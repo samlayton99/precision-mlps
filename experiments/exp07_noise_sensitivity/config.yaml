@@ -1,0 +1,15 @@
+# Experiment 7: Noise Sensitivity
+# How does construction precision degrade with data/grid noise?
+
+name: noise_sensitivity
+seeds: [0, 1, 2]
+widths: [32, 64, 128, 256]
+
+target: sine
+
+construction:
+  enabled: true
+
+# Noise levels swept in run.py
+# Y-noise: [0, 1e-14, 1e-12, 1e-10, 1e-8, 1e-6, 1e-4]
+# X-noise: [0, 1e-14, 1e-12, 1e-10, 1e-8, 1e-6, 1e-4]

@@ -1,0 +1,21 @@
+# Experiment 2: QI Basin Stability and Path Experiments
+# Analyze whether the QI solution sits in a stable basin and
+# whether trained solutions share that basin.
+
+name: basin_stability
+seeds: [0, 1, 2]
+widths: [32, 64, 128]
+
+target: sine
+
+construction:
+  enabled: true
+
+init:
+  from_construction: true
+
+training:
+  stages:
+    - name: adam
+      learning_rate: 1.0e-5  # small LR to test drift
+      steps: 10000

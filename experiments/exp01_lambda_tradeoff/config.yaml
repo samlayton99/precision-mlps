@@ -1,0 +1,23 @@
+# Experiment 1: Lambda Tradeoff Verification
+# Trace the U-shaped error-vs-lambda curve predicted by QI theory.
+# Aliasing at large lambda, ill-conditioning at small lambda.
+
+name: lambda_tradeoff
+seeds: [0, 1, 2, 3, 4]
+widths: [16, 32, 64, 128, 256]
+
+target: sine
+
+construction:
+  enabled: true
+  mp_dps: 50
+
+init:
+  from_construction: true
+
+n_train: 512
+n_eval: 2048
+sampling: equispaced
+
+sweep:
+  construction.lambda_star: [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0]

@@ -1,0 +1,23 @@
+# Experiment 8: Reparameterization
+# Compare parameterizations head-to-head.
+
+name: reparameterization
+seeds: [0, 1, 2]
+widths: [16, 32, 64, 128]
+
+target: sine
+
+training:
+  stages:
+    - name: adam
+      learning_rate: 1.0e-3
+      steps: 30000
+    - name: lbfgs
+      learning_rate: 1.0
+      steps: 10000
+
+# Layer types tested in run.py:
+# - standard (raw W, b)
+# - gamma_linear (raw gamma, centers)
+# - gamma_exp (log-gamma reparameterization)
+# Plus: global bandwidth, dimensionless centers, alpha readout

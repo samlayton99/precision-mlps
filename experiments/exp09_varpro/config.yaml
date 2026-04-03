@@ -1,0 +1,20 @@
+# Experiment 9: Variable Projection (VarPro) / Reduced Objective
+# Eliminate readout exactly, optimize only nonlinear geometry.
+
+name: varpro
+seeds: [0, 1, 2]
+widths: [32, 64, 128]
+
+target: sine
+
+model:
+  layer_type: gamma_exp  # log-gamma for gradient health
+
+training:
+  stages:
+    - name: adam
+      learning_rate: 1.0e-3
+      steps: 20000
+    - name: lbfgs
+      learning_rate: 1.0
+      steps: 10000

@@ -1,0 +1,23 @@
+# Experiment 6: Objective Mismatch
+# Does changing the training loss recover QI-like geometry?
+
+name: objective_mismatch
+seeds: [0, 1, 2]
+widths: [32, 64, 128]
+
+target: sine
+
+training:
+  stages:
+    - name: adam
+      learning_rate: 1.0e-3
+      steps: 30000
+    - name: lbfgs
+      learning_rate: 1.0
+      steps: 10000
+
+# Loss variants tested in run.py:
+# - mse (baseline)
+# - lp_approx with p=6
+# - hybrid_boundary with boundary_weight=5
+# - weighted_mse with Chebyshev weights

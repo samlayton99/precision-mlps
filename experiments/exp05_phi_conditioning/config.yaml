@@ -1,0 +1,14 @@
+# Experiment 5: Phi Conditioning
+# Feature matrix conditioning as a function of width and lambda.
+
+name: phi_conditioning
+seeds: [0]
+widths: [16, 32, 64, 128, 256]
+
+target: sine
+
+construction:
+  enabled: true
+
+sweep:
+  construction.lambda_star: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]

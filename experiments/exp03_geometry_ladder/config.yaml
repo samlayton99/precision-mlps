@@ -1,0 +1,24 @@
+# Experiment 3: Geometry Ladder Cascade
+# Progressive constraint relaxation from full construction to fully free.
+# 7 levels, each revealing where precision is lost.
+
+name: geometry_ladder
+seeds: [0, 1, 2]
+widths: [32, 64, 128, 256]
+
+target: sine
+
+construction:
+  enabled: true
+
+training:
+  stages:
+    - name: adam
+      learning_rate: 1.0e-3
+      steps: 30000
+    - name: lbfgs
+      learning_rate: 1.0
+      steps: 10000
+
+# Ladder levels are defined in run.py, not here.
+# Each level sets different freeze/init configs.

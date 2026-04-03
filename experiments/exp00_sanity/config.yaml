@@ -1,0 +1,23 @@
+# Experiment 0: Numerics Sanity Checks
+# Verify that linear solves, function evaluation, and tolerance choices
+# are not the precision bottleneck.
+
+name: sanity_checks
+seeds: [0]
+widths: [16, 32, 64, 128, 256]
+
+target: sine
+
+construction:
+  enabled: true
+  mp_dps: 50
+  Kc: 12
+  halo: 8
+
+init:
+  from_construction: true
+  readout_solve: lstsq  # compare lstsq, qr, svd, ridge in run.py
+
+n_train: 256
+n_eval: 2048
+sampling: equispaced
