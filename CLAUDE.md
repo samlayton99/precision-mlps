@@ -9,9 +9,16 @@ Three violations in trained networks explain the gap:
 2. **Weight blowup**: outer weights diverge instead of staying O(1)
 3. **Rank saturation**: features collapse instead of uniform utilization
 
+## How to Succeed
+1. Always get context of the research! The papers/theory guiding the experiments are in the /papers/ folder. It has both the pdf and latex versions. Read the main_paper.tex and Section_3_rewrite.tex. We are trying to complete this paper by finding an optimization strategy.
+2. Use the additional repo 'continuous-mlps' (next door neighbor to this repo in the file structure) as inspiration or a resource when you need it (it is a correct implementation of the paper), but not as something to just copy exactly.
+3. read future_experiments.md every time. This is our main design spec doc that I will be working with you through.
+4. When implementing new machinery or experiments, always write and clearly communicate to me the tests that verify your implementation actually matches the research (e.g. show me the QI construction reaches machine eps precision after being first built, etc.) 
+
 ## Architecture
 
 ```
+papers/                       Source material guiding everything
 src/                          Core library (PyTorch, all computation in float64)
   config/
     schema.py                 ExperimentConfig and sub-configs (dataclasses)
@@ -47,7 +54,36 @@ experiments/                  One folder per experiment, each with config.yaml +
   exp09_varpro/               Variable Projection reduced objective
 
 tests/                        Unit tests
+results/                      Experiment results output
 ```
+
+## QI Construction: Critical Facts
+
+The QI construction in `src/construction/qi_mpmath.py` has two precision regimes.
+**Read `papers/practical_implementation.tex` before touching construction code.**
+
+- **fp64 path** (default, `precision="fp64"`, lambda=0.30): ~10ms, L_inf ~ 1e-12.
+  Limited by fp64 cancellation in the convolution (c_j reach |c_0|~338 with alternating signs).
+- **mpmath path** (`precision="mpmath"`, lambda=0.25): ~55s cold, ~0.25s cached, L_inf ~ 3e-15 (machine eps).
+  Required because fp64 Toeplitz solve is ill-conditioned at lambda=0.25.
+
+**Cardinal coefficients `c_j` are target-independent and cached to disk** at
+`results/qi_cache/`, keyed by `(lambda_star, Kc, N, precision, mp_dps)`.
+Second call at same config completes in ~0.25s even for mpmath.
+
+**Use mpmath for baseline experiments (exp02 basin, exp03 ladder, exp04 Hessian)**
+where QI is a fixed reference point. **Use fp64 everywhere else**
+(training runs, sweeps, initialization). Both paths produce valid fp64 coefficients.
+
+**mpmath does NOT violate fp64 assumptions.** The construction is an offline
+precomputation that produces fp64 coefficients. The model, training loop, and
+evaluation all run in fp64. Analogy: `numpy.pi` is computed at high precision
+once and stored as a fp64 constant.
+
+**Parameter warnings:**
+- `lambda_star=1.5` does NOT work (intrinsic aliasing too large).
+- `Kc=12` does NOT work (cardinal coefficients don't decay that fast).
+- Use `Kc=160` (matches continuous-mlps) and `halo=default_halo(N, lambda_star)`.
 
 ## Key Abstractions
 
@@ -97,4 +133,4 @@ PyTorch, mpmath, numpy, scipy, PyYAML.
 
 ## Success Criterion
 
-A method works if, across widths N in {32, 64, 128, 256}, on the target-family matrix (6 categories), over 3-5 seeds, it reaches eval relative L2 <= 1e-13 and eval L_inf consistent with construction-level precision, without initialization from the exact constructive solution.
+An optimization method has been found if, as widths N increase (e.g. {32, 64, 128, 256, ...}) on the target-family matrix (6 categories), over 3-5 seeds, it's error falls at O(log(1/eps)) and eventually reaches eval relative L2 <= 1e-13 and eval L_inf consistent with machine epsilon precision, without initialization from the exact constructive solution.

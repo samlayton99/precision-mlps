@@ -10,9 +10,9 @@ target: sine
 
 construction:
   enabled: true
-  mp_dps: 50
-  Kc: 12
-  halo: 8
+  precision: fp64   # compare against precision=mpmath in run.py
+  Kc: 160           # do NOT use Kc<80 - cardinal coefs don't decay fast enough
+  # halo: leave null so default_halo(N, lambda_star) is used
 
 init:
   from_construction: true

@@ -10,11 +10,14 @@ All parameter writes use torch.no_grad().
 
 from __future__ import annotations
 
+import numpy as np
 import torch
 import torch.nn as nn
 
 from src.construction.qi_mpmath import QIResult
+from src.construction.readout import build_phi, solve_readout_with_bias
 from src.config.schema import FreezeConfig, InitConfig
+from src.models.layers import GammaLinear, GammaExpLinear
 
 
 def initialize_from_construction(
@@ -27,15 +30,44 @@ def initialize_from_construction(
 ) -> None:
     """Copy QIResult values into model parameters in-place.
 
-    Uses torch.no_grad() for all parameter writes.
-
-    For GammaLinear: gamma.data = qi_result.gamma (broadcast to [1, width])
-    For GammaExpLinear: log_gamma.data = log(lambda_star)
-    Readout: weight.data = interior_a_coeffs reshaped to [1, width]
-             bias.data = c0
+    Uses the interior (non-halo) centers and coefficients to match model width.
+    For models with halo nodes, use the full centers/a_coeffs directly.
     """
-    # TODO: implement
-    raise NotImplementedError
+    with torch.no_grad():
+        inner = model.inner_layer
+        width = model.config.width
+
+        # Determine which centers/coeffs to use based on model width
+        if width == len(qi_result.centers):
+            centers = qi_result.centers
+            a_coeffs = qi_result.a_coeffs
+        elif width == len(qi_result.interior_centers):
+            centers = qi_result.interior_centers
+            a_coeffs = qi_result.interior_a_coeffs
+        else:
+            raise ValueError(
+                f"Model width {width} doesn't match construction: "
+                f"full={len(qi_result.centers)}, interior={len(qi_result.interior_centers)}"
+            )
+
+        if construct_gamma:
+            if isinstance(inner, GammaLinear):
+                inner.gamma.data.fill_(qi_result.gamma)
+            elif isinstance(inner, GammaExpLinear):
+                import math
+                inner.log_gamma.data.fill_(math.log(qi_result.lambda_val))
+
+        if construct_centers:
+            if isinstance(inner, (GammaLinear, GammaExpLinear)):
+                inner.centers.data.copy_(
+                    torch.tensor(centers, dtype=torch.float64).reshape(1, width)
+                )
+
+        if construct_readout:
+            model.readout.weight.data.copy_(
+                torch.tensor(a_coeffs, dtype=torch.float64).reshape(1, width)
+            )
+            model.readout.bias.data.fill_(qi_result.c0)
 
 
 def initialize_and_freeze(
@@ -44,12 +76,28 @@ def initialize_and_freeze(
     freeze_config: FreezeConfig,
     init_config: InitConfig,
 ) -> None:
-    """Initialize from construction, then freeze per config.
+    """Initialize from construction, then freeze per config."""
+    initialize_from_construction(
+        model, qi_result,
+        construct_gamma=init_config.construct_gamma,
+        construct_centers=init_config.construct_centers,
+        construct_readout=init_config.construct_readout,
+    )
 
-    Geometry ladder entry point (Experiment 3).
-    """
-    # TODO: implement
-    raise NotImplementedError
+    inner = model.inner_layer
+    if freeze_config.gamma:
+        if isinstance(inner, GammaLinear):
+            inner.gamma.requires_grad_(False)
+        elif isinstance(inner, GammaExpLinear):
+            inner.log_gamma.requires_grad_(False)
+
+    if freeze_config.centers:
+        if isinstance(inner, (GammaLinear, GammaExpLinear)):
+            inner.centers.requires_grad_(False)
+
+    if freeze_config.readout:
+        model.readout.weight.requires_grad_(False)
+        model.readout.bias.requires_grad_(False)
 
 
 def initialize_with_readout_solve(
@@ -64,5 +112,15 @@ def initialize_with_readout_solve(
     Detaches Phi to numpy, solves, copies weights back with torch.no_grad().
     Returns info dict with solve diagnostics.
     """
-    # TODO: implement
-    raise NotImplementedError
+    with torch.no_grad():
+        Phi = model.features(x_train).detach().cpu().numpy()
+        y_np = y_train.detach().cpu().numpy().ravel()
+
+        v, bias, info = solve_readout_with_bias(Phi, y_np, method=method, ridge_alpha=ridge_alpha)
+
+        model.readout.weight.data.copy_(
+            torch.tensor(v, dtype=torch.float64).reshape(1, -1)
+        )
+        model.readout.bias.data.fill_(bias)
+
+    return info

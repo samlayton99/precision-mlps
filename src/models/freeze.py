@@ -19,56 +19,48 @@ import torch.nn as nn
 
 
 def freeze_params(model: nn.Module, filter_fn: Callable[[str, nn.Parameter], bool]) -> None:
-    """Freeze parameters where filter_fn returns True.
-
-    Args:
-        model: Any nn.Module.
-        filter_fn: (name, param) -> bool. True = freeze.
-    """
-    # TODO: implement
-    # for name, param in model.named_parameters():
-    #     if filter_fn(name, param):
-    #         param.requires_grad_(False)
-    raise NotImplementedError
+    """Freeze parameters where filter_fn returns True."""
+    for name, param in model.named_parameters():
+        if filter_fn(name, param):
+            param.requires_grad_(False)
 
 
 def unfreeze_params(model: nn.Module, filter_fn: Callable[[str, nn.Parameter], bool]) -> None:
     """Unfreeze parameters where filter_fn returns True."""
-    # TODO: implement
-    raise NotImplementedError
+    for name, param in model.named_parameters():
+        if filter_fn(name, param):
+            param.requires_grad_(True)
 
 
 def freeze_inner_layer(model: nn.Module) -> None:
     """Freeze all inner layer parameters (gamma/log_gamma and centers)."""
-    # TODO: implement
-    raise NotImplementedError
+    freeze_params(model, lambda name, _p: name.startswith("inner_layer"))
 
 
 def freeze_gamma(model: nn.Module) -> None:
     """Freeze only gamma (or log_gamma). Keep centers trainable."""
-    # TODO: implement
-    raise NotImplementedError
+    freeze_params(
+        model,
+        lambda name, _p: name.endswith("gamma") or name.endswith("log_gamma"),
+    )
 
 
 def freeze_centers(model: nn.Module) -> None:
     """Freeze only centers."""
-    # TODO: implement
-    raise NotImplementedError
+    freeze_params(model, lambda name, _p: name.endswith("centers"))
 
 
 def freeze_readout(model: nn.Module) -> None:
     """Freeze readout weights and bias."""
-    # TODO: implement
-    raise NotImplementedError
+    freeze_params(model, lambda name, _p: name.startswith("readout"))
 
 
 def unfreeze_all(model: nn.Module) -> None:
     """Unfreeze all parameters."""
-    # TODO: implement
-    raise NotImplementedError
+    for param in model.parameters():
+        param.requires_grad_(True)
 
 
 def get_trainable_param_count(model: nn.Module) -> int:
     """Count parameters with requires_grad=True."""
-    # TODO: implement
-    raise NotImplementedError
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)

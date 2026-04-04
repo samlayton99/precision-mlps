@@ -139,58 +139,89 @@ def get_trainable_param_count(model): ...
 
 ---
 
-## Phase 3: Construction
+## Phase 3: Construction (DONE)
 
-### `src/construction/qi_mpmath.py`
+The construction is implemented in `src/construction/qi_mpmath.py` and has two
+precision regimes. See `papers/practical_implementation.tex` for the full
+discussion. The short version:
 
-The most complex module. Adapt from continuous-mlps.
+### Two precision regimes
+
+**fp64 (default, fast, ~10ms, achieves ~1e-12):**
+- `precision="fp64"`, `lambda_star=0.30`, `Kc=160`, halo scaling
+- Toeplitz solve via `np.linalg.solve`
+- Convolution via fp64 Kahan summation
+- Plateau at ~1e-12 from cancellation error in the c_k (|c_0|~338, alternating signs)
+
+**mpmath (slow, ~55s cold / ~0.25s cached, achieves ~3e-15):**
+- `precision="mpmath"`, `lambda_star=0.25`, `Kc=160`, halo scaling
+- Toeplitz solve via `mp.lu_solve`
+- Convolution via mpmath Kahan summation
+- Reaches true fp64 machine epsilon
+
+### API
 
 ```python
-@dataclass(frozen=True)
-class QIResult:
-    N: int; h: float; gamma: float; lambda_val: float
-    centers: np.ndarray; interior_centers: np.ndarray
-    a_coeffs: np.ndarray; interior_a_coeffs: np.ndarray
-    c0: float; toeplitz_residual: float; halo: int; Kc: int
+from src.construction import construct_qi, evaluate_qi, default_halo
 
-def construct_qi(target_fn, target_deriv, N, *,
-                 lambda_star=1.5, Kc=12, halo=8, mp_dps=50) -> QIResult:
+# Fast fp64 (default)
+qi = construct_qi(target.fn_numpy, target.deriv_numpy, N=64)
+
+# Machine-epsilon baseline (for exp02, exp03, exp04)
+qi = construct_qi(target.fn_numpy, target.deriv_numpy, N=64, precision="mpmath")
+
+# Evaluate
+y = evaluate_qi(qi, x_array)
 ```
 
-Algorithm:
-1. h = 2/N, gamma = lambda_star / h
-2. Grid: x_k = -1 + k*h for k in range(-halo, N + halo + 1)
-3. Toeplitz matrix T[r,j] = h * gamma * sech^2(gamma * (r-j) * h). Use mpmath.
-4. Solve T @ c = e_Kc for cardinal coefficients
-5. Evaluate g'(x_k) at all grid points
-6. Convolve: a_n = sum_j c_j * g'(x_{n+j}) * h (Kahan summation)
-7. Bias: c0 = g(-1) - sum_n a_n * tanh(gamma * (-1 - x_n))
-8. Project to float64 numpy arrays
+### Cache
 
-Kahan summation is ~10 lines, inline it here.
+Cardinal coefficients `c_j` are **target-independent** and cached to disk at
+`results/qi_cache/` keyed by `(lambda_star, Kc, N, precision, mp_dps)`. This
+amortizes the 55s mpmath cost across all targets and seeds that share the
+same construction configuration. Set `QI_CACHE_DIR` env var or pass
+`cache_dir=Path(...)` to override; pass `use_cache=False` to skip.
 
-### `src/construction/readout.py`
-numpy/scipy only:
-```python
-def build_phi(x, gamma, centers):        # -> [n, width] numpy
-def solve_readout(Phi, y, method="lstsq", ridge_alpha=0.0):       # -> (v, info)
-def solve_readout_with_bias(Phi, y, method="lstsq", ridge_alpha=0.0):  # -> (v, bias, info)
-```
+### Per-experiment precision recommendations
 
-### `src/construction/initialize.py`
-```python
-def initialize_from_construction(model, qi_result, *,
-                                  construct_gamma=True, construct_centers=True, construct_readout=True):
-    # torch.no_grad(), copy numpy arrays into model params
+| Experiment | Precision | Why |
+|-----------|-----------|-----|
+| exp00 (numerics) | both | explicit comparison |
+| exp01 (lambda tradeoff) | fp64 | sweeps many params |
+| exp02 (basin stability) | **mpmath** | QI is the reference point |
+| exp03 (geometry ladder) | **mpmath** | measures precision loss vs. construction |
+| exp04 (Hessian) | **mpmath** | Hessian at true QI solution |
+| exp05-09 (training-heavy) | fp64 | fast iteration |
 
-def initialize_and_freeze(model, qi_result, freeze_config, init_config):
-    # init then freeze per config
+Rule: use mpmath when QI is a fixed reference to compare against; use fp64
+when training / sweeping / initializing.
 
-def initialize_with_readout_solve(model, x_train, y_train, method="lstsq", ridge_alpha=0.0):
-    # detach Phi to numpy, solve, copy back
-```
+### Other construction modules
 
-**Test:** construct_qi on sine N=64, verify L_inf < 1e-13. Initialize model, verify output matches.
+**`src/construction/readout.py`** (DONE, numpy/scipy):
+- `build_phi(x, gamma, centers) -> Phi[n, W]`
+- `solve_readout(Phi, y, method, ridge_alpha) -> (v, info)`  (methods: lstsq, qr, svd, ridge)
+- `solve_readout_with_bias(Phi, y, ...) -> (v, bias, info)`
+
+**`src/construction/initialize.py`** (DONE):
+- `initialize_from_construction(model, qi_result, construct_gamma, construct_centers, construct_readout)`
+- `initialize_and_freeze(model, qi_result, freeze_config, init_config)`
+- `initialize_with_readout_solve(model, x_train, y_train, method, ridge_alpha)`
+
+Models can be initialized with full width `N + 2*halo + 1` (all centers) OR
+interior-only width `N + 1` (drops halo). `initialize_from_construction`
+auto-detects based on `model.config.width`.
+
+### CRITICAL: parameter warnings
+
+1. **lambda_star=1.5 does NOT work.** At lambda=1.5 the intrinsic aliasing
+   error is ~1e-3. We need lambda ≤ 0.30. Old default was wrong.
+2. **Kc=12 does NOT work.** The cardinal coefficients decay much slower than
+   the simplified rate formula `exp(-2*lambda*Kc)` predicts. At Kc=12 the
+   edge coefficients are O(1e-5), causing ~1e-5 truncation error. Must use Kc~=160.
+3. **Halo sizing is lambda-dependent.** Use `default_halo(N, lambda_star)`:
+   - Lower bound: `ceil(35/(2*lambda))` to drive halo-tail below 1e-15
+   - Lower bound: `0.4*N` to match continuous-mlps empirical rule
 
 ---
 
@@ -287,19 +318,23 @@ in each experiment's run.py using PyTorch. No pre-built analysis module.
 
 ## Phase 6: Tests
 
-- `test_construction.py`: construct_qi on sine, verify precision, readout solvers agree
+- `test_construction.py` (DONE, 37 tests): construct_qi precision, readout solvers,
+  cache roundtrip, precision flag, lambda sensitivity, scaling. Marked `slow` tests
+  exercise the mpmath path.
 - `test_models.py`: forward shapes, layer types, accessors
 - `test_freeze.py`: freeze/unfreeze, gradient flow, param counts
 - `test_training.py`: loss decreases, metrics collector keys
 
-Run: `python -m pytest tests/ -v`
+Run fast: `PYTHONPATH=. python3 -m pytest tests/ -v -m "not slow"` (~1s)
+Run all:  `PYTHONPATH=. python3 -m pytest tests/ -v` (~60s, includes mpmath)
 
 ---
 
 ## Notes
 
 **Target function dual interface:** Each TargetFn has torch and numpy versions.
-The torch version is for training. The numpy version is for mpmath construction.
+The torch version is for training. The numpy version is for QI construction
+(both fp64 and mpmath paths call it on scalar floats).
 
 **LBFGS closure:** PyTorch LBFGS needs a closure that does zero_grad + loss + backward.
 This is the only difference from Adam/SGD in the training loop.
@@ -308,3 +343,12 @@ This is the only difference from Adam/SGD in the training loop.
 
 **Readout solve bridge:** detach Phi to numpy, solve with scipy, copy weights back
 with torch.no_grad(). Clean separation between numpy linear algebra and torch gradients.
+
+**mpmath is offline, not a fp64 violation.** The QI construction is a one-time offline
+computation producing fp64 coefficients. The trained model, training loop, and evaluation
+all run in fp64. Computing coefficients in mpmath is analogous to computing `numpy.pi`
+offline at high precision and storing as an fp64 constant.
+
+**Construction is a reference point, not a training target.** Training experiments
+(exp05-09) always use fp64 construction. Baseline experiments (exp02-04) use mpmath
+construction as the "true QI solution" to compare training against.

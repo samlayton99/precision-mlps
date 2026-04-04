@@ -1,6 +1,10 @@
 # Experiment 1: Lambda Tradeoff Verification
 # Trace the U-shaped error-vs-lambda curve predicted by QI theory.
 # Aliasing at large lambda, ill-conditioning at small lambda.
+#
+# The viable regime sits around lambda in [0.20, 0.35]. At lambda >= 0.5 the
+# intrinsic aliasing exp(-pi^2/lambda) exceeds 1e-4. At lambda < 0.2 the fp64
+# Toeplitz solve becomes ill-conditioned. Sweep spans both sides to show the U.
 
 name: lambda_tradeoff
 seeds: [0, 1, 2, 3, 4]
@@ -10,7 +14,8 @@ target: sine
 
 construction:
   enabled: true
-  mp_dps: 50
+  precision: fp64   # use fp64 (fast) for this sweep
+  Kc: 160
 
 init:
   from_construction: true
@@ -20,4 +25,4 @@ n_eval: 2048
 sampling: equispaced
 
 sweep:
-  construction.lambda_star: [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0]
+  construction.lambda_star: [0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50, 0.75, 1.0, 1.5]

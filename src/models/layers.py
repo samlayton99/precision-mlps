@@ -36,15 +36,19 @@ class GammaLinear(nn.Module):
     """
 
     def __init__(self, width: int, gamma_init=None, center_init=None):
-        # TODO: implement
-        # self.gamma = nn.Parameter(gamma_init or torch.ones(1, width))
-        # self.centers = nn.Parameter(center_init or torch.zeros(1, width))
-        raise NotImplementedError
+        super().__init__()
+        if gamma_init is not None:
+            self.gamma = nn.Parameter(gamma_init.clone().detach().reshape(1, width))
+        else:
+            self.gamma = nn.Parameter(torch.ones(1, width, dtype=torch.float64))
+        if center_init is not None:
+            self.centers = nn.Parameter(center_init.clone().detach().reshape(1, width))
+        else:
+            self.centers = nn.Parameter(torch.zeros(1, width, dtype=torch.float64))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """gamma * (x - centers). x: [batch, 1] -> [batch, width]."""
-        # TODO: implement
-        raise NotImplementedError
+        return self.gamma * (x - self.centers)
 
 
 class GammaExpLinear(nn.Module):
@@ -62,21 +66,25 @@ class GammaExpLinear(nn.Module):
     """
 
     def __init__(self, width: int, h: float = 1.0, log_gamma_init=None, center_init=None):
-        # TODO: implement
-        # self.log_gamma = nn.Parameter(log_gamma_init or torch.zeros(1, width))
-        # self.centers = nn.Parameter(center_init or torch.zeros(1, width))
-        # self.h = h
-        raise NotImplementedError
+        super().__init__()
+        if log_gamma_init is not None:
+            self.log_gamma = nn.Parameter(log_gamma_init.clone().detach().reshape(1, width))
+        else:
+            self.log_gamma = nn.Parameter(torch.zeros(1, width, dtype=torch.float64))
+        if center_init is not None:
+            self.centers = nn.Parameter(center_init.clone().detach().reshape(1, width))
+        else:
+            self.centers = nn.Parameter(torch.zeros(1, width, dtype=torch.float64))
+        self.h = h
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """exp(log_gamma)/h * (x - centers). x: [batch, 1] -> [batch, width]."""
-        # TODO: implement
-        raise NotImplementedError
+        gamma = torch.exp(self.log_gamma) / self.h
+        return gamma * (x - self.centers)
 
     def get_gamma(self) -> torch.Tensor:
         """Return effective gamma = exp(log_gamma) / h."""
-        # TODO: implement
-        raise NotImplementedError
+        return torch.exp(self.log_gamma) / self.h
 
 
 class StandardLinear(nn.Module):
@@ -86,14 +94,12 @@ class StandardLinear(nn.Module):
     """
 
     def __init__(self, width: int):
-        # TODO: implement
-        # self.linear = nn.Linear(1, width)
-        raise NotImplementedError
+        super().__init__()
+        self.linear = nn.Linear(1, width, dtype=torch.float64)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """x @ weight + bias. x: [batch, 1] -> [batch, width]."""
-        # TODO: implement
-        raise NotImplementedError
+        return self.linear(x)
 
 
 def get_layer(layer_type: str, width: int, **kwargs) -> nn.Module:
@@ -107,5 +113,11 @@ def get_layer(layer_type: str, width: int, **kwargs) -> nn.Module:
     Returns:
         Instantiated layer module.
     """
-    # TODO: implement
-    raise NotImplementedError
+    if layer_type == "gamma_linear":
+        return GammaLinear(width, **kwargs)
+    elif layer_type == "gamma_exp":
+        return GammaExpLinear(width, **kwargs)
+    elif layer_type == "standard":
+        return StandardLinear(width)
+    else:
+        raise ValueError(f"Unknown layer type: {layer_type}")

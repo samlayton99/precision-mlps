@@ -1,0 +1,212 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{gray!10},
+  frame=single,
+  breaklines=true,
+}
+
+\title{Practical Implementation Notes for the QI--MLP Construction}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{TL;DR}
+
+\begin{itemize}
+\item The QI construction is implemented in \texttt{src/construction/qi\_mpmath.py}.
+\item Two precision regimes, both producing valid fp64 coefficients:
+  \begin{itemize}
+  \item \texttt{precision="fp64"} (default, $\sim$10\,ms per call, $L_\infty \sim 10^{-12}$).
+  \item \texttt{precision="mpmath"} ($\sim$55\,s per call, $L_\infty \sim 3\times 10^{-15}$ = machine eps).
+  \end{itemize}
+\item Cardinal coefficients $c_j$ are cached to disk (target-independent), so subsequent
+      calls at the same $(\lambda, K_c, N, \text{precision})$ complete in $\sim$0.25\,s.
+\item \textbf{mpmath does not violate fp64 assumptions.} It is an offline computation that
+      produces fp64 coefficients; the model, training loop, and evaluation all run in fp64.
+\end{itemize}
+
+\section{Algorithm recap}
+
+Given a target $g$ analytic on $[-1,1]$ with known derivative $g'$:
+
+\begin{enumerate}
+\item \textbf{Grid.} $h = 2/N$, $\gamma = \lambda^*/h$, $x_k = -1 + kh$ for $k \in \{-R, \ldots, N+R\}$.
+\item \textbf{Toeplitz solve.} Build $T_{r,j} = h\,K_d((r-j)h)$ with $K_d(x) = \gamma\,\mathrm{sech}^2(\gamma x)$; solve $Tc = e_0 \cdot h$ for the cardinal coefficients $\{c_j\}_{j=-K_c}^{K_c}$.
+\item \textbf{Convolution (Kahan).} $a_n = \sum_{k=-K_c}^{K_c} c_k\, g'(x_{n-k})$ for $n \in \{-R,\ldots,N+R\}$.
+\item \textbf{Bias.} $c_0 = g(-1) - \sum_n a_n \tanh(\gamma(-1 - x_n))$.
+\item \textbf{MLP.} $q(x) = c_0 + \sum_n a_n \tanh(\gamma(x - x_n))$, width $W = N + 2R + 1$.
+\end{enumerate}
+
+\section{Why two regimes? The precision--conditioning tradeoff}
+
+\subsection{What limits fp64 construction}
+
+The construction has two sources of fp64 roundoff:
+\begin{enumerate}
+  \item \textbf{Toeplitz solve conditioning.} As $\lambda$ decreases, $T$ becomes ill-conditioned; fp64 can't resolve the solution.
+  \item \textbf{Convolution cancellation.} The cardinal coefficients $c_j$ have magnitudes $|c_0|\approx 338$ at $\lambda=0.30$ with alternating signs in $k$. Computing $a_n = O(1)$ from this sum involves cancelling $O(300)$-magnitude terms. The resulting fp64 error is $\sim 300 \cdot \varepsilon \cdot \sqrt{2K_c+1} \approx 10^{-12}$.
+\end{enumerate}
+
+The paper's error budget has four exponentially decaying terms:
+\begin{align*}
+  \text{intrinsic aliasing:} &\quad e^{-\pi^2/\lambda}, \\
+  \text{stencil truncation:} &\quad e^{-\alpha\,\lambda\,K_c}, \\
+  \text{halo truncation:}    &\quad e^{-\beta\,\lambda\,R}, \\
+  \text{resolution (target-dependent):} &\quad e^{-\rho_f/h}.
+\end{align*}
+Smaller $\lambda$ reduces the intrinsic aliasing but raises the cancellation error and worsens Toeplitz conditioning. There is a sweet spot.
+
+\subsection{Two operating points}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+  & \textbf{fp64 path} & \textbf{mpmath path} \\
+\midrule
+$\lambda^*$        & 0.30 & 0.25 \\
+$K_c$              & 160 & 160 \\
+$R$ (halo)         & $\max(59, 0.4N)$ & $\max(70, 0.4N)$ \\
+mp\_dps            & -- & 30 \\
+typical precision  & $\sim 10^{-12}$ & $\sim 3\times 10^{-15}$ \\
+runtime (N=64)     & $\sim$10\,ms & $\sim$55\,s (cold), $\sim$0.25\,s (cached) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Empirically: halo sizing}
+
+The halo-tail term $e^{-2\lambda R}$ must drop below the target precision. Setting
+$R \geq 35/(2\lambda)$ gives a halo-truncation floor of $e^{-35} \approx 6\times 10^{-16}$,
+below fp64 machine epsilon. On top of that we grow $R$ with $N$ to match
+\texttt{continuous-mlps}'s empirical rule $R \approx 0.4\,N$. The helper
+\texttt{default\_halo(N, lambda\_star)} applies both constraints.
+
+\subsection{Empirically: $K_c$ choice}
+
+The simplified rate formula $e^{-2\lambda K_c}$ \emph{underestimates} the required stencil
+because the actual decay rate of the cardinal coefficients (set by singularities of
+$h/D_h(\omega)$ in the complex plane) is smaller than the simplified constant. We fix
+$K_c = 160$ to match \texttt{continuous-mlps}; this gives cardinal-coefficient edge
+magnitudes below $10^{-18}$ at $\lambda=0.25$.
+
+\section{mpmath is an offline precomputation, not fp64 violation}
+
+\textbf{Common concern:} ``If we require fp64 for training, doesn't mpmath construction violate that?''
+
+\textbf{Answer:} No. \texttt{torch.set\_default\_dtype(torch.float64)} governs the trained
+model---its weights, activations, gradients, and loss evaluation. The QI construction is a
+\emph{one-time, offline} step that produces \texttt{np.float64} coefficients
+$(a_n, c_0, \text{centers})$. Whether those numbers were computed by hand, in fp64, in fp128,
+or in mpmath is irrelevant to the training regime; what matters is that they are valid fp64
+values and representable in the model.
+
+Analogy: \texttt{numpy.pi} is derived from high-precision algorithms and stored as a single
+fp64 constant. Nobody considers this a violation of fp64 arithmetic.
+
+The mpmath path is the \emph{canonical ground truth} for ``what is the best fp64 coefficient
+set we can construct?''. The fp64 path is a \emph{fast approximation} of that ground truth,
+accurate enough for most training experiments.
+
+\section{Caching}
+
+Since $c_j$ depends only on $(\lambda_*, K_c, N, \text{precision}, \texttt{mp\_dps})$---NOT
+on the target function---we cache it to disk. This is essential for mpmath, because
+computing $c_j$ dominates the cost ($\sim$55\,s) while the convolution takes
+$\sim$0.1\,s and can be redone per target cheaply.
+
+\subsection{Cache layout}
+
+\begin{lstlisting}[language=bash]
+results/qi_cache/
+  c_fp64_lam0.3000_Kc160_N64_dps30_<hash>.npz     # fp64: numpy savez
+  c_mpmath_lam0.2500_Kc160_N64_dps30_<hash>.txt   # mpmath: text with full precision
+\end{lstlisting}
+
+mpmath coefficients are serialized as text with \texttt{mp\_dps} decimal digits to avoid
+fp64 downcasting during persistence. fp64 coefficients use numpy's binary format.
+
+\subsection{Amortized cost}
+
+For an experiment touching 8 targets at 5 widths with 5 seeds each:
+\begin{itemize}
+  \item \textbf{Cold mpmath:} $8 \times 5 \times 5 \times 55\,\text{s} = 1$\,h 50\,min.
+  \item \textbf{Cached mpmath:} $5 \times 55\,\text{s} + 199 \times 0.25\,\text{s} \approx 5$\,min.
+\end{itemize}
+The cache pays for itself on the very first experiment.
+
+\section{Recommendations per experiment class}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Experiment & Precision & Rationale \\
+\midrule
+exp00 (numerics sanity) & both & explicitly compares \\
+exp01 (lambda tradeoff) & fp64 & sweeps many params, speed matters \\
+exp02 (basin stability) & \textbf{mpmath} & QI solution is the reference point \\
+exp03 (geometry ladder) & \textbf{mpmath} & measures precision loss vs.\ construction \\
+exp04 (Hessian) & \textbf{mpmath} & Hessian at true QI solution \\
+exp05 ($\Phi$ conditioning) & fp64 & studies feature matrix, not coefficients \\
+exp06 (objective mismatch) & fp64 & training runs \\
+exp07 (noise sensitivity) & fp64 & fast sweeps \\
+exp08 (reparameterization) & fp64 & training comparisons \\
+exp09 (VarPro) & fp64 & training method \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Rule of thumb:} Use mpmath whenever the construction is a \emph{fixed reference} we're
+comparing against (Group A). Use fp64 whenever we're \emph{training, sweeping, or initializing}
+(Group B). Both paths produce valid fp64 coefficients that initialize a fp64 PyTorch model.
+
+\section{Validation against \texttt{continuous-mlps}}
+
+\texttt{continuous-mlps} uses fp64 throughout in its production sweep and achieves
+$L_\infty \approx 4\times 10^{-13}$ on $\sin(2\pi x)$ at $N=1671$ (width 2048). Our fp64 path
+reaches $\sim 5\times 10^{-12}$ at $N=64$ (width 183), consistent with continuous-mlps after
+accounting for the smaller width. Both are dominated by the fp64 cancellation floor. The
+paper's theoretical $10^{-15}$ claim is reachable only with mpmath.
+
+\section{API summary}
+
+\begin{lstlisting}[language=Python]
+from src.construction import construct_qi, evaluate_qi
+
+# Fast default: fp64, cache, scaling halo
+qi = construct_qi(target.fn_numpy, target.deriv_numpy, N=64)
+# Equivalent to:
+qi = construct_qi(target.fn_numpy, target.deriv_numpy, N=64,
+                  precision="fp64", lambda_star=0.30, Kc=160,
+                  halo=None,  # -> default_halo(64, 0.30) = 59
+                  use_cache=True)
+
+# Machine-epsilon baseline
+qi = construct_qi(target.fn_numpy, target.deriv_numpy, N=64,
+                  precision="mpmath")  # lambda_star=0.25, halo=70
+
+# Evaluate
+y_pred = evaluate_qi(qi, x_points)                # fp64 direct summation
+y_pred = evaluate_qi(qi, x_points, kahan=True)    # fp64 Kahan summation
+\end{lstlisting}
+
+\section{Known limitations}
+
+\begin{itemize}
+\item fp64 path plateaus at $\sim 10^{-12}$ due to convolution cancellation; unfixable without mpmath.
+\item mpmath path at $\sim$55\,s per cold call; amortized via cache.
+\item Targets with narrow analyticity strips (e.g.\ \texttt{tanh\_steep}, frequencies $>10\pi$)
+      need larger $N$ to converge; this is a \emph{resolution} limit independent of construction arithmetic.
+\item We have not yet implemented per-width $\gamma$-factor sweeps (which \texttt{continuous-mlps} does).
+      If squeezing more fp64 precision becomes important, adding a small sweep around $\lambda \in [0.25, 0.45]$ per width would help.
+\end{itemize}
+
+\end{document}

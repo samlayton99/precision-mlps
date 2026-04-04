@@ -1,0 +1,551 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{mathrsfs}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{microtype}
+
+\title{Constructing Machine-Precision Neural Networks with Quasi-Interpolants\\
+\large Math-focused LaTeX reconstruction from PDF}
+\author{Reconstructed from PDF output}
+\date{}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\Om}{\Omega}
+\newcommand{\wh}[1]{\widehat{#1}}
+\newcommand{\sech}{\operatorname{sech}}
+\newcommand{\Linf}{L^\infty}
+\newcommand{\ellinf}{\ell^\infty}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Important note.} This reconstruction prioritizes the mathematics, theorem statements, and equation content. Figure environments, bibliography formatting, and some prose-level typography are simplified. I manually corrected the math-heavy sections against the PDF pages containing the displayed equations and appendix proofs. Non-math wording outside those sections is a best-effort reconstruction.
+
+\begin{abstract}
+Neural networks struggle to train to machine precision for simple interpolation tasks, limiting their use in scientific computing pipelines. We address this by providing the first explicit MLP construction that provably achieves machine-precision interpolation with $\log(1/\eps)$ parameter scaling, matching classical polynomial methods, while remaining implementable in floating-point arithmetic. Our construction, based on quasi-interpolation theory, reveals a critical dimensionless bandwidth parameter $\lambda$ that controls an aliasing vs. numerical stability tradeoff; setting the optimal $\lambda$ implies weight magnitudes must grow with width. Using this framework to analyze trained MLPs, we find that they do not maintain the required weight scaling and exhibit rank saturation. Our results provide a principled approach for understanding how optimization, not expressivity, underlies precision failures in high-precision machine learning.
+\end{abstract}
+
+\section{Introduction}
+Machine learning has the potential to dramatically accelerate scientific workflows by replacing expensive physics-based subroutines with learned surrogates, from neural operators for weather modeling to surrogates for aerodynamics simulations. However, numerical precision remains a central barrier to deployment: many scientific pipelines require tight residual tolerances and stable long-horizon rollouts, yet current methods struggle to reliably reach the required fidelity. In fact, neural networks already struggle to reach machine precision in the simple controlled setting of noise-free interpolation of smooth functions from exact samples. Even for analytic 1D targets like $f(x)=\sin(2\pi x)$, standard training of single-hidden-layer MLPs stalls many orders of magnitude above fp64 limits for relative $L^2$ error.
+
+Motivated by recent diagnostic work, the paper studies one-hidden-layer MLPs in the noise-free 1D interpolation regime to understand why precision fails to scale with model size and compute. The paper decomposes the problem into two questions:
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Expressivity.} What machine-precision representations are numerically realizable as MLPs?
+    \item \textbf{Optimization.} Why does training fail to discover high-precision solutions?
+\end{enumerate}
+
+The paper addresses both gaps by constructing explicit MLP interpolants using tools from quasi-interpolation theory.
+
+\section{Related Work}
+This section surveys high-precision scientific ML, interpolation and quasi-interpolation, and universal approximation theorems for MLPs. I am not attempting a citation-perfect reconstruction here because the user indicated the math is the priority.
+
+\section{Constructing High-Precision MLPs with Quasi-Interpolants}
+In this section, the paper describes its quasi-interpolation-based construction for high-precision MLP interpolants. The main theoretical result is Theorem~\ref{thm:numerical-error-bound}, an explicit error decomposition with geometric parameter convergence. Crucially, the construction is claimed to be the first to achieve these rates while remaining implementable in floating-point arithmetic. The analysis identifies a critical parameter $\lambda$, which controls a fundamental tradeoff between aliasing error and conditioning. Choosing an optimal $\lambda$ requires the magnitudes of the construction's weights to grow with the number of neurons.
+
+\subsection{Constructing Fourier-normalized quasi-interpolants}
+We begin by constructing an operator that interpolates a smooth function from uniform samples while maintaining stable conditioning as resolution increases. Quasi-interpolation provides an explicit, translation-invariant form: it reconstructs $f$ as a weighted sum of localized kernels centered at the sample locations. The goal is to define the cardinal function $L_h$ in a way that (i) yields predictable convergence as the grid refines, and (ii) remains numerically implementable in finite precision on a bounded domain.
+
+\paragraph{Overview.}
+Let $\Omega=[-1,1]$ and let $f$ be known through uniform samples on a grid of spacing $h$. On the infinite lattice, a translation-invariant quasi-interpolant has the form
+\begin{equation}
+(Q_h f)(x) := \sum_{k\in\Z} f(x_k)L_h(x-x_k),
+\qquad x_k := -1 + kh,
+\label{eq:qh-infinite}
+\end{equation}
+where $L_h$ is a cardinal function constructed by Fourier normalization of a kernel family. On the finite interval $\Omega$ we implement a finite operator by introducing: (i) a halo size $R$ limiting the number of centers placed outside $\Omega$, and (ii) a Fourier stencil half-width $K_c$ from truncating Fourier coefficients in the cardinal function construction. The behavior of the approximant is governed by the dimensionless bandwidth parameter
+\begin{equation}
+\lambda := \gamma h,
+\label{eq:lambda-def}
+\end{equation}
+which couples the kernel bandwidth $\gamma$ with the grid scale $h$. This dimensionless parameter controls a fundamental tradeoff between aliasing and stability by controlling kernel localization, made precise in Theorem~\ref{thm:numerical-error-bound}.
+
+\paragraph{Grid and kernel.}
+Fix $N\in\N$ and define the step size and nodes
+\begin{equation}
+h := \frac{2}{N},
+\qquad x_k := -1+kh,
+\qquad k\in\Z.
+\label{eq:grid}
+\end{equation}
+For a halo size $R\in\N$, define the extended index range
+\[
+I_{R,K_c}=\{-R-K_c,\dots,N+R+K_c\}
+\]
+and the extended interval $\Omega_R := [-1-Rh,1+Rh]$. Let $K:\R\to\R$ be a base kernel and define its scaled version
+\begin{equation}
+K_\gamma(x):=\gamma K(\gamma x),
+\qquad \gamma>0,
+\qquad \lambda:=\gamma h.
+\label{eq:scaled-kernel}
+\end{equation}
+We denote the Fourier transform of $g$ by $\wh g$.
+
+\paragraph{Constructing $L_h$ by Fourier normalization.}
+Define the Fourier character
+\begin{equation}
+\wh C_h(\omega) := \frac{h}{D_h(\omega)}
+= \frac{h}{\sum_{m\in\Z}\wh K_\gamma\!\left(\omega+\frac{2\pi m}{h}\right)}
+= \sum_{j\in\Z} c_j e^{-ijh\omega},
+\label{eq:fourier-character}
+\end{equation}
+where $(c_j)_{j\in\Z}$ denote the Fourier coefficients and we assume the denominator $D_h$ is non-zero on $\R$. We define the stencil-truncated cardinal function
+\begin{equation}
+L_h^{(K_c)}(x):=\sum_{|j|\le K_c} c_j K_\gamma(x-jh),
+\label{eq:truncated-cardinal}
+\end{equation}
+which approaches $L_h$ as $K_c\to\infty$.
+
+\paragraph{Finite operator on $\Omega$.}
+Consider samples $f(x_k)$ on the extended index set $I_{R,K_c}$. The halo- and stencil-truncated quasi-interpolant is\footnote{The extended index set does not require training samples outside the interpolation interval in MLP training. Although the quasi-interpolant utilizes these samples to stabilize boundary error, the MLPs can determine arbitrary function values on the extended set to correct boundary error.}
+\begin{equation}
+(Q_{h,R}^{(K_c)}f)(x) := \sum_{k=-R}^{N+R} f(x_k)L_h^{(K_c)}(x-x_k),
+\qquad x\in\Omega.
+\label{eq:qh-truncated}
+\end{equation}
+Re-indexing yields the equivalent single-kernel sum
+\begin{equation}
+(Q_{h,R}^{(K_c)}f)(x)=\sum_{m=-R}^{N+R} a[m]K_\gamma(x-x_m),
+\qquad
+ a[m]:=\sum_{|j|\le K_c} c_j f(x_{m-j}),
+\label{eq:single-kernel-sum}
+\end{equation}
+which defines a kernel network in the quasi-interpolant framework.
+
+\subsection{MLPs can implement quasi-interpolants}
+Although certain MLP activation functions do not satisfy the kernel properties, often an order derivative of a smooth activation does ($\sech^2 = \tanh'$). Assume there exists a smooth activation $\psi:\R\to\R$ and an order $r\in\N$ such that
+\begin{equation}
+K(u)=\psi^{(r)}(u).
+\label{eq:kernel-derivative}
+\end{equation}
+Then, by the chain rule,
+\begin{equation}
+(Q_{h,R}^{(K_c)}f)(x)
+= \sum_{m=-R}^{N+R} a[m]K_\gamma(x-x_m)
+= \frac{d^r}{dx^r}
+\left(\sum_{m=-R}^{N+R} \frac{a[m]}{\gamma^{r-1}} \, \psi\big(\gamma(x-x_m)\big)\right).
+\label{eq:chain-rule-realization}
+\end{equation}
+Therefore, defining the one-hidden-layer MLP
+\begin{equation}
+g_{\mathrm{MLP}}(x):=\sum_{m=-R}^{N+R} w[m] \, \psi\big(\gamma(x-x_m)\big),
+\qquad w[m]:=\frac{a[m]}{\gamma^{r-1}},
+\label{eq:mlp-def}
+\end{equation}
+we obtain the exact identity
+\begin{equation}
+g_{\mathrm{MLP}}^{(r)}(x)=(Q_{h,R}^{(K_c)}f)(x).
+\label{eq:exact-identity}
+\end{equation}
+Crucially, this shows that standard one-hidden-layer MLPs can exactly represent the quasi-interpolant construction. In particular, applying the QI construction to sampled data of an $r$th derivative, $g_{\mathrm{MLP}}$ recovers the target up to an integration polynomial of degree at most $r-1$:
+\begin{equation}
+\tilde f(x)=p_{r-1}(x)+g_{\mathrm{MLP}}(x),
+\label{eq:integration-poly}
+\end{equation}
+where $p_{r-1}$ can be fixed by boundary conditions. For $\tanh'=\sech^2$ this polynomial reduces to a simple bias. For GELU and Swish, it reduces to a linear layer.
+
+\subsection{Error analysis}
+We present a numerical error bound on the quasi-interpolant construction. All kernel regularity and non-degeneracy conditions, together with explicit prefactors, are deferred to the appendix; these conditions hold for the kernels used in the experiments.
+
+\begin{theorem}[Numerical error bound]
+\label{thm:numerical-error-bound}
+Let $\lambda=\gamma h$. Assume $f$ is analytic in a complex neighborhood of $\Omega$, and assume the Fourier normalizer $D_h$ is uniformly bounded away from zero on a fixed strip (Appendix A.1). Then there exist constants $c_1,c_2,c_3,c_4,C_2>0$ and prefactors $C_1(\lambda),C_3(\lambda),C_4(\lambda)>0$ such that, for all $x\in\Omega$,
+\begin{equation}
+\|f-Q_{h,R}^{(K_c)}f\|_{L^\infty(\Omega)}
+\le
+\underbrace{C_1(\lambda)e^{-c_1/h}}_{\text{resolution}}
++
+\underbrace{C_2 e^{-c_2/\lambda^p}}_{\text{aliasing / normalization}}
++
+\underbrace{C_3(\lambda)e^{-c_3\lambda R}}_{\text{halo truncation}}
++
+\underbrace{C_4(\lambda)e^{-c_4\lambda K_c}}_{\text{Fourier stencil truncation}}.
+\label{eq:main-error-bound}
+\end{equation}
+The exponent $p$ depends on the kernel family: for $K=\sech^2$ one can take $p=1$.
+\end{theorem}
+
+Note that the prefactors diverge algebraically as $\lambda\to 0$, thus enforcing an effective lower bound.
+Equation~\eqref{eq:main-error-bound} separates four error mechanisms, each governed by a distinct scale:
+\begin{itemize}
+    \item \textbf{Grid resolution $h$.} For analytic targets, the approximation error decays geometrically as $e^{-c_1/h}$. Since $h=2/N$, this gives exponential convergence in the number of nodes $N$.
+    \item \textbf{Bandwidth ratio $\lambda$.} The aliasing/normalization term decays as $e^{-c_2/\lambda^p}$. For machine precision, one requires roughly $\lambda\lesssim \log(1/\eps)^{-1/p}$. However, the prefactors $C_1(\lambda),C_3(\lambda),C_4(\lambda)$ blow up algebraically as $\lambda\to 0$, enforcing a tradeoff.
+    \item \textbf{Halo thickness in kernel units $\lambda R$.} Boundary truncation error scales as $e^{-c_3\lambda R}$. Achieving precision $\eps$ requires $R\gtrsim \log(1/\eps)/\lambda$.
+    \item \textbf{Stencil width in kernel units $\lambda K_c$.} The cardinal function truncation error decays as $e^{-c_4\lambda K_c}$. Again, the coupling through $\lambda$ implies $K_c\gtrsim \log(1/\eps)/\lambda$.
+\end{itemize}
+
+The key scaling consequence stated in the paper is that as width $N$ increases, $\lambda=\gamma h$ will eventually plateau to maintain the viable regime. Here, the bandwidth parameter $\gamma$ must then scale proportionally with $N$, a scaling property that standard initialization schemes and gradient-based training for MLPs systematically fail to preserve.
+
+\section{Experiments}
+The paper then reports that direct training plateaus well above machine precision, while QI-parameterized constructions can reach the fp64 floor when the geometry is fixed. It further argues that trained networks exhibit a mismatch in weight scaling, rank saturation, and a representational mismatch relative to the explicit construction.
+
+\section{Discussion}
+The paper claims to introduce the first explicit MLP construction achieving machine-precision interpolation with $\log(1/\eps)$ parameter scaling while being realizable in floating-point arithmetic. The main conceptual claim is that optimization, not expressivity, is the bottleneck for high-precision neural networks.
+
+\appendix
+\section{Appendix}
+\subsection{Theoretical results}
+\subsubsection{Notation}
+\paragraph{Fourier transform.}
+For $f\in L^1(\R)$, the convention is
+\begin{equation}
+\wh f(\omega):=\int_{\R} f(x)e^{-i\omega x}\,dx,
+\qquad
+f(x)=\frac{1}{2\pi}\int_{\R}\wh f(\omega)e^{i\omega x}\,d\omega.
+\label{eq:ft-convention}
+\end{equation}
+
+\paragraph{Uniform grid, halo, and kernel scaling.}
+We work on $\Omega=[-1,1]$ with uniform step $h=2/N$ and nodes $x_k=-1+kh$. For $R\in\N$, define the halo interval $\Omega_R=[-1-Rh,1+Rh]$ and halo indices $\{-R,\dots,N+R\}$. Let $K:\R\to\R$ be a kernel profile and define the scaled family
+\begin{equation}
+K_\gamma(x):=\gamma K(\gamma x),
+\qquad \gamma>0,
+\qquad \lambda:=\gamma h.
+\label{eq:appendix-scaled-kernel}
+\end{equation}
+We use both continuous and sampled supremum norms:
+\begin{equation}
+\|f\|_{L^\infty(\Omega_R)}:=\sup_{x\in\Omega_R}|f(x)|,
+\qquad
+\|f\|_{\ell^\infty(\Omega_R\cap h\Z)}:=\max_{-R\le k\le N+R}|f(x_k)|.
+\label{eq:norms}
+\end{equation}
+
+\paragraph{Fourier-normalized character and quasi-interpolants.}
+Define the normalizer and Fourier character
+\begin{equation}
+D_h(\omega):=\sum_{m\in\Z}\wh K_\gamma\!\left(\omega+\frac{2\pi m}{h}\right),
+\qquad
+\wh C_h(\omega):=\frac{h}{D_h(\omega)}.
+\label{eq:normalizer}
+\end{equation}
+Let $\widetilde C_\lambda(\theta):=\wh C_h(\theta/h)$, a $2\pi$-periodic function of $\theta$, and let $(c_j)_{j\in\Z}$ denote its Fourier coefficients:
+\begin{equation}
+c_j:=\frac{1}{2\pi}\int_{-\pi}^{\pi} \widetilde C_\lambda(\theta)e^{ij\theta}\,d\theta.
+\label{eq:fourier-coeffs}
+\end{equation}
+Define the quasi-cardinal and its stencil truncation
+\begin{equation}
+L_h(x):=\sum_{j\in\Z} c_j K_\gamma(x-jh),
+\qquad
+L_h^{(K_c)}(x):=\sum_{|j|\le K_c} c_j K_\gamma(x-jh),
+\label{eq:quasi-cardinal}
+\end{equation}
+and the infinite, halo-, and halo+stencil-truncated operators (for $x\in\Omega$)
+\begin{align}
+(Q_hf)(x) &:= \sum_{k\in\Z} f(x_k)L_h(x-x_k), \label{eq:appendix-qh}\\
+(Q_{h,R}f)(x) &:= \sum_{k=-R}^{N+R} f(x_k)L_h(x-x_k), \label{eq:appendix-qhr}\\
+(Q_{h,R}^{(K_c)}f)(x) &:= \sum_{k=-R}^{N+R} f(x_k)L_h^{(K_c)}(x-x_k). \label{eq:appendix-qhrkc}
+\end{align}
+
+\paragraph{Interior projector (Option A).}
+Fix $\varepsilon\in(0,1)$ and define the interior projector in Fourier space by
+\begin{equation}
+(\widehat{P_{\backslash h,\varepsilon}f})(\omega):=\mathbf 1_{\{|\omega|\le (1-\varepsilon)\pi/h\}}\,\wh f(\omega).
+\label{eq:interior-projector}
+\end{equation}
+
+\subsubsection{Proof of Theorem 1}
+\begin{assumption}[Target regularity]
+There exist $\rho>0$ and $B_\rho>0$ such that
+\begin{equation}
+|\wh f(\omega)|\le B_\rho e^{-\rho|\omega|},
+\qquad \omega\in\R.
+\label{eq:assump-target}
+\end{equation}
+\end{assumption}
+
+\begin{assumption}[Kernel conditions K1--K4]
+Fix $\varepsilon\in(0,1)$.
+\begin{enumerate}[label=K\arabic*.]
+    \item \textbf{(Nonzero mass)} $\wh K(0)=\int_{\R}K(x)\,dx\ne 0$.
+    \item \textbf{(Interior-band aliasing)} There exist $C_{\mathrm{alias}}(\varepsilon)>0$, $c_{\mathrm{alias}}(\varepsilon)>0$, and $p_K\ge 1$ such that for all $h>0$ and $\gamma>0$,
+    \begin{equation}
+    \sup_{|\omega|\le (1-\varepsilon)\pi/h}
+    \bigl|1-M_h(\omega)\bigr|
+    \le
+    C_{\mathrm{alias}}(\varepsilon)\exp\!\left(-\frac{c_{\mathrm{alias}}(\varepsilon)}{\lambda^{p_K}}\right),
+    \qquad
+    M_h(\omega):=\frac{\wh K_\gamma(\omega)}{D_h(\omega)}.
+    \label{eq:K2}
+    \end{equation}
+    \item \textbf{(Zero-free strip margin)} There exist $\sigma>0$ and $d_0(\sigma,\lambda)>0$ such that the rescaled normalizer $\widetilde D_\lambda(\theta):=D_h(\theta/h)$ satisfies
+    \begin{equation}
+    \inf_{|\Re\theta|\le \pi,\,|\Im\theta|\le \sigma}
+    |\widetilde D_\lambda(\theta)|\ge d_0(\sigma,\lambda).
+    \label{eq:K3}
+    \end{equation}
+    \item \textbf{(Spatial localization envelope)} There exist $A_K>0$ and $a_K>0$ such that for all $\gamma>0$ and $x\in\R$,
+    \begin{equation}
+    |K_\gamma(x)|\le A_K\gamma e^{-a_K\gamma |x|}.
+    \label{eq:K4}
+    \end{equation}
+\end{enumerate}
+\end{assumption}
+
+\setcounter{lemma}{1}
+
+\paragraph{Stability prefactors from K3--K4.}
+Assume K3 holds with parameters $(\sigma,d_0(\sigma,\lambda))$ and define
+\begin{align}
+C_c(\lambda) &:= \frac{h}{d_0(\sigma,\lambda)}, \label{eq:Cc}\\
+C_Q(\lambda) &:= \frac{\|K\|_{L^1(\R)}}{h}\, C_c(\lambda)\,\coth\!\left(\frac{\sigma}{2}\right), \label{eq:CQ}\\
+C_L(\sigma,\lambda) &:= A_K\gamma C_c(\lambda)\,\coth\!\left(\frac{a_K\lambda-\sigma}{2}\right), \label{eq:CL}
+\end{align}
+where $C_L$ is defined assuming $a_K\lambda>\sigma$.
+
+\begin{lemma}[Coefficient decay from the strip margin]
+\label{lem:coeff-decay}
+Assume K3. Then the character coefficients satisfy
+\begin{equation}
+|c_j|\le C_c(\lambda)e^{-\sigma|j|},
+\qquad j\in\Z.
+\label{eq:coeff-decay}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+By K3, $|\widetilde D_\lambda(\theta)|\ge d_0(\sigma,\lambda)$ on the strip cell $\{|\Re\theta|\le \pi,\,|\Im\theta|\le \sigma\}$, hence $|\widetilde C_\lambda(\theta)|=|h/\widetilde D_\lambda(\theta)|\le h/d_0(\sigma,\lambda)=C_c(\lambda)$ there. For $j\ne 0$, shift the contour in the Fourier coefficient formula for $c_j$ to $\Im\theta=\operatorname{sign}(j)\sigma$. Then $|e^{ij\theta}|=e^{-\sigma|j|}$ and $|\widetilde C_\lambda(\theta)|\le C_c(\lambda)$ on the shifted contour, yielding \eqref{eq:coeff-decay}. The case $j=0$ is immediate.
+\end{proof}
+
+\begin{lemma}[$L^\infty$ stability of $Q_h$]
+\label{lem:Qh-stability}
+Assume Lemma~\ref{lem:coeff-decay} and $\|K\|_{L^1(\R)}<\infty$. Then for any $g\in L^\infty(\R)$,
+\begin{equation}
+\|Q_h g\|_{L^\infty(\R)}\le C_Q(\lambda)\|g\|_{L^\infty(\R)}.
+\label{eq:Qh-stability}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For any $x\in\R$,
+\[
+|(Q_hg)(x)|\le \|g\|_{L^\infty}\sum_{k\in\Z}|L_h(x-x_k)|.
+\]
+Using $L_h(x)=\sum_j c_j K_\gamma(x-jh)$ and re-indexing,
+\[
+\sum_{k\in\Z}|L_h(x-x_k)|
+\le
+\left(\sum_{j\in\Z}|c_j|\right)
+\left(\sum_{m\in\Z}|K_\gamma(x-x_m)|\right).
+\]
+The coefficient sum is bounded by Lemma~\ref{lem:coeff-decay}: $\sum_j |c_j|\le C_c(\lambda)\sum_j e^{-\sigma|j|}=C_c(\lambda)\coth(\sigma/2)$. For the kernel lattice sum, a crude bound is $\sum_m |K_\gamma(x-x_m)|\le h^{-1}\|K_\gamma\|_{L^1(\R)}=h^{-1}\|K\|_{L^1(\R)}$. Combining yields \eqref{eq:Qh-stability}.
+\end{proof}
+
+\begin{lemma}[Spatial decay of the quasi-cardinal]
+\label{lem:Lh-decay}
+Assume coefficient decay \eqref{eq:coeff-decay} and K4. If $a_K\lambda>\sigma$, then for all $x\in\R$,
+\begin{equation}
+|L_h(x)|\le C_L(\sigma,\lambda)\exp\!\left(-\frac{\sigma}{h}|x|\right).
+\label{eq:Lh-spatial-decay}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+From $L_h(x)=\sum_j c_j K_\gamma(x-jh)$, coefficient decay, and K4,
+\[
+|L_h(x)|\le \sum_{j\in\Z} C_c(\lambda)e^{-\sigma|j|} A_K\gamma e^{-a_K\gamma|x-jh|}.
+\]
+Write $t:=x/h$ so that $\gamma|x-jh|=\lambda|t-j|$ and use $|j|-|t|\le |t-j|$ to factor out $e^{-\sigma|t|}$:
+\[
+e^{-\sigma|j|}e^{-a_K\lambda|t-j|}
+\le e^{-\sigma|t|}e^{-(a_K\lambda-\sigma)|t-j|}.
+\]
+Summing the geometric lattice tail gives $\sum_j e^{-(a_K\lambda-\sigma)|t-j|}\le \coth((a_K\lambda-\sigma)/2)$, yielding \eqref{eq:Lh-spatial-decay}.
+\end{proof}
+
+\setcounter{theorem}{4}
+
+\begin{theorem}[Restatement of Theorem 1 with explicit constants (uniform grid)]
+\label{thm:explicit-bound}
+Fix $\varepsilon\in(0,1)$. Assume target regularity and kernel conditions K1--K4. Assume further $a_K\lambda>\sigma$ so that $C_L(\sigma,\lambda)$ is defined. Then for all $x\in\Omega$,
+\begin{align}
+|f(x)-(Q_{h,R}^{(K_c)}f)(x)|
+&\le
+\underbrace{(1+C_Q(\lambda))\frac{B_\rho}{\pi\rho}\exp\!\left(-\frac{(1-\varepsilon)\pi\rho}{h}\right)}_{\text{interior resolution and filtered tail}}
+\label{eq:explicit-bound-1}\\
+&\quad+
+\underbrace{\frac{B_\rho}{\pi\rho}C_{\mathrm{alias}}(\varepsilon)\exp\!\left(-\frac{c_{\mathrm{alias}}(\varepsilon)}{\lambda^{p_K}}\right)}_{\text{aliasing on the resolved band}}
+\label{eq:explicit-bound-2}\\
+&\quad+
+\underbrace{\frac{2C_L(\sigma,\lambda)}{1-e^{-\sigma}}e^{-\sigma R}\,\|f\|_{\ell^\infty(h\Z)}}_{\text{halo truncation}}
+\label{eq:explicit-bound-3}\\
+&\quad+
+\underbrace{\frac{2\|K\|_{L^1(\R)}}{h}C_c(\lambda)\frac{e^{-\sigma(K_c+1)}}{1-e^{-\sigma}}\,\|f\|_{\ell^\infty(\Omega_R\cap h\Z)}}_{\text{Fourier stencil truncation (data-local)}}.
+\label{eq:explicit-bound-4}
+\end{align}
+\end{theorem}
+
+\begin{proof}
+We use the Option A decomposition (linearity of $Q_h$):
+\[
+f-Q_hf = (f-P_{\backslash h,\varepsilon}f) + (P_{\backslash h,\varepsilon}f-Q_h(P_{\backslash h,\varepsilon}f)) + Q_h(f-P_{\backslash h,\varepsilon}f).
+\]
+(i) Tail and filtered tail. By Fourier inversion and target regularity,
+\[
+\|f-P_{\backslash h,\varepsilon}f\|_{L^\infty(\R)}\le \frac{B_\rho}{\pi\rho}\exp\!\left(-\frac{(1-\varepsilon)\pi\rho}{h}\right).
+\]
+Applying the stability bound for $Q_h$ to $g=f-P_{\backslash h,\varepsilon}f$ gives the same bound multiplied by $C_Q(\lambda)$, yielding \eqref{eq:explicit-bound-1}. 
+
+(ii) Aliasing. On the band $|\omega|\le (1-\varepsilon)\pi/h$, the operator has Fourier multiplier $M_h(\omega)$, so
+\[
+\widehat{P_{\backslash h,\varepsilon}f-Q_h(P_{\backslash h,\varepsilon}f)}(\omega)=(1-M_h(\omega))\wh f(\omega)
+\]
+on that band. Using target regularity and K2 gives \eqref{eq:explicit-bound-2}.
+
+(iii) Truncations. For halo truncation, write $(Q_h-Q_{h,R})f$ as a sum over $k\notin\{-R,\dots,N+R\}$ and apply the spatial decay bound for $L_h$, bounding the two geometric tails by $2e^{-\sigma R}/(1-e^{-\sigma})$, yielding \eqref{eq:explicit-bound-3}. For stencil truncation, write $L_h-L_h^{(K_c)}=\sum_{|j|>K_c}c_j K_\gamma(\cdot-jh)$, use coefficient decay to bound
+\[
+\sum_{|j|>K_c}|c_j|\le \frac{2C_c(\lambda)e^{-\sigma(K_c+1)}}{1-e^{-\sigma}},
+\]
+and use $\|K_\gamma\|_{L^1}=\|K\|_{L^1}$ to obtain \eqref{eq:explicit-bound-4}. Combining the pieces yields the result.
+\end{proof}
+
+\subsubsection{Kernel verification for the normalized $\sech^2$ family}
+We verify the assumptions for the normalized profile
+\begin{equation}
+K(x):=\frac12\sech^2(x),
+\qquad
+K_\gamma(x)=\frac{\gamma}{2}\sech^2(\gamma x).
+\label{eq:sech-kernel}
+\end{equation}
+
+\paragraph{K1 (mass) and K4 (envelope).}
+Since $\int_{\R}\sech^2(x)\,dx=2$, we have $\wh K(0)=\int K = 1$. Also $\sech(t)\le 2e^{-|t|}$ implies
+\begin{equation}
+|K_\gamma(x)|=\frac{\gamma}{2}\sech^2(\gamma x)\le 2\gamma e^{-2\gamma|x|},
+\label{eq:sech-envelope}
+\end{equation}
+so K4 holds with $(A_K,a_K)=(2,2)$.
+
+\begin{proposition}[Fourier transform of $\tfrac12\sech^2$]
+With the convention above,
+\begin{equation}
+\wh K(\xi)=\frac{\pi}{2}\frac{\xi}{\sinh\!\left(\frac{\pi}{2}\xi\right)},
+\qquad \xi\in\R,
+\label{eq:sech-ft}
+\end{equation}
+with the continuous extension $\wh K(0)=1$. Consequently $\wh K(\xi)>0$ for all $\xi\in\R$.
+\end{proposition}
+
+\begin{proof}
+It suffices to compute $I(\xi):=\int_{\R}\sech^2(x)e^{-i\xi x}\,dx$ and then divide by $2$. Fix $\xi>0$ and consider
+\[
+f(z):=\frac{e^{-i\xi z}}{\cosh^2 z}
+\]
+integrated over the rectangle with vertices $\pm R$ and $\pm R+i\pi$. Using $\cosh(z+i\pi)=-\cosh z$, we have $f(z+i\pi)=e^{\xi\pi}f(z)$. Letting $R\to\infty$ (vertical sides vanish by exponential decay), residue calculus gives
+\[
+(1-e^{\xi\pi})I(\xi)=2\pi i\,\operatorname{Res}(f;z_0=i\pi/2),
+\]
+where $z_0=i\pi/2$ is the only pole in the strip. Since $\cosh z\sim i(z-z_0)$ near $z_0$, we have $f(z)\sim -e^{-i\xi z}(z-z_0)^{-2}$, a second-order pole with residue
+\[
+\operatorname{Res}=\frac{d}{dz}\bigl(-e^{-i\xi z}\bigr)\big|_{z=z_0}=i\xi e^{\xi\pi/2}.
+\]
+Thus $(1-e^{\xi\pi})I(\xi)=-2\pi\xi e^{\xi\pi/2}$, i.e.
+\[
+I(\xi)=\frac{\pi\xi}{\sinh(\pi\xi/2)}.
+\]
+Evenness gives the same formula for $\xi<0$, and dividing by $2$ yields \eqref{eq:sech-ft}.
+\end{proof}
+
+\begin{proposition}[Interior-band aliasing for $\sech^2$]
+Fix $\varepsilon\in(0,1)$. There exists $C_{\mathrm{alias}}(\varepsilon)>0$ such that for all $h>0$ and $\gamma>0$,
+\begin{equation}
+\sup_{|\omega|\le (1-\varepsilon)\pi/h}
+|1-M_h(\omega)|
+\le
+C_{\mathrm{alias}}(\varepsilon)\exp\!\left(-\frac{\varepsilon\pi^2}{\lambda}\right),
+\qquad \lambda=\gamma h.
+\label{eq:sech-aliasing}
+\end{equation}
+In particular, K2 holds with $p_K=1$ and one may take $c_{\mathrm{alias}}(\varepsilon)=\varepsilon\pi^2$.
+\end{proposition}
+
+\begin{proof}
+By positivity of $\wh K_\gamma(\omega)$, we have $D_h(\omega)\ge \wh K_\gamma(\omega)$ and hence
+\[
+|1-M_h(\omega)|=
+\frac{\sum_{m\ne 0}\wh K_\gamma(\omega+2\pi m/h)}{D_h(\omega)}
+\le
+\sum_{m\ne 0}\frac{\wh K_\gamma(\omega+2\pi m/h)}{\wh K_\gamma(\omega)}.
+\]
+Write $\wh K_\gamma(\omega)=\wh K(\omega/\gamma)$ and set $F(t):=\wh K(t)$ for $t\ge 0$. On the interior band, $|\omega|\le (1-\varepsilon)\pi/h$ implies $t:=|\omega|/\gamma\le (1-\varepsilon)\pi/\lambda$. For $m\ge 1$, the closest approach is at $\omega=-(1-\varepsilon)\pi/h$, giving
+\[
+\frac{|\omega+2\pi m/h|}{\gamma}\ge \frac{(2m-1+\varepsilon)\pi}{\lambda},
+\]
+so the gap is at least $2(m-1+\varepsilon)\pi/\lambda$. Using the formula for $F$ and the inequality $\sinh(a+b)\ge \tfrac12 e^b\sinh(a)$ for $a,b\ge 0$, one obtains
+\[
+\frac{\wh K_\gamma(\omega+2\pi m/h)}{\wh K_\gamma(\omega)}
+\le
+C(\varepsilon)\exp\!\left(-\frac{(m-1+\varepsilon)\pi^2}{\lambda}\right).
+\]
+Summing the geometric series over $m\ge 1$ and using symmetry for $m\le -1$ yields the claim.
+\end{proof}
+
+\begin{proposition}[Poisson form of the normalizer]
+\label{prop:poisson}
+Assume $K_\gamma$ decays sufficiently fast for Poisson summation. Then
+\begin{equation}
+D_h(\omega)=h\sum_{k\in\Z}K_\gamma(kh)e^{-i\omega kh},
+\qquad
+\widetilde D_\lambda(\theta)=D_h(\theta/h)=\lambda\sum_{k\in\Z}K(\lambda k)e^{-ik\theta}.
+\label{eq:poisson-normalizer}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+This is the standard Poisson summation identity applied to $x\mapsto K_\gamma(x)e^{-i\omega x}$.
+\end{proof}
+
+\begin{proposition}[Diagonal dominance sufficient condition for K3: $\sech^2$]
+Let $K(x)=\tfrac12\sech^2(x)$. Fix $\sigma>0$ and assume $2\lambda>\sigma$. Then for all $\theta\in\mathbb C$ with $|\Im\theta|\le \sigma$,
+\begin{equation}
+|\widetilde D_\lambda(\theta)|
+\ge
+\frac{\lambda}{2}\bigl(1-q(\sigma,\lambda)\bigr),
+\qquad
+q(\sigma,\lambda):=\frac{8e^{-(2\lambda-\sigma)}}{1-e^{-(2\lambda-\sigma)}}.
+\label{eq:diag-dom}
+\end{equation}
+In particular, if $q(\sigma,\lambda)<1$ then K3 holds with
+\begin{equation}
+d_0(\sigma,\lambda)\ge \frac{\lambda}{2}\bigl(1-q(\sigma,\lambda)\bigr)>0.
+\label{eq:d0-lower}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By Proposition~\ref{prop:poisson},
+\[
+\widetilde D_\lambda(\theta)=\lambda\sum_{k\in\Z}K(\lambda k)e^{-ik\theta}.
+\]
+Write $\theta=\theta_r+i\theta_i$ with $|\theta_i|\le \sigma$. Then $|e^{-ik\theta}|=e^{k\theta_i}\le e^{\sigma|k|}$. Separating the $k=0$ term and applying the triangle inequality,
+\[
+|\widetilde D_\lambda(\theta)|
+\ge
+\lambda K(0)-\lambda\sum_{k\ne 0}|K(\lambda k)|e^{\sigma|k|}.
+\]
+Using $|K(\lambda k)|\le 2e^{-2\lambda|k|}$ gives $|K(\lambda k)|e^{\sigma|k|}\le 2e^{-(2\lambda-\sigma)|k|}$, so
+\[
+\sum_{k\ne 0}|K(\lambda k)|e^{\sigma|k|}
+\le 4\sum_{k\ge 1} e^{-(2\lambda-\sigma)k}
+=4\frac{e^{-(2\lambda-\sigma)}}{1-e^{-(2\lambda-\sigma)}}.
+\]
+Since $K(0)=1/2$, the claim follows.
+\end{proof}
+
+\subsection{Target functions}
+The PDF includes a final figure with target functions such as $\sin(2\pi x)$, a Runge-type profile $1/(1+25x^2)$, a compactly supported bump, and a multi-frequency target. I did not reproduce that figure here because the mathematical core of the paper lies in the construction and appendix above.
+
+\end{document}

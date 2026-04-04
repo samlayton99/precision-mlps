@@ -6,7 +6,7 @@ Usage:
     config = ExperimentConfig(
         name="lambda_tradeoff",
         widths=[16, 32, 64, 128, 256],
-        construction=ConstructionConfig(enabled=True, lambda_star=1.5),
+        construction=ConstructionConfig(enabled=True, lambda_star=0.30),
     )
 """
 
@@ -26,13 +26,23 @@ class ModelConfig:
 
 @dataclass
 class ConstructionConfig:
-    """QI construction parameters."""
+    """QI construction parameters.
+
+    Two precision regimes are supported (see papers/practical_implementation.tex):
+    - precision="fp64"   : fast (~10ms), achieves ~1e-12 L_inf.
+    - precision="mpmath" : slow (~55s), achieves ~3e-15 L_inf (machine eps).
+
+    The cardinal coefficients c_j are cached to disk keyed by
+    (lambda_star, Kc, N, precision, mp_dps) and are target-independent.
+    """
     enabled: bool = False
-    mp_dps: int = 50                    # mpmath decimal places
-    Kc: int = 12                        # Toeplitz half-width
-    halo: int = 8                       # ghost nodes
+    precision: str = "fp64"             # "fp64" | "mpmath"
+    mp_dps: int = 30                    # mpmath decimal places (30 is enough)
+    Kc: int = 160                       # Toeplitz half-width (matches continuous-mlps)
+    halo: Optional[int] = None          # None -> default_halo(N) = max(50, 0.4*N)
     gamma: Optional[float] = None       # if None, computed as lambda_star / h
-    lambda_star: float = 1.5
+    lambda_star: Optional[float] = None # None -> 0.30 (fp64), 0.25 (mpmath)
+    use_cache: bool = True              # cache c_j to disk
 
 
 @dataclass

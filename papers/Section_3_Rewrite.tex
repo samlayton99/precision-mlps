@@ -1,0 +1,583 @@
+\documentclass{article}
+
+% For anonymous main-track submission
+\usepackage{neurips_2026}
+
+% If you want a non-anonymous preprint instead, use:
+% \usepackage[preprint]{neurips_2026}
+
+% If you want camera-ready later, use:
+% \usepackage[final]{neurips_2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{graphicx} % needed for \resizebox
+
+\title{Constructing Machine-Precision Neural Networks with Quasi-Interpolants}
+
+% Anonymous submission
+\author{%
+  Anonymous Authors \\
+  Paper under double-blind review
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+% Paste your abstract here
+\end{abstract}
+
+\section{Introduction}
+% Paste your introduction here
+
+\section{Related Work}
+% Paste your related work here
+
+% =========================
+% SECTION 3
+% =========================
+
+\section{Constructing High-Precision MLPs with Quasi-Interpolants}
+\label{sec:qi-construction}
+Our goal is to build an interpolation scheme with arbitrarily good approximation that is also expressible in the primitives available to one-hidden-layer MLPs. Quasi-interpolants are a natural choice because they reconstruct from samples using translates of a single cardinal function, which will later construct directly with hidden units and activations. We first construct the quasi-interpolant and its cardinal function here, then realize it as an MLP (Section~3.2), derive the error-width tradeoff (Section~3.3), and summarize the implementation in Section~3.4.
+
+\paragraph{Main result (informal).}
+For any analytic target \(f\) on \([-1,1]\) and any target precision \(\varepsilon > 0\) above a kernel-dependent threshold, we construct a one-hidden-layer MLP with \(W = O(\log(1/\varepsilon))\) neurons and maximum weight magnitude \(O(\log(1/\varepsilon))\) that interpolates \(f\) to accuracy \(\varepsilon\) in \(L^\infty\). The construction is explicit (Algorithm~\ref{alg:qi-mlp}); for the \(\operatorname{sech}^2\) kernel, the viable parameter regime extends to fp64 machine precision (\(\varepsilon \sim 10^{-15}\)), with all weights remaining within floating-point range (Table~\ref{tab:comparison}).
+
+\subsection{Constructing Fourier-Normalized Quasi-Interpolants}
+\label{subsec:fourier-normalized}
+
+\paragraph{Setup.} To begin our Quasi-interpolation construction from MLPs, we let \(\Omega = [-1,1]\), fix \(N \in \mathbb{N}\), and define
+\begin{equation}
+h := \frac{2}{N}, \qquad x_k := -1 + kh, \qquad K_\gamma(x) := \gamma K(\gamma x).
+\label{eq:grid-kernel}
+\end{equation}
+A translation-invariant quasi-interpolant reconstructs \(f\) from uniform samples as
+\begin{equation}
+(Q_h f)(x) := \sum_{k \in \mathbb{Z}} f(x_k)\, L_h(x - x_k),
+\label{eq:Qh}
+\end{equation}
+where the ideal \emph{cardinal function} \(L_h\) would satisfy the following two conditions
+\begin{itemize}
+    \item[\textbf{(i)}] \(\boldsymbol{L_h(jh) = \delta_{j,0}}\) for all \(j \in \mathbb{Z}\), ensuring exact interpolation at grid points.
+    \item[\textbf{(ii)}] \(\boldsymbol{L_h(x) = \sum_j c_j\, K_\gamma(x - jh)}\), so the operator maps onto a one-hidden-layer MLP (Section~3.2).
+\end{itemize}
+Furthermore, stability between nodes is guaranteed by the kernel's exponential spatial decay (Assumption K4, Appendix A.1), which makes \(L_h\) a localized bump, the quasi-interpolation analog of avoiding the Runge phenomenon.
+
+\paragraph{Fourier normalization.}
+By Appendix~B.1, condition \textbf{(i)} is equivalent to the Fourier partition-of-unity condition
+\begin{equation}
+\sum_{m \in \mathbb{Z}} \widehat{L}_h\!\left(\omega + \frac{2\pi m}{h}\right) = h
+\qquad \forall\, \omega.
+\label{eq:partition-unity}
+\end{equation}
+And enforcing the structure found in condition \textbf{(ii)} lets us decouple $\widehat{L}_h(\omega)$ via shift invariance, giving us
+\[
+\widehat{L}_h(\omega)
+=
+\widehat{K}_\gamma(\omega)\sum_j c_j e^{-ijh\omega}
+=
+\widehat{K}_\gamma(\omega)\,\widehat{C}_h(\omega),
+\qquad
+\widehat{C}_h(\omega) := \sum_j c_j e^{-ijh\omega}.
+\]
+Since \(\widehat{C}_h\) is \(2\pi/h\)-periodic, plugging this into \eqref{eq:partition-unity} gives
+\[
+h
+=
+\widehat{C}_h(\omega)\sum_{m \in \mathbb{Z}} \widehat{K}_\gamma\!\left(\omega + \frac{2\pi m}{h}\right)
+=
+\widehat{C}_h(\omega)\,D_h(\omega),
+\]
+so the construction reduces to a single division in Fourier space:
+\begin{equation}
+\widehat{C}_h(\omega) = \frac{h}{D_h(\omega)},
+\qquad
+D_h(\omega) := \sum_{m \in \mathbb{Z}} \widehat{K}_\gamma\!\left(\omega + \frac{2\pi m}{h}\right).
+\label{eq:fourier-character}
+\end{equation}
+Here \(\widehat{C}_h\) is the \emph{Fourier character} and \(D_h\) is the \emph{normalizer}, the periodized kernel spectrum. The construction requires \(D_h \neq 0\) everywhere, which we verify for \(K = \tfrac{1}{2}\operatorname{sech}^2\) via diagonal dominance (Appendix A.1, Proposition 4). Rescaling \(\theta = h\omega\) gives \(\widetilde{C}_\lambda(\theta) := \widehat{C}_h(\theta/h) = \sum_j c_j e^{-ij\theta}\), so the Fourier coefficients of \(\widetilde{C}_\lambda\) are exactly the same coefficients \(c_j\) appearing in the original kernel expansion of \(L_h\). In practice, these coefficients are computed using the DFT shown explicitly in Algorithm 1.
+
+\paragraph{From infinite to finite.}
+To implement the operator on \(\Omega\), we introduce two truncations. \emph{Stencil truncation}: restrict the cardinal function to \(|j| \leq K_c\) terms,
+\begin{equation}
+L_h^{(K_c)}(x) := \sum_{|j| \leq K_c} c_j\, K_\gamma(x - jh).
+\label{eq:Lh-trunc}
+\end{equation}
+\emph{Halo truncation}: restrict the lattice sum to \(k \in \{-R, \ldots, N+R\}\), placing \(R\) nodes on each side of \(\Omega\) to stabilize boundary effects (Figure~2a). The finite operator is
+\begin{equation}
+(Q_{h,R}^{(K_c)} f)(x) := \sum_{k=-R}^{N+R} f(x_k)\, L_h^{(K_c)}(x - x_k),
+\qquad x \in \Omega,
+\label{eq:finite-op}
+\end{equation}
+which re-indexes into a \emph{kernel network} (Appendix~B.3):
+\begin{equation}
+(Q_{h,R}^{(K_c)} f)(x)
+=
+\sum_{m=-R}^{N+R} a[m]\, K_\gamma(x - x_m),
+\qquad
+a[m] := \sum_{|j| \leq K_c} c_j\, f(x_{m-j}).
+\label{eq:kernel-network}
+\end{equation}
+
+\subsection{MLPs Can Implement Quasi-Interpolants}
+\label{subsec:mlp-implementation}
+
+The kernel network \eqref{eq:kernel-network} uses \(K_\gamma\) as its basis, but standard MLP activations \(\psi\) (e.g., \(\tanh\)) typically do not satisfy the kernel requirements directly. Instead, a low-order derivative often does: \(\operatorname{sech}^2 = \tanh'\). Assume
+\begin{equation}
+K(u) = \psi^{(r)}(u)
+\label{eq:activation-kernel}
+\end{equation}
+for some smooth \(\psi\) and order \(r \in \mathbb{N}\), with \(K\) satisfying the kernel conditions (Assumptions K1--K4). By the chain rule, \(K_\gamma(x - x_m) = \gamma^{-(r-1)} \frac{d^r}{dx^r} \psi(\gamma(x - x_m))\), so \eqref{eq:kernel-network} becomes
+\begin{equation}
+(Q_{h,R}^{(K_c)} f)(x)
+=
+\frac{d^r}{dx^r}\!\left(
+\sum_{m=-R}^{N+R} \frac{a[m]}{\gamma^{r-1}}\, \psi\big(\gamma(x - x_m)\big)
+\right).
+\label{eq:derivative-form}
+\end{equation}
+Define the one-hidden-layer MLP
+\begin{equation}
+g_{\mathrm{MLP}}(x)
+:=
+\sum_{m=-R}^{N+R} w[m]\, \psi\big(\gamma(x - x_m)\big),
+\qquad
+w[m] := \frac{a[m]}{\gamma^{r-1}}.
+\label{eq:gmlp}
+\end{equation}
+Then
+\begin{equation}
+g_{\mathrm{MLP}}^{(r)}(x) = (Q_{h,R}^{(K_c)} f)(x).
+\label{eq:gmlp-identity}
+\end{equation}
+Applying the construction to \(f^{(r)}\), the MLP recovers \(f\) up to an integration polynomial:
+\begin{equation}
+\widetilde{f}(x) = p_{r-1}(x) + g_{\mathrm{MLP}}(x),
+\label{eq:f-tilde}
+\end{equation}
+where \(p_{r-1}\) is fixed by boundary conditions. For \(\tanh\) (\(r = 1\), \(K = \operatorname{sech}^2\)), all kernel conditions are verified (Appendix A.1) and the polynomial reduces to a bias. Extending the construction to other activations (e.g., GELU, Swish) via higher-order derivatives is possible in principle but requires separate verification of the kernel conditions for each case.
+
+\paragraph{Expressivity is not the bottleneck.}
+Equations \eqref{eq:gmlp}--\eqref{eq:f-tilde} show that one-hidden-layer tanh MLPs can exactly represent the quasi-interpolant construction. Whether machine-precision interpolation is achievable reduces to whether the correct weights can be found, an optimization question.
+
+\subsection{Error Analysis and Width-Precision Scaling}
+\label{subsec:error-analysis}
+
+\paragraph{The dimensionless bandwidth.}
+We now introduce the dimensionless bandwidth parameter
+\[
+\lambda := \gamma h.
+\]
+Since the kernel width is on the order of \(1/\gamma\) and the grid spacing is \(h\), the quantity \(1/\lambda = 1/(\gamma h)\) can be interpreted as the approximate number of grid points that lie inside one kernel width. The parameter \(\lambda\) controls a fundamental tradeoff. When \(\lambda\) is large (narrow kernels), the cardinal function is easy to construct but the kernel's spectral energy above the Nyquist rate \(\pi/h\) folds back into \(D_h\), producing \emph{aliasing error}. When \(\lambda\) is small (wide kernels), aliasing vanishes but building a cardinal function from broad overlapping bumps demands large coefficients with precise cancellations, making the construction \emph{ill-conditioned}, reflected in error-bound prefactors that diverge algebraically as \(\lambda \to 0\) (Theorem~1). The optimal \(\lambda\) balances these effects.
+
+\paragraph{Error decomposition.}
+The total error decomposes into four terms by the triangle inequality (full proof in Appendix A.1, Theorem 5).
+
+\medskip
+\noindent\textbf{Theorem 1 (Numerical error bound).}
+\emph{Let \(\lambda = \gamma h\). Assume \(f\) is analytic in a strip of half-width \(\rho\) around \(\Omega\), and assume the normalizer \(D_h\) is bounded away from zero on a strip of half-width \(\sigma\). Then}
+\begin{equation}
+\resizebox{\columnwidth}{!}{$\displaystyle
+\|f - Q_{h,R}^{(K_c)} f\|_{L^\infty(\Omega)}
+\le
+\underbrace{C_1(\lambda)\, e^{-c_1/h}}_{\text{resolution}}
++
+\underbrace{C_2\, e^{-c_2/\lambda^p}}_{\text{aliasing}}
++
+\underbrace{C_3(\lambda)\, e^{-c_3 \lambda R}}_{\text{halo}}
++
+\underbrace{C_4(\lambda)\, e^{-c_4 \lambda K_c}}_{\text{stencil}}.
+$}
+\label{eq:error-bound}
+\end{equation}
+\emph{The rates \(c_1, \ldots, c_4\) depend on the target's analyticity \(\rho\), the kernel's decay rate \(a_K\), and the normalizer's strip margin \(\sigma\). The prefactors \(C_1, C_3, C_4\) capture the stability cost of Fourier normalization and diverge algebraically as \(\lambda \to 0\) (explicit formulas in Appendix A.1, Eqs.~29--31). \(C_2\) is independent of \(\lambda\). For \(K = \operatorname{sech}^2\), \(p = 1\).}
+
+Each term is exponential in a parameter we control. The resolution term decays as \(e^{-c_1 N/2}\) with the number of grid points; the aliasing term decays as \(e^{-c_2/\lambda^p}\), vanishing as the kernel widens relative to the grid (small \(\lambda\)); and the halo/stencil terms decay geometrically in \(R\) and \(K_c\), respectively, at rates coupled through \(\lambda\).
+
+\paragraph{Width-precision scaling.}
+To achieve a target tolerance \(\varepsilon\), we choose \(\lambda\) in the \emph{viable regime}: small enough that \(C_2 e^{-c_2/\lambda^p} \leq \varepsilon\) (bounding aliasing), yet large enough that the prefactors \(C_i(\lambda)\) remain moderate (bounding ill-conditioning). For a fixed precision target such as fp64, this viable regime is a computable interval \([\lambda_{\min}, \lambda_{\max}]\) depending on \(\varepsilon\), the kernel, and the analyticity width (Appendix~C.1). With any \(\lambda^*\) in this interval, the remaining three terms each require their control parameter to scale as \(O(\log(1/\varepsilon))\):
+\[
+N = O\!\left(\frac{1}{c_1}\log\frac{1}{\varepsilon}\right),
+\qquad
+R = O\!\left(\frac{1}{c_3\lambda^*}\log\frac{1}{\varepsilon}\right),
+\qquad
+K_c = O\!\left(\frac{1}{c_4\lambda^*}\log\frac{1}{\varepsilon}\right).
+\]
+Since the MLP has \(W = N + 2R + 1\) neurons, the total width scales as \(W = O(\log(1/\varepsilon))\). Equivalently,
+
+\medskip
+\noindent\textbf{Corollary 1 (Exponential convergence in width).}
+\emph{Fix a target precision \(\varepsilon\) in the viable regime (Appendix~C.1) and choose \(\lambda^*\) accordingly. There exist \(A, \alpha > 0\) such that the constructed MLP with \(W\) neurons satisfies \(\|f - \widetilde{f}_W\|_{L^\infty} \leq A\, e^{-\alpha W}\). (Proof in Appendix~C.2.)}
+
+This matches the rate of classical polynomial interpolation for analytic targets (Trefethen, 2019), realized by a one-hidden-layer MLP with explicit weights.
+
+\paragraph{Weight scaling.}
+Maintaining \(\lambda^*\) constant as \(h \to 0\) requires \(\gamma = \lambda^*/h = \lambda^* N/2\): the inner-layer weights must grow proportionally with width. The maximum weight magnitude is \(O(W) = O(\log(1/\varepsilon))\), keeping all parameters within fp64 range even at machine precision (Appendix~C.3). This is what makes the construction numerically realizable, in contrast to prior results where weights scale as \(\Theta(\varepsilon^{-1})\) (Cybenko, 1989) or \(\Theta(\varepsilon^{-1/k})\) (Mhaskar, 1993); see Table~\ref{tab:comparison}.
+
+\begin{table}[t]
+\centering
+\caption{Comparison of parameter count, working-precision bit complexity, and weight magnitudes for prior MLP constructions on analytic targets.}
+\label{tab:comparison}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & \#params vs.\ \(\varepsilon\) & Bit complexity (working precision) & Weight magnitudes \\
+\midrule
+Cybenko (1989)
+& \(\Theta(\varepsilon^{-1})\)
+& \(\Theta(\log(1/\varepsilon))\)
+& \(\|W\|_{\max} = \Theta\!\big(\varepsilon^{-1}\log(1/\varepsilon)\big)\) \\
+
+Mhaskar (1993)
+& \(\widetilde{O}\!\big(\log(1/\varepsilon)\log\log(1/\varepsilon)\big)\)
+& \(\gtrsim \widetilde{\Theta}\!\big(\log(1/\varepsilon)\log\log(1/\varepsilon)\big)\)
+& \(\|W\|_{\max} = \Theta(\varepsilon^{-1/k})\) (order \(k\)) \\
+
+Quasi-interpolant (ours)
+& \(O(\log(1/\varepsilon))\)
+& \(O(\log(1/\varepsilon)+\log\log(1/\varepsilon))\)
+& \(\|W\|_{\max} = O(\log(1/\varepsilon))\) \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\paragraph{Predictions for trained networks.}
+The construction makes three testable predictions about what a trained MLP \emph{should} look like to achieve high precision: (i) \(\lambda = \gamma h\) should plateau as width increases, requiring \(\gamma\) to grow proportionally with \(N\); (ii) the outer-layer weight magnitudes should remain \(O(1)\), not grow; and (iii) the learned features should distribute approximation power uniformly across neurons rather than concentrating it in a compressible subset. In Section~4, we verify that end-to-end trained MLPs violate all three: \(\gamma\) stays \(O(1)\) (driving \(\lambda \to 0\)), outer weights are too large, and learned representations exhibit rank saturation.
+
+\subsection{Algorithm}
+\label{subsec:qi-algorithm}
+
+\begin{algorithm}[t]
+\caption{Explicit Quasi-Interpolant MLP Construction}
+\label{alg:qi-mlp}
+\small
+\begin{algorithmic}[1]
+\Statex \textbf{Input:} grid size \(N\), bandwidth \(\gamma\), halo \(R\), stencil half-width \(K_c\), DFT size \(M\), activation \(\psi\) with \(K=\psi^{(r)}\), and target samples on the extended grid.
+
+\State Build the extended uniform grid on \([-1,1]\) together with the halo points needed for the finite operator.
+\State Sample the target \(f\) on this extended grid.
+\State Evaluate the periodized kernel spectrum \(D_h\) on a DFT grid and form the Fourier character \(\widetilde{C}_\lambda = h/\widetilde{D}_\lambda\).
+\State Recover the cardinal coefficients \(c_j\) by inverse DFT, and retain the stencil coefficients with \(|j| \le K_c\).
+\State Form the truncated cardinal function \(L_h^{(K_c)}(x) = \sum_{|j|\le K_c} c_j K_\gamma(x-jh)\).
+\State Convolve the stencil coefficients \(c_j\) with the sampled target values to obtain the kernel-network coefficients \(a[m]\).
+\State Convert the kernel network into MLP parameters by using hidden units \(\psi(\gamma(x-x_m))\) and outer weights \(w[m] = a[m]/\gamma^{r-1}\).
+\State If \(r>1\), determine the degree-\((r-1)\) integration polynomial from boundary conditions.
+\State Output the final approximant \(\widetilde f(x) = p_{r-1}(x) + \sum_{m=-R}^{N+R} w[m]\psi(\gamma(x-x_m))\).
+
+\Statex \textbf{Output:} the explicit one-hidden-layer MLP \(\widetilde f\).
+
+\Statex \textbf{Width:} \(W = N + 2R + 1\) neurons, plus \(r\) polynomial coefficients when \(r>1\).
+\end{algorithmic}
+\end{algorithm}
+
+% =========================
+% PASTE MY SECTION 3 BLOCK HERE
+% =========================
+
+\section{Experiments}
+% Paste your experiments here
+
+\section{Discussion}
+% Paste your discussion here
+
+\medskip
+\small
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+
+\section{Theoretical Results}
+% Keep your existing Appendix A here
+
+% =========================
+% PASTE MY APPENDIX B AND C BLOCKS HERE
+% =========================
+
+% The NeurIPS checklist is included by the style file.
+% Leave it in place for submission.
+
+% =========================
+% APPENDICES B AND C ONLY
+% Paste these after existing Appendix A.
+% Assumes \appendix has already been called.
+% =========================
+
+\section{Construction Derivations}
+\label{app:construction-derivations}
+
+This appendix derives the Fourier normalization construction summarized in Section~3.1. The proof of Theorem~1 (with explicit constants), Lemmas~2--4, and the kernel verification for \(\operatorname{sech}^2\) are in Appendix~A.1.
+
+\subsection{Deriving the Cardinal Function via Fourier Normalization}
+\label{app:fourier-normalization}
+
+We establish that the cardinal property \(L_h(jh) = \delta_{j,0}\) is equivalent to \eqref{eq:partition-unity}, and show how Fourier normalization yields equation~\eqref{eq:fourier-character}.
+
+\subsubsection{The cardinal property in Fourier space}
+
+Write
+\[
+L_h(jh) = \frac{1}{2\pi} \int_{\mathbb{R}} \widehat{L}_h(\omega)\, e^{i\omega jh}\, d\omega.
+\]
+Partition \(\mathbb{R}\) into intervals of length \(2\pi/h\) and substitute \(\omega \mapsto \omega + 2\pi m/h\) in each:
+\[
+L_h(jh)
+=
+\frac{1}{2\pi}
+\int_{-\pi/h}^{\pi/h}
+\underbrace{
+\left[
+\sum_{m \in \mathbb{Z}}
+\widehat{L}_h\!\left(\omega + \frac{2\pi m}{h}\right)
+\right]
+}_{=: \, S(\omega)}
+e^{i\omega jh}\, d\omega,
+\]
+using \(e^{i(2\pi m/h)jh} = 1\). The integral extracts the \(j\)-th Fourier coefficient of \(S\) on \([-\pi/h,\pi/h]\).
+
+\paragraph{Forward.}
+If \(S(\omega) = h\), then
+\[
+L_h(jh)
+=
+\frac{h}{2\pi}\int_{-\pi/h}^{\pi/h} e^{i\omega jh}\, d\omega
+=
+\delta_{j,0}
+\]
+by orthogonality.
+
+\paragraph{Reverse.}
+If \(L_h(jh) = \delta_{j,0}\) for all \(j\), all nonzero Fourier coefficients of \(S\) vanish, forcing \(S = h\).
+
+\subsubsection{From kernel composition to equation~\eqref{eq:fourier-character}}
+
+Write \(L_h(x) = \sum_j c_j K_\gamma(x - jh)\). Fourier-transforming gives
+\[
+\widehat{L}_h(\omega) = \widehat{K}_\gamma(\omega)\,\widehat{C}_h(\omega),
+\qquad
+\widehat{C}_h(\omega) := \sum_j c_j e^{-ijh\omega}.
+\]
+Because \(\widehat{C}_h\) is \(2\pi/h\)-periodic,
+\[
+\sum_{m \in \mathbb{Z}} \widehat{L}_h\!\left(\omega+\frac{2\pi m}{h}\right)
+=
+\widehat{C}_h(\omega)\sum_{m \in \mathbb{Z}} \widehat{K}_\gamma\!\left(\omega+\frac{2\pi m}{h}\right)
+=
+\widehat{C}_h(\omega)\,D_h(\omega).
+\]
+Plugging this into \eqref{eq:partition-unity} yields
+\[
+h = \widehat{C}_h(\omega)\,D_h(\omega),
+\]
+so
+\[
+\widehat{C}_h(\omega) = \frac{h}{D_h(\omega)}.
+\]
+
+\subsubsection{Recovering the coefficients \(c_j\)}
+
+Rescale \(\theta := h\omega\), and define
+\[
+\widetilde{C}_\lambda(\theta)
+:=
+\widehat{C}_h(\theta/h)
+=
+\frac{h}{\widetilde{D}_\lambda(\theta)}.
+\]
+This is \(2\pi\)-periodic with Fourier series
+\[
+\widetilde{C}_\lambda(\theta) = \sum_j c_j e^{-ij\theta}.
+\]
+The Fourier coefficients of \(\widetilde{C}_\lambda\) are the kernel-expansion weights \(c_j\).
+
+\paragraph{Remark.}
+The rescaled normalizer \(\widetilde{D}_\lambda(\theta) = D_h(\theta/h)\) depends on \(\gamma\) and \(h\) only through \(\lambda = \gamma h\), which is why \(\lambda\) is the natural dimensionless parameter.
+
+\subsection{DFT Approximation of the Cardinal Coefficients}
+\label{app:dft-approximation}
+
+The coefficients \(c_j\) are computed via the \(M\)-point DFT of \(\widetilde{C}_\lambda\) at nodes \(\theta_l = 2\pi l/M\) (Algorithm~\ref{alg:qi-mlp}, Step~2). The DFT returns aliased coefficients
+\[
+\widetilde{c}_j^{(M)} = c_j + \sum_{l \neq 0} c_{j+lM}.
+\]
+By Lemma~2, \(|c_j| \leq C_c(\lambda)e^{-\sigma|j|}\), so
+\[
+\bigl|\widetilde{c}_j^{(M)} - c_j\bigr|
+\leq
+\frac{2C_c(\lambda)\, e^{-\sigma M}}{1 - e^{-\sigma M}}.
+\]
+This computational error is independent of the four approximation-theoretic terms in Theorem~1 and can be driven below machine precision by choosing \(M\) moderately larger than \(2K_c + 1\).
+
+\subsection{Kernel Network Re-indexing}
+\label{app:kernel-reindexing}
+
+Substituting \eqref{eq:Lh-trunc} into \eqref{eq:finite-op} and setting \(m = k + j\) gives
+\[
+(Q_{h,R}^{(K_c)} f)(x)
+=
+\sum_{k=-R}^{N+R} f(x_k)\sum_{|j| \le K_c} c_j K_\gamma(x - x_k - jh)
+=
+\sum_{m=-R}^{N+R} a[m]\, K_\gamma(x - x_m),
+\]
+where
+\[
+a[m] = \sum_{|j| \le K_c} c_j f(x_{m-j})
+\]
+is a discrete convolution of width \(2K_c + 1\). This requires samples on the extended index set \(\{-R-K_c, \ldots, N+R+K_c\}\).
+
+\subsection{Activation Coverage}
+\label{app:activation-coverage}
+
+The derivative-kernel relation \(K = \psi^{(r)}\) is verified for \(\tanh\):
+
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Activation \(\psi\) & Kernel \(K\) & Order \(r\) & Integration polynomial \\
+\midrule
+\(\tanh\) & \(\operatorname{sech}^2\) & \(1\) & bias \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For \(\tanh\), the kernel \(K = \operatorname{sech}^2\) satisfies all conditions (K1--K4) as verified in Appendix~A.1.3: nonzero mass, exponential spatial decay with \((A_K, a_K) = (2,2)\), positive Fourier transform, and a diagonal-dominance condition ensuring a zero-free strip.
+
+\paragraph{Remark on other activations.}
+In principle, any smooth activation whose \(r\)-th derivative satisfies K1--K4 yields a valid construction. However, extending the verification beyond \(\tanh\) requires care. For instance, \(\mathrm{GELU}''(x) = \phi(x)(2 - x^2)\), which changes sign and has nonzero integral only after checking cancellations. \(\mathrm{Softplus}'(x) = \sigma(x)\), which does not decay as \(x \to +\infty\) and therefore violates K4 as stated. We leave a systematic treatment of activation coverage to future work; all experiments in this paper use \(\tanh\) (equivalently, \(\operatorname{sech}^2\)) activations.
+
+\section{Width-Precision Scaling}
+\label{app:width-precision}
+
+\subsection{The Viable Regime for \(\lambda\)}
+\label{app:viable-lambda}
+
+For a fixed target tolerance \(\varepsilon\), the bandwidth \(\lambda\) must satisfy competing constraints.
+
+\paragraph{Aliasing (upper bound).}
+\(C_2 e^{-c_2/\lambda^p} \leq \varepsilon\) requires
+\[
+\lambda \leq \lambda_{\max}(\varepsilon)
+:=
+\left(\frac{c_2}{\log(C_2/\varepsilon)}\right)^{1/p}.
+\]
+
+\paragraph{Conditioning (lower bound).}
+The prefactors \(C_i(\lambda)\) diverge as \(\lambda \to 0\). For \(K = \tfrac{1}{2}\operatorname{sech}^2\), the cardinal function's spatial decay (Lemma~4) requires \(a_K \lambda > \sigma\), giving \(\lambda > \sigma/2\) with \(a_K = 2\). The diagonal-dominance condition (Proposition~4) further requires \(q(\sigma,\lambda) < 1\), satisfied for \(\lambda \gtrsim 1.2\) with \(\sigma = 1\).
+
+The viable regime \([\lambda_{\min}, \lambda_{\max}(\varepsilon)]\) is nonempty for all \(\varepsilon\) above a kernel-dependent threshold; this is the threshold referenced in the informal main result. The threshold arises because \(\lambda_{\max}(\varepsilon) \to 0\) as \(\varepsilon \to 0\) while \(\lambda_{\min}\) is fixed by conditioning, so there exists a smallest achievable \(\varepsilon\) for each kernel. Note that \(\lambda_{\max}(\varepsilon)\) depends on \(\varepsilon\) only through a \(1/\log(1/\varepsilon)\) factor, so the viable regime shrinks slowly as \(\varepsilon \to 0\). For fp64 targets (\(\varepsilon \sim 10^{-15}\)) with the \(\operatorname{sech}^2\) kernel, the interval is well-separated and \(\lambda^* \approx 1.5\) is near-optimal across target functions in our experiments.
+
+\paragraph{Practical selection.}
+We choose \(\lambda^*\) by a one-dimensional sweep over \([1,4]\), evaluating the total bound \eqref{eq:error-bound} with all prefactors in closed form (Appendix~A.1, Eqs.~29--31).
+
+\subsection{Proof of Corollary 1}
+\label{app:proof-cor1}
+
+Fix \(\varepsilon\) and choose \(\lambda^*\) in the viable regime so that the aliasing term satisfies
+\[
+C_2 e^{-c_2/(\lambda^*)^p} =: \delta \leq \varepsilon.
+\]
+Given width \(W\), allocate
+\[
+N = \lfloor \beta W \rfloor,
+\qquad
+R = \left\lfloor \frac{(1-\beta)W}{2} \right\rfloor,
+\qquad
+K_c = R
+\]
+for fixed \(\beta \in (0,1)\). Then \(h = 2/N \le 4/(\beta W)\), and:
+\begin{itemize}
+    \item \emph{Resolution:}
+    \[
+    C_1(\lambda^*) e^{-c_1 N/2}
+    \le
+    C_1(\lambda^*) e^{-c_1 \beta W/4}.
+    \]
+
+    \item \emph{Halo:}
+    \[
+    C_3(\lambda^*) e^{-c_3 \lambda^* R}
+    \le
+    C_3(\lambda^*) e^{-c_3 \lambda^*(1-\beta)W/4}.
+    \]
+
+    \item \emph{Stencil:}
+    \[
+    C_4(\lambda^*) e^{-c_4 \lambda^* R}
+    \le
+    C_4(\lambda^*) e^{-c_4 \lambda^*(1-\beta)W/4}.
+    \]
+\end{itemize}
+
+Setting
+\[
+\alpha := \min\!\left(
+\frac{c_1\beta}{4},
+\frac{c_3\lambda^*(1-\beta)}{4},
+\frac{c_4\lambda^*(1-\beta)}{4}
+\right)
+\]
+and
+\[
+A := C_1 + C_3 + C_4 + \delta
+\]
+yields
+\[
+\|f - \widetilde{f}_W\| \leq A e^{-\alpha W}
+\]
+for \(W\) large enough that \(N \ge 2\) and \(R \ge 1\). \hfill\(\square\)
+
+\paragraph{Remark.}
+The constant \(A\) depends on \(\lambda^*\) and hence (weakly) on \(\varepsilon\). For any fixed precision target, \(A\) is a computable constant. The proportion \(\beta\) can be optimized:
+\[
+\beta^* = \frac{c_3\lambda^*}{c_1 + c_3\lambda^*};
+\]
+for typical parameters, \(\beta^* \approx 0.6\).
+
+\subsection{Weight Magnitude Scaling}
+\label{app:weight-scaling}
+
+With \(\lambda^*\) fixed,
+\[
+\gamma = \lambda^* N/2.
+\]
+
+\paragraph{Inner-layer weights.}
+\(\gamma = O(W) = O(\log(1/\varepsilon))\) by Corollary~1.
+
+\paragraph{Outer-layer weights.}
+\[
+|a[m]|
+\le
+\|f\|_\infty \sum_{|j| \le K_c} |c_j|
+\le
+\|f\|_\infty C_c(\lambda^*) \coth(\sigma/2)
+=
+O(1)
+\]
+by Lemma~2. So \(w[m] = a[m]/\gamma^{r-1}\): for \(r = 1\) (\(\tanh\)), \(w[m] = O(1)\).
+
+\paragraph{Maximum weight.}
+\[
+\|W\|_{\max} = \gamma = O(\log(1/\varepsilon)).
+\]
+Concretely, for \(\varepsilon = 10^{-15}\): our construction gives \(\gamma \sim 35\), versus \(\sim 10^{15}\) for Cybenko (1989) and \(\sim 10^{15/k}\) for Mhaskar (1993).
+
+\end{document}

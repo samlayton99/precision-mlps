@@ -1,37 +1,65 @@
-"""High-precision QI construction using mpmath.
+"""QI construction for single-hidden-layer tanh MLPs.
 
 Constructs a single-hidden-layer tanh MLP that approximates a target function
-to machine precision (~10^-15) on [-1, 1].
+on [-1, 1]. Two precision regimes are supported (see construct_qi docstring
+and papers/practical_implementation.tex):
 
-Algorithm (from the paper):
-    1. Set up uniform grid: x_k = -1 + k*h, k = 0, ..., N, with h = 2/N.
-    2. Set gamma = lambda_star / h (bandwidth scaling with width).
-    3. Solve Toeplitz system for cardinal function coefficients c_k:
-       sum_j c_j * h * Kd((r-j)*h) = h * delta_{r,0}
-       where Kd(x) = gamma * sech^2(gamma * x) is the derivative kernel.
-    4. Convolve c_k with target derivative values g'(x_k) using Kahan summation
-       to get outer weights a_n (coefficients of the quasi-interpolant).
-    5. Compute bias c0 from boundary condition: q(-1) = g(-1).
-    6. Return QIResult with all construction data.
+    precision="fp64"   : fast (~10ms), L_inf ~ 1e-12 (default).
+    precision="mpmath" : slow (~55s cold, ~0.25s cached), L_inf ~ 3e-15.
 
-The MLP then computes:
-    q(x) = c0 + sum_n a_n * tanh(gamma * (x - x_n))
+Both paths produce valid fp64 coefficients for fp64 PyTorch models.
 
-Key implementation notes:
-- Use mpmath for the Toeplitz solve (arbitrary precision arithmetic).
-- Use Kahan compensated summation for the convolution step.
-- Ghost nodes (halo) extend the grid beyond [-1, 1] for boundary accuracy.
-- Project final coefficients to fp64 for use in JAX models.
+Algorithm:
+    1. Grid: x_k = -1 + k*h, h = 2/N, k in [-halo, N+halo].
+    2. Set gamma = lambda_star / h (inner-layer bandwidth, grows as O(N)).
+    3. Toeplitz solve for cardinal coefficients:
+         sum_j c_j * h * Kd((r-j)*h) = h * delta_{r,0}
+       where Kd(x) = gamma * sech^2(gamma * x).
+    4. Convolve with target derivative (Kahan summation):
+         a_n = sum_k c_k * g'(x_{n-k})
+    5. Compute bias from boundary: c0 = g(-1) - sum_n a_n * tanh(gamma*(-1 - x_n)).
+
+The resulting MLP: q(x) = c0 + sum_n a_n * tanh(gamma * (x - x_n)).
+
+Caching: Cardinal coefficients c_j depend only on (lambda_star, Kc, N,
+precision, mp_dps) and are target-independent. They are cached on disk at
+DEFAULT_CACHE_DIR (override via QI_CACHE_DIR env var or cache_dir kwarg).
 
 Adapted from continuous-mlps/src/construction/explicit_quasi_interpolant.py.
 """
 
 from __future__ import annotations
 
+import hashlib
+import os
 from dataclasses import dataclass
-from typing import Callable, Optional
+from pathlib import Path
+from typing import Callable, Literal, Optional
 
 import numpy as np
+
+
+# Default on-disk cache for cardinal coefficients (target-independent).
+DEFAULT_CACHE_DIR = Path(
+    os.environ.get("QI_CACHE_DIR",
+                   str(Path(__file__).resolve().parents[2] / "results" / "qi_cache"))
+)
+
+
+def default_halo(N: int, *, lambda_star: float = 0.30,
+                 ratio: float = 0.4, safety: float = 35.0) -> int:
+    """Recommended halo size for width N at a given lambda.
+
+    Two constraints drive the choice:
+      1. Scaling with N (matches continuous-mlps): halo >= ratio * N.
+      2. Exponential halo-tail decay: exp(-2 * lambda * halo) must be below
+         the target precision floor, so halo >= safety / (2 * lambda).
+
+    For lambda=0.30, safety=35 gives halo >= 58 (floor below 1e-15).
+    For lambda=0.25 (mpmath path), halo >= 70 (floor below 1e-15).
+    """
+    min_halo = int(np.ceil(safety / (2.0 * lambda_star)))
+    return max(min_halo, int(ratio * N))
 
 
 @dataclass(frozen=True)
@@ -42,7 +70,7 @@ class QIResult:
     Use initialize.py to copy values into a QIMlp.
 
     Fields:
-        N:                  Number of interior grid points (width).
+        N:                  Number of interior grid intervals.
         h:                  Grid spacing 2/N.
         gamma:              Bandwidth parameter lambda_star / h.
         lambda_val:         Dimensionless bandwidth gamma * h = lambda_star.
@@ -69,41 +97,467 @@ class QIResult:
     Kc: int
 
 
+# ---------------------------------------------------------------------------
+# Fast fp64 path (no mpmath dependency for the Toeplitz solve)
+# ---------------------------------------------------------------------------
+
+def _build_toeplitz_c_f64(*, h, gamma, Kc):
+    """Solve Toeplitz system for cardinal coefficients in fp64.
+
+    Same math as the mpmath version but uses numpy.linalg.solve.
+    """
+    n = 2 * Kc + 1
+    idx = np.arange(-Kc, Kc + 1, dtype=np.int64)
+
+    d = np.arange(-2 * Kc, 2 * Kc + 1, dtype=np.int64)
+    x = d.astype(np.float64) * h
+    z = gamma * x
+    t = np.tanh(z)
+    kd = gamma * (1.0 - t * t)
+    dvals = h * kd
+
+    T = np.empty((n, n), dtype=np.float64)
+    for i, r in enumerate(idx):
+        diffs = r - idx
+        T[i, :] = dvals[diffs + 2 * Kc]
+
+    b = np.zeros(n, dtype=np.float64)
+    b[Kc] = h
+    c = np.linalg.solve(T, b)
+
+    rvec = T @ c - b
+    info = {"toeplitz_resid_inf": float(np.max(np.abs(rvec)))}
+    return c.tolist(), info
+
+
+def _f64_kahan_dot(x_arr, y_arr):
+    """Kahan compensated dot product in fp64."""
+    total = 0.0
+    comp = 0.0
+    for xv, yv in zip(x_arr, y_arr):
+        prod = float(xv) * float(yv)
+        yk = prod - comp
+        t = total + yk
+        comp = (t - total) - yk
+        total = t
+    return total
+
+
+def _build_a_f64_kahan(*, gprime, h, gamma, N, halo, Kc, c_f64, sample_dtype=np.float64):
+    """Compute outer weights a_n via convolution with Kahan summation in fp64."""
+    jmin = -(halo + Kc)
+    jmax = N + halo + Kc
+
+    y = {}
+    for j in range(jmin, jmax + 1):
+        xj = -1.0 + j * h
+        y[j] = _sample_scalar(gprime, xj, sample_dtype)
+
+    c_arr = np.array(c_f64, dtype=np.float64)
+    k_list = list(range(-Kc, Kc + 1))
+    n_idx = list(range(-halo, N + halo + 1))
+
+    a_list = []
+    for n in n_idx:
+        seg = np.array([y[n - k] for k in k_list], dtype=np.float64)
+        a_list.append(_f64_kahan_dot(c_arr, seg))
+
+    return n_idx, a_list
+
+
+def _compute_c0_f64(*, g, x0, x_centers, a_f64, gamma, sample_dtype=np.float64):
+    """Compute bias c0 in fp64 so that q(x0) = g(x0)."""
+    gx0 = _sample_scalar(g, x0, sample_dtype)
+    x_centers_f64 = np.array(x_centers, dtype=np.float64)
+    a_arr = np.array(a_f64, dtype=np.float64)
+    s = float(np.sum(a_arr * np.tanh(gamma * (float(x0) - x_centers_f64))))
+    return float(gx0 - s)
+
+
+# ---------------------------------------------------------------------------
+# mpmath high-precision path
+# ---------------------------------------------------------------------------
+
+def _sech2_mp(z, mp):
+    """sech^2(z) in mpmath."""
+    t = mp.cosh(z)
+    return 1 / (t * t)
+
+
+def _Kd_mp(x, gamma, mp):
+    """Kd(x) = gamma * sech^2(gamma * x) in mpmath."""
+    return mp.mpf(gamma) * _sech2_mp(mp.mpf(gamma) * x, mp)
+
+
+def _mp_kahan_dot(c_list, y_list, mp):
+    """Kahan compensated dot product in mpmath arithmetic."""
+    s = mp.mpf("0")
+    comp = mp.mpf("0")
+    for ci, yi in zip(c_list, y_list):
+        prod = ci * yi
+        yk = prod - comp
+        t = s + yk
+        comp = (t - s) - yk
+        s = t
+    return s
+
+
+def _sample_scalar(func, x, sample_dtype=np.float64):
+    """Sample func at x with quantized input/output."""
+    x_q = sample_dtype(float(x))
+    y = func(float(x_q))
+    y_q = sample_dtype(y)
+    return float(y_q)
+
+
+def _build_toeplitz_c_mpmath(*, h, gamma, Kc, mp_dps):
+    """Solve Toeplitz system for cardinal coefficients c_k in mpmath.
+
+    T[r, j] = h * Kd((r-j)*h), solve T @ c = e_center for c.
+    Returns (c_list_mp, info_dict).
+    """
+    import mpmath as mp
+    mp.mp.dps = int(mp_dps)
+
+    n = 2 * Kc + 1
+    idx = list(range(-Kc, Kc + 1))
+
+    h_mp = mp.mpf(h)
+
+    # Precompute Toeplitz values for all differences d in [-2Kc, 2Kc]
+    dvals = {}
+    for d in range(-2 * Kc, 2 * Kc + 1):
+        x = mp.mpf(d) * h_mp
+        dvals[d] = h_mp * _Kd_mp(x, gamma, mp)
+
+    # Build dense Toeplitz matrix
+    T = mp.matrix(n, n)
+    for i, r in enumerate(idx):
+        for j, jj in enumerate(idx):
+            T[i, j] = dvals[r - jj]
+
+    # RHS: unit vector at center
+    b = mp.matrix(n, 1)
+    for i in range(n):
+        b[i] = mp.mpf("0")
+    b[Kc] = mp.mpf(h)
+
+    # Solve
+    c = mp.lu_solve(T, b)
+    c_list = [c[i] for i in range(n)]
+
+    # Residual
+    rvec = T * c - b
+    resid_inf = max(abs(rvec[i]) for i in range(n))
+
+    info = {
+        "toeplitz_resid_inf": float(resid_inf),
+    }
+    return c_list, info
+
+
+def _build_a_mpmath_kahan(*, gprime, h, gamma, N, halo, Kc, c_mp, mp_dps, sample_dtype=np.float64):
+    """Compute outer weights a_n via convolution with Kahan summation in mpmath.
+
+    a_n = sum_{k=-Kc..Kc} c_k * g'(x_{n-k})
+    for n in [-halo, N+halo].
+    """
+    import mpmath as mp
+    mp.mp.dps = int(mp_dps)
+
+    h_mp = mp.mpf(h)
+
+    # Sample g' on extended grid
+    jmin = -(halo + Kc)
+    jmax = N + halo + Kc
+    y = {}
+    for j in range(jmin, jmax + 1):
+        xj = mp.mpf(-1) + mp.mpf(j) * h_mp
+        y_samp = _sample_scalar(gprime, xj, sample_dtype)
+        y[j] = mp.mpf(y_samp)
+
+    k_list = list(range(-Kc, Kc + 1))
+    n_idx = list(range(-halo, N + halo + 1))
+
+    a_mp = []
+    for n in n_idx:
+        seg = [y[n - k] for k in k_list]
+        a_n = _mp_kahan_dot(c_mp, seg, mp)
+        a_mp.append(a_n)
+
+    return n_idx, a_mp
+
+
+def _compute_c0_mpmath(*, g, x0, x_centers, a_mp, gamma, mp_dps, sample_dtype=np.float64):
+    """Compute bias c0 in mpmath so that q(x0) = g(x0)."""
+    import mpmath as mp
+    mp.mp.dps = int(mp_dps)
+
+    gx0 = mp.mpf(_sample_scalar(g, x0, sample_dtype))
+    s = mp.mpf("0")
+    x0_mp = mp.mpf(x0)
+    gamma_mp = mp.mpf(gamma)
+
+    for an, xn in zip(a_mp, x_centers):
+        xn_mp = mp.mpf(float(xn))
+        s += an * mp.tanh(gamma_mp * (x0_mp - xn_mp))
+
+    return gx0 - s
+
+
+# ---------------------------------------------------------------------------
+# Cardinal-coefficient cache (target-independent)
+# ---------------------------------------------------------------------------
+#
+# The cardinal coefficients c_j depend only on (lambda_star, Kc, N, precision,
+# mp_dps). They do NOT depend on the target function. Since mpmath computation
+# takes ~55s per call, caching them once per (lambda, Kc, N, precision) pays
+# off enormously when running experiments across many targets/seeds.
+#
+# Convolution with g'(x_k) and bias c0 are cheap and never cached.
+
+def _cache_key(*, lambda_star: float, Kc: int, N: int,
+               precision: str, mp_dps: int) -> str:
+    payload = f"{precision}|lam={lambda_star:.12f}|Kc={Kc}|N={N}|dps={mp_dps}"
+    h = hashlib.sha1(payload.encode()).hexdigest()[:12]
+    ext = "txt" if precision == "mpmath" else "npz"
+    return f"c_{precision}_lam{lambda_star:.4f}_Kc{Kc}_N{N}_dps{mp_dps}_{h}.{ext}"
+
+
+def _load_cached_c_f64(path: Path) -> Optional[tuple[np.ndarray, dict]]:
+    """Load fp64 cardinal coefficients from npz cache."""
+    if not path.exists():
+        return None
+    try:
+        data = np.load(path, allow_pickle=False)
+        return data["c"].astype(np.float64), {
+            "toeplitz_resid_inf": float(data["resid"]),
+            "cached": True,
+        }
+    except Exception:
+        return None
+
+
+def _save_cached_c_f64(path: Path, c: np.ndarray, resid: float) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(path, c=np.asarray(c, dtype=np.float64), resid=float(resid))
+
+
+def _load_cached_c_mpmath(path: Path, mp_dps: int):
+    """Load mpmath cardinal coefficients from text cache (full precision)."""
+    if not path.exists():
+        return None
+    try:
+        import mpmath as mp
+        mp.mp.dps = int(mp_dps)
+        with open(path) as f:
+            header = f.readline().strip()
+            resid = float(header.split("=")[1])
+            c_list = [mp.mpf(line.strip()) for line in f if line.strip()]
+        return c_list, {"toeplitz_resid_inf": resid, "cached": True}
+    except Exception:
+        return None
+
+
+def _save_cached_c_mpmath(path: Path, c_mp: list, resid: float, mp_dps: int) -> None:
+    """Serialize mpmath coefficients as strings with full precision."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    import mpmath as mp
+    with mp.workdps(int(mp_dps)):
+        with open(path, "w") as f:
+            f.write(f"resid={resid:.18e}\n")
+            for v in c_mp:
+                f.write(mp.nstr(v, int(mp_dps)) + "\n")
+
+
 def construct_qi(
     target_fn: Callable[[float], float],
     target_deriv: Callable[[float], float],
     N: int,
     *,
-    lambda_star: float = 1.5,
-    Kc: int = 12,
-    halo: int = 8,
-    mp_dps: int = 50,
+    precision: Literal["fp64", "mpmath"] = "fp64",
+    lambda_star: Optional[float] = None,
+    Kc: int = 160,
+    halo: Optional[int] = None,
+    mp_dps: int = 30,
+    cache_dir: Optional[Path] = None,
+    use_cache: bool = True,
 ) -> QIResult:
-    """Construct a QI MLP approximation using mpmath.
+    """Construct a QI MLP approximation from a target function.
 
-    Implementation steps:
-    1. Compute grid: x_k = -1 + k*h for k in range(-halo, N + halo + 1), h = 2/N.
-    2. Compute gamma = lambda_star / h.
-    3. Build Toeplitz matrix T[r, j] = h * Kd((r-j)*h) where Kd(x) = gamma * sech^2(gamma*x).
-       Use mpmath.sech for high-precision evaluation. Matrix size: (2*Kc + 1) x (2*Kc + 1).
-    4. Solve T @ c = e_Kc (unit vector at center) for cardinal coefficients c.
-    5. Evaluate target derivative at grid points: g'(x_k) for all k including halo.
-    6. Convolve: a_n = sum_j c_j * g'(x_{n+j}) * h, using Kahan compensated summation.
-    7. Compute bias: c0 = g(-1) - sum_n a_n * tanh(gamma * (-1 - x_n)).
-    8. Project all coefficients to float64.
-    9. Return QIResult.
+    Two precision regimes are supported (see papers/practical_implementation.tex
+    for the full nuance):
+
+    - ``precision="fp64"`` (default, fast, ~10ms per call):
+          Uses numpy.linalg.solve for the Toeplitz system and Python-level
+          Kahan summation for the convolution. Achieves L_inf ~ 1e-12 on
+          smooth targets. Limited by cancellation error in the convolution
+          (c_j has magnitudes ~300 with alternating signs).
+          Defaults for this path: lambda_star=0.30.
+
+    - ``precision="mpmath"`` (slow, ~55s per call, reaches machine epsilon):
+          Uses mpmath arbitrary-precision for Toeplitz solve AND convolution.
+          Achieves L_inf ~ 2-6e-15 (true fp64 machine epsilon).
+          Required because at the smaller lambda needed for machine-eps
+          precision, the Toeplitz matrix becomes fp64-ill-conditioned.
+          Defaults for this path: lambda_star=0.25.
+
+    The cardinal coefficients c_j (the expensive part) are cached to disk
+    keyed by (lambda_star, Kc, N, precision, mp_dps). Since c_j does NOT
+    depend on the target function, one construction amortizes across all
+    targets and seeds for a given (N, lambda) configuration.
 
     Args:
-        target_fn:    Target function g(x). Must be evaluable at grid points.
-        target_deriv: Derivative g'(x). Needed for the quasi-interpolant construction.
-        N:            Number of interior grid intervals (= width of MLP).
-        lambda_star:  Target dimensionless bandwidth (default 1.5).
-        Kc:           Toeplitz stencil half-width (default 12).
-        halo:         Ghost nodes on each side for boundary accuracy (default 8).
-        mp_dps:       mpmath decimal places for high-precision arithmetic (default 50).
+        target_fn:    Target function g(x). Callable on floats.
+        target_deriv: Derivative g'(x). Callable on floats.
+        N:            Number of interior grid intervals.
+        precision:    "fp64" or "mpmath" (see docstring above).
+        lambda_star:  Dimensionless bandwidth gamma*h. If None, uses the
+                      default for the chosen precision (0.30 for fp64, 0.25
+                      for mpmath).
+        Kc:           Toeplitz stencil half-width (default 160, matches
+                      continuous-mlps).
+        halo:         Ghost nodes on each side. If None, uses default_halo(N)
+                      which scales as max(50, int(0.4*N)).
+        mp_dps:       mpmath decimal places when precision="mpmath" (default
+                      30 is enough; larger values don't change the result).
+        cache_dir:    Directory for c_j cache. Defaults to results/qi_cache.
+        use_cache:    If True (default), load and save c_j to disk.
 
     Returns:
-        QIResult with all construction data.
+        QIResult with all construction data (fp64 coefficients either way).
     """
-    # TODO: implement
-    raise NotImplementedError
+    # Apply precision-specific defaults
+    if lambda_star is None:
+        lambda_star = 0.25 if precision == "mpmath" else 0.30
+    if halo is None:
+        halo = default_halo(N, lambda_star=lambda_star)
+
+    h = 2.0 / N
+    gamma = lambda_star / h
+
+    # ---- Step 1: cardinal coefficients c_j (cacheable) ----
+    cache_dir_p = Path(cache_dir) if cache_dir is not None else DEFAULT_CACHE_DIR
+    cache_path = cache_dir_p / _cache_key(
+        lambda_star=lambda_star, Kc=Kc, N=N,
+        precision=precision, mp_dps=mp_dps,
+    )
+    toe_info: dict = {}
+    c_f64_array: Optional[np.ndarray] = None
+    c_mp_list: Optional[list] = None
+
+    if use_cache:
+        if precision == "mpmath":
+            hit_mp = _load_cached_c_mpmath(cache_path, mp_dps)
+            if hit_mp is not None:
+                c_mp_list, toe_info = hit_mp
+                c_f64_array = np.array([float(v) for v in c_mp_list],
+                                        dtype=np.float64)
+        else:
+            hit_f = _load_cached_c_f64(cache_path)
+            if hit_f is not None:
+                c_f64_array, toe_info = hit_f
+
+    if c_f64_array is None:
+        if precision == "mpmath":
+            c_mp_list, toe_info = _build_toeplitz_c_mpmath(
+                h=h, gamma=gamma, Kc=Kc, mp_dps=mp_dps,
+            )
+            c_f64_array = np.array([float(v) for v in c_mp_list],
+                                    dtype=np.float64)
+            toe_info["cached"] = False
+            if use_cache:
+                _save_cached_c_mpmath(
+                    cache_path, c_mp_list,
+                    toe_info.get("toeplitz_resid_inf", 0.0), mp_dps,
+                )
+        else:
+            c_list, toe_info = _build_toeplitz_c_f64(h=h, gamma=gamma, Kc=Kc)
+            c_f64_array = np.array(c_list, dtype=np.float64)
+            toe_info["cached"] = False
+            if use_cache:
+                _save_cached_c_f64(
+                    cache_path, c_f64_array,
+                    toe_info.get("toeplitz_resid_inf", 0.0),
+                )
+
+    # ---- Step 2: convolve with target derivative (cheap, per-target) ----
+    if precision == "mpmath":
+        assert c_mp_list is not None
+        n_idx, a_mp = _build_a_mpmath_kahan(
+            gprime=target_deriv, h=h, gamma=gamma,
+            N=N, halo=halo, Kc=Kc, c_mp=c_mp_list, mp_dps=mp_dps,
+        )
+        n_idx_np = np.array(n_idx, dtype=np.int64)
+        centers = -1.0 + n_idx_np.astype(np.float64) * h
+        c0_mp = _compute_c0_mpmath(
+            g=target_fn, x0=-1.0, x_centers=centers,
+            a_mp=a_mp, gamma=gamma, mp_dps=mp_dps,
+        )
+        a_coeffs = np.array([float(v) for v in a_mp], dtype=np.float64)
+        c0 = float(c0_mp)
+    else:
+        c_f64_list = c_f64_array.tolist()
+        n_idx, a_f64 = _build_a_f64_kahan(
+            gprime=target_deriv, h=h, gamma=gamma,
+            N=N, halo=halo, Kc=Kc, c_f64=c_f64_list,
+        )
+        n_idx_np = np.array(n_idx, dtype=np.int64)
+        centers = -1.0 + n_idx_np.astype(np.float64) * h
+        c0 = _compute_c0_f64(
+            g=target_fn, x0=-1.0, x_centers=centers,
+            a_f64=a_f64, gamma=gamma,
+        )
+        a_coeffs = np.array(a_f64, dtype=np.float64)
+
+    # Extract interior (non-halo) portion
+    interior_mask = (n_idx_np >= 0) & (n_idx_np <= N)
+    interior_centers = centers[interior_mask]
+    interior_a_coeffs = a_coeffs[interior_mask]
+
+    return QIResult(
+        N=N,
+        h=h,
+        gamma=gamma,
+        lambda_val=lambda_star,
+        centers=centers,
+        interior_centers=interior_centers,
+        a_coeffs=a_coeffs,
+        interior_a_coeffs=interior_a_coeffs,
+        c0=c0,
+        toeplitz_residual=toe_info.get("toeplitz_resid_inf", 0.0),
+        halo=halo,
+        Kc=Kc,
+    )
+
+
+def evaluate_qi(qi_result: QIResult, x: np.ndarray, kahan: bool = False) -> np.ndarray:
+    """Evaluate the QI interpolant at points x.
+
+    q(x) = c0 + sum_n a_n * tanh(gamma * (x - x_n))
+
+    Args:
+        qi_result: Construction output.
+        x: Evaluation points, shape [n_points].
+        kahan: If True, use Kahan compensated summation (slower but more
+            accurate; reduces evaluation roundoff floor by ~1-2 orders of magnitude).
+
+    Returns:
+        q(x), shape [n_points].
+    """
+    x = np.asarray(x, dtype=np.float64).ravel()
+    z = qi_result.gamma * (x[:, None] - qi_result.centers[None, :])
+    terms = qi_result.a_coeffs[None, :] * np.tanh(z)
+
+    if kahan:
+        # Kahan compensated summation along axis=1
+        total = np.zeros(x.shape[0], dtype=np.float64)
+        comp = np.zeros(x.shape[0], dtype=np.float64)
+        for k in range(terms.shape[1]):
+            y = terms[:, k] - comp
+            t = total + y
+            comp = (t - total) - y
+            total = t
+        return qi_result.c0 + total
+
+    return qi_result.c0 + np.sum(terms, axis=1)
