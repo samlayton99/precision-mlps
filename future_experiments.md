@@ -45,7 +45,7 @@ Success criterion:
 **Hypothesis:** The theory predicts a U-shaped error curve in lambda (aliasing at large lambda, ill-conditioning at small lambda). If this tradeoff is numerically real and sharp, it explains why unconstrained training -- which lets lambda drift to ~0 -- cannot reach high precision.
 
 **Core:**
-- Construct QI MLPs across widths N in {16, 32, 64, 128, 256} and sweep gamma to trace the error-vs-lambda curve for each width. Plot L_inf error (y) vs gamma (x) with one curve per width. Expect U-shaped curves with a shared optimal lambda* ~ 1.5.
+- Construct QI MLPs across widths N in {16, 32, 64, 128, 256} and sweep gamma to trace the error-vs-lambda curve for each width. Plot L_inf error (y) vs gamma (x) with one curve per width. Expect U-shaped curves with a shared optimal lambda* ~ 0.25-0.30.
 
 **Additional:**
 - Repeat with fixed QI geometry (gamma, x_k) but solve the readout via least squares instead of the full construction. Does the U-shape persist when the outer weights are learned rather than constructed? Isolates whether the tradeoff is purely geometric or also depends on exact coefficient computation.
@@ -56,6 +56,8 @@ Success criterion:
 ## 2. QI Basin Stability and Path Experiments
 
 **Hypothesis:** The QI solution sits in a basin that is narrow in certain parameter directions. Optimizers starting at or near the QI solution may drift away, and the construction and trained solutions may or may not share a basin.
+
+Additionally, what can we learn about the Basin? what are its properties?
 
 **Core:**
 - **Low learning rate from construction:** Construct the QI MLP, then train with a small learning rate. Monitor whether the solution drifts away and in which parameter subspace. Compare SGD vs Adam. Train on the full dataset (no stochastic noise). Track lambda, gamma, outer weight norms, and loss throughout training.
@@ -111,7 +113,7 @@ Success criterion:
 **Hypothesis:** The feature matrix Phi (entries Phi_{i,m} = tanh(gamma * (x_i - x_m))) may be ill-conditioned, amplifying small errors in the readout weights or data into large output errors. This is separate from the loss Hessian -- it's about the forward map from weights to predictions.
 
 **Core:**
-- Compute cond(Phi) as a function of width N and lambda. Sweep N in {16, 32, 64, 128, 256} and lambda across the viable regime [1.0, 4.0].
+- Compute cond(Phi) as a function of width N and lambda. Sweep N in {16, 32, 64, 128, 256} and lambda across a range including the viable regime, e.g. [0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.75, 1.0].
 - Compute the singular value spectrum of Phi at the QI solution. How many singular values are near zero? Does the effective rank match the width?
 - Measure how perturbations to the readout weights propagate through Phi to output errors: if v_perturbed = v_true + epsilon * noise, how does ||Phi * (v_perturbed - v_true)|| / (epsilon * ||noise||) compare to cond(Phi)?
 
@@ -221,3 +223,5 @@ Delay until there is a reliable clean-data solver. Then test whether constrained
 Increasing width gives more tanh functions to work with. Increasing gamma steepens the tanh slope, which the construction requires (gamma ~ N/2 * lambda). But gradient-based optimization cannot efficiently increase gamma because the gradient signal vanishes as gamma grows (vanishing sech^2 envelope). This is likely the central obstacle: the optimizer is blind to the direction it most needs to move in.
 
 The most promising path is not a better unconstrained optimizer, but reduced-coordinate training: fix the geometry (or parameterize it in natural coordinates), eliminate the linear readout exactly, and optimize only a small nonlinear block. If this works, the story is "theoretical constructions as optimization guides" -- the QI theory reveals the right coordinate system for training.
+
+

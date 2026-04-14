@@ -1,0 +1,17 @@
+# Experiment 0A: QI vs Learned Readout (both mpmath precision)
+# Isolates whether the QI convolution formula is fundamentally better
+# than direct least-squares on the same geometry, when both get
+# extended-precision arithmetic.
+
+name: QI_vs_learn
+widths: [32, 64, 96, 128]
+targets: [sine, runge, exp, sine_mixture]
+
+construction:
+  precision: mpmath
+  mp_dps: 30
+  Kc: 160
+
+n_eval: 2048
+
+lambda_sweep: [0.20, 0.25, 0.30]

@@ -7,22 +7,13 @@
 # Toeplitz solve becomes ill-conditioned. Sweep spans both sides to show the U.
 
 name: lambda_tradeoff
-seeds: [0, 1, 2, 3, 4]
 widths: [16, 32, 64, 128, 256]
-
-target: sine
+targets: [sine, runge, exp, sine_mixture]
 
 construction:
-  enabled: true
-  precision: fp64   # use fp64 (fast) for this sweep
+  precision: fp64
   Kc: 160
 
-init:
-  from_construction: true
-
-n_train: 512
 n_eval: 2048
-sampling: equispaced
 
-sweep:
-  construction.lambda_star: [0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50, 0.75, 1.0, 1.5]
+lambda_sweep: [0.01, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50, 0.75, 1.0]
