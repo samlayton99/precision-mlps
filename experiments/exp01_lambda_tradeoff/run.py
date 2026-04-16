@@ -52,6 +52,14 @@ MPMATH_WIDTHS = [128, 256, 512]
 MPMATH_LAMBDAS = [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40]
 MPMATH_DATA_PATH = RESULTS_DIR / "data_mpmath.json"
 
+# --- fine-grained config (fp64 lstsq + mpmath QI around optimal lambda) ---
+FINE_WIDTHS = [16, 32, 64, 128]
+FINE_LAMBDAS = [round(0.22 + i * 0.005, 3) for i in range(13)]  # 0.220 to 0.280
+FINE_DATA_PATH = RESULTS_DIR / "data_fine.json"
+
+# --- fine-grained fp64 config (fp64 lstsq + fp64 QI, same sweep as fine) ---
+FINE_FP64_DATA_PATH = RESULTS_DIR / "data_fine_fp64.json"
+
 
 def collect_data(precision, widths, lambda_sweep, data_path):
     """Run the lambda sweep for all targets/widths and save results."""
@@ -136,12 +144,108 @@ def collect_data(precision, widths, lambda_sweep, data_path):
                 })
 
                 elapsed = time.time() - t0
-                print(f"  [{done}/{total}] {target_name} N={N} lam={lam:.2f} "
+                print(f"  [{done}/{total}] {target_name} N={N} lam={lam:.3f} "
                       f"qi_linf={qi_linf:.2e} lstsq_linf={lstsq_linf:.2e} "
                       f"({elapsed:.0f}s elapsed)")
 
     elapsed = time.time() - t0
     print(f"\nData collection done in {elapsed:.1f}s ({total} configs)")
+
+    with open(data_path, "w") as f:
+        json.dump(results, f, indent=2)
+    print(f"Saved to {data_path}")
+
+    return results
+
+
+def collect_data_fine(widths, lambda_sweep, data_path):
+    """Fine-grained sweep: QI in mpmath, lstsq in fp64, on the same geometry."""
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    x_eval = np.linspace(-1, 1, N_EVAL)
+    results = []
+
+    t0 = time.time()
+    total = len(TARGETS) * len(widths) * len(lambda_sweep)
+    done = 0
+
+    for target_name in TARGETS:
+        target = get_target(target_name)
+        y_eval = target.fn_numpy(x_eval)
+        y_norm = np.linalg.norm(y_eval)
+
+        for N in widths:
+            h = 2.0 / N
+            n_train = max(512, 4 * N)
+            x_train = np.linspace(-1, 1, n_train)
+            y_train = target.fn_numpy(x_train)
+
+            for lam in lambda_sweep:
+                done += 1
+                gamma = lam / h
+                halo = default_halo(N, lambda_star=lam)
+
+                # --- QI construction (mpmath) ---
+                try:
+                    qi = construct_qi(
+                        target.fn_numpy, target.deriv_numpy, N,
+                        precision="mpmath", lambda_star=lam, Kc=KC,
+                        halo=halo, mp_dps=50, use_cache=True,
+                    )
+                    qi_pred = evaluate_qi(qi, x_eval)
+                    qi_err = np.abs(qi_pred - y_eval)
+                    qi_linf = float(np.max(qi_err))
+                    qi_rel_l2 = float(np.linalg.norm(qi_err) / y_norm) if y_norm > 0 else float(np.linalg.norm(qi_err))
+                except Exception as e:
+                    qi_linf = float("nan")
+                    qi_rel_l2 = float("nan")
+                    qi = None
+                    print(f"  QI mpmath failed: {target_name} N={N} lam={lam}: {e}")
+
+                # --- Lstsq readout (fp64) on same geometry ---
+                try:
+                    if qi is not None:
+                        centers = qi.centers
+                        gamma_vec = np.full(len(centers), qi.gamma)
+                    else:
+                        n_idx = np.arange(-halo, N + halo + 1)
+                        centers = -1.0 + n_idx * h
+                        gamma_vec = np.full(len(centers), gamma)
+
+                    Phi_train = build_phi(x_train, gamma_vec, centers)
+                    v, bias, _ = solve_readout_with_bias(Phi_train, y_train, method="lstsq")
+
+                    Phi_eval = build_phi(x_eval, gamma_vec, centers)
+                    lstsq_pred = Phi_eval @ v + bias
+                    lstsq_err = np.abs(lstsq_pred - y_eval)
+                    lstsq_linf = float(np.max(lstsq_err))
+                    lstsq_rel_l2 = float(np.linalg.norm(lstsq_err) / y_norm) if y_norm > 0 else float(np.linalg.norm(lstsq_err))
+                except Exception as e:
+                    lstsq_linf = float("nan")
+                    lstsq_rel_l2 = float("nan")
+                    print(f"  Lstsq fp64 failed: {target_name} N={N} lam={lam}: {e}")
+
+                results.append({
+                    "target": target_name,
+                    "N": N,
+                    "lambda_star": lam,
+                    "gamma": gamma,
+                    "halo": halo,
+                    "width": len(centers),
+                    "precision": "fine",
+                    "qi_linf": qi_linf,
+                    "qi_rel_l2": qi_rel_l2,
+                    "lstsq_linf": lstsq_linf,
+                    "lstsq_rel_l2": lstsq_rel_l2,
+                })
+
+                elapsed = time.time() - t0
+                print(f"  [{done}/{total}] {target_name} N={N} lam={lam:.3f} "
+                      f"qi_mp={qi_linf:.2e} ls_f64={lstsq_linf:.2e} "
+                      f"({elapsed:.0f}s elapsed)")
+
+    elapsed = time.time() - t0
+    print(f"\nFine sweep done in {elapsed:.1f}s ({total} configs)")
 
     with open(data_path, "w") as f:
         json.dump(results, f, indent=2)
@@ -174,7 +278,8 @@ def plot_results(data_path, widths, suffix=""):
     ncols = 2
     nrows = (n_targets + 1) // 2
 
-    prec_label = results[0].get("precision", "fp64") if results else "fp64"
+    prec_raw = results[0].get("precision", "fp64") if results else "fp64"
+    prec_label = "QI mpmath + lstsq fp64" if prec_raw == "fine" else prec_raw
 
     for metric_key, metric_label, filename in [
         ("linf", r"$L_\infty$ error", f"lambda_tradeoff_linf{suffix}.png"),
@@ -240,9 +345,17 @@ def plot_results(data_path, widths, suffix=""):
 
 if __name__ == "__main__":
     use_mpmath = "--mpmath" in sys.argv
+    use_fine = "--fine" in sys.argv
+    use_fine_fp64 = "--fine-fp64" in sys.argv
     plot_only = "--plot" in sys.argv
 
-    if use_mpmath:
+    if use_fine_fp64:
+        precision = "fp64"
+        widths = FINE_WIDTHS
+        lambdas = FINE_LAMBDAS
+        data_path = FINE_FP64_DATA_PATH
+        suffix = "_fine_fp64"
+    elif use_fine:
         precision = "mpmath"
         widths = MPMATH_WIDTHS
         lambdas = MPMATH_LAMBDAS
@@ -256,7 +369,10 @@ if __name__ == "__main__":
         suffix = "_fp64"
 
     if not plot_only:
-        collect_data(precision, widths, lambdas, data_path)
+        if use_fine:
+            collect_data_fine(widths, lambdas, data_path)
+        else:
+            collect_data(precision, widths, lambdas, data_path)
 
     if data_path.exists():
         plot_results(data_path, widths, suffix)

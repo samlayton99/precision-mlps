@@ -1,34 +1,21 @@
 # Results
 
-## Exp01 -- Lambda Tradeoff
+## Exp01 + Exp0A -- Lambda Tradeoff and QI vs Lstsq
 
-U-shaped error-vs-lambda confirmed. Viable regime: lambda ~ 0.20-0.35. Optimal at lambda = 0.25.
+Consolidated sweep: 4 targets, N={16,32,64,96,128}, lambda=0.01-1.0 (coarse) + 0.22-0.28 (fine). Three precision combos: fp64/fp64, mpmath QI/fp64 lstsq, mpmath/mpmath. See `consolidated_linf.png`.
 
-- Left side (lambda < 0.15): ill-conditioning, errors explode, worse with larger N.
-- Right side (lambda > 0.5): aliasing-limited, width-independent, ~1e-3.
-- Optimal lambda is target-independent (~0.25), as theory predicts.
+**Conclusions:**
 
-To do: finer sweep around 0.225-0.275.
+1. **Both QI and lstsq reach machine epsilon** given sufficient arithmetic precision (mpmath). lstsq mpmath: 2e-16. QI mpmath: 4e-16 to 2e-15.
+2. **Lstsq is strictly better than QI** on identical geometry. It directly minimizes the residual rather than using a fixed convolution formula. lstsq mpmath beats QI mpmath in 48/48 configs.
+3. **Lstsq fp64 is comparable to QI mpmath** (~1e-13 vs ~1e-15). The lstsq fp64 floor is catastrophic cancellation in fp64 arithmetic, not a method limitation -- it scales with precision.
+4. **Optimal lambda ~ 0.23-0.26** for both methods. U-shaped curve confirmed: ill-conditioning below 0.15, aliasing above 0.5.
+5. **QI is more sensitive to lambda than lstsq.** QI error is dominated by the aliasing term (exponential in lambda). lstsq error is dominated by arithmetic precision, making it nearly lambda-independent in the viable regime.
 
-## Exp0A -- QI vs Lstsq (fair comparison)
-
-Four methods on identical geometry (gamma, centers, halo), 4 targets, N={32,64,96,128}, lambda={0.20,0.25,0.30}:
-
-| Method | Arithmetic | Typical best L_inf | Notes |
-|---|---|---|---|
-| lstsq mpmath SVD | mpmath (50 dps) | **2e-16 to 9e-16** | Best overall, true machine eps |
-| QI construction | mpmath (50 dps) | 2e-15 to 6e-15 | ~10x worse than lstsq mpmath |
-| lstsq fp64 | fp64 | 1e-13 to 1e-14 | Limited by Phi conditioning in fp64 |
-| QI construction | fp64 | 1e-8 to 1e-12 | Worst -- convolution cancellation kills it |
-
-Key findings:
-- **Geometry is what matters, not the weight-computation method.** Given the right (gamma, centers), lstsq finds weights as good or better than the QI convolution formula.
-- **QI fp64 is the worst method** due to cardinal coefficient cancellation (~300 magnitude, alternating sign). lstsq fp64 on the same geometry beats it by orders of magnitude.
-- **QI's advantage was purely arithmetic**: mpmath convolution, not a better formula. When lstsq gets mpmath too, it wins.
-- Phi is rank-deficient (rank ~N+12 out of N+2*halo+1), but truncated SVD handles this cleanly.
+**Implication:** Geometry (gamma, centers) is the hard part. Given correct geometry, even fp64 lstsq gets 1e-13 without special arithmetic. The research question reduces to whether an optimizer can discover the geometry.
 
 ## Future
-- how does truncated svd work on fp64 for lstsq
-- Exp02: gradient descent from the QI solution -- does the optimizer drift away?
+- Exp03: geometry ladder -- progressive constraint relaxation to pinpoint where precision is lost.
+- Exp02: gradient descent from QI solution -- does the optimizer drift away?
 - Fix width, vary gamma, see where trained optimal lambda goes.
 
