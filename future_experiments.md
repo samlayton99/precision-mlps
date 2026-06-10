@@ -50,6 +50,7 @@ Success criterion:
 **Additional:**
 - Repeat with fixed QI geometry (gamma, x_k) but solve the readout via least squares instead of the full construction. Does the U-shape persist when the outer weights are learned rather than constructed? Isolates whether the tradeoff is purely geometric or also depends on exact coefficient computation.
 - Overlay the lambda values that trained networks actually converge to on the same plot. Visualize how far off the trained solutions are from the viable regime.
+- Regularized least squares (NOTE, COME BACK TO THIS. THIS WILL LIKELY WORK WELL)
 
 ---
 
