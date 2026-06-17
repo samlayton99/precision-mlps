@@ -1,0 +1,23 @@
+# Experiment 0B: Coefficient closeness of QI vs least-squares readout.
+#
+# Question: on a FIXED tanh geometry, are the QI and lstsq readouts the "same
+# solution"? Phi is ~50% null space, so we measure the difference three ways
+# (raw / row-space / function) to separate null-space floppiness from genuine
+# agreement. fp64 throughout, kept quick.
+
+name: coeff_diff
+
+# fp64 default lambda; tanh only (the QI construction is tanh-locked).
+lambda_star: 0.30
+Kc: 160
+precision: fp64
+n_eval: 2048
+
+# Sweep 1: coefficient difference vs model width, one target per category.
+widths: [32, 64, 96, 128]
+targets: [sine, sine_8pi, runge, sine_mixture, exp, abs_cubed]
+
+# Sweep 2: hold model size, vary the number of lstsq sample points.
+# (QI sampling is architecture-dictated and fixed; lstsq sampling is free.)
+nsamples_sweep: [256, 512, 1024, 2048, 4096]
+nsamples_target: sine

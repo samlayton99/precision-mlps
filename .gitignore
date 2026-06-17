@@ -1,4 +1,8 @@
-results/
+results/**
+# but keep the per-experiment writeups (results/<exp>/<exp>_results.md) tracked
+!results/**/
+!results/**/*_results.md
+!results/results.md
 checkpoints/
 __pycache__/
 *.egg-info/
