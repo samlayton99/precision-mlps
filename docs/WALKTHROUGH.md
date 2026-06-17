@@ -69,8 +69,12 @@ fp64. This is *not* an fp64 violation — analogous to `numpy.pi`.
 
 ```
 papers/                     The theory. Read section3_rewrite.tex + practical_implementation.tex.
+docs/                       Project docs.
+  WALKTHROUGH.md            This file — repo orientation.
+  future_experiments.md     *** THE DESIGN SPEC *** numbered sections map 1:1 onto exp00..exp09.
+  thoughts.md               Scratchpad (Socratic framing notes).
 src/                        Core library (PyTorch, all fp64). Solid, well-tested.
-  __init__.py               Sets torch fp64 default + DEVICE (DEVICE is dead code — see §7).
+  __init__.py               Sets torch fp64 default + DEVICE (CUDA/CPU; MPS excluded, no fp64).
   config/{schema,loader}    ExperimentConfig dataclasses; YAML load + sweep expansion.
   models/
     layers.py               GammaLinear / GammaExpLinear / StandardLinear inner layers.
@@ -80,14 +84,12 @@ src/                        Core library (PyTorch, all fp64). Solid, well-tested
     qi_mpmath.py            *** THE HEAVY LIFTING *** QI construction, fp64 + mpmath, caching.
     readout.py              Phi matrix + readout solve (lstsq/qr/svd/ridge), with-bias variant.
     initialize.py           Project a QIResult into model params; init-and-freeze; readout re-solve.
+    README.md               Construction-package quick reference (lives next to the code).
   data/{targets,sampling,dataset}   9 targets / 6 categories; samplers; dataset builder.
   training/{optimizers,losses,train_loop,metrics}   Multi-stage Adam->LBFGS, losses, metric schema.
 experiments/                One folder per experiment (config.yaml + run.py). 3 done, 8 stubs.
 results/                    JSONL/JSON outputs + results.md (the running lab notebook).
-tests/                      Unit tests for the core library (65 pass; mpmath ones marked `slow`).
-future_experiments.md       *** THE DESIGN SPEC *** numbered sections map 1:1 onto exp00..exp09.
-implementation.md           Build-order + construction notes (mirrors CLAUDE.md).
-thoughts.md                 Socratic framing notes.
+tests/                      Unit tests for the core library (71 pass; mpmath ones marked `slow`).
 scripts/                    sweep_machine_eps.py, sweep_qi_convergence.py (standalone probes).
 ```
 

@@ -1,8 +1,30 @@
 # precision-mlps
-This is a repo for a research project regarding machine epsilon precision mlps. We have already found an explicit construction that allows mlps to approximate functions to machine epsilon precision with computationally feasible designs, demonstrating theoretical capacity of MLPs. Now, the particular aim of this repo is to find an optimizer that can learn simple, single-variable functions through training, rather than through our construction.
 
+Research project on machine-epsilon-precision MLPs. We already have an explicit
+construction (Quadrature/Quasi-Interpolation, "QI") that lets single-hidden-layer
+tanh MLPs approximate smooth 1-D functions to ~1e-15, demonstrating the
+theoretical capacity of MLPs. The aim now is to find an *optimizer* that can
+learn such functions through training rather than via the construction.
 
-# Hardware
-uses cuda if available, then uses mps if available, and finally defaults to cpu. 
+## Documentation
 
-# Setup
+- `docs/WALKTHROUGH.md` — repo orientation: what's where, how the code maps to
+  the theory, fidelity to the `continuous-mlps` reference, and experiment status.
+- `docs/future_experiments.md` — the design spec / experiment roadmap.
+- `src/construction/README.md` — QI construction quick reference.
+- `papers/` — the underlying theory (LaTeX + PDF).
+
+## Setup
+
+```bash
+python3 -m venv ~/.venvs/precisionMLPs        # keep venvs outside iCloud-synced dirs
+~/.venvs/precisionMLPs/bin/pip install torch mpmath numpy scipy pyyaml pytest matplotlib
+# run from the repo root; `python -m pytest` puts the repo on sys.path so `src` imports
+~/.venvs/precisionMLPs/bin/python -m pytest -q -m "not slow"   # ~70 fast tests
+```
+
+## Hardware
+
+All computation runs in float64. CUDA supports it; Apple MPS does **not** (it
+raises on float64), so MPS is never selected. Falls back to CPU. These are tiny
+1-D problems, so CPU is the expected device.
