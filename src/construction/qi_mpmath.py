@@ -9,13 +9,17 @@ and papers/practical_implementation.tex):
 
 Both paths produce valid fp64 coefficients for fp64 PyTorch models.
 
+Index conventions (two distinct families -- see also docs/explanation.md 5.1):
+    n = center/neuron index, n in [-halo, N+halo]  (W = N + 2*halo + 1 neurons).
+    k = cardinal stencil index, k in [-Kc, Kc]     (2*Kc+1 coefficients, default 321).
+
 Algorithm:
-    1. Grid: x_k = -1 + k*h, h = 2/N, k in [-halo, N+halo].
+    1. Grid (centers): x_n = -1 + n*h, h = 2/N, n in [-halo, N+halo].
     2. Set gamma = lambda_star / h (inner-layer bandwidth, grows as O(N)).
-    3. Toeplitz solve for cardinal coefficients:
-         sum_j c_j * h * Kd((r-j)*h) = h * delta_{r,0}
+    3. Toeplitz solve for cardinal coefficients c_k, k in [-Kc, Kc]:
+         sum_j c_j * h * Kd((r-j)*h) = h * delta_{r,0},  r,j in [-Kc, Kc],
        where Kd(x) = gamma * sech^2(gamma * x).
-    4. Convolve with target derivative:
+    4. Convolve with target derivative (stencil index k in [-Kc, Kc]):
          a_n = sum_k c_k * g'(x_{n-k})
        (vectorized sliding-window matmul in fp64; Kahan in the mpmath path).
     5. Compute bias from boundary: c0 = g(-1) - sum_n a_n * tanh(gamma*(-1 - x_n)).
