@@ -52,10 +52,11 @@ Two sweeps:
 
 ## Results
 
-Data: `results/exp0B_coeff_diff/data.json`. Figures (this folder):
-- `coeff_ratio_full_vs_row.png` -- headline (full vs row-space ratio vs width).
-- `coeff_diff_vs_width.png` -- raw coefficient diff and function diff vs width.
-- `coeff_diff_vs_nsamples.png` -- the same vs lstsq sample count.
+`data.json` holds two lists, `width_sweep` and `nsamples_sweep` (plus `lambda`,
+`Kc`). Each row is one (target, N, n_train) config with: `ratio_full`,
+`ratio_row`, `fun_linf`/`fun_rel_l2` (function diff), `raw_l2`/`raw_linf` (raw
+coefficient diff), `row_mean_qi`/`row_mean_ls` (mean |coeff| in the row space),
+`rank`/`null_dim`, and `qi_fit_resid`/`ls_fit_resid` (relative fit residuals).
 
 Representative numbers (sweep 1; full table in `data.json`):
 
@@ -68,29 +69,48 @@ Representative numbers (sweep 1; full table in `data.json`):
 | runge | 128 | 4.7e-2 | 2.3e-4 | 1.8e-12 | 1.7e-12 | 1.1e-14 |
 | abs_cubed | 128 | 1.2e2 | 5.5e-1 | 2.4e-7 | 7.7e-8 | 4.8e-8 |
 
-Observed (factual):
-- Full-space ratio is O(1)-O(100) for every smooth target; the rank of `[Phi,1]`
-  is ~N+12 of ~N+2*halo+1 columns, i.e. a ~110-dim null space at every width.
-- For converged smooth targets the row-space ratio is 1e-4-1e-3 and `fun_linf`
-  is ~1e-12; the row-space mean magnitudes of the two vectors match to ~4 digits.
-- The cases that stay high in BOTH ratio_row and the fit residuals are exactly
-  the unconverged ones: abs_cubed (only C^1) at all N, and runge/sine_mixture at
-  N<=64. There both methods are far from the target (fit resid 1e-5-1e-7).
-- Sweep 2: holding N fixed and varying n_train from 256 to 4096 leaves
-  ratio_full, ratio_row, and fun_linf flat.
-- Getting ratio_row to read honestly required two choices, recorded in the code:
-  include the bias (else exp's DC term -- in `c0` for QI, split between `v` and
-  `bias` for lstsq -- fakes a ~2.5x disagreement), and use the 1e-11 SVD cutoff
-  (the last decade of singular values carries spurious disagreement).
+### Figures
 
-### How to read `coeff_ratio_full_vs_row.png`
+**`coeff_ratio_full_vs_row.png` (headline, sweep 1).** Deviation ratio vs width;
+each color a target, solid = full space, dashed = row space.
+*Result:* solid lines sit near 1 -- the worst coefficient disagrees by ~one
+typical coefficient (exp/abs_cubed higher, ~1e1-1e2) -- while dashed lines for
+converged smooth targets drop to 1e-4-1e-3. The vertical gap between a target's
+two lines *is* the null-space freedom. Lines that never drop (abs_cubed;
+coarse-N runge/mixture) are unconverged constructions, not agreement.
 
-Each color is a target; solid = full-space ratio, dashed = row-space ratio.
-Solid lines sit near 1 (the worst coefficient disagrees by ~one typical
-coefficient). Dashed lines for converged smooth targets drop to 1e-4-1e-3; the
-vertical gap between a target's solid and dashed line *is* the null-space
-freedom. Lines that do not drop (abs_cubed; coarse-N runge/mixture) are
-unconverged constructions, not genuine agreement.
+**`coeff_diff_vs_width.png` (sweep 1).** Two panels vs width: top = raw
+coefficient diff (`raw_l2` dotted, `raw_linf` solid), bottom = function diff
+(`fun_rel_l2` dotted, `fun_linf` solid).
+*Result:* the raw coefficient diff stays O(1) at every N, while the function diff
+falls to ~1e-12 as N grows for smooth targets (abs_cubed plateaus ~1e-7). Same
+geometry, same function -- different weights.
+
+**`coeff_diff_vs_nsamples.png` (sweep 2).** Same two panels, but vs `n_train`
+(color = N, target = sine).
+*Result:* every line is flat -- increasing the lstsq sample count from 256 to
+4096 changes neither the coefficient diff nor the function diff.
+
+### Why the coefficients are underdetermined (and why more data does not help)
+
+The readout solve `A beta = y` (`A = [Phi, 1]`) is rank-deficient: `rank(A) ~
+N+12` of `~N+120` columns, a ~110-dim null space at every width. The columns are
+near-collinear on `[-1,1]` -- adjacent `tanh` bumps overlap at large gamma, and
+the ~59 halo neurons per side saturate to near-constants on the domain -- so the
+features span only an ~N-dim space and ~110 weight combinations are invisible to
+the data. This is a property of the **columns (geometry)**, not the rows: adding
+samples scales all singular values by ~`sqrt(n_train)` without changing their
+spread, so rank and null space are unchanged. `coeff_diff_vs_nsamples.png`
+confirms this empirically (flat lines). It is fixed only by changing the geometry
+(smaller gamma, fewer/spread centers, no halo) or by regularization (which picks
+a representative, as min-norm lstsq already does) -- never by more data.
+
+### Note on the row-space measurement
+
+Getting `ratio_row` to read honestly required two choices, recorded in the code:
+include the bias (else exp's DC term -- in `c0` for QI, split between `v` and
+`bias` for lstsq -- fakes a ~2.5x disagreement), and use the 1e-11 SVD cutoff
+(the last decade of singular values carries spurious disagreement).
 
 ## Conclusions
 
