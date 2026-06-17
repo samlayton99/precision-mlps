@@ -31,7 +31,7 @@
 ## 2. The research question and the theory it rests on
 
 **Goal (CLAUDE.md, `future_experiments.md`):** close the gap between explicit construction (~1e-15)
-and gradient training (~1e-10). The papers (`papers/section3_rewrite.tex`, `main_paper.tex`) prove a
+and gradient training (~1e-10). The papers (`papers/QIs_workshop.pdf`, `papers/section3_rewrite.tex`) prove a
 one-hidden-layer `tanh` MLP *can represent* a machine-precision interpolant; the open question is
 whether an optimizer can *find* it.
 

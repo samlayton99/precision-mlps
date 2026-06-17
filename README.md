@@ -11,7 +11,10 @@ learn such functions through training rather than via the construction.
 - `docs/future_experiments.md` — the design spec / experiment roadmap.
 - `src/construction/README.md` — QI construction quick reference.
 - `CLAUDE.md` — research question, architecture map, and QI construction facts.
-- `papers/` — the underlying theory (LaTeX + PDF).
+- `papers/QIs_workshop.pdf` — the main paper. Section 3 (construction) is not yet
+  updated there; read `papers/section3_rewrite.tex` for the current Section 3 and
+  `papers/practical_implementation.tex` for the fp64/mpmath implementation details.
+- `docs/explanation.md` — conceptual walkthrough of the math and `qi_mpmath.py`.
 
 ## Setup
 
