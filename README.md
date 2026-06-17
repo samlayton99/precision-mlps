@@ -8,10 +8,9 @@ learn such functions through training rather than via the construction.
 
 ## Documentation
 
-- `docs/WALKTHROUGH.md` — repo orientation: what's where, how the code maps to
-  the theory, fidelity to the `continuous-mlps` reference, and experiment status.
 - `docs/future_experiments.md` — the design spec / experiment roadmap.
 - `src/construction/README.md` — QI construction quick reference.
+- `CLAUDE.md` — research question, architecture map, and QI construction facts.
 - `papers/` — the underlying theory (LaTeX + PDF).
 
 ## Setup

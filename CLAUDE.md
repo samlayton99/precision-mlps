@@ -14,7 +14,6 @@ Three violations in trained networks explain the gap:
 2. Use the additional repo 'continuous-mlps' (next door neighbor to this repo in the file structure) as inspiration or a resource when you need it (it is a correct implementation of the paper), but not as something to just copy exactly.
 3. read docs/future_experiments.md every time. This is our main design spec doc that I will be working with you through.
 4. When implementing new machinery or experiments, always write and clearly communicate to me the tests that verify your implementation actually matches the research (e.g. show me the QI construction reaches machine eps precision after being first built, etc.)
-5. docs/WALKTHROUGH.md is the repo orientation: what's where, how the code maps to the theory, fidelity to continuous-mlps, and current experiment status.
 
 ## Architecture
 
