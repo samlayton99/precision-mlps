@@ -38,11 +38,11 @@ def freeze_inner_layer(model: nn.Module) -> None:
 
 
 def freeze_gamma(model: nn.Module) -> None:
-    """Freeze only gamma (or log_gamma). Keep centers trainable."""
-    freeze_params(
-        model,
-        lambda name, _p: name.endswith("gamma") or name.endswith("log_gamma"),
-    )
+    """Freeze only gamma. Keep centers trainable.
+
+    The "gamma" suffix also matches GammaExpLinear's "log_gamma" parameter.
+    """
+    freeze_params(model, lambda name, _p: name.endswith("gamma"))
 
 
 def freeze_centers(model: nn.Module) -> None:

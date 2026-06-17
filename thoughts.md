@@ -28,3 +28,5 @@ Do manifolds/transformations exist that make the optimization mechanisms work ni
 What are the unique characteristics of the basin that could be used/engineered to draw the optimizer into? is there a risk of it landing in other similar basins without the same good solution?
 
 How does noise affect the construction solution basin? is noise a confounding variable? does it make it intractible?
+
+

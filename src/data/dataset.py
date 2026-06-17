@@ -1,7 +1,13 @@
 """Dataset construction from config.
 
 Eval points are always dense equispaced for consistent L_inf measurement.
-Noise applied only to training data.
+Noise is applied only to training data.
+
+Seed semantics (important when interpreting multi-seed runs): the seed only
+changes the data for ``sampling="uniform"`` and for the noise paths
+(x_noise_std / y_noise_std). For ``equispaced``, ``chebyshev`` and ``qi_grid``
+with no noise, the training data is identical across seeds, so any seed-to-seed
+variation comes from model initialization and training stochasticity, not data.
 """
 
 from __future__ import annotations

@@ -18,10 +18,13 @@ from typing import Optional
 
 @dataclass
 class ModelConfig:
-    """MLP architecture specification. Always float64."""
+    """MLP architecture specification. Always float64.
+
+    The activation is always tanh (QIMlp.forward hardcodes it), matching the
+    sech^2 = tanh' kernel the QI construction is built on.
+    """
     width: int = 64
     layer_type: str = "gamma_linear"    # "gamma_linear" | "gamma_exp" | "standard"
-    activation: str = "tanh"
 
 
 @dataclass
@@ -35,12 +38,11 @@ class ConstructionConfig:
     The cardinal coefficients c_j are cached to disk keyed by
     (lambda_star, Kc, N, precision, mp_dps) and are target-independent.
     """
-    enabled: bool = False
+    enabled: bool = False               # experiments use this to gate construction
     precision: str = "fp64"             # "fp64" | "mpmath"
     mp_dps: int = 30                    # mpmath decimal places (30 is enough)
     Kc: int = 160                       # Toeplitz half-width (matches continuous-mlps)
-    halo: Optional[int] = None          # None -> default_halo(N) = max(50, 0.4*N)
-    gamma: Optional[float] = None       # if None, computed as lambda_star / h
+    halo: Optional[int] = None          # None -> default_halo(N) = max(ceil(35/(2*lambda)), 0.4*N)
     lambda_star: Optional[float] = None # None -> 0.30 (fp64), 0.25 (mpmath)
     use_cache: bool = True              # cache c_j to disk
 

@@ -1,9 +1,13 @@
 """Target function registry for approximation experiments.
 
-6 categories: low_freq, high_freq, boundary_layer, mixed_scale, polynomial, rough.
+9 functions spanning the 6 target categories of the success criterion:
+low_freq (sine, cosine), high_freq (sine_8pi), boundary_layer (runge,
+tanh_steep), mixed_scale (sine_mixture), polynomial (exp, poly5), rough
+(abs_cubed).
 
-Each TargetFn provides fn (torch) and deriv (torch) for training/evaluation,
-plus fn_numpy and deriv_numpy for construction (mpmath needs numpy-compatible callables).
+The QI construction needs the analytic derivative g' (the kernel is
+sech^2 = tanh'), so every target supplies one. Each TargetFn provides fn/deriv
+(torch) for training/evaluation, plus fn_numpy/deriv_numpy for construction.
 
 Usage:
     target = get_target("sine")

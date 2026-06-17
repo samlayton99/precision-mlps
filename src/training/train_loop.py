@@ -97,11 +97,19 @@ def run_training(config: ExperimentConfig, model: nn.Module, dataset: Dataset,
             if scheduler is not None:
                 scheduler.step()
 
-            # Periodic readout re-solve
+            # Periodic readout re-solve (exact least-squares refit of the
+            # readout given the current inner layer). Skip when the readout is
+            # frozen -- re-solving would silently overwrite a parameter the user
+            # asked to hold fixed. Use the configured solver/penalty.
             rse = config.training.readout_solve_every
-            if rse > 0 and (global_step % rse == 0):
+            if (rse > 0 and global_step % rse == 0
+                    and model.readout.weight.requires_grad):
+                method = config.init.readout_solve
+                if method == "none":
+                    method = "lstsq"
                 initialize_with_readout_solve(
-                    model, x_train, y_train, method="lstsq",
+                    model, x_train, y_train,
+                    method=method, ridge_alpha=config.init.ridge_alpha,
                 )
 
             if global_step % eval_interval == 0:

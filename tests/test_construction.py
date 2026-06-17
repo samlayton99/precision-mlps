@@ -243,6 +243,30 @@ class TestReadout:
         assert np.allclose(v_lstsq, v_qr, atol=1e-10)
         assert np.allclose(v_lstsq, v_svd, atol=1e-10)
 
+    def test_svd_truncates_tiny_singular_values(self):
+        """The svd solver must drop near-zero singular values instead of
+        dividing by them (which amplifies roundoff into a huge solution).
+
+        Built from a controlled spectrum with one singular value at 1e-18,
+        far below the rcond floor. Truncated svd should match lstsq closely
+        and stay bounded; the un-truncated version blows up by ~1/s_min.
+        """
+        rng = np.random.default_rng(0)
+        U, _ = np.linalg.qr(rng.standard_normal((6, 3)))
+        V, _ = np.linalg.qr(rng.standard_normal((3, 3)))
+        s = np.array([1.0, 0.1, 1e-18])
+        Phi = U @ np.diag(s) @ V.T
+        v_true = np.array([1.0, -2.0, 0.5])
+        y = Phi @ v_true
+
+        v_svd, info = solve_readout(Phi, y, method="svd")
+        v_lstsq, _ = solve_readout(Phi, y, method="lstsq")
+
+        assert info["rank"] == 2, f"expected rank 2 after truncation, got {info['rank']}"
+        assert np.linalg.norm(v_svd) < 1e3, "solution blew up (no truncation)"
+        assert np.allclose(v_svd, v_lstsq, atol=1e-6)
+        assert info["residual_norm"] < 1e-8
+
     def test_solve_with_bias(self):
         np.random.seed(42)
         x = np.linspace(-1, 1, 200)
@@ -301,6 +325,37 @@ class TestFullPipeline:
 
         err = _linf(y_model, y_true)
         assert err < 1e-11, f"Model L_inf = {err:.3e}"
+
+    def test_gamma_exp_init_recovers_construction_gamma(self):
+        """gamma_exp model initialized from construction must recover the O(N)
+        construction gamma, not the O(1) dimensionless lambda*.
+
+        Regression test for the h-propagation trap: QIMlp does not forward an
+        explicit h to GammaExpLinear, so initialization must set the layer's h
+        to the construction grid spacing. Otherwise effective gamma collapses
+        to lambda* (O(1)) -- which would artificially manufacture violation #1.
+        """
+        target = get_target("sine")
+        N = 32
+        qi = construct_qi(target.fn_numpy, target.deriv_numpy, N=N, **QI_PARAMS)
+        width = len(qi.centers)
+
+        config = ModelConfig(width=width, layer_type="gamma_exp")
+        model = QIMlp(config)  # no explicit h -- must be set during init
+        initialize_from_construction(model, qi)
+
+        g = model.get_gamma()
+        assert torch.allclose(g, torch.full_like(g, qi.gamma)), (
+            f"effective gamma {float(g[0]):.4f} != construction gamma "
+            f"{qi.gamma:.4f} (h-propagation trap)"
+        )
+
+        # The fully initialized model must also reproduce the construction.
+        x_eval = torch.linspace(-1, 1, 501, dtype=torch.float64).unsqueeze(1)
+        with torch.no_grad():
+            y_model = model(x_eval).squeeze(1).numpy()
+        y_qi = evaluate_qi(qi, x_eval.squeeze(1).numpy())
+        assert _linf(y_model, y_qi) < 1e-13
 
     def test_readout_solve_matches_construction(self):
         """Solving readout from QI geometry gets close to construction precision."""

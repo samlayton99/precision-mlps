@@ -57,7 +57,15 @@ def build_scheduler(
     config: OptimizerStageConfig,
     total_steps: int,
 ) -> Optional[torch.optim.lr_scheduler.LRScheduler]:
-    """Build LR scheduler. Returns None if no schedule configured."""
+    """Build a cosine LR scheduler, or None if no schedule applies.
+
+    LBFGS is always excluded: it sets its own step size via a strong-Wolfe line
+    search, so cosine-annealing its lr (e.g. from 1.0 down to min_learning_rate)
+    fights the line search rather than helping. We skip it even when
+    use_cosine_schedule is left at its default True.
+    """
+    if config.name.lower() == "lbfgs":
+        return None
     if config.use_cosine_schedule and total_steps > 0:
         return torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer, T_max=total_steps, eta_min=config.min_learning_rate,

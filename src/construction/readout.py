@@ -25,12 +25,26 @@ def build_phi(x: np.ndarray, gamma: np.ndarray, centers: np.ndarray) -> np.ndarr
 
 
 def solve_readout(Phi: np.ndarray, y: np.ndarray, method: str = "lstsq",
-                  ridge_alpha: float = 0.0) -> tuple[np.ndarray, dict]:
-    """Solve Phi @ v = y. Returns (v, info_dict)."""
+                  ridge_alpha: float = 0.0,
+                  rcond: float | None = None) -> tuple[np.ndarray, dict]:
+    """Solve Phi @ v = y for the readout weights. Returns (v, info_dict).
+
+    The QI feature matrix is deliberately ill-conditioned at small lambda, so
+    the truncating solvers ("lstsq", "svd") are the safe choices: they discard
+    singular values below the rcond floor instead of dividing by ~0.
+
+    Args:
+        method:      "lstsq" | "qr" | "svd" | "ridge".
+        ridge_alpha: Tikhonov penalty (ridge only).
+        rcond:       Relative singular-value cutoff. None lets numpy/this code
+                     pick a sane default (~1e-13 * s_max).
+    """
     y = np.asarray(y, dtype=np.float64).ravel()
+    # Default truncation floor for the SVD path (matches continuous-mlps' rcond).
+    svd_rcond = 1e-13 if rcond is None else rcond
 
     if method == "lstsq":
-        result = np.linalg.lstsq(Phi, y, rcond=None)
+        result = np.linalg.lstsq(Phi, y, rcond=rcond)
         v = result[0]
         info = {"residual_norm": float(np.linalg.norm(Phi @ v - y)),
                 "rank": int(result[2]) if len(result) > 2 else Phi.shape[1]}
@@ -40,10 +54,17 @@ def solve_readout(Phi: np.ndarray, y: np.ndarray, method: str = "lstsq",
         info = {"residual_norm": float(np.linalg.norm(Phi @ v - y))}
     elif method == "svd":
         U, s, Vt = np.linalg.svd(Phi, full_matrices=False)
-        v = Vt.T @ (np.diag(1.0 / s) @ (U.T @ y))
+        # Truncate small singular values: keep only s_i > rcond * s_max, so we
+        # never amplify roundoff by dividing by a near-zero singular value.
+        smax = s[0] if s.size else 0.0
+        keep = s > svd_rcond * smax
+        s_inv = np.where(keep, 1.0 / np.where(keep, s, 1.0), 0.0)
+        v = Vt.T @ (s_inv * (U.T @ y))
+        s_kept = s[keep]
         info = {"residual_norm": float(np.linalg.norm(Phi @ v - y)),
-                "cond": float(s[0] / s[-1]) if s[-1] > 0 else float("inf"),
-                "smin": float(s[-1]), "smax": float(s[0])}
+                "rank": int(keep.sum()),
+                "cond": float(s_kept[0] / s_kept[-1]) if s_kept.size else float("inf"),
+                "smin": float(s[-1]), "smax": float(smax)}
     elif method == "ridge":
         # (Phi^T Phi + alpha I) v = Phi^T y
         A = Phi.T @ Phi + ridge_alpha * np.eye(Phi.shape[1])

@@ -10,6 +10,8 @@ All parameter writes use torch.no_grad().
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -54,7 +56,13 @@ def initialize_from_construction(
             if isinstance(inner, GammaLinear):
                 inner.gamma.data.fill_(qi_result.gamma)
             elif isinstance(inner, GammaExpLinear):
-                import math
+                # GammaExpLinear computes effective gamma = exp(log_gamma) / h.
+                # To reproduce the construction's gamma = lambda* / h (which grows
+                # O(N)), the layer's h MUST equal the construction grid spacing.
+                # QIMlp does not forward h to the inner layer, so set it here --
+                # otherwise the default h=1.0 collapses gamma to lambda* (O(1)),
+                # which would artificially manufacture violation #1.
+                inner.h = qi_result.h
                 inner.log_gamma.data.fill_(math.log(qi_result.lambda_val))
 
         if construct_centers:

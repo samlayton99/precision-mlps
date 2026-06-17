@@ -30,15 +30,27 @@ class MetricsCollector:
         self._dataset = dataset
         self._history: dict[str, list] = defaultdict(list)
         self._rank_tol = rank_tol
-        # Default h for lambda reporting
-        if h is None:
-            a, b = float(dataset.x_eval.min()), float(dataset.x_eval.max())
-            # Use model width to recover h = (b - a) / N
-            width = getattr(model, "config", None)
-            N = width.width if width is not None else dataset.x_train.shape[0]
-            self._h = (b - a) / max(N, 1)
-        else:
-            self._h = h
+        # h is only used to report the dimensionless lambda = gamma * h.
+        self._h = h if h is not None else self._infer_h(model, dataset)
+
+    @staticmethod
+    def _infer_h(model: nn.Module, dataset: Dataset) -> float:
+        """Infer the grid spacing h for lambda = gamma * h reporting.
+
+        Prefer the actual spacing between adjacent centers (exact for the QI
+        uniform grid, regardless of halo), since the construction defines
+        h = 2/N with centers exactly h apart. Fall back to domain-width / width
+        only when centers are unavailable.
+        """
+        if hasattr(model, "get_centers"):
+            c = model.get_centers().detach().reshape(-1)
+            if c.numel() >= 2:
+                diffs = torch.diff(torch.sort(c).values)
+                return float(diffs.median())
+        a, b = float(dataset.x_eval.min()), float(dataset.x_eval.max())
+        cfg = getattr(model, "config", None)
+        width = getattr(cfg, "width", None) or dataset.x_train.shape[0]
+        return (b - a) / max(width, 1)
 
     @torch.no_grad()
     def collect(self, step: int, train_loss: float | None = None) -> dict[str, float]:

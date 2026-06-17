@@ -99,6 +99,33 @@ def test_build_scheduler():
     assert build_scheduler(opt2, stage2, 100) is None
 
 
+def test_scheduler_skips_lbfgs():
+    """LBFGS uses a line search; its lr must NOT be cosine-annealed even when
+    use_cosine_schedule is left at its default True."""
+    cfg = ModelConfig(width=4, layer_type="gamma_linear")
+    m = QIMlp(cfg)
+    stage = OptimizerStageConfig(name="lbfgs", learning_rate=1.0,
+                                 use_cosine_schedule=True)
+    opt = build_optimizer(stage, m)
+    assert build_scheduler(opt, stage, total_steps=100) is None
+
+
+def test_readout_resolve_respects_freeze():
+    """A frozen readout must not be silently overwritten by the periodic
+    readout re-solve. Re-solving only makes sense for a trainable readout."""
+    torch.manual_seed(0)
+    cfg = _tiny_cfg(steps_adam=10, width=16)
+    cfg.training.readout_solve_every = 5
+    ds = build_dataset(cfg, seed=0)
+    m = QIMlp(cfg.model)
+    _init_model(m, 16)
+    m.readout.weight.requires_grad_(False)
+    m.readout.bias.requires_grad_(False)
+    w0 = m.readout.weight.detach().clone()
+    run_training(cfg, m, ds)
+    assert torch.allclose(m.readout.weight, w0), "frozen readout was mutated by re-solve"
+
+
 def test_train_step_reduces_loss():
     torch.manual_seed(0)
     cfg = ModelConfig(width=16, layer_type="gamma_linear")
@@ -122,6 +149,24 @@ def test_metrics_collector_keys():
     collector = MetricsCollector(m, ds)
     metrics = collector.collect(step=0)
     assert EXPECTED_METRIC_KEYS.issubset(set(metrics.keys()))
+
+
+def test_metrics_h_inferred_from_center_spacing():
+    """lambda = gamma*h must use the actual grid spacing (distance between
+    adjacent centers), not (domain width / n_neurons). For a uniform-grid model
+    this makes reported lambda match the construction's lambda* exactly."""
+    torch.manual_seed(0)
+    cfg = _tiny_cfg(steps_adam=1, width=8)
+    ds = build_dataset(cfg, seed=0)
+    m = QIMlp(cfg.model)
+    with torch.no_grad():
+        m.inner_layer.gamma.data.fill_(14.0)
+        m.inner_layer.centers.data.copy_(torch.linspace(-1, 1, 8).reshape(1, 8))
+        m.readout.weight.data.normal_(0.0, 0.1)
+    collector = MetricsCollector(m, ds)
+    metrics = collector.collect(step=0)
+    h = 2.0 / 7.0  # spacing of linspace(-1, 1, 8), not 2/8
+    assert metrics["lambda_mean"] == pytest.approx(14.0 * h, rel=1e-9)
 
 
 def test_compute_eval_metrics():
