@@ -1,0 +1,21 @@
+# Experiment 0D: optimal lambda vs target frequency, QI vs lstsq.
+#
+# Tests whether the optimal bandwidth lambda depends on the target frequency,
+# separately for the QI construction and the lstsq readout, on a frequency
+# ladder sin(k*pi*x). fp64 throughout (fast), fine lambda grid.
+#
+# Hypothesis to check (NOT a foregone conclusion):
+#   - QI optimum is frequency-independent (c_j are target-independent).
+#   - lstsq optimum rises with frequency (data-adaptive; Nyquist-like).
+
+name: lambda_frequency
+precision: fp64
+
+frequencies: [1, 2, 4, 8, 16]   # sin(k*pi*x)
+widths: [128, 256]
+lambda_min: 0.02
+lambda_max: 0.40
+lambda_step: 0.01
+
+n_eval: 4096
+Kc: 160

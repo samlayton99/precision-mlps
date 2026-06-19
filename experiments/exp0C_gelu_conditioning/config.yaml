@@ -1,0 +1,25 @@
+# Experiment 0C: GELU vs tanh feature-matrix conditioning.
+#
+# Step 1: GELU lstsq on sin(pi x); sweep lambda in [0.1, 0.5]; pick the best.
+# Step 2: at the best lambda, compare GELU vs tanh Phi conditioning (cond, rank,
+#         null) across widths, plus per-function lstsq fit and eval error.
+# fp64 throughout, tanh overlaid for contrast. The QI-dependent metrics from
+# exp0B are dropped (GELU has no QI construction; its derivative is not a bump).
+
+name: gelu_conditioning
+precision: fp64
+
+step1:
+  target: sin_pi_x          # sin(pi*x)
+  N: 128
+  lambda_min: 0.1
+  lambda_max: 0.5
+  lambda_steps: 21
+
+step2:
+  widths: [32, 64, 96, 128]
+  targets: [sine, sine_8pi, runge, sine_mixture, exp, abs_cubed]
+  # lambda is taken from step 1's best (GELU eval L_inf minimizer).
+
+n_eval: 2048
+Kc: 160
