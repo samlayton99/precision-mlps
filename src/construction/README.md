@@ -50,10 +50,10 @@ Cached at `results/qi_cache/` by default.
 ## Per-experiment recommendations
 
 Use **mpmath** when the construction is a fixed reference:
-- exp02 (basin stability), exp03 (geometry ladder), exp04 (Hessian).
+- exp12 (geometry ladder), exp13 (solution basins).
 
 Use **fp64** everywhere else:
-- training runs, sweeps, initialization (exp01, exp05-09).
+- training runs, sweeps, initialization (all other experiments).
 
 ## Files
 

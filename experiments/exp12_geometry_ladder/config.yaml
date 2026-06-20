@@ -1,0 +1,19 @@
+# Experiment 12: Geometry Ladder -- Phase 1 (simplified).
+# Frozen correct QI geometry; train only the readout, compare Adam to the
+# lstsq global optimum. Levels 4-7 (relaxing the geometry) are future work.
+# All knobs live in run.py (TARGETS, WIDTHS, SEEDS, schedule); this file is a
+# summary only.
+
+name: geometry_ladder
+seeds: [0, 1, 2]
+widths: [32, 64, 128, 256]
+target: sine
+
+geometry:
+  lambda_star: 0.25        # frozen uniform grid + halo, gamma = lambda*/h
+
+training:
+  optimizer: adam
+  peak_lr: 1.0e-1          # short warmup -> peak -> cosine decay
+  total_steps: 50000
+  baseline: lstsq          # exact global-optimum reference

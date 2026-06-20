@@ -24,6 +24,24 @@ Success criterion:
 
 ---
 
+## Status and current numbering
+
+This doc's section numbers (0-9) are the original roadmap. The experiments have since been reorganized into checkpoints with new folder numbers. Mapping of roadmap sections to current `experiments/` folders:
+
+- Section 0 (numerics) -> `exp01_numerics_sanity` (run).
+- Section 1 (lambda tradeoff) -> `exp02_lambda_tradeoff` (run). Spun off: `exp03_qi_vs_lstsq`, `exp04_coeff_nullspace`, `exp05_activation_conditioning`, `exp06_lambda_vs_frequency` (Checkpoint 1, all run).
+- Checkpoint 2 (1D: what controls precision) -> `exp07_center_geometry`, `exp08_sampling_and_noise`, `exp09_scaling_laws` (all run).
+- Checkpoint 3 (2D ridge / Radon) -> `exp10_radon_hex2d`, `exp11_geometry_zoo_2d` (run).
+- Section 3 (geometry ladder) -> `exp12_geometry_ladder` (Phase 1 run; simplified, see below).
+- Sections 2 + 4 (basin stability + Hessian) -> **merged** into `exp13_solution_basins` (stub).
+- Section 8 (reparameterization) -> `exp14_reparameterization` (stub).
+- Section 9 (VarPro) -> `exp15_varpro` (stub).
+- **Dropped** (superseded by completed work): Section 5 (Phi conditioning) -- conditioning was measured in exp04/exp05/exp07 and shown not to discriminate precision; Section 6 (objective mismatch) -- lstsq (the MSE-optimal readout) already reaches the floor on the right geometry, so the objective is not the barrier; Section 7 (noise sensitivity) -- y-noise / x-noise / the 1/sqrt(n) law are done in exp08 and exp09.
+
+The remaining roadmap text below is the original design spec, kept for the open optimizer-arc experiments (exp13/exp14/exp15).
+
+---
+
 ## 0. Numerics Sanity Checks
 
 **Hypothesis:** Some of the observed precision floor may be numerical rather than optimization-limited. Before attributing failures to training, we need to verify that linear solves, function evaluation, and tolerance choices are not the bottleneck.
@@ -75,6 +93,8 @@ Additionally, what can we learn about the Basin? what are its properties?
 ---
 
 ## 3. Geometry Ladder Cascade
+
+**Status:** implemented as `exp12_geometry_ladder`, simplified. Phase 1 covers level 3 (frozen correct geometry, readout trained from random init) and compares Adam against the lstsq global-optimum baseline across targets and widths. The original per-cell SGD divergence-threshold tuning, the 200k-step budget, the lr-sweep side study, and the full violation-diagnostic SVDs were removed as over-engineering. Levels 4-7 (relaxing the geometry) remain future work.
 
 **Hypothesis:** The inner-layer geometry (gamma, centers) is the hard part. Starting from the full construction and progressively relaxing constraints reveals exactly where precision is lost.
 

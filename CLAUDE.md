@@ -10,7 +10,7 @@ Three violations in trained networks explain the gap:
 3. **Rank saturation**: features collapse instead of uniform utilization
 
 ## How to Succeed
-1. Always get context of the research! The papers/theory guiding the experiments are in the /papers/ folder. The main paper is `papers/QIs_workshop.pdf` ("Constructing Machine-Precision Neural Networks with Quasi-Interpolants"). NOTE: Section 3 (the construction) is NOT yet updated in that PDF -- read `papers/section3_rewrite.tex` for the current construction, and `papers/practical_implementation.tex` for the fp64/mpmath implementation details. We are trying to complete this paper by finding an optimization strategy.
+1. Always get context of the research! The papers/theory guiding the experiments are in the /papers/ folder. The main paper is `papers/QIs_workshop.pdf` ("Constructing Machine-Precision Neural Networks with Quasi-Interpolants"). NOTE: Section 3 (the construction) is NOT yet updated in that PDF -- read `papers/section3_rewrite.pdf` IN ADDITION to `papers/QIs_workshop.pdf`, for the current construction (do not just read the rewrite on its own, it is only a single section rewritten), and `papers/practical_implementation.tex` for the fp64/mpmath implementation details. We are trying to complete this paper by finding an optimization strategy.
 2. Use the additional repo 'continuous-mlps' (next door neighbor to this repo in the file structure) as inspiration or a resource when you need it (it is a correct implementation of the paper), but not as something to just copy exactly.
 3. read docs/future_experiments.md every time. This is our main design spec doc that I will be working with you through.
 4. When implementing new machinery or experiments, always write and clearly communicate to me the tests that verify your implementation actually matches the research (e.g. show me the QI construction reaches machine eps precision after being first built, etc.)
@@ -42,16 +42,25 @@ src/                          Core library (PyTorch, all computation in float64)
     metrics.py                MetricsCollector: uniform metric set across experiments
 
 experiments/                  One folder per experiment, each with config.yaml + run.py
-  exp00_sanity/               Numerics sanity checks
-  exp01_lambda_tradeoff/      U-shaped error curve in lambda
-  exp02_basin_stability/      QI basin width and recovery
-  exp03_geometry_ladder/      Progressive constraint relaxation (7 levels)
-  exp04_hessian/              Hessian eigenspectrum comparison
-  exp05_phi_conditioning/     Feature matrix conditioning
-  exp06_objective_mismatch/   Loss function comparison
-  exp07_noise_sensitivity/    Y-noise and X-noise robustness
-  exp08_reparameterization/   Log-gamma, global bandwidth, dimensionless centers
-  exp09_varpro/               Variable Projection reduced objective
+  # Checkpoint 1 -- the 1D readout on a fixed geometry
+  exp01_numerics_sanity/         Numerics sanity checks
+  exp02_lambda_tradeoff/         U-shaped error curve in lambda
+  exp03_qi_vs_lstsq/             QI construction vs least-squares readout
+  exp04_coeff_nullspace/         Coefficient closeness / readout null space
+  exp05_activation_conditioning/ tanh vs GELU null-space regimes
+  exp06_lambda_vs_frequency/     Optimal lambda vs target frequency/width
+  # Checkpoint 2 -- what controls 1D precision
+  exp07_center_geometry/         Center-placement comparison (uniform vs others)
+  exp08_sampling_and_noise/      Centers vs samples; y-noise; 1/sqrt(n) law
+  exp09_scaling_laws/            Width + data scaling, multi-activation
+  # Checkpoint 3 -- 2D ridge / Radon geometry
+  exp10_radon_hex2d/             Hex tangent-line geometry + lstsq
+  exp11_geometry_zoo_2d/         Six 2D ridge geometries head-to-head
+  # Future -- the optimizer arc (mostly stubs)
+  exp12_geometry_ladder/         Optimizers on frozen geometry (Phase 1 run)
+  exp13_solution_basins/         Landscape near the optimum: Hessian + basin (stub)
+  exp14_reparameterization/      Log-gamma, global bandwidth, dimensionless centers (stub)
+  exp15_varpro/                  Variable Projection reduced objective (stub)
 
 tests/                        Unit tests
 results/                      Experiment results output
@@ -71,7 +80,7 @@ The QI construction in `src/construction/qi_mpmath.py` has two precision regimes
 `results/qi_cache/`, keyed by `(lambda_star, Kc, N, precision, mp_dps)`.
 Second call at same config completes in ~0.25s even for mpmath.
 
-**Use mpmath for baseline experiments (exp02 basin, exp03 ladder, exp04 Hessian)**
+**Use mpmath for baseline experiments (exp12 geometry ladder, exp13 solution basins)**
 where QI is a fixed reference point. **Use fp64 everywhere else**
 (training runs, sweeps, initialization). Both paths produce valid fp64 coefficients.
 
@@ -105,7 +114,7 @@ once and stored as a fp64 constant.
 - **Multi-stage training.** Adam -> LBFGS is the default. LBFGS uses PyTorch's built-in closure pattern.
 - **Analysis is per-experiment.** No pre-built analysis module. Each experiment's `run.py` implements its own analysis using PyTorch directly.
 - **Results format.** JSONL for metrics. Config YAML saved alongside.
-- **Experiment writeups.** Every experiment gets its OWN results file at `results/<exp>/<exp>_results.md` (e.g. `results/exp0B_coeff_diff/exp0B_results.md`) -- one per experiment, never a shared/global results doc. `results/` is gitignored EXCEPT `*_results.md` (see `.gitignore`), so writeups are version-controlled while data/figures are not. Each writeup must record: (1) the exact experiments the code is set up to run -- sweeps, parameters, metric definitions, read from `run.py`/`config.yaml`; and (2) the results, pointing to the data file and figures that hold them, with a "how to read" passage for each figure. **Conclusions are special:** a statement may go in the Conclusions section ONLY if it is plainly obvious from the data, OR it was proposed, discussed, and explicitly approved by Sam. Do not write conclusions before Sam has reviewed the numbers and signed off; keep proposed-but-unapproved conclusions out (or clearly marked as pending). Write conservatively: state only what the data shows, and flag any metric that is not independent evidence.
+- **Experiment writeups.** Every experiment gets its OWN results file at `results/<exp>/<exp_id>_results.md` (e.g. `results/exp04_coeff_nullspace/exp04_results.md`) -- one per experiment, never a shared/global results doc. `results/` is gitignored EXCEPT `*_results.md` (see `.gitignore`), so writeups are version-controlled while data/figures are not. Each writeup must record: (1) the exact experiments the code is set up to run -- sweeps, parameters, metric definitions, read from `run.py`/`config.yaml`; and (2) the results, pointing to the data file and figures that hold them, with a "how to read" passage for each figure. **Conclusions are special:** a statement may go in the Conclusions section ONLY if it is plainly obvious from the data, OR it was proposed, discussed, and explicitly approved by Sam. Do not write conclusions before Sam has reviewed the numbers and signed off; keep proposed-but-unapproved conclusions out (or clearly marked as pending). Write conservatively: state only what the data shows, and flag any metric that is not independent evidence.
 - **Research-summary formatting.** Write all math in research summaries/writeups in LaTeX (`$...$` inline, `$$...$$` display, KaTeX-safe -- no `\*`, no `\emph`). Do NOT hard-wrap prose: write each paragraph as a single line and let markdown/the editor wrap it. Manual line breaks mid-paragraph (short fixed-width lines) make the docs hard to read and edit.
 
 ## Experiment Workflow
@@ -120,7 +129,7 @@ from src.construction import construct_qi, initialize_from_construction
 from src.models.freeze import freeze_gamma, freeze_centers
 from src.training import run_training
 
-config = load_config("experiments/exp01/config.yaml")
+config = load_config("experiments/exp02_lambda_tradeoff/config.yaml")
 for cfg in expand_sweep(config):
     for seed in cfg.seeds:
         for width in cfg.widths:

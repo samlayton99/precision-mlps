@@ -1,0 +1,55 @@
+# Experiment 14: scaling laws for the fixed-geometry lstsq readout (1D).
+#
+# Fixed 1D QI geometry (uniform centers + halo, gamma = lambda/h), readout by
+# least squares. Three figures, each a 3 x 2 panel grid (rows = activations,
+# left col = relative L2, right col = L_inf) with one line per target function:
+#
+#   1. error_vs_width.png   -- x = grid size N (fine logspace 16..128),
+#                              overdetermined clean fit; best over a lambda sweep.
+#                              Shows the size/resolution scaling law.
+#   2. error_vs_data_clean.png -- x = number of training points n_data
+#                              (fine logspace, starts UNDERdetermined, ends
+#                              OVERdetermined), fixed N and lambda, clean data.
+#   3. error_vs_data_noise.png -- same as (2) but with fixed Gaussian y-noise
+#                              std = 1e-4, averaged over seeds. Shows the
+#                              statistical sigma * n^-1/2 data scaling law.
+#
+# NOTE: the grid (targets, activations, widths, sweeps) is defined in run.py,
+# not loaded from here -- this file documents the configuration. Edit run.py
+# constants to change.
+
+name: scaling_laws
+
+# Geometry (shared)
+halo_lambda: 0.25         # fixes the halo / span / h for each N (gamma swept separately)
+precision: fp64
+rcond: 1.0e-13            # null-space / rank cutoff (relative to s_max)
+
+# Targets: one representative per success-criterion category (6 total)
+targets: [sine, sine_8pi, runge, sine_mixture, exp, abs_cubed]
+# Activations (3): the QI kernel (tanh) + two contrasts
+activations: [tanh, gelu, relu]
+
+# --- Figure 1: width / size scaling ---
+width_n_min: 16
+width_n_max: 1024         # extended size axis
+width_n_points: 32        # fine logspace between n_min and n_max
+width_lambda_grid: [0.05, 0.08, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.70, 1.00]
+width_n_train: 4001       # prime, overdetermined for W up to ~1845 (N=1024)
+width_n_eval: 8009        # prime, misaligned with the train grid
+width_floor_line: 5.0e-14 # black reference line drawn on every width panel
+
+# --- Figures 2 and 3: data scaling (fixed geometry) ---
+data_N: 128               # fixed grid size -> width W ~ 269 -> ~270 unknowns
+data_lambda: 0.25         # fixed bandwidth (viable regime, uniform centers)
+data_n_eval: 8009         # prime eval grid
+# Figure 2 (clean): zoom on the under- -> over-determined transition around W+1.
+data_n_min: 16            # underdetermined (< W)
+data_n_max: 512           # crosses the W+1 threshold into the overdetermined regime
+data_n_points: 30         # fine logspace
+# Figure 3 (noisy): the statistical regime lives far out, so extend the axis.
+noise_n_min: 16
+noise_n_max: 500000       # ~4.5 decades; the sigma * n^-1/2 descent needs the range
+noise_n_points: 42
+noise_std: 1.0e-4         # fixed Gaussian y-noise for figure 3
+noise_seeds: [0, 1, 2]

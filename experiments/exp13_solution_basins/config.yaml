@@ -1,0 +1,16 @@
+# Experiment 13: Solution basins -- landscape near the optimal solution.
+# Merges basin stability + Hessian landscape into one study.
+
+name: solution_basins
+seeds: [0, 1, 2]
+widths: [32, 64, 128, 256]
+
+target: sine
+
+construction:
+  enabled: true        # QI reference solution (use mpmath for the exact baseline)
+
+# Probes are defined in run.py:
+# - Hessian blocks: full vs readout-only vs reduced (geometry-only)
+# - directional + Hessian-eigenvector perturbation -> recovery
+# - neuron-matched path interpolation QI <-> trained

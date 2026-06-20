@@ -1,0 +1,25 @@
+# Experiment 12: randomness and noise in the lstsq readout (1D, tanh).
+#
+# Overdetermined fp64 least squares: W neurons < n_train < n_eval, with n_train
+# and n_eval prime so the uniform train/eval grids do not align. Two figures:
+# (1) center geometry x sample type (clean); (2) uniform centers with x-noise
+# (random samples) and/or y-noise. NOTE: the grid is defined in run.py.
+
+name: noise_perturbation
+
+target: sine
+base_N: [32, 64, 128, 256]   # uniform grid sizes -> width W (centers), span, h
+halo_lambda: 0.25
+lambda_grid: [0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.70, 1.00]
+seeds: [0, 1, 2]             # for stochastic conditions (random centers/samples/noise)
+
+n_train: 1031               # prime; > max width, overdetermined
+n_eval: 7919                # prime; ~7.7x n_train, misaligned with the train grid
+y_noise_std: 1.0e-3         # Gaussian noise added to y in the "noisy" conditions
+precision: fp64
+
+# figure 3: sample-count scaling at fixed N, one line per y-noise level
+ss_N: 64                    # fixed width
+ss_lambda: 0.25             # fixed bandwidth (viable regime, uniform centers)
+ss_sample_counts: [256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072]
+ss_noise_levels: [0.0, 1.0e-8, 1.0e-7, 1.0e-6, 1.0e-5, 1.0e-4, 1.0e-3, 1.0e-2]

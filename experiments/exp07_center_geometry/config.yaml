@@ -1,0 +1,25 @@
+# Experiment 11: 1D center-geometry comparison (lstsq readout, tanh).
+#
+# Four center geometries solved by the same fp64 least-squares readout, sharing
+# gamma = lambda/h at each swept lambda, on the same target. Only center
+# placement differs. NOTE: the grid is defined in run.py constants, not loaded
+# from here -- this file documents the configuration.
+
+name: geometry_comparison
+
+target: sine                 # uniform geometry reaches ~1e-13 on this in fp64
+base_N: [32, 64, 128, 256]   # uniform grid sizes -> set total width W, span, h
+halo_lambda: 0.25            # reference lambda for the (structural) halo size
+lambda_grid: [0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.70, 1.00]
+seeds: [0, 1, 2]             # stochastic geometries (random, clustered, trained)
+n_train: 1024
+n_eval: 4096
+precision: fp64              # readout solve precision (mpmath: future swap)
+
+geometries: [uniform, random, clustered, trained, reg_clustered]
+nn_steps: 4000              # Adam steps for the trained-geometry net
+nn_lr: 1.0e-3
+
+# reg_clustered: regular grid broken into geometric clusters
+cluster_size: 8             # points per cluster
+cluster_ratio: 0.75         # geometric compression (1 = uniform, smaller = tighter)
