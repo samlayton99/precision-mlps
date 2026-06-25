@@ -1,14 +1,13 @@
-"""Render the 2D target functions of exp10 and exp11 as 3D surfaces over the
-unit disk, with the disk highlighted and the actual training sample points shown.
+"""Render the 2D target functions of expE01 (geometry zoo) as 3D surfaces over
+the unit disk, with the disk highlighted and the actual training sample points shown.
 
-Sample points are the exact training set used by both experiments:
+Sample points are the exact training set used by the experiment:
     disk_uniform(8000, radius=1.0, seed=0)
 Targets and definitions come straight from src/data/targets2d.py, so what is
 plotted is what is fit.
 
 Outputs:
-    results/exp10_radon_hex2d/targets_3d.png   (6 targets)
-    results/exp11_geometry_zoo_2d/targets_3d.png (4 targets)
+    results/checkpoint_E_2d/expE01_geometry_zoo_2d/targets_3d.png (4 targets)
 
 Run: ~/.venvs/precisionMLPs/bin/python experiments/_viz_targets_3d.py
 """
@@ -131,19 +130,12 @@ def render(targets, ncols, out_path, suptitle):
 
 
 def main():
-    # exp10: 6 targets
-    exp10_targets = ["sine2d", "sine2d_hi", "gauss_bump", "runge2d", "mixed2d", "planewave"]
+    # expE01 geometry zoo: 4 targets
+    expE01_targets = ["gauss_bump", "runge2d", "sine2d", "mixed2d"]
     render(
-        exp10_targets, ncols=3,
-        out_path=os.path.join(ROOT, "results", "exp10_radon_hex2d", "targets_3d.png"),
-        suptitle="exp10 -- 2D targets over the unit disk (with training samples)",
-    )
-    # exp11: 4 targets
-    exp13_targets = ["gauss_bump", "runge2d", "sine2d", "mixed2d"]
-    render(
-        exp13_targets, ncols=2,
-        out_path=os.path.join(ROOT, "results", "exp11_geometry_zoo_2d", "targets_3d.png"),
-        suptitle="exp11 -- 2D targets over the unit disk (with training samples)",
+        expE01_targets, ncols=2,
+        out_path=os.path.join(ROOT, "results", "checkpoint_E_2d", "expE01_geometry_zoo_2d", "targets_3d.png"),
+        suptitle="expE01 -- 2D targets over the unit disk (with training samples)",
     )
 
 

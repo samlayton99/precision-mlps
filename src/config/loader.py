@@ -1,7 +1,7 @@
 """YAML config loading and sweep expansion.
 
 Usage:
-    config = load_config("experiments/exp02/config.yaml")
+    config = load_config("experiments/expC01_lambda_tradeoff/config.yaml")
     configs = expand_sweep(config)
 """
 

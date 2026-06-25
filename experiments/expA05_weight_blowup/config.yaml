@@ -1,0 +1,12 @@
+# expA05 weight-blowup study.
+# Parameters are documented here but run.py is self-contained (mirrors expA02).
+# Compares the readout-weight NORM of the QI construction vs the fp64 lstsq
+# (min-norm) solve on the IDENTICAL geometry, swept over width N at fixed lambda.
+name: expA05_weight_blowup
+lambda_star: 0.25          # fixed; both QI and lstsq are fp64 here
+N_min: 32
+N_max: 512
+N_points: 20               # log-spaced (deduped to unique ints)
+targets: [sine, runge, exp, sine_mixture]
+Kc: 160
+n_eval: 2048

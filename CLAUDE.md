@@ -41,29 +41,34 @@ src/                          Core library (PyTorch, all computation in float64)
     train_loop.py             Multi-stage training orchestration
     metrics.py                MetricsCollector: uniform metric set across experiments
 
-experiments/                  One folder per experiment, each with config.yaml + run.py
-  # Checkpoint 1 -- the 1D readout on a fixed geometry
-  exp01_numerics_sanity/         Numerics sanity checks
-  exp02_lambda_tradeoff/         U-shaped error curve in lambda
-  exp03_qi_vs_lstsq/             QI construction vs least-squares readout
-  exp04_coeff_nullspace/         Coefficient closeness / readout null space
-  exp05_activation_conditioning/ tanh vs GELU null-space regimes
-  exp06_lambda_vs_frequency/     Optimal lambda vs target frequency/width
-  # Checkpoint 2 -- what controls 1D precision
-  exp07_center_geometry/         Center-placement comparison (uniform vs others)
-  exp08_sampling_and_noise/      Centers vs samples; y-noise; 1/sqrt(n) law
-  exp09_scaling_laws/            Width + data scaling, multi-activation
-  # Checkpoint 3 -- 2D ridge / Radon geometry
-  exp10_radon_hex2d/             Hex tangent-line geometry + lstsq
-  exp11_geometry_zoo_2d/         Six 2D ridge geometries head-to-head
-  # Future -- the optimizer arc (mostly stubs)
-  exp12_geometry_ladder/         Optimizers on frozen geometry (Phase 1 run)
-  exp13_solution_basins/         Landscape near the optimum: Hessian + basin (stub)
-  exp14_reparameterization/      Log-gamma, global bandwidth, dimensionless centers (stub)
-  exp15_varpro/                  Variable Projection reduced objective (stub)
+experiments/                  One FLAT folder per experiment (expXNN_name), each with config.yaml + run.py.
+                              Flat (not nested under checkpoints) because run.py uses REPO_ROOT = parents[2].
+  # Checkpoint A -- numerical validation, method justification
+  expA01_numerics_sanity/        Numerics sanity checks
+  expA02_qi_vs_lstsq/            QI construction vs least-squares readout (lstsq is superior)
+  expA03_coeff_nullspace/        Coefficient closeness / readout null space
+  expA04_activation_conditioning/ tanh O(1) vs GELU O(N) null-space regimes
+  # Checkpoint B -- scaling laws + noise robustness
+  expB01_sampling_and_noise/     Centers vs samples; y-noise; 1/sqrt(n) law
+  expB02_scaling_laws/           Width + data scaling, multi-activation (linear-then-floor)
+  # Checkpoint C -- how much the geometry matters
+  expC01_lambda_tradeoff/        U-shaped error curve in lambda (QI + lstsq)
+  expC02_lambda_vs_frequency/    Optimal lambda constant across frequency
+  expC03_lambda_basin/           Robust basin: lambda* ~ 0.25, gamma*/N ~ 0.10
+  expC04_center_geometry/        Center-placement comparison (uniform vs others)
+  expC05_geometry_interpolation/ gamma/weight/bias coupling; reparam argument
+  # Checkpoint D -- can optimizers find the geometry
+  expD01_geometry_ladder/        Adam on frozen geometry stalls; lstsq solves (Phase 1)
+  expD02_adam_geometry/          Init x training-regime cube (QI-init + refit wins)
+  expD03_reparameterization/     Log-gamma / dimensionless coordinates (stub, live future)
+  expD04_varpro/                 Variable Projection reduced objective (stub, future)
+  exp13_solution_basins/         Hessian / basin landscape (stub, DEPRIORITIZED -- curvature ruled out)
+  # Checkpoint E -- extend to 2D
+  expE01_geometry_zoo_2d/        Six 2D ridge geometries head-to-head (hex folded in; ex-exp11)
 
 tests/                        Unit tests
-results/                      Experiment results output
+results/                      Experiment results output, grouped: results/checkpoint_<A..E>_*/exp*/
+                              The global cross-experiment summary is results/results.md.
 ```
 
 ## QI Construction: Critical Facts
@@ -80,7 +85,7 @@ The QI construction in `src/construction/qi_mpmath.py` has two precision regimes
 `results/qi_cache/`, keyed by `(lambda_star, Kc, N, precision, mp_dps)`.
 Second call at same config completes in ~0.25s even for mpmath.
 
-**Use mpmath for baseline experiments (exp12 geometry ladder, exp13 solution basins)**
+**Use mpmath for baseline experiments (expD01 geometry ladder, exp13 solution basins)**
 where QI is a fixed reference point. **Use fp64 everywhere else**
 (training runs, sweeps, initialization). Both paths produce valid fp64 coefficients.
 
@@ -114,7 +119,21 @@ once and stored as a fp64 constant.
 - **Multi-stage training.** Adam -> LBFGS is the default. LBFGS uses PyTorch's built-in closure pattern.
 - **Analysis is per-experiment.** No pre-built analysis module. Each experiment's `run.py` implements its own analysis using PyTorch directly.
 - **Results format.** JSONL for metrics. Config YAML saved alongside.
-- **Experiment writeups.** Every experiment gets its OWN results file at `results/<exp>/<exp_id>_results.md` (e.g. `results/exp04_coeff_nullspace/exp04_results.md`) -- one per experiment, never a shared/global results doc. `results/` is gitignored EXCEPT `*_results.md` (see `.gitignore`), so writeups are version-controlled while data/figures are not. Each writeup must record: (1) the exact experiments the code is set up to run -- sweeps, parameters, metric definitions, read from `run.py`/`config.yaml`; and (2) the results, pointing to the data file and figures that hold them, with a "how to read" passage for each figure. **Conclusions are special:** a statement may go in the Conclusions section ONLY if it is plainly obvious from the data, OR it was proposed, discussed, and explicitly approved by Sam. Do not write conclusions before Sam has reviewed the numbers and signed off; keep proposed-but-unapproved conclusions out (or clearly marked as pending). Write conservatively: state only what the data shows, and flag any metric that is not independent evidence.
+- **Experiment writeups.** Every experiment gets its OWN results file at `results/checkpoint_<X>_<name>/exp<X>NN_<name>/exp<X>NN_results.md` (e.g. `results/checkpoint_A_numerics/expA03_coeff_nullspace/expA03_results.md`) -- one per experiment, never a shared/per-experiment global doc (the only global doc is `results/results.md`). `results/` is gitignored EXCEPT `*_results.md`, `results/results.md`, and the one pinned notebook (see `.gitignore`), so writeups are version-controlled while data/figures are not.
+  **Standard structure (every writeup, in this order):**
+  1. **Title + Status** -- one line (approved / data-obvious / draft-pending-Sam).
+  2. **TL;DR** -- 2-4 lean bullets, the takeaways; numbers only where they carry the point.
+  3. **Question / hypothesis** -- get to the heart in 1-2 sentences; do not pad. Example (expA02): "Does solving the readout matrix directly beat the QI convolution, at both fp64 and mpmath?"
+  4. **Experiment design** -- THE section that earns depth: a reader should come away knowing *exactly* what was tested. State the actual math (feature-matrix definitions like $\Phi_{ik}=\tanh(\gamma(x_i-c_k))$, the augmented $[\Phi,\mathbf 1]$, $\gamma=\lambda/h$; any estimator / interpolation / construction formulas), the key params (sweeps, widths, $K_c$, seeds), and the metric definitions ($L_\infty=\max_x|\hat f-f|$, rel $L_2=\|\hat f-f\|/\|f\|$). Use sub-bullets when there are several variants/checks. End with a single **Code & data** block -- the ONLY place file paths appear (run.py/config, data files, figures).
+  5. **Results** -- the signal in plain language, sparse numbers. Then a **Figures** subsection with ONE bullet per figure (never one lumped paragraph): name the figure, give its layout (axes, what each line/color is), and what to look for.
+  6. **Additional details** -- flexible; include only if it earns its place (derivations, confounds, caveats). Goes ABOVE Conclusions; omit the section entirely if there is nothing load-bearing.
+  7. **Conclusions** -- synthesize the signed-off claim in 1-2 sentences; do NOT re-list the TL;DR.
+  8. **Open questions** -- conservative (few); the global `results.md` re-aggregates them per checkpoint.
+
+  **Voice / calibration:** aim for ~5/10 fluff -- plain language, actively cut redundancy (the biggest offender is the TL;DR restated in Conclusions). Keep the references and the per-figure how-to-reads; cut hedging and restatement. If a sentence is not adding information, delete it. The design section is the one place to add depth, not subtract it.
+  **Number discipline:** spend raw numbers like currency -- only where they matter; do not saturate prose with `N=128, 1.2e-12, ...`. Use tables only when they tell a clean story.
+  **Conclusions are special:** a statement may go in the Conclusions section ONLY if it is plainly obvious from the data, OR it was proposed, discussed, and explicitly approved by Sam. Do not write conclusions before Sam has reviewed the numbers and signed off; keep proposed-but-unapproved conclusions out (or clearly marked as pending). Write conservatively: state only what the data shows, and flag any metric that is not independent evidence.
+- **Figure legends.** Every legend on a subplot goes OUTSIDE the chart, above it -- never inside the axes (it occludes data). Use a per-axes legend placed above the axes (e.g. `ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=..., borderaxespad=0)`) or a single shared figure legend across the top (`fig.legend(..., loc="upper center", bbox_to_anchor=(0.5, ...), ncol=...)` with `subplots_adjust`/`tight_layout(rect=...)` reserving the top margin). Applies to all multi-line subplots.
 - **Research-summary formatting.** Write all math in research summaries/writeups in LaTeX (`$...$` inline, `$$...$$` display, KaTeX-safe -- no `\*`, no `\emph`). Do NOT hard-wrap prose: write each paragraph as a single line and let markdown/the editor wrap it. Manual line breaks mid-paragraph (short fixed-width lines) make the docs hard to read and edit.
 
 ## Experiment Workflow
@@ -129,7 +148,7 @@ from src.construction import construct_qi, initialize_from_construction
 from src.models.freeze import freeze_gamma, freeze_centers
 from src.training import run_training
 
-config = load_config("experiments/exp02_lambda_tradeoff/config.yaml")
+config = load_config("experiments/expC01_lambda_tradeoff/config.yaml")
 for cfg in expand_sweep(config):
     for seed in cfg.seeds:
         for width in cfg.widths:

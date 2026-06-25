@@ -1,0 +1,43 @@
+# Experiment 16: Geometry interpolation family (checkpoint-2 / checkpoint-C relevant).
+# Three sibling experiments that interpolate a genuine Xavier-init tanh MLP toward the
+# ideal QI inner layer and watch the (lstsq, fp64) relative-L2 error. They share
+# common.py (uniform QI geometry, Glorot draw + neuron ordering, truncated-SVD readout,
+# train/eval grids), so the three error surfaces are directly comparable.
+# All knobs live in the run scripts; this file is a summary only.
+#
+# The ideal QI inner layer is  gamma*(x - c_i):  weight = gamma for EVERY neuron
+# (the constant vector 1*gamma), bias = -gamma*c_i, centers c = the uniform QI grid+halo.
+# Each script moves the Xavier init onto that target along different axes.
+
+name: geometry_interpolation
+targets: [sine, sine_8pi, runge, exp]
+widths: [64, 128, 256, 512]
+seed_folders: {seed_1: 0, seed_2: 1, seed_3: 2}   # one Xavier init per folder, shared across targets
+
+shared:                                  # common.py, identical across the three modes
+  k: 21                                   # K x K grid
+  halo_lambda: 0.25                       # sizes the uniform grid's halo
+  solve: lstsq                            # truncated SVD with explicit bias column, fp64
+  metric: relative_l2
+  n_train: 2003                           # prime, overdetermined (W <= 921 at N=512)
+  n_eval: 4001                            # prime, misaligned with train grid
+  rcond: 1.0e-13
+
+modes:
+  centers:                                # run_centers.py  -> results/.../centers/
+    axes: [uniformness_t, gamma]          # weight fixed = gamma; interpolate center POSITIONS Xavier->uniform; sweep gamma
+    gamma: [0.25, N]                      # logspace per width
+    note: "t=1 + ideal gamma = exact QI. --uniform-init variant: random anchor uniform over span, N in {64,128,256}."
+
+  weights:                                # run_weights.py  -> results/.../weights/
+    axes: [weight_uniformness_s, gamma]   # biases fixed = -gamma*c_uniform; interpolate weights Xavier->1*gamma; sweep gamma
+    gamma: [0.25, N]                      # logspace per width
+    note: "s=1 + ideal gamma = exact QI; reduces to centers' ideal edge."
+
+  weightbias:                             # run_weightbias.py  -> results/.../weightbias/
+    axes: [weight_s, bias_t]              # interpolate BOTH; gamma fixed per (N,target)
+    lambda_selection: {where: ideal_geometry, range: [0.03, 1.5], points: 81, pick: argmin_relative_l2}
+    note: "(s,t)=(1,1) = exact QI; (0,0) = genuine Xavier init; reduces to weights along t=1."
+
+# Output: results/checkpoint_C_geometry/expC05_geometry_interpolation/{centers,weights,weightbias}/<seed_folder>/interp_<target>.png
+#   (each a 4x3 grid, rows = widths) plus weightbias/lambda_sweeps.png.

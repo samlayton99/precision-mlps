@@ -344,7 +344,7 @@ Look at how `λ` appears with opposite signs:
 
 So there's a **U-shaped** error-vs-`λ` curve with a sweet spot around
 `λ* ≈ 0.25–0.30`. That's why those exact values are hard-coded, and why
-`λ=1.5` (too aliased) and tiny `λ` (too ill-conditioned) both fail. **exp02 is the
+`λ=1.5` (too aliased) and tiny `λ` (too ill-conditioned) both fail. **expC01 is the
 experiment that traces this U-curve and confirms the sweet spot** (§10).
 
 The deep consequence (paper §3 end, and the abstract): to *stay* at the good `λ*`
@@ -422,12 +422,12 @@ The QI construction (Toeplitz + convolution) and the least-squares readout are
 uses a fixed analytic formula (`a_m = Σ c_j g'(x_{m−j})`); the least-squares route
 directly minimizes the residual on the data.
 
-### 8.2 What exp03 compares — and what it does *not* show
+### 8.2 What expA02 compares — and what it does *not* show
 
-exp03 fixes **one** geometry (the QI centers `x_m` and bandwidth `γ`) and fills the
+expA02 fixes **one** geometry (the QI centers `x_m` and bandwidth `γ`) and fills the
 readout four ways: QI-formula (mpmath / fp64) and least-squares (mpmath / fp64).
 Same `W` neurons every time. Eval `L∞` on a dense grid in `[−1,1]` (sine, `λ*=0.25`,
-from `results/exp03_qi_vs_lstsq/data.json`):
+from `results/checkpoint_A_numerics/expA02_qi_vs_lstsq/data.json`):
 
 | width | QI (mpmath) | QI (fp64) | lstsq (fp64) | lstsq (mpmath) |
 |---:|---:|---:|---:|---:|
@@ -454,12 +454,12 @@ coordinate system:
   **That is the real justification for the switch:** with the right geometry, lstsq
   isn't finding an alien readout — it *recovers* the QI solution by a stable convex
   solve.
-- **The catch — our repo uses a different basis.** `readout.py`/exp03 fit the *raw
+- **The catch — our repo uses a different basis.** `readout.py`/expA02 fit the *raw
   tanh* basis `f = b + Σ_m a_m tanh(γ(x−x_m))`, where the coefficients are the QI
   convolution weights `a_m` (not `f(x_m)`) and `Φ` is **ill-conditioned** (the
   saturated, redundant features of §4.3). So the *function* is pinned to ~1e-13, but
   the *coefficients* are floppy — many `a_m` give nearly the same function.
-  exp03 measured eval error, **not** coefficient distance, so the tanh-basis
+  expA02 measured eval error, **not** coefficient distance, so the tanh-basis
   closeness is not verified here. That's the experiment in §13.
 
 **What it does *not* show (so you don't over-read it):**
@@ -469,11 +469,11 @@ coordinate system:
   outcome, not a definitional one.
 - It is **not a controlled "same-inputs" comparison** — see §8.4.
 
-**Working conclusion (from exp03 — scoped, not yet proven in general):** the readout
+**Working conclusion (from expA02 — scoped, not yet proven in general):** the readout
 is the *easy* part. Once the geometry `(γ ∝ N, grid-spaced centers)` is correct, even
 fp64 least-squares hits ~1e-13, so the open problem becomes *whether an optimizer can
 discover that geometry*. The stronger half — that end-to-end *training* actually
-fails to find it — is exactly what exp12 (ladder) and exp13 (solution basins) are
+fails to find it — is exactly what expD01 (ladder) and exp13 (solution basins) are
 meant to test, and exp13 is currently a stub. So treat "geometry is the bottleneck"
 as the current **working hypothesis**, not a settled result.
 
@@ -494,7 +494,7 @@ coupled.
 |---|---|---|---|
 | **centers** `x_m` | where the `tanh`s sit (QI grid + halo) | `W = N + 2R + 1` | fixed by resolution `N` (+ halo `R`) |
 | **construction samples** | where `g'` is evaluated, `I_{R,K_c}` | `W + 2K_c` | **forced** by the grid: `[−R−K_c, N+R+K_c]` |
-| **lstsq fit points** `x_i` | where the residual is evaluated to fit `v` | `n_train` | **your choice** (exp03: `max(512, 2W)`) |
+| **lstsq fit points** `x_i` | where the residual is evaluated to fit `v` | `n_train` | **your choice** (expA02: `max(512, 2W)`) |
 | **eval points** | where error is measured | 2048 | measurement only — never fits anything |
 
 The coupling that **is** real: *neurons ↔ grid resolution* (`W = N + 2R + 1`). Pick
@@ -549,7 +549,7 @@ A structural asymmetry worth keeping straight:
 
 So irregular or noisy **sampling points** are compatible with the design-matrix route
 but break the construction route. **Whether lstsq actually retains machine precision
-under noisy or irregular sampling is now addressed by exp08 (sampling and noise),
+under noisy or irregular sampling is now addressed by expB01 (sampling and noise),
 which implements exactly this question.** Don't assume graceful degradation; it has
 to be measured.
 
@@ -592,7 +592,7 @@ method. The **mpmath path** does the Toeplitz solve and the convolution in 30-di
 arithmetic (so cancellation costs 2.5 of 30 digits, irrelevant), then rounds the
 *final* `a_m, b` to fp64 — landing at true machine epsilon ~`2–3e-15`.
 
-You can see both regimes directly in `results/exp01_numerics_sanity/summary.txt`
+You can see both regimes directly in `results/checkpoint_A_numerics/expA01_numerics_sanity/summary.txt`
 (target=sine):
 
 | N | fp64 L∞ | mpmath L∞ |
@@ -607,7 +607,7 @@ machine epsilon. **Same construction, same final fp64 model — only the precisi
 the offline coefficient computation differs.**
 
 **Practical rule** (encoded in the experiments): use **mpmath** when the QI
-solution is a *fixed reference you compare against* (you want it exact — exp12
+solution is a *fixed reference you compare against* (you want it exact — expD01
 ladder, exp13 solution basins). Use **fp64** when you're *training, sweeping,
 or initializing* (you want speed and 1e-12 is plenty). The repo even mitigates the
 fp64 floor with compensated summation (Kahan in the mpmath convolution; `math.fsum`
@@ -617,14 +617,15 @@ in the fp64 bias) so it gets as close to the floor as fp64 allows.
 
 ## 10. Current results, in depth
 
-The implemented/run experiments are exp01 numerics_sanity, exp02 lambda_tradeoff,
-exp03 qi_vs_lstsq, exp04 coeff_nullspace, exp05 activation_conditioning, exp06
-lambda_vs_frequency, exp07 center_geometry, exp08 sampling_and_noise, exp09
-scaling_laws, exp10 radon_hex2d, exp11 geometry_zoo_2d, and exp12 geometry_ladder
-(Phase 1) — plus the `results/setup/` convergence probes; the remaining stubs are
-exp13 solution_basins, exp14 reparameterization, and exp15 varpro. Together they
-establish the *foundations* the paper's Section 4 rests on. Here's what each actually
-shows.
+The implemented/run experiments are expA01 numerics_sanity, expA02 qi_vs_lstsq,
+expA03 coeff_nullspace, expA04 activation_conditioning, expB01 sampling_and_noise,
+expB02 scaling_laws, expC01 lambda_tradeoff, expC02 lambda_vs_frequency, expC03
+lambda_basin, expC04 center_geometry, expC05 geometry_interpolation, expD01
+geometry_ladder (Phase 1), expD02 adam_geometry, and expE01 geometry_zoo_2d — plus
+the `results/setup/` convergence probes; the remaining stubs are expD03
+reparameterization, expD04 varpro, and the deprioritized exp13 solution_basins.
+Together they establish the *foundations* the paper's Section 4 rests on. Here's what
+each actually shows.
 
 ### 10.1 `results/setup/` — the construction works and scales
 
@@ -635,10 +636,10 @@ version of "machine-precision interpolation is achievable," and it's verified in
 the test suite too (`tests/test_construction.py::TestPrecisionFlag::
 test_mpmath_path_reaches_machine_eps`).
 
-### 10.2 `exp01` — it's not a numerics bug
+### 10.2 `expA01` — it's not a numerics bug
 
 Before blaming optimization for the training gap, rule out that the *floor itself*
-is a numerical artifact. exp01 does this exhaustively (`results/exp01_numerics_sanity/`):
+is a numerical artifact. expA01 does this exhaustively (`results/checkpoint_A_numerics/expA01_numerics_sanity/`):
 
 - **Construction baseline** (table in §9): fp64 floors at ~1e-12, mpmath at ~1e-15,
   cleanly and reproducibly. The floor is real and well-understood (cancellation),
@@ -658,10 +659,10 @@ is a numerical artifact. exp01 does this exhaustively (`results/exp01_numerics_s
 Takeaway: **the precision floor is arithmetic, not a solver/eval artifact.** The
 training gap is therefore a real optimization phenomenon, not a measurement bug.
 
-### 10.3 `exp02` — the λ U-curve is real
+### 10.3 `expC01` — the λ U-curve is real
 
-exp02 sweeps `λ` across widths and targets, comparing full QI vs least-squares on
-the same geometry (`results/exp02_lambda_tradeoff/`, plots
+expC01 sweeps `λ` across widths and targets, comparing full QI vs least-squares on
+the same geometry (`results/checkpoint_C_geometry/expC01_lambda_tradeoff/`, plots
 `consolidated_linf.png`). It confirms the Theorem-1 tradeoff empirically:
 
 - A clear **U-shaped** error-vs-`λ` curve, minimized around **`λ ≈ 0.23–0.26`**.
@@ -671,15 +672,15 @@ the same geometry (`results/exp02_lambda_tradeoff/`, plots
   *method*, not the function. This is what licenses hard-coding `λ* ≈ 0.25–0.30`.
 
 Why it matters for the big question: unconstrained training lets `λ` drift toward 0
-(because `γ` stays `O(1)` while `h→0`). exp02 shows that's precisely the
+(because `γ` stays `O(1)` while `h→0`). expC01 shows that's precisely the
 ill-conditioned side of the U — quantifying *why* drifting `λ` can't reach high
 precision.
 
-### 10.4 `exp03` — the readout is easy given the geometry
+### 10.4 `expA02` — the readout is easy given the geometry
 
 Covered in detail in §8.2 (including what it does *not* show). The full four-way
 grid — **QI vs lstsq × mpmath vs fp64**, same geometry, across widths (target=sine,
-`λ*=0.25`, eval `L∞`, from `results/exp03_qi_vs_lstsq/data.json`):
+`λ*=0.25`, eval `L∞`, from `results/checkpoint_A_numerics/expA02_qi_vs_lstsq/data.json`):
 
 | N | W | QI mpmath | QI fp64 | lstsq fp64 | lstsq mpmath |
 |---:|---:|---:|---:|---:|---:|
@@ -690,7 +691,7 @@ grid — **QI vs lstsq × mpmath vs fp64**, same geometry, across widths (target
 
 Reading the columns: both **mpmath** columns ride at machine epsilon (~1e-15); the
 **fp64** columns sit at their arithmetic floors. Note QI fp64 here is ~1e-10, *worse*
-than the ~1e-12 in §9 — because exp03 uses `λ*=0.25` (the mpmath-optimal value, so
+than the ~1e-12 in §9 — because expA02 uses `λ*=0.25` (the mpmath-optimal value, so
 both methods share one geometry), and at that smaller `λ` the fp64 Toeplitz +
 convolution are more ill-conditioned (§6 U-curve). lstsq fp64 dodges that
 cancellation (it fits the residual directly) and stays ~1e-13. So precision is
@@ -700,14 +701,14 @@ readout reaches the floor either way.
 **Working hypothesis the repo currently operates under** (scoped, not yet proven —
 see §8.2): since the readout is easy, the difficulty must lie in *discovering the
 geometry* (`γ ∝ N`, grid-spaced centers). That hypothesis is what points the
-geometry experiments (exp12 ladder, exp13 solution basins) and the
-reparameterization/VarPro stubs (exp14/exp15) at the geometry — they are what would
+geometry experiments (expD01 ladder, exp13 solution basins) and the
+reparameterization/VarPro stubs (expD03/expD04) at the geometry — they are what would
 actually test it.
 
 ### 10.5 What is *not* done yet
 
-The remaining stubs are exp13 (solution basins), exp14 (reparameterization), and
-exp15 (varpro) — scaffolded but unimplemented (docstring + `# TODO`). They are the
+The remaining stubs are exp13 (solution basins), expD03 (reparameterization), and
+expD04 (varpro) — scaffolded but unimplemented (docstring + `# TODO`). They are the
 planned diagnostics that would fill in the paper's Section 4.3 story (the solution
 landscape near the optimum: Hessian spectrum + basin/perturbation/recovery + path
 interpolation; reparameterization; VarPro). See `docs/future_experiments.md`.
@@ -727,7 +728,7 @@ the bottleneck." Fig. 1 shows three panels that *are* the thesis: (left) QI kern
 with halo nodes outside `[−1,1]`; (middle) relative L₂ vs width — the explicit QI
 interpolant rides down to the fp64 floor while trained MLPs plateau ~3 orders
 higher; (right) mean `λ` vs width — QI plateaus at `λ*`, trained networks drive
-`λ → 0`. Your `results/setup/` and exp02 plots are the repo's versions of the
+`λ → 0`. Your `results/setup/` and expC01 plots are the repo's versions of the
 middle and right panels.
 
 **§4.1 — "Direct training fails to reach machine precision" (Fig. 3).** Across
@@ -737,7 +738,7 @@ above fp64**, with widening giving diminishing/non-monotone returns.
 - *Repo counterpart:* not yet implemented as a training experiment — this is the
   motivation the diagnostic experiments serve. The infrastructure exists
   (`src/training/`, the multi-stage Adam→LBFGS loop, the metric schema), so this is
-  the most direct "fill in Section 4.1" task. exp01 establishes that the gap these
+  the most direct "fill in Section 4.1" task. expA01 establishes that the gap these
   curves show is genuinely optimization, not numerics.
 
 **§4.2 — "MLPs can realize quasi-interpolants" (Fig. 4).** Fix the grid and
@@ -746,9 +747,9 @@ i.e. a least-squares solve on the Φ features. Result: the learned coefficients
 match the samples at grid points, and the interpolant converges geometrically to
 the fp64 floor (for Gaussian and sinc kernels). Trained nets also place centers
 outside the domain (the halo).
-- *Repo counterpart:* **this is exactly exp03 and the `readout.py` Φ machinery.**
+- *Repo counterpart:* **this is exactly expA02 and the `readout.py` Φ machinery.**
   "Fix geometry, fit output coefficients by least squares" is `build_phi` +
-  `solve_readout`. exp03's finding (fp64 lstsq ≈ 1e-13 on correct geometry) is the
+  `solve_readout`. expA02's finding (fp64 lstsq ≈ 1e-13 on correct geometry) is the
   repo's version of Fig. 4c. The §8.1 "two solves" distinction is precisely the
   §3-vs-§4.2 distinction in the paper.
 
@@ -760,7 +761,7 @@ outside the domain (the halo).
   overlapping features. → **violation #1 (γ scaling) and #2 (weight blowup).**
   - *Repo counterpart:* the metric schema already logs `γ`, `λ=γh`, and outer-weight
     norms at every eval step (`src/training/metrics.py`), so this plot drops out of
-    any training run; exp12 (ladder) and exp13 (solution basins) are designed to produce it.
+    any training run; expD01 (ladder) and exp13 (solution basins) are designed to produce it.
 - *Rank saturation / node utilization (Fig. 6).* Freeze the hidden layer, form the
   feature system `Φa=b` with `Φ_ij = tanh(γ_j(x_i−x_j))`, and use OMP to count how
   many neurons you can delete while keeping error below a threshold. Trained nets
@@ -768,14 +769,14 @@ outside the domain (the halo).
   nets spread the work across all neurons. → **violation #3 (rank saturation).**
   - *Repo counterpart:* `Φ` is `readout.build_phi`; the metric schema already
     computes `feature_rank` and `feature_stable_rank` from the SVD of `Φ`. The OMP
-    pruning curve is the planned exp12 (ladder) training analysis (feature-matrix
-    conditioning itself is covered in exp04/exp05/exp07). This is the *same Φ* you
+    pruning curve is the planned expD01 (ladder) training analysis (feature-matrix
+    conditioning itself is covered in expA03/expA04/expC04). This is the *same Φ* you
     asked about — here used as a diagnostic rather than a solver.
 - *Endpoint Hessian curvature alone doesn't explain it (Fig. 7).* QI solutions
   don't have systematically larger top-Hessian curvature than trained ones, so the
   gap isn't simple endpoint conditioning — it's more consistent with a
   *representational* mismatch (how width is used). → motivates exp13 (solution basins)
-  and the reduced-coordinate view (exp15 VarPro).
+  and the reduced-coordinate view (expD04 VarPro).
 
 **§Discussion.** "The first explicit MLP construction achieving machine precision
 with `log(1/ε)` parameter scaling, realizable in fp64; optimization, not
@@ -798,7 +799,7 @@ shift-invariant; (2) **convolving** `c_j` with the target's derivative to get ou
 weights `a_m` (derivative because `sech² = tanh'`); (3) pinning a **bias** at the
 boundary. The **Φ matrix / least-squares** solve is a *separate* tool — it fits the
 outer weights of a *fixed-geometry* MLP directly, and it's both an alternative to
-the convolution (exp03) and the paper's diagnostic for trained networks (§4.2,
+the convolution (expA02) and the paper's diagnostic for trained networks (§4.2,
 §4.3). **mpmath vs fp64** is not a contradiction: the model is always fp64; mpmath
 just computes the offline coefficient *constants* accurately enough to dodge the
 catastrophic cancellation that floors the fp64 computation at ~1e-12, yielding fp64
@@ -811,7 +812,7 @@ progress).
 
 ## 13. A small experiment worth running: *how close* are lstsq and QI?
 
-**The gap it fills.** exp03 established that lstsq and QI agree *as functions*
+**The gap it fills.** expA02 established that lstsq and QI agree *as functions*
 (~1e-13 eval error). It never measured whether they agree *as coefficients* — which
 is the paper's actual closeness claim (Fig 4b: fitted `v_j ≈ f(x_j)`). So the one
 thing that would turn "lstsq also hits the floor" into "lstsq *recovers* the QI
@@ -826,7 +827,7 @@ repo. This experiment checks it, directly, in this repo's coordinates.
    `Phi = build_phi(x_train, gamma_vec, centers)` (`readout.py`),
    `a_LS, b, info = solve_readout_with_bias(Phi, y_train, method="svd")`.
 3. Report, per width `N ∈ {32,64,128,256}`:
-   - **coefficient distance** `‖a_LS − a_QI‖ / ‖a_QI‖` (the number exp03 never logged),
+   - **coefficient distance** `‖a_LS − a_QI‖ / ‖a_QI‖` (the number expA02 never logged),
    - the **conditioning** `info["cond"]` of `Φ`,
    - alongside the eval `L∞` already measured.
 4. Repeat in the **cardinal basis** (`L_h` features) to reproduce the paper's Fig 4b,
@@ -845,7 +846,7 @@ repo. This experiment checks it, directly, in this repo's coordinates.
   hypothesis (§8.2) toward evidence: recovery should hold on the QI grid and fail
   off it.
 
-This is essentially the first rung of exp12 (geometry ladder) plus the paper's
+This is essentially the first rung of expD01 (geometry ladder) plus the paper's
 Fig 4b, scoped down to a single, cheap, high-information plot.
 
 ---
@@ -866,7 +867,7 @@ column points back into this file for the intuition.)
 | Outer weights (convolution) | `a[m]`, eq. `single-kernel-sum` | `qi_mpmath.py · _build_a_f64 / _build_a_mpmath_kahan` | §4 |
 | Bias / integration poly | `p_{r-1}` → bias, eq. `integration-poly` | `qi_mpmath.py · _compute_c0_f64 / _mpmath` | §4 |
 | Construction → model params | — | `construction/initialize.py · initialize_from_construction` | §5 |
-| Error bound / λ tradeoff | Thm. 1, eq. `main-error-bound` | exp02 (`experiments/exp02_lambda_tradeoff/`) | §6 |
+| Error bound / λ tradeoff | Thm. 1, eq. `main-error-bound` | expC01 (`experiments/expC01_lambda_tradeoff/`) | §6 |
 | fp64 vs extended precision | App. / `practical_implementation.tex` | `construct_qi(precision=...)`; `precision` config | §9 |
 | §4.2 fix geometry, fit coeffs | `f = Σ_j v_j L_h(·−x_j)`, Fig 4 | `construction/readout.py · build_phi`, `solve_readout` | §8, §8.2 |
 | §4.3 rank saturation | `Φa=b`, `Φ_ij = tanh(γ_j(x_i−x_j))` | `readout.py · build_phi`; `training/metrics.py` (`feature_rank`) | §8.5, §4.3-ref |

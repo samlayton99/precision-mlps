@@ -1,248 +1,68 @@
-# Experiments
+# Future experiments / roadmap
 
-Central question: can we find a training/optimization strategy that learns QI-like solutions, closing the gap between construction (~10^-15) and training (~10^-10)?
+Design spec for the open work. For what is already established, see `results/results.md` (the cross-experiment summary) and the per-experiment writeups under `results/checkpoint_*/`.
 
-The paper identifies three violations in trained networks: (1) gamma stays O(1) instead of growing with N, (2) outer weights blow up instead of staying O(1), (3) features exhibit rank saturation instead of uniform utilization. Every experiment below should be evaluated against whether it explains or fixes these violations.
+## Central question
 
-Metrics to log for every experiment:
-- train L_inf, eval L_inf, eval relative L2
-- gamma, lambda = gamma*h (mean/median/max)
-- max absolute outer weight
-- feature rank diagnostics (singular values, stable rank)
-- seed-to-seed variance (3-5 seeds minimum)
+Can we find a training/optimization strategy that learns QI-like solutions, closing the gap between the explicit construction ($\sim 10^{-15}$) and standard training ($\sim 10^{-10}$)? The paper's three violations in trained networks frame it: (1) $\gamma$ stays $O(1)$ instead of growing as $O(N)$, (2) outer weights blow up instead of staying $O(1)$, (3) features rank-saturate.
 
-Target families to include across the roadmap:
-- low-frequency analytic
-- high-frequency analytic
-- boundary-layer / steep-transition analytic
-- mixed-scale analytic
-- polynomial / entire-function type
-- one slightly rough but still smooth target
+**Success criterion.** A method works if, across widths $N\in\{32,64,128,256,\dots\}$ on the 6-category target family, over 3-5 seeds, error falls at $O(\log(1/\varepsilon))$ and reaches eval relative $L_2\le 10^{-13}$ with $L_\infty$ at machine-epsilon precision -- **without** initializing from the exact constructive solution.
 
-Success criterion:
-- A method counts as working if, across widths N in {32, 64, 128, 256}, on the target-family matrix above, over 3-5 seeds, it reaches eval relative L2 <= 1e-13 and eval L_inf consistent with construction-level precision, without initialization from the exact constructive solution.
+## Where we are
 
----
+The diagnostic checkpoints (A-E) have localized the problem and produced a working recipe:
 
-## Status and current numbering
+- The readout is a solved convex problem -- lstsq on a fixed geometry reaches the fp64 floor (Checkpoint A).
+- Precision is controlled by the first-layer geometry, and mostly by bandwidth: $\lambda^*\approx 0.25$ (i.e. $\gamma=O(N)$) plus uniform centers. Bandwidth is first-order, center uniformity second-order (Checkpoint C).
+- Raw first-order Adam cannot grow $\gamma$ or solve the readout on the ill-conditioned $\Phi$ (Checkpoint D), but **QI-init + train + final lstsq refit recovers the construction floor**, and scaled-Xavier (right bandwidth) generalizes the gain.
+- The recipe extends to 2D (Checkpoint E).
 
-This doc's section numbers (0-9) are the original roadmap. The experiments have since been reorganized into checkpoints with new folder numbers. Mapping of roadmap sections to current `experiments/` folders:
+So the open frontier is: can an optimizer *discover* the precision-admitting geometry from a generic start, and does the recipe extend in dimension and depth?
 
-- Section 0 (numerics) -> `exp01_numerics_sanity` (run).
-- Section 1 (lambda tradeoff) -> `exp02_lambda_tradeoff` (run). Spun off: `exp03_qi_vs_lstsq`, `exp04_coeff_nullspace`, `exp05_activation_conditioning`, `exp06_lambda_vs_frequency` (Checkpoint 1, all run).
-- Checkpoint 2 (1D: what controls precision) -> `exp07_center_geometry`, `exp08_sampling_and_noise`, `exp09_scaling_laws` (all run).
-- Checkpoint 3 (2D ridge / Radon) -> `exp10_radon_hex2d`, `exp11_geometry_zoo_2d` (run).
-- Section 3 (geometry ladder) -> `exp12_geometry_ladder` (Phase 1 run; simplified, see below).
-- Sections 2 + 4 (basin stability + Hessian) -> **merged** into `exp13_solution_basins` (stub).
-- Section 8 (reparameterization) -> `exp14_reparameterization` (stub).
-- Section 9 (VarPro) -> `exp15_varpro` (stub).
-- **Dropped** (superseded by completed work): Section 5 (Phi conditioning) -- conditioning was measured in exp04/exp05/exp07 and shown not to discriminate precision; Section 6 (objective mismatch) -- lstsq (the MSE-optimal readout) already reaches the floor on the right geometry, so the objective is not the barrier; Section 7 (noise sensitivity) -- y-noise / x-noise / the 1/sqrt(n) law are done in exp08 and exp09.
+## Live experiments (priority order)
 
-The remaining roadmap text below is the original design spec, kept for the open optimizer-arc experiments (exp13/exp14/exp15).
+**1. Reparameterization (`experiments/expD03_reparameterization`, stub -- top priority).**
+Motivated directly by expC05: in raw $(w,b)$ coordinates, weight and bias must reach $\gamma$-scale together (the diagonal-valley barrier), and the vanishing $\mathrm{sech}^2$ gradient blocks Adam from growing $\gamma$. Test natural coordinates head-to-head on the same widths/targets/optimizer: log-scale $\gamma=\exp(\eta)$; global bandwidth $\gamma=\lambda/h$ with a single learnable $\lambda$; dimensionless centers $c_k=-1+h(k+\delta_k)$; and an $\alpha=a\gamma$ readout. Question: does any of these let a standard optimizer reach the floor that raw coordinates cannot?
 
----
+**2. The $\gamma$-init-scale sweep (top priority).**
+Accidental finding from expD02 stage-1 tuning: rescaling the init so $\gamma\approx\gamma^*=O(N)$ lets even untrained, random-center geometry hit the floor under lstsq, while at standard Xavier ($\gamma\approx 0.1$) it is useless. Systematically sweep the init $\gamma$-scale (global and per-neuron) across widths and the target family; map where untrained-init + lstsq stops reaching the floor as a function of $\gamma/\gamma_\text{ideal}$; and test whether a steep-$\gamma$ init plus a short Adam pass (or the log-$\gamma$ reparameterization above) closes the gap raw Adam cannot.
 
-## 0. Numerics Sanity Checks
+**3. Variable projection (`experiments/expD04_varpro`, stub -- medium).**
+Eliminate the readout exactly (solve $v(\theta)$ by lstsq each step) and optimize only the nonlinear geometry $\theta=(\lambda,\delta_k)$ with Gauss-Newton / LM / quasi-Newton. Both a candidate method and a diagnostic: if VarPro reaches the floor where end-to-end Adam stalls, the raw end-to-end coordinates are confirmed as the wrong optimization variables.
 
-**Hypothesis:** Some of the observed precision floor may be numerical rather than optimization-limited. Before attributing failures to training, we need to verify that linear solves, function evaluation, and tolerance choices are not the bottleneck.
+**4. Geometry-ladder levels 4-7 (`experiments/expD01_geometry_ladder`).**
+expD01 covered level 3 (frozen geometry, trained readout). Continue relaxing: fixed $\gamma$ + free centers, then free $\gamma$ + free centers, each with the readout solved exactly or trained, to localize exactly where precision is lost as constraints come off.
 
-**Core:**
-- Compare exact-readout solves using QR, SVD, and ridge-stabilized least squares.
-- Check whether the same "QI + exact readout" result is reproducible across solver backends and tolerances.
-- Track residual norms of the linear solves explicitly.
-- Verify whether evaluating on a denser grid changes the claimed eval L_inf materially.
+**5. Coefficient-magnitude / weight-blowup study (Checkpoint A follow-up).**
+Measure the norm/magnitude of the solved readout coefficients ($\max|v|$, $\|v\|_2$) for QI vs lstsq across width/target, and test whether trained optimizers select a high-norm null-space representative when a min-norm one fits identically. Directly characterizes the paper's "weight blowup" violation (expA03 showed the QI/lstsq difference is pure null-space).
 
-**Additional:**
-- Test whether using extended precision only for the linear solve or only for evaluation changes the observed floor.
-- Measure tanh evaluation stability at large arguments and compare cond(Phi) vs cond(Phi^T Phi) in the same sweep.
+**6. Scaling-law characterization.**
+The expB02 fixed-$\lambda=0.25$ rerun is done (`fixed_lambda_scaling.png`): the power-law-descent-then-floor law survives without the best-over-$\lambda$ confound -- same floor (within ~1 order), relu unchanged, just a noisier descent. Remaining: characterize the law -- what sets the descent slope (activation and target both matter; relu is a clean ~$N^{-2}$), and does the number of width/data decades to reach the floor grow as $\log(1/\varepsilon)$ (the form the success criterion needs)?
 
----
+**7. Curvature-aware center placement (1D and 2D).**
+expC05 (runge) and expE01 (runge2d) both hint that clustering centers at high target curvature can beat uniform placement. Run a deterministic curvature-clustering experiment in 1D, and in 2D place uniform coverage near the bumps rather than uniformly over the disk; check whether the scaling laws then descend cleanly. (Also disentangle scale from placement: a follow-up that fixes vector scale and varies only structure.)
 
-## 1. Lambda Tradeoff Verification
+**8. The second bandwidth mode near $\lambda\approx 0.05$ (expC03 tangent).**
+At large $N$ a faint second near-floor region appears at small $\lambda$ (for runge it edges out $\lambda=0.25$). Is it aliasing, or does increasing width make the small-bandwidth regime attainable? Map whether scaling keeps opening it.
 
-**Hypothesis:** The theory predicts a U-shaped error curve in lambda (aliasing at large lambda, ill-conditioning at small lambda). If this tradeoff is numerically real and sharp, it explains why unconstrained training -- which lets lambda drift to ~0 -- cannot reach high precision.
+## Deprioritized / dropped
 
-**Core:**
-- Construct QI MLPs across widths N in {16, 32, 64, 128, 256} and sweep gamma to trace the error-vs-lambda curve for each width. Plot L_inf error (y) vs gamma (x) with one curve per width. Expect U-shaped curves with a shared optimal lambda* ~ 0.25-0.30.
+- **Deprioritized:** Hessian / solution-basin landscape (`experiments/exp13_solution_basins`, stub). The paper and expC03/expC05 already indicate curvature/landscape is not the discriminator; kept low-priority.
+- **Dropped** (done or ruled out): $\Phi$-conditioning (shown not to discriminate precision in expA03/expA04/expC04), objective mismatch (lstsq already reaches the floor on the right geometry), standalone noise sensitivity ($y$/$x$-noise and the $1/\sqrt{n}$ law are done in Checkpoint B).
 
-**Additional:**
-- Repeat with fixed QI geometry (gamma, x_k) but solve the readout via least squares instead of the full construction. Does the U-shape persist when the outer weights are learned rather than constructed? Isolates whether the tradeoff is purely geometric or also depends on exact coefficient computation.
-- Overlay the lambda values that trained networks actually converge to on the same plot. Visualize how far off the trained solutions are from the viable regime.
-- Regularized least squares (NOTE, COME BACK TO THIS. THIS WILL LIKELY WORK WELL)
+## The new frontier (Sam)
 
----
+Beyond the optimizer arc, the two structural extensions:
 
-## 2. QI Basin Stability and Path Experiments
+- **$\mathbb{R}^n\to\mathbb{R}^m$.** expD02 suggests $1\to\mathbb{R}^m$ is already solved via one shared geometry + a per-coordinate lstsq readout. The open part is higher *input* dimension (the 2D Radon recipe of Checkpoint E is the first step) and combining it with depth.
+- **Depth.** Delay until the single-hidden-layer case is fully understood, then study stacking. Speculative payoff: initializing a transformer's first hidden layers with this construction -- which requires depth, domain, and higher-dimension input solved first.
 
-**Hypothesis:** The QI solution sits in a basin that is narrow in certain parameter directions. Optimizers starting at or near the QI solution may drift away, and the construction and trained solutions may or may not share a basin.
+## Standard logging (every experiment)
 
-Additionally, what can we learn about the Basin? what are its properties?
+- train $L_\infty$, eval $L_\infty$, eval relative $L_2$
+- $\gamma$, $\lambda=\gamma h$ (mean/median/max)
+- max absolute outer weight, $\|v\|_2$
+- feature-rank diagnostics (singular values, stable rank)
+- seed-to-seed variance (3-5 seeds)
 
-**Core:**
-- **Low learning rate from construction:** Construct the QI MLP, then train with a small learning rate. Monitor whether the solution drifts away and in which parameter subspace. Compare SGD vs Adam. Train on the full dataset (no stochastic noise). Track lambda, gamma, outer weight norms, and loss throughout training.
-- **Directional perturbation profiles:** From the QI solution, perturb along isolated directions (global gamma, per-neuron gamma, center shifts, readout weights). Sweep perturbation magnitude, measure loss increase. Then re-optimize from each perturbed point and record recovery probability and final error.
-- **Path interpolation:** Interpolate between matched QI construction and trained-MLP solutions in parameter space. Track loss along the path. If a barrier exists, the construction and trained solutions are in different basins. If the path is flat, the difference is parameterization, not landscape.
-
-**Additional:**
-- Match neurons before parameter interpolation, and compare to function-space interpolation as a control.
-- If needed, compare feature-subspace interpolation rather than raw-parameter interpolation to avoid permutation artifacts.
-- Hessian-eigenvector perturbations: compute exact Hessian at the QI solution, perturb along the most negative, smallest positive, largest positive, and near-zero eigenvectors. Retrain. Does instability concentrate in specific eigen-directions?
-- Repeat the low-LR experiment with different frozen subsets (freeze gamma only, freeze centers only, freeze readout only) to identify which parameter group is responsible for drift.
-- Compare recovery probability from isotropic noise vs. Hessian-aligned noise at matched perturbation magnitude.
-
----
-
-## 3. Geometry Ladder Cascade
-
-**Status:** implemented as `exp12_geometry_ladder`, simplified. Phase 1 covers level 3 (frozen correct geometry, readout trained from random init) and compares Adam against the lstsq global-optimum baseline across targets and widths. The original per-cell SGD divergence-threshold tuning, the 200k-step budget, the lr-sweep side study, and the full violation-diagnostic SVDs were removed as over-engineering. Levels 4-7 (relaxing the geometry) remain future work.
-
-**Hypothesis:** The inner-layer geometry (gamma, centers) is the hard part. Starting from the full construction and progressively relaxing constraints reveals exactly where precision is lost.
-
-**Core:** Run a ladder from most constrained to least constrained. At each level, measure the best achievable error:
-1. **Full construction:** QI geometry and readout weights all from construction. Baseline precision.
-2. **Fixed geometry, exact readout solve:** Fix gamma and x_k from construction. Solve readout via least squares. Should match or nearly match step 1.
-3. **Fixed geometry, trained readout:** Fix gamma and x_k. Train readout with Adam -> SSBroyden. How much precision is lost by training vs. exact solve?
-4. **Fixed gamma, free centers, exact readout:** Fix gamma = lambda*/h, let centers float, solve readout exactly.
-5. **Fixed gamma, free centers, trained readout:** Fix gamma, train both centers and readout.
-6. **Free gamma, free centers, exact readout:** Everything free except readout is solved exactly.
-7. **Fully free:** Standard end-to-end training (Adam -> SSBroyden).
-
-**Additional:**
-- Run the ladder at multiple widths to see if the precision-loss pattern changes with scale.
-- For each level, log the three violation diagnostics: does lambda stay in the viable regime? Are outer weights O(1)? What is the feature rank?
-- At level 4, compare starting centers on-grid vs. random initialization to test whether the grid structure matters or just the gamma scaling.
-
----
-
-## 4. Hessian Landscape
-
-**Hypothesis:** The full-parameter Hessian at the QI solution is ill-conditioned, but the reduced Hessian (over nonlinear geometry params only, with readout eliminated) is much better conditioned.
-
-**Core:**
-- Compute the Hessian eigenspectrum at the QI solution with only v_j (readout weights) free -- the most constrained training case from the geometry ladder (level 3). This is the Hessian of the MSE loss with respect to the readout weights only, with Phi fixed. Compare to the full-parameter Hessian at the same point. If the readout-only Hessian is well-conditioned (it should be -- it's Phi^T Phi), the optimization difficulty is entirely in the inner layer.
-- Compare Hessian spectra at three matched solutions: QI construction, trained-MLP (Adam -> SSBroyden), and geometry-ladder solutions from Experiment 3. Does the construction sit in a more fragile region (more negative eigenvalues, more near-zero directions, worse conditioning)?
-
-**Additional:**
-- Compute the Gauss-Newton approximation J^T J at the QI solution and compare to the full Hessian. If they differ significantly, the loss surface is not well-approximated by a quadratic near the solution.
-- Expand the residual on a Chebyshev basis for QI, trained-MLP, and SSBroyden solutions. Compare coefficient decay. If the gap is concentrated in high-frequency modes, the precision barrier is spectral.
-- Track how the Hessian spectrum evolves along the training trajectory to see if conditioning degrades as the optimizer approaches the solution.
-
----
-
-## 5. Phi Conditioning
-
-**Hypothesis:** The feature matrix Phi (entries Phi_{i,m} = tanh(gamma * (x_i - x_m))) may be ill-conditioned, amplifying small errors in the readout weights or data into large output errors. This is separate from the loss Hessian -- it's about the forward map from weights to predictions.
-
-**Core:**
-- Compute cond(Phi) as a function of width N and lambda. Sweep N in {16, 32, 64, 128, 256} and lambda across a range including the viable regime, e.g. [0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.75, 1.0].
-- Compute the singular value spectrum of Phi at the QI solution. How many singular values are near zero? Does the effective rank match the width?
-- Measure how perturbations to the readout weights propagate through Phi to output errors: if v_perturbed = v_true + epsilon * noise, how does ||Phi * (v_perturbed - v_true)|| / (epsilon * ||noise||) compare to cond(Phi)?
-
-**Additional:**
-- Compare cond(Phi) between QI geometry (uniform grid, gamma ~ N) and trained geometry (wherever the optimizer lands). Are trained solutions accidentally better conditioned?
-- Measure how floating-point roundoff in the evaluation of Phi itself (computing tanh(gamma * (x - x_m)) at large gamma in fp64) contributes to output error.
-
-- other thoughts: think about and interpret the rows/columns. how do they relate to gamma, should we be
-
----
-
-## 6. Objective Mismatch
-
-**Hypothesis:** Part of the training gap may be due to mismatch between the training objective (sampled MSE) and the evaluation criteria (eval L_inf, eval relative L2). Objective shaping may partially recover QI-like geometry.
-
-**Core:**
-- Compare training with uniform-grid MSE, denser-grid MSE, large-p losses approximating L_inf, and hybrid losses with boundary weighting.
-- Check whether the optimizer still drives lambda -> 0 under all of these objectives.
-
-**Additional:**
-- Compare Chebyshev-weighted MSE or nonuniform collocation against uniform sampling.
-- If derivatives are available analytically, test MSE + derivative matching.
-- Measure whether the remaining error is concentrated near boundaries or in high-frequency regions.
-
----
-
-## 7. Noise Sensitivity
-
-**Hypothesis:** The construction is sensitive to noise because Phi amplifies perturbations. Understanding this sensitivity reveals whether training noise (gradient noise, floating point errors) is a fundamental barrier to high precision.
-
-**Core:**
-- **Y-noise:** Add Gaussian noise of varying magnitude to function values *before* constructing the QI MLP. Plot construction error vs noise level at different widths N. Does the error degrade gracefully or catastrophically?
-- **X-noise:** Perturb the grid points x_k via Gaussian noise (breaking the uniform grid assumption). Same analysis. The construction assumes uniform spacing; how sensitive is it to this assumption?
-
-**Additional:**
-- For the trained-MLP solutions, add the same Y-noise to the training data and retrain. Compare the noise-sensitivity curve of trained vs. constructed solutions. If trained solutions are more noise-robust, they may be finding a more regularized region of the landscape.
-- Measure how noise in gradient estimates (simulated by adding Gaussian noise to gradients during training) affects the final precision. This connects to whether SGD-style noise is fundamentally incompatible with high-precision convergence.
-
----
-
-## 8. Reparameterization
-
-**Hypothesis:** Raw coordinates (gamma_k, c_k) are the wrong optimization variables. The gradient d(tanh(gamma*x))/d(gamma) = x*sech^2(gamma*x) vanishes for large gamma*x, so gradient-based methods cannot efficiently increase gamma to the O(N) scale needed. Reparameterizing to natural coordinates should fix the scaling pathology.
-
-**Core:** Compare these parameterizations head-to-head on the same widths, targets, and optimizer:
-- **Raw:** standard weight matrix W, bias b
-- **Log-scale gamma:** gamma = exp(eta), so d(phi)/d(eta) = gamma * d(phi)/d(gamma) = O(1) instead of O(1/N)
-- **Global bandwidth:** single learnable lambda, gamma = lambda/h, centers on grid
-- **Dimensionless centers:** c_k = -1 + h*(k + delta_k), learn delta_k instead of c_k directly
-
-For each: train at widths N in {16, 32, 64, 128} with Adam -> SSBroyden. Log final error, learned lambda, outer weight norms, and convergence speed.
-
-**Additional:**
-- Alpha readout: learn alpha = a * gamma instead of a directly, so the learned parameter stays O(1) even when the effective readout weight a = alpha/gamma is O(1/gamma).
-- Combined reparameterization: log-gamma + dimensionless centers + alpha readout + per-group LR scaling.
-- Test whether reparameterization alone is sufficient, or whether it must be combined with exact readout solve / constrained geometry to reach high precision.
-
----
-
-## 9. Variable Projection (VarPro) / Reduced Objective
-
-**Hypothesis:** Eliminating the readout exactly and optimizing only the nonlinear geometry is not just a better method; it is a diagnostic that isolates whether the real failure sits in the geometry block.
-
-**Core:**
-- Nonlinear params: theta = (lambda, delta_k)
-- Linear params v(theta) solved exactly via least squares at each iteration
-- Optimize the reduced loss with Gauss-Newton, LM, or SSBroyden
-- Compare reduced-objective training directly to the matched end-to-end run from the geometry ladder
-
-**Additional:**
-- Log reduced Jacobian / Hessian conditioning and compare to the full-parameter objective.
-- If VarPro works dramatically better, that is evidence that raw end-to-end coordinates are the wrong optimization variables.
-
----
-
-## Other thoughts
-1. how does it work with regularization?
-2. where does the mse objective come into this?
-3. 
-
----
-
-## Future Methods
-
-These are methods to test *after* the diagnostic experiments above have clarified the landscape. Don't invest in implementation until the diagnostics tell us where to push.
-
-### Deeper Networks
-
-Delay until the 1-hidden-layer case is understood. Otherwise depth becomes a confound.
-
-### Progressive Unfreezing / Width Continuation
-
-Train small, prolongate to 2N by inserting intermediate centers, solve readout exactly, progressively unfreeze (lambda first, then delta_k). A homotopy that keeps the optimizer near the QI manifold at every scale. Requires the geometry ladder (Experiment 3) to first establish which constraints matter.
-
-### Residual Stacking / Multilevel Refinement
-
-Train stage 1 (optionally constrained), freeze, fit residual with stage 2, repeat. Each stage adds a fresh feature subspace and avoids rank saturation. Each stage solves a lower-dynamic-range problem. Requires noise sensitivity results (Experiment 6) to understand whether residual targets are too small for the optimizer's noise floor.
-
-### PINN-style Regularization
-
-Delay until there is a reliable clean-data solver. Then test whether constrained training survives extra loss terms.
-
----
-
-## Thoughts
-
-Increasing width gives more tanh functions to work with. Increasing gamma steepens the tanh slope, which the construction requires (gamma ~ N/2 * lambda). But gradient-based optimization cannot efficiently increase gamma because the gradient signal vanishes as gamma grows (vanishing sech^2 envelope). This is likely the central obstacle: the optimizer is blind to the direction it most needs to move in.
-
-The most promising path is not a better unconstrained optimizer, but reduced-coordinate training: fix the geometry (or parameterize it in natural coordinates), eliminate the linear readout exactly, and optimize only a small nonlinear block. If this works, the story is "theoretical constructions as optimization guides" -- the QI theory reveals the right coordinate system for training.
-
-
+Target family (6 categories): low-frequency analytic, high-frequency analytic, boundary-layer/steep, mixed-scale, polynomial/entire, one slightly-rough-but-smooth.

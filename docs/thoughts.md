@@ -1,32 +1,46 @@
-Okay...
+## Use lstsq over QI
+- So basically, I verified the results numerically, the machinery works.
+- I found that lstsq gives much better numerical results on all fronts, 
+so I tested to see if they were the same solution... they aren't, but if you project the QI solution into the null space of phi, then they are identical. so the phi matrix has super big null space and weirdly conditioned, but that conditioning is not correlated with the ability to get good precision. but it basically chooses the same solution in the null space 
+- norm of weight also drops down, the norm solution is pretty solid and not a big deal.
 
-We know where we start: random initializations
+## it is robust to noise and it scales well
+- noise in x is prety harmless
+- noise in y is much harder, follows statistics 1/sqrt(n)
+- noise in centers is painful
+- as we scale the size and data, there are precision scaling laws for both.
+
+## we have 3 conditions that make the geometry work well
+### Gamma
+- gamma in the right regime is really important
+- ideal lambda stays pretty constant as you increase frequency and across function types. matters about 8-10 orders of precision
+
+### bias uniformity
+- correct center placement gives you about 2 orders of magnitude of precision. pretty useful to get this right
+- more uniformity is giving wider lambda error valleys, (and often deeper) across all functions
+- uniformity improves precision for almost every lambda and function choice, gradual improvements the entire time, but most dramatic improvements on the last nudge to uniformity (aliasing?)
+- 
+
+### weight identicalness
+weights:
 
 
-We know where standard optimization procedures take us. 
-- what do they have in common?
-- what do some optimizers that do better than others, what is true about their structure?
-- lets study the structure of some of these solutions and compare to the constructed solution
+
+### Interpolating geometries
+Interpolating between, we see some interesting things
 
 
-We know that a solution exists. it exists at the QI construction.
-- what does the structure look like here, how can we think about analyzing the structure?
-- how is the loss basin here?
+odd point: runge had a defect where for small N, uniformity hurt. this was the only case. in this same case, we were able to get machine epsilon precision if the biases were more compact and less spread out. this is something further to test. 
 
 
-what is the mechanism that gets us this QI solution?
 
-What is the mechanism that gets us to the other learned solutions?
 
-What does the path look like for the optimization method, what would need to be done to make the path obvious to get to the QI solution? 
-- how would we work backwards?
 
-How do the traditional optimization mechanisms interact with the structure at the QI solution. 
+So one thing we can do is fine tune the lambda, it matters, but maybe reparameterizing and letting adam go at it can put it in the optimal regime
 
-Do manifolds/transformations exist that make the optimization mechanisms work nicely and well with the QI solution? (how do we tranform the problem)
 
-What are the unique characteristics of the basin that could be used/engineered to draw the optimizer into? is there a risk of it landing in other similar basins without the same good solution?
+compare 2nd order, 1st order, lstsq, toeplitz
 
-How does noise affect the construction solution basin? is noise a confounding variable? does it make it intractible?
+
 
 
