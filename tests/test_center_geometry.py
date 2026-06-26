@@ -1,4 +1,4 @@
-"""Tests for 1D center-placement strategies (exp07 geometry comparison)."""
+"""Tests for 1D center-placement strategies (expC04 geometry comparison)."""
 
 import sys
 from pathlib import Path

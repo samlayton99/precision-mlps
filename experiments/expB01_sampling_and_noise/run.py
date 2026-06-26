@@ -1,12 +1,12 @@
-"""Experiment 8 -- randomness and noise in the lstsq readout (1D, tanh).
+"""Experiment expB01 -- randomness and noise in the lstsq readout (1D, tanh).
 
-Follows exp07, but now the *sample points* (where we observe (x, f(x)) to solve
+Follows expC04, but now the *sample points* (where we observe (x, f(x)) to solve
 the readout) vary too, and we add y-noise. Everything is an overdetermined fp64
 least-squares fit: W neurons < N_TRAIN sample points < N_EVAL eval points, with
 N_TRAIN and N_EVAL chosen prime so the uniform train and eval grids do not align
 (which would otherwise hide error at the sample points).
 
-In exp07 every geometry was fit and evaluated on a *uniform* grid, which favors
+In expC04 every geometry was fit and evaluated on a *uniform* grid, which favors
 uniform centers. Here we also let the sample points be random, so randomness in
 the geometry and randomness in the sampling are tested on an equal footing.
 
@@ -267,7 +267,7 @@ def plot_geometry(data):
         data, conds,
         color_fn=lambda c: G1_COLORS[(c["center_geom"], c["sample_type"])],
         label_fn=lambda c: f"{c['center_geom'][:4]} ctr / {c['sample_type'][:4]} samp",
-        title=f"Exp08 fig1: geometry x sampling (clean, lstsq, {data['config']['precision']}, "
+        title=f"ExpB01 fig1: geometry x sampling (clean, lstsq, {data['config']['precision']}, "
               f"target={data['config']['target']})",
         fname="error_vs_width_geometry.png")
 
@@ -280,7 +280,7 @@ def plot_noise(data):
         data, conds,
         color_fn=lambda c: G2_COLORS[(c["sample_type"], c["noise"])],
         label_fn=lambda c: f"{c['sample_type'][:4]} samp / {'noisy' if c['noise'] else 'clean'}",
-        title=f"Exp08 fig2: uniform centers, x/y perturbation "
+        title=f"ExpB01 fig2: uniform centers, x/y perturbation "
               f"(y-noise std={nstd:g}, lstsq, {data['config']['precision']})",
         fname="error_vs_width_noise.png")
 
@@ -294,7 +294,7 @@ def plot_sample_scaling(data):
     levels = cfg["ss_noise_levels"]
     metrics = [("rel_l2", 0, r"Relative $L_2$"), ("linf", 1, r"$L_\infty$")]
     fig, axes = plt.subplots(1, 2, figsize=(13, 5.4))
-    fig.suptitle(f"Exp08 fig3: sample-count scaling under y-noise "
+    fig.suptitle(f"ExpB01 fig3: sample-count scaling under y-noise "
                  f"(uniform centers, N={cfg['ss_N']}, $\\lambda$={cfg['ss_lambda']}, lstsq, "
                  f"{cfg['precision']})", fontsize=13)
     cmap = plt.cm.viridis(np.linspace(0, 0.88, len(levels)))

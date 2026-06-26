@@ -1,0 +1,32 @@
+# expC06: Soft-neuron weight interpolation (checkpoint C).
+# Merge of the former expC06 (histogram) + expC07 (threshold test): both probe the
+# same thing -- the soft/low-bandwidth inner-weight neurons under the Xavier -> uniform
+# interpolation of expC05 weights. Two sibling run scripts share expC05's verified
+# common.py (uniform geometry, Glorot draw, neuron ordering, truncated-SVD readout).
+# All knobs live in the run scripts; this file is a summary only.
+
+name: soft_neuron_interp
+
+shared:                                   # from expC05 common.py
+  normalizer: L1 (mean-abs, mean|w| = gamma)
+  draw: Glorot/Xavier (seeded per (seed, N))
+  lambda: 0.25                            # gamma = lambda/h = N/8
+  activation: tanh
+  widths: [64, 128, 256, 512]
+
+histogram:                                # run_histogram.py  -> results/.../histogram/
+  what: animate the |w| magnitude distribution as Xavier -> 1s vector
+  s_points: 100                           # linear (matches expC05 s)
+  output: [weight_hist_interp.mp4, weight_hist_snapshots.png]
+
+threshold:                                # run_threshold.py  -> results/.../{uniform,init}/
+  what: freeze the soft tail (|w0| < tau), pull the rest to gamma; vs random "placebo"
+  metric: relative_l2 (lstsq fp64)
+  targets: [exp, x2, neg_cos, sin2pi]     # convex + one non-convex control
+  const_taus: [0.125, 0.25, 0.75, 1.5]    # raw (small-tau counts seed-noisy)
+  rel_fracs: [0.0625, 0.125, 0.25, 0.5, 0.75, 1.0]   # x gamma (stable fractions)
+  baseline: tau=0 (no protection, the hump reference)
+  seeds: 6                                # all thresholds; aggregated by GEOMETRIC mean
+  center_regimes: [uniform]               # init computed earlier (old arith-mean) but not rerun -- less informative
+  s_points: 26                            # dense near s=0 (hump onset)
+  renorm: non-protected set only (survivors stay exactly frozen)

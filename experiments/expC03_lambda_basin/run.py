@@ -1,4 +1,4 @@
-"""Experiment 18 -- lambda basin: center + confidence range of the optimal bandwidth.
+"""Experiment expC03 -- lambda basin: center + confidence range of the optimal bandwidth.
 
 Stage 0 (this file, --check): visual stress-test of two candidate "basin
 estimators" before committing to the full sweep. For each (target, width) we
@@ -217,7 +217,7 @@ def plot_method(data, method, title, color):
     handles, labels = axes[0][0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper center", ncol=2, fontsize=9,
                bbox_to_anchor=(0.5, 1.003))
-    fig.suptitle(f"exp18 basin check -- {title}  "
+    fig.suptitle(f"expC03 basin check -- {title}  "
                  "(shaded = proposed range, line = center; derived from rel L2)",
                  fontsize=11, y=1.025)
     plt.tight_layout(rect=[0, 0, 1, 0.97])
@@ -301,7 +301,7 @@ def plot_basin_grid(data):
                 ax.set_xlabel(r"$\lambda = \gamma h$")
     h, l = axes[0][0].get_legend_handles_labels()
     fig.legend(h, l, loc="upper center", ncol=2, fontsize=9, bbox_to_anchor=(0.5, 1.004))
-    fig.suptitle("exp18 full basin grid -- M2 + mode seeking (shaded = range, line = center; from rel L2)",
+    fig.suptitle("expC03 full basin grid -- M2 + mode seeking (shaded = range, line = center; from rel L2)",
                  fontsize=12, y=1.02)
     plt.tight_layout(rect=[0, 0, 1, 0.975])
     out = RESULTS_DIR / "basin_grid_m2ms.png"
@@ -337,7 +337,7 @@ def plot_lambda_vs_size(data):
                 ax.set_xlabel(xlabel)
     h, l = axes[0][0].get_legend_handles_labels()
     fig.legend(h, l, loc="upper center", ncol=3, fontsize=10, bbox_to_anchor=(0.5, 1.005))
-    fig.suptitle(r"exp18 -- optimal $\lambda^*$ vs size  (weight/bias magnitude $\gamma=\lambda^* N/2$);"
+    fig.suptitle(r"expC03 -- optimal $\lambda^*$ vs size  (weight/bias magnitude $\gamma=\lambda^* N/2$);"
                  " center = M2+mode-seek, band = posterior range", fontsize=12, y=1.025)
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     out = RESULTS_DIR / "lambda_vs_size.png"

@@ -31,7 +31,7 @@ from src.data.sampling2d import disk_uniform  # noqa: E402
 from src.data.targets2d import get_target_2d  # noqa: E402
 
 RADIUS = 1.0
-N_TRAIN = 8000          # matches exp10/exp11 N_TRAIN
+N_TRAIN = 8000          # matches expE01 N_TRAIN
 TRAIN_SEED = 0          # matches disk_uniform(..., seed=0)
 N_SHOW = 1500           # subsample of the 8000 train points actually drawn (legibility)
 SURF_SIDE = 220         # surface mesh resolution

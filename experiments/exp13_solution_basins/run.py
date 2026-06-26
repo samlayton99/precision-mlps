@@ -1,4 +1,4 @@
-"""Experiment 13: Solution basins -- the landscape near the optimal solution.
+"""Experiment exp13: Solution basins -- the landscape near the optimal solution.
 
 Merges the former basin-stability and Hessian-landscape studies into one
 experiment that asks: what is actually going on at the high-precision solution,

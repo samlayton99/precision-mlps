@@ -48,6 +48,7 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expA02_qi_vs_lstsq/            QI construction vs least-squares readout (lstsq is superior)
   expA03_coeff_nullspace/        Coefficient closeness / readout null space
   expA04_activation_conditioning/ tanh O(1) vs GELU O(N) null-space regimes
+  expA05_weight_blowup/          QI vs lstsq readout norm (no blowup; norm decays with width)
   # Checkpoint B -- scaling laws + noise robustness
   expB01_sampling_and_noise/     Centers vs samples; y-noise; 1/sqrt(n) law
   expB02_scaling_laws/           Width + data scaling, multi-activation (linear-then-floor)
@@ -56,7 +57,8 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expC02_lambda_vs_frequency/    Optimal lambda constant across frequency
   expC03_lambda_basin/           Robust basin: lambda* ~ 0.25, gamma*/N ~ 0.10
   expC04_center_geometry/        Center-placement comparison (uniform vs others)
-  expC05_geometry_interpolation/ gamma/weight/bias coupling; reparam argument
+  expC05_geometry_interpolation/ center/weight/bandwidth perturbation; one-way coupling; reparam argument
+  expC06_soft_neuron_interp/     soft-neuron hump (low-degree polynomial basis); cascaded-geometry lead
   # Checkpoint D -- can optimizers find the geometry
   expD01_geometry_ladder/        Adam on frozen geometry stalls; lstsq solves (Phase 1)
   expD02_adam_geometry/          Init x training-regime cube (QI-init + refit wins)

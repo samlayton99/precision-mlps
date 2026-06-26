@@ -1,14 +1,14 @@
-"""Experiment 9 -- scaling laws for the fixed-geometry lstsq readout (1D).
+"""Experiment expB02 -- scaling laws for the fixed-geometry lstsq readout (1D).
 
 Fixed 1D QI geometry (uniform centers + halo, gamma = lambda/h), readout solved
-by least squares -- the method exp03/0B/11/12 showed reaches the fp64 floor on
+by least squares -- the method expA02/expA03/expE01/expD01 showed reaches the fp64 floor on
 the right (uniform) geometry. Here we trace two scaling laws, across multiple
 targets and multiple activations:
 
   Figure 1 (error_vs_width.png) -- SIZE scaling.
     x = grid size N on a fine logspace 16..128 (the resolution knob: h = 2/N).
     Overdetermined clean fit; for each (N, activation, target) the error is the
-    best over a lambda sweep (the U-shaped bandwidth tradeoff, see exp06). Two
+    best over a lambda sweep (the U-shaped bandwidth tradeoff, see expC02). Two
     columns (relative L2, L_inf), three rows (activations), one line per target.
 
   Figure 2 (error_vs_data_clean.png) -- DATA scaling, clean.
@@ -26,7 +26,7 @@ L_inf, one colored line per target. All fp64, all numpy.
 
 Geometry is fixed by HALO_LAMBDA (sets W, span, h for each N); gamma = lambda/h
 is set separately (swept in Figure 1, fixed in Figures 2-3). The readout is a
-plain np.linalg lstsq via a truncated SVD with bias (matches exp08).
+plain np.linalg lstsq via a truncated SVD with bias (matches expB01).
 
 Usage:
     python experiments/expB02_scaling_laws/run.py            # collect + plot
@@ -328,7 +328,7 @@ def plot_width(data):
     acts = cfg["activations"]
     fig, axes = _panels(acts)
     fig.suptitle(
-        f"Exp09 fig1: size scaling -- fixed uniform geometry, best-over-$\\lambda$ "
+        f"ExpB02 fig1: size scaling -- fixed uniform geometry, best-over-$\\lambda$ "
         f"lstsq, clean (fp64)", fontsize=13, y=0.995)
     for ri, act in enumerate(acts):
         for ci, (metric, mlabel) in enumerate(
@@ -415,7 +415,7 @@ def plot_data_clean(data):
     cfg = data["config"]
     _plot_data(
         data, "data_clean", noisy=False, fname="error_vs_data_clean.png",
-        title=f"Exp09 fig2: data scaling (clean) -- fixed geometry "
+        title=f"ExpB02 fig2: data scaling (clean) -- fixed geometry "
               f"N={cfg['data_N']}, $\\lambda$={cfg['data_lambda']}, lstsq (fp64); "
               f"dotted line = n_data = W+1 threshold")
 
@@ -424,7 +424,7 @@ def plot_data_noise(data):
     cfg = data["config"]
     _plot_data(
         data, "data_noise", noisy=True, fname="error_vs_data_noise.png",
-        title=f"Exp09 fig3: data scaling under y-noise $\\sigma$={cfg['noise_std']:g} "
+        title=f"ExpB02 fig3: data scaling under y-noise $\\sigma$={cfg['noise_std']:g} "
               f"-- fixed geometry N={cfg['data_N']}, $\\lambda$={cfg['data_lambda']}, "
               f"lstsq (fp64); mean over {len(cfg['noise_seeds'])} seeds")
 

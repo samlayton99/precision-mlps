@@ -1,4 +1,4 @@
-"""Tests for exp06 frequency-ladder helpers."""
+"""Tests for expC02 frequency-ladder helpers."""
 
 import sys
 from pathlib import Path

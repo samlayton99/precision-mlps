@@ -1,7 +1,7 @@
-"""Experiment 5: GELU vs tanh feature-matrix conditioning.
+"""Experiment expA04: GELU vs tanh feature-matrix conditioning.
 
 GELU has no QI construction (its derivative is a sigmoid, not a bump kernel), so
-the QI-dependent metrics of exp04 (ratio_full/ratio_row/qi_fit) do not apply. We
+the QI-dependent metrics of expA03 (ratio_full/ratio_row/qi_fit) do not apply. We
 instead study what IS defined for GELU: the conditioning of the feature matrix
 and the lstsq fit, with tanh overlaid for contrast.
 
@@ -161,14 +161,14 @@ def _plot_step1(data):
                 fontsize=9, color="#1f77b4")
     ax.set_xlabel(r"$\lambda = \gamma h$")
     ax.set_ylabel(r"eval $L_\infty$ error  (lstsq fp64)")
-    ax.set_title(rf"exp05 step 1: lstsq error vs $\lambda$ on $\sin(\pi x)$, N={data['N_step1']}")
+    ax.set_title(rf"expA04 step 1: lstsq error vs $\lambda$ on $\sin(\pi x)$, N={data['N_step1']}")
     ax.grid(True, which="both", alpha=0.3)
     ax.legend()
     caption = (
         "HOW TO READ: lstsq eval error vs bandwidth lambda for GELU (solid) and "
         "tanh (dashed) on the same geometry, target sin(pi x). Neither has a sharp "
         "optimum -- both are flat-bottomed in lambda until the high-lambda fp64 "
-        "cancellation wall (see exp06/exp02). The dotted line marks the GELU "
+        "cancellation wall (see expC02/expC01). The dotted line marks the GELU "
         "minimum, but it is just a representative point in the flat band."
     )
     fig.text(0.5, 0.005, caption, ha="center", va="bottom", fontsize=8,
@@ -226,7 +226,7 @@ def _plot_step2(data):
     ax_err.grid(True, which="both", alpha=0.3)
     ax_err.legend(fontsize=7, ncol=2, title="target")
 
-    fig.suptitle(rf"exp05 step 2: GELU vs tanh conditioning at $\lambda$={best_lambda:.3f} (fp64)",
+    fig.suptitle(rf"expA04 step 2: GELU vs tanh conditioning at $\lambda$={best_lambda:.3f} (fp64)",
                  fontsize=14, y=0.99)
     caption = (
         "HOW TO READ: panels 1-3 are the feature-matrix conditioning, which is "

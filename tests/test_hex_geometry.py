@@ -162,7 +162,7 @@ def test_build_phi_2d_matches_explicit_formula():
 def test_in_span_target_recovered_near_eps():
     """Control: a target that lies in the Phi span (a known readout) must be
     recovered as a FUNCTION to ~machine precision, even though the coefficients
-    are underdetermined (the 2D analog of exp04's function_diff)."""
+    are underdetermined (the 2D analog of expA03's function_diff)."""
     geo = build_hex_geometry(127, radius=RADIUS, lambda_star=0.25)
     X = disk_uniform(4000, radius=1.0, seed=0)
     Phi = build_phi_2d(X, geo["W"], geo["beta"])

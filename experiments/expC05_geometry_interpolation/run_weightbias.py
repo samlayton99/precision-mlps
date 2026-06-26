@@ -1,44 +1,34 @@
-"""Experiment 20 -- weight + bias interpolation (belongs in checkpoint 2).
+"""expC05 weight+bias mode -- interpolate BOTH the weight pattern and the centers, no confound.
 
-Completes the exp16 / exp19 pair. exp16 fixed the ideal inner weight (gamma for
-every neuron) and interpolated the center geometry; exp19 fixed the ideal geometry
-(biases) and interpolated the inner weights. exp20 interpolates BOTH at once: the
-genuine Xavier-initialized inner layer (w_xavier, b_xavier) is moved, along two
-independent axes, onto the exact QI inner layer (weight = gamma for all neurons,
-bias = -gamma * c_uniform).
+Completes the centers / weights pair. Two independent axes, at a FIXED bandwidth (lambda=0.25):
 
-Unlike the other two, gamma (= lambda) is NOT a swept axis here -- it is held
-CONSTANT per (N, target). The held value is chosen by a detailed lambda sweep at the
-ideal geometry (uniform centers + the 1*gamma weight vector = exact QI), taking the
-argmin relative-L2 per function. The ideal geometry is seed-independent, so lambda*
-depends only on (N, target) and is computed once and reused across the seed folders.
+  - weight uniformness s in [0,1] -- the weight pattern, on the L1 diamond (same as the weights mode):
+        w_hat = w_xav / mean|w_xav|,  sigma = sign(w_xav)
+        u(s)  = (1-s)*w_hat + s*sigma          # toward the signed-ones octant center
+        w(s)  = gamma * u(s) / mean|u(s)|       # mean|w| = gamma, stays in-orthant (no crossing)
+  - center uniformness t in [0,1] -- the center POSITIONS:
+        c_rand = sorted uniform random over the full grid+halo span
+        c(t)   = (1-t)*c_rand + t*c_uniform     # random-uniform layout -> the uniform QI grid
+  - bias is DERIVED, never interpolated raw:  b(s,t) = -w(s) * c(t)   (so center -b/w = c(t) exactly)
 
-The two interpolation axes, each with K points -> a K x K grid (gamma* fixed):
-  - weight uniformness s in [0, 1]:  w_i(s) = (1 - s) * w_xavier_i + s * gamma*.
-        s = 0 -> the raw Xavier weights (random, some negative); s = 1 -> the constant
-        1*gamma vector (every weight = gamma*).
-  - bias uniformness t in [0, 1]:    b_i(t) = (1 - t) * b_xavier_i + t * (-gamma* * c_i).
-        t = 0 -> the raw Xavier biases; t = 1 -> -gamma* * c_uniform, the bias vector that
-        encodes the ideal uniform centers.
-  (s = 0, t = 0) is the genuine Xavier init; (s = 1, t = 1) is tanh(gamma*(x - c_i)),
-  the exact QI geometry, which should reach the fp64 floor. Along the t = 1 edge exp20
-  reduces exactly to exp19.
+Feature: tanh(w(s)*x + b(s,t)) = tanh(w(s)*(x - c(t))).
 
-The Xavier weights and biases are ordered by their Xavier center -b/w (the same neuron
-ordering exp16 / exp19 use) and the i-th neuron is pinned to the i-th ascending uniform
-grid center, so the t = 1 bias target -gamma * c_uniform[i] matches neuron i.
+gamma is held CONSTANT at lambda* = 0.25 (gamma = lambda*/h = N/8) -- not swept, not selected. So the
+(s,t) grid is one bandwidth slice. Corners: (1,1) = exact QI construction (-> fp64 floor);
+(0,0) = the Xavier weight *pattern* at gamma-scale + random-uniform centers (a controlled random
+start, NOT the literal small-magnitude Xavier init); (1,0) = uniform weights / random centers;
+(0,1) = Xavier-pattern weights / uniform centers.
 
-Per cell (one target) gamma* is fixed, so unlike exp16 / exp19 the design matrix differs
-per target and we solve one right-hand side per (s, t) with its own truncated-SVD.
+Consistency check (validate post-run): along t=1 the centers are exactly uniform regardless of s, so
+the t=1 edge reduces to the weights mode (uniform centers + w(s)); its error-vs-s should equal the
+weights experiment's tanh run at lambda=0.25.
 
-Grid: 3 seed folders x 4 targets x 4 widths (N=64,128,256,512) x K x K.
+L1 / mean-abs normalization (hold the bandwidth budget); centers and target share the same span (t
+varies uniformity only); invariants asserted: mean|w|=gamma, center -b/w=c(t), no sign crossing.
 
-Figures: one PNG per (seed folder, target) under results/.../<folder>/, a 4 x 3 grid
-(rows = widths). Col 1 = K x K error heatmap (x = weight s, y = bias t, color = rel L2).
-Col 2 = error vs weight s, one line per bias-t slice (colored by t). Col 3 = error vs
-bias t, one line per weight-s slice (colored by s). lambda* annotated per row. Plus
-results/.../lambda_sweeps.png: the ideal-geometry U-curves and the chosen lambda* per
-(N, target).
+tanh only, single seed. Grid: 4 targets x 4 widths (N=64,128,256,512) x K x K.
+Figures: weightbias/interp_<target>.png -- 4x3 grid (rows=widths): col1 = (s,t) error heatmap,
+col2 = error vs s (lines = t slices), col3 = error vs t (lines = s slices).
 
 Usage:
     python experiments/expC05_geometry_interpolation/run_weightbias.py            # collect + plot
@@ -68,45 +58,14 @@ DATA_PATH = OUT_DIR / "data.json"
 # --- experiment grid ---
 WIDTHS = [64, 128, 256, 512]
 TARGETS = ["sine", "sine_8pi", "runge", "exp"]
-SEED_FOLDERS = {"seed_1": 0, "seed_2": 1, "seed_3": 2}   # one init per folder, shared across targets
-K = 21                                            # K x K interpolation grid (weight s) x (bias t)
-HALO_LAMBDA = 0.25                                # sizes the uniform grid's halo
-N_TRAIN = 2003                                    # prime, overdetermined for all W (W<=923 at N=512)
-N_EVAL = 4001                                     # prime, misaligned with the train grid
-RCOND = 1e-13                                     # SVD truncation (relative to s_max)
-
-# Detailed lambda sweep at the ideal geometry -> lambda* held constant per (N, target).
-LAMBDA_MIN = 0.03
-LAMBDA_MAX = 1.5
-LAMBDA_POINTS = 81
-# uniform_geometry, N_TRAIN/N_EVAL/RCOND/HALO_LAMBDA, solve_relL2 come from `common`.
+SEED = 0
+K = 21
+LAMBDA_STAR = 0.25                                # bandwidth held fixed here
+WDEAD = 1e-12
 
 
-def xavier_params(W, seed, N):
-    """The genuine Xavier-init inner layer, ordered to match the centers / weights
-    modes' neuron ordering. Draw per-neuron (w, b) (Glorot bound sqrt(6/(1+W))), order
-    the neurons by their Xavier center c = -b/w (ascending, dead |w|<eps parked by bias
-    sign) and return both vectors in that order. The i-th neuron is then pinned to the
-    i-th ascending uniform grid center. (w[order], b[order]) is the same function as the
-    raw draw (neurons are exchangeable). Seeded per (folder seed, width)."""
-    w, b = xavier_draw(W, seed, N)
-    order = center_order(w, b)
-    return w[order], b[order]
-
-
-def ideal_lambda_sweep(N, c_uniform, h, X_tr, X_ev, Y_tr, Y_ev, y_norms):
-    """Detailed lambda sweep at the IDEAL geometry (exact QI: weight = gamma, centers =
-    uniform). Returns (lambdas, err[target, lambda], lambda_star[target]). Seed-independent."""
-    lambdas = np.logspace(np.log10(LAMBDA_MIN), np.log10(LAMBDA_MAX), LAMBDA_POINTS)
-    err = np.zeros((len(TARGETS), len(lambdas)))
-    for li, lam in enumerate(lambdas):
-        g = lam / h
-        Phi_tr = np.tanh(g * (X_tr[:, None] - c_uniform[None, :]))
-        Phi_ev = np.tanh(g * (X_ev[:, None] - c_uniform[None, :]))
-        err[:, li] = solve_relL2(Phi_tr, Phi_ev, Y_tr, Y_ev, y_norms)
-    star_idx = np.argmin(err, axis=1)
-    lambda_star = lambdas[star_idx]
-    return lambdas, err, lambda_star
+def mabs(v):
+    return float(np.mean(np.abs(np.asarray(v))))
 
 
 def collect_data():
@@ -114,75 +73,83 @@ def collect_data():
     X_tr = np.linspace(-1.0, 1.0, N_TRAIN)
     X_ev = np.linspace(-1.0, 1.0, N_EVAL)
     ss = np.linspace(0.0, 1.0, K)                        # weight-uniformness axis
-    ts = np.linspace(0.0, 1.0, K)                        # bias-uniformness axis
-    Y_tr = np.stack([get_target(t).fn_numpy(X_tr) for t in TARGETS], axis=1)   # [n_tr, 4]
-    Y_ev = np.stack([get_target(t).fn_numpy(X_ev) for t in TARGETS], axis=1)   # [n_ev, 4]
-    y_norms = np.linalg.norm(Y_ev, axis=0)               # [4]
+    ts = np.linspace(0.0, 1.0, K)                        # center-uniformness axis
+    Y_tr = np.stack([get_target(t).fn_numpy(X_tr) for t in TARGETS], axis=1)
+    Y_ev = np.stack([get_target(t).fn_numpy(X_ev) for t in TARGETS], axis=1)
+    y_norms = np.linalg.norm(Y_ev, axis=0)
 
     cells = []
-    ideal_sweeps = []
     t0 = time.time()
-    total = len(SEED_FOLDERS) * len(WIDTHS) * len(TARGETS)
-    done = 0
+    max_center_err = 0.0; max_budget_err = 0.0; n_signflip = 0
+    total = len(WIDTHS) * len(TARGETS); done = 0
     for N in WIDTHS:
         c_uniform, h, halo = uniform_geometry(N)
         W = c_uniform.size
+        span = (float(c_uniform[0]), float(c_uniform[-1]))
+        g = LAMBDA_STAR / h                              # = N/8
 
-        # --- pick lambda* per target at the ideal geometry (seed-independent) ---
-        lambdas, ideal_err, lambda_star = ideal_lambda_sweep(
-            N, c_uniform, h, X_tr, X_ev, Y_tr, Y_ev, y_norms)
-        gamma_star = lambda_star / h
+        # weight pattern: Xavier draw, ordered (pins neuron i to grid center i, matching weights mode)
+        w_x, b_x = xavier_draw(W, SEED, N)
+        order = center_order(w_x, b_x)
+        w_x = w_x[order]
+        what = w_x / mabs(w_x)
+        sigma = np.sign(w_x)
+        # center anchor: random uniform over the full span (sorted), independent of the weights
+        rng = np.random.default_rng([SEED, N])
+        c_rand = np.sort(rng.uniform(span[0], span[1], size=W)).astype(np.float64)
+
+        # precompute w(s) on the L1 face
+        Wmat = np.zeros((K, W))
+        for si, s in enumerate(ss):
+            u = (1.0 - s) * what + s * sigma
+            Wmat[si] = g * u / mabs(u)                   # mean|w| = g
+
         for ti, target in enumerate(TARGETS):
-            interior = 0 < int(np.argmin(ideal_err[ti])) < LAMBDA_POINTS - 1
-            ideal_sweeps.append({
-                "N": N, "target": target, "W": int(W),
-                "lambdas": lambdas.tolist(), "err": ideal_err[ti].tolist(),
-                "lambda_star": float(lambda_star[ti]), "gamma_star": float(gamma_star[ti]),
-                "ideal_err": float(ideal_err[ti].min()), "interior": bool(interior),
+            yt = Y_tr[:, ti:ti + 1]; ye = Y_ev[:, ti:ti + 1]; yn = y_norms[ti:ti + 1]
+            err = np.zeros((K, K))                        # [s_idx, t_idx]
+            for si in range(K):
+                w = Wmat[si]
+                for tj, t in enumerate(ts):
+                    c = (1.0 - t) * c_rand + t * c_uniform
+                    b = -w * c
+                    live = np.abs(w) > WDEAD
+                    if live.any():
+                        max_center_err = max(max_center_err, float(np.max(np.abs((-b[live]/w[live]) - c[live]))))
+                        n_signflip += int(np.sum((np.sign(w[live]) != sigma[live]) & (sigma[live] != 0)))
+                    max_budget_err = max(max_budget_err, abs(mabs(w) - g) / g)
+                    Phi_tr = np.tanh(w[None, :] * X_tr[:, None] + b[None, :])
+                    Phi_ev = np.tanh(w[None, :] * X_ev[:, None] + b[None, :])
+                    err[si, tj] = solve_relL2(Phi_tr, Phi_ev, yt, ye, yn)[0]
+            cells.append({
+                "target": target, "N": N, "W": int(W), "halo": int(halo), "seed": SEED,
+                "lambda": LAMBDA_STAR, "gamma": float(g), "span": list(span),
+                "ss": ss.tolist(), "ts": ts.tolist(), "err": err.tolist(),
             })
-        flag = "" if all(0 < int(np.argmin(ideal_err[ti])) < LAMBDA_POINTS - 1
-                         for ti in range(len(TARGETS))) else "  [!] boundary lambda*"
-        print(f"N={N:4d} (W={W}) lambda*: "
-              + " ".join(f"{TARGETS[ti][:5]}={lambda_star[ti]:.3f}(e={ideal_err[ti].min():.1e})"
-                         for ti in range(len(TARGETS))) + flag)
+            done += 1
+            print(f"[{done}/{total}] N={N:4d} {target:8s} | (0,0)={err[0,0]:.1e} "
+                  f"(1,1)={err[-1,-1]:.1e} (1,0)={err[-1,0]:.1e} (0,1)={err[0,-1]:.1e} "
+                  f"min={err.min():.1e} | {time.time()-t0:.0f}s")
 
-        # --- K x K weight/bias interpolation per (seed folder, target) ---
-        for folder, fseed in SEED_FOLDERS.items():
-            w_x, b_x = xavier_params(W, fseed, N)
-            for ti, target in enumerate(TARGETS):
-                g = gamma_star[ti]
-                b_target = -g * c_uniform                 # ideal (t=1) bias
-                yt = Y_tr[:, ti:ti + 1]; ye = Y_ev[:, ti:ti + 1]; yn = y_norms[ti:ti + 1]
-                err = np.zeros((K, K))                    # [s_idx, t_idx]
-                for si, s in enumerate(ss):
-                    w = (1.0 - s) * w_x + s * g
-                    Wcol = w[None, :]
-                    for tj, t in enumerate(ts):
-                        b = (1.0 - t) * b_x + t * b_target
-                        Phi_tr = np.tanh(Wcol * X_tr[:, None] + b[None, :])
-                        Phi_ev = np.tanh(Wcol * X_ev[:, None] + b[None, :])
-                        err[si, tj] = solve_relL2(Phi_tr, Phi_ev, yt, ye, yn)[0]
-                cells.append({
-                    "folder": folder, "target": target, "N": N, "W": int(W),
-                    "halo": int(halo), "seed": fseed,
-                    "lambda_star": float(lambda_star[ti]), "gamma_star": float(g),
-                    "ss": ss.tolist(), "ts": ts.tolist(), "err": err.tolist(),
-                })
-                done += 1
-                print(f"  [{done}/{total}] {folder} N={N:4d} {target:8s} "
-                      f"lambda*={lambda_star[ti]:.3f} | "
-                      f"xavier(0,0)={err[0,0]:.1e} ideal(1,1)={err[-1,-1]:.1e} "
-                      f"min={err.min():.1e} | {time.time()-t0:.0f}s")
+    print(f"\n[invariant] max center drift |(-b/w)-c| = {max_center_err:.2e}  (want ~0)")
+    print(f"[invariant] max rel budget err |mean|w|-g|/g = {max_budget_err:.2e}  (want ~0)")
+    print(f"[invariant] sign flips / origin crossings = {n_signflip}  (want 0)")
+    assert max_center_err < 1e-9 and max_budget_err < 1e-9 and n_signflip == 0
+    for c in cells:
+        if c["target"] == "sine" and c["N"] == 256:
+            corner = float(np.array(c["err"])[-1, -1])
+            print(f"[sanity] sine N=256 (1,1) corner rel L2 = {corner:.2e}  (want <1e-11)")
+            assert corner < 1e-11
 
     out = {
         "config": {
-            "widths": WIDTHS, "targets": TARGETS, "seed_folders": SEED_FOLDERS,
-            "K": K, "halo_lambda": HALO_LAMBDA, "n_train": N_TRAIN, "n_eval": N_EVAL,
-            "rcond": RCOND, "lambda_range": [LAMBDA_MIN, LAMBDA_MAX],
-            "lambda_points": LAMBDA_POINTS,
+            "widths": WIDTHS, "targets": TARGETS, "seed": SEED, "K": K,
+            "lambda_star": LAMBDA_STAR, "halo_lambda": HALO_LAMBDA,
+            "n_train": N_TRAIN, "n_eval": N_EVAL, "rcond": RCOND, "normalizer": "L1 (mean-abs)",
+            "construction": "w: L1 face Xavier->sign(Xavier)*1; centers: uniform-random-over-span->uniform grid; "
+                            "b=-w*c (derived); gamma fixed at lambda*=0.25",
+            "max_center_err": max_center_err, "max_budget_err": max_budget_err, "sign_flips": n_signflip,
         },
         "cells": cells,
-        "ideal_sweeps": ideal_sweeps,
     }
     with open(DATA_PATH, "w") as f:
         json.dump(out, f)
@@ -192,106 +159,66 @@ def collect_data():
 
 # ----------------------------- plotting -----------------------------
 
-def _cell(cells, folder, target, N):
-    return next(c for c in cells if c["folder"] == folder
-               and c["target"] == target and c["N"] == N)
+def _cell(cells, target, N):
+    return next(c for c in cells if c["target"] == target and c["N"] == N)
 
 
-def plot_target(data, folder, target):
+def plot_target(data, target):
     cfg = data["config"]
     widths = cfg["widths"]
     nrows = len(widths)
     fig, axes = plt.subplots(nrows, 3, figsize=(19, 4.6 * nrows))
-    fig.suptitle(f"Exp20: weight + bias interpolation -- {target} ({folder}) "
-                 r"(Xavier $(w,b)\to(\mathbf{1}\gamma,\,-\gamma c_{\rm unif})$; "
-                 r"$\gamma$ fixed per row; lstsq, fp64, relative $L_2$)",
-                 fontsize=15, y=0.999)
+    fig.suptitle(f"expC05 weight+bias -- {target} "
+                 r"(weight: Xavier $\to \sigma\mathbf{1}$ on L1 face; centers: random$\to$uniform; "
+                 r"$b=-w c$; $\lambda=0.25$ fixed; lstsq fp64, rel $L_2$)",
+                 fontsize=14, y=0.999)
 
     for ri, N in enumerate(widths):
-        c = _cell(data["cells"], folder, target, N)
+        c = _cell(data["cells"], target, N)
         ss = np.array(c["ss"]); ts = np.array(c["ts"]); err = np.array(c["err"])   # [s, t]
-        lam = c["lambda_star"]
         emin = max(err.min(), 1e-16); emax = err.max()
 
-        # --- col 1: K x K heatmap (x = weight s, y = bias t) ---
         ax = axes[ri][0]
         im = ax.pcolormesh(ss, ts, err.T, norm=LogNorm(vmin=emin, vmax=emax),
                            cmap="inferno", shading="auto")
-        ax.set_ylabel(f"N = {N},  " + rf"$\lambda^* = {lam:.3f}$" + "\nbias uniformness $t$")
+        ax.set_ylabel(f"N = {N}\ncenter uniformness $t$")
         ax.set_xlabel("weight uniformness $s$")
         if ri == 0:
             ax.set_title("error heatmap (rel $L_2$)")
         fig.colorbar(im, ax=ax, shrink=0.85, label="rel $L_2$")
 
-        # --- col 2: error vs weight s, one line per bias-t slice ---
         ax = axes[ri][1]
         cmap2, norm2 = plt.cm.viridis, Normalize(0.0, 1.0)
         for tj, t in enumerate(ts):
             ax.plot(ss, err[:, tj], "-", lw=1.1, color=cmap2(norm2(t)))
-        ax.set_yscale("log")
-        ax.grid(True, alpha=0.3, which="both")
+        ax.set_yscale("log"); ax.grid(True, alpha=0.3, which="both")
         ax.set_xlabel("weight uniformness $s$"); ax.set_ylabel("rel $L_2$")
         if ri == 0:
-            ax.set_title("error vs weight $s$ (lines = bias $t$ slices)")
+            ax.set_title("error vs weight $s$ (lines = center $t$ slices)")
         fig.colorbar(ScalarMappable(norm=norm2, cmap=cmap2), ax=ax,
-                     shrink=0.85, label="bias uniformness $t$")
+                     shrink=0.85, label="center uniformness $t$")
 
-        # --- col 3: error vs bias t, one line per weight-s slice ---
         ax = axes[ri][2]
         cmap3, norm3 = plt.cm.plasma, Normalize(0.0, 1.0)
         for si, s in enumerate(ss):
             ax.plot(ts, err[si, :], "-", lw=1.1, color=cmap3(norm3(s)))
-        ax.set_yscale("log")
-        ax.grid(True, alpha=0.3, which="both")
-        ax.set_xlabel("bias uniformness $t$"); ax.set_ylabel("rel $L_2$")
+        ax.set_yscale("log"); ax.grid(True, alpha=0.3, which="both")
+        ax.set_xlabel("center uniformness $t$"); ax.set_ylabel("rel $L_2$")
         if ri == 0:
-            ax.set_title("error vs bias $t$ (lines = weight $s$ slices)")
+            ax.set_title("error vs center $t$ (lines = weight $s$ slices)")
         fig.colorbar(ScalarMappable(norm=norm3, cmap=cmap3), ax=ax,
                      shrink=0.85, label="weight uniformness $s$")
 
     plt.tight_layout(rect=[0, 0, 1, 0.99])
-    out_dir = OUT_DIR / folder
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out = out_dir / f"interp_{target}.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight"); plt.close(fig)
-    print(f"Saved {out}")
-
-
-def plot_lambda_sweeps(data):
-    """Ideal-geometry U-curves and the chosen lambda* per (N, target)."""
-    sweeps = data["ideal_sweeps"]
-    widths = data["config"]["widths"]
-    targets = data["config"]["targets"]
-    nrows = len(widths)
-    fig, axes = plt.subplots(nrows, 1, figsize=(8.5, 3.4 * nrows), squeeze=False)
-    fig.suptitle("Exp20: ideal-geometry $\\lambda$ sweep (exact QI; rel $L_2$) "
-                 "-- vertical marks = chosen $\\lambda^*$", fontsize=13, y=0.999)
-    cmap = plt.cm.tab10
-    for ri, N in enumerate(widths):
-        ax = axes[ri][0]
-        for ti, target in enumerate(targets):
-            sw = next(s for s in sweeps if s["N"] == N and s["target"] == target)
-            lam = np.array(sw["lambdas"]); e = np.array(sw["err"])
-            ax.plot(lam, e, "-", lw=1.3, color=cmap(ti), label=target)
-            ax.axvline(sw["lambda_star"], color=cmap(ti), ls="--", lw=1.0, alpha=0.7)
-        ax.set_xscale("log"); ax.set_yscale("log")
-        ax.grid(True, alpha=0.3, which="both")
-        ax.set_ylabel(f"N = {N}\nrel $L_2$"); ax.set_xlabel(r"$\lambda = \gamma\,h$")
-        if ri == 0:
-            ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.04),
-                      ncol=len(targets), borderaxespad=0, fontsize=9)
-    plt.tight_layout(rect=[0, 0, 1, 0.985])
-    out = OUT_DIR / "lambda_sweeps.png"
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / f"interp_{target}.png"
     fig.savefig(out, dpi=150, bbox_inches="tight"); plt.close(fig)
     print(f"Saved {out}")
 
 
 def plot_all(data):
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    plot_lambda_sweeps(data)
-    for folder in data["config"]["seed_folders"]:
-        for target in data["config"]["targets"]:
-            plot_target(data, folder, target)
+    for target in data["config"]["targets"]:
+        plot_target(data, target)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
-"""Tests for exp04 coefficient-comparison metrics.
+"""Tests for expA03 coefficient-comparison metrics.
 
-The heart of exp04: on a FIXED tanh geometry, the QI and lstsq readouts solve
+The heart of expA03: on a FIXED tanh geometry, the QI and lstsq readouts solve
 the same Phi @ beta = y, but Phi is ~50% null space. So the two coefficient
 vectors can differ wildly in the null space while computing the same function.
 These tests pin the three metrics that disentangle that:

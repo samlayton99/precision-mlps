@@ -12,7 +12,7 @@ GammaExpLinear:  Log-gamma reparameterization. Stores log_gamma and centers.
 
 StandardLinear:  Standard weight/bias parameterization (nn.Linear wrapper).
                  Forward: x @ weight + bias.
-                 Baseline for reparameterization experiments (Experiment 8).
+                 Baseline for the reparameterization experiments (expD03).
 
 All layers: input [batch, 1], output [batch, width], dtype float64.
 """
@@ -88,7 +88,7 @@ class GammaExpLinear(nn.Module):
 
 
 class StandardLinear(nn.Module):
-    """Standard weight/bias linear layer. Baseline for Experiment 8.
+    """Standard weight/bias linear layer. Baseline for the reparameterization experiments (expD03).
 
     Wraps nn.Linear(1, width). Does not separate gamma and center.
     """

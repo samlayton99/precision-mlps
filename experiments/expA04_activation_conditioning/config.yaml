@@ -1,10 +1,10 @@
-# Experiment 0C: GELU vs tanh feature-matrix conditioning.
+# Experiment expA04: GELU vs tanh feature-matrix conditioning.
 #
 # Step 1: GELU lstsq on sin(pi x); sweep lambda in [0.1, 0.5]; pick the best.
 # Step 2: at the best lambda, compare GELU vs tanh Phi conditioning (cond, rank,
 #         null) across widths, plus per-function lstsq fit and eval error.
 # fp64 throughout, tanh overlaid for contrast. The QI-dependent metrics from
-# exp0B are dropped (GELU has no QI construction; its derivative is not a bump).
+# expA03 are dropped (GELU has no QI construction; its derivative is not a bump).
 
 name: gelu_conditioning
 precision: fp64

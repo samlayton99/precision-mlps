@@ -1,4 +1,4 @@
-"""Experiment 14: Reparameterization.
+"""Experiment expD03: Reparameterization.
 
 Core (head-to-head comparison):
 - Raw (standard): W, b

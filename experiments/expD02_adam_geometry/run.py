@@ -1,4 +1,4 @@
-"""Experiment 17 -- does Adam learn a useful geometry? (1D, checkpoint 2)
+"""Experiment expD02 -- does Adam learn a useful geometry? (1D, checkpoint D)
 
 Trains a standard tanh MLP with Adam, then asks whether the *geometry* it learned
 is any good by refitting only the readout with fp64 least squares (the readout
@@ -327,7 +327,7 @@ def plot(data):
              ("random_refit", "random init + lstsq", "#1f77b4"),
              ("uniform_refit", "uniform (QI) + lstsq", "#2ca02c")]
     fig, axes = plt.subplots(2, 2, figsize=(13, 10))
-    fig.suptitle("Exp17: does Adam learn a useful geometry?  (relative $L_2$, "
+    fig.suptitle("expD02: does Adam learn a useful geometry?  (relative $L_2$, "
                  "fp64 refit; standard Xavier init)", fontsize=14)
     for ax, fn in zip(axes.ravel(), targets):
         for key, label, color in lines:

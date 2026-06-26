@@ -1,4 +1,4 @@
-"""Plot the exp17 cube two ways (reads results/.../cube.json; makes no data).
+"""Plot the expD02 cube two ways (reads results/.../cube.json; makes no data).
 
 training_slice/      -- one PNG per INITIALIZATION; lines = the 4 training regimes.
                         (training_slice_<init>.png; the xavier PNG is the original
@@ -93,7 +93,7 @@ def plot_training_slice(data, out_dir):
                 ys = [_val(rows, init, fn, N, key) for N in widths]
                 ax.loglog(widths, ys, "-o", color=color, ms=5, label=label)
             _setup_axes(ax, fn, widths)
-        title = (f"Exp17 training slice -- {INIT_TITLE[init]}\n"
+        title = (f"expD02 training slice -- {INIT_TITLE[init]}\n"
                  r"relative $L_2$ vs width, by training regime ($\lambda^*=0.25$, float32 Adam)")
         _finish_fig(fig, axes, title, ncol=4)
         out = out_dir / f"training_slice_{init}.png"
@@ -118,7 +118,7 @@ def plot_initialization_slice(data, out_dir):
             base = [_val(rows, "xavier", fn, N, "qi_lstsq") for N in widths]
             ax.loglog(widths, base, "--", color="k", lw=1.6, label=BASELINE_LABEL)
             _setup_axes(ax, fn, widths)
-        title = (f"Exp17 initialization slice -- regime: {regime_label}\n"
+        title = (f"expD02 initialization slice -- regime: {regime_label}\n"
                  r"relative $L_2$ vs width, by initialization ($\lambda^*=0.25$, float32 Adam)")
         _finish_fig(fig, axes, title, ncol=5)
         out = out_dir / f"init_slice_{regime_key}.png"

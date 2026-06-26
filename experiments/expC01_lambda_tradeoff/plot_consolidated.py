@@ -1,6 +1,6 @@
 """Consolidated 3x4 lambda tradeoff plot.
 
-Merges all data from exp02 and exp03 into a single all_data.json,
+Merges all data from expC01 and expA02 into a single all_data.json,
 then produces a 3-row x 4-column figure:
   Row 1: fp64 QI + fp64 lstsq
   Row 2: mpmath QI + fp64 lstsq
@@ -20,10 +20,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EXP01_DIR = REPO_ROOT / "results" / "checkpoint_C_geometry" / "expC01_lambda_tradeoff"
-EXP0A_DIR = REPO_ROOT / "results" / "checkpoint_A_numerics" / "expA02_qi_vs_lstsq"
-ALL_DATA_PATH = EXP01_DIR / "all_data.json"
-PLOT_PATH = EXP01_DIR / "consolidated_linf.png"
+EXPC01_DIR = REPO_ROOT / "results" / "checkpoint_C_geometry" / "expC01_lambda_tradeoff"
+EXPA02_DIR = REPO_ROOT / "results" / "checkpoint_A_numerics" / "expA02_qi_vs_lstsq"
+ALL_DATA_PATH = EXPC01_DIR / "all_data.json"
+PLOT_PATH = EXPC01_DIR / "consolidated_linf.png"
 
 TARGETS = ["sine", "runge", "exp", "sine_mixture"]
 EXCLUDE_N = {256, 512}
@@ -48,15 +48,15 @@ def build_all_data():
                 "source": source,
             }
 
-    # --- exp02/data.json: fp64/fp64 ---
-    with open(EXP01_DIR / "data.json") as f:
+    # --- expC01/data.json: fp64/fp64 ---
+    with open(EXPC01_DIR / "data.json") as f:
         for r in json.load(f):
             add(key(r["target"], r["N"], r["lambda_star"], "fp64", "fp64"),
                 r["qi_linf"], r["qi_rel_l2"], r["lstsq_linf"], r["lstsq_rel_l2"],
-                "exp02/data.json")
+                "expC01/data.json")
 
-    # --- exp02/data_fine_fp64.json: fp64/fp64 (fine, overwrites coarse) ---
-    with open(EXP01_DIR / "data_fine_fp64.json") as f:
+    # --- expC01/data_fine_fp64.json: fp64/fp64 (fine, overwrites coarse) ---
+    with open(EXPC01_DIR / "data_fine_fp64.json") as f:
         for r in json.load(f):
             k = key(r["target"], r["N"], r["lambda_star"], "fp64", "fp64")
             if k[1] not in EXCLUDE_N:
@@ -65,18 +65,18 @@ def build_all_data():
                     "qi_precision": "fp64", "lstsq_precision": "fp64",
                     "qi_linf": r["qi_linf"], "qi_rel_l2": r["qi_rel_l2"],
                     "lstsq_linf": r["lstsq_linf"], "lstsq_rel_l2": r["lstsq_rel_l2"],
-                    "source": "exp02/data_fine_fp64.json",
+                    "source": "expC01/data_fine_fp64.json",
                 }
 
-    # --- exp02/data_mpmath.json: mpmath/fp64 ---
-    with open(EXP01_DIR / "data_mpmath.json") as f:
+    # --- expC01/data_mpmath.json: mpmath/fp64 ---
+    with open(EXPC01_DIR / "data_mpmath.json") as f:
         for r in json.load(f):
             add(key(r["target"], r["N"], r["lambda_star"], "mpmath", "fp64"),
                 r["qi_linf"], r["qi_rel_l2"], r["lstsq_linf"], r["lstsq_rel_l2"],
-                "exp02/data_mpmath.json")
+                "expC01/data_mpmath.json")
 
-    # --- exp02/data_fine.json: mpmath/fp64 (fine, overwrites coarse) ---
-    with open(EXP01_DIR / "data_fine.json") as f:
+    # --- expC01/data_fine.json: mpmath/fp64 (fine, overwrites coarse) ---
+    with open(EXPC01_DIR / "data_fine.json") as f:
         for r in json.load(f):
             k = key(r["target"], r["N"], r["lambda_star"], "mpmath", "fp64")
             if k[1] not in EXCLUDE_N:
@@ -85,11 +85,11 @@ def build_all_data():
                     "qi_precision": "mpmath", "lstsq_precision": "fp64",
                     "qi_linf": r["qi_linf"], "qi_rel_l2": r["qi_rel_l2"],
                     "lstsq_linf": r["lstsq_linf"], "lstsq_rel_l2": r["lstsq_rel_l2"],
-                    "source": "exp02/data_fine.json",
+                    "source": "expC01/data_fine.json",
                 }
 
-    # --- exp03/data.json: 4-way, extract 3 precision combos ---
-    with open(EXP0A_DIR / "data.json") as f:
+    # --- expA02/data.json: 4-way, extract 3 precision combos ---
+    with open(EXPA02_DIR / "data.json") as f:
         for r in json.load(f):
             t, N, lam = r["target"], r["N"], r["lambda_star"]
             if N in EXCLUDE_N:
@@ -98,17 +98,17 @@ def build_all_data():
             add(key(t, N, lam, "fp64", "fp64"),
                 r["qi_f64_linf"], r["qi_f64_rel_l2"],
                 r["ls_f64_linf"], r["ls_f64_rel_l2"],
-                "exp03/data.json")
+                "expA02/data.json")
             # mpmath/fp64
             add(key(t, N, lam, "mpmath", "fp64"),
                 r["qi_mp_linf"], r["qi_mp_rel_l2"],
                 r["ls_f64_linf"], r["ls_f64_rel_l2"],
-                "exp03/data.json")
+                "expA02/data.json")
             # mpmath/mpmath
             add(key(t, N, lam, "mpmath", "mpmath"),
                 r["qi_mp_linf"], r["qi_mp_rel_l2"],
                 r["ls_mp_linf"], r["ls_mp_rel_l2"],
-                "exp03/data.json")
+                "expA02/data.json")
 
     result = sorted(all_data.values(),
                     key=lambda r: (r["qi_precision"], r["lstsq_precision"],
@@ -218,7 +218,7 @@ if __name__ == "__main__":
     all_data = build_all_data()
 
     # Save
-    EXP01_DIR.mkdir(parents=True, exist_ok=True)
+    EXPC01_DIR.mkdir(parents=True, exist_ok=True)
     with open(ALL_DATA_PATH, "w") as f:
         json.dump(all_data, f, indent=2)
     print(f"Saved {ALL_DATA_PATH} ({len(all_data)} entries)")

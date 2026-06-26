@@ -1,4 +1,4 @@
-"""Experiment 12 -- geometry ladder, Phase 1: training the readout on frozen geometry.
+"""Experiment expD01 -- geometry ladder, Phase 1: training the readout on frozen geometry.
 
 Question: with the inner-layer geometry FIXED in the correct regime (correct
 lambda, uniform spacing, gamma = lambda*/h), how close does a standard optimizer
@@ -55,7 +55,7 @@ DATA_PATH = RESULTS_DIR / "phase1_data.json"
 TARGETS = ["sine", "sine_8pi", "runge"]
 WIDTHS = [32, 64, 128, 256]
 SEEDS = [0, 1, 2]
-LAMBDA_STAR = 0.25            # exp02's shared lstsq optimum; the "correct regime"
+LAMBDA_STAR = 0.25            # expC01's shared lstsq optimum; the "correct regime"
 N_TRAIN = 1024
 N_EVAL = 4096
 
@@ -232,7 +232,7 @@ def plot_error_vs_width(data):
     metrics = [("rel_l2", r"Relative $L_2$ error"), ("linf", r"$L_\infty$ error")]
     nrows = len(TARGETS)
     fig, axes = plt.subplots(nrows, 2, figsize=(12, 4.2 * nrows), sharex=True)
-    fig.suptitle("Exp12 Phase 1: final eval error vs width (frozen QI geometry, "
+    fig.suptitle("ExpD01 Phase 1: final eval error vs width (frozen QI geometry, "
                  r"$\lambda^*=0.25$; Adam vs lstsq)", fontsize=14, y=0.995)
 
     for ri, target_name in enumerate(TARGETS):
@@ -271,7 +271,7 @@ def plot_convergence(data, target_name):
     metrics = [("rel_l2", r"Relative $L_2$ error"), ("linf", r"$L_\infty$ error")]
     nrows = len(WIDTHS)
     fig, axes = plt.subplots(nrows, 2, figsize=(12, 3.6 * nrows), sharex=True)
-    fig.suptitle(f"Exp12 Phase 1: convergence vs step -- {target_name} "
+    fig.suptitle(f"ExpD01 Phase 1: convergence vs step -- {target_name} "
                  r"(frozen QI geometry, $\lambda^*=0.25$; Adam)", fontsize=14, y=0.997)
 
     for ri, N in enumerate(WIDTHS):

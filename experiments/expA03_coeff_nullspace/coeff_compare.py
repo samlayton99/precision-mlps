@@ -1,4 +1,4 @@
-"""Coefficient-comparison metrics for exp04.
+"""Coefficient-comparison metrics for expA03.
 
 On a FIXED tanh geometry (shared centers + gamma), the QI construction and a
 least-squares readout both produce an augmented coefficient vector
@@ -15,7 +15,7 @@ answers depending on where you measure:
     function_diff  distance of the functions they compute  -- the honest
                    "same solution" measure.
 
-All pure numpy; imported by run.py and exercised by tests/test_exp04.py.
+All pure numpy; imported by run.py and exercised by tests/test_expA03_coeff_nullspace.py.
 """
 
 from __future__ import annotations

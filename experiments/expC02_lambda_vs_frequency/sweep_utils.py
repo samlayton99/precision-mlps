@@ -1,6 +1,6 @@
-"""Helpers for exp06: frequency-ladder targets and argmin selection.
+"""Helpers for expC02: frequency-ladder targets and argmin selection.
 
-Pure numpy; imported by run.py and exercised by tests/test_exp06.py.
+Pure numpy; imported by run.py and exercised by tests/test_expC02_lambda_vs_frequency.py.
 """
 
 from __future__ import annotations

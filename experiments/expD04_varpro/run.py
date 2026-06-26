@@ -1,4 +1,4 @@
-"""Experiment 15: Variable Projection (VarPro) / Reduced Objective.
+"""Experiment expD04: Variable Projection (VarPro) / Reduced Objective.
 
 Core:
 - Nonlinear params: theta = (lambda, delta_k) or (log_gamma, centers)
@@ -20,4 +20,4 @@ Additional:
 #    (using VarProObjective as the loss function)
 # 5. After optimization, call varpro.solve_and_update_readout()
 # 6. Evaluate final model on eval data
-# 7. Compare to exp12 level 7 (fully free, same width/seed)
+# 7. Compare to expD01 level 7 (fully free, same width/seed)

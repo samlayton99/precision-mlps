@@ -1,4 +1,4 @@
-"""Experiment 6: optimal lambda vs target frequency, QI vs lstsq.
+"""Experiment expC02: optimal lambda vs target frequency, QI vs lstsq.
 
 Maps how the best bandwidth lambda depends on the target frequency, separately
 for the QI construction (cardinal-coefficient convolution) and the lstsq readout
@@ -106,7 +106,7 @@ def _plot_optimum(rows):
     ax.get_xaxis().set_major_formatter(plt.ScalarFormatter())
     ax.set_xlabel(r"target frequency $k$  in  $\sin(k\pi x)$")
     ax.set_ylabel(r"optimal $\lambda = \gamma h$")
-    ax.set_title("exp06: optimal bandwidth vs frequency (fp64)")
+    ax.set_title("expC02: optimal bandwidth vs frequency (fp64)")
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=9)
     caption = (
@@ -140,7 +140,7 @@ def _plot_curves(rows):
         ax.grid(True, which="both", alpha=0.3)
     axes[0].set_ylabel(r"eval $L_\infty$ error")
     axes[0].legend(fontsize=8, title="frequency")
-    fig.suptitle("exp06: error vs lambda (solid = lstsq, dashed = QI)", fontsize=13, y=0.99)
+    fig.suptitle("expC02: error vs lambda (solid = lstsq, dashed = QI)", fontsize=13, y=0.99)
     caption = (
         "HOW TO READ: eval error vs lambda, one color per frequency; lstsq solid, "
         "QI dashed. QI U-curves all bottom at the same lambda; lstsq U-curves shift "

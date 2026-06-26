@@ -1,4 +1,4 @@
-"""Experiment 3: QI vs Learned Readout -- fair 4-way comparison.
+"""Experiment expA02: QI vs Learned Readout -- fair 4-way comparison.
 
 Compares QI construction vs least-squares readout, each in both fp64 and
 mpmath, on identical QI geometry. Isolates whether the QI convolution

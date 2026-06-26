@@ -1,8 +1,8 @@
-"""GELU feature matrix and conditioning helpers for exp05.
+"""GELU feature matrix and conditioning helpers for expA04.
 
 Mirrors src/construction/readout.build_phi but with an exact GELU activation
 (gelu(z) = 0.5 z (1 + erf(z/sqrt(2)))) instead of tanh. Pure numpy/scipy;
-imported by run.py and exercised by tests/test_exp05.py.
+imported by run.py and exercised by tests/test_expA04_activation_conditioning.py.
 """
 
 from __future__ import annotations

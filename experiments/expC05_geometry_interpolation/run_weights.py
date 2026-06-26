@@ -1,35 +1,40 @@
-"""expC05 weights mode -- weight-pattern interpolation at fixed bandwidth scale and fixed centers.
+"""expC05 weights mode -- weight interpolation along an L1-ball face, no origin crossing.
 
-Mirror of the centers mode. The centers mode fixes the inner weight at the ideal (gamma for
-every neuron) and moves the center positions; this mode fixes the centers at the ideal uniform
-QI grid AND the bandwidth SCALE at gamma, and varies only the per-neuron weight PATTERN. This
-isolates "must the per-neuron bandwidths be identical?" from the bandwidth (lambda) and the
-center-placement questions.
+Fix the centers at the ideal uniform QI grid and the bandwidth budget (L1 / mean-abs) at gamma,
+and interpolate the inner weight vector from the Xavier draw to the CENTER of its own L1 octant
+face -- the uniform-magnitude vector with the SAME signs as the Xavier init. Because both endpoints
+lie in the same orthant and the L1 face is flat, the straight-line interpolation stays on the L1
+sphere (mean|w| = gamma held exactly) and NEVER crosses the origin. So `s` is a clean
+"per-neuron bandwidth-magnitude uniformity" axis with no sign-crossing artifact.
+
+Three runs (folders):
+  - tanh                : base = Xavier (signed),   target = sign(Xavier)*1   (octant center), tanh
+  - gelu                : base = Xavier (signed),   target = sign(Xavier)*1   (octant center), gelu
+  - gelu_positive_init  : base = |Xavier|,          target = +1               (positive octant), gelu
+(tanh's positive-init case is omitted: tanh is odd, so the octant and positive versions differ only
+by per-column sign, which the readout absorbs -- they are identical. gelu is not odd, so its sign is
+a real degree of freedom and the two gelu runs genuinely differ.)
+weights/crossing_0/ is the frozen earlier RMS run that DID cross the origin (kept for reference).
 
 Construction (per neuron i, interpolation s in [0,1], swept bandwidth gamma):
-    w_hat = w_xavier / rms(w_xavier)          # unit-RMS Xavier direction (keeps spread + signs)
-    u(s)  = (1 - s) * w_hat + s * 1           # pattern: Xavier spread -> all-ones
-    w(s)  = gamma * u(s) / rms(u(s))          # RMS-normalized: rms(w) = gamma for ALL s
-    b(s)  = -w(s) * c_uniform                 # bias tracks weight, so center -b/w = c_i (pinned)
-    preact = w(s) * (x - c_i)                 # tanh(w_i (x - c_i)), center c_i fixed
+    base, target  per run (see above), with base L1-normalized: mean|base| = 1, mean|target| = 1
+    u(s) = (1 - s) * base + s * target        # stays in one orthant -> never crosses 0
+    w(s) = gamma * u(s) / mean|u(s)|           # mean|w| = gamma for all s (mean|u| = 1 already)
+    b(s) = -w(s) * c_uniform                   # center -b/w = c_i, pinned
+    Phi  = act(w(s)[None,:]*x[:,None] + b(s)[None,:])
 
-So along s only the per-neuron weight pattern (magnitude spread + sign) changes; the overall
-bandwidth scale rms(w) = gamma and the centers c_i are held EXACTLY fixed (both asserted at
-runtime). This removes the magnitude/center confound of the earlier (1-s)*w + s*gamma version,
-where w's magnitude (hence the effective bandwidth) and the center -b/w both drifted with s.
+Why L1 (mean-abs): the per-neuron dimensionless bandwidth is lambda_i = |w_i| h, so sum|w_i| is the
+total bandwidth budget; mean-abs holds it fixed. (RMS would hand the uniform endpoint ~15% more
+budget, since the uniform vector maximizes L1 at fixed L2.) The L1 face is flat, so the path needs
+no projection and stays on the budget sphere.
 
-Why RMS: a vector splits canonically into magnitude ||w||_2 and direction w/||w||_2, so "hold
-the scale, vary the pattern" is "hold ||w||_2 (= sqrt(W)*RMS), rotate the direction." RMS is also
-the native norm of the least-squares readout and is robust to the sign zero-crossings that make
-the (log-natural) geometric mean unusable here.
+Invariants asserted at runtime: mean|w| = gamma; center -b/w = c_i (live neurons); and NO sign flip
+/ origin crossing (every w_i keeps its target-octant sign). The (s=1, gamma~N/8) corner: for tanh
+and gelu_positive_init it is the uniform ideal (span = QI for tanh; all-forward ridges for gelu) and
+should reach the activation's floor; for gelu (octant) s=1 is the mixed-sign uniform vector, which is
+a valid but not necessarily optimal gelu basis -- its floor may sit higher (expected, not a bug).
 
-Axes: weight uniformness s in [0,1] (Xavier at 0, ideal all-equal-gamma at 1); gamma in
-logspace(0.25, N), lambda = rms(w)*h = gamma*h = gamma*2/N. The (s=1, gamma~N/8) corner is exact
-QI and must reach the fp64 floor -- the built-in sanity check. Single seed.
-
-Grid: 1 seed x 4 targets x 4 widths (N=64,128,256,512) x K x K. Figure per target: 4x3 grid
-(rows = widths): col 1 = s x lambda error heatmap, col 2 = error vs lambda (lines = s slices),
-col 3 = error vs s (lines = gamma slices).
+Grid: 3 runs x 4 targets x 4 widths (N=64,128,256,512) x K x K, single seed.
 
 Usage:
     python experiments/expC05_geometry_interpolation/run_weights.py            # collect + plot
@@ -42,6 +47,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from scipy.special import erf
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -60,22 +66,28 @@ DATA_PATH = OUT_DIR / "data.json"
 # --- experiment grid ---
 WIDTHS = [64, 128, 256, 512]
 TARGETS = ["sine", "sine_8pi", "runge", "exp"]
-SEED_FOLDERS = {"seed_1": 0}                      # single seed (folder -> base seed)
-K = 21                                            # K x K interpolation grid
-GAMMA_MIN = 0.25                                  # gamma_max = N per width
-GLOBAL_LAMBDA_MAX = 2.0                           # lambda axis top (shared across rows)
-WDEAD = 1e-12                                     # |w| below this = a sign zero-crossing (center undefined)
+TANH = np.tanh
+GELU = lambda z: 0.5 * z * (1.0 + erf(z / np.sqrt(2.0)))
+# (folder, activation, init_mode): init_mode "octant" = signed Xavier -> sign(Xavier)*1;
+#                                            "positive" = |Xavier| -> +1
+RUNS = [("tanh", TANH, "octant"),
+        ("gelu", GELU, "octant"),
+        ("gelu_positive_init", GELU, "positive")]
+SANITY = {"tanh": 1e-11, "gelu_positive_init": 1e-7, "gelu": None}   # None = print only
+SEED = 0
+K = 21
+GAMMA_MIN = 0.25
+GLOBAL_LAMBDA_MAX = 2.0
+WDEAD = 1e-12
 
 
-def rms(v):
-    return float(np.sqrt(np.mean(np.asarray(v) ** 2)))
+def mabs(v):
+    return float(np.mean(np.abs(np.asarray(v))))
 
 
 def xavier_weights(W, seed, N):
-    """Exact Xavier inner weights, ordered to match the centers mode's neuron ordering (sorted by
-    Xavier center -b/w, dead |w| parked by bias sign), then pinned one-to-one to the ascending
-    uniform grid. With centers pinned by construction the assignment is cosmetic, but kept for
-    reproducibility / comparability with the centers mode. Seeded per (folder seed, width)."""
+    """Exact Xavier inner weights, ordered to match the centers mode (sorted by Xavier center
+    -b/w, dead |w| parked by bias sign), pinned to the ascending uniform grid. Seeded per (seed, N)."""
     w, b = xavier_draw(W, seed, N)
     return w[center_order(w, b)]
 
@@ -84,77 +96,90 @@ def collect_data():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     X_tr = np.linspace(-1.0, 1.0, N_TRAIN)
     X_ev = np.linspace(-1.0, 1.0, N_EVAL)
-    ss = np.linspace(0.0, 1.0, K)                         # weight-uniformness axis
-    Y_tr = np.stack([get_target(t).fn_numpy(X_tr) for t in TARGETS], axis=1)   # [n_tr, 4]
-    Y_ev = np.stack([get_target(t).fn_numpy(X_ev) for t in TARGETS], axis=1)   # [n_ev, 4]
-    y_norms = np.linalg.norm(Y_ev, axis=0)               # [4]
+    ss = np.linspace(0.0, 1.0, K)
+    Y_tr = np.stack([get_target(t).fn_numpy(X_tr) for t in TARGETS], axis=1)
+    Y_ev = np.stack([get_target(t).fn_numpy(X_ev) for t in TARGETS], axis=1)
+    y_norms = np.linalg.norm(Y_ev, axis=0)
 
     cells = []
     t0 = time.time()
-    max_center_err = 0.0          # max |(-b/w) - c_i| over live neurons, all cells (should be ~0)
-    max_rms_err = 0.0             # max |rms(w) - gamma| / gamma, all cells (should be ~0)
-    total = len(SEED_FOLDERS) * len(WIDTHS)
-    done = 0
-    for folder, fseed in SEED_FOLDERS.items():
+    max_center_err = 0.0; max_budget_err = 0.0; n_signflip = 0
+    total = len(RUNS) * len(WIDTHS); done = 0
+    for run, act, mode in RUNS:
         for N in WIDTHS:
-            c_uniform, h, halo = uniform_geometry(N)      # FIXED ideal centers
+            c_uniform, h, halo = uniform_geometry(N)
             W = c_uniform.size
-            w_xavier = xavier_weights(W, fseed, N)
-            w_hat = w_xavier / rms(w_xavier)              # unit-RMS Xavier direction
+            wx = xavier_weights(W, SEED, N)
+            if mode == "octant":
+                base = wx / mabs(wx)                 # signed, L1-normalized
+                target = np.sign(wx)                 # octant center: +-1 with Xavier signs
+            else:                                    # "positive"
+                base = np.abs(wx) / mabs(wx)         # positive magnitudes, L1-normalized
+                target = np.ones(W)                  # all +1
+            tsign = np.sign(target)
             gammas = np.logspace(np.log10(GAMMA_MIN), np.log10(N), K)
             lambdas = gammas * 2.0 / N
 
-            err = np.zeros((len(TARGETS), K, K))          # [target, s_idx, gamma_idx]
+            err = np.zeros((len(TARGETS), K, K))
             for si, s in enumerate(ss):
-                u = (1.0 - s) * w_hat + s * 1.0           # pattern: Xavier -> all-ones
-                u_unit = u / rms(u)                       # unit RMS -> rms(w) = gamma exactly
+                u = (1.0 - s) * base + s * target    # stays in the target octant
+                u_unit = u / mabs(u)                 # mean|w| = gamma
                 for gi, g in enumerate(gammas):
-                    w = g * u_unit                        # rms(w) = g
-                    b = -w * c_uniform                    # center -b/w = c_i, pinned
-                    # invariants (cheap; assert once on the first cell, track max thereafter)
+                    w = g * u_unit
+                    b = -w * c_uniform
                     live = np.abs(w) > WDEAD
                     if live.any():
-                        ce = float(np.max(np.abs((-b[live] / w[live]) - c_uniform[live])))
-                        max_center_err = max(max_center_err, ce)
-                    max_rms_err = max(max_rms_err, abs(rms(w) - g) / g)
-                    Phi_tr = np.tanh(w[None, :] * X_tr[:, None] + b[None, :])
-                    Phi_ev = np.tanh(w[None, :] * X_ev[:, None] + b[None, :])
+                        max_center_err = max(max_center_err,
+                                             float(np.max(np.abs((-b[live] / w[live]) - c_uniform[live]))))
+                        # crossing check: any live neuron whose sign differs from its target octant
+                        n_signflip += int(np.sum((np.sign(w[live]) != tsign[live]) & (tsign[live] != 0)))
+                    max_budget_err = max(max_budget_err, abs(mabs(w) - g) / g)
+                    Phi_tr = act(w[None, :] * X_tr[:, None] + b[None, :])
+                    Phi_ev = act(w[None, :] * X_ev[:, None] + b[None, :])
                     err[:, si, gi] = solve_relL2(Phi_tr, Phi_ev, Y_tr, Y_ev, y_norms)
 
-            for tigt, target in enumerate(TARGETS):
+            for tigt, target_name in enumerate(TARGETS):
                 cells.append({
-                    "folder": folder, "target": target, "N": N, "W": int(W),
-                    "halo": int(halo), "seed": fseed,
+                    "folder": run, "activation": "tanh" if act is TANH else "gelu",
+                    "init_mode": mode, "target": target_name, "N": N, "W": int(W),
+                    "halo": int(halo), "seed": SEED,
                     "ss": ss.tolist(), "gammas": gammas.tolist(),
                     "lambdas": lambdas.tolist(), "err": err[tigt].tolist(),
                 })
             done += 1
             best = {TARGETS[k]: err[k].min() for k in range(len(TARGETS))}
-            print(f"[{done}/{total}] {folder} N={N:4d} (W={W}) | "
+            print(f"[{done}/{total}] {run:18s} N={N:4d} (W={W}) | "
                   + " ".join(f"{k[:5]}={v:.1e}" for k, v in best.items())
                   + f" | {time.time()-t0:.0f}s")
 
-    # --- invariant + sanity checks ---
-    print(f"\n[invariant] max center drift  |(-b/w) - c_i| = {max_center_err:.2e}  (want ~0)")
-    print(f"[invariant] max rel rms error  |rms(w)-gamma|/gamma = {max_rms_err:.2e}  (want ~0)")
-    assert max_center_err < 1e-9, "centers drifted -- bias is not tracking the weight"
-    assert max_rms_err < 1e-9, "bandwidth scale not held at gamma"
-    # s=1 corner (exact QI) must reach the fp64 floor on the smooth targets
+    # --- invariants + sanity ---
+    print(f"\n[invariant] max center drift |(-b/w)-c_i| = {max_center_err:.2e}  (want ~0)")
+    print(f"[invariant] max rel budget err |mean|w|-g|/g = {max_budget_err:.2e}  (want ~0)")
+    print(f"[invariant] sign flips / origin crossings = {n_signflip}  (want 0)")
+    assert max_center_err < 1e-9, "centers drifted"
+    assert max_budget_err < 1e-9, "budget not held at gamma"
+    assert n_signflip == 0, "a weight crossed the origin -- interpolation left its octant"
     s1 = K - 1
-    for target in ("sine", "exp"):
-        tc = next(c for c in cells if c["target"] == target and c["N"] == 256)
-        floor = min(np.array(tc["err"])[s1, :])
-        print(f"[sanity] {target} N=256 s=1 best-over-gamma rel L2 = {floor:.2e}  (want <1e-12)")
-        assert floor < 1e-11, f"s=1 corner did not reach the floor for {target}"
+    for run, act, mode in RUNS:
+        tc = next(c for c in cells if c["folder"] == run and c["target"] == "sine" and c["N"] == 256)
+        floor = float(min(np.array(tc["err"])[s1, :]))
+        thr = SANITY[run]
+        tag = f"(want <{thr:.0e})" if thr else "(print only)"
+        print(f"[sanity] {run:18s} sine N=256 s=1 best-over-gamma rel L2 = {floor:.2e}  {tag}")
+        if thr:
+            assert floor < thr, f"s=1 corner did not reach the floor for {run}"
 
     out = {
         "config": {
-            "widths": WIDTHS, "targets": TARGETS, "seed_folders": SEED_FOLDERS,
-            "K": K, "gamma_min": GAMMA_MIN, "halo_lambda": HALO_LAMBDA,
-            "n_train": N_TRAIN, "n_eval": N_EVAL, "rcond": RCOND,
-            "normalizer": "rms", "construction": "w=gamma*u/rms(u), u=(1-s)*what+s, b=-w*c (centers pinned)",
-            "max_center_err": max_center_err, "max_rms_err": max_rms_err,
+            "widths": WIDTHS, "targets": TARGETS,
+            "runs": [r[0] for r in RUNS], "run_modes": {r[0]: r[2] for r in RUNS},
+            "seed": SEED, "K": K, "gamma_min": GAMMA_MIN, "halo_lambda": HALO_LAMBDA,
+            "n_train": N_TRAIN, "n_eval": N_EVAL, "rcond": RCOND, "normalizer": "L1 (mean-abs)",
+            "construction": "u=(1-s)*base+s*target along an L1 octant face (no origin crossing); "
+                            "octant target=sign(Xavier)*1, positive target=+1; w=gamma*u/mean|u|, b=-w*c",
+            "max_center_err": max_center_err, "max_budget_err": max_budget_err, "sign_flips": n_signflip,
             "global_lambda": [GAMMA_MIN * 2.0 / max(WIDTHS), GLOBAL_LAMBDA_MAX],
+            "note": "weights/crossing_0/ is the frozen earlier RMS run that crossed the origin.",
         },
         "cells": cells,
     }
@@ -173,33 +198,33 @@ def _cell(cells, folder, target, N):
 
 def plot_target(data, folder, target):
     cfg = data["config"]
-    widths = cfg["widths"]
-    lam_lo, lam_hi = cfg["global_lambda"]
+    widths = cfg["widths"]; lam_lo, lam_hi = cfg["global_lambda"]
+    mode = cfg["run_modes"][folder]
+    tgt_lbl = (r"$\mathrm{sign}(w_{\rm xav})\cdot\mathbf{1}$ (octant center)" if mode == "octant"
+               else r"$+\mathbf{1}$ (positive)")
+    init_lbl = "Xavier" if mode == "octant" else "$|$Xavier$|$"
     nrows = len(widths)
     fig, axes = plt.subplots(nrows, 3, figsize=(19, 4.6 * nrows))
-    fig.suptitle(f"expC05 weights -- {target} ({folder}) "
-                 r"(Xavier direction $\to$ all-ones; centers pinned, $\mathrm{rms}(w)=\gamma$ fixed; "
-                 r"lstsq, fp64, relative $L_2$)",
-                 fontsize=15, y=0.999)
+    fig.suptitle(f"expC05 weights [{folder}] -- {target} "
+                 f"({init_lbl} $\\to$ {tgt_lbl}; centers pinned, mean$|w|=\\gamma$; lstsq fp64, rel $L_2$)",
+                 fontsize=14, y=0.999)
 
     for ri, N in enumerate(widths):
         c = _cell(data["cells"], folder, target, N)
         ss = np.array(c["ss"]); gammas = np.array(c["gammas"])
-        lambdas = np.array(c["lambdas"]); err = np.array(c["err"])   # [s, gamma]
+        lambdas = np.array(c["lambdas"]); err = np.array(c["err"])
         emin = max(err.min(), 1e-16); emax = err.max()
 
-        # --- col 1: K x K heatmap (x = weight uniformness, y = lambda log) ---
         ax = axes[ri][0]
         im = ax.pcolormesh(ss, lambdas, err.T, norm=LogNorm(vmin=emin, vmax=emax),
                            cmap="inferno", shading="auto")
         ax.set_yscale("log")
-        ax.set_ylabel(f"N = {N}\n" + r"$\lambda = \mathrm{rms}(w)\,h$")
+        ax.set_ylabel(f"N = {N}\n" + r"$\lambda = \mathrm{mean}|w|\,h$")
         ax.set_xlabel("weight uniformness $s$")
         if ri == 0:
             ax.set_title("error heatmap (rel $L_2$)")
         fig.colorbar(im, ax=ax, shrink=0.85, label="rel $L_2$")
 
-        # --- col 2: error vs lambda, one line per weight-uniformness slice ---
         ax = axes[ri][1]
         cmap2, norm2 = plt.cm.viridis, Normalize(0.0, 1.0)
         for si, s in enumerate(ss):
@@ -208,24 +233,24 @@ def plot_target(data, folder, target):
         ax.set_xlim(lam_lo * 0.8, lam_hi * 1.15)
         ax.xaxis.set_minor_formatter(NullFormatter())
         ax.grid(True, alpha=0.3, which="both")
-        ax.set_xlabel(r"$\lambda = \mathrm{rms}(w)\,h$"); ax.set_ylabel("rel $L_2$")
+        ax.set_xlabel(r"$\lambda = \mathrm{mean}|w|\,h$"); ax.set_ylabel("rel $L_2$")
         if ri == 0:
             ax.set_title("error vs $\\lambda$ (lines = weight uniformness slices)")
         fig.colorbar(ScalarMappable(norm=norm2, cmap=cmap2), ax=ax,
                      shrink=0.85, label="weight uniformness $s$")
 
-        # --- col 3: error vs weight uniformness, one line per gamma slice ---
         ax = axes[ri][2]
-        cmap3, norm3 = plt.cm.plasma, LogNorm(gammas.min(), gammas.max())
-        for gi, g in enumerate(gammas):
-            ax.plot(ss, err[:, gi], "-", lw=1.1, color=cmap3(norm3(g)))
+        # color by lambda on the GLOBAL range, so this lines up with cols 1 & 2 (which are in lambda)
+        cmap3, norm3 = plt.cm.plasma, LogNorm(lam_lo, lam_hi)
+        for gi in range(len(gammas)):
+            ax.plot(ss, err[:, gi], "-", lw=1.1, color=cmap3(norm3(lambdas[gi])))
         ax.set_yscale("log")
         ax.grid(True, alpha=0.3, which="both")
         ax.set_xlabel("weight uniformness $s$"); ax.set_ylabel("rel $L_2$")
         if ri == 0:
-            ax.set_title(r"error vs weight uniformness (lines = $\gamma$ slices)")
+            ax.set_title(r"error vs weight uniformness (lines = $\lambda$ slices)")
         fig.colorbar(ScalarMappable(norm=norm3, cmap=cmap3), ax=ax,
-                     shrink=0.85, label=r"$\gamma$")
+                     shrink=0.85, label=r"$\lambda = \mathrm{mean}|w|\,h$")
 
     plt.tight_layout(rect=[0, 0, 1, 0.99])
     out_dir = OUT_DIR / folder
@@ -237,7 +262,7 @@ def plot_target(data, folder, target):
 
 def plot_all(data):
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    for folder in data["config"]["seed_folders"]:
+    for folder in data["config"]["runs"]:
         for target in data["config"]["targets"]:
             plot_target(data, folder, target)
 

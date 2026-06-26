@@ -1,18 +1,18 @@
-"""Experiment 16 -- geometry interpolation (belongs in checkpoint 2).
+"""Experiment expC05 -- geometry interpolation (checkpoint C).
 
 Interpolates a random tanh MLP toward the ideal QI geometry along two axes and
 watches how the (lstsq, fp64) relative-L2 error changes, to shed light on the
 two geometric barriers an optimizer faces: the ideal bandwidth (gamma/lambda)
 and the ideal center layout (uniform spacing + halo).
 
-Geometry handled exactly like the other geometry experiments (exp07, exp12): the
+Geometry handled exactly like the other geometry experiments (expC04, expD01): the
 center POSITIONS are the primitive -- fixed, independent of the bandwidth -- and
 gamma is a separate global bandwidth applied on top. This keeps the two axes
 orthogonal and the comparison apples-to-apples.
 
   - Random anchor (t=0): the EXACT Xavier-initialized inner layer. Draw per-neuron
     weights w_i and biases b_i (both Xavier-uniform, Glorot bound sqrt(6/(1+W))) and
-    take the genuine tanh centers c_i = -b_i/w_i -- the same extraction exp07 uses for
+    take the genuine tanh centers c_i = -b_i/w_i -- the same extraction expC04 uses for
     its "trained" geometry (dead |w|<eps neurons parked, all clipped to the span).
     These positions are FIXED; they do not depend on gamma.
   - One Xavier draw per SEED FOLDER and width, shared across the four targets (the
@@ -88,7 +88,7 @@ def xavier_centers(W, span, seed, N):
     """The exact Xavier-init geometry: draw per-neuron weights and biases (both
     Xavier-uniform, Glorot bound sqrt(6/(1 + W))) and return the genuine tanh
     centers c = -b/w, clipped to the span with dead |w| parked -- the same
-    extraction exp07 uses for its trained geometry. Gamma-independent. Seeded per
+    extraction expC04 uses for its trained geometry. Gamma-independent. Seeded per
     (folder seed, width)."""
     w, b = xavier_draw(W, seed, N)
     return trained_centers(w, b, span)        # sorted, clipped to span
@@ -181,7 +181,7 @@ def plot_target(data, folder, target):
     lam_lo, lam_hi = cfg["global_lambda"]
     nrows = len(widths)
     fig, axes = plt.subplots(nrows, 3, figsize=(19, 4.6 * nrows))
-    fig.suptitle(f"Exp16: geometry interpolation -- {target} ({folder}) "
+    fig.suptitle(f"expC05 (centers): geometry interpolation -- {target} ({folder}) "
                  r"(random $\to$ QI geometry; lstsq, fp64, relative $L_2$)",
                  fontsize=15, y=0.999)
 
@@ -217,18 +217,19 @@ def plot_target(data, folder, target):
         fig.colorbar(ScalarMappable(norm=norm2, cmap=cmap2), ax=ax,
                      shrink=0.85, label="uniformness $t$")
 
-        # --- col 3: error vs uniformness, one line per gamma slice ---
+        # --- col 3: error vs uniformness, one line per lambda slice ---
         ax = axes[ri][2]
-        cmap3, norm3 = plt.cm.plasma, LogNorm(gammas.min(), gammas.max())
-        for gi, g in enumerate(gammas):
-            ax.plot(ts, err[:, gi], "-", lw=1.1, color=cmap3(norm3(g)))
+        # color by lambda on the GLOBAL range, so this lines up with cols 1 & 2 (which are in lambda)
+        cmap3, norm3 = plt.cm.plasma, LogNorm(lam_lo, lam_hi)
+        for gi in range(len(gammas)):
+            ax.plot(ts, err[:, gi], "-", lw=1.1, color=cmap3(norm3(lambdas[gi])))
         ax.set_yscale("log")
         ax.grid(True, alpha=0.3, which="both")
         ax.set_xlabel("uniformness $t$"); ax.set_ylabel("rel $L_2$")
         if ri == 0:
-            ax.set_title(r"error vs uniformness (lines = $\gamma$ slices)")
+            ax.set_title(r"error vs uniformness (lines = $\lambda$ slices)")
         fig.colorbar(ScalarMappable(norm=norm3, cmap=cmap3), ax=ax,
-                     shrink=0.85, label=r"$\gamma$")
+                     shrink=0.85, label=r"$\lambda = \gamma\,h$")
 
     plt.tight_layout(rect=[0, 0, 1, 0.99])
     out_dir = OUT_DIR / folder

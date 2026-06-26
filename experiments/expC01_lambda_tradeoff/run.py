@@ -1,4 +1,4 @@
-"""Experiment 2: Lambda Tradeoff Verification.
+"""Experiment expC01: Lambda Tradeoff Verification.
 
 Traces the error-vs-lambda curve predicted by QI theory across multiple
 widths and target functions. Compares full QI construction (convolution

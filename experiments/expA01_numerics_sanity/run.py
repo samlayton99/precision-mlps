@@ -1,4 +1,4 @@
-"""Experiment 1: Numerics Sanity Checks.
+"""Experiment expA01: Numerics Sanity Checks.
 
 Goal: verify that linear solves, function evaluation, and tolerance choices
 are not the precision bottleneck before attributing failures to training.
@@ -366,10 +366,10 @@ def main() -> None:
     mp_rows: list[dict] = []
     repro_rows: list[dict] = []
 
-    print(f"[exp01] target={cfg.target}, widths={cfg.widths}")
+    print(f"[expA01] target={cfg.target}, widths={cfg.widths}")
 
     for N in cfg.widths:
-        print(f"\n[exp01] --- N = {N} ---")
+        print(f"\n[expA01] --- N = {N} ---")
 
         # 1. Construction baseline
         print(f"  [construction] fp64 + mpmath at N={N}")
@@ -476,7 +476,7 @@ def main() -> None:
 
     # --- Summary ---
     summary_lines = []
-    summary_lines.append(f"exp01 sanity checks: target={cfg.target}")
+    summary_lines.append(f"expA01 sanity checks: target={cfg.target}")
     summary_lines.append("=" * 80)
 
     summary_lines.append("\n[1] Construction baseline (L_inf, n_eval=8192):")
@@ -543,7 +543,7 @@ def main() -> None:
     summary = "\n".join(summary_lines)
     (out_dir / "summary.txt").write_text(summary + "\n")
     print("\n" + summary)
-    print(f"\n[exp01] wrote results to {out_dir}")
+    print(f"\n[expA01] wrote results to {out_dir}")
 
 
 if __name__ == "__main__":

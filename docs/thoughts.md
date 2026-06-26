@@ -22,12 +22,15 @@ so I tested to see if they were the same solution... they aren't, but if you pro
 - 
 
 ### weight identicalness
-weights:
+weights, place it on the unit l1 ball, interpolate it across the surface to 
 
 
 
 ### Interpolating geometries
 Interpolating between, we see some interesting things
+
+note that if we interpolate weights through the center, then we get a lot of dead neurons, so weights can't be too close to zero
+
 
 
 odd point: runge had a defect where for small N, uniformity hurt. this was the only case. in this same case, we were able to get machine epsilon precision if the biases were more compact and less spread out. this is something further to test. 

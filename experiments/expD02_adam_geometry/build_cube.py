@@ -1,4 +1,4 @@
-"""Build the consolidated exp17 cube -- one JSON, sliceable any way.
+"""Build the consolidated expD02 cube -- one JSON, sliceable any way.
 
 The cube has three axes plus width:
   function (6): sine, sine_8pi, runge, sine_mixture, exp, abs_cubed   (one per category)

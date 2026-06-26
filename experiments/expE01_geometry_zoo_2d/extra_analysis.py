@@ -1,7 +1,7 @@
-"""Add-ons to exp11 without redoing the whole suite:
+"""Add-ons to expE01 without redoing the whole suite:
 
   --lambda    : recompute a fine lambda sweep at one representative width and
-                plot error vs lambda (the U-shape, like exp10). Fast.
+                plot error vs lambda (the U-shape). Fast.
   --add8192   : compute the N=8192 cells (n_train raised for overdetermination),
                 append to data.json + weights, and regenerate geometry_suite.png.
                 Slow (8192-column SVDs); run in the background.
@@ -25,7 +25,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parents[1]))
 
-import run as R                                    # the exp11 driver module
+import run as R                                    # the expE01 driver module
 from geometries import GEOMETRIES
 from src.data.sampling2d import disk_grid, disk_uniform
 from src.data.targets2d import get_target_2d
@@ -89,7 +89,7 @@ def plot_lambda(data):
     metrics = [("rel_l2", 0, r"Relative $L_2$"), ("linf", 1, r"$L_\infty$")]
     fig, axes = plt.subplots(len(R.TARGETS), 2, figsize=(13, 3.4 * len(R.TARGETS)),
                              sharex=True)
-    fig.suptitle(f"Exp11: error vs $\\lambda$ (U-shape) at N={N}, lstsq fp64",
+    fig.suptitle(f"ExpE01: error vs $\\lambda$ (U-shape) at N={N}, lstsq fp64",
                  fontsize=14, y=0.997)
     for ri, t in enumerate(R.TARGETS):
         sym = "symmetric" if t in data["config"]["symmetric"] else "asymmetric"
@@ -239,7 +239,7 @@ def build_anim(ad):
             for mkey, ci, _ in metrics:
                 for g in R.GEOM_ORDER:
                     lines[(t, ci, g)].set_ydata(D[str(N)][g][t][mkey])
-        suptitle.set_text(f"Exp11: error vs $\\lambda$ as width grows  --  N = {N}  "
+        suptitle.set_text(f"ExpE01: error vs $\\lambda$ as width grows  --  N = {N}  "
                           f"(lstsq fp64)")
         return list(lines.values()) + [suptitle]
 
@@ -254,7 +254,7 @@ def build_anim(ad):
     html_out = R.RESULTS_DIR / "error_vs_lambda_anim.html"
     html_out.write_text(
         "<!doctype html><meta charset='utf-8'>"
-        "<title>Exp11 error-vs-lambda sweep over N</title>"
+        "<title>ExpE01 error-vs-lambda sweep over N</title>"
         "<body style='font-family:sans-serif'>" + html + "</body>")
     print(f"Saved {html_out}")
 

@@ -1,4 +1,4 @@
-"""Experiment 17 (lambda-init variant) -- does Adam HOLD a correct gamma regime?
+"""Experiment expD02 (lambda-init variant) -- does Adam HOLD a correct gamma regime?
 
 The original `run.py` trains from standard Xavier init (gamma ~ 0.1, ~100x too
 small) and asks "does Adam learn a useful geometry?" -- the honest test, answer:
@@ -71,8 +71,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-# Reuse the original exp17 machinery (fp64 eval/refit, geometry, schedules).
-import run as exp17
+# Reuse the original expD02 machinery (fp64 eval/refit, geometry, schedules).
+import run as expD02
 from run import (DEVICE, TDTYPE, LAMBDA_STAR, N_TRAIN, N_EVAL, RCOND, features_np,
                  geometry_for_N, eval_bundle, to_device_train,
                  refit_rel_l2, rel_l2_with_readout, lr_at, eval_steps)
@@ -163,7 +163,7 @@ def init_net(W, seed, scheme, gamma_uniform, c_uniform, readout=None):
             net.inner.bias.copy_(b * s)
         elif scheme == "const_weight":
             # (c) constant weight w=gamma*, centers = Xavier -b/w CLIPPED to the
-            # grid+halo span (the exp16 "xavier" covering geometry), b=-gamma*c.
+            # grid+halo span (the expC05 centers "xavier" covering geometry), b=-gamma*c.
             w_x = ((torch.rand(W, 1, generator=g) * 2 - 1) * bound).numpy().ravel()
             b_x = ((torch.rand(W, generator=g) * 2 - 1) * bound).numpy().ravel()
             span = (float(c_uniform[0]), float(c_uniform[-1]))
@@ -333,7 +333,7 @@ def plot(data):
     for scheme in schemes:
         srows = [r for r in rows if r["scheme"] == scheme]
         fig, axes = plt.subplots(2, 3, figsize=(18, 10))
-        fig.suptitle(f"Exp17 (lambda-init): {SCHEME_TITLE[scheme]}\n"
+        fig.suptitle(f"expD02 (lambda-init): {SCHEME_TITLE[scheme]}\n"
                      r"relative $L_2$, fp64 refit, $\lambda^*=0.25$, float32 Adam",
                      fontsize=13)
         for ax, fn in zip(axes.ravel(), targets):

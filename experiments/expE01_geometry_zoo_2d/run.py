@@ -1,6 +1,6 @@
-"""Experiment 11 -- 2D ridge-geometry zoo: which geometry reaches precision?
+"""Experiment expE01 -- 2D ridge-geometry zoo: which geometry reaches precision?
 
-Generalizes exp10 to six geometries (see geometries.py) compared head-to-head on
+Generalizes the original 2D hex experiment to six geometries (see geometries.py) compared head-to-head on
 a function suite, all fp64 least squares, lambda finetuned per (geometry, width).
 
 Each neuron is a ridge tanh(gamma*(w_m . x - t_m)); a geometry supplies the
@@ -153,7 +153,7 @@ def plot_suite(data):
     targets, widths = cfg["targets"], cfg["widths"]
     metrics = [("rel_l2", r"Relative $L_2$"), ("linf", r"$L_\infty$")]
     fig, axes = plt.subplots(len(targets), 2, figsize=(13, 3.4 * len(targets)), sharex=True)
-    fig.suptitle("Exp11: 2D ridge geometry comparison (best over $\\lambda$, lstsq, fp64)",
+    fig.suptitle("ExpE01: 2D ridge geometry comparison (best over $\\lambda$, lstsq, fp64)",
                  fontsize=14, y=0.997)
     for ri, target in enumerate(targets):
         sym = "symmetric" if target in cfg["symmetric"] else "asymmetric"

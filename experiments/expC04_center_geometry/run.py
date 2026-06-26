@@ -1,4 +1,4 @@
-"""Experiment 7 -- 1D center-geometry comparison (lstsq readout, tanh).
+"""Experiment expC04 -- 1D center-geometry comparison (lstsq readout, tanh).
 
 Question: in 1D, the uniform QI grid + least-squares readout reaches machine
 precision. How much of that depends on the *uniform* placement of the tanh
@@ -222,7 +222,7 @@ def plot_error_vs_width(data):
     Ws = [uniform_geometry(N)[0] for N in cfg["base_N"]]
     metrics = [(0, r"Best relative $L_2$"), (1, r"Best $L_\infty$")]
     fig, axes = plt.subplots(1, 2, figsize=(13, 5.2))
-    fig.suptitle(f"Exp07: center-geometry comparison vs width "
+    fig.suptitle(f"ExpC04: center-geometry comparison vs width "
                  f"(target={cfg['target']}, lstsq, {cfg['precision']})", fontsize=14)
     for mi, mlabel in metrics:
         ax = axes[mi]
@@ -254,7 +254,7 @@ def plot_centers_numberline(data):
     geometries = cfg["geometries"]
     Ns = cfg["base_N"]
     fig, axes = plt.subplots(2, 3, figsize=(16, 7))
-    fig.suptitle("Exp07: center placement on the number line (seed 0)", fontsize=14)
+    fig.suptitle("ExpC04: center placement on the number line (seed 0)", fontsize=14)
     axes = axes.ravel()
     for gi, geometry in enumerate(geometries):
         ax = axes[gi]
@@ -284,7 +284,7 @@ def plot_conditioning(data):
     rows = data["rows"]
     Ws = [uniform_geometry(N)[0] for N in cfg["base_N"]]
     fig, ax = plt.subplots(figsize=(7.5, 5.5))
-    fig.suptitle("Exp07: feature-matrix conditioning at the best-$L_\\infty$ cell",
+    fig.suptitle("ExpC04: feature-matrix conditioning at the best-$L_\\infty$ cell",
                  fontsize=13)
     for geometry in cfg["geometries"]:
         conds = []

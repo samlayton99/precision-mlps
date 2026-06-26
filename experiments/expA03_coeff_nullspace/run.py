@@ -1,4 +1,4 @@
-"""Experiment 4: How close are the QI and least-squares readouts?
+"""Experiment expA03: How close are the QI and least-squares readouts?
 
 A marginal justification (beyond eval error) for using lstsq: on the SAME
 fixed tanh geometry, does lstsq land on essentially the QI solution?
@@ -218,7 +218,7 @@ def _ratio_figure(rows, out_path):
     ax.axhline(1.0, color="0.6", lw=0.8, ls=":")
     ax.set_xlabel("model width  W = N + 2*halo + 1")
     ax.set_ylabel(r"deviation ratio  $\max_i|a^{QI}_i-a^{lstsq}_i|\,/\,(\overline{|a|})$")
-    ax.set_title("exp04: QI vs lstsq coefficient deviation -- full space vs row space")
+    ax.set_title("expA03: QI vs lstsq coefficient deviation -- full space vs row space")
     ax.grid(True, which="both", alpha=0.3)
 
     # Two legends: color = target, linestyle = which space.
@@ -262,7 +262,7 @@ def plot_results(data_path=None):
     _two_panel(
         data["width_sweep"], group_key="target", x_key="width",
         x_label="model width  W = N + 2*halo + 1",
-        title=fr"exp04: QI vs lstsq coefficient closeness vs width ($\lambda$={lam}, fp64)",
+        title=fr"expA03: QI vs lstsq coefficient closeness vs width ($\lambda$={lam}, fp64)",
         caption=(
             "On a fixed tanh geometry, QI and lstsq solve the same rank-deficient "
             "Phi @ beta = y (~half the columns are null space). TOP: the raw "
@@ -277,7 +277,7 @@ def plot_results(data_path=None):
     _two_panel(
         data["nsamples_sweep"], group_key="N", x_key="n_train",
         x_label="number of lstsq sample points  n_train",
-        title=fr"exp04: closeness vs lstsq sample count ($\lambda$={lam}, fp64, target={NSAMPLES_TARGET})",
+        title=fr"expA03: closeness vs lstsq sample count ($\lambda$={lam}, fp64, target={NSAMPLES_TARGET})",
         caption=(
             "QI sampling is fixed by the architecture; lstsq sampling is free. "
             "Holding the model width fixed and increasing the number of lstsq "

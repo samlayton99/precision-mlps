@@ -1,4 +1,4 @@
-"""Tests for exp05 GELU feature matrix and conditioning helpers."""
+"""Tests for expA04 GELU feature matrix and conditioning helpers."""
 
 import sys
 from pathlib import Path

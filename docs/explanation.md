@@ -8,7 +8,7 @@ the thing that sounds contradictory (using **mpmath** when "the point is fp64").
 
 Paper: `papers/QIs_workshop.pdf` ("Constructing Machine-Precision Neural Networks
 with Quasi-Interpolants"). Section 3 in that PDF is stale; the current construction
-is `papers/section3_rewrite.tex`, and the fp64/mpmath details are in
+is `papers/Section_3_Rewrite.pdf`, and the fp64/mpmath details are in
 `papers/practical_implementation.tex`.
 
 ---
@@ -618,11 +618,12 @@ in the fp64 bias) so it gets as close to the floor as fp64 allows.
 ## 10. Current results, in depth
 
 The implemented/run experiments are expA01 numerics_sanity, expA02 qi_vs_lstsq,
-expA03 coeff_nullspace, expA04 activation_conditioning, expB01 sampling_and_noise,
-expB02 scaling_laws, expC01 lambda_tradeoff, expC02 lambda_vs_frequency, expC03
-lambda_basin, expC04 center_geometry, expC05 geometry_interpolation, expD01
-geometry_ladder (Phase 1), expD02 adam_geometry, and expE01 geometry_zoo_2d — plus
-the `results/setup/` convergence probes; the remaining stubs are expD03
+expA03 coeff_nullspace, expA04 activation_conditioning, expA05 weight_blowup,
+expB01 sampling_and_noise, expB02 scaling_laws, expC01 lambda_tradeoff, expC02
+lambda_vs_frequency, expC03 lambda_basin, expC04 center_geometry, expC05
+geometry_interpolation, expC06 soft_neuron_interp, expD01 geometry_ladder
+(Phase 1), expD02 adam_geometry, and expE01 geometry_zoo_2d — plus the
+`results/setup/` convergence probes; the remaining stubs are expD03
 reparameterization, expD04 varpro, and the deprioritized exp13 solution_basins.
 Together they establish the *foundations* the paper's Section 4 rests on. Here's what
 each actually shows.
@@ -721,7 +722,7 @@ Now the payoff. The paper's `QIs_workshop.pdf` Section 4 is organized exactly
 around the construction-vs-training gap, and every part of it has a counterpart in
 this repo. (Note: the *figures* in the PDF were produced from a fuller pipeline;
 the repo's implemented experiments cover the foundations and some of §4.2, with
-§4.3's remaining diagnostics scaffolded as exp13–15.)
+§4.3's remaining diagnostics scaffolded as exp13, expD03, and expD04.)
 
 **The paper's framing (abstract + Fig. 1).** "Optimization, not expressivity, is
 the bottleneck." Fig. 1 shows three panels that *are* the thesis: (left) QI kernels
