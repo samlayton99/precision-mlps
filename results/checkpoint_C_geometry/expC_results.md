@@ -6,8 +6,6 @@
 
 The theory proves a machine-precision parameter point exists. The inner layer that controls it is $2N$-dimensional ($N$ weights $w_i$, $N$ biases $b_i$; the readout is solved exactly and is not the issue). Checkpoint C maps the neighborhood of that point: **which of the $2N$ coordinates are actually free, how precision decays as you leave the point, and why other configurations fail.** Two headline results:
 
-1. **The $2N$ degrees of freedom collapse to essentially one.** A precision-reaching geometry is fully specified by a single shared bandwidth; centers are a deterministic grid and biases are derived. The admissible set is a measure-zero structured point, not a basin in $\mathbb{R}^{2N}$.
-2. **The failures are approximation-theoretic, not numerical.** Conditioning and curvature are explicitly ruled out as the discriminator. Off-geometry solutions fail because they fail to *cover* the interval, not because the linear algebra is ill-posed.
 
 ## 1. What collapses the degrees of freedom (most to least reduction)
 

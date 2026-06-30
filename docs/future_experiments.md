@@ -1,86 +1,51 @@
-# Roadmap -- what to run next
+# Open questions & proposed experiments -- master list
 
-The single place to pick up. For what's established, see `results/results.md` and the per-checkpoint consolidations (e.g. `results/checkpoint_C_geometry/expC_results.md`); for the math/code, `docs/explanation.md`. Sorted most to least important; each item carries its own open questions.
+Every open question and proposed experiment, collected from each experiment's `results.md`, `thoughts.md`, and the prior roadmap. Grouped by checkpoint, deduped, sorted most-to-least relevant within each. Established findings live in `results/results.md` and the per-experiment `expX_results.md`.
 
-## Central question
 
-Can a training/optimization strategy learn QI-like solutions, closing the gap between the explicit construction ($\sim 10^{-15}$) and standard training ($\sim 10^{-10}$)? The paper's three violations frame it: (1) $\gamma$ stays $O(1)$ instead of growing as $O(N)$, (2) outer weights blow up, (3) features rank-saturate.
+- try it on harder functions (sin(1/x(+eps))) (more interesting functions in repo)
+- 
 
-**Success criterion.** A method works if, across $N\in\{32,64,128,256,\dots\}$ on the 6-category target family, over 3-5 seeds, error falls at $O(\log(1/\varepsilon))$ and reaches eval relative $L_2\le 10^{-13}$ with $L_\infty$ at machine epsilon -- **without** initializing from the exact construction.
 
-## Where we are
+## Checkpoint A -- numerics / method
 
-The diagnostic checkpoints (A-E) localized the problem and produced a working recipe:
+- **Activation null-space regimes: bounded vs growing.** expA04 found tanh has a bounded (~constant) null space in $[\Phi,\mathbf 1]$ (rank $\approx N$) and reaches the floor, while gelu has an $O(N)$ (growing) null space (rank $\approx 0.4N$) and stalls 1-3 orders short -- with comparable condition numbers, so it's rank, not conditioning, that separates them. Open: *why* -- what property of an activation sets the bounded-vs-growing regime (the paper's kernel conditions K1-K4 on $K=\psi^{(r)}$ should predict it)? Is a bounded null space necessary to reach the floor, are there any correlations? Map other valid-kernel activations (sin, sech, softplus) onto the two regimes. (expA04; paper §3 kernel conditions)
 
-- **The readout is solved, not hard.** lstsq on a fixed correct geometry reaches the fp64 floor (Checkpoint A). The "weight blowup" violation is dissolved: the readout norm *decays* with width, and QI just sits ~$1.25\times$ off the min-norm representative (expA05).
-- **Geometry is the whole game, and its $2N$ DOF collapse to ~one knob:** a shared bandwidth ($\lambda^*\approx0.25$, i.e. $\gamma=O(N)$) plus a uniform center grid; biases are derived; signs are irrelevant (Checkpoint C, `expC_results.md`). Bandwidth is the forgiving first-order knob; uniform centers are a hard structural requirement (non-uniform never reaches the floor). The failures are approximation-theoretic (coverage), not numerical (conditioning/curvature ruled out).
-- **Raw first-order Adam cannot grow $\gamma$ or solve the readout on the ill-conditioned $\Phi$** (Checkpoint D), but **QI-init + train + final lstsq refit recovers the construction floor**, and scaled-Xavier (right bandwidth, inexact centers) generalizes the gain (expD02).
-- **The recipe extends to 2D** (Checkpoint E).
+## Checkpoint C -- geometry
+- **Precision vs generalization (mask the data).** The precision-optimal uniform-$\gamma$ geometry is all one sharp scale, so it may interpolate/extrapolate badly in data-poor regions. Mask out parts of the domain (a held-out middle interval, or scattered gaps) and compare held-out error head-to-head across three approaches: (1) an Adam-trained network, (2) the cascade multi-band geometry + lstsq (see below), (3) the QI / uniform construction. Do the cascade's soft bands recover generalization where the single-scale uniform geometry fails? Also check the tradeoff when soft weights are frozen. (expC06; thoughts)
+- **Cascaded multi-band geometry.** Build a deliberate multi-bandwidth geometry by hand: the uniform grid at the ideal $\gamma$, plus a smaller evenly-spaced set of low-bandwidth ("soft") neurons, optionally a couple of bands at intermediate $\gamma$. Does it beat both plain-uniform and the accidental Xavier soft tail? How should band count, spacing, and bandwidth ratios scale with $N$? (expC06; thoughts)
+- **Soft-neuron protection and the residual-fitting interpretation.** (a) Is freezing the smallest ("soft") neurons better than full weight uniformity? (Tentatively yes, especially convex targets -- it flattens the hump.) (b) Is the ~$10\times$ floor improvement from a few soft neurons at $N{=}256$ real or a seed fluke (it fades by $N{=}512$)? Needs many seeds with per-target, per-$N$ error bars; decide fraction-of-width vs fixed count. (c) Is multistage fitting just "a few soft low-order neurons do the coarse fit each stage, the sharp neurons fit the residual"? If so, seeding/protecting a few soft neurons per stage is the lever -- formalize and test. (expC06; thoughts)
+- **Curvature-adaptive uniform centers (1D + 2D).** Increase center density in high-curvature regions while keeping placement locally uniform -- curvature-adaptive spacing, not random clustering. Does it beat the globally-uniform grid? Concrete test: can it get runge to machine precision at $N{=}32$, where the uniform grid falls short? Is that small-$N$ runge gap closable with a target-aware halo, or is it intrinsic to equal-width kernels on a peaked target? In 2D, place denser-but-locally-uniform coverage near the bumps / high-curvature regions instead of uniformly over the disk (`random_ridges`' runge win is likely incidental center-clustering) and check whether the scaling laws then descend cleanly. (expC05; expE01; thoughts)
+- **Second bandwidth mode near $\lambda\approx0.05$.** At large $N$ a second near-floor region appears at small bandwidth (for runge it slightly beats $\lambda=0.25$). Is it aliasing, or does growing width genuinely open a usable small-bandwidth regime? Does it keep widening with $N$? (expC03; thoughts)
+- **The last-mile step change.** Why does the final nudge to fully-uniform weights and centers give a sudden jump in precision, instead of gradual improvement? (thoughts; low priority)
 
-So the open frontier: can an optimizer *discover* the precision-admitting geometry from a generic start, and does the recipe extend in dimension and depth?
+## Checkpoint D -- optimizers
+- **Reparameterization (expD03).** Does optimizing in natural coordinates let plain gradient descent reach the floor that raw $(w,b)$ can't? Head-to-head: log-$\gamma$ ($\gamma{=}e^{\eta}$); one global $\lambda$ with $\gamma{=}\lambda/h$; dimensionless centers $c_k=-1+h(k+\delta_k)$; a readout scaled as $\alpha{=}a\gamma$. Pair each with a final lstsq refit. Direct test of expC05's one-way coupling. (expC05; prior roadmap)
+- **What does the trained geometry look like, and did it move?** Characterize a trained net's geometry: are centers uniform, what's their spread, what's $\gamma$? With QI init, how much do the first-layer params actually move before the refit, and what does that look like for runge? (expD02; thoughts)
+- **Initialization Regimes in greater depth** Expanding on expD02, what properties should we test about the trained solutions in the init regime. Is there an optimizer and initialization regime that work better? this is the real question.
+- **Variable projection (expD04).** Solve the readout exactly by lstsq at every step, and optimize only the nonlinear geometry $\theta=(\lambda,\delta_k)$ with Gauss-Newton / LM / quasi-Newton. Does it reach the floor where end-to-end Adam stalls? (prior roadmap)
+- **Can any optimizer solve the lstsq readout?** First-order Adam can't solve the readout on the ill-conditioned $\Phi$ (the 4th barrier, expD01). Can a second-order / quasi-Newton method get there -- SSBroyden (the paper's two-stage Adam$\to$SSBroyden), LM, or a preconditioned solver? (expD01; thoughts)
+- **Geometry-ladder levels 4-7 (expD01).** Continue the ladder: relax more constraints -- fixed $\gamma$ + free centers, then free $\gamma$ + free centers -- each with the readout either solved or trained. Pinpoint exactly which relaxation first loses precision. (expD01)
+- **Seed-average the finer expD02 trends** (coverage vs uniformity; scaled vs clean init). (expD02)
 
-## The decisive arc (items 1-3 close the paper)
+## Checkpoint E -- 2D
 
-One hypothesis -- *raw $(w,b)$ are the wrong optimization variables* -- tested from two angles, after one cheap design question. If either method reaches the floor from random init across the width ladder, the thesis becomes one sentence: *QI theory reveals the right coordinate system; in those coordinates, train + final solve reaches machine precision.* Resist re-mapping the landscape; the diagnostic phase is done. Point everything here.
+- **Curvature-aware 2D coverage.** See the merged Checkpoint C curvature item -- the 2D half lives there.
+- **Does optimal $\lambda$ drift with $N$ in 2D?** It looks like it may decrease slightly as $N$ grows. Confirm or rule out. (expE01; thoughts)
+- **Do extended precision and larger $N$ push the other smooth 2D targets to the floor?** (expE01) More robust treatment, as it appears they will.
 
-**1. Resolve $\gamma$-only vs $\gamma$+uniformity (cheap, design-critical -- do first).**
-A genuine tension: expC03 says $\gamma=O(N)$ is required; the $\gamma$-init finding says right-$\gamma$ + random centers + lstsq already hits the floor on smooth targets; but expD02/expC04 show random/scaled centers **decay with $N$ while uniform holds**. Likely resolution: **coverage + right $\gamma$ gets into the basin; uniformity holds the floor as $N$ grows.** Pin it down -- it decides whether the optimizer must learn *uniform centers* or *just $\gamma$*. If just $\gamma$, the problem collapses to a one-parameter barrier and the story is clean.
+## Checkpoint F -- depth, higher dimension, applications
+- **1D and 2D real physics task** with the constructed geometry, end-to-end. (thoughts)
+- **Depth.** Stack the construction across multiple layers (delay until the 1-hidden-layer case is fully understood/a good optimization and init strategy is found). Just try the initialization on multiple layers. (thoughts; frontier)
+- **Higher output dimension ($\to\mathbb{R}^m$).** Emperical chec, works in theoery. Multi-output via shared geometry + per-coordinate lstsq is partly shown for $1\to\mathbb{R}^m$ (expD02); push it further -- more outputs, harder targets, and combined with higher input dim / depth. (expD02; frontier)
+- **Higher input dimension ($\mathbb{R}^n\to$).** The harder open part: higher input dimension plus depth (the 2D Radon recipe is step 1). Domain matters -- the init works well over the relevant domain. (frontier)
+- **Non-MSE losses.** How does the method behave under cross-entropy / non-MSE objectives? (thoughts)
+- **Transformer init.** Initialize a transformer's first hidden layers with this construction (needs depth, higher input dimension, and domain solved first). (frontier)
 
-**2. Variable projection (`experiments/expD04_varpro`, stub) -- the cleanest shot.**
-Eliminate the readout exactly (solve $v(\theta)$ by lstsq each step), optimize only the nonlinear geometry $\theta=(\lambda,\delta_k)$ with Gauss-Newton / LM / quasi-Newton. The nonlinear problem is tiny -- essentially one bandwidth plus small center deltas -- and a second-order method is immune to the vanishing $\mathrm{sech}^2$ gradient that blocks Adam from growing $\gamma$. Both a candidate method and a diagnostic: if VarPro reaches the floor where end-to-end Adam stalls, raw coordinates are confirmed as the wrong variables.
+## Reference (conventions, not questions)
 
-**3. Reparameterization (`experiments/expD03_reparameterization`, stub).**
-Does optimizing in natural coordinates let first-order descent reach the floor that raw $(w,b)$ cannot? Test head-to-head on the same widths/targets/optimizer: log-scale $\gamma=\exp(\eta)$; global bandwidth $\gamma=\lambda/h$ with a single learnable $\lambda$; dimensionless centers $c_k=-1+h(k+\delta_k)$; an $\alpha=a\gamma$ readout. Pair with the final lstsq refit that already works. This is also the direct test of expC05's one-way coupling (weight uniformity needs center uniformity) -- does a joint reparameterization remove the joint-movement barrier?
-
-## Supporting experiments (priority order)
-
-**4. The $\gamma$-init-scale sweep.**
-Accidental finding from expD02 stage-1 tuning: rescaling the init so $\gamma\approx\gamma^*=O(N)$ lets even untrained, random-center geometry hit the floor under lstsq, while at standard Xavier ($\gamma\approx0.1$) it is useless. Sweep the init $\gamma$-scale (global and per-neuron) across widths and the target family; map where untrained-init + lstsq stops reaching the floor as a function of $\gamma/\gamma_\text{ideal}$; test whether a steep-$\gamma$ init plus a short Adam pass (or the log-$\gamma$ reparameterization) closes the gap raw Adam cannot.
-
-**5. Geometry-ladder levels 4-7 (`experiments/expD01_geometry_ladder`).**
-expD01 covered through level 3 (frozen geometry, trained readout). Continue relaxing: fixed $\gamma$ + free centers, then free $\gamma$ + free centers, each with the readout solved or trained, to localize exactly where precision is lost as constraints come off.
-
-**6. Scaling-law characterization (paper backbone).**
-The expB02 fixed-$\lambda=0.25$ rerun confirmed the power-law-descent-then-floor law isn't a bandwidth-selection artifact. Remaining: what sets the descent slope (activation and target both matter; relu is a clean ~$N^{-2}$), and **does the number of width/data decades to reach the floor grow as $\log(1/\varepsilon)$** -- the form the success criterion needs, and possibly provable?
-
-**7. Cascaded multi-band geometry (from expC06).**
-expC06 showed the weight-uniformity "hump" is the loss of soft (low-bandwidth) neurons that span a low-degree polynomial basis; protecting them helps. Instead of protecting an accidental Xavier tail, *design* the multi-scale basis: a uniform grid at the ideal $\gamma$ plus a small evenly-spaced sub-grid of soft neurons, optionally medium bands between. Open: does it beat both pure-uniform and Xavier-protected, and how should band count/spacing/bandwidth-ratios scale with $N$? (Also the natural realization of the residual-fitting idea below.)
-
-**8. Curvature-aware center placement (1D and 2D).**
-expC05 (runge $N{=}64$) and expE01 (runge2d) both hint that clustering centers at high target curvature can beat uniform placement. Run a deterministic curvature-clustering experiment in 1D, and in 2D place uniform coverage near the bumps rather than uniformly over the disk; check whether the scaling laws then descend cleanly. Disentangle scale from placement (fix vector scale, vary only structure). Open: is the runge lead real or incidental center-clustering?
-
-**9. The second bandwidth mode near $\lambda\approx0.05$ (expC03 tangent).**
-At large $N$ a faint second near-floor region appears at small $\lambda$ (for runge it edges out $0.25$). Aliasing, or does width make the small-bandwidth regime attainable? Map whether scaling keeps opening it.
-
-## Open threads (no dedicated experiment yet)
-
-- **Precision vs generalization in data-poor regions (expC06).** The precision-optimal uniform-$\gamma$ geometry may extrapolate/interpolate-across-gaps poorly (all one sharp scale, no smooth global trend). Cheap test: hold out a middle interval, fit lstsq on the rest with (a) trained geometry, (b) uniform construction, (c) the cascade, compare held-out error. Does the cascade's soft bands recover generalization?
-- **Residual-fitting division of labor (expC06, theory).** Is multistage residual fitting just "a few soft low-order modes do the coarse work each stage, sharp modes do the residual"? If so, seeding a few soft modes per stage may be the right lever. Worth formalizing.
-- **Few-soft-neuron floor improvement -- real or artifact? (expC06).** Protecting ~5-10 smallest neurons beat the cardinal floor by up to ~10x; needs many more seeds + an explanation for why it fades by $N{=}512$. Also: fraction vs raw count (the uniform/init regimes disagree).
-- **Coefficient closeness / cardinal-basis recovery (`explanation.md` §13).** expA02 showed lstsq and QI agree as *functions*; never as *coefficients*. Cheap plot: $\|a_\text{LS}-a_\text{QI}\|/\|a_\text{QI}\|$ and $\mathrm{cond}(\Phi)$ across widths, in both the tanh and cardinal bases, with a degraded-geometry control. Turns "geometry is the bottleneck" from hypothesis toward evidence.
-- **Did the coefficients move during training? (expD02).** With QI init, how much do first-layer parameters change before the refit, and how does this look for runge?
-- **Reproduce paper §4.1 "direct training fails" (paper completeness).** The infrastructure exists (`src/training/`, Adam->LBFGS loop, metric schema). Not yet run as a training experiment; the most direct "fill in Section 4.1" task, and it produces the $\gamma$/$\lambda$/weight-norm-vs-width plots (violations #1/#2) for free.
-
-## The new frontier (Sam) -- after the optimizer arc
-
-- **$\mathbb{R}^n\to\mathbb{R}^m$.** expD02 suggests $1\to\mathbb{R}^m$ is already solved (one shared geometry + per-coordinate lstsq). The open part is higher *input* dimension (the 2D Radon recipe of Checkpoint E is step one) combined with depth. Domain matters: the init works well over the relevant domain.
-- **Depth.** Delay until the single-hidden-layer case is fully understood, then study stacking. Speculative payoff: initialize a transformer's first hidden layers with this construction -- which needs depth, domain, and higher input dimension solved first.
-
-## Deprioritized / dropped
-
-- **Deprioritized:** Hessian / solution-basin landscape (`experiments/exp13_solution_basins`, stub). The paper and expC03/expC04/expC05 already show curvature, conditioning, and landscape are not the discriminator (the failure is coverage/approximation). Low priority.
-- **Dropped** (done or ruled out): $\Phi$-conditioning (doesn't discriminate -- expA03/expA04/expC04), objective mismatch (lstsq reaches the floor on the right geometry), standalone noise sensitivity (Checkpoint B), weight-blowup (dissolved -- expA05).
-
-## Caution
-
-The expD02 wins are **single-seed and fp32** -- enough to motivate, not to claim. Before "we found the method" goes in writing, it must clear the full protocol: 3-5 seeds, width ladder, 6 targets, fp64 eval, no construction init.
-
-## Standard logging (every experiment)
-
-- train $L_\infty$, eval $L_\infty$, eval relative $L_2$
-- $\gamma$, $\lambda=\gamma h$ (mean/median/max)
-- max absolute outer weight, $\|v\|_2$
-- feature-rank diagnostics (singular values, stable rank)
-- seed-to-seed variance (3-5 seeds)
-
-Target family (6 categories): low-frequency analytic, high-frequency analytic, boundary-layer/steep, mixed-scale, polynomial/entire, one slightly-rough-but-smooth.
+- **Success criterion.** Across $N\in\{32,64,128,256,\dots\}$ on the 6-category target family, over 3-5 seeds, error falls at the exponential-in-width rate (Corollary 1, $\sim e^{-\alpha W}$) and reaches eval relative $L_2\le 10^{-13}$ with $L_\infty$ at machine epsilon -- *without* initializing from the exact construction.
+- **Standard logging.** train/eval $L_\infty$, eval rel $L_2$; $\gamma$ and $\lambda=\gamma h$ (mean/median/max); max $|$outer weight$|$ and $\|v\|_2$; feature-rank diagnostics (singular values, stable rank); seed-to-seed variance (3-5 seeds).
+- **Target family (6 categories).** low-frequency analytic, high-frequency analytic, boundary-layer/steep, mixed-scale, polynomial/entire, one slightly-rough-but-smooth.
+- **Answered / dropped.** Coefficient closeness QI vs lstsq (answered by expA03: same function, difference lives in the ~108-dim null space, lstsq is min-norm, absolute gap decays with width -- only a confirmatory cond/norm-vs-width plot remains, low priority). Also dropped or ruled out: $\Phi$-conditioning, objective mismatch, standalone noise studies, weight-blowup.
+- **Stubs / deprioritized.** `expD03_reparameterization`, `expD04_varpro` (stubs, above). `exp13_solution_basins` deprioritized (curvature/conditioning ruled out as discriminators).

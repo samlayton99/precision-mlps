@@ -54,6 +54,8 @@ WIDTHS = [32, 64, 96, 128]
 TARGETS = ["sine", "sine_8pi", "runge", "sine_mixture", "exp", "abs_cubed"]
 NSAMPLES_SWEEP = [256, 512, 1024, 2048, 4096]
 NSAMPLES_TARGET = "sine"
+RAW_NORM_TARGET = "sine"                       # wide-N sweep for the raw-norms figure
+RAW_NORM_WIDTHS = [32, 64, 96, 128, 192, 256, 384, 512]
 
 
 def _compare_one(target, N, n_train, x_eval, y_eval):
@@ -92,13 +94,23 @@ def _compare_one(target, N, n_train, x_eval, y_eval):
     ratio_full = cc.deviation_ratio(beta_qi, beta_ls)
     rs = cc.rowspace_ratio(A_train, beta_qi, beta_ls)  # rcond=1e-11
 
+    # Raw (un-normalized) norms, for the raw-norms figure: the coefficient scale
+    # of each solution, and the difference measured both in the full space and in
+    # the data-visible row space (same 1e-11 cut as the rank above). The full diff
+    # decays with N; the row-space diff sits at the fp64 floor -- same vector there.
+    Pq, _ = cc.project_rowspace(A_train, beta_qi)
+    Pl, _ = cc.project_rowspace(A_train, beta_ls)
+    raw_row_l2 = float(np.linalg.norm(Pq - Pl))
+
     y_train_norm = np.linalg.norm(y_train) or 1.0
     return {
         "target": target.name, "N": N, "width": W, "n_train": n_train,
         "rank": rs["rank"], "null_dim": (W + 1) - rs["rank"],
         "ratio_full": ratio_full, "ratio_row": rs["ratio"],
         "row_mean_qi": rs["mean_qi"], "row_mean_ls": rs["mean_ls"],
-        "raw_l2": raw["l2"], "raw_linf": raw["linf"], "raw_rel_l2": raw["rel_l2"],
+        "qi_norm": float(np.linalg.norm(beta_qi)), "ls_norm": float(np.linalg.norm(beta_ls)),
+        "raw_l2": raw["l2"], "raw_row_l2": raw_row_l2,
+        "raw_linf": raw["linf"], "raw_rel_l2": raw["rel_l2"],
         "fun_l2": fun["l2"], "fun_linf": fun["linf"], "fun_rel_l2": fun["rel_l2"],
         # Sanity: both must actually fit the data for the comparison to be fair.
         "qi_fit_resid": cc.fit_residual(A_train, beta_qi, y_train) / y_train_norm,
@@ -138,8 +150,21 @@ def collect_data():
             print(f"  N={N:>3} n_train={n_train:>5}  ratio_full={r['ratio_full']:.2e}  "
                   f"ratio_row={r['ratio_row']:.2e}  fun_linf={r['fun_linf']:.2e}")
 
+    # --- Sweep 3: raw coefficient norms vs N, wide range, single target ---
+    print(f"\nSweep 3: raw coefficient norms vs N ({RAW_NORM_TARGET})")
+    raw_rows = []
+    target = get_target(RAW_NORM_TARGET)
+    y_eval = target.fn_numpy(x_eval)
+    for N in RAW_NORM_WIDTHS:
+        W = N + 2 * default_halo(N, lambda_star=LAMBDA) + 1
+        r = _compare_one(target, N, max(512, 2 * W), x_eval, y_eval)
+        raw_rows.append(r)
+        print(f"  N={N:>4} W={r['width']:>4}  ||b_QI||={r['qi_norm']:.3e}  "
+              f"||b_LS||={r['ls_norm']:.3e}  full_diff={r['raw_l2']:.3e}  "
+              f"row_diff={r['raw_row_l2']:.2e}")
+
     out = {"width_sweep": width_rows, "nsamples_sweep": nsamp_rows,
-           "lambda": LAMBDA, "Kc": KC}
+           "raw_norm_sweep": raw_rows, "lambda": LAMBDA, "Kc": KC}
     with open(DATA_PATH, "w") as f:
         json.dump(out, f, indent=2)
     print(f"\nDone in {time.time() - t0:.1f}s. Saved {DATA_PATH}")
@@ -249,6 +274,48 @@ def _ratio_figure(rows, out_path):
     print(f"Saved {out_path}")
 
 
+def _raw_norms_figure(rows, out_path, lam):
+    """Raw (un-normalized) L2 norms vs N: coefficient scale of each solution, the
+    full coefficient difference, and the difference inside the data-visible row
+    space. Shows -- with no normalization -- that the full difference decays with
+    N alongside the coefficients, while in the row space the two are identical to
+    the fp64 floor.
+    """
+    rows = sorted(rows, key=lambda r: r["N"])
+    Ns = [r["N"] for r in rows]
+    fig, ax = plt.subplots(figsize=(8.5, 6))
+    ax.semilogy(Ns, [r["qi_norm"] for r in rows], "-", color="0.55", lw=1.0,
+                marker=".", ms=6, label=r"$\|\beta_{QI}\|_2$  (coeff scale)")
+    ax.semilogy(Ns, [r["ls_norm"] for r in rows], "--", color="0.55", lw=1.0,
+                marker=".", ms=6, label=r"$\|\beta_{lstsq}\|_2$  (coeff scale)")
+    ax.semilogy(Ns, [r["raw_l2"] for r in rows], "-", color="#d62728", lw=1.9,
+                marker="o", ms=5, label=r"full diff  $\|\beta_{QI}-\beta_{lstsq}\|_2$")
+    ax.semilogy(Ns, [max(r["raw_row_l2"], 1e-18) for r in rows], "-", color="#1f77b4",
+                lw=1.9, marker="s", ms=5,
+                label=r"row-space diff  $\|P(\beta_{QI}-\beta_{lstsq})\|_2$")
+    ax.set_xlabel("grid resolution  N")
+    ax.set_ylabel(r"raw $L_2$ norm  (no normalization)")
+    ax.set_title(fr"expA03: raw coefficient norms vs N  ({RAW_NORM_TARGET}, $\lambda$={lam}, fp64)")
+    ax.grid(True, which="both", alpha=0.3)
+    ax.legend(fontsize=9, loc="best")
+    caption = (
+        "RAW norms, no normalization. Grey: the coefficient scale of each solution "
+        "-- both shrink as N grows. Red: the full coefficient difference -- it shrinks "
+        "WITH them (never frozen at O(1)). Blue: the same difference restricted to the "
+        "row space of [Phi,1] (the part the data sees) -- it sits ~5-6 orders below the "
+        "coefficient scale (~1e-5-1e-6, the row-space floor at rcond=1e-11) and does not "
+        "grow with N, so QI and lstsq coincide wherever the data constrains them (the "
+        "functions agree to ~1e-12). The red-blue gap is the null-space freedom; the O(1) "
+        "figure elsewhere is that gap divided by a (shrinking) typical coefficient, not a raw norm."
+    )
+    fig.text(0.5, 0.005, caption, ha="center", va="bottom", fontsize=7.5,
+             wrap=True, style="italic")
+    plt.tight_layout(rect=[0, 0.08, 1, 1])
+    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {out_path}")
+
+
 def plot_results(data_path=None):
     data_path = Path(data_path) if data_path else DATA_PATH
     with open(data_path) as f:
@@ -259,6 +326,11 @@ def plot_results(data_path=None):
     # Headline figure.
     _ratio_figure(data["width_sweep"], RESULTS_DIR / "coeff_ratio_full_vs_row.png")
 
+    # Raw-norms figure (un-normalized, the decisive raw view).
+    if data.get("raw_norm_sweep"):
+        _raw_norms_figure(data["raw_norm_sweep"],
+                          RESULTS_DIR / "coeff_raw_norms_vs_width.png", lam)
+
     _two_panel(
         data["width_sweep"], group_key="target", x_key="width",
         x_label="model width  W = N + 2*halo + 1",
@@ -266,10 +338,11 @@ def plot_results(data_path=None):
         caption=(
             "On a fixed tanh geometry, QI and lstsq solve the same rank-deficient "
             "Phi @ beta = y (~half the columns are null space). TOP: the raw "
-            "coefficient vectors differ by O(1) -- but that distance lives almost "
-            "entirely in the null space the data cannot see. BOTTOM: the functions "
-            "they compute agree to the fp64 floor. The two are the same solution "
-            "wherever the data constrains it. One target per category."
+            "coefficient difference decays with width (it is not frozen) but stays "
+            "far above the function difference -- that gap lives almost entirely in "
+            "the null space the data cannot see. BOTTOM: the functions they compute "
+            "agree to the fp64 floor. The two are the same solution wherever the data "
+            "constrains it. One target per category."
         ),
         out_path=RESULTS_DIR / "coeff_diff_vs_width.png",
     )

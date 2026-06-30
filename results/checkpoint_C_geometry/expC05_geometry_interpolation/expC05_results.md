@@ -111,4 +111,3 @@ These surfaces are consistent with a single covering picture of what a good geom
 - Does the $\gamma(x-c)$ / log-$\gamma$ reparameterization remove the joint-movement barrier the multiply-not-add result implies? (expD03/expD04.)
 - ~~Why does weight uniformity get worse before better even when $\lambda$ and centers are ideal? Are the small near-zero weights particularly useful? Is it worst for convex targets?~~ **Answered in expC06:** yes -- the hump is the loss of the soft (small-bandwidth) neurons, which span a low-degree polynomial basis; protecting them flattens it, and the effect tracks target convexity.
 - Curvature-clustering (on hold): a deterministic test of whether clustering centers at high curvature beats the uniform grid (runge $N{=}64$ hint).
-- Does the small-$N$ runge bandwidth starvation at $(1,1)$ close with a target-aware halo, or is it intrinsic to equal kernels on a peaked target?

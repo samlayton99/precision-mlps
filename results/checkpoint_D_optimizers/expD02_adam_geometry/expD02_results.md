@@ -14,7 +14,9 @@ How does the achievable error depend on how the first layer is initialized and o
 
 ## Experiment design
 
-One cube, sliceable along three axes plus width. **init (4)** -- the first layer, with centers pinned by $b=-\gamma c$:
+One cube, sliceable along three axes plus width. 
+
+**init (4)** -- the first layer, with centers pinned by $b=-\gamma c$:
 
 - `xavier`: standard Glorot ($\gamma\approx0.1$, far too small), random centers;
 - `scaled_xavier`: Xavier rescaled by $s=\gamma^*/\text{mean}|w|$ to bandwidth $\gamma^*=\lambda^*/h=N/8$ (at $\lambda^*=0.25$), heavy-tailed centers;
