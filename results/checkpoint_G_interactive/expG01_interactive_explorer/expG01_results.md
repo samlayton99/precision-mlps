@@ -30,6 +30,13 @@ Then open **http://127.0.0.1:8050** in a browser. (Requires `dash` in the venv; 
 
 A note on the gap: with least squares, the min-norm SVD readout fills a masked gap with a straight line between the endpoints. With $\gamma=O(N)$ each tanh is a sharp step of height $2v_k$ at its center; the net rise across the gap is fixed by the boundary values, and minimizing $\|v\|_2$ for a fixed sum makes every $v_k$ equal -- equal steps at equal spacing, i.e. a linear ramp.
 
+## Override regimes (below the graphs, least-squares only)
+
+Two optional regimes take over only when their "use this" box is checked; otherwise nothing changes. Each table row has its own apply-checkbox (only checked rows are used), independent of the Sample button.
+
+- **x-sampling (gaussian mixture)** -- editable rows of (center, variance, count); the **Sample** button draws `count` points per row from $\mathcal N(\text{center}, \text{variance})$ (not clipped to $[-1,1]$) and overrides the equispaced training x. The sampled locations show as a red rug on the x-axis. Make data dense in some regions and sparse in others; the residual then degrades exactly in the data-poor regions.
+- **custom centers (piecewise-uniform, per-region λ)** -- editable rows of (left, right, num, $\lambda\in[0,1]$); each region places `num` uniform centers with $\gamma=\lambda/h_\text{region}$ (local spacing), replacing the grid + halo + global $\lambda$. Place more/sharper neurons where the data is and fewer/wider elsewhere (the "smooth boundary between data-rich and data-poor" idea).
+
 ## Panels
 
 - **Left** -- target $f$ (blue) vs approximation (red, thinner, semi-transparent); the mask interval is shaded. With y-noise on, the scheme switches to: true $f$ dotted black, approximation red, and the noisy training data blue.
@@ -46,3 +53,10 @@ Sanity checks (headless): sine at $\lambda=0.25$, $N=128$, no mask reaches rel $
 
 - App: `experiments/expG01_interactive_explorer/app.py` (solver + layout + callbacks)
 - Launcher: `experiments/expG01_interactive_explorer/run.py`
+
+
+## Sam thoughts:
+- low lambda fixes the noisy + gap blowup
+- dropping centers also helps with noise + gap blowup
+- smooth boundary to data rich and data poor regimes? placing more centers and higher lambda at those places with data? 
+

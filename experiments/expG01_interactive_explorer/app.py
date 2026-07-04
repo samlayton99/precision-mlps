@@ -18,7 +18,7 @@ if str(REPO_ROOT) not in sys.path:
 import numpy as np
 import sympy as sp
 from scipy.special import erf, expit
-from dash import Dash, dcc, html, Input, Output, ctx, no_update
+from dash import Dash, dcc, html, Input, Output, State, ctx, no_update, dash_table
 import plotly.graph_objects as go
 
 from src.construction.qi_mpmath import default_halo, construct_qi
@@ -124,8 +124,50 @@ def _metrics(resid, f_true, idx):
     return (rel_l2, linf)
 
 
+def sample_gmm(rows, seed):
+    """rows: [{center, variance, count}] -> sampled training x in [-1, 1] (sorted)."""
+    rng = np.random.default_rng(int(seed))
+    xs = []
+    for r in rows or []:
+        try:
+            mu, var, n = float(r["center"]), float(r["variance"]), int(r["count"])
+        except (TypeError, ValueError, KeyError):
+            continue
+        if n > 0:
+            xs.append(mu + np.sqrt(max(var, 0.0)) * rng.standard_normal(n))
+    if not xs:
+        return None
+    return np.sort(np.concatenate(xs))   # not clipped -- samples may fall outside [-1, 1]
+
+
+def build_centers_override(rows):
+    """rows: [{left, right, num, lambda}] -> (centers, gamma_vec) or None.
+
+    Each region places `num` uniform centers on [left, right]; its neurons get
+    gamma = lambda / h_region (local spacing). lambda in [0, 1].
+    """
+    cs, gs = [], []
+    for r in rows or []:
+        try:
+            a, b, num, lam = float(r["left"]), float(r["right"]), int(r["num"]), float(r["lambda"])
+        except (TypeError, ValueError, KeyError):
+            continue
+        if num < 1 or b <= a or not (0.0 <= lam <= 1.0):
+            continue
+        pts = np.linspace(a, b, num)
+        h = (b - a) / (num - 1) if num > 1 else (b - a)
+        cs.append(pts)
+        gs.append(np.full(num, lam / h if h > 0 else 0.0))
+    if not cs:
+        return None
+    centers, gamma_vec = np.concatenate(cs), np.concatenate(gs)
+    order = np.argsort(centers)
+    return centers[order], gamma_vec[order]
+
+
 def compute(N, lam, fn_text, n_train, n_test, mask_on, mlo, mhi, activation,
-            halo=None, mask_centers=False, method="lstsq", noise_sigma=0.0, rcond=None):
+            halo=None, mask_centers=False, method="lstsq", noise_sigma=0.0, rcond=None,
+            x_override=None, centers_override=None, mark_points=False):
     f_vec, f_scalar, fp_scalar = make_fns(fn_text)
     halo_n = int(halo) if halo is not None else default_halo(N, lambda_star=HALO_LAMBDA)
 
@@ -145,11 +187,18 @@ def compute(N, lam, fn_text, n_train, n_test, mask_on, mlo, mhi, activation,
         f_hat = build_phi_act(x_test, gamma_vec, centers, "tanh") @ v + b
         n_fit, activation, x_fit, y_fit = centers.size, "tanh", None, None
     else:
-        centers, gamma_vec, halo_n, gamma = geometry(N, lam, halo_n)
+        if centers_override is not None:              # custom piecewise-uniform centers + per-region gamma
+            centers, gamma_vec = centers_override
+        else:
+            centers, gamma_vec, halo_n, gamma = geometry(N, lam, halo_n)
         if mask_on and mask_centers:                  # also drop neurons centered in the gap
             keep_c = (centers < mlo) | (centers > mhi)
             centers, gamma_vec = centers[keep_c], gamma_vec[keep_c]
-        x_train = np.linspace(-1.0, 1.0, int(n_train))
+        gamma = float(np.mean(gamma_vec)) if gamma_vec.size else 0.0   # representative bandwidth
+        if x_override is not None:                     # custom (e.g. GMM-sampled) training x
+            x_train = np.asarray(x_override, dtype=np.float64)
+        else:
+            x_train = np.linspace(-1.0, 1.0, int(n_train))
         keep = (x_train < mlo) | (x_train > mhi) if mask_on else np.ones_like(x_train, dtype=bool)
         x_fit = x_train[keep]
         y_fit = f_vec(x_fit)
@@ -169,6 +218,8 @@ def compute(N, lam, fn_text, n_train, n_test, mask_on, mlo, mhi, activation,
     return dict(
         x_test=x_test, f_test=f_test, f_hat=f_hat, resid=resid,
         x_fit=x_fit, y_fit=y_fit, noise_on=noise_on,
+        show_points=(mark_points and x_fit is not None),
+        centers_custom=(centers_override is not None), x_custom=(x_override is not None),
         mask_on=mask_on, mlo=mlo, mhi=mhi, method=method, activation=activation,
         m_all=_metrics(resid, f_test, np.ones(x_test.size, dtype=bool)),
         m_out=_metrics(resid, f_test, ~in_mask),
@@ -183,7 +234,16 @@ def compute(N, lam, fn_text, n_train, n_test, mask_on, mlo, mhi, activation,
 # ----------------------------------------------------------------------------
 BLUE = "#1f4e8c"
 RED = "#d1352b"
+RED_DARK = "#7a0d0d"
+GREEN = "#2ca02c"
 GRID = "#e6e6e6"
+
+
+def _add_rug(fig, xf, y_level):
+    """Black baseline at y_level + red open-circle markers at the sampled x's."""
+    fig.add_hline(y=y_level, line=dict(color="black", width=1))
+    fig.add_scatter(x=xf, y=np.full(xf.shape, y_level), mode="markers",
+                    marker=dict(color=RED, size=6, symbol="circle-open"), name="sampled x")
 
 
 def _base(fig, title, ylog=False):
@@ -216,15 +276,23 @@ def fig_functions(d):
         fig.add_scatter(x=d["x_test"], y=d["f_test"], mode="lines",
                         line=dict(color="black", width=1.6, dash="dot"), name="f(x) true")
         fig.add_scatter(x=d["x_test"], y=d["f_hat"], mode="lines",
-                        line=dict(color=RED, width=1.4), name="approx")
+                        line=dict(color=RED, width=2.2), name="approx")
     else:
         fig.add_scatter(x=d["x_test"], y=d["f_test"], mode="lines",
                         line=dict(color=BLUE, width=2.2), name="f(x)")
         fig.add_scatter(x=d["x_test"], y=d["f_hat"], mode="lines",
-                        line=dict(color=RED, width=1.1), opacity=0.6, name="approx")
+                        line=dict(color=RED, width=2.2), opacity=0.8, name="approx")
     if d["mask_on"]:
         fig.add_vrect(x0=d["mlo"], x1=d["mhi"], fillcolor="#999", opacity=0.13, line_width=0)
-    return _base(fig, "target vs approximation")
+    xf = d.get("x_fit")
+    if d.get("show_points") and xf is not None and xf.size:
+        lo, hi = float(d["f_test"].min()), float(d["f_test"].max())
+        yr = lo - 0.08 * max(hi - lo, 1e-9)                     # rug just below the data
+        _add_rug(fig, xf, yr)
+    fig = _base(fig, "target vs approximation")
+    if d.get("show_points") and xf is not None and xf.size:     # widen to show samples past [-1,1]
+        fig.update_xaxes(range=[min(-1.0, float(xf.min())), max(1.0, float(xf.max()))])
+    return fig
 
 
 E_MIN = -16.0  # machine-eps floor exponent; maps to the centered zero line
@@ -256,15 +324,21 @@ def fig_residual(d):
         ticktext += [f"10<sup>{e}</sup>", f"-10<sup>{e}</sup>"]
     fig = go.Figure()
     fig.add_scatter(x=d["x_test"], y=t, mode="lines",
-                    line=dict(color="#333", width=1.0), name="f - approx")
+                    line=dict(color=GREEN, width=1.1), name="f - approx")
     if d["mask_on"]:
         fig.add_vrect(x0=d["mlo"], x1=d["mhi"], fillcolor="#999", opacity=0.13, line_width=0)
     fig.add_hline(y=0.0, line_color="#bbb", line_width=1.2)
-    # red dotted lines at the max and min residual (the L-inf envelope)
-    fig.add_hline(y=float(t.max()), line=dict(color=RED, width=1, dash="dot"))
-    fig.add_hline(y=float(t.min()), line=dict(color=RED, width=1, dash="dot"))
+    # dark-red dotted lines at the max and min residual (the L-inf envelope)
+    fig.add_hline(y=float(t.max()), line=dict(color=RED_DARK, width=2, dash="dot"))
+    fig.add_hline(y=float(t.min()), line=dict(color=RED_DARK, width=2, dash="dot"))
+    ymin, xf = -S, d.get("x_fit")
+    if d.get("show_points") and xf is not None and xf.size:     # sampled-x rug at the bottom
+        _add_rug(fig, xf, -S)
+        ymin = -S - 0.10 * S
     fig = _base(fig, "residual  (f - approx),  symmetric log")
-    fig.update_yaxes(tickvals=tickvals, ticktext=ticktext, range=[-S, S], title="residual")
+    fig.update_yaxes(tickvals=tickvals, ticktext=ticktext, range=[ymin, S], title="residual")
+    if d.get("show_points") and xf is not None and xf.size:
+        fig.update_xaxes(range=[min(-1.0, float(xf.min())), max(1.0, float(xf.max()))])
     return fig
 
 
@@ -310,6 +384,9 @@ _card = {"border": "1px solid #e4e4e4", "borderRadius": "8px", "padding": "14px 
          "background": "#fcfcfc", "display": "flex", "flexDirection": "column", "gap": "14px"}
 _section = {"fontSize": "11px", "fontWeight": 700, "letterSpacing": "0.06em",
             "textTransform": "uppercase", "color": "#999", "marginBottom": "2px"}
+_btn = {"padding": "6px 14px", "fontSize": "13px", "border": "1px solid #ccc",
+        "borderRadius": "6px", "background": "#fff", "cursor": "pointer"}
+_btn_primary = {**_btn, "background": "#5b3fd1", "color": "#fff", "border": "1px solid #5b3fd1"}
 
 PRESETS = ["sin(2*pi*x)", "sin(8*pi*x)", "1/(1+25*x**2)", "exp(x)", "x**5 - x",
            "tanh(10*x)", "sin(2*pi*x) + 0.3*sin(10*pi*x)", "Abs(x)**3"]
@@ -424,6 +501,54 @@ app.layout = html.Div([
     ], style={"display": "flex", "gap": "18px", "flexWrap": "wrap"}),
 
     html.Div(id="info-line", style={"color": "#888", "fontSize": "12px", "marginTop": "8px"}),
+
+    # override regimes (below the graphs) -- each takes over only when enabled
+    html.Div([
+        html.Div([
+            html.Div("x-sampling — gaussian mixture", style=_section),
+            dcc.Checklist(id="gmm-enable",
+                          options=[{"label": " use this (overrides # train samples)", "value": "on"}],
+                          value=[], style={"marginBottom": "8px"}),
+            dash_table.DataTable(
+                id="gmm-table",
+                columns=[{"name": "center", "id": "center", "type": "numeric"},
+                         {"name": "variance", "id": "variance", "type": "numeric"},
+                         {"name": "count", "id": "count", "type": "numeric"}],
+                data=[{"center": -0.5, "variance": 0.02, "count": 300},
+                      {"center": 0.5, "variance": 0.02, "count": 300}],
+                editable=True, row_deletable=True,
+                row_selectable="multi", selected_rows=[0, 1],
+                style_cell={"fontFamily": "Arial", "fontSize": "13px", "padding": "4px 10px",
+                            "textAlign": "center"},
+                style_header={"fontWeight": 600, "backgroundColor": "#f4f4f4"}),
+            html.Div([
+                html.Button("+ add cluster", id="gmm-add", n_clicks=0, style=_btn),
+                html.Button("sample", id="gmm-sample", n_clicks=0, style=_btn_primary),
+            ], style={"display": "flex", "gap": "10px", "marginTop": "10px"}),
+            dcc.Store(id="gmm-store"),
+        ], style={**_card, "flex": "1", "minWidth": "340px"}),
+
+        html.Div([
+            html.Div("custom centers — piecewise-uniform, per-region λ", style=_section),
+            dcc.Checklist(id="centers-enable",
+                          options=[{"label": " use this (overrides grid, halo & λ)", "value": "on"}],
+                          value=[], style={"marginBottom": "8px"}),
+            dash_table.DataTable(
+                id="centers-table",
+                columns=[{"name": "left", "id": "left", "type": "numeric"},
+                         {"name": "right", "id": "right", "type": "numeric"},
+                         {"name": "num", "id": "num", "type": "numeric"},
+                         {"name": "λ (0–1)", "id": "lambda", "type": "numeric"}],
+                data=[{"left": -1.0, "right": 1.0, "num": 129, "lambda": 0.25}],
+                editable=True, row_deletable=True,
+                row_selectable="multi", selected_rows=[0],
+                style_cell={"fontFamily": "Arial", "fontSize": "13px", "padding": "4px 10px",
+                            "textAlign": "center"},
+                style_header={"fontWeight": 600, "backgroundColor": "#f4f4f4"}),
+            html.Button("+ add region", id="centers-add", n_clicks=0,
+                        style={**_btn, "marginTop": "10px"}),
+        ], style={**_card, "flex": "1", "minWidth": "340px"}),
+    ], style={"display": "flex", "gap": "18px", "flexWrap": "wrap", "marginTop": "18px"}),
 ], style={"maxWidth": "1500px", "margin": "0 auto", "padding": "18px 24px",
           "fontFamily": "Arial, sans-serif"})
 
@@ -462,6 +587,36 @@ def _halo_default(default_val, N):
     return no_update, False
 
 
+@app.callback(Output("gmm-table", "data"), Output("gmm-table", "selected_rows"),
+              Input("gmm-add", "n_clicks"),
+              State("gmm-table", "data"), State("gmm-table", "selected_rows"),
+              prevent_initial_call=True)
+def _gmm_add(n, data, selected):
+    data = data or []
+    return data + [{"center": 0.0, "variance": 0.02, "count": 200}], \
+        sorted(set((selected or []) + [len(data)]))          # keep the new row checked
+
+
+@app.callback(Output("centers-table", "data"), Output("centers-table", "selected_rows"),
+              Input("centers-add", "n_clicks"),
+              State("centers-table", "data"), State("centers-table", "selected_rows"),
+              prevent_initial_call=True)
+def _centers_add(n, data, selected):
+    data = data or []
+    return data + [{"left": -1.0, "right": 1.0, "num": 64, "lambda": 0.25}], \
+        sorted(set((selected or []) + [len(data)]))
+
+
+@app.callback(Output("gmm-store", "data"), Input("gmm-sample", "n_clicks"),
+              State("gmm-table", "data"), State("gmm-table", "selected_rows"),
+              prevent_initial_call=True)
+def _gmm_sample(n, rows, selected):
+    rows = rows or []
+    sel = [rows[i] for i in (selected or []) if 0 <= i < len(rows)]   # only checked clusters
+    x = sample_gmm(sel, seed=n)
+    return None if x is None else x.tolist()
+
+
 @app.callback(
     Output("figL", "figure"), Output("figM", "figure"),
     Output("metrics", "children"), Output("info-line", "children"),
@@ -473,9 +628,13 @@ def _halo_default(default_val, N):
     Input("method-input", "value"), Input("mask-centers", "value"),
     Input("noise-on", "value"), Input("noise-slider", "value"),
     Input("rcond-slider", "value"),
+    Input("gmm-enable", "value"), Input("gmm-store", "data"),
+    Input("centers-enable", "value"), Input("centers-table", "data"),
+    Input("centers-table", "selected_rows"),
 )
 def update(lam, N, ntr, nte, fn_text, activation, mask_val, mask_rng, halo_default, halo_val,
-           method, mask_centers_val, noise_on_val, noise_k, rcond_k):
+           method, mask_centers_val, noise_on_val, noise_k, rcond_k,
+           gmm_enable, gmm_store, centers_enable, centers_table, centers_selected):
     try:
         lam = float(lam)
         N = max(8, int(N))
@@ -489,15 +648,26 @@ def update(lam, N, ntr, nte, fn_text, activation, mask_val, mask_rng, halo_defau
         method = method or "lstsq"
         noise_sigma = (10.0 ** float(noise_k)) if (noise_on_val and "on" in noise_on_val) else 0.0
         rcond = 10.0 ** float(rcond_k)
+        gmm_on = bool(gmm_enable) and "on" in gmm_enable
+        x_override = np.asarray(gmm_store, dtype=np.float64) if (gmm_on and gmm_store) else None
+        centers_on = bool(centers_enable) and "on" in centers_enable
+        centers_rows = [centers_table[i] for i in (centers_selected or [])
+                        if centers_table and 0 <= i < len(centers_table)]   # only checked regions
+        centers_override = build_centers_override(centers_rows) if centers_on else None
+        if method == "qi":                            # overrides are least-squares only
+            x_override = centers_override = None
         d = compute(N, lam, fn_text, ntr, nte, mask_on, mlo, mhi, activation or "tanh", halo,
-                    mask_centers, method, noise_sigma, rcond)
+                    mask_centers, method, noise_sigma, rcond,
+                    x_override, centers_override, mark_points=(x_override is not None))
         note = "  ·  QI: full grid (mask / #train ignored)" if method == "qi" else ""
         nnote = f"  ·  y-noise σ={noise_sigma:.0e}" if d["noise_on"] else ""
         rnote = f"  ·  rcond={rcond:.0e}" if (float(rcond_k) > -13 and method != "qi") else ""
-        info = (f"solve={method}  ·  activation={d['activation']}  ·  "
-                f"neurons W={d['W']} (N={N}, halo={d['halo']} each side)  ·  "
-                f"γ={d['gamma']:.2f}  ·  fit points={d['n_fit']}  ·  "
-                f"test samples={d['n_test_prime']} (nearest prime){note}{nnote}{rnote}")
+        xnote = "  ·  GMM x-sampling" if d.get("x_custom") else ""
+        geo = (f"neurons W={d['W']} (custom centers)  ·  γ~{d['gamma']:.2f}" if d.get("centers_custom")
+               else f"neurons W={d['W']} (N={N}, halo={d['halo']} each side)  ·  γ={d['gamma']:.2f}")
+        info = (f"solve={method}  ·  activation={d['activation']}  ·  {geo}  ·  "
+                f"fit points={d['n_fit']}  ·  test samples={d['n_test_prime']} (nearest prime)"
+                f"{note}{nnote}{rnote}{xnote}")
         return fig_functions(d), fig_residual(d), metrics_table(d), info
     except Exception as e:  # bad function text, etc. -- show the error, don't crash
         ef = go.Figure()
