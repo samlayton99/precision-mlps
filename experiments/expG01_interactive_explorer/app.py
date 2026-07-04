@@ -22,7 +22,7 @@ from dash import Dash, dcc, html, Input, Output, ctx, no_update
 import plotly.graph_objects as go
 
 from src.construction.qi_mpmath import default_halo, construct_qi
-from src.construction.readout import solve_readout_with_bias
+from src.construction.readout import solve_readout
 
 # Halo is sized with a fixed reference lambda (as in the batch experiments,
 # e.g. expC04), NOT the slider lambda -- keeps geometry on-convention and avoids
@@ -125,7 +125,7 @@ def _metrics(resid, f_true, idx):
 
 
 def compute(N, lam, fn_text, n_train, n_test, mask_on, mlo, mhi, activation,
-            halo=None, mask_centers=False, method="lstsq", noise_sigma=0.0):
+            halo=None, mask_centers=False, method="lstsq", noise_sigma=0.0, rcond=None):
     f_vec, f_scalar, fp_scalar = make_fns(fn_text)
     halo_n = int(halo) if halo is not None else default_halo(N, lambda_star=HALO_LAMBDA)
 
@@ -156,7 +156,9 @@ def compute(N, lam, fn_text, n_train, n_test, mask_on, mlo, mhi, activation,
         if noise_sigma > 0:                           # y-noise on the training data (fixed seed)
             y_fit = y_fit + noise_sigma * np.random.default_rng(0).standard_normal(y_fit.shape)
         Phi_fit = build_phi_act(x_fit, gamma_vec, centers, activation)
-        v, b, _ = solve_readout_with_bias(Phi_fit, y_fit, method="svd")
+        A_fit = np.hstack([Phi_fit, np.ones((Phi_fit.shape[0], 1))])   # bias column
+        sol, _ = solve_readout(A_fit, y_fit, method="svd", rcond=rcond)
+        v, b = sol[:-1], sol[-1]
         f_hat = build_phi_act(x_test, gamma_vec, centers, activation) @ v + b
         n_fit = x_fit.size
 
@@ -398,6 +400,14 @@ app.layout = html.Div([
                                tooltip={"placement": "top", "always_visible": True}, **_slider),
                     style={"paddingTop": "22px", "paddingRight": "8px"}),
             ]),
+            html.Div([
+                html.Div("svd solver regularization  (rcond = 10^k)", style=_label),
+                html.Div(
+                    dcc.Slider(id="rcond-slider", min=-13, max=-1, step=0.5, value=-13,
+                               marks={-13: "-13 (off)", -7: "-7", -1: "-1"},
+                               tooltip={"placement": "top", "always_visible": True}, **_slider),
+                    style={"paddingTop": "42px", "paddingRight": "8px"}),
+            ]),
         ], style={**_card, "flex": "1.1", "minWidth": "320px"}),
     ], style={"display": "flex", "gap": "18px", "flexWrap": "wrap", "marginBottom": "16px",
               "alignItems": "flex-start"}),
@@ -462,9 +472,10 @@ def _halo_default(default_val, N):
     Input("halo-default", "value"), Input("halo-input", "value"),
     Input("method-input", "value"), Input("mask-centers", "value"),
     Input("noise-on", "value"), Input("noise-slider", "value"),
+    Input("rcond-slider", "value"),
 )
 def update(lam, N, ntr, nte, fn_text, activation, mask_val, mask_rng, halo_default, halo_val,
-           method, mask_centers_val, noise_on_val, noise_k):
+           method, mask_centers_val, noise_on_val, noise_k, rcond_k):
     try:
         lam = float(lam)
         N = max(8, int(N))
@@ -477,14 +488,16 @@ def update(lam, N, ntr, nte, fn_text, activation, mask_val, mask_rng, halo_defau
         mask_centers = bool(mask_centers_val) and "on" in mask_centers_val
         method = method or "lstsq"
         noise_sigma = (10.0 ** float(noise_k)) if (noise_on_val and "on" in noise_on_val) else 0.0
+        rcond = 10.0 ** float(rcond_k)
         d = compute(N, lam, fn_text, ntr, nte, mask_on, mlo, mhi, activation or "tanh", halo,
-                    mask_centers, method, noise_sigma)
+                    mask_centers, method, noise_sigma, rcond)
         note = "  ·  QI: full grid (mask / #train ignored)" if method == "qi" else ""
         nnote = f"  ·  y-noise σ={noise_sigma:.0e}" if d["noise_on"] else ""
+        rnote = f"  ·  rcond={rcond:.0e}" if (float(rcond_k) > -13 and method != "qi") else ""
         info = (f"solve={method}  ·  activation={d['activation']}  ·  "
                 f"neurons W={d['W']} (N={N}, halo={d['halo']} each side)  ·  "
                 f"γ={d['gamma']:.2f}  ·  fit points={d['n_fit']}  ·  "
-                f"test samples={d['n_test_prime']} (nearest prime){note}{nnote}")
+                f"test samples={d['n_test_prime']} (nearest prime){note}{nnote}{rnote}")
         return fig_functions(d), fig_residual(d), metrics_table(d), info
     except Exception as e:  # bad function text, etc. -- show the error, don't crash
         ef = go.Figure()
