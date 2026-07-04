@@ -67,9 +67,13 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   exp13_solution_basins/         Hessian / basin landscape (stub, DEPRIORITIZED -- curvature ruled out)
   # Checkpoint E -- extend to 2D
   expE01_geometry_zoo_2d/        Six 2D ridge geometries head-to-head (hex folded in; ex-exp11)
+  # Checkpoint F -- applications (STUB, experiments TBD)
+  #   depth, higher input/output dim, non-MSE losses, physics tasks, transformer init
+  # Checkpoint G -- generalization (STUB, experiments TBD)
+  #   precision-vs-generalization; mask-the-data; soft-weight tradeoff; data-poor regions
 
 tests/                        Unit tests
-results/                      Experiment results output, grouped: results/checkpoint_<A..E>_*/exp*/
+results/                      Experiment results output, grouped: results/checkpoint_<A..G>_*/exp*/
                               The global cross-experiment summary is results/results.md.
 ```
 
