@@ -43,6 +43,7 @@ One cube, sliceable along three axes plus width.
 
 - Single seed per cell, so fine trends are noisy; the three wins are large and robust. Clean coverage (`const_weight`) did not beat heavy-tailed (`scaled_xavier`) here -- flagged.
 - The HP-tuning stage surfaced the $\gamma$-init-scale finding (a ~$64\times$ init rescale lets even untrained random-center geometry hit the floor under lstsq) -- the seed of the future $\gamma$-init sweep. exp17 itself uses standard Xavier to keep the "does Adam learn geometry?" test honest.
+- expD05 is the fp64 follow-up for that scale-init finding: it reruns scale-corrected and QI-scale initialization families in this repo's current PyTorch stack, with train/eval sanity, drift plots, and final lstsq refits. Its full matrix confirms that construction-scale initialization persists through Adam and beats standard affine baselines; the exact deployable default is still pending Sam review.
 
 ## Conclusions
 
@@ -52,4 +53,4 @@ One cube, sliceable along three axes plus width.
 
 - **Did the coefficients move during training?** (Sam) With QI init, how much do the first-layer parameters change before the refit, and how does this look for runge?
 - Seed-average the finer trends (coverage vs uniformity, scaled vs clean).
-- **The $\gamma$-init-scale sweep** (future): map where untrained-init + lstsq stops reaching the floor as a function of $\gamma/\gamma_\text{ideal}$, and whether a steep-$\gamma$ init or log-$\gamma$ reparameterization closes the gap raw Adam cannot.
+- **Promote the deployable scale-aware initializer** (expD05): decide whether scale-corrected Xavier, QI-scale grids, or low-QI multiscale grids should become the default recipe now that the full fp64 matrix confirms the scale story.

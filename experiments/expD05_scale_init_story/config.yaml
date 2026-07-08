@@ -1,0 +1,31 @@
+name: expD05_scale_init_story
+checkpoint: D
+description: FP64 PyTorch rerun of the QI-scale initialization evidence.
+
+full_matrix:
+  targets: [sine, sine_8pi, runge, sine_mixture, exp, abs_cubed]
+  resolutions: [64, 128, 256, 512]
+  seeds: [0, 1, 2, 3, 4]
+  steps: 20000
+  learning_rate: 1.0e-3
+  n_train: 2003
+  n_eval: 4001
+  families:
+    - standard_xavier_affine
+    - center_spread_xavier
+    - scale_corrected_xavier_l025
+    - scale_corrected_xavier_l030
+    - qi_scale_only_l025
+    - qi_scale_only_l030
+    - low_qi_l030
+    - exact_qi_oracle
+    - qi_geom_random_readout
+
+smoke_matrix:
+  targets: [sine, runge]
+  resolutions: [32]
+  seeds: [0]
+  steps: 50
+  learning_rate: 1.0e-3
+  n_train: 257
+  n_eval: 513
