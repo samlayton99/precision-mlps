@@ -1,10 +1,14 @@
-# Checkpoint G -- generalization (stub)
+# Checkpoint G -- generalization
 
-**Status:** stub -- experiments TBD (Sam to specify the first experiment).
+**Status:** live -- expG01 (interactive explorer) built; batch experiments TBD.
 
 ## Scope
 
 The precision-optimal uniform-$\gamma$ geometry is all one sharp length scale, so it may interpolate/extrapolate poorly where data is sparse. This checkpoint studies the precision-vs-generalization tradeoff of the construction and its variants (uniform, cascade multi-band, soft-weight protection), separate from the pure-precision question of Checkpoint C.
+
+## Experiments
+
+- **expG01 -- interactive geometry / generalization explorer (built, live).** Writeup: `expG01_interactive_explorer/expG01_results.md`.
 
 ## Planned / open (see `docs/future_experiments.md`, Checkpoint G)
 

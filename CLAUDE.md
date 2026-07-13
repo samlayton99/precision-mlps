@@ -69,8 +69,9 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expE01_geometry_zoo_2d/        Six 2D ridge geometries head-to-head (hex folded in; ex-exp11)
   # Checkpoint F -- applications (STUB, experiments TBD)
   #   depth, higher input/output dim, non-MSE losses, physics tasks, transformer init
-  # Checkpoint G -- generalization (STUB, experiments TBD)
+  # Checkpoint G -- generalization
   #   precision-vs-generalization; mask-the-data; soft-weight tradeoff; data-poor regions
+  expG01_interactive_explorer/  Interactive Dash explorer (lambda, N, target, hold-out mask; live lstsq refit)
 
 tests/                        Unit tests
 results/                      Experiment results output, grouped: results/checkpoint_<A..G>_*/exp*/
