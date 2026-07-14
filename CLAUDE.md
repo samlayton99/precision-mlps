@@ -67,8 +67,9 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   exp13_solution_basins/         Hessian / basin landscape (stub, DEPRIORITIZED -- curvature ruled out)
   # Checkpoint E -- extend to 2D
   expE01_geometry_zoo_2d/        Six 2D ridge geometries head-to-head (hex folded in; ex-exp11)
-  # Checkpoint F -- applications (STUB, experiments TBD)
+  # Checkpoint F -- applications
   #   depth, higher input/output dim, non-MSE losses, physics tasks, transformer init
+  expF01_linear_de_zoo/         Nine linear ODEs/PDEs solved by frozen geometry + collocation lstsq (no training)
   # Checkpoint G -- generalization
   #   precision-vs-generalization; mask-the-data; soft-weight tradeoff; data-poor regions
   expG01_interactive_explorer/  Interactive Dash explorer (lambda, N, target, hold-out mask; live lstsq refit)
