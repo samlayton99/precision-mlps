@@ -58,3 +58,8 @@ def test_solve_poisson_sanity(family, tol):
                               np.linspace(-0.98, 0.98, 40)), -1).reshape(-1, 2)
     err = rc.rel_l2(rc.eval_model(model, Pe), ustar(Pe))
     assert err < tol, err
+
+
+def test_problems_fd_verified():
+    import problems
+    problems.verify_all()  # raises AssertionError on any FD mismatch
