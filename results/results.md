@@ -88,6 +88,17 @@ We test whether training reaches the precision the geometry admits. `results/che
 
 ---
 
+## Checkpoint F -- applications (differential equations)
+
+`results/checkpoint_F_applications/`. **Synthesis: `checkpoint_F_applications/expF_results.md`.** Background analysis: `docs/pinn_feasibility.md`.
+
+- **expF01 linear DE zoo** -- freezing the QI geometry makes a linear PDE residual linear in the readout, so the entire PINN loss is one least-squares problem $\|Aa-y\|^2$ over blocks $[L\Phi;\ \Phi_{bc};\ \Phi_{ic};\ \Phi_{data}]$. All nine linear problems (orders 1--3; interval, disk, space-time; IVP/Dirichlet/Neumann/inflow/Cauchy) reach the floor (rel $L_2\lesssim10^{-13}$) with **no training**. Time is a coordinate and the IC is a row block, so there is no time-stepping and nothing accumulates. *(Pending Sam.)*
+- **expF02 nonlinear DE zoo** -- Newton on the frozen geometry (each step a variable-coefficient linear PDE, same stacked lstsq) reaches machine-precision on classical 1D nonlinear ODEs (logistic, Bratu, Blasius) and the floor on **Monge-Ampere** ($1.2\times10^{-14}$, fully nonlinear) in 5 steps. Nonlinear hyperbolic without dissipation stagnates (inviscid Burgers $10^{-5}$; its viscous sibling $2.5\times10^{-10}$). *(Pending Sam.)*
+- **Geometry is the cause, verified against a baseline.** The frozen-feature + lstsq algorithm is shared with ELM/PIELM/random-feature collocation, so the load-bearing test is against random features: the structured Radon/QI geometry wins **19x--685x** at identical width and $\lambda$. Checkpoint C's "geometry is the whole game" reproducing in the PDE setting. No oracle tuning needed (flat $\lambda=0.25$ suffices).
+- **A small residual certifies nothing.** On an ill-posed condition placement, the PDE residual, rank, and singular spectrum were *indistinguishable* from the well-posed solve while the solution was four orders worse. **Nested-width self-consistency** is the working $u^*$-free diagnostic and the deployable width/$\lambda$ selector.
+
+**Open questions (Checkpoint F).** **expF03 (ablation + baseline study) is the highest-value next experiment** -- its scope is written out in `expF_results.md` and the preliminary numbers to beat are in `expF01_linear_de_zoo/expF01_results.md` (*Ablations and baselines*): full baselines (random-feature/RBF/spectral/trained-PINN), rcond, polynomial-block, weighting, halo, and seed ablations with error bars. Also: rescuing the stagnating hyperbolic cases (vanishing-viscosity continuation, LM damping); a stability theory for the collocation solve (QI gives expressivity, not stability).
+
 ## Future directions (beyond the current checkpoints)
 
 The diagnostic experiments have localized the problem; these are the frontier:
