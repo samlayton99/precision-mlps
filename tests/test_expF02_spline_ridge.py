@@ -80,3 +80,25 @@ def test_darcy_loader_and_surrogate():
     Pg = np.stack(np.meshgrid(g[ii], g[ii], indexing="ij"), -1).reshape(-1, 2)
     vals = coef.a(Pg).reshape(4, 4)
     assert np.allclose(vals, a_all[0][np.ix_(ii, ii)], atol=1e-8)
+
+
+def test_local_gammas_matches_uniform_grid():
+    import adaptive
+    dirs, offs, gammas = rc.radon_geometry(256, lam=0.25)
+    got = adaptive.local_gammas(dirs, offs, lam=0.25)
+    # on the uniform init grid, per-neuron gammas ~ the global expF01 gamma
+    assert np.all(np.abs(got / gammas - 1.0) < 0.15)
+
+
+def test_insert_knots_targets_residual_mass():
+    import adaptive
+    dirs, offs, _ = rc.radon_geometry(256, lam=0.25)
+    rng = np.random.default_rng(0)
+    P = rng.uniform(-1, 1, (4000, 2))
+    # all residual mass concentrated near x ~ 0.7
+    r = np.exp(-((P[:, 0] - 0.7) ** 2) / 0.005)
+    nd, no = adaptive.insert_knots(dirs, offs, P, r, n_new=64)
+    assert len(no) == 64 and nd.shape == (64, 2)
+    # knots for the near-x-axis direction should cluster near s ~ 0.7
+    ax_dir = np.abs(nd[:, 1]) < 0.35  # directions mostly along x
+    assert np.median(np.abs(no[ax_dir] - 0.7)) < 0.3
