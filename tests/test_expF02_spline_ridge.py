@@ -63,3 +63,20 @@ def test_solve_poisson_sanity(family, tol):
 def test_problems_fd_verified():
     import problems
     problems.verify_all()  # raises AssertionError on any FD mismatch
+
+
+DARCY_NPZ = "/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_test_421_jax.npz"
+
+
+@pytest.mark.skipif(not Path(DARCY_NPZ).exists(), reason="darcy npz not present")
+def test_darcy_loader_and_surrogate():
+    import darcy_data as dd
+    a_all, u_all = dd.load_darcy_test(DARCY_NPZ, n_instances=1)
+    assert a_all.shape == (1, 421, 421) and u_all.shape == (1, 421, 421)
+    coef = dd.DarcyCoefficient(a_all[0], sigma_px=0.0, cell_centered=True)
+    # surrogate reproduces grid values at grid nodes (interpolation property)
+    g = dd.grid_1d(421, cell_centered=True)
+    ii = np.array([10, 100, 210, 400])
+    Pg = np.stack(np.meshgrid(g[ii], g[ii], indexing="ij"), -1).reshape(-1, 2)
+    vals = coef.a(Pg).reshape(4, 4)
+    assert np.allclose(vals, a_all[0][np.ix_(ii, ii)], atol=1e-8)
