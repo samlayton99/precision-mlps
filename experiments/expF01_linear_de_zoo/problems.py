@@ -252,9 +252,15 @@ def _c3_ux(P):
     return (_K1 * np.cos(_K1 * x + _K1**3 * t)
             + 0.5 * _K2 * np.cos(_K2 * x + _K2**3 * t))
 
+# BC placement is NOT free here. With u ~ exp(i(kx - wt)), u_t + u_xxx = 0 gives
+# w = -k^3, so the group velocity dw/dk = -3k^2 < 0: energy travels LEFT. The
+# well-posed split therefore puts TWO conditions at the RIGHT (inflow) edge and
+# ONE at the left. Using 2-left/1-right instead costs ~5 orders of accuracy
+# (3e-8 vs 2e-13 at W=2304) -- the operator still holds pointwise, but the
+# discrete problem admits a near-null spurious mode. See expF01 writeup.
 C3 = dict(
     key="pde2d_time_o3", category="pde2d_time", order=3,
-    title="$u_t + u_{xxx} = 0$  (IC + Cauchy sides)",
+    title="$u_t + u_{xxx} = 0$  (IC + 2 right / 1 left)",
     terms=[((0, 1), 2.0), ((3, 0), 1.0)],
     exact=_c3_u,
     forcing=0.0,
@@ -262,7 +268,7 @@ C3 = dict(
         dict(where="ic", terms=[((0, 0), 1.0)], value=_c3_u),
         dict(where="left", terms=[((0, 0), 1.0)], value=_c3_u),
         dict(where="right", terms=[((0, 0), 1.0)], value=_c3_u),
-        dict(where="left", terms=[((1, 0), 1.0)], value=_c3_ux),
+        dict(where="right", terms=[((1, 0), 1.0)], value=_c3_ux),
     ],
 )
 
