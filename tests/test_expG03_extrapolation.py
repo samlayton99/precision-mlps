@@ -62,3 +62,15 @@ def test_basis_contributions_sum_to_fit():
     contrib, b = solver.basis_contributions(x_dense, centers, gamma_vec, v, bias)
     recon = contrib.sum(axis=1) + b
     assert np.max(np.abs(recon - solver.predict(x_dense, centers, gamma_vec, v, bias))) < 1e-9
+
+
+import run as g03run
+
+
+def test_evaluate_cell_holdout_is_finite_and_harder():
+    """Runge under edge_holdout at lambda=0.25: held-out rel L2 is finite and
+    no better than the unmasked region."""
+    rec = g03run.evaluate_cell("edge_holdout", "runge", 0.25, N=128)
+    assert np.isfinite(rec["rel_l2_held"])
+    assert np.isfinite(rec["coeff_norm"])
+    assert rec["rel_l2_held"] >= rec["rel_l2_unmasked"]
