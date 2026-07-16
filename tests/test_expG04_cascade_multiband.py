@@ -4,8 +4,12 @@ from pathlib import Path
 import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expG03_extrapolation"))
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expG04_cascade_multiband"))
+# Append (never insert-0): these dirs hold generically-named modules (run/viz)
+# shared with sibling experiments; keeping them off sys.path[0] avoids shadowing
+# another test's bare imports in a shared pytest process. solver/protocols are
+# unique to expG03, cascade to expG04; run/viz are loaded by explicit path below.
+sys.path.append(str(REPO_ROOT / "experiments" / "expG03_extrapolation"))
+sys.path.append(str(REPO_ROOT / "experiments" / "expG04_cascade_multiband"))
 
 import importlib.util
 
@@ -77,3 +81,15 @@ def test_evaluate_cell_basis_sum_identity():
     contrib, b = solver.basis_contributions(xd, c, g, v, bias)
     assert np.max(np.abs(contrib.sum(axis=1) + b
                          - solver.predict(xd, c, g, v, bias))) < 1e-9
+
+
+def test_viz_writes_figures(tmp_path):
+    viz = _load_g04("g04_viz", "viz.py")
+    import protocols
+    recs = [g04run.evaluate_cell(3, "edge_holdout", "runge"),
+            g04run.evaluate_cell(1, "edge_holdout", "runge")]
+    viz.make_all_figures(recs, tmp_path, g04run.TARGETS, protocols, cascade,
+                         solver, 128, g04run.LAMBDAS, g04run.COARSEN)
+    assert (tmp_path / "summary_held_vs_nbands.png").exists()
+    assert any(tmp_path.glob("basis_nb3_edge_holdout_runge.png"))
+    assert any(tmp_path.glob("fit_nb3_edge_holdout_runge.png"))

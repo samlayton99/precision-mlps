@@ -19,9 +19,10 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
-sys.path.insert(0, str(HERE))
-# Append expG03: it uniquely provides `solver`/`protocols`; appending keeps
-# expG04's own `run`/`viz`/`cascade` ahead so they are not shadowed.
+# Append (never insert-0): keep this experiment's dir off sys.path[0] so a bare
+# `import viz`/`run` in a sibling experiment's test is not shadowed. `cascade`
+# is unique to this dir; `solver`/`protocols` are unique to expG03.
+sys.path.append(str(HERE))
 sys.path.append(str(REPO_ROOT / "experiments" / "expG03_extrapolation"))
 
 import solver
