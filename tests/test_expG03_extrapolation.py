@@ -74,3 +74,12 @@ def test_evaluate_cell_holdout_is_finite_and_harder():
     assert np.isfinite(rec["rel_l2_held"])
     assert np.isfinite(rec["coeff_norm"])
     assert rec["rel_l2_held"] >= rec["rel_l2_unmasked"]
+
+
+def test_viz_writes_figures(tmp_path):
+    import viz
+    recs = [g03run.evaluate_cell("edge_holdout", "runge", 0.25, N=128)]
+    viz.make_all_figures(recs, tmp_path, g03run.TARGETS, protocols, solver, 128)
+    assert (tmp_path / "summary_held_vs_lambda.png").exists()
+    assert any(tmp_path.glob("fit_*edge_holdout*runge*.png"))
+    assert any(tmp_path.glob("basis_*edge_holdout*runge*.png"))
