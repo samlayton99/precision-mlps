@@ -7,8 +7,21 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments" / "expG03_extrapolation"))
 sys.path.insert(0, str(REPO_ROOT / "experiments" / "expG04_cascade_multiband"))
 
+import importlib.util
+
 import solver          # expG03 numeric core
 import cascade
+
+
+def _load_g04(name, relpath):
+    """Load an expG04 module by explicit path under a unique name, so the
+    generic `run`/`viz` names do not collide with expG03's modules in a shared
+    pytest process."""
+    path = REPO_ROOT / "experiments" / "expG04_cascade_multiband" / relpath
+    spec = importlib.util.spec_from_file_location(name, path)
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
 
 
 def test_n_bands_1_reproduces_expg03_geometry():
@@ -36,3 +49,31 @@ def test_cascade_concatenation_and_band_index():
     gammas = [g[b == k][0] for k in range(3)]
     assert gammas[0] > gammas[1] > gammas[2]
     assert all(np.allclose(g[b == k], gammas[k]) for k in range(3))
+
+
+g04run = _load_g04("g04_run", "run.py")
+
+
+def test_evaluate_cell_precision_preserved_and_per_band():
+    """3-band cascade keeps the trained region near the floor, splits ||v|| by
+    band, and the held-out region is finite and no easier than unmasked."""
+    rec = g04run.evaluate_cell(3, "edge_holdout", "sine")
+    assert rec["rel_l2_unmasked"] < 1e-8            # precision preserved
+    assert np.isfinite(rec["rel_l2_held"])
+    assert rec["rel_l2_held"] >= rec["rel_l2_unmasked"]
+    assert sorted(rec["per_band_norm"]) == [0, 1, 2]
+    assert np.isclose(
+        np.sqrt(sum(n**2 for n in rec["per_band_norm"].values())),
+        rec["coeff_norm"], rtol=1e-9)
+
+
+def test_evaluate_cell_basis_sum_identity():
+    """With a cascade geometry, sum_k c_k*phi_k + bias == predict(...)."""
+    c, g, _ = g04run.C.cascade_geometry(128, g04run.LAMBDAS, g04run.COARSEN)
+    x = np.linspace(-1.0, 1.0, 300)
+    y = 1.0 / (1.0 + 25.0 * x**2)
+    v, bias, _ = solver.fit(x, y, c, g)
+    xd = np.linspace(-1.3, 1.3, 411)
+    contrib, b = solver.basis_contributions(xd, c, g, v, bias)
+    assert np.max(np.abs(contrib.sum(axis=1) + b
+                         - solver.predict(xd, c, g, v, bias))) < 1e-9

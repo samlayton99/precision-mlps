@@ -13,7 +13,9 @@ from pathlib import Path
 import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expG03_extrapolation"))
+# Append (not insert-0): expG03 only provides `solver`, which is unique to it,
+# so it must not shadow expG04's own `run`/`viz`/`cascade` modules on sys.path.
+sys.path.append(str(REPO_ROOT / "experiments" / "expG03_extrapolation"))
 
 import solver  # expG03 numeric core
 
