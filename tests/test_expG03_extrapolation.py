@@ -49,3 +49,16 @@ def test_in_regions_masks_correctly():
     x = np.array([-0.9, 0.0, 0.5, 0.6, 1.0, 1.2])
     m = protocols.in_regions(x, [(0.5, 1.0, False, True)])
     assert list(m) == [False, False, False, True, True, False]
+
+
+def test_basis_contributions_sum_to_fit():
+    """sum_k c_k*phi_k(x) + bias must equal predict(...) to fp precision."""
+    N, lam = 64, 0.10
+    centers, gamma_vec = solver.geometry(N, lam)
+    x = np.linspace(-1.0, 1.0, 200)
+    y = 1.0 / (1.0 + 25.0 * x**2)
+    v, bias, _ = solver.fit(x, y, centers, gamma_vec)
+    x_dense = np.linspace(-1.0, 1.0, 311)
+    contrib, b = solver.basis_contributions(x_dense, centers, gamma_vec, v, bias)
+    recon = contrib.sum(axis=1) + b
+    assert np.max(np.abs(recon - solver.predict(x_dense, centers, gamma_vec, v, bias))) < 1e-9
