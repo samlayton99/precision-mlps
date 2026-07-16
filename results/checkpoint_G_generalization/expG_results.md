@@ -1,6 +1,6 @@
 # Checkpoint G -- generalization
 
-**Status:** live -- expG01 (interactive explorer) built; batch experiments TBD.
+**Status:** live -- expG01 (interactive explorer) built; expG03 (extrapolation batch) drafted.
 
 ## Scope
 
@@ -9,6 +9,7 @@ The precision-optimal uniform-$\gamma$ geometry is all one sharp length scale, s
 ## Experiments
 
 - **expG01 -- interactive geometry / generalization explorer (built, live).** Writeup: `expG01_interactive_explorer/expG01_results.md`.
+- **expG03 -- extrapolation & data-poor generalization (drafted).** Fixed uniform-gamma construction under three hold-out protocols (edge_holdout, beyond_domain, sparse_half) over lambda in {0.25,0.10,0.05}, with per-neuron basis-contribution visualization. Precision is preserved on the trained region; the precision-optimal geometry extrapolates worst (~1e-1 ramp), and low lambda rescues analytic targets (~1e-4) but is catastrophic for the non-analytic Runge peak (~1e5, ||v||~1e6). Construction-only first pass; Adam/cascade baselines deferred. Writeup: `expG03_extrapolation/expG03_results.md`.
 
 ## Planned / open (see `docs/future_experiments.md`, Checkpoint G)
 
