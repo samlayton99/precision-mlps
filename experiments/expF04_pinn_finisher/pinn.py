@@ -6,7 +6,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-import problems as bp  # expF03's problems (sys.path order set by caller)
+import burgers as bp  # expF03's burgers problem (sys.path order set by caller)
 
 torch.set_default_dtype(torch.float64)
 

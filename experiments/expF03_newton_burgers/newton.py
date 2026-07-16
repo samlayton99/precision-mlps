@@ -12,7 +12,7 @@ import time
 import numpy as np
 
 import ridge_core as rc
-import problems as bp
+import burgers as bp
 
 FIELD_TERMS = {
     "": (((0, 0), 1.0),),
