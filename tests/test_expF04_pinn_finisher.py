@@ -36,3 +36,21 @@ def test_pinn_fields_match_autograd_fd():
     Py_m[:, 1] -= h
     fd_lap = fd_lap_part + (fields(Py_p)["uy"] - fields(Py_m)["uy"]) / (2 * h)
     assert np.max(np.abs(f["lap_u"] - fd_lap)) < 1e-2
+
+
+@pytest.mark.slow
+def test_finisher_improves_pinn():
+    import pinn
+    import newton as nt
+    net, hist = pinn.train_pinn(nu=0.1, steps=400, batch=512, eval_every=200, seed=0)
+    before = hist[-1]["rel_l2_u"]
+    # Representation ceiling: the ridge correction must express u* - PINN, and
+    # an undertrained (400-step) PINN's error field is rougher than the
+    # gamma-limited basis can fully cancel — residual floors at ~0.06 here
+    # (0.379 -> 0.0169 rel L2, then flat). The ceiling scales with the PINN's
+    # error magnitude; the full run (50k steps, W=1024) measures the real claim.
+    # Smoke bar: >=20x improvement.
+    res = nt.newton_burgers(nu=0.1, W=256, lam=0.25, max_iter=6, seed=0,
+                            base_fields=pinn.pinn_fields(net))
+    after = res["history"][-1]["rel_l2_u"]
+    assert after < 0.05 * before, (before, after)
