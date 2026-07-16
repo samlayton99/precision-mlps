@@ -51,7 +51,10 @@ def _residuals(f, P, nu):
 
 def newton_burgers(nu, W, lam, family=rc.tanh_family, max_iter=12, seed=42,
                    base_fields=None, u_exact=bp.u_exact, v_exact=bp.v_exact,
-                   n_eval=120):
+                   n_eval=120, init_sol=None):
+    """init_sol=(sol_u, sol_v): warm-start the ridge coefficients (same W/lam/
+    family geometry) instead of zero. Used by the nu-continuation ladder to
+    seed a low-nu solve from a converged higher-nu one."""
     rng = np.random.default_rng(seed)
     geom = rc.radon_geometry(W, lam)
     n_feat = len(geom[1]) + len(rc.MONO_2D)
@@ -61,8 +64,12 @@ def newton_burgers(nu, W, lam, family=rc.tanh_family, max_iter=12, seed=42,
     Pe = np.stack(np.meshgrid(g, g, indexing="ij"), -1).reshape(-1, 2)
     ue, ve = u_exact(Pe), v_exact(Pe)
 
-    sol_u = np.zeros(n_feat)
-    sol_v = np.zeros(n_feat)
+    if init_sol is None:
+        sol_u = np.zeros(n_feat)
+        sol_v = np.zeros(n_feat)
+    else:
+        sol_u = np.array(init_sol[0], dtype=np.float64)
+        sol_v = np.array(init_sol[1], dtype=np.float64)
     history = []
     t0 = time.time()
     for it in range(max_iter + 1):

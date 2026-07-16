@@ -61,6 +61,28 @@ def sweep(smoke):
             save_data(data)
 
 
+CONT_PATH = RESULTS_DIR / "continuation.json"
+NU_LADDER = [0.1, 0.05, 0.02, 0.01]
+
+
+def continuation(smoke):
+    """nu-continuation: solve the ladder 0.1 -> 0.05 -> 0.02 -> 0.01 at fixed W,
+    warm-starting each rung from the previous converged coefficients. The
+    escalation for the zero-init nu=0.01 divergence in the direct sweep."""
+    W = 256 if smoke else 1024
+    ladder = [0.1, 0.02] if smoke else NU_LADDER
+    rungs = []
+    init = None
+    for nu in ladder:
+        print(f"=== continuation nu={nu} W={W} (warm={init is not None}) ===", flush=True)
+        res = nt.newton_burgers(nu=nu, W=W, lam=LAM, max_iter=6 if smoke else 12,
+                                init_sol=init)
+        init = (res["sol_u"], res["sol_v"])
+        rungs.append(dict(nu=nu, W=W, warm=len(rungs) > 0, history=res["history"]))
+        CONT_PATH.write_text(json.dumps(rungs, indent=1))
+    return rungs
+
+
 def plot():
     data = load_data()
     if not data:
@@ -95,8 +117,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--plot", action="store_true")
+    ap.add_argument("--continuation", action="store_true",
+                    help="nu-continuation ladder for the nu=0.01 escalation")
     args = ap.parse_args()
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    if args.continuation:
+        rungs = continuation(args.smoke)
+        for r in rungs:
+            print(f"nu={r['nu']:<5} warm={r['warm']} "
+                  f"final rel_l2_u={r['history'][-1]['rel_l2_u']:.2e}", flush=True)
+        return
     if not args.plot:
         sweep(args.smoke)
     plot()
