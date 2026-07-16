@@ -3,7 +3,7 @@ in a FROZEN ridge basis, so iterates add in coefficient space.
 
 newton_burgers(..., base_fields=None): base_fields(P) -> dict with keys
 u, ux, uy, lap_u, v, vx, vy, lap_v (numpy [n]) is an optional frozen warm
-start (the trained PINN in expF04); the ridge expansion carries corrections.
+start (the trained PINN in expF07); the ridge expansion carries corrections.
 """
 from __future__ import annotations
 

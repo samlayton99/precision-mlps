@@ -1,4 +1,4 @@
-"""Experiment expF02 -- KAN-style B-spline ridge basis.
+"""Experiment expF05 -- KAN-style B-spline ridge basis.
 
 Part A (default): tanh vs cubic-B-spline floor on poisson + smooth darcy
 control, W in {144,256,576,1024,2304}, lam in {0.2,0.25,0.3}, best-of-lam.
@@ -6,13 +6,13 @@ Part B (--adaptive): rough darcy_421 instance 0, sigma=0. Baselines: dense
 tanh and dense spline at W=2304 (uniform). Adaptive: spline, start W=1024,
 4 rounds x 320 residual-guided knots -> 2304 total (width-matched).
 
-Outputs (results/checkpoint_F_applications/expF02_spline_ridge/):
+Outputs (results/checkpoint_F_applications/expF05_spline_ridge/):
   error_vs_width.png    rel L2 vs W, 2 problems x 2 families
   adaptive_rounds.png   rel L2 + n_knots per adaptive round vs dense baselines
   data.json             all cells, written incrementally
 
 Usage:
-  uv run --extra dev python experiments/expF02_spline_ridge/run.py [--smoke] [--plot] [--adaptive] [--darcy-path PATH]
+  uv run --extra dev python experiments/expF05_spline_ridge/run.py [--smoke] [--plot] [--adaptive] [--darcy-path PATH]
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ import problems as pb
 import adaptive as ad
 import darcy_data as dd
 
-RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF02_spline_ridge"
+RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF05_spline_ridge"
 DATA_PATH = RESULTS_DIR / "data.json"
 
 FAMILIES = {"tanh": rc.tanh_family, "bspline": rc.bspline_family}

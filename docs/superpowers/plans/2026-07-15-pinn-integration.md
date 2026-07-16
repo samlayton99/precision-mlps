@@ -1,10 +1,10 @@
-# PINN Integration (expF02/expF03/expF04) Implementation Plan
+# PINN Integration (expF05/expF06/expF07) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Three checkpoint-F experiments: B-spline ridge basis with adaptive knots (expF02), Newton-lstsq for steady 2D Burgers (expF03), and an lstsq precision-finisher for a trained torch PINN (expF04).
+**Goal:** Three checkpoint-F experiments: B-spline ridge basis with adaptive knots (expF05), Newton-lstsq for steady 2D Burgers (expF06), and an lstsq precision-finisher for a trained torch PINN (expF07).
 
-**Architecture:** A generalized frozen-ridge collocation core (`ridge_core.py`, living in expF02, imported by F03/F04 via the repo's sys.path pattern) parameterizes the univariate family (tanh vs cubic B-spline) and allows per-neuron γ. Nonlinearity is handled by damped Newton where each step is one block lstsq; the PINN finisher is the same Newton loop warm-started at a frozen torch net supplied as `base_fields`.
+**Architecture:** A generalized frozen-ridge collocation core (`ridge_core.py`, living in expF05, imported by F03/F04 via the repo's sys.path pattern) parameterizes the univariate family (tanh vs cubic B-spline) and allows per-neuron γ. Nonlinearity is handled by damped Newton where each step is one block lstsq; the PINN finisher is the same Newton loop warm-started at a frozen torch net supplied as `base_fields`.
 
 **Tech Stack:** numpy/scipy (solves), torch (PINN only), matplotlib (plots), pytest. Run everything with `uv run --extra dev ...` from `/scr/cdeng/precision-mlps`.
 
@@ -17,43 +17,43 @@
 - The reference implementation of the tanh solver is `experiments/expF01_linear_de_zoo/run.py` and (cleaner) `/scr/cdeng/continuous-mlps/experiments/precision_pde/core.py`. This plan vendors and generalizes that core — you do not need to read those files; all code is in this plan.
 - Operator convention: a "terms" list `[((ax, ay), coeff)]` means L = Σ coeff · ∂^ax_x ∂^ay_y, where coeff is a float, a callable `P[n,2] -> [n]`, or (new in this plan) a precomputed `[n]` array.
 - Darcy data npz: `/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_test_421_jax.npz` (421×421, cell-centered grid, keys `x`/`y` or `a`/`u`). Known baselines from the July-14 continuous-mlps sweep: dense tanh W=2304 on rough instance 0 at σ=0 → rel-L2 ~7.2e-2; presmoothed σ=4 → ~2.8e-3; smooth control → 3.0e-14.
-- Commit style: `expF02: <what>`.
+- Commit style: `expF05: <what>`.
 
 ## File structure
 
 ```
-experiments/expF02_spline_ridge/
+experiments/expF05_spline_ridge/
   ridge_core.py     generalized solver core (families, geometry, rows, lstsq, eval)
   problems.py       Poisson + smooth-Darcy-control manufactured problems (FD-verified)
   darcy_data.py     darcy_421 npz loader + spline coefficient surrogate (vendored)
   adaptive.py       residual->knot insertion + per-neuron gamma from local spacing
   run.py            Part A (tanh vs spline floor) + Part B (--adaptive rough Darcy)
-experiments/expF03_newton_burgers/
+experiments/expF06_newton_burgers/
   problems.py       Taylor-Green manufactured Burgers fields + forcing (FD-verified)
   newton.py         fields abstraction + damped Newton block-lstsq loop
   run.py            nu x W sweep, convergence/floor plots
-experiments/expF04_pinn_finisher/
+experiments/expF07_pinn_finisher/
   pinn.py           torch tanh-MLP PINN, residual loss, Adam trainer, fields adapter
-  run.py            train -> plateau -> Newton polish (reuses expF03 newton), plots
+  run.py            train -> plateau -> Newton polish (reuses expF06 newton), plots
 tests/
-  test_expF02_spline_ridge.py
-  test_expF03_newton_burgers.py
-  test_expF04_pinn_finisher.py
+  test_expF05_spline_ridge.py
+  test_expF06_newton_burgers.py
+  test_expF07_pinn_finisher.py
 results/checkpoint_F_applications/expF0{2,3,4}_*/   data.json + PNGs (+ PINN ckpt)
 ```
 
 ---
 
-### Task 1: expF02 ridge_core.py (generalized solver core)
+### Task 1: expF05 ridge_core.py (generalized solver core)
 
 **Files:**
-- Create: `experiments/expF02_spline_ridge/__init__.py` (empty), `experiments/expF02_spline_ridge/ridge_core.py`
-- Test: `tests/test_expF02_spline_ridge.py`
+- Create: `experiments/expF05_spline_ridge/__init__.py` (empty), `experiments/expF05_spline_ridge/ridge_core.py`
+- Test: `tests/test_expF05_spline_ridge.py`
 
 - [ ] **Step 1: Write the failing tests**
 
 ```python
-# tests/test_expF02_spline_ridge.py
+# tests/test_expF05_spline_ridge.py
 import sys
 from pathlib import Path
 
@@ -61,7 +61,7 @@ import numpy as np
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF02_spline_ridge"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF05_spline_ridge"))
 
 import ridge_core as rc
 
@@ -116,13 +116,13 @@ def test_solve_poisson_sanity(family, tol):
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd /scr/cdeng/precision-mlps && uv run --extra dev pytest tests/test_expF02_spline_ridge.py -v`
+Run: `cd /scr/cdeng/precision-mlps && uv run --extra dev pytest tests/test_expF05_spline_ridge.py -v`
 Expected: FAIL/ERROR with `ModuleNotFoundError: No module named 'ridge_core'`
 
 - [ ] **Step 3: Write ridge_core.py**
 
 ```python
-# experiments/expF02_spline_ridge/ridge_core.py
+# experiments/expF05_spline_ridge/ridge_core.py
 """Frozen-ridge collocation-lstsq core on [-1,1]^2, generalized over the
 univariate family and per-neuron gamma.
 
@@ -296,31 +296,31 @@ def linf(u_hat, u_true):
     return float(np.max(np.abs(u_hat - u_true)))
 ```
 
-Also create the empty `experiments/expF02_spline_ridge/__init__.py`.
+Also create the empty `experiments/expF05_spline_ridge/__init__.py`.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `uv run --extra dev pytest tests/test_expF02_spline_ridge.py -v`
+Run: `uv run --extra dev pytest tests/test_expF05_spline_ridge.py -v`
 Expected: all PASS. If `test_solve_poisson_sanity[bspline_family]` fails on tolerance (not on error), record the actual number — that is the spec's spline-conditioning risk. Loosen ONLY that test to `5e-3` and note it in the commit message; if worse than 5e-3, stop and report.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add experiments/expF02_spline_ridge/__init__.py experiments/expF02_spline_ridge/ridge_core.py tests/test_expF02_spline_ridge.py
-git commit -m "expF02: generalized ridge core (tanh + cubic B-spline families, per-neuron gamma)"
+git add experiments/expF05_spline_ridge/__init__.py experiments/expF05_spline_ridge/ridge_core.py tests/test_expF05_spline_ridge.py
+git commit -m "expF05: generalized ridge core (tanh + cubic B-spline families, per-neuron gamma)"
 ```
 
 ---
 
-### Task 2: expF02 problems.py (Poisson + smooth Darcy control)
+### Task 2: expF05 problems.py (Poisson + smooth Darcy control)
 
 **Files:**
-- Create: `experiments/expF02_spline_ridge/problems.py`
-- Test: append to `tests/test_expF02_spline_ridge.py`
+- Create: `experiments/expF05_spline_ridge/problems.py`
+- Test: append to `tests/test_expF05_spline_ridge.py`
 
 - [ ] **Step 1: Write the failing test**
 
-Append to `tests/test_expF02_spline_ridge.py`:
+Append to `tests/test_expF05_spline_ridge.py`:
 
 ```python
 def test_problems_fd_verified():
@@ -330,7 +330,7 @@ def test_problems_fd_verified():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `uv run --extra dev pytest tests/test_expF02_spline_ridge.py::test_problems_fd_verified -v`
+Run: `uv run --extra dev pytest tests/test_expF05_spline_ridge.py::test_problems_fd_verified -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'problems'`
 
 - [ ] **Step 3: Write problems.py**
@@ -338,7 +338,7 @@ Expected: FAIL with `ModuleNotFoundError: No module named 'problems'`
 The control problem is vendored verbatim from continuous-mlps `precision_pde/darcy_problems.py` (a = 3 + exp(sin πx sin πy), u* = sin πx sin πy + 0.5 sin 2πx sin πy, u* = 0 on the boundary). Poisson reuses the same u*.
 
 ```python
-# experiments/expF02_spline_ridge/problems.py
+# experiments/expF05_spline_ridge/problems.py
 """Part-A problems on [-1,1]^2, all with u* = 0 on the boundary.
 
   poisson:        -lap u = f
@@ -461,23 +461,23 @@ def verify_all(tol=2e-4):
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `uv run --extra dev pytest tests/test_expF02_spline_ridge.py::test_problems_fd_verified -v`
+Run: `uv run --extra dev pytest tests/test_expF05_spline_ridge.py::test_problems_fd_verified -v`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add experiments/expF02_spline_ridge/problems.py tests/test_expF02_spline_ridge.py
-git commit -m "expF02: FD-verified poisson + smooth darcy control problems"
+git add experiments/expF05_spline_ridge/problems.py tests/test_expF05_spline_ridge.py
+git commit -m "expF05: FD-verified poisson + smooth darcy control problems"
 ```
 
 ---
 
-### Task 3: expF02 darcy_data.py (rough-Darcy loader + surrogate)
+### Task 3: expF05 darcy_data.py (rough-Darcy loader + surrogate)
 
 **Files:**
-- Create: `experiments/expF02_spline_ridge/darcy_data.py`
-- Test: append to `tests/test_expF02_spline_ridge.py`
+- Create: `experiments/expF05_spline_ridge/darcy_data.py`
+- Test: append to `tests/test_expF05_spline_ridge.py`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -501,13 +501,13 @@ def test_darcy_loader_and_surrogate():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `uv run --extra dev pytest tests/test_expF02_spline_ridge.py::test_darcy_loader_and_surrogate -v`
+Run: `uv run --extra dev pytest tests/test_expF05_spline_ridge.py::test_darcy_loader_and_surrogate -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'darcy_data'` (or SKIP if the npz is missing — if SKIP, verify the path by `ls` and fix before proceeding)
 
 - [ ] **Step 3: Write darcy_data.py** (vendored from continuous-mlps `precision_pde/darcy_problems.py`)
 
 ```python
-# experiments/expF02_spline_ridge/darcy_data.py
+# experiments/expF05_spline_ridge/darcy_data.py
 """darcy_421 benchmark loading + spline coefficient surrogate.
 
 Benchmark convention: -div_s(a grad_s u) = 1 on [0,1]^2, u = 0 on the boundary.
@@ -583,23 +583,23 @@ def eval_points_and_ref(u_grid, stride=3):
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `uv run --extra dev pytest tests/test_expF02_spline_ridge.py::test_darcy_loader_and_surrogate -v`
+Run: `uv run --extra dev pytest tests/test_expF05_spline_ridge.py::test_darcy_loader_and_surrogate -v`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add experiments/expF02_spline_ridge/darcy_data.py tests/test_expF02_spline_ridge.py
-git commit -m "expF02: vendored darcy_421 loader + spline coefficient surrogate"
+git add experiments/expF05_spline_ridge/darcy_data.py tests/test_expF05_spline_ridge.py
+git commit -m "expF05: vendored darcy_421 loader + spline coefficient surrogate"
 ```
 
 ---
 
-### Task 4: expF02 adaptive.py (knot insertion + local gammas)
+### Task 4: expF05 adaptive.py (knot insertion + local gammas)
 
 **Files:**
-- Create: `experiments/expF02_spline_ridge/adaptive.py`
-- Test: append to `tests/test_expF02_spline_ridge.py`
+- Create: `experiments/expF05_spline_ridge/adaptive.py`
+- Test: append to `tests/test_expF05_spline_ridge.py`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -628,14 +628,14 @@ def test_insert_knots_targets_residual_mass():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `uv run --extra dev pytest tests/test_expF02_spline_ridge.py -k adaptive_or_knots -v` — actually run by name:
-`uv run --extra dev pytest tests/test_expF02_spline_ridge.py::test_local_gammas_matches_uniform_grid tests/test_expF02_spline_ridge.py::test_insert_knots_targets_residual_mass -v`
+Run: `uv run --extra dev pytest tests/test_expF05_spline_ridge.py -k adaptive_or_knots -v` — actually run by name:
+`uv run --extra dev pytest tests/test_expF05_spline_ridge.py::test_local_gammas_matches_uniform_grid tests/test_expF05_spline_ridge.py::test_insert_knots_targets_residual_mass -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'adaptive'`
 
 - [ ] **Step 3: Write adaptive.py**
 
 ```python
-# experiments/expF02_spline_ridge/adaptive.py
+# experiments/expF05_spline_ridge/adaptive.py
 """Residual-guided knot insertion for the spline ridge basis.
 
 insert_knots: project |residual| mass onto each ridge direction (Radon
@@ -707,28 +707,28 @@ def insert_knots(dirs, offs, P_res, r_abs, n_new, collar=COLLAR_SQUARE, n_bins=4
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `uv run --extra dev pytest tests/test_expF02_spline_ridge.py -v`
+Run: `uv run --extra dev pytest tests/test_expF05_spline_ridge.py -v`
 Expected: all PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add experiments/expF02_spline_ridge/adaptive.py tests/test_expF02_spline_ridge.py
-git commit -m "expF02: residual-guided knot insertion + local per-neuron gammas"
+git add experiments/expF05_spline_ridge/adaptive.py tests/test_expF05_spline_ridge.py
+git commit -m "expF05: residual-guided knot insertion + local per-neuron gammas"
 ```
 
 ---
 
-### Task 5: expF02 run.py (Part A + Part B drivers)
+### Task 5: expF05 run.py (Part A + Part B drivers)
 
 **Files:**
-- Create: `experiments/expF02_spline_ridge/run.py`
+- Create: `experiments/expF05_spline_ridge/run.py`
 
 - [ ] **Step 1: Write run.py**
 
 ```python
-# experiments/expF02_spline_ridge/run.py
-"""Experiment expF02 -- KAN-style B-spline ridge basis.
+# experiments/expF05_spline_ridge/run.py
+"""Experiment expF05 -- KAN-style B-spline ridge basis.
 
 Part A (default): tanh vs cubic-B-spline floor on poisson + smooth darcy
 control, W in {144,256,576,1024,2304}, lam in {0.2,0.25,0.3}, best-of-lam.
@@ -736,13 +736,13 @@ Part B (--adaptive): rough darcy_421 instance 0, sigma=0. Baselines: dense
 tanh and dense spline at W=2304 (uniform). Adaptive: spline, start W=1024,
 4 rounds x 320 residual-guided knots -> 2304 total (width-matched).
 
-Outputs (results/checkpoint_F_applications/expF02_spline_ridge/):
+Outputs (results/checkpoint_F_applications/expF05_spline_ridge/):
   error_vs_width.png    rel L2 vs W, 2 problems x 2 families
   adaptive_rounds.png   rel L2 + n_knots per adaptive round vs dense baselines
   data.json             all cells, written incrementally
 
 Usage:
-  uv run --extra dev python experiments/expF02_spline_ridge/run.py [--smoke] [--plot] [--adaptive] [--darcy-path PATH]
+  uv run --extra dev python experiments/expF05_spline_ridge/run.py [--smoke] [--plot] [--adaptive] [--darcy-path PATH]
 """
 from __future__ import annotations
 
@@ -765,7 +765,7 @@ import problems as pb
 import adaptive as ad
 import darcy_data as dd
 
-RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF02_spline_ridge"
+RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF05_spline_ridge"
 DATA_PATH = RESULTS_DIR / "data.json"
 
 FAMILIES = {"tanh": rc.tanh_family, "bspline": rc.bspline_family}
@@ -932,34 +932,34 @@ if __name__ == "__main__":
 
 - [ ] **Step 2: Smoke-run Part A**
 
-Run: `uv run --extra dev python experiments/expF02_spline_ridge/run.py --smoke`
+Run: `uv run --extra dev python experiments/expF05_spline_ridge/run.py --smoke`
 Expected: 2 problems × 2 families × 2 W × 3 λ = 24 cells printed with finite `rel_l2`; tanh at W=400 should reach ≤1e-6 on poisson; `error_vs_width.png` and `data.json` created. Sanity-read: spline within ~1-2 orders of tanh at matched W. If spline is >2 orders worse, note it and continue (full-run data decides the quintic escalation).
 
 - [ ] **Step 3: Smoke-run Part B**
 
-Run: `uv run --extra dev python experiments/expF02_spline_ridge/run.py --smoke --adaptive`
+Run: `uv run --extra dev python experiments/expF05_spline_ridge/run.py --smoke --adaptive`
 Expected: dense_tanh + dense_bspline cells at W=400, then adaptive rounds 0..2 (144 → 272 → 400 knots) each with finite rel_l2; `adaptive_rounds.png` created. Smoke numbers will be poor (~1e-1) — only checking the machinery runs.
 
 - [ ] **Step 4: Delete smoke data and commit**
 
 ```bash
-rm results/checkpoint_F_applications/expF02_spline_ridge/data.json
-git add experiments/expF02_spline_ridge/run.py
-git commit -m "expF02: Part A/B driver with smoke mode and incremental data.json"
+rm results/checkpoint_F_applications/expF05_spline_ridge/data.json
+git add experiments/expF05_spline_ridge/run.py
+git commit -m "expF05: Part A/B driver with smoke mode and incremental data.json"
 ```
 
 ---
 
-### Task 6: expF02 full runs
+### Task 6: expF05 full runs
 
 - [ ] **Step 1: Run Part A in the background**
 
-Run: `cd /scr/cdeng/precision-mlps && nohup uv run --extra dev python experiments/expF02_spline_ridge/run.py > /tmp/expF02_partA.log 2>&1 &`
-Expected: ~60 cells; the W=2304 solves take ~1-2 min each; total ~1-2 h. Poll with `tail /tmp/expF02_partA.log`.
+Run: `cd /scr/cdeng/precision-mlps && nohup uv run --extra dev python experiments/expF05_spline_ridge/run.py > /tmp/expF05_partA.log 2>&1 &`
+Expected: ~60 cells; the W=2304 solves take ~1-2 min each; total ~1-2 h. Poll with `tail /tmp/expF05_partA.log`.
 
 - [ ] **Step 2: When Part A finishes, run Part B**
 
-Run: `uv run --extra dev python experiments/expF02_spline_ridge/run.py --adaptive > /tmp/expF02_partB.log 2>&1`
+Run: `uv run --extra dev python experiments/expF05_spline_ridge/run.py --adaptive > /tmp/expF05_partB.log 2>&1`
 Expected: dense baselines (dense_tanh should land near the known 7.2e-2), then 5 adaptive cells (rounds 0-4, 1024→2304 knots).
 
 - [ ] **Step 3: Sanity-read results against the spec**
@@ -970,22 +970,22 @@ Expected: dense baselines (dense_tanh should land near the known 7.2e-2), then 5
 - [ ] **Step 4: Commit results**
 
 ```bash
-git add results/checkpoint_F_applications/expF02_spline_ridge/
-git commit -m "expF02: full Part A floor sweep + Part B adaptive-knot rough darcy results"
+git add results/checkpoint_F_applications/expF05_spline_ridge/
+git commit -m "expF05: full Part A floor sweep + Part B adaptive-knot rough darcy results"
 ```
 
 ---
 
-### Task 7: expF03 problems.py (manufactured Burgers)
+### Task 7: expF06 problems.py (manufactured Burgers)
 
 **Files:**
-- Create: `experiments/expF03_newton_burgers/__init__.py` (empty), `experiments/expF03_newton_burgers/problems.py`
-- Test: `tests/test_expF03_newton_burgers.py`
+- Create: `experiments/expF06_newton_burgers/__init__.py` (empty), `experiments/expF06_newton_burgers/problems.py`
+- Test: `tests/test_expF06_newton_burgers.py`
 
 - [ ] **Step 1: Write the failing test**
 
 ```python
-# tests/test_expF03_newton_burgers.py
+# tests/test_expF06_newton_burgers.py
 import sys
 from pathlib import Path
 
@@ -993,8 +993,8 @@ import numpy as np
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF02_spline_ridge"))
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF03_newton_burgers"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF05_spline_ridge"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF06_newton_burgers"))
 
 
 def test_burgers_manufactured_fd_verified():
@@ -1005,13 +1005,13 @@ def test_burgers_manufactured_fd_verified():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `uv run --extra dev pytest tests/test_expF03_newton_burgers.py -v`
-Expected: FAIL — `problems` resolves to expF02's module which has no `verify_all(nu=...)` signature, or import error. NOTE: because both experiments name a module `problems.py`, tests and run scripts must insert the expF03 dir FIRST (last-inserted wins with sys.path.insert(0, ...)). The ordering above (expF02 inserted before expF03) achieves that. In expF03/expF04 code, import expF02 modules by their unique names (`ridge_core`, `adaptive`, `darcy_data`) — those don't collide.
+Run: `uv run --extra dev pytest tests/test_expF06_newton_burgers.py -v`
+Expected: FAIL — `problems` resolves to expF05's module which has no `verify_all(nu=...)` signature, or import error. NOTE: because both experiments name a module `problems.py`, tests and run scripts must insert the expF06 dir FIRST (last-inserted wins with sys.path.insert(0, ...)). The ordering above (expF05 inserted before expF06) achieves that. In expF06/expF07 code, import expF05 modules by their unique names (`ridge_core`, `adaptive`, `darcy_data`) — those don't collide.
 
 - [ ] **Step 3: Write problems.py**
 
 ```python
-# experiments/expF03_newton_burgers/problems.py
+# experiments/expF06_newton_burgers/problems.py
 """Steady viscous Burgers on [-1,1]^2, manufactured Taylor-Green solution.
 
   F_u(u,v) = u u_x + v u_y - nu lap u - f_u = 0
@@ -1103,27 +1103,27 @@ def verify_all(nu, tol=2e-4):
         assert err < tol, f"burgers check '{name}' failed: rel err {err:.2e}"
 ```
 
-Also create the empty `experiments/expF03_newton_burgers/__init__.py`.
+Also create the empty `experiments/expF06_newton_burgers/__init__.py`.
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `uv run --extra dev pytest tests/test_expF03_newton_burgers.py -v`
+Run: `uv run --extra dev pytest tests/test_expF06_newton_burgers.py -v`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add experiments/expF03_newton_burgers/ tests/test_expF03_newton_burgers.py
-git commit -m "expF03: FD-verified manufactured Taylor-Green Burgers problem"
+git add experiments/expF06_newton_burgers/ tests/test_expF06_newton_burgers.py
+git commit -m "expF06: FD-verified manufactured Taylor-Green Burgers problem"
 ```
 
 ---
 
-### Task 8: expF03 newton.py (damped Newton block-lstsq)
+### Task 8: expF06 newton.py (damped Newton block-lstsq)
 
 **Files:**
-- Create: `experiments/expF03_newton_burgers/newton.py`
-- Test: append to `tests/test_expF03_newton_burgers.py`
+- Create: `experiments/expF06_newton_burgers/newton.py`
+- Test: append to `tests/test_expF06_newton_burgers.py`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1143,19 +1143,19 @@ def test_newton_converges_nu01():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `uv run --extra dev pytest tests/test_expF03_newton_burgers.py::test_newton_converges_nu01 -v`
+Run: `uv run --extra dev pytest tests/test_expF06_newton_burgers.py::test_newton_converges_nu01 -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'newton'`
 
 - [ ] **Step 3: Write newton.py**
 
 ```python
-# experiments/expF03_newton_burgers/newton.py
+# experiments/expF06_newton_burgers/newton.py
 """Damped Newton for steady Burgers; every step is one block collocation lstsq
 in a FROZEN ridge basis, so iterates add in coefficient space.
 
 newton_burgers(..., base_fields=None): base_fields(P) -> dict with keys
 u, ux, uy, lap_u, v, vx, vy, lap_v (numpy [n]) is an optional frozen warm
-start (the trained PINN in expF04); the ridge expansion carries corrections.
+start (the trained PINN in expF07); the ridge expansion carries corrections.
 """
 from __future__ import annotations
 
@@ -1276,39 +1276,39 @@ def newton_burgers(nu, W, lam, family=rc.tanh_family, max_iter=12, seed=42,
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `uv run --extra dev pytest tests/test_expF03_newton_burgers.py -v`
+Run: `uv run --extra dev pytest tests/test_expF06_newton_burgers.py -v`
 Expected: both tests PASS (the Newton test takes ~30-90 s; it is marked slow). Watch the printed history: residual should drop fast (near-quadratically) after the first 1-2 iterations.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add experiments/expF03_newton_burgers/newton.py tests/test_expF03_newton_burgers.py
-git commit -m "expF03: damped Newton block-lstsq solver with optional frozen base fields"
+git add experiments/expF06_newton_burgers/newton.py tests/test_expF06_newton_burgers.py
+git commit -m "expF06: damped Newton block-lstsq solver with optional frozen base fields"
 ```
 
 ---
 
-### Task 9: expF03 run.py + full run
+### Task 9: expF06 run.py + full run
 
 **Files:**
-- Create: `experiments/expF03_newton_burgers/run.py`
+- Create: `experiments/expF06_newton_burgers/run.py`
 
 - [ ] **Step 1: Write run.py**
 
 ```python
-# experiments/expF03_newton_burgers/run.py
-"""Experiment expF03 -- steady 2D Burgers via Newton-lstsq (solve, don't train).
+# experiments/expF06_newton_burgers/run.py
+"""Experiment expF06 -- steady 2D Burgers via Newton-lstsq (solve, don't train).
 
 Grid: nu in {0.1, 0.01} x W in {256, 576, 1024, 2304} (smoke: nu=0.1, W=256),
 max 12 Newton iterations, tanh family, lam=0.25.
 
-Outputs (results/checkpoint_F_applications/expF03_newton_burgers/):
+Outputs (results/checkpoint_F_applications/expF06_newton_burgers/):
   newton_convergence.png   res_norm + rel_l2(u) vs iteration, best W per nu
   error_vs_width.png       final rel_l2(u) vs W per nu
   data.json                every (nu, W) cell with its full Newton history
 
 Usage:
-  uv run --extra dev python experiments/expF03_newton_burgers/run.py [--smoke] [--plot]
+  uv run --extra dev python experiments/expF06_newton_burgers/run.py [--smoke] [--plot]
 """
 from __future__ import annotations
 
@@ -1323,12 +1323,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF02_spline_ridge"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF05_spline_ridge"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import newton as nt
 
-RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF03_newton_burgers"
+RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF06_newton_burgers"
 DATA_PATH = RESULTS_DIR / "data.json"
 LAM = 0.25
 
@@ -1407,41 +1407,41 @@ if __name__ == "__main__":
 
 - [ ] **Step 2: Smoke-run**
 
-Run: `uv run --extra dev python experiments/expF03_newton_burgers/run.py --smoke`
+Run: `uv run --extra dev python experiments/expF06_newton_burgers/run.py --smoke`
 Expected: one (0.1, 256) cell, Newton history printed per iteration, final rel_l2_u ≤ 1e-6, plot + data.json created.
 
 - [ ] **Step 3: Delete smoke data, commit driver**
 
 ```bash
-rm results/checkpoint_F_applications/expF03_newton_burgers/data.json
-git add experiments/expF03_newton_burgers/run.py
-git commit -m "expF03: nu x W sweep driver"
+rm results/checkpoint_F_applications/expF06_newton_burgers/data.json
+git add experiments/expF06_newton_burgers/run.py
+git commit -m "expF06: nu x W sweep driver"
 ```
 
 - [ ] **Step 4: Full run**
 
-Run: `nohup uv run --extra dev python experiments/expF03_newton_burgers/run.py > /tmp/expF03.log 2>&1 &`
+Run: `nohup uv run --extra dev python experiments/expF06_newton_burgers/run.py > /tmp/expF06.log 2>&1 &`
 Expected: ~1-3 h (W=2304 iterations are ~2-4 min each). Spec pass: ν=0.1 final rel_l2 ≤ 1e-10 at the larger widths. ν=0.01 recorded wherever it lands; if it stalls (damping exhausted), that is recorded in the history — the ν-continuation escalation is a separate follow-up, do not improvise it inline.
 
 - [ ] **Step 5: Commit results**
 
 ```bash
-git add results/checkpoint_F_applications/expF03_newton_burgers/
-git commit -m "expF03: full Newton-lstsq results (nu 0.1/0.01, W up to 2304)"
+git add results/checkpoint_F_applications/expF06_newton_burgers/
+git commit -m "expF06: full Newton-lstsq results (nu 0.1/0.01, W up to 2304)"
 ```
 
 ---
 
-### Task 10: expF04 pinn.py (torch PINN + fields adapter)
+### Task 10: expF07 pinn.py (torch PINN + fields adapter)
 
 **Files:**
-- Create: `experiments/expF04_pinn_finisher/__init__.py` (empty), `experiments/expF04_pinn_finisher/pinn.py`
-- Test: `tests/test_expF04_pinn_finisher.py`
+- Create: `experiments/expF07_pinn_finisher/__init__.py` (empty), `experiments/expF07_pinn_finisher/pinn.py`
+- Test: `tests/test_expF07_pinn_finisher.py`
 
 - [ ] **Step 1: Write the failing tests**
 
 ```python
-# tests/test_expF04_pinn_finisher.py
+# tests/test_expF07_pinn_finisher.py
 import sys
 from pathlib import Path
 
@@ -1449,9 +1449,9 @@ import numpy as np
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF02_spline_ridge"))
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF03_newton_burgers"))
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF04_pinn_finisher"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF05_spline_ridge"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF06_newton_burgers"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF07_pinn_finisher"))
 
 
 def test_pinn_trains_and_loss_decreases():
@@ -1484,22 +1484,22 @@ def test_pinn_fields_match_autograd_fd():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `uv run --extra dev pytest tests/test_expF04_pinn_finisher.py -v`
+Run: `uv run --extra dev pytest tests/test_expF07_pinn_finisher.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'pinn'`
 
 - [ ] **Step 3: Write pinn.py**
 
 ```python
-# experiments/expF04_pinn_finisher/pinn.py
-"""Vanilla torch tanh-MLP PINN for the expF03 Burgers problem, plus a numpy
-fields adapter so the frozen net can serve as base_fields in expF03's Newton
+# experiments/expF07_pinn_finisher/pinn.py
+"""Vanilla torch tanh-MLP PINN for the expF06 Burgers problem, plus a numpy
+fields adapter so the frozen net can serve as base_fields in expF06's Newton
 loop. Everything float64 on CPU."""
 from __future__ import annotations
 
 import numpy as np
 import torch
 
-import problems as bp  # expF03's problems (sys.path order set by caller)
+import problems as bp  # expF06's problems (sys.path order set by caller)
 
 torch.set_default_dtype(torch.float64)
 
@@ -1591,7 +1591,7 @@ def train_pinn(nu, steps=50000, batch=1024, n_bc=256, lr=1e-3, bc_weight=10.0,
 def pinn_fields(net):
     """Frozen-net numpy fields adapter: P [n,2] -> dict of numpy [n] arrays
     (u, ux, uy, lap_u, v, vx, vy, lap_v) — the base_fields contract of
-    expF03 newton.newton_burgers."""
+    expF06 newton.newton_burgers."""
     def fields(P, chunk=2048):
         out = {k: np.empty(len(P)) for k in
                ["u", "ux", "uy", "lap_u", "v", "vx", "vy", "lap_v"]}
@@ -1607,23 +1607,23 @@ def pinn_fields(net):
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `uv run --extra dev pytest tests/test_expF04_pinn_finisher.py -v`
+Run: `uv run --extra dev pytest tests/test_expF07_pinn_finisher.py -v`
 Expected: both PASS (~30-60 s)
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add experiments/expF04_pinn_finisher/ tests/test_expF04_pinn_finisher.py
-git commit -m "expF04: torch tanh-MLP PINN + frozen-net fields adapter"
+git add experiments/expF07_pinn_finisher/ tests/test_expF07_pinn_finisher.py
+git commit -m "expF07: torch tanh-MLP PINN + frozen-net fields adapter"
 ```
 
 ---
 
-### Task 11: expF04 finisher smoke test + run.py
+### Task 11: expF07 finisher smoke test + run.py
 
 **Files:**
-- Create: `experiments/expF04_pinn_finisher/run.py`
-- Test: append to `tests/test_expF04_pinn_finisher.py`
+- Create: `experiments/expF07_pinn_finisher/run.py`
+- Test: append to `tests/test_expF07_pinn_finisher.py`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1642,27 +1642,27 @@ def test_finisher_improves_pinn():
 
 - [ ] **Step 2: Run test to verify it fails-then-passes**
 
-Run: `uv run --extra dev pytest tests/test_expF04_pinn_finisher.py::test_finisher_improves_pinn -v`
+Run: `uv run --extra dev pytest tests/test_expF07_pinn_finisher.py::test_finisher_improves_pinn -v`
 Expected: PASS directly if Tasks 8/10 are correct (the machinery already exists; this test pins the integration contract). If it FAILS, debug before writing run.py — the most likely bug is sys.path module shadowing (see Task 7 Step 2 note).
 
 - [ ] **Step 3: Write run.py**
 
 ```python
-# experiments/expF04_pinn_finisher/run.py
-"""Experiment expF04 -- lstsq precision finisher for a trained PINN.
+# experiments/expF07_pinn_finisher/run.py
+"""Experiment expF07 -- lstsq precision finisher for a trained PINN.
 
-Train a vanilla torch tanh-MLP PINN (4x64, Adam) on the expF03 Burgers
-problem (nu=0.1) to its plateau, freeze it, then run the expF03 Newton-lstsq
+Train a vanilla torch tanh-MLP PINN (4x64, Adam) on the expF06 Burgers
+problem (nu=0.1) to its plateau, freeze it, then run the expF06 Newton-lstsq
 loop warm-started at the PINN (base_fields). Full: 50k Adam steps, polish
 W=1024, 3 Newton steps. Smoke: 400 steps, W=256, 2 steps.
 
-Outputs (results/checkpoint_F_applications/expF04_pinn_finisher/):
+Outputs (results/checkpoint_F_applications/expF07_pinn_finisher/):
   finisher_convergence.png  rel L2(u): Adam curve then polish steps
   pinn_ckpt.pt              trained PINN state_dict
   data.json                 training history + polish history + wall clocks
 
 Usage:
-  uv run --extra dev python experiments/expF04_pinn_finisher/run.py [--smoke] [--plot]
+  uv run --extra dev python experiments/expF07_pinn_finisher/run.py [--smoke] [--plot]
 """
 from __future__ import annotations
 
@@ -1679,14 +1679,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF02_spline_ridge"))
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF03_newton_burgers"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF05_spline_ridge"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF06_newton_burgers"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import pinn
 import newton as nt
 
-RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF04_pinn_finisher"
+RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF07_pinn_finisher"
 DATA_PATH = RESULTS_DIR / "data.json"
 NU = 0.1
 
@@ -1744,31 +1744,31 @@ if __name__ == "__main__":
 
 - [ ] **Step 4: Smoke-run**
 
-Run: `uv run --extra dev python experiments/expF04_pinn_finisher/run.py --smoke`
+Run: `uv run --extra dev python experiments/expF07_pinn_finisher/run.py --smoke`
 Expected: PINN trains 400 steps (rel_l2 ~1e-1-1e-2), polish drops it several orders in 2 steps; plot + ckpt + data.json created.
 
 - [ ] **Step 5: Delete smoke artifacts, commit**
 
 ```bash
-rm results/checkpoint_F_applications/expF04_pinn_finisher/data.json results/checkpoint_F_applications/expF04_pinn_finisher/pinn_ckpt.pt
-git add experiments/expF04_pinn_finisher/run.py tests/test_expF04_pinn_finisher.py
-git commit -m "expF04: PINN-then-polish driver"
+rm results/checkpoint_F_applications/expF07_pinn_finisher/data.json results/checkpoint_F_applications/expF07_pinn_finisher/pinn_ckpt.pt
+git add experiments/expF07_pinn_finisher/run.py tests/test_expF07_pinn_finisher.py
+git commit -m "expF07: PINN-then-polish driver"
 ```
 
 ---
 
-### Task 12: expF04 full run + results.md summary
+### Task 12: expF07 full run + results.md summary
 
 - [ ] **Step 1: Full run in the background**
 
-Run: `nohup uv run --extra dev python experiments/expF04_pinn_finisher/run.py > /tmp/expF04.log 2>&1 &`
-Expected: 50k Adam steps ~30-90 min CPU, polish ~5-15 min. Spec pass: ≥4 orders improvement over the Adam plateau, landing within ~1 order of the expF03 floor at W=1024.
+Run: `nohup uv run --extra dev python experiments/expF07_pinn_finisher/run.py > /tmp/expF07.log 2>&1 &`
+Expected: 50k Adam steps ~30-90 min CPU, polish ~5-15 min. Spec pass: ≥4 orders improvement over the Adam plateau, landing within ~1 order of the expF06 floor at W=1024.
 
 - [ ] **Step 2: Commit results**
 
 ```bash
-git add results/checkpoint_F_applications/expF04_pinn_finisher/
-git commit -m "expF04: full finisher results (Adam plateau -> Newton-lstsq polish)"
+git add results/checkpoint_F_applications/expF07_pinn_finisher/
+git commit -m "expF07: full finisher results (Adam plateau -> Newton-lstsq polish)"
 ```
 
 - [ ] **Step 3: Append a summary block to results.md**
@@ -1778,13 +1778,13 @@ Append to `results/results.md` (create the heading if the file structure differs
 ```markdown
 ## Checkpoint F additions (2026-07): PINN integration
 
-- expF02 (spline ridges): cubic B-spline family floor vs tanh on poisson +
+- expF05 (spline ridges): cubic B-spline family floor vs tanh on poisson +
   smooth darcy control: <fill actual numbers from data.json>. Adaptive knots
   on rough darcy_421 (sigma=0, width-matched 2304): <fill: rel_l2 per round
   vs dense 7.2e-2 baseline>.
-- expF03 (Newton-lstsq Burgers): nu=0.1 floor <fill>, nu=0.01 <fill>,
+- expF06 (Newton-lstsq Burgers): nu=0.1 floor <fill>, nu=0.01 <fill>,
   quadratic convergence in <fill> iterations.
-- expF04 (PINN finisher): Adam plateau <fill> after <fill>s; +<fill> Newton
+- expF07 (PINN finisher): Adam plateau <fill> after <fill>s; +<fill> Newton
   steps (<fill>s) -> <fill>. "<X> minutes of Adam + <Y> seconds of lstsq."
 ```
 
@@ -1792,7 +1792,7 @@ Fill every `<fill>` from the data.json files — no placeholders may survive int
 
 ```bash
 git add results/results.md
-git commit -m "expF02-04: results.md summary for PINN-integration experiments"
+git commit -m "expF05-04: results.md summary for PINN-integration experiments"
 ```
 
 ---
@@ -1800,6 +1800,6 @@ git commit -m "expF02-04: results.md summary for PINN-integration experiments"
 ## Self-review notes (already applied)
 
 - Spec coverage: Part A (Task 5/6), Part B adaptive (Tasks 4/5/6), Burgers Newton (Tasks 7-9), PINN + finisher (Tasks 10-12), tests-with-FD-verification throughout, --smoke/--plot everywhere, slow markers on >10s tests.
-- Module shadowing: expF02 and expF03 both define `problems.py`; the sys.path insertion order rule is documented in Task 7 Step 2 and followed in every run.py/test file (expF03/expF04 dirs inserted after expF02, i.e., they win).
+- Module shadowing: expF05 and expF06 both define `problems.py`; the sys.path insertion order rule is documented in Task 7 Step 2 and followed in every run.py/test file (expF06/expF07 dirs inserted after expF05, i.e., they win).
 - The spec's quintic-spline and nu-continuation escalations are deliberately NOT tasks — they trigger only on recorded failures, as separate follow-up work.
 - Known-baseline cross-checks: dense tanh Part B should reproduce ~7.2e-2 (continuous-mlps July-14 sweep); if it doesn't land within ~2x, stop and investigate the vendoring (grid convention, forcing 0.25) before trusting anything downstream.

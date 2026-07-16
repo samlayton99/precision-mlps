@@ -15,14 +15,14 @@ KAN with frozen inner weights, and freezing is what makes the PINN residual
 minimization a *linear* problem. Three experiments cash this out as PINN
 infrastructure:
 
-1. **expF02** — the KAN move proper: B-spline univariate family (locality →
+1. **expF05** — the KAN move proper: B-spline univariate family (locality →
    adaptive knots), attacking the rough-Darcy stall without presmoothing.
-2. **expF03** — nonlinear PDEs via Newton-lstsq: each Newton step is one
+2. **expF06** — nonlinear PDEs via Newton-lstsq: each Newton step is one
    linear solve in the frozen basis; "PINN training" without gradient descent.
-3. **expF04** — the finisher: any trained PINN + a few Newton-lstsq polish
+3. **expF07** — the finisher: any trained PINN + a few Newton-lstsq polish
    steps in the ridge basis ≈ machine-precision PINN.
 
-## expF02_spline_ridge — KAN-style B-spline ridge basis
+## expF05_spline_ridge — KAN-style B-spline ridge basis
 
 **Question:** does replacing tanh with a compact-support spline family keep the
 precision floor, and does knot adaptivity beat the rough-Darcy stall?
@@ -48,11 +48,11 @@ to the dense tanh baseline (W=2304) so the comparison is fair.
 **Success:** ≥1 order below the 7.2e-2 raw stall. **Stretch:** ≤2.8e-3 (beats
 presmoothing without touching the coefficient).
 
-**Outputs** (`results/checkpoint_F_applications/expF02_spline_ridge/`):
+**Outputs** (`results/checkpoint_F_applications/expF05_spline_ridge/`):
 `error_vs_width.png` (spline vs tanh, per problem), `adaptive_rounds.png`
 (rel-L2 + knot histogram per round), residual/error heatmaps, `data.json`.
 
-## expF03_newton_burgers — nonlinear PDEs via Newton-lstsq
+## expF06_newton_burgers — nonlinear PDEs via Newton-lstsq
 
 **Question:** does the one-solve precision story survive nonlinearity when the
 outer loop is Newton and each step is a linear collocation solve?
@@ -84,18 +84,18 @@ lands (harder, sharper layers).
 **Outputs:** `newton_convergence.png`, `error_vs_width.png`, error heatmaps,
 `data.json`.
 
-## expF04_pinn_finisher — lstsq polish for trained PINNs
+## expF07_pinn_finisher — lstsq polish for trained PINNs
 
 **Question:** can a few Newton-lstsq steps in the frozen ridge basis take an
 ordinary trained PINN from its optimization plateau to solver-grade precision?
 
 **Baseline PINN.** torch tanh-MLP, 4 hidden layers × 64 units, (x,y) → (u,v),
 trained with Adam (lr 1e-3, cosine decay, ~50k steps, resampled collocation
-batches) on the expF03 Burgers problem (ν=0.1), loss = PDE residual MSE + BC
+batches) on the expF06 Burgers problem (ν=0.1), loss = PDE residual MSE + BC
 MSE. Train to plateau; seeded; save checkpoint + loss/rel-L2 curves. Expected
 plateau ~1e-3 rel-L2 (whatever it is, it is recorded, not tuned toward).
 
-**Finisher.** Freeze the PINN. Run the expF03 Newton loop warm-started at
+**Finisher.** Freeze the PINN. Run the expF06 Newton loop warm-started at
 u_0 = PINN output: linearization coefficients are callables evaluating the
 frozen PINN and its first derivatives (torch autograd) at collocation points;
 the ridge basis carries the correction δ; total solution u = PINN + Σ δ_i.
@@ -106,7 +106,7 @@ boundary kept at collocation arrays).
 
 **Metrics:** rel-L2 before / after each polish step; wall-clock: PINN training
 time vs total polish time. **Pass:** ≥4 orders improvement, landing within ~1
-order of the expF03 floor at the same W. **Report line:** "N minutes of Adam +
+order of the expF06 floor at the same W. **Report line:** "N minutes of Adam +
 M seconds of lstsq = machine-precision PINN."
 
 **Outputs:** `finisher_convergence.png` (one curve: Adam plateau then polish
@@ -115,7 +115,7 @@ steps), `data.json`, PINN checkpoint under the results dir.
 ## Shared conventions
 
 - Repo format: self-contained `experiments/expF0N_*/run.py` (+ `problems.py`);
-  expF04 imports expF03's problems via the expF01 sys.path pattern.
+  expF07 imports expF06's problems via the expF01 sys.path pattern.
 - `--smoke` (reduced grids) and `--plot` (regenerate figures from data.json)
   flags on every run.py; incremental writes to data.json.
 - Tests in `tests/`: FD verification of spline derivative rows (orders 0–3,
@@ -123,7 +123,7 @@ steps), `data.json`, PINN checkpoint under the results dir.
   asserts monotone residual decrease), PINN-finisher smoke (2 Adam steps + 1
   polish step end-to-end shape check). Marked `slow` where >10s.
 - All CPU (torch CPU fine at 4×64); commits styled `expF0N: ...`.
-- Build order: expF02 → expF03 → expF04 (F04 depends on F03's problems/solver).
+- Build order: expF05 → expF06 → expF07 (F04 depends on F03's problems/solver).
 
 ## Risks / escalations
 

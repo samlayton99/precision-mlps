@@ -1,12 +1,12 @@
-"""Vanilla torch tanh-MLP PINN for the expF03 Burgers problem, plus a numpy
-fields adapter so the frozen net can serve as base_fields in expF03's Newton
+"""Vanilla torch tanh-MLP PINN for the expF06 Burgers problem, plus a numpy
+fields adapter so the frozen net can serve as base_fields in expF06's Newton
 loop. Everything float64 on CPU."""
 from __future__ import annotations
 
 import numpy as np
 import torch
 
-import burgers as bp  # expF03's burgers problem (sys.path order set by caller)
+import burgers as bp  # expF06's burgers problem (sys.path order set by caller)
 
 torch.set_default_dtype(torch.float64)
 
@@ -98,7 +98,7 @@ def train_pinn(nu, steps=50000, batch=1024, n_bc=256, lr=1e-3, bc_weight=10.0,
 def pinn_fields(net):
     """Frozen-net numpy fields adapter: P [n,2] -> dict of numpy [n] arrays
     (u, ux, uy, lap_u, v, vx, vy, lap_v) — the base_fields contract of
-    expF03 newton.newton_burgers."""
+    expF06 newton.newton_burgers."""
     def fields(P, chunk=2048):
         out = {k: np.empty(len(P)) for k in
                ["u", "ux", "uy", "lap_u", "v", "vx", "vy", "lap_v"]}

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF02_spline_ridge"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF05_spline_ridge"))
 
 import ridge_core as rc
 

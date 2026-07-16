@@ -1,15 +1,15 @@
-"""Experiment expF03 -- steady 2D Burgers via Newton-lstsq (solve, don't train).
+"""Experiment expF06 -- steady 2D Burgers via Newton-lstsq (solve, don't train).
 
 Grid: nu in {0.1, 0.01} x W in {256, 576, 1024, 2304} (smoke: nu=0.1, W=256),
 max 12 Newton iterations, tanh family, lam=0.25.
 
-Outputs (results/checkpoint_F_applications/expF03_newton_burgers/):
+Outputs (results/checkpoint_F_applications/expF06_newton_burgers/):
   newton_convergence.png   res_norm + rel_l2(u) vs iteration, best W per nu
   error_vs_width.png       final rel_l2(u) vs W per nu
   data.json                every (nu, W) cell with its full Newton history
 
 Usage:
-  uv run --extra dev python experiments/expF03_newton_burgers/run.py [--smoke] [--plot]
+  uv run --extra dev python experiments/expF06_newton_burgers/run.py [--smoke] [--plot]
 """
 from __future__ import annotations
 
@@ -24,12 +24,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF02_spline_ridge"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF05_spline_ridge"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import newton as nt
 
-RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF03_newton_burgers"
+RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF06_newton_burgers"
 DATA_PATH = RESULTS_DIR / "data.json"
 LAM = 0.25
 

@@ -1,4 +1,4 @@
-# expF02 -- KAN-style B-spline ridges: floor and adaptive knots
+# expF05 -- KAN-style B-spline ridges: floor and adaptive knots
 
 **Status: draft.**
 
@@ -47,7 +47,7 @@ highest-|residual|-mass Radon bins per direction (proportional allocation),
 per-neuron $\gamma$ from local gaps; rel $L_2$ against the dataset reference
 (421-grid, stride 3).
 
-**Code & data.** `experiments/expF02_spline_ridge/` (`ridge_core.py`,
+**Code & data.** `experiments/expF05_spline_ridge/` (`ridge_core.py`,
 `problems.py`, `darcy_data.py`, `adaptive.py`, `run.py`). Data: `data.json`
 (gitignored, regenerate with `run.py` / `run.py --adaptive`, ~25 min CPU).
 Figures: `error_vs_width.png`, `adaptive_rounds.png`.

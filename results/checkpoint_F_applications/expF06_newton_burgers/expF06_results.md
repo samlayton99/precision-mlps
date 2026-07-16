@@ -1,4 +1,4 @@
-# expF03 -- steady 2D Burgers via Newton-lstsq: solve, don't train
+# expF06 -- steady 2D Burgers via Newton-lstsq: solve, don't train
 
 **Status: draft.**
 
@@ -10,7 +10,7 @@
   in 5--8 steps) to rel $L_2\sim3\times10^{-8}$--$4\times10^{-6}$ across widths.
 - **The nonlinear floor is ~$10^{-6}$--$10^{-8}$, not the fp64 floor.** The same
   smooth tanh basis solves the *linear* Poisson/Darcy control to $3\times10^{-14}$
-  (expF02), so this ~6-order gap is the Newton/Jacobian-conditioning cost of the
+  (expF05), so this ~6-order gap is the Newton/Jacobian-conditioning cost of the
   nonlinearity, not a representation limit. Steps flag as "stalled" (backtracking
   cannot reduce the residual further) at that floor.
 - **$\nu=0.01$ diverges from a zero initial guess** (rel $L_2\approx1$ at every
@@ -39,7 +39,7 @@ residual norm. Direct sweep: $\nu\in\{0.1,0.01\}\times W\in\{256,576,1024,2304\}
 zero init, $\le12$ iterations. Continuation: fixed $W=1024$, ladder
 $\{0.1,0.05,0.02,0.01\}$, each rung `init_sol` = previous converged coefficients.
 
-**Code & data.** `experiments/expF03_newton_burgers/` (`problems.py`, `newton.py`,
+**Code & data.** `experiments/expF06_newton_burgers/` (`problems.py`, `newton.py`,
 `run.py`). Data (gitignored): `data.json` (direct sweep), `continuation.json`.
 Figure: `newton_convergence.png`. Regenerate: `run.py` and `run.py --continuation`.
 
@@ -81,6 +81,6 @@ the previous rung's solution is already inside the convergence basin of the next
    quadratic convergence per outer step.
 2. The achievable precision drops from the linear fp64 floor ($10^{-14}$) to
    ~$10^{-6}$--$10^{-8}$ for nonlinear Burgers — a conditioning cost of the Newton
-   linearization, not the basis. This same floor bounds the expF04 PINN finisher.
+   linearization, not the basis. This same floor bounds the expF07 PINN finisher.
 3. Convection-dominated $\nu=0.01$ is unreachable from a cold start but recovered by
    $\nu$-continuation, confirming the escalation the spec pre-registered.

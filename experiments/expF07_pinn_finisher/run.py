@@ -1,7 +1,7 @@
-"""Experiment expF04 -- lstsq precision finisher for a trained PINN.
+"""Experiment expF07 -- lstsq precision finisher for a trained PINN.
 
-Train a vanilla torch tanh-MLP PINN (4x64, Adam) on the expF03 Burgers
-problem (nu=0.1) to its plateau, freeze it, then run the expF03 Newton-lstsq
+Train a vanilla torch tanh-MLP PINN (4x64, Adam) on the expF06 Burgers
+problem (nu=0.1) to its plateau, freeze it, then run the expF06 Newton-lstsq
 loop warm-started at the PINN (base_fields). Full: 50k Adam steps, polish
 W=1024, 6 Newton steps. Smoke: 400 steps, W=256, 2 steps.
 
@@ -9,13 +9,13 @@ Known mechanism (from the smoke-scale test): the ridge correction must
 represent u* - PINN, so the achievable floor scales with the magnitude and
 roughness of the PINN's error field ("representation ceiling").
 
-Outputs (results/checkpoint_F_applications/expF04_pinn_finisher/):
+Outputs (results/checkpoint_F_applications/expF07_pinn_finisher/):
   finisher_convergence.png  rel L2(u): Adam curve then polish steps
   pinn_ckpt.pt              trained PINN state_dict
   data.json                 training history + polish history + wall clocks
 
 Usage:
-  uv run --extra dev python experiments/expF04_pinn_finisher/run.py [--smoke] [--plot]
+  uv run --extra dev python experiments/expF07_pinn_finisher/run.py [--smoke] [--plot]
 """
 from __future__ import annotations
 
@@ -32,14 +32,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF02_spline_ridge"))
-sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF03_newton_burgers"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF05_spline_ridge"))
+sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF06_newton_burgers"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import pinn
 import newton as nt
 
-RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF04_pinn_finisher"
+RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_F_applications" / "expF07_pinn_finisher"
 DATA_PATH = RESULTS_DIR / "data.json"
 NU = 0.1
 
