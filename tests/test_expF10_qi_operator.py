@@ -80,3 +80,14 @@ def test_models_forward_backward():
     xf = torch.randn(4, 1, 16, 16)
     yf = C(xf)
     assert yf.shape == (4, 1, 16, 16)
+
+
+import run as g10
+
+
+def test_smoke_train_one_config_returns_finite_loss():
+    """Tiny end-to-end: train config C for 2 epochs on 16 instances at 16^2."""
+    cfg = g10.SMOKE_CFG
+    rec = g10.train_eval("C", cfg)
+    assert np.isfinite(rec["test_rel_l2"])
+    assert rec["test_rel_l2"] > 0
