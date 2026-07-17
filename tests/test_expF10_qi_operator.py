@@ -50,3 +50,12 @@ def test_fno_forward_shape_and_backward():
     assert y.shape == (2, 1, 48, 48)
     y.sum().backward()
     assert x.grad is not None
+
+
+import data as dd
+
+
+def test_load_darcy_downsamples():
+    a, u = dd.load_darcy("train", n=8, res=32)
+    assert a.shape == (8, 32, 32) and u.shape == (8, 32, 32)
+    assert np.isfinite(a).all() and np.isfinite(u).all()
