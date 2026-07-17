@@ -23,6 +23,27 @@ precision), extends to 3D, and can report vorticity for the Stage-D benchmark.
 Streamfunction (4th-order, gamma^4 roundoff risk) and vorticity-streamfunction
 (ill-posed wall vorticity BC) were rejected.
 
+## Comparison framing (accuracy-ceiling reference)
+
+The program's purpose is to position this method against the **data-driven
+neural-operator regime** (FNO/DeepONet) on the operators those methods benchmark
+(Darcy, NS). We stay a **training-free, per-instance physics solve** -- we do NOT
+learn a solution map from data. The comparison is therefore explicitly
+multi-axis and must be reported honestly, never as a bare "we beat FNO":
+
+| axis | data-driven neural operator | this physics-solve |
+|---|---|---|
+| accuracy (known PDE) | ~1e-2 | wins (fp64 / nonlinear floor) |
+| training data | required | none |
+| amortized inference (many new inputs) | wins (one forward pass) | pays a solve per instance |
+| works with no known equation | wins | no -- needs the PDE |
+
+So the claim is: a training-free solve **sets the accuracy ceiling** and
+quantifies what the learned approach gives up, while the neural operator's real
+value is amortized speed and the no-equation regime. Every stage records
+per-instance wall-clock (`t_solve`); the Stage-D writeup pairs accuracy with an
+honest cost table (FNO train-once + cheap-inference vs our per-instance solve).
+
 ## Program shape
 
 Four stages, each adding exactly one capability. **Stages A-C live on a box
