@@ -59,3 +59,24 @@ def test_load_darcy_downsamples():
     a, u = dd.load_darcy("train", n=8, res=32)
     assert a.shape == (8, 32, 32) and u.shape == (8, 32, 32)
     assert np.isfinite(a).all() and np.isfinite(u).all()
+
+
+import models as mo
+
+
+def test_models_forward_backward():
+    codec = qc.QICodec(W=128, lam=0.25)   # small W for a fast test
+    Phi_out = codec.basis(codec.grid(16))  # [256, D]
+    # A: coeff MLP
+    A, kindA = mo.build_model("A", D=codec.D, Phi_out=Phi_out)
+    assert kindA == "coeff"
+    ca = torch.randn(4, codec.D)
+    ua = A(ca)
+    assert ua.shape == (4, 16 * 16)
+    ua.sum().backward()
+    # C: plain FNO (field in, field out)
+    C, kindC = mo.build_model("C", fno_kw=dict(width=8, modes=6, n_layers=2))
+    assert kindC == "field"
+    xf = torch.randn(4, 1, 16, 16)
+    yf = C(xf)
+    assert yf.shape == (4, 1, 16, 16)
