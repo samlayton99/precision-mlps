@@ -148,13 +148,87 @@ def save(recs, name):
     (RESULTS_DIR / name).write_text(json.dumps(recs, indent=1))
 
 
+def _load(name):
+    p = RESULTS_DIR / name
+    return json.loads(p.read_text()) if p.exists() else []
+
+
+def plot():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    COL = {"A": "tab:red", "B": "tab:blue", "C": "0.4"}
+    LAB = {"A": "A: QI-coeff MLP", "B": "B: QI->FNO", "C": "C: plain FNO"}
+
+    acc = _load("data.json")
+    if acc:
+        fig, ax = plt.subplots(figsize=(5, 4))
+        cs = [r["config"] for r in acc]
+        ax.bar(cs, [r["test_rel_l2"] for r in acc],
+               color=[COL[c] for c in cs])
+        for r in acc:
+            ax.text(r["config"], r["test_rel_l2"], f"{r['test_rel_l2']:.3f}",
+                    ha="center", va="bottom", fontsize=9)
+        ax.set_ylabel("test rel L2 @ 64^2")
+        ax.set_title("expF10: Darcy accuracy (1000 train)")
+        fig.tight_layout()
+        fig.savefig(RESULTS_DIR / "accuracy_bar.png", dpi=150)
+        plt.close(fig)
+
+    inv = _load("invariance.json")
+    if inv:
+        fig, ax = plt.subplots(figsize=(6, 4.5))
+        for c in ("A", "B", "C"):
+            pts = sorted((r for r in inv if r["config"] == c),
+                         key=lambda r: r["test_res"])
+            if pts:
+                ax.plot([r["test_res"] for r in pts],
+                        [r["test_rel_l2"] for r in pts], "o-",
+                        color=COL[c], label=LAB[c])
+        ax.axvline(64, color="k", ls=":", alpha=0.5, label="train res")
+        ax.set_xscale("log", base=2)
+        ax.set_yscale("log")
+        ax.set_xlabel("test resolution")
+        ax.set_ylabel("test rel L2")
+        ax.set_title("expF10: discretization invariance (train @ 64^2)")
+        ax.legend(fontsize=8)
+        fig.tight_layout()
+        fig.savefig(RESULTS_DIR / "invariance_vs_res.png", dpi=150)
+        plt.close(fig)
+
+    de = _load("data_eff.json")
+    if de:
+        fig, ax = plt.subplots(figsize=(6, 4.5))
+        for c in ("A", "B", "C"):
+            pts = sorted((r for r in de if r["config"] == c),
+                         key=lambda r: r["n_train"])
+            if pts:
+                ax.plot([r["n_train"] for r in pts],
+                        [r["test_rel_l2"] for r in pts], "o-",
+                        color=COL[c], label=LAB[c])
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel("n_train")
+        ax.set_ylabel("test rel L2 @ 64^2")
+        ax.set_title("expF10: data efficiency")
+        ax.legend(fontsize=8)
+        fig.tight_layout()
+        fig.savefig(RESULTS_DIR / "data_eff.png", dpi=150)
+        plt.close(fig)
+    print("figures written to", RESULTS_DIR)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="all", choices=["A", "B", "C", "all"])
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--eval-invariance", action="store_true")
     ap.add_argument("--eval-data-eff", action="store_true")
+    ap.add_argument("--plot", action="store_true")
     args = ap.parse_args()
+    if args.plot:
+        plot()
+        return
     cfg = SMOKE_CFG if args.smoke else Cfg()
     configs = ["A", "B", "C"] if args.config == "all" else [args.config]
 

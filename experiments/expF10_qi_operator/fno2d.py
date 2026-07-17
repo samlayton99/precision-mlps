@@ -21,12 +21,18 @@ class SpectralConv2d(nn.Module):
 
     def forward(self, x):
         b, c, h, wd = x.shape
-        m = self.modes
         xft = torch.fft.rfft2(x)
-        out = torch.zeros(b, self.w1.shape[1], h, wd // 2 + 1,
+        wf = wd // 2 + 1
+        # clamp modes to the available spectrum (test res may be < train res),
+        # slicing the weights to match -- standard FNO discretization handling.
+        mh = min(self.modes, h // 2)
+        mw = min(self.modes, wf)
+        out = torch.zeros(b, self.w1.shape[1], h, wf,
                           dtype=torch.cfloat, device=x.device)
-        out[:, :, :m, :m] = self._cmul(xft[:, :, :m, :m], self.w1)
-        out[:, :, -m:, :m] = self._cmul(xft[:, :, -m:, :m], self.w2)
+        out[:, :, :mh, :mw] = self._cmul(xft[:, :, :mh, :mw],
+                                         self.w1[:, :, :mh, :mw])
+        out[:, :, -mh:, :mw] = self._cmul(xft[:, :, -mh:, :mw],
+                                          self.w2[:, :, :mh, :mw])
         return torch.fft.irfft2(out, s=(h, wd))
 
 

@@ -52,6 +52,15 @@ def test_fno_forward_shape_and_backward():
     assert x.grad is not None
 
 
+def test_fno_runs_below_mode_resolution():
+    """A net with modes=12 must still run at res 16 (spectrum has only 9
+    frequencies) -- modes clamp to the available spectrum (invariance eval)."""
+    net = fno2d.FNO2d(width=8, modes=12, n_layers=2)
+    for res in (16, 32, 128):
+        y = net(torch.randn(2, 1, res, res))
+        assert y.shape == (2, 1, res, res)
+
+
 import data as dd
 
 
