@@ -35,3 +35,20 @@ def test_solve_system_matches_scalar_on_poisson():
     # both are min-norm fits of the same problem; agree to solver precision
     assert scalar_core.rel_l2(b, target(P)) < 1e-9
     assert scalar_core.rel_l2(a, target(P)) < 1e-9
+
+
+import stokes
+
+
+def test_target_is_divergence_free():
+    """u*_x + v*_y == 0 analytically at random points."""
+    rng = np.random.default_rng(3)
+    P = rng.uniform(-1, 1, (500, 2))
+    div = stokes.u_star_x(P) + stokes.v_star_y(P)
+    assert np.max(np.abs(div)) < 1e-12
+
+
+def test_verify_stokes_forcing():
+    """All hand-coded derivatives and the momentum forcing match finite
+    differences (raises on mismatch)."""
+    stokes.verify_stokes()
