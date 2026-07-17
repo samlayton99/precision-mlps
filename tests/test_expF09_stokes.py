@@ -52,3 +52,14 @@ def test_verify_stokes_forcing():
     """All hand-coded derivatives and the momentum forcing match finite
     differences (raises on mismatch)."""
     stokes.verify_stokes()
+
+
+import run_stokes as rs
+
+
+def test_stokes_reaches_floor():
+    """At W=1600 the manufactured Stokes solve hits the velocity floor and the
+    divergence residual is tiny (verified prototype: vel ~8e-13, div ~2e-9)."""
+    rec = rs.evaluate_cell(W=1600, lam=0.25)
+    assert rec["vel_rel_l2"] < 1e-10
+    assert rec["max_div"] < 1e-7
