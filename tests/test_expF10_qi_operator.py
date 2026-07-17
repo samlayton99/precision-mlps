@@ -37,3 +37,16 @@ def test_rough_darcy_reconstruction_is_bounded():
     c = codec.encode(a, 16)
     err = codec.rel_l2(codec.decode(c, codec.grid(16)), a)
     assert 1e-3 < err < 1e-1     # rough: represented, not exact (probe: ~4.5e-2)
+
+
+import torch
+import fno2d
+
+
+def test_fno_forward_shape_and_backward():
+    net = fno2d.FNO2d(width=16, modes=8, n_layers=3)
+    x = torch.randn(2, 1, 48, 48, requires_grad=True)
+    y = net(x)
+    assert y.shape == (2, 1, 48, 48)
+    y.sum().backward()
+    assert x.grad is not None
