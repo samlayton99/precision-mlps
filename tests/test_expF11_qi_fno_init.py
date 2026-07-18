@@ -35,3 +35,33 @@ def test_qi_spectral_init_changes_weights_and_runs():
     for res in (64, 32):                                   # still runs, incl low-res
         y = net(torch.randn(2, 1, res, res))
         assert y.shape == (2, 1, res, res)
+
+
+import importlib.util
+
+
+def _load_g11(name, relpath):
+    """Load an expF11 module by explicit path under a unique name, so the
+    generic `run` name does not collide with expF10's run.py on sys.path."""
+    path = REPO_ROOT / "experiments" / "expF11_qi_fno_init" / relpath
+    spec = importlib.util.spec_from_file_location(name, path)
+    m = importlib.util.module_from_spec(spec)
+    sys.modules[name] = m          # dataclass introspection needs this registered
+    spec.loader.exec_module(m)
+    return m
+
+
+g11 = _load_g11("g11_run", "run.py")
+
+
+def test_train_eval_all_methods_finite():
+    cfg = g11.SMOKE_CFG
+    for method in ("D0", "1", "2", "3"):
+        rec = g11.train_eval(method, cfg)
+        assert np.isfinite(rec["test_rel_l2"]) and rec["test_rel_l2"] > 0
+
+
+def test_pretrain_init_lowers_starting_loss():
+    """Method 1's pretrained net starts below a random net on the labeled set."""
+    cfg = g11.SMOKE_CFG
+    assert g11.pretrain_start_loss(cfg) < g11.random_start_loss(cfg)

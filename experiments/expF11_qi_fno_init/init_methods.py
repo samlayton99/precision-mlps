@@ -45,6 +45,6 @@ def qi_spectral_init(net, codec, res=64):
                 for j in range(m):
                     r = int(round((i ** 2 + j ** 2) ** 0.5))
                     env[i, j] = g[min(r, len(g) - 1)]
-            e = torch.tensor(env)[None, None, :, :, None]
+            e = torch.tensor(env, device=sp.w1.device)[None, None, :, :, None]
             sp.w1.mul_(e)
             sp.w2.mul_(e)
