@@ -226,7 +226,7 @@ def mlp_residuals(net, X, nu):
     return torch.stack(moms, dim=1), cont
 
 
-def train_mlp_pinn(width=128, depth=4, seed=0, adam_steps=6000, adam_batch=1024,
+def train_mlp_pinn(width=64, depth=4, seed=0, adam_steps=6000, adam_batch=1024,
                    lr=1e-3, lbfgs_iters=200, lbfgs_batch=2048, n_ic=1024,
                    n_bc=1536, eval_every=100, weights=None, log_path=None):
     torch.manual_seed(seed)
