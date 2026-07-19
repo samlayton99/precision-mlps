@@ -7,6 +7,9 @@ Stages (run.py --stage <s>, default all):
   pinn      The moonshot: PINN training (Adam -> LBFGS) of A on the NS
             residual + IC + BC + gauge, geometry frozen, warm-started from a
             Kronecker fit to the t-constant extension of the IC.
+  newton    THE HEADLINE: training-free solve -- frozen QI geometry +
+            Gauss-Newton collocation lstsq for the readout in the reduced
+            product-SVD basis (first step = Stokes). See newton_solve.py.
   baseline  Standard tanh-MLP PINN (autograd), same losses/eval, matched
             wall-clock -- the "other method" for the benchmark plot.
   plots     Benchmark figure, error-vs-time figure, ceiling figure, slice
@@ -114,6 +117,29 @@ def _final_metrics(net, hist, tag):
     path.write_text(json.dumps(out, indent=1))
 
 
+def stage_newton(args):
+    import newton_solve as ns
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    log = RESULTS / "newton_history.jsonl"
+    log.unlink(missing_ok=True)
+    kw = dict(n_centers=args.N_newton, lam=args.lam_newton, K_vel=args.K_vel,
+              K_p=args.K_p, newton_iters=args.newton_iters, seed=args.seed,
+              log_path=str(log))
+    if args.smoke:
+        kw.update(n_centers=8, K_vel=300, K_p=150, n_int=1200, n_ic=400,
+                  n_bc=400, newton_iters=2)
+    basis_v, basis_p, theta, hist = ns.solve_navier_stokes(**kw)
+    np.save(RESULTS / "newton_theta.npy", theta)
+    (RESULTS / "newton_config.json").write_text(json.dumps(
+        dict(N=kw["n_centers"], lam=kw["lam"], K_vel=kw["K_vel"],
+             K_p=kw["K_p"])))
+    out = dict(tag="newton", rel_l2_v=hist[-1]["rel_l2_v"],
+               rel_l2_p=hist[-1]["rel_l2_p"], mom_rms=hist[-1]["mom_rms"],
+               div_max=hist[-1]["div_max"], wall=hist[-1]["wall"])
+    print("FINAL", out, flush=True)
+    (RESULTS / "newton_final.json").write_text(json.dumps(out, indent=1))
+
+
 def stage_baseline(args):
     RESULTS.mkdir(parents=True, exist_ok=True)
     log = RESULTS / "baseline_history.jsonl"
@@ -159,9 +185,17 @@ def stage_plots(args):
     bh = _load_hist(RESULTS / "baseline_history.jsonl")
     net, cfg = _load_pinn_net()
 
+    nh = None
+    if (RESULTS / "newton_history.jsonl").exists():
+        nh = _load_hist(RESULTS / "newton_history.jsonl")
+
     # -- fig 1: benchmark -- error vs wall-clock -------------------------------
-    fig, ax = plt.subplots(figsize=(7.2, 5.0))
-    for hist, label, color in [(ph, "tensor sech$^2$ PINN (this work)", "C0"),
+    fig, ax = plt.subplots(figsize=(7.2, 5.2))
+    if nh:
+        ax.plot([r["wall"] for r in nh], [r["rel_l2_v"] for r in nh],
+                color="C2", marker="s", ms=5, lw=2,
+                label="QI geometry + Gauss-Newton lstsq (no training)")
+    for hist, label, color in [(ph, "tensor sech$^2$ PINN, Adam$\\to$LBFGS", "C0"),
                                (bh, "tanh-MLP PINN baseline", "C1")]:
         wall = [r["wall"] for r in hist if r["step"] >= 0]
         err = [r["rel_l2_v"] for r in hist if r["step"] >= 0]
@@ -208,6 +242,23 @@ def stage_plots(args):
     fig.savefig(RESULTS / "ceiling_convergence.png", dpi=160)
     plt.close(fig)
 
+    # -- newton predictor (if run) --------------------------------------------
+    newton_predict = None
+    if nh and (RESULTS / "newton_theta.npy").exists():
+        import newton_solve as nsv
+        ncfg = json.loads((RESULTS / "newton_config.json").read_text())
+        theta = np.load(RESULTS / "newton_theta.npy")
+        bv = nsv.ReducedTensorBasis(ncfg["N"], ncfg["lam"], K=ncfg["K_vel"])
+        bp = nsv.ReducedTensorBasis(ncfg["N"], ncfg["lam"], K=ncfg["K_p"])
+
+        def newton_predict(P):
+            Cv = bv.op_columns(P, [((0, 0, 0, 0), 1.0)])
+            Cp = bp.op_columns(P, [((0, 0, 0, 0), 1.0)])
+            Kv = bv.K
+            cols = [Cv @ theta[i * Kv:(i + 1) * Kv] for i in range(3)]
+            cols.append(Cp @ theta[3 * Kv:])
+            return np.stack(cols, axis=1)
+
     # -- fig 3: error vs time --------------------------------------------------
     g = np.linspace(-1, 1, 25)
     ts = np.linspace(0, 1, 21)
@@ -216,6 +267,8 @@ def stage_plots(args):
     mnet.load_state_dict(torch.load(RESULTS / "baseline_state.pt",
                                     weights_only=True))
     curves = {"tensor sech$^2$ PINN": [], "tanh-MLP PINN": []}
+    if newton_predict:
+        curves["QI + Gauss-Newton"] = []
     for t in ts:
         P = np.concatenate([S, np.full((len(S), 1), t)], axis=1)
         exact = bel.fields(P)
@@ -223,8 +276,10 @@ def stage_plots(args):
         pred_t = net.evaluate_chunked(X, [(0, 0, 0, 0)])[(0, 0, 0, 0)].numpy()
         with torch.no_grad():
             pred_m = mnet(X).numpy()
-        for k, pred in [("tensor sech$^2$ PINN", pred_t),
-                        ("tanh-MLP PINN", pred_m)]:
+        pairs = [("tensor sech$^2$ PINN", pred_t), ("tanh-MLP PINN", pred_m)]
+        if newton_predict:
+            pairs.append(("QI + Gauss-Newton", newton_predict(P)))
+        for k, pred in pairs:
             curves[k].append(np.linalg.norm(pred[:, :3] - exact[:, :3])
                              / np.linalg.norm(exact[:, :3]))
     fig, ax = plt.subplots(figsize=(6.8, 4.4))
@@ -246,13 +301,23 @@ def stage_plots(args):
     frames = np.linspace(0, 1, 41)
     combos = [(0, 0, 0, 0), (1, 0, 0, 0), (0, 1, 0, 0)]
 
+    # the animation shows the headline model: Newton solve if run, else the PINN
     def slice_fields(t):
         P = np.concatenate([S2, np.full((len(S2), 1), t)], axis=1)
-        X = torch.tensor(P)
-        d = net.evaluate_chunked(X, combos)
-        val = d[(0, 0, 0, 0)].numpy()
+        if newton_predict:
+            Kv = bv.K
+            val = newton_predict(P)
+            gx = bv.op_columns(P, [((1, 0, 0, 0), 1.0)])
+            gy = bv.op_columns(P, [((0, 1, 0, 0), 1.0)])
+            wz = (gx @ theta[Kv:2 * Kv]
+                  - gy @ theta[:Kv]).reshape(m, m)
+        else:
+            X = torch.tensor(P)
+            d = net.evaluate_chunked(X, combos)
+            val = d[(0, 0, 0, 0)].numpy()
+            wz = (d[(1, 0, 0, 0)][:, 1]
+                  - d[(0, 1, 0, 0)][:, 0]).numpy().reshape(m, m)
         spd = np.linalg.norm(val[:, :3], axis=1).reshape(m, m)
-        wz = (d[(1, 0, 0, 0)][:, 1] - d[(0, 1, 0, 0)][:, 0]).numpy().reshape(m, m)
         ex = bel.fields(P)
         spd_e = np.linalg.norm(ex[:, :3], axis=1).reshape(m, m)
         err = np.abs(np.linalg.norm(val[:, :3] - ex[:, :3], axis=1)).reshape(m, m)
@@ -261,8 +326,10 @@ def stage_plots(args):
     s0 = slice_fields(0.0)
     vmax = s0[0].max()
     fig, axes = plt.subplots(1, 4, figsize=(16, 4.2))
-    titles = [r"exact $|\mathbf{u}|$", r"PINN $|\mathbf{u}|$",
-              r"PINN $\omega_z$", r"$\log_{10}|\mathbf{u}-\mathbf{u}^*|$"]
+    who = "Newton solve" if newton_predict else "PINN"
+    titles = [r"exact $|\mathbf{u}|$", f"{who} " + r"$|\mathbf{u}|$",
+              f"{who} " + r"$\omega_z$",
+              r"$\log_{10}|\mathbf{u}-\mathbf{u}^*|$"]
     ims = []
     for ax_, title, data, kwargs in zip(
             axes, titles,
@@ -294,7 +361,13 @@ def stage_plots(args):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", default="all",
-                    choices=["ceiling", "pinn", "baseline", "plots", "all"])
+                    choices=["ceiling", "newton", "pinn", "baseline", "plots",
+                             "all"])
+    ap.add_argument("--N-newton", type=int, default=12)
+    ap.add_argument("--lam-newton", type=float, default=0.15)
+    ap.add_argument("--K-vel", type=int, default=2000)
+    ap.add_argument("--K-p", type=int, default=1000)
+    ap.add_argument("--newton-iters", type=int, default=6)
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--N", type=int, default=16)
     ap.add_argument("--lam", type=float, default=0.2)
@@ -305,10 +378,10 @@ def main():
     ap.add_argument("--mlp-lbfgs-iters", type=int, default=300)
     args = ap.parse_args()
     stages = ([args.stage] if args.stage != "all"
-              else ["ceiling", "pinn", "baseline", "plots"])
+              else ["ceiling", "newton", "pinn", "baseline", "plots"])
     for s in stages:
         print(f"=== stage: {s} ===", flush=True)
-        dict(ceiling=stage_ceiling, pinn=stage_pinn,
+        dict(ceiling=stage_ceiling, newton=stage_newton, pinn=stage_pinn,
              baseline=stage_baseline, plots=stage_plots)[s](args)
 
 

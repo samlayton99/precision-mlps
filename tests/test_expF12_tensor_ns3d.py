@@ -136,3 +136,35 @@ def test_supervised_kron_fit_precision():
     exact = bel.fields(P)
     rel = np.linalg.norm(pred[:, :3] - exact[:, :3]) / np.linalg.norm(exact[:, :3])
     assert rel < 2e-6, rel
+
+
+def test_reduced_basis_derivative_consistency():
+    """op_columns derivative columns match central finite differences of the
+    value columns (validates the Newton-solve assembly path)."""
+    import newton_solve as nsv
+    rb = nsv.ReducedTensorBasis(n_centers=6, lam=0.3, K=100)
+    rng = np.random.default_rng(0)
+    P = rng.uniform(-0.8, 0.8, (50, 4))
+    P[:, 3] = rng.uniform(0.1, 0.9, 50)
+    h = 1e-6
+    for a, op in enumerate([(1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0),
+                            (0, 0, 0, 1)]):
+        Pp, Pm = P.copy(), P.copy()
+        Pp[:, a] += h
+        Pm[:, a] -= h
+        fd = (rb.op_columns(Pp, [((0, 0, 0, 0), 1.0)])
+              - rb.op_columns(Pm, [((0, 0, 0, 0), 1.0)])) / (2 * h)
+        ana = rb.op_columns(P, [(op, 1.0)])
+        assert np.abs(fd - ana).max() < 1e-5 * (np.abs(ana).max() + 1.0)
+
+
+def test_newton_solve_tiny_converges():
+    """Tiny Gauss-Newton NS solve: the first step (Stokes) already lands well
+    below the zero init, and iterating does not diverge."""
+    import newton_solve as nsv
+    _, _, theta, hist = nsv.solve_navier_stokes(
+        n_centers=8, lam=0.2, K_vel=300, K_p=150, n_int=1200, n_ic=400,
+        n_bc=400, newton_iters=2, verbose=False)
+    assert hist[0]["rel_l2_v"] == 1.0  # zero init
+    assert hist[1]["rel_l2_v"] < 0.05
+    assert hist[-1]["rel_l2_v"] <= hist[1]["rel_l2_v"] * 1.5
