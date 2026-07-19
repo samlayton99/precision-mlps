@@ -364,7 +364,7 @@ def main():
                     choices=["ceiling", "newton", "pinn", "baseline", "plots",
                              "all"])
     ap.add_argument("--N-newton", type=int, default=12)
-    ap.add_argument("--lam-newton", type=float, default=0.15)
+    ap.add_argument("--lam-newton", type=float, default=0.1)
     ap.add_argument("--K-vel", type=int, default=2000)
     ap.add_argument("--K-p", type=int, default=1000)
     ap.add_argument("--newton-iters", type=int, default=6)
