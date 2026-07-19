@@ -197,7 +197,7 @@ def train_tensor_pinn(n_centers=16, lam=0.2, seed=0, adam_steps=1500,
 # -- baseline tanh-MLP PINN ----------------------------------------------------
 
 class MLP(torch.nn.Module):
-    def __init__(self, width=128, depth=4):
+    def __init__(self, width=64, depth=4):
         super().__init__()
         layers = [torch.nn.Linear(4, width), torch.nn.Tanh()]
         for _ in range(depth - 1):

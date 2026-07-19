@@ -33,7 +33,7 @@ $$u_t+(\mathbf u^0\!\cdot\!\nabla)u+u\,\partial_x u^0+v\,\partial_y u^0+w\,\part
 
 **Method 3 -- gradient PINN on the same architecture.** Adam (1500 steps, lr 2e-4, resampled batches 2048) $\to$ LBFGS (300 iters, fixed 12288/3072/4608 sets) on the same loss blocks; $A$ warm-started by a Kronecker fit to the $t$-constant extension of the IC (uses only given data); geometry frozen. $N=16$, $\lambda=0.2$.
 
-**Method 4 -- literature baseline.** Standard tanh-MLP PINN (4$\to$128$\times$4$\to$4, autograd derivatives), same losses, Adam 5000 $\to$ LBFGS 300, matched-order wall-clock.
+**Method 4 -- literature baseline.** Standard tanh-MLP PINN (4$\to$64$\times$4$\to$4 as in expF07, autograd derivatives), same losses, Adam 3000 $\to$ LBFGS 200, matched-order wall-clock.
 
 **Code & data.** `experiments/expF12_tensor_ns3d/`: `tensor_basis.py` (architecture, contraction, Kronecker-SVD fit), `beltrami.py`, `newton_solve.py` (reduced basis + Gauss-Newton), `pinn.py` (both trainers), `run.py` (stages: ceiling / newton / pinn / baseline / plots). Tests: `tests/test_expF12_tensor_ns3d.py` (7 tests: contraction==naive, analytic==autograd, Kronecker==dense lstsq, Beltrami satisfies NS, supervised precision, FD assembly check, tiny Newton solve). Results dir: `results/checkpoint_F_applications/expF12_tensor_ns3d/` (`ceiling.json`, `*_history.jsonl`, `*_final.json`, figures below).
 
@@ -44,7 +44,7 @@ $$u_t+(\mathbf u^0\!\cdot\!\nabla)u+u\,\partial_x u^0+v\,\partial_y u^0+w\,\part
 | **QI geometry + Gauss-Newton lstsq** ($K_{vel}$=3000, $K_p$=2000) | **1.49e-6** | 3.6e-3 | 8.8e-5 | 7.5e-6 | 2 iters, ~15 min/iter |
 | same, smaller budget ($K_{vel}$=2000, $K_p$=1000) | 1.63e-5 | 1.3e-2 | 1.4e-3 | 1.3e-4 | 2 iters, ~2-5 min/iter |
 | tensor sech$^2$ PINN, Adam$\to$LBFGS (same architecture) | 2.7e-2 | 5.2e-1 | 9.2e-2 | 2.8e-1 | ~10 min |
-| tanh-MLP PINN baseline | TBD_BASELINE_V | TBD_BASELINE_P | TBD_BASELINE_MOM | TBD_BASELINE_DIV | TBD_BASELINE_WALL |
+| tanh-MLP PINN baseline | 2.1e-2 | 4.2e-1 | 8.0e-2 | 2.1e-1 | ~52 min |
 | *supervised ceiling, same truncated basis ($K$=3000)* | *2.2e-7* | *9.1e-6* | -- | -- | *seconds* |
 | *supervised ceiling, full basis ($N$=32)* | *5.6e-9* | *2.0e-8* | -- | -- | *9 s* |
 
