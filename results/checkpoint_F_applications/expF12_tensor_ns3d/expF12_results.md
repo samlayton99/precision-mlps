@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-- TBD_NEWTON_TLDR
+- **The moonshot works, and it works as a solve, not as training.** Frozen QI geometry + Gauss-Newton collocation lstsq for the readout solves 3D unsteady Navier-Stokes (Beltrami, $\nu=1$) to velocity rel $L_2$ **1.5e-6** in **2 Newton steps** (step 1 = the Stokes solve already at 1.2e-6), with $\max|\nabla\!\cdot\!\mathbf u|\sim$ 7.5e-6 at fresh points -- within $7\times$ of the best its truncated basis can represent at all (2.2e-7).
 - The supervised expressivity ceiling of the basis is velocity rel $L_2$ **5.6e-9** (N=32 per axis, $\lambda=0.125$), reached by a mode-wise Kronecker-SVD fit in seconds; it saturates at $\sim\sqrt{\varepsilon}$ because the fp64 conditioning budget divides multiplicatively across the four axes.
 - Gradient training on the same architecture (Adam$\to$LBFGS on the readout) stalls orders above the solve -- the Checkpoint-D "optimizers can't solve the ill-conditioned readout" story reproduces in 4D on a PDE.
 - One structural discovery: "Kronecker of pinvs" is NOT the right least-squares solve -- per-factor rcond truncation admits directions whose *product* singular value is $\sim\sigma_{\min}^4$ and amplifies roundoff. The SVD of a Kronecker product factorizes, so global product-singular-value truncation can be done mode-wise; this is what makes the fp64 fit work at all.
@@ -28,7 +28,7 @@ Does the frozen-geometry + solved-readout recipe survive the jump to $d=4$ (3D s
 **Method 2 -- the headline: Gauss-Newton collocation solve of the readout (no training).** The Checkpoint-F recipe (expF02/expF06 Newton-lstsq, expF09 multi-field blocks) carried to this architecture. Newton-linearize the advection at the current iterate $\mathbf u^0$: solve the linear system in the next iterate,
 $$u_t+(\mathbf u^0\!\cdot\!\nabla)u+u\,\partial_x u^0+v\,\partial_y u^0+w\,\partial_z u^0+p_x-\nu\Delta u=(\mathbf u^0\!\cdot\!\nabla)u^0$$
 (and cyclic), plus continuity, IC, BC, and gauge row blocks, each block rescaled to $O(1)$ max entry, stacked into ONE min-norm lstsq per Newton step. $\theta=0$ start makes step 1 exactly the Stokes solve; steps are damped on the nonlinear interior residual.
-- **The reduced product-SVD basis is what makes this possible.** The linearized operator has variable coefficients ($\mathbf u^0\!\cdot\!\nabla$), which breaks Kronecker separability -- no mode-wise solve, and a dense lstsq over all $4\tilde N^4$ coefficients is out of reach. But the ceiling study shows fp64 only ever uses the directions whose product singular value survives truncation ($\sim$5-15%). So the solve runs in the top-$K$ product directions per field ($\psi_a=\Phi_a V_a S_a^{-1}$ per axis, tuples ranked by $s_is_js_ks_l$): $K_{vel}=2000$ per velocity field, $K_p=1000$, i.e. 7000 unknowns, $\sim$30k rows, one dense gelsy lstsq (rcond $10^{-13}$) per Newton step. Config: $N=12$, $\lambda=0.1$ (top-$K$ supervised ceiling at this config: 1.7e-6), 5000 interior / 1500 IC / 2000 BC points, 6 Newton iterations, seed 0.
+- **The reduced product-SVD basis is what makes this possible.** The linearized operator has variable coefficients ($\mathbf u^0\!\cdot\!\nabla$), which breaks Kronecker separability -- no mode-wise solve, and a dense lstsq over all $4\tilde N^4$ coefficients is out of reach. But the ceiling study shows fp64 only ever uses the directions whose product singular value survives truncation ($\sim$5-15%). So the solve runs in the top-$K$ product directions per field ($\psi_a=\Phi_a V_a S_a^{-1}$ per axis, tuples ranked by $s_is_js_ks_l$): $K_{vel}=3000$ per velocity field, $K_p=2000$, i.e. 11000 unknowns, $\sim$37k rows, one dense gelsy lstsq (rcond $10^{-13}$) per Newton step. Config: $N=12$, $\lambda=0.1$ (top-$K$ supervised ceiling at this config: 2.2e-7), 6000 interior / 2000 IC / 2500 BC points, 3 Newton iterations, seed 0; a smaller-budget run ($K_{vel}$=2000, $K_p$=1000, results table) probes how the error tracks $K$.
 - Assembly derivatives verified against finite differences.
 
 **Method 3 -- gradient PINN on the same architecture.** Adam (1500 steps, lr 2e-4, resampled batches 2048) $\to$ LBFGS (300 iters, fixed 12288/3072/4608 sets) on the same loss blocks; $A$ warm-started by a Kronecker fit to the $t$-constant extension of the IC (uses only given data); geometry frozen. $N=16$, $\lambda=0.2$.
@@ -39,11 +39,21 @@ $$u_t+(\mathbf u^0\!\cdot\!\nabla)u+u\,\partial_x u^0+v\,\partial_y u^0+w\,\part
 
 ## Results
 
-TBD_RESULTS_TABLE
+| method | velocity rel $L_2$ | pressure rel $L_2$ | mom. res. RMS | max $\vert\nabla\cdot\mathbf u\vert$ | wall |
+|---|---|---|---|---|---|
+| **QI geometry + Gauss-Newton lstsq** ($K_{vel}$=3000, $K_p$=2000) | **1.49e-6** | 3.6e-3 | 8.8e-5 | 7.5e-6 | 2 iters, ~15 min/iter |
+| same, smaller budget ($K_{vel}$=2000, $K_p$=1000) | 1.63e-5 | 1.3e-2 | 1.4e-3 | 1.3e-4 | 2 iters, ~2-5 min/iter |
+| tensor sech$^2$ PINN, Adam$\to$LBFGS (same architecture) | 2.7e-2 | 5.2e-1 | 9.2e-2 | 2.8e-1 | ~10 min |
+| tanh-MLP PINN baseline | TBD_BASELINE_V | TBD_BASELINE_P | TBD_BASELINE_MOM | TBD_BASELINE_DIV | TBD_BASELINE_WALL |
+| *supervised ceiling, same truncated basis ($K$=3000)* | *2.2e-7* | *9.1e-6* | -- | -- | *seconds* |
+| *supervised ceiling, full basis ($N$=32)* | *5.6e-9* | *2.0e-8* | -- | -- | *9 s* |
 
 **Supervised ceiling (best over $\lambda$, rcond $10^{-15}$):** rel $L_2$ velocity 2.5e-6 ($N{=}8$) $\to$ 1.0e-7 (12) $\to$ 3.1e-8 (16) $\to$ 1.4e-8 (20) $\to$ 8.6e-9 (24) $\to$ 5.6e-9 (32); $\lambda^*=0.125$ throughout, solve time $\le$10 s. The saturation at $\sim\sqrt{\varepsilon}$ is the 4-way conditioning product: each axis effectively gets only $(\mathrm{rcond})^{1/4}$ of relative singular-value depth, so the retained per-axis basis is shallow; below rcond $10^{-15}$ the coefficients blow up and the fit disintegrates (rcond $\to0$: rel $L_2\sim10^{18}$).
 
-TBD_RESULTS_BULLETS
+- **Newton converges in 2 steps and then sits at a fixed point** (metrics identical to 11 digits from iter 2 on). Step 1 (Stokes: advection off) already nails velocity (1.2e-6) but its pressure is $O(1)$ wrong -- exactly as physics demands: Beltrami flows have $(\mathbf u\!\cdot\!\nabla)\mathbf u=\nabla(|\mathbf u|^2/2)$, so the missing advection is *entirely* a pressure correction. Step 2 restores it (pressure 0.90 $\to$ 3.6e-3, momentum residual RMS 0.58 $\to$ 8.8e-5).
+- **The optimizer-vs-solve gap is 4+ orders on identical architecture and geometry.** Adam$\to$LBFGS on the same frozen-basis readout stalls at 2.7e-2; the linear-algebra solve of the same objective reaches 1.5e-6. This is Checkpoint D's central finding (first-order methods cannot solve the ill-conditioned readout; lstsq can) reproduced in 4D on a nonlinear PDE.
+- **What limits each number.** Velocity is at its truncated-basis ceiling (1.5e-6 vs 2.2e-7 supervised, and the $K{=}2000$ run tracks its own ceiling the same way: 1.6e-5 vs 1.7e-6) -- the budget $K$, not the Newton iteration, is the knob. Pressure lands further from its value-space ceiling (3.6e-3 vs 9.1e-6) but its *gradient* error is what the momentum rows constrain (RMS 8.8e-5); the smooth low-gradient pressure modes are only weakly pinned by the one-line gauge tap. Growing $K_p$ 1000$\to$2000 bought $3.7\times$ in pressure and $16\times$ in momentum residual.
+- **Error does not grow in time** (`error_vs_time.png`): time is a coordinate and the IC is a row block, so there is no accumulation over $t$ -- consistent with expF01's space-time findings.
 
 **Figures**
 
@@ -60,7 +70,7 @@ TBD_RESULTS_BULLETS
 
 ## Conclusions
 
-TBD_CONCLUSIONS (pending Sam's review of the numbers.)
+*(proposed, pending Sam's review)* The frozen-QI-geometry + solved-readout recipe survives the jump to $d=4$ and a nonlinear constrained system: 3D unsteady Navier-Stokes falls to 1.5e-6 velocity rel $L_2$ in two Gauss-Newton lstsq steps with zero training, while gradient optimization of the identical architecture stalls 4 orders higher. The remaining gap to fp64 is not the PDE or the optimizer but the tensor-product conditioning budget (the $\sqrt{\varepsilon}$ product-truncation floor and the top-$K$ solve budget).
 
 ## Open questions
 
