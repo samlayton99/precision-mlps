@@ -40,7 +40,7 @@ import beltrami as bel
 import pinn
 import tensor_basis as tb
 
-RCOND = 1e-13
+RCOND = 1e-15                    # expF03 part 1: 1e-15 >> 1e-13 on nonlinear
 
 
 class ReducedTensorBasis:
@@ -133,13 +133,41 @@ def ns_residual_interior(basis_v, basis_p, X, theta, nu):
 def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
                         n_int=5000, n_ic=1500, n_bc=2000, newton_iters=6,
                         seed=0, rcond=RCOND, log_path=None, verbose=True,
-                        theta0=None):
+                        theta0=None, init="cascade", w_mult=1.0):
     """Gauss-Newton NS solve. Returns (basis_v, basis_p, theta, history).
-    theta0: optional warm-start coefficients (default zeros, whose first Newton
-    step is exactly the Stokes solve)."""
+
+    expF03 techniques carried over:
+    - init="cascade" (expF03 part 1's dominant nonlinear knob): solve at K/4
+      first, then polish at full K. In this basis the cascade fit is exact
+      embedding -- the top-K/4 product-SVD tuples are a prefix of the top-K
+      list, so the coarse solution zero-pads into the full basis.
+    - rcond: default 1e-15 via RCOND (expF03: gains 4-5 orders on nonlinear
+      problems over 1e-13).
+    - Condition blocks (IC/BC/gauge) weighted w_mult * sqrt(n_pde / n_blk)
+      after O(1) row scaling (expF03 convention) -- without it a 33-row gauge
+      block is drowned by ~24k PDE rows.
+    - The no-oracle tuning signal (stacked FRESH residual incl condition rows)
+      is logged every iteration as `fresh_sig`.
+    theta0: explicit warm start (overrides init; zeros -> first step = Stokes).
+    """
     rng = np.random.default_rng(seed)
     basis_v = ReducedTensorBasis(n_centers, lam, K=K_vel)
     basis_p = ReducedTensorBasis(n_centers, lam, K=K_p)
+    if theta0 is None and init == "cascade" and K_vel >= 800:
+        sub_v, sub_p, th_sub, _ = solve_navier_stokes(
+            n_centers, lam, K_vel // 4, K_p // 4, n_int, n_ic, n_bc,
+            newton_iters=max(newton_iters, 3), seed=seed, rcond=rcond,
+            verbose=verbose, init="zero", w_mult=w_mult)
+        theta0 = np.zeros(3 * basis_v.K + basis_p.K)
+        for i in range(3):
+            theta0[i * basis_v.K:i * basis_v.K + sub_v.K] = \
+                th_sub[i * sub_v.K:(i + 1) * sub_v.K]
+        assert np.array_equal(sub_v.idx, basis_v.idx[:, :sub_v.K]), \
+            "cascade embedding requires prefix-nested tuple selection"
+        theta0[3 * basis_v.K:3 * basis_v.K + sub_p.K] = th_sub[3 * sub_v.K:]
+        if verbose:
+            print(f"[cascade] embedded K={sub_v.K}/{sub_p.K} solution into "
+                  f"K={basis_v.K}/{basis_p.K}", flush=True)
     Kv, Kp = basis_v.K, basis_p.K
     ncols = 3 * Kv + Kp
 
@@ -157,18 +185,21 @@ def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
     # matters at the largest K budgets.
     blocks_const = []
 
-    def add_block(A, y):
+    n_pde = 4 * n_int                       # momentum (3) + continuity rows
+
+    def add_block(A, y, condition=True):
         s = np.abs(A).max()
         s = s if s > 0 else 1.0
-        blocks_const.append((A / s, np.asarray(y) / s))
+        wt = w_mult * np.sqrt(n_pde / len(y)) if condition else 1.0
+        blocks_const.append((wt * A / s, wt * np.asarray(y) / s))
 
-    # continuity
+    # continuity (part of the PDE block: weight 1)
     zeros_p = np.zeros((n_int, Kp))
     A_cont = np.hstack([basis_v.op_columns(Xi, [(DX, 1.0)]),
                         basis_v.op_columns(Xi, [(DY, 1.0)]),
                         basis_v.op_columns(Xi, [(DZ, 1.0)]), zeros_p])
-    add_block(A_cont, np.zeros(n_int))
-    # IC + BC velocity value rows
+    add_block(A_cont, np.zeros(n_int), condition=False)
+    # IC + BC velocity value rows (condition blocks: expF03 sqrt weighting)
     for X, F, n in [(Xic, Fic, n_ic), (Xbc, Fbc, n_bc)]:
         Cv = basis_v.op_columns(X, [(VAL, 1.0)])
         Z = np.zeros((n, Kv))
@@ -188,6 +219,23 @@ def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
     visc = [(DT, 1.0), (DXX, -nu), (DYY, -nu), (DZZ, -nu)]
     grad_p_cols = [basis_p.op_columns(Xi, [(g, 1.0)], feats=Fi_p)
                    for g in GRADS]
+
+    # fresh points for the no-oracle tuning signal (never used in the solve)
+    rng_f = np.random.default_rng(seed + 7777)
+    Xf = pinn.sample_interior(rng_f, 2000).numpy()
+    Xf_ic = pinn.sample_ic(rng_f, 500).numpy()
+    Xf_bc = pinn.sample_bc(rng_f, 500).numpy()
+    Ff_ic, Ff_bc = bel.fields(Xf_ic), bel.fields(Xf_bc)
+
+    def fresh_signal(th):
+        mom_rms, div_max = ns_residual_interior(basis_v, basis_p, Xf, th, nu)
+        Kv_ = basis_v.K
+        errs = []
+        for X, F in [(Xf_ic, Ff_ic), (Xf_bc, Ff_bc)]:
+            C = basis_v.op_columns(X, [(VAL, 1.0)])
+            pred = np.stack([C @ th[i * Kv_:(i + 1) * Kv_] for i in range(3)], 1)
+            errs.append(np.abs(pred - F[:, :3]).max())
+        return max(mom_rms, div_max, *errs)
 
     n_const = sum(len(y) for _, y in blocks_const)
     n_rows = 3 * n_int + n_const
@@ -212,7 +260,8 @@ def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
         rel_p = float(np.linalg.norm(dp)
                       / np.linalg.norm(E[:, 3] - E[:, 3].mean()))
         rec = dict(iter=it, wall=time.time() - t0, rel_l2_v=rel_v,
-                   rel_l2_p=rel_p, mom_rms=mom_rms, div_max=div_max, **extra)
+                   rel_l2_p=rel_p, mom_rms=mom_rms, div_max=div_max,
+                   fresh_sig=fresh_signal(theta), **extra)
         history.append(rec)
         if verbose:
             print(rec, flush=True)
