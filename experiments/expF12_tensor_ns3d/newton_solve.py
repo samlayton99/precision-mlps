@@ -132,8 +132,11 @@ def ns_residual_interior(basis_v, basis_p, X, theta, nu):
 
 def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
                         n_int=5000, n_ic=1500, n_bc=2000, newton_iters=6,
-                        seed=0, rcond=RCOND, log_path=None, verbose=True):
-    """Gauss-Newton NS solve. Returns (basis_v, basis_p, theta, history)."""
+                        seed=0, rcond=RCOND, log_path=None, verbose=True,
+                        theta0=None):
+    """Gauss-Newton NS solve. Returns (basis_v, basis_p, theta, history).
+    theta0: optional warm-start coefficients (default zeros, whose first Newton
+    step is exactly the Stokes solve)."""
     rng = np.random.default_rng(seed)
     basis_v = ReducedTensorBasis(n_centers, lam, K=K_vel)
     basis_p = ReducedTensorBasis(n_centers, lam, K=K_p)
@@ -148,7 +151,10 @@ def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
     Xe, Fe = pinn.make_eval_set()
     nu = bel.NU
 
-    # constant (theta-independent) row blocks
+    # constant (theta-independent) row blocks, pre-scaled to O(1) max entry.
+    # Kept as (sparse-ish) pieces and copied into a preallocated stacked matrix
+    # each iteration -- vstack of a list would double the peak memory, which
+    # matters at the largest K budgets.
     blocks_const = []
 
     def add_block(A, y):
@@ -183,7 +189,11 @@ def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
     grad_p_cols = [basis_p.op_columns(Xi, [(g, 1.0)], feats=Fi_p)
                    for g in GRADS]
 
+    n_const = sum(len(y) for _, y in blocks_const)
+    n_rows = 3 * n_int + n_const
     theta = np.zeros(ncols)
+    if theta0 is not None:
+        theta = np.asarray(theta0, dtype=np.float64).copy()
     history = []
     t0 = time.time()
 
@@ -217,29 +227,28 @@ def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
         u0 = d0[VAL]
         adv0 = (u0[:, 0:1] * d0[DX] + u0[:, 1:2] * d0[DY]
                 + u0[:, 2:3] * d0[DZ])                       # (u0.grad)u0 [B,3]
-        rows, vals = [], []
+        Amat = np.empty((n_rows, ncols))
+        yvec = np.empty(n_rows)
+        Cval = basis_v.op_columns(Xi, [(VAL, 1.0)], feats=Fi_v)
         for i in range(3):                                   # momentum-i
             terms_i = visc + [(DX, u0[:, 0]), (DY, u0[:, 1]), (DZ, u0[:, 2])]
             Ai = basis_v.op_columns(Xi, terms_i, feats=Fi_v)
-            row = []
+            r0, r1 = i * n_int, (i + 1) * n_int
             for j in range(3):
-                blk = Ai.copy() if j == i else np.zeros((n_int, basis_v.K))
+                dst = Amat[r0:r1, j * Kv:(j + 1) * Kv]
                 # + u_j * d_j(u0_i) coupling
-                blk += (d0[GRADS[j]][:, i:i + 1]
-                        * basis_v.op_columns(Xi, [(VAL, 1.0)], feats=Fi_v))
-                row.append(blk)
-            row.append(grad_p_cols[i])
-            A = np.hstack(row)
-            y = adv0[:, i]
-            s = np.abs(A).max()
-            rows.append(A / s)
-            vals.append(y / s)
+                np.multiply(d0[GRADS[j]][:, i:i + 1], Cval, out=dst)
+                if j == i:
+                    dst += Ai
+            Amat[r0:r1, 3 * Kv:] = grad_p_cols[i]
+            s = np.abs(Amat[r0:r1]).max()
+            Amat[r0:r1] /= s
+            yvec[r0:r1] = adv0[:, i] / s
+        r = 3 * n_int
         for A, y in blocks_const:
-            rows.append(A)
-            vals.append(y)
-        Amat = np.vstack(rows)
-        yvec = np.concatenate(vals)
-        del rows, vals
+            Amat[r:r + len(y)] = A
+            yvec[r:r + len(y)] = y
+            r += len(y)
         t_s = time.time()
         theta_new = scipy.linalg.lstsq(Amat, yvec, cond=rcond,
                                        lapack_driver="gelsy",
