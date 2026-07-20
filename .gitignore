@@ -11,7 +11,11 @@ results/**
 !results/**/*.gif
 !results/**/*.svg
 !results/**/*.webp
+# ...but never the bulky coefficient-evolution gif dirs (expD06 etc.)
+results/**/gifs/
 checkpoints/
+data/
+wandb/
 __pycache__/
 *.egg-info/
 .venv/
