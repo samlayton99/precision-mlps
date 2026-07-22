@@ -11,6 +11,8 @@ results/**
 !results/**/*.gif
 !results/**/*.svg
 !results/**/*.webp
+# track the expD02 cube data (source of the init_slice / training_slice figures)
+!results/checkpoint_D_optimizers/expD02_adam_geometry/cube.json
 # ...but never the bulky coefficient-evolution gif dirs (expD06 etc.)
 results/**/gifs/
 checkpoints/

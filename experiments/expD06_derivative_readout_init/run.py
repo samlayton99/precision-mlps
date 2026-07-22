@@ -65,7 +65,7 @@ SEEDS = ["seed1_calibrated", "seed2_over3x", "seed3_under3x", "seed4_noisy", "se
          "seed10_standard_dl"]     # (c) standard PyTorch init for BOTH layers (scattered centers)
 
 # the 3-column movie seeds: per-seed step count and the 4-target row set
-SEEDS3 = {"seed8_noisy_long": 20000, "seed9_zero_readout": 1000, "seed10_standard_dl": 1000}
+SEEDS3 = {"seed8_noisy_long": 20000, "seed9_zero_readout": 1000, "seed10_standard_dl": 40000}
 TARGETS3 = ["sine", "sine_8pi", "runge", "exp"]
 _X = sp.Symbol("x", real=True)   # real=True so Abs(x) differentiates to sign-based form
 
@@ -202,6 +202,18 @@ def run_case(job):
         rels.append(ev())
         snap(step)
 
+    # persist per-frame parameter snapshots for the 3D explorer (app3d.py)
+    snap_dir = OUT_DIR / "snaps"
+    snap_dir.mkdir(parents=True, exist_ok=True)
+    ssteps = sorted(snaps)
+    np.savez_compressed(
+        snap_dir / f"{seed_name}--{fn_name}--N{N}.npz",
+        steps=np.array(ssteps, dtype=np.int64),
+        w=np.stack([snaps[s]["w"] for s in ssteps]),
+        b=np.stack([snaps[s]["b"] for s in ssteps]),
+        v=np.stack([snaps[s]["v"] for s in ssteps]),
+        losses=np.array(losses), rels=np.array(rels), a=a)
+
     return {"fn": fn_name, "N": N, "seed": seed_name, "a": a,
             "centers": centers.tolist(), "interior": interior.tolist(),
             "losses": losses, "rels": rels,
@@ -263,14 +275,19 @@ def render_gif(rows, seed_name, N, path, fps=8):
     print(f"  saved {path} ({len(images)} frames, {path.stat().st_size/1e6:.1f} MB)")
 
 
-def render_gif3(rows, seed_name, N, path, fps=8):
+def render_gif3(rows, seed_name, N, path, fps=8, scatter=False):
     """3-column parameter movie: rows = TARGETS3, cols = (w_k | b_k | v_k), all plotted
     against the CURRENT effective centers c_k = -b_k/w_k. Fixed window [-2,2], [-1,1]
     shaded, off-screen counter, and per-column theory overlays: w = gamma, b = -gamma*c,
-    v = (h/2) f'(c)."""
+    v = (h/2) f'(c).
+
+    scatter=True: draw each neuron as an unconnected dot (no lines), colored by a FIXED
+    per-neuron red->blue gradient assigned from the ORIGINAL (step-0) center ordering --
+    so a neuron keeps its color as it moves and you can track where it migrates."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap
     from PIL import Image
 
     XW = 2.0                                   # x-window half-width
@@ -282,6 +299,16 @@ def render_gif3(rows, seed_name, N, path, fps=8):
     gamma = LAM / h
     cgrid = np.linspace(-1, 1, 401)
     overlays = {fn: (h / 2.0) * fprime(TARGETS[fn])(cgrid) for fn in fns}
+
+    # fixed per-neuron color: rank each neuron by its ORIGINAL center, map red->blue.
+    rbcmap = LinearSegmentedColormap.from_list("redblue", ["red", "blue"])
+    ncolors = {}
+    for fn in fns:
+        sn0 = cases[fn]["snaps"][str(steps[0])]
+        w0, b0 = np.array(sn0["w"]), np.array(sn0["b"])
+        c0 = -b0 / np.where(np.abs(w0) > 1e-12, w0, 1e-12)
+        ranks = np.argsort(np.argsort(c0))     # 0..N-1 rank of each neuron by center
+        ncolors[fn] = rbcmap(ranks / max(len(c0) - 1, 1))
 
     # fixed y-limits per (fn, column) across all frames, overlay included
     lims = {}
@@ -303,8 +330,11 @@ def render_gif3(rows, seed_name, N, path, fps=8):
             sn = cases[fn]["snaps"][str(s)]
             w_, b_, v_ = (np.array(sn[k]) for k in ("w", "b", "v"))
             c = -b_ / np.where(np.abs(w_) > 1e-12, w_, 1e-12)
-            order = np.argsort(c)
-            c, w_, b_, v_ = c[order], w_[order], b_[order], v_[order]
+            if scatter:                        # keep neuron order so fixed colors align
+                cols = ncolors[fn]
+            else:                              # legacy connected line: sort by center
+                order = np.argsort(c)
+                c, w_, b_, v_ = c[order], w_[order], b_[order], v_[order]
             vis = np.abs(c) <= XW
             for j, (y, ttl) in enumerate([(w_, "first-layer w"), (b_, "bias b"),
                                           (v_, "readout v")]):
@@ -318,7 +348,11 @@ def render_gif3(rows, seed_name, N, path, fps=8):
                 else:
                     ax.plot(cgrid, overlays[fn], color="#2ca02c", lw=1.0, ls="--",
                             alpha=0.8)
-                ax.plot(c[vis], y[vis], color="#1f4e8c", lw=0.8, marker=".", ms=1.5)
+                if scatter:
+                    ax.scatter(c[vis], y[vis], c=cols[vis], s=9, edgecolors="none",
+                               zorder=3)
+                else:
+                    ax.plot(c[vis], y[vis], color="#1f4e8c", lw=0.8, marker=".", ms=1.5)
                 ax.set_xlim(-XW, XW)
                 ax.set_ylim(*lims[(fn, j)])
                 ax.tick_params(labelsize=6)
@@ -426,7 +460,8 @@ def main():
         render_loss_figure(rows, seed_name, sdir / f"loss_curves_{seed_name}.png")
         for N in widths:
             if seed_name in SEEDS3:
-                render_gif3(rows, seed_name, N, sdir / "gifs" / f"params_N{N}.gif")
+                render_gif3(rows, seed_name, N, sdir / "gifs" / f"params_N{N}.gif",
+                            scatter=(seed_name == "seed10_standard_dl"))
             else:
                 render_gif(rows, seed_name, N, sdir / "gifs" / f"coeffs_N{N}.gif")
     print(f"done; outputs under {OUT_DIR}")
