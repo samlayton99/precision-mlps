@@ -107,6 +107,15 @@ once and stored as a fp64 constant.
 - `Kc=12` does NOT work (cardinal coefficients don't decay that fast).
 - Use `Kc=160` (matches continuous-mlps) and `halo=default_halo(N, lambda_star)`.
 
+## The Practicality Gate (binding, from Sam)
+
+Every proposed optimizer mechanism must make the method MORE practical at real-world scale, not less. Concretely:
+- No state that grows with dataset size: no per-sample caches, no per-batch parameter-sized vectors.
+- Optimizer state stays O(m) in Adam's class (Adam stores 2m).
+- Never patch one impracticality by adding another.
+- Battle-tested mechanisms (EMA, momentum) win any design toss-up over novel ones.
+Judge every design idea through this gate BEFORE proposing it.
+
 ## Key Abstractions
 
 **QIMlp** (`src/models/mlp.py`): Single-hidden-layer tanh MLP (`nn.Module`). Always `inner_layer -> tanh -> readout`. Exposes `features(x)` for the Phi matrix and accessors for gamma, centers, readout weights.
@@ -141,6 +150,7 @@ once and stored as a fp64 constant.
   **Voice / calibration:** aim for ~5/10 fluff -- plain language, actively cut redundancy (the biggest offender is the TL;DR restated in Conclusions). Keep the references and the per-figure how-to-reads; cut hedging and restatement. If a sentence is not adding information, delete it. The design section is the one place to add depth, not subtract it.
   **Number discipline:** spend raw numbers like currency -- only where they matter; do not saturate prose with `N=128, 1.2e-12, ...`. Use tables only when they tell a clean story.
   **Conclusions are special:** a statement may go in the Conclusions section ONLY if it is plainly obvious from the data, OR it was proposed, discussed, and explicitly approved by Sam. Do not write conclusions before Sam has reviewed the numbers and signed off; keep proposed-but-unapproved conclusions out (or clearly marked as pending). Write conservatively: state only what the data shows, and flag any metric that is not independent evidence.
+- **Every experimental claim ships with a plot.** Any experiment or probe that generates data MUST produce well-thought-out figures BEFORE the results are reported to Sam: informative and uncluttered, fixed/meaningful axes (no misleading autoscale), trajectories not just endpoints, never a lone datapoint. If Claude claims a result from data it generated, the claim comes with a plot that shows it clearly -- the only escape hatch is when a plot is obviously useless. When Sam gives plot directions, follow them exactly (his plot intuition is good). Unplotted results are lazy science and hide what Sam would catch.
 - **Figure legends.** Every legend on a subplot goes OUTSIDE the chart, above it -- never inside the axes (it occludes data). Use a per-axes legend placed above the axes (e.g. `ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=..., borderaxespad=0)`) or a single shared figure legend across the top (`fig.legend(..., loc="upper center", bbox_to_anchor=(0.5, ...), ncol=...)` with `subplots_adjust`/`tight_layout(rect=...)` reserving the top margin). Applies to all multi-line subplots.
 - **Research-summary formatting.** Write all math in research summaries/writeups in LaTeX (`$...$` inline, `$$...$$` display, KaTeX-safe -- no `\*`, no `\emph`). Do NOT hard-wrap prose: write each paragraph as a single line and let markdown/the editor wrap it. Manual line breaks mid-paragraph (short fixed-width lines) make the docs hard to read and edit.
 

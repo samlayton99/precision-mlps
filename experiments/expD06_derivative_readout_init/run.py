@@ -310,15 +310,27 @@ def render_gif3(rows, seed_name, N, path, fps=8, scatter=False):
         ranks = np.argsort(np.argsort(c0))     # 0..N-1 rank of each neuron by center
         ncolors[fn] = rbcmap(ranks / max(len(c0) - 1, 1))
 
-    # fixed y-limits per (fn, column) across all frames, overlay included
+    # fixed y-limits per (fn, column) across all frames, overlay included.
+    # Scale is set ONLY by neurons whose CURRENT center is in ~[-1,1] (the
+    # interior) -- neurons that wander off simply leave the screen.
     lims = {}
     for fn in fns:
         r = cases[fn]
-        arrs = {k: np.array([r["snaps"][str(s)][k] for s in steps]) for k in ("w", "b", "v")}
+        vals = {"w": [], "b": [], "v": []}
+        for s in steps:
+            sn = r["snaps"][str(s)]
+            w_, b_, v_ = (np.array(sn[k]) for k in ("w", "b", "v"))
+            c = -b_ / np.where(np.abs(w_) > 1e-12, w_, 1e-12)
+            m = np.abs(c) <= 1.1
+            if not m.any():
+                m = np.abs(c) <= XW
+            for k, arr in (("w", w_), ("b", b_), ("v", v_)):
+                vals[k].append(arr[m])
         ref = {"w": np.array([gamma]), "b": np.array([-gamma, gamma]), "v": overlays[fn]}
         for j, k in enumerate(("w", "b", "v")):
-            lo = min(np.percentile(arrs[k], 0.5), ref[k].min())
-            hi = max(np.percentile(arrs[k], 99.5), ref[k].max())
+            allv = np.concatenate(vals[k])
+            lo = min(np.percentile(allv, 0.5), ref[k].min())
+            hi = max(np.percentile(allv, 99.5), ref[k].max())
             pad = 0.10 * max(hi - lo, 1e-9)
             lims[(fn, j)] = (lo - pad, hi + pad)
 
@@ -355,6 +367,13 @@ def render_gif3(rows, seed_name, N, path, fps=8, scatter=False):
                     ax.plot(c[vis], y[vis], color="#1f4e8c", lw=0.8, marker=".", ms=1.5)
                 ax.set_xlim(-XW, XW)
                 ax.set_ylim(*lims[(fn, j)])
+                # plain tick labels: never offset notation ("+6.4e1" header
+                # with 0.0000 ticks reads as w ~ 0 when w is really ~ gamma)
+                try:
+                    ax.ticklabel_format(useOffset=False, style="plain",
+                                        axis="y")
+                except (AttributeError, ValueError):
+                    pass
                 ax.tick_params(labelsize=6)
                 if i == 0:
                     ax.set_title(ttl + "  (green = theory)", fontsize=8)
