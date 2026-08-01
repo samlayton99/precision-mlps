@@ -49,6 +49,22 @@ Mechanism (measured): the implicit operator is $A_{\rm kept}R^{-1}=Q+ER^{-1}$ wi
 
 ---
 
+## Where we stand: the step-3 package (re-anchored to motivation.md)
+
+**Cost model, stated precisely (this was getting conflated):** persistent state is the $R$ factors, $d\cdot k$ floats, $O(d)$ -- always. Whitening costs $k$ passes **once per solve event, never per step**. Each LSMR iteration is one forward-backward pass at $O(d)$ memory. $B$ is a batch-sized transient that exists only during a solve event. Amortized over a $T{=}200$-step event cadence the whole thing is $\sim$2--3 extra passes per step. The per-step $O(d)$ requirement is met everywhere, on every geometry, including 2-D ridges; the 2-D finding was never a cost failure.
+
+**The re-anchoring:** motivation.md asks the recurring tier for *meaningful least-squares progress during training* past Adam's $10^{-3}$; machine epsilon is demanded only on settled geometry (the QI 1-D/2-D goalposts), i.e. at a **one-time final solve** -- and a one-time solve is not bound by the per-step memory constraint ("Memory $O(d)$ **per step**", SUBPROBLEM.md). Graded against the right bars, the hardest measured cell (2-D radon, $\kappa=10^{15}$, floor $5\times10^{-15}$) gives:
+
+| tier | cadence | cost | banks (hard 2-D cell) |
+|---|---|---|---|
+| 1: LSMR + block-Jacobi | every step | 3--30 passes, $O(k^2)$ state | $3\times10^{-3}$..$6\times10^{-4}$ |
+| 2: block-QR whitened solve | per event ($T\sim200$ steps) | $k$-pass setup + 100--1000 it | $3.7\times10^{-9}$..$1.3\times10^{-10}$ |
+| 3: finisher (SPIR) | **once**, geometry settled | $O(dr)$ transient, CPU-parkable | $1.1\times10^{-16}$ |
+
+All three tiers share the batching rules, Fong-Saunders stopping, and precision-agnosticism; `plan_blocks`/`kappa_gate` picks tier-2's config and predicts its ceiling pre-solve. In 1-D/clustered structure tier 2 alone reaches machine epsilon (the goalpost cells); on global-support features (ridges = MLP neurons in high input dimension) tier 2 banks $10^{-9}$--$10^{-12}$ and the finisher closes to machine epsilon. **Under the coupling law ($\|v\|\eta$ re-injection) nothing beyond tier-2 precision is bankable while the geometry moves anyway, so the division of labor matches the physics of the training loop, not just the memory budget.**
+
+**Revised F1/2-D disposition:** "$O(d)$ is dead on unstructured/ridge features" applies only to the last $\sim$3 orders (from $10^{-12}$ to $10^{-15}$) of a *recurring* solve -- exactly the orders the coupling law says cannot be banked mid-training and the finisher supplies at the end. The recurring tiers beat Adam's barrier by 3--9 orders on every geometry ever measured, structured or not.
+
 ## Fix log
 
 Each entry: the mechanism-level fix, its cost against the constraints ($O(d)$ state, one pass/iter, precision-agnostic, battle-tested), and the measurement.
