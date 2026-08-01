@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>expD14 iteration 0 — what was actually implemented</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[
+          {left:'$$',right:'$$',display:true},
+          {left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+:root{
+  --bg:#fbfbf9; --fg:#1a1a1a; --mut:#5f6368; --line:#e0ded8;
+  --card:#ffffff; --accent:#a4441f; --accent2:#1f5fa4; --good:#1d6b3f; --bad:#a01f1f;
+  --code-bg:#f4f2ee;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#14151a; --fg:#e6e4df; --mut:#9a9a9a; --line:#2c2e36;
+         --card:#1b1d23; --accent:#e08a5f; --accent2:#7fb0e8; --good:#6fc48f; --bad:#e07a7a;
+         --code-bg:#1f2229; }
+}
+:root[data-theme="dark"]{ --bg:#14151a; --fg:#e6e4df; --mut:#9a9a9a; --line:#2c2e36;
+  --card:#1b1d23; --accent:#e08a5f; --accent2:#7fb0e8; --good:#6fc48f; --bad:#e07a7a;
+  --code-bg:#1f2229; }
+:root[data-theme="light"]{ --bg:#fbfbf9; --fg:#1a1a1a; --mut:#5f6368; --line:#e0ded8;
+  --card:#ffffff; --accent:#a4441f; --accent2:#1f5fa4; --good:#1d6b3f; --bad:#a01f1f;
+  --code-bg:#f4f2ee; }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;}
+.wrap{max-width:900px;margin:0 auto;padding:48px 24px 120px}
+h1{font-size:2.1rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
+h2{font-size:1.42rem;margin:64px 0 4px;letter-spacing:-.01em;
+   padding-top:20px;border-top:1px solid var(--line)}
+h3{font-size:1.08rem;margin:32px 0 6px;color:var(--accent)}
+h4{font-size:.95rem;margin:22px 0 4px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+p,li{margin:10px 0}
+.sub{color:var(--mut);font-size:1.02rem;margin:0 0 30px}
+.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.13em;color:var(--accent);
+  font-weight:600;margin:0 0 8px}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px;
+  font:0.87em/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}
+pre code{background:none;padding:0;font-size:inherit}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:18px 22px;margin:22px 0}
+.card h4{margin-top:0}
+.key{border-left:3px solid var(--accent);background:var(--card);
+  padding:14px 20px;margin:22px 0;border-radius:0 8px 8px 0}
+.key strong{color:var(--accent)}
+.warn{border-left:3px solid var(--bad)}
+.warn strong{color:var(--bad)}
+.ok{border-left:3px solid var(--good)}
+.ok strong{color:var(--good)}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:.9rem}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--mut);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+figure{margin:26px 0;padding:0}
+figure img{width:100%;height:auto;display:block;border:1px solid var(--line);
+  border-radius:8px;background:#fff}
+figcaption{color:var(--mut);font-size:.87rem;margin-top:10px}
+figcaption b{color:var(--fg)}
+.toc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 22px}
+.toc ol{margin:6px 0;padding-left:22px}
+.toc li{margin:3px 0}
+.toc a{color:var(--accent2);text-decoration:none}
+.toc a:hover{text-decoration:underline}
+.small{font-size:.88rem;color:var(--mut)}
+.pill{display:inline-block;font-size:.72rem;padding:2px 9px;border-radius:20px;
+  border:1px solid var(--line);color:var(--mut);margin-right:6px;vertical-align:middle}
+.verdict-kept{color:var(--good);font-weight:600}
+.verdict-cut{color:var(--bad);font-weight:600}
+hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">expD14 · iteration 0 · checkpoint D</p>
+<h1>The lobotomy: Adam and a least-squares solve sharing one step budget</h1>
+<p class="sub">Everything that was implemented, from the notation up — every symbol, every constant, every knob, and what each experiment actually measured.</p>
+
+<div class="toc">
+<strong>Contents</strong>
+<ol>
+<li><a href="#where">Where this sits in the program</a></li>
+<li><a href="#setup">The setup: model, data, notation</a></li>
+<li><a href="#fact">The structural fact everything rests on</a></li>
+<li><a href="#cert">Finding the linear block (the certificate)</a></li>
+<li><a href="#lstep">The $L$ step: damped Gauss-Newton, and the $\mu$ identity</a></li>
+<li><a href="#astep">The $A$ step: Adam, with its step length replaced</a></li>
+<li><a href="#rho">The energy split $\rho$</a></li>
+<li><a href="#alpha">The three damping rules</a></li>
+<li><a href="#algo">The complete algorithm</a></li>
+<li><a href="#solvers">The two solvers</a></li>
+<li><a href="#constants">Every constant and every knob</a></li>
+<li><a href="#metrics">The two metrics (this is the important one)</a></li>
+<li><a href="#t1">T1 — the pieces, tested alone</a></li>
+<li><a href="#t2">T2 — the ablation</a></li>
+<li><a href="#t2b">T2b — the damping rules, and the tension</a></li>
+<li><a href="#t3">T3 — pricing the $O(d)$ solver</a></li>
+<li><a href="#t4">T4 — the headline grid</a></li>
+<li><a href="#verdict">Verdict: what survived</a></li>
+<li><a href="#files">Cost, memory, and the file map</a></li>
+</ol>
+</div>
+
+<h2 id="where">1. Where this sits in the program</h2>
+
+<p>The three-step program from <code>motivation.md</code>: <b>step 1</b> is a general optimizer (Adam). <b>Step 2</b> is an iterative least-squares solver that scales like Adam — $O(d)$ memory, one forward-backward per iteration, batch-robust. <b>Step 3</b> is the assembly: lobotomize Adam and stitch the solver in, so that <em>every iteration updates every parameter — some governed by modified Adam, some by least-squares updates</em>.</p>
+
+<p>This document is iteration 0 of step 3. The thing it has to beat is not just Adam; it is <em>Adam followed by one least-squares refit at the end</em>, which is expD02's winner and the obvious cheap baseline.</p>
+
+<div class="key">
+<strong>The one-sentence summary of what was built.</strong> Each iteration measures which parameters the model is linear in, spends a single step-energy budget between an Adam step on the curved ones and a damped least-squares step on the linear ones, and decides the split and the damping from quantities it measures that same step — no schedule, no hand-tuned constant in either rule.
+</div>
+
+<h2 id="setup">2. The setup: model, data, notation</h2>
+
+<h3>The network</h3>
+<p>One hidden layer, $\tanh$, scalar in and scalar out:</p>
+$$f(x;\theta) \;=\; \sum_{k=1}^{W} v_k \tanh(w_k x + b_k) \;+\; c_0 .$$
+<p>The parameter vector is the four groups concatenated, and this flat layout is what every index below refers to:</p>
+$$\theta \;=\; (\,\underbrace{w_1..w_W}_{\text{slopes}}\;|\;\underbrace{b_1..b_W}_{\text{offsets}}\;|\;\underbrace{v_1..v_W}_{\text{readout}}\;|\;c_0\,)\;\in\;\mathbb R^{m},\qquad m=3W+1 .$$
+
+<p>Unit $k$ is a smooth step centred at $x=-b_k/w_k$ with sharpness $w_k$. So $(w,b)$ is the <b>geometry</b> — where the steps are and how sharp — and $(v,c_0)$ is the <b>readout</b> — how much of each to add up.</p>
+
+<h3>The data and the loss</h3>
+<p>$n=2003$ equispaced training points on $[-1,1]$, targets $y_i=f^\star(x_i)$ with no noise. Residual, loss, and the gradient Adam actually receives:</p>
+$$r(\theta)\in\mathbb R^{n},\quad r_i=f(x_i;\theta)-y_i,\qquad \mathcal L=\tfrac1n\|r\|_2^2,\qquad g=\nabla_\theta\mathcal L=\tfrac2n J^{\!\top} r,$$
+<p>where $J=\partial f/\partial\theta\in\mathbb R^{n\times m}$ is the Jacobian of the <em>predictions</em> (not of the loss). Everything is reported as <b>eval relative $L_2$</b> on a <em>disjoint</em> 4001-point grid:</p>
+$$\text{rel }L_2=\frac{\big\|f(\tilde x;\theta)-f^\star(\tilde x)\big\|_2}{\|f^\star(\tilde x)\|_2}.$$
+<p>Reporting on a held-out grid matters: an error of $10^{-16}$ there is the rounding floor of evaluating the model, not a fit statistic.</p>
+
+<h3>The two initialisations</h3>
+<div class="scroll"><table>
+<tr><th>name</th><th>what it is</th><th>why it is in the study</th></tr>
+<tr><td><code>qi</code></td>
+    <td>The QI construction in affine coordinates. Grid spacing $h=2/N$, centres $c_j=-1+jh$ for $j\in[-\text{halo},N+\text{halo}]$, bandwidth $\gamma=\lambda/h$ with $\lambda=0.25$; then $w_k=\gamma$, $b_k=-\gamma c_k$, and <b>the readout is set to exactly zero</b>. Width is $W=N+2\,\text{halo}+1$, so $W>N$.</td>
+    <td>The geometry is already the right one. This isolates "can the optimizer exploit and preserve a good geometry".</td></tr>
+<tr><td><code>rand</code></td>
+    <td>PyTorch's stock <code>nn.Linear</code> initialisation: $w,b\sim U(-1,1)$ (fan-in 1), $v\sim U(-1/\sqrt W,1/\sqrt W)$, $c_0=0$.</td>
+    <td>The geometry has to be <em>learned</em>. This is the case the success criterion actually asks about.</td></tr>
+</table></div>
+
+<p class="small">Note the zero readout in <code>qi</code> is not cosmetic — it makes every geometry gradient exactly zero at step 0, because $\partial f/\partial b_k = v_k(1-t_k^2)$ carries a factor $v_k$. That fact shows up twice below, in the certificate and in the drift gauge.</p>
+
+<h2 id="fact">3. The structural fact everything rests on</h2>
+
+<p>Differentiate $f$ twice with respect to each kind of parameter, writing $t_k=\tanh(w_kx+b_k)$:</p>
+$$\frac{\partial^2 f}{\partial v_k^2}=0,\qquad \frac{\partial^2 f}{\partial c_0^2}=0,$$
+$$\frac{\partial^2 f}{\partial b_k^2}=-2v_k\,t_k(1-t_k^2),\qquad \frac{\partial^2 f}{\partial w_k^2}=-2v_k\,x^2\,t_k(1-t_k^2).$$
+
+<p>The readout second derivatives are <b>exactly zero</b> — not small. So $f$ is an exactly linear function of $(v,c_0)$, and the sub-problem of choosing them is a linear least-squares problem, solvable in closed form to machine precision. The geometry second derivatives are not zero, and no closed form exists for them.</p>
+
+<div class="key">
+<strong>Why this matters more than it looks.</strong> A first-order method cannot solve the linear part either. The feature matrix here has $\kappa\approx5\times10^{14}$; gradient descent needs $\sim(\sigma_1/\sigma_j)^2$ steps to fix direction $j$, so reaching $10^{-13}$ needs about $10^{22}$ steps. A factorisation inverts every direction once. That gap is the entire reason for putting a solver inside the optimizer.
+</div>
+
+<p>Note also that the geometry curvature is <em>proportional to $v_k$</em>. With a zero readout the network is momentarily flat in the geometry too — which would fool any single-point curvature test.</p>
+
+<h2 id="cert">4. Finding the linear block (the certificate)</h2>
+
+<p>The optimizer is not told which parameters are linear; it measures it. Two tests, both required.</p>
+
+<h3>Test 1 — is it linear? (a second-difference probe)</h3>
+<p>For each coordinate $i$, with $s_i=\max(|\theta_i|,1)$ and $\varepsilon_i=10^{-3}s_i$:</p>
+$$q_i=\frac{\big\|f(\theta+\varepsilon_i e_i)-2f(\theta)+f(\theta-\varepsilon_i e_i)\big\|_2}{\varepsilon_i^{2}}\,s_i^{2}\;\approx\;s_i^2\left\|\frac{\partial^2 f}{\partial\theta_i^2}\right\|_2 .$$
+<p>Read it as <em>how much curvature does the model show when this parameter moves by a fixed fraction of its own size</em>. The $s_i^2$ makes it comparable across parameters of wildly different magnitude ($w_k\approx N/8$ can be in the hundreds while $v_k$ is order one). Three forward passes per coordinate; no derivatives, no knowledge of the architecture.</p>
+
+<p>Two corrections, both load-bearing:</p>
+<ul>
+<li><b>Probe at two points.</b> Because geometry curvature $\propto v_k$, at a zero readout <em>everything</em> reads as perfectly linear. So $q$ is also evaluated at $\theta+0.1\,s\odot(\pm1)$ and the elementwise max is taken. A truly linear parameter has zero second derivative at <em>every</em> point; a curved one only looks flat at special points.</li>
+<li><b>An absolute noise floor.</b> $q_i$ is a difference of three nearly-equal numbers divided by $\varepsilon^2$, so its own rounding is $q_{\text{noise}}\approx 4\epsilon_{\text{mach}}\|f\|/(10^{-3})^2$. Anything below $100\,q_{\text{noise}}$ is set to exactly zero. Without this, normalising by the max promotes pure rounding noise on a problem that is genuinely linear.</li>
+</ul>
+<p>Then $\hat q_i=q_i/\max_j q_j$, dimensionless in $[0,1]$.</p>
+
+<h3>Test 2 — can the data see it? (observability)</h3>
+<p>A tiny gradient means two opposite things: already optimal, or invisible to the data. The halo units sit outside the data range, so $|w_kx+b_k|>20$ everywhere, $\tanh$ saturates and $1-t_k^2$ <em>underflows to exactly zero</em> in fp64. Those parameters are perfectly linear <em>and</em> perfectly useless. The test needs no threshold because the separation is absolute:</p>
+$$\text{informed}_i \iff \text{info}_i>0,\qquad \text{info}_i=\hat v_i\ \ \text{(Adam's second moment, already stored)}.$$
+
+<h3>Membership, with hysteresis</h3>
+$$i\in L \iff \hat q_i<10^{-8}\ \text{and}\ \text{info}_i>0;\qquad \text{removed when } \hat q_i>10^{-7}\ \text{or}\ \text{info}_i=0.$$
+<p>Removal is not freezing — a removed parameter simply goes back to being Adam's. $A$ is the complement of $L$.</p>
+
+<h3>When it re-probes</h3>
+<p>The dense probe costs $2(2m{+}1)$ forward passes, so it cannot run often. At every 200-step boundary the residual drift over the window is compared to $10\epsilon_{\text{mach}}\|y\|$; only if the model actually moved does it re-probe, and the interval doubles (capped at 8 windows) each time membership comes back unchanged. On these runs that means 2–3 probes per 3000 steps.</p>
+
+<div class="card">
+<h4>What it actually selected</h4>
+<p>At $N{=}256$ it admits $B=583$ coordinates against a 462-coordinate readout — the readout plus a tail of geometry units that saturated <em>during</em> training (Adam's second moment is an EMA decaying at $0.999$, so it remembers gradients from before a unit went dark). A third guard catches those at solve time: any Jacobian column with norm below $10^{-8}$ of the largest is dropped. Measured gap: live columns $O(1)$, blind columns $\le10^{-14}$. All 121 extras are dropped; the block that does arithmetic is the readout.</p>
+<p class="small">This reproduces iteration 11's numbers exactly, which is the cross-check that the certificate was ported faithfully.</p>
+</div>
+
+<h2 id="lstep">5. The $L$ step: damped Gauss-Newton, and the $\mu$ identity</h2>
+
+<p>Restricted to $L$, the model is exactly linear, so the change in predictions from a change $\delta$ is exactly $J_L\delta$. The step solves a <em>damped</em> version of that least-squares problem:</p>
+$$d_\mu \;=\; \arg\min_{\delta}\ \|J_L\delta + r\|_2^2 + \mu\|\delta\|_2^2 \;=\;\big(J_L^{\!\top}J_L+\mu I\big)^{-1}J_L^{\!\top}(-r).$$
+
+<p>$\mu$ is parameterised through a dimensionless $\alpha$, because $\alpha$ is exactly the inverse effective condition number and therefore transfers across matrices:</p>
+$$\mu=(\alpha\,\sigma_1)^2,\qquad \alpha=\frac{\sqrt\mu}{\sigma_1},\qquad \sigma_1=\sigma_{\max}(J_L).$$
+<p>$\sigma_1$ comes from three power iterations on $J_L^{\!\top}J_L$, refreshed on the certificate cadence, carrying one $O(d)$ vector. Measured accuracy: within $0.25\%$ of the SVD.</p>
+
+<div class="key">
+<strong>Your "multiply by $\mu$" observation, stated exactly.</strong> Take the two limits of $d_\mu$:
+$$\mu\to\infty:\quad \mu\,d_\mu \longrightarrow J_L^{\!\top}(-r)\quad\text{— the raw gradient direction},$$
+$$\mu\to 0:\quad\ \ d_\mu \longrightarrow \text{the exact least-squares step}.$$
+So multiplying by $\mu$ puts the damped step back in <em>gradient</em> coordinates, and the single knob $\alpha$ slides the update continuously from "an Adam-scale gradient step on $L$" to "the exact solve". Verified numerically in T1: at $\alpha=10^2$ the cosine to the raw gradient is $1-8\times10^{-11}$ and the length ratio is $0.99998$.
+</div>
+
+<p>And the practical consequence, also measured in T1 and worth memorising:</p>
+$$\boxed{\ \text{eval rel }L_2 \;\approx\; 0.3\,\alpha\ }\qquad\text{over ten decades of }\alpha.$$
+<p>$\alpha$ is not an abstract regularisation dial. It <em>is</em> the accuracy you are choosing to bank this step.</p>
+
+<h2 id="astep">6. The $A$ step: Adam, with its step length replaced</h2>
+
+<p>Adam's moments are updated on <b>all $m$ coordinates every step</b>, whether or not that coordinate spends any energy. That is deliberate: a parameter that crosses $A\!\leftrightarrow\!L$ never meets a cold optimizer, so the handoff needs no special case.</p>
+$$\hat m,\hat v \ \text{as usual};\qquad \Delta^{\text{Adam}} = -\,\text{lr}\cdot\frac{\hat m}{\sqrt{\hat v}+\epsilon}.$$
+<p>Restrict to $A$, and split into a direction and a length: $p_A = \Delta^{\text{Adam}}_A/\|\Delta^{\text{Adam}}_A\|$.</p>
+
+<div class="key warn">
+<strong>The problem with Adam's length.</strong> When the gradient is consistent, $\hat m_i\approx g_i$ and $\sqrt{\hat v_i}\approx|g_i|$, so $\Delta_i \approx -\text{lr}\cdot\mathrm{sign}(g_i)$. <b>The step has size lr regardless of how small the gradient is.</b> Halving the error does not halve the step. Next to an exact solve this is fatal: after each solve the readout is optimal for the current features, and then Adam moves the geometry by $\sim\text{lr}$, re-injecting error of order $\|v\|\cdot\text{lr}$. That is iteration 11's coupling law and its sawtooth.
+</div>
+
+<p>The replacement is the exact-line-search length along Adam's <em>own</em> direction:</p>
+$$t^\star_A=\frac{-\,r\cdot J p_A}{\|Jp_A\|^2},\qquad \ell_A=\min\big(\|\Delta^{\text{Adam}}_A\|,\ \max(t^\star_A,0)\big).$$
+
+<p>Two things make this the right object. It is <b>linear in the residual</b>, so it vanishes as the problem is solved — exactly the settling behaviour iteration 11 asked for. And it costs nothing extra: the JVP $Jp_A$ is already being computed for the energy allocation below. The $\min$ keeps it never longer than Adam would have gone, so it can only be more conservative.</p>
+
+<h2 id="rho">7. The energy split $\rho$</h2>
+
+<p>For any unit direction $p$, the decrease in $\|r\|^2$ achievable by an exact line search along it is</p>
+$$\text{gain}(p)=\frac{(r\cdot Jp)^2}{\|Jp\|^2}.$$
+<p>One JVP per direction. Compute it for $p_A$ and for $p_L=d_\mu/\|d_\mu\|$, and allocate the energy in proportion:</p>
+$$\rho=\frac{\text{gain}_L}{\text{gain}_A+\text{gain}_L}\in[0,1].$$
+
+<p>The budget itself is <em>measured, not set</em>: $E=\|\Delta^{\text{Adam}}\|$, the norm of the step stock Adam would have taken over all $m$ coordinates this step. Then</p>
+$$\Delta_A=(1-\rho)\,\ell_A\,p_A,\qquad \Delta_L=\begin{cases} d_\mu & \text{(clip off)}\\[2pt] \min(\|d_\mu\|,\ \rho E)\,p_L & \text{(clip on)}\end{cases}$$
+
+<div class="card">
+<h4>Why $A$ keeps its own step rather than a renormalised one</h4>
+<p>An earlier version gave $A$ a step of norm $(1-\rho)E$ in the direction $p_A$. That is <em>not</em> Adam even at $\rho=0$, because $\|\Delta^{\text{Adam}}\|\ne \text{lr}\sqrt m$ in general. Scaling Adam's actual step instead makes the reduction exact: with $L$ empty and $\rho=0$, the optimizer reproduces stock Adam to $8\times10^{-17}$ relative in $\theta$ after 50 steps. That exact-reduction property is the reliability floor the whole program is graded against, so it is worth getting bit-exact.</p>
+</div>
+
+<h2 id="alpha">8. The three damping rules</h2>
+
+<div class="scroll"><table>
+<tr><th>mode</th><th>rule</th><th>the idea</th></tr>
+<tr><td><code>fixed</code></td><td>$\alpha$ pinned</td><td>Control. $\alpha=10^{-15}$ is "solve as hard as fp64 allows"; $\alpha=1$ is "barely solve at all".</td></tr>
+<tr><td><code>drift</code></td>
+    <td>$\alpha=\mathrm{EMA}\big(\|J\Delta_A\|/\|y\|\big)$, bias-corrected</td>
+    <td>Never resolve below the scale your own features are moving at — expD13's matching rule. The $A$ step moves the predictions by $J\Delta_A$, so that norm <em>is</em> the geometry's uncertainty in residual units.</td></tr>
+<tr><td><code>drift_gain</code></td>
+    <td>$\alpha=\max\big(\text{drift},\ \sqrt{1-\rho}\big)$</td>
+    <td>Never resolve $L$ below the part of the error $A$ can still remove. Gains are quadratic in the residual and $\text{gain}_A/(\text{gain}_A{+}\text{gain}_L)=1-\rho$, so $\sqrt{1-\rho}$ is that level in residual units — the same units the $0.3\alpha$ law lives in.</td></tr>
+</table></div>
+
+<p>The EMA is bias-corrected exactly the way Adam corrects its moments. Without that, the gauge spends $\sim1/(1-\beta)$ steps decaying from its initial value instead of reading the measurement — which on QI init is most of the run. With it, step 1 on QI init reads $\alpha=10^{-15}$ immediately (zero readout $\Rightarrow$ zero geometry gradient $\Rightarrow$ zero $A$ step $\Rightarrow$ zero drift), while random init reads $\alpha\approx3\times10^{-3}$. That is the behaviour you predicted, and it falls out of the measurement rather than being scheduled.</p>
+
+<p>$\alpha$ is clipped to $[10^{-15},\,1]$ throughout. Neither rule contains a fitted constant.</p>
+
+<h2 id="algo">9. The complete algorithm</h2>
+
+<pre><code>state: theta, Adam moments (m, v), membership mask L, power vector for sigma_1
+       -- all O(d).  No block preconditioner anywhere: scalar (Adam-diagonal) only.
+
+L  <- certify(theta)                                   # probe + observability
+
+for it = 1, 2, 3, ...:
+
+    r, g  <- fused forward+backward at theta            # 2 passes
+    m,v   <- Adam moments on ALL m coordinates          # free
+    step  <- -lr * mhat / (sqrt(vhat) + 1e-8)
+
+    # ---- the A direction ----
+    stepA <- step restricted to A ;  pA <- unit(stepA)
+
+    # ---- the L step ----
+    if it == 1 or (it-1) % 200 == 0:
+        sigma_1 <- 3 power iterations on J_L^T J_L      # 6 passes, amortised
+    alpha <- fixed | drift | max(drift, sqrt(1-rho))
+    mu    <- (alpha * sigma_1)^2
+    d_mu  <- solve  min ||J_L d + r||^2 + mu||d||^2     # 2*tau passes (lsqr)
+    pL    <- unit(d_mu)
+
+    # ---- allocation and line search: 2 JVPs, shared ----
+    jA <- J pA ;  gainA <- (r.jA)^2/||jA||^2 ;  tstarA <- -(r.jA)/||jA||^2
+    jL <- J pL ;  gainL <- (r.jL)^2/||jL||^2
+    rho <- gainL / (gainA + gainL)
+
+    # ---- the split step ----
+    E     <- ||step||                                   # measured Adam energy
+    lenA  <- min(||stepA||, max(tstarA, 0))             # the line search
+    theta <- theta + (1-rho)*lenA*pA  +  d_mu
+
+    # ---- gauges ----
+    drift <- biasEMA( ||J((1-rho)*lenA*pA)|| / ||y|| )  # 1 pass -> next alpha
+    every 200 steps: if the residual moved, re-probe L  # with 2x backoff
+</code></pre>
+
+<p>There is no schedule, no trust region in the shipped configuration, no mode switch, and no control decision that compares two loss values. NaN is the only reject.</p>
+
+<h2 id="solvers">10. The two solvers</h2>
+
+<div class="scroll"><table>
+<tr><th></th><th><code>lsqr</code> — the shipped path</th><th><code>direct</code> — the reference</th></tr>
+<tr><td>what it does</td>
+    <td>Matrix-free damped LSQR. $J_Lz$ is one JVP, $J_L^{\!\top}u$ is one VJP, both restricted to the mask. $\tau$ iterations per step, restarted from scratch on a fresh residual, Fong-Saunders stopping with $\epsilon$-scaled tolerances. Damping applied implicitly through the operator, never by stacking an identity.</td>
+    <td>Materialise $J_L$, take its SVD, apply $\sigma/(\sigma^2+\mu)$ with truncation at <code>rcond</code>, plus the column-norm observability filter.</td></tr>
+<tr><td>state</td><td>$O(d)$ — Adam's class</td><td>$O(nB)$ — a measurement instrument, not a candidate</td></tr>
+<tr><td>cost/step</td><td>$2\tau$ passes</td><td>$B$ pass-equivalents</td></tr>
+<tr><td>role</td><td>The honest, deployable version.</td><td>Separates "is the control logic right?" from "can the cheap solver keep up?" — so T2/T2b/T4 judge the allocation without the solver's limits in the way.</td></tr>
+</table></div>
+
+<div class="card">
+<h4>One implementation honesty note</h4>
+<p>The reference arm gets its Jacobian columns from a one-pass analytic formula rather than a loop of $B$ JVPs, because a per-column JVP loop costs $|L|$ passes <em>per step</em> and is unaffordable at 3000 steps. The analytic version was verified against the blind JVP construction to a max relative difference of $1\times10^{-17}$, so it is arithmetically the same matrix — but it means the reference arm's <em>wall-clock</em> is not that of an architecture-blind implementation. The shipped <code>lsqr</code> path never touches it.</p>
+</div>
+
+<h2 id="constants">11. Every constant and every knob</h2>
+
+<h4>Constants</h4>
+<div class="scroll"><table>
+<tr><th>symbol / name</th><th>value</th><th>what it is and why that value</th></tr>
+<tr><td><code>N_TRAIN</code>, <code>N_EVAL</code></td><td class="num">2003, 4001</td><td>Train and eval grid sizes. Coprime-ish and disjoint so eval is genuinely held out.</td></tr>
+<tr><td>$\lambda$ (<code>LAM</code>)</td><td class="num">0.25</td><td>Bandwidth parameter of the QI geometry, $\gamma=\lambda/h$. The repo's measured optimum (expC03 basin).</td></tr>
+<tr><td><code>RCOND</code></td><td class="num">$10^{-15}$</td><td>Singular-value truncation in every direct solve. Repo standard.</td></tr>
+<tr><td>$\epsilon_{\text{mach}}$</td><td class="num">$2.22\times10^{-16}$</td><td>fp64 unit roundoff. Used to scale the probe noise guard and the drift gate.</td></tr>
+<tr><td><code>Q_ENTER</code> / <code>Q_EXIT</code></td><td class="num">$10^{-8}$ / $10^{-7}$</td><td>Certificate admit / demote on $\hat q$. A deadband so membership cannot chatter. The measured probe separation is 9–12 orders, so anything in $10^{-6}..10^{-10}$ gives the same answer — not a delicate constant.</td></tr>
+<tr><td><code>COL_FLOOR</code></td><td class="num">$10^{-8}$</td><td>Drop a Jacobian column below this fraction of the largest. Measured gap is live $O(1)$ vs blind $\le10^{-14}$, so it sits in a wide valley.</td></tr>
+<tr><td><code>PROBE_EPS</code></td><td class="num">$10^{-3}$</td><td>Relative step of the second-difference probe. Sets the noise floor $\propto1/\text{PROBE\_EPS}^2$.</td></tr>
+<tr><td><code>ALPHA_MIN</code> / <code>ALPHA_MAX</code></td><td class="num">$10^{-15}$ / $1$</td><td>Clip on the damping. The floor matches <code>RCOND</code>; below it the solve is undamped anyway.</td></tr>
+<tr><td>lr</td><td class="num">$10^{-3}$</td><td>Adam's learning rate, unchanged from the rest of the campaign.</td></tr>
+<tr><td>$\beta_1,\beta_2,\epsilon$</td><td class="num">0.9, 0.999, $10^{-8}$</td><td>Stock Adam.</td></tr>
+<tr><td><code>alpha_ema</code></td><td class="num">0.9</td><td>Smoothing of the drift gauge, bias-corrected.</td></tr>
+<tr><td><code>refresh</code></td><td class="num">200</td><td>Boundary for the $\sigma_1$ refresh and the gated re-probe. Matches iteration 11's cadence.</td></tr>
+</table></div>
+
+<h4>Knobs (the arguments of <code>train_lobo</code>)</h4>
+<div class="scroll"><table>
+<tr><th>knob</th><th>options</th><th>meaning</th></tr>
+<tr><td><code>lset</code></td><td><code>none</code> · <code>readout</code> · <code>certificate</code></td><td>How $L$ is chosen. <code>none</code> is stock Adam; <code>readout</code> is the oracle; <code>certificate</code> discovers it.</td></tr>
+<tr><td><code>lsolver</code></td><td><code>lsqr</code> · <code>direct</code></td><td>The two solvers above.</td></tr>
+<tr><td><code>tau</code></td><td>1, 3, 10, 30, 100</td><td>LSQR iterations per step.</td></tr>
+<tr><td><code>alpha_mode</code></td><td><code>fixed</code> · <code>drift</code> · <code>drift_gain</code></td><td>The damping rule.</td></tr>
+<tr><td><code>rho_mode</code></td><td><code>gain</code> · <code>fixed</code></td><td>Energy allocation: measured, or pinned.</td></tr>
+<tr><td><code>astep</code></td><td><code>adam</code> · <code>linesearch</code></td><td>$A$'s step length.</td></tr>
+<tr><td><code>clip</code></td><td>on / off</td><td>The trust region on $\Delta_L$.</td></tr>
+<tr><td><code>adam_on_L</code></td><td>on / off</td><td>Whether Adam also steps the certified block (iteration 11 did).</td></tr>
+<tr><td><code>reset_moments</code></td><td>on / off</td><td>Zero Adam's moments on $L$ after a solve.</td></tr>
+</table></div>
+
+<h2 id="metrics">12. The two metrics (this is the important one)</h2>
+
+<p>Every run reports two numbers, and the second one is what makes the negative result visible at all.</p>
+
+<div class="scroll"><table>
+<tr><th>metric</th><th>definition</th><th>the question it answers</th></tr>
+<tr><td><b>reached</b></td><td>best eval rel $L_2$ over the trajectory</td><td>Did the readout get solved?</td></tr>
+<tr><td><b>geometry floor</b><br><span class="small"><code>floor_final</code></span></td><td>truncated-SVD solve on the geometry the run <em>finished</em> with</td><td>Did the geometry get <em>learned</em>? This is exactly the error one terminal exact solve would give, so it also scores every arm "with a finisher".</td></tr>
+</table></div>
+
+<p>The reference point <code>floor0</code> is the same quantity evaluated at $\theta_0$: the best any readout-only method could do without moving the geometry at all. A run whose geometry floor equals its <code>floor0</code> did not improve its features, no matter how good its error looks.</p>
+
+<h2 id="t1">13. T1 — the pieces, tested alone</h2>
+
+<p>Five checks before anything was assembled. All pass against the final code.</p>
+
+<div class="scroll"><table>
+<tr><th>check</th><th>result</th></tr>
+<tr><td>$\mu d_\mu \to$ raw gradient as $\mu\to\infty$</td><td class="num">cos $=1-8\times10^{-11}$, length ratio $0.99998$ ✓</td></tr>
+<tr><td>$d_\mu \to$ exact solve as $\mu\to0$</td><td class="num">reaches $9.5\times10^{-15}$ vs floor $2.3\times10^{-14}$ ✓</td></tr>
+<tr><td>matrix-free LSQR $=$ direct damped solve</td><td class="num">$10^{-13}$ agreement where it converges ✓</td></tr>
+<tr><td>$\sigma_1$ by 3 power iterations</td><td class="num">within $0.25\%$ of the SVD ✓</td></tr>
+<tr><td>gain estimator $=$ actual line-search decrease</td><td class="num">ratio $1.00000$ ($L$ dir), $0.989$ (random) ✓</td></tr>
+<tr><td><code>lset=none</code> reproduces stock Adam</td><td class="num">$7.9\times10^{-17}$ relative in $\theta$ after 50 steps ✓</td></tr>
+</table></div>
+
+<figure>
+<img src="figures/T1_mu_interpolation.png" alt="Cosine similarity and relative length of the damped GN step against alpha">
+<figcaption><b>How to read it.</b> The $x$ axis is $\alpha$, log-scaled and <em>reversed</em>, so left-to-right reads as "solving harder". Left panel: cosine of $\mu d_\mu$ to the raw gradient (circles) and of $d_\mu$ to the exact solve (squares). Right panel: the same two as relative lengths. The claim is the circles pinned at 1 on the left edge — at heavy damping the update <em>is</em> the gradient — and the squares climbing to 1 on the right.</figcaption>
+</figure>
+
+<div class="key warn">
+<strong>The one check that failed, and it is a known wall.</strong> A <em>cold</em> matrix-free LSQR converges in 8 iterations at $\alpha=1$ and 70 at $\alpha=10^{-2}$, but <b>does not converge at all at $\alpha\le10^{-4}$ within a 400-iteration cap</b>. That is expD11's result — on a gapless spectrum a short-recurrence Krylov method needs stored orthogonality of size $\approx r$ to reach the floor. It is present and correct here, and it sets up T3.
+</div>
+
+<h2 id="t2">14. T2 — the ablation</h2>
+
+<p>Ten arms, one ablation each, everything else held at the proposal. $N{=}128$, 2500 steps, oracle $L$, direct solve — so the allocation logic is the only thing under test.</p>
+
+<div class="scroll"><table>
+<tr><th>arm</th><th class="num">qi/sine</th><th class="num">qi/runge</th><th class="num">rand/sine</th><th class="num">rand/runge</th></tr>
+<tr><td>stock Adam</td><td class="num">$8.6\times10^{-4}$</td><td class="num">$2.3\times10^{-4}$</td><td class="num">$1.6\times10^{-2}$</td><td class="num">$1.0\times10^{-1}$</td></tr>
+<tr><td><b>undamped, $\rho$ allocated</b></td><td class="num"><b>$2.0\times10^{-16}$</b></td><td class="num"><b>$1.2\times10^{-16}$</b></td><td class="num"><b>$5.7\times10^{-11}$</b></td><td class="num"><b>$5.8\times10^{-3}$</b></td></tr>
+<tr><td>drift-matched $\mu$</td><td class="num">$1.1\times10^{-12}$</td><td class="num">$2.5\times10^{-14}$</td><td class="num">$6.4\times10^{-11}$</td><td class="num">$9.5\times10^{-3}$</td></tr>
+<tr><td>trust-region clip on</td><td class="num">$9.3\times10^{-7}$</td><td class="num">$4.7\times10^{-12}$</td><td class="num">$6.2\times10^{-1}$</td><td class="num">$2.4\times10^{-1}$</td></tr>
+<tr><td>Adam's own step length</td><td class="num">$7.7\times10^{-12}$</td><td class="num">$7.0\times10^{-13}$</td><td class="num">$1.1\times10^{-10}$</td><td class="num">$2.8\times10^{-2}$</td></tr>
+<tr><td>$\alpha$ pinned at 1</td><td class="num">$6.8\times10^{-3}$</td><td class="num">$2.2\times10^{-3}$</td><td class="num">$1.8\times10^{-1}$</td><td class="num">$1.7\times10^{-1}$</td></tr>
+<tr><td>$\rho=0$ (no allocation)</td><td class="num">$2.7\times10^{-12}$</td><td class="num">$2.4\times10^{-13}$</td><td class="num">$1.6\times10^{-1}$</td><td class="num">$2.1\times10^{-1}$</td></tr>
+</table></div>
+
+<p><b>Both of my step-size protections are costs, not protections</b>, and for the same reason: they exist to stop you banking accuracy you cannot keep, and when you re-solve every single step there is nothing to keep — you just re-solve. <code>reset_moments</code> changed nothing to three digits. <code>adam_on_L</code> was neutral to mildly positive.</p>
+
+<p>The "Adam's own step length" row hides its real failure behind a <em>best</em> column. Its <em>final</em> errors are $2.2\times10^{-6}$, $7.5\times10^{-10}$, $1.26$ and $3.2\times10^{2}$ — it oscillates and then diverges. The line search is what removes that.</p>
+
+<figure>
+<img src="figures/T2_ablation.png" alt="Error against iteration for ten ablation arms across four cells">
+<figcaption><b>How to read it.</b> 2×2 over (init × target), eval rel $L_2$ against iteration, one colour per arm, shared log $y$ fixed to $[10^{-16},3]$ so panels are comparable; dashed line is the floor of the initial geometry. Look for purple and orange (undamped, $\rho{=}1$) flat along $10^{-16}$ in both QI panels; green (Adam's own step length) oscillating over six decades and rising; grey (Adam) barely moving; and in the bottom-right panel every line collapsing onto the dashed floor — that collapse is the geometry never improving.</figcaption>
+</figure>
+
+<figure>
+<img src="figures/T2_signals.png" alt="Error, alpha and rho against iteration for QI and random init">
+<figcaption><b>How to read it.</b> Three stacked rows, two columns (QI and random init, <code>sine</code>): the error, then $\alpha$ as the drift gauge asks for it with the error overlaid dotted for scale, then $\rho$. Two things to look for: $\alpha$ tracking the error curve about two decades below it — the gauge is measuring the right thing — and $\rho$ chattering across the full $[0,1]$ range once converged. That chatter is the allocator reading rounding noise once both gains bottom out. Harmless here, but it is why the rule needs a floor.</figcaption>
+</figure>
+
+<h2 id="t2b">15. T2b — the damping rules, and the tension</h2>
+
+<p>Four arms × 2 inits × 4 targets, 4000 steps, scoring both metrics. This is where the real obstacle shows up.</p>
+
+<div class="key warn">
+<strong>The finding.</strong> From a random init, solving $L$ exactly makes the residual orthogonal to everything the features can express. The geometry gradient that survives is a much weaker learning signal — and it is <em>self-reinforcing</em>: weak signal ⟶ short line-searched $A$ step ⟶ quiet drift gauge ⟶ deeper solve ⟶ weaker signal. On <code>sine_8pi</code>, plain Adam improves the geometry from $0.43$ to $4.3\times10^{-5}$ — four orders — while every hard-solving arm leaves it at $0.43$.
+</div>
+
+<p><code>drift_gain</code> is the one arm that breaks the loop by deliberately under-solving. On <code>runge</code> it leaves a geometry worth $5.8\times10^{-7}$ — $16000\times$ better than the one it started with, and $100\times$ better than Adam's. It does not work on <code>sine_8pi</code>. And because it under-solves, its <em>reached</em> error is poor; it is only a win if a finisher cashes the geometry in.</p>
+
+<figure>
+<img src="figures/T2b_tension.png" alt="Grouped bars: error reached vs error after a terminal solve, per arm and target">
+<figcaption><b>How to read it — this is the figure that carries the negative result.</b> Rows are init; the left column is what each arm <em>reached</em>, the right column is what its final geometry is <em>worth</em> (= after one terminal exact solve). Dashed lines are the initial geometry's floor. Compare the two columns in the bottom row: grey (Adam) goes from worst to best on <code>sine_8pi</code> and <code>runge</code>, while the solving arms barely move — their bars were already sitting on their own geometry's floor.</figcaption>
+</figure>
+
+<h2 id="t3">16. T3 — pricing the $O(d)$ solver</h2>
+
+<p>Swap the reference solve for the matrix-free LSQR, hold everything else. $N{=}128$, 3000 steps.</p>
+
+<div class="scroll"><table>
+<tr><th>arm</th><th class="num">passes/step</th><th class="num">qi/sine reached</th><th class="num">geometry left</th><th class="num">rand/runge reached</th><th class="num">geometry left</th></tr>
+<tr><td>direct (reference)</td><td class="num">274</td><td class="num">$2.0\times10^{-16}$</td><td class="num">$2.3\times10^{-14}$</td><td class="num">$5.9\times10^{-3}$</td><td class="num">$9.4\times10^{-3}$</td></tr>
+<tr><td>lsqr $\tau{=}1$</td><td class="num">7</td><td class="num">$3.2\times10^{-3}$</td><td class="num">$1.2\times10^{-9}$</td><td class="num">$1.1\times10^{-1}$</td><td class="num"><b>$4.4\times10^{-6}$</b></td></tr>
+<tr><td>lsqr $\tau{=}3$</td><td class="num">11</td><td class="num">$3.6\times10^{-4}$</td><td class="num">$1.5\times10^{-11}$</td><td class="num">$7.1\times10^{-2}$</td><td class="num">$2.6\times10^{-4}$</td></tr>
+<tr><td>lsqr $\tau{=}30$</td><td class="num">65</td><td class="num">$8.2\times10^{-6}$</td><td class="num">$9.8\times10^{-13}$</td><td class="num">$5.2\times10^{-2}$</td><td class="num">$9.3\times10^{-3}$</td></tr>
+</table></div>
+
+<p>As an error-reducer the $O(d)$ path is <b>ten orders short</b> of the reference on QI init. Carrying the warm start in $\theta$ across steps does <em>not</em> rescue a short-recurrence Krylov solve on a gapless spectrum, so expD11's wall stands. Sweeping $\alpha$ at fixed $\tau$ changes almost nothing ($8.9$, $8.7$, $8.7\times10^{-6}$ across four decades), which confirms it is the iteration budget, not the damping, doing the work here.</p>
+
+<div class="key ok">
+<strong>But read the other column.</strong> The shallower the solve, the better the geometry it leaves — monotonically. At $\tau{=}1$ on random-init <code>runge</code> the geometry left behind is worth $4.4\times10^{-6}$: $2000\times$ better than the exact solve's, at $1/40$ of its passes. So the two under-solving mechanisms — damping and a truncated iterative solver — produce the same effect, and <em>the cheap one produces it for free</em>. The $O(d)$ solver's weakness as a solver is exactly the under-solving that feature learning needs.
+</div>
+
+<figure>
+<img src="figures/T3_solver.png" alt="Error against iteration for the direct solve and LSQR at five tau">
+<figcaption><b>How to read it.</b> 2×2 over (init × target), the reference direct solve dashed black against the matrix-free LSQR at five values of $\tau$. Look for the clean monotone ladder in $\tau$ and the ten-order gap down to the black line — that gap is the price of the $O(d)$ path.</figcaption>
+</figure>
+
+<figure>
+<img src="figures/T3b_undersolving.png" alt="Geometry floor against solver budget tau, both inits">
+<figcaption><b>How to read it — the two regimes in one picture.</b> $x$ is the per-step solver budget $\tau$ (the star at the right edge is the exact solve), $y$ is what the geometry each arm finished with is <em>worth</em>, dashed lines are the geometry each started from. On random init (right) the curves <em>rise</em> with $\tau$ up to the dashed line: solving harder leaves a worse geometry. On QI init (left) they <em>fall</em>: solving harder is better. Same knob, opposite sign, decided by whether the geometry is already right.</figcaption>
+</figure>
+
+<h2 id="t4">17. T4 — the headline grid</h2>
+
+<p>6 targets × 3 widths × 2 inits × 3 arms, 3000 steps, with $L$ <b>discovered by the certificate</b> rather than handed over.</p>
+
+<h4>QI init — error reached, all 18 cells</h4>
+<div class="scroll"><table>
+<tr><th>target</th><th class="num">$N{=}64$</th><th class="num">128</th><th class="num">256</th><th class="num">floor 64</th><th class="num">floor 128</th><th class="num">floor 256</th></tr>
+<tr><td><code>sine</code></td><td class="num">$2.4\times10^{-16}$</td><td class="num">$2.0\times10^{-16}$</td><td class="num">$2.1\times10^{-16}$</td><td class="num">$5.7\times10^{-15}$</td><td class="num">$2.3\times10^{-14}$</td><td class="num">$1.6\times10^{-14}$</td></tr>
+<tr><td><code>sine_8pi</code></td><td class="num">$1.3\times10^{-13}$</td><td class="num">$1.4\times10^{-15}$</td><td class="num">$8.7\times10^{-16}$</td><td class="num">$1.9\times10^{-13}$</td><td class="num">$5.5\times10^{-14}$</td><td class="num">$3.8\times10^{-14}$</td></tr>
+<tr><td><code>runge</code></td><td class="num">$1.3\times10^{-9}$</td><td class="num">$1.2\times10^{-16}$</td><td class="num">$1.1\times10^{-16}$</td><td class="num">$3.3\times10^{-9}$</td><td class="num">$2.8\times10^{-14}$</td><td class="num">$1.7\times10^{-14}$</td></tr>
+<tr><td><code>sine_mixture</code></td><td class="num">$4.7\times10^{-11}$</td><td class="num">$8.7\times10^{-15}$</td><td class="num">$4.6\times10^{-16}$</td><td class="num">$4.7\times10^{-11}$</td><td class="num">$6.8\times10^{-14}$</td><td class="num">$2.8\times10^{-14}$</td></tr>
+<tr><td><code>exp</code></td><td class="num">$1.0\times10^{-16}$</td><td class="num">$1.0\times10^{-16}$</td><td class="num">$1.0\times10^{-16}$</td><td class="num">$2.8\times10^{-14}$</td><td class="num">$8.3\times10^{-15}$</td><td class="num">$1.1\times10^{-14}$</td></tr>
+<tr><td><code>abs_cubed</code></td><td class="num">$4.6\times10^{-7}$</td><td class="num">$4.5\times10^{-8}$</td><td class="num">$4.2\times10^{-9}$</td><td class="num">$5.3\times10^{-7}$</td><td class="num">$4.7\times10^{-8}$</td><td class="num">$4.2\times10^{-9}$</td></tr>
+</table></div>
+
+<p><b>All 18 cells land at or below the frozen-geometry floor, and 10 sit at $\sim10^{-16}$</b> — the rounding floor of evaluating the model on a held-out grid, i.e. every digit fp64 has. Stock Adam on the same cells ranges from $4\times10^{-5}$ to $2\times10^{-1}$, so the margin is 8 to 13 orders. <code>abs_cubed</code> is the control: it is only twice differentiable, its own floor is $10^{-7}$–$10^{-9}$, and the optimizer sits exactly on it at every width rather than overfitting past it.</p>
+
+<h4>Random init — after one terminal exact solve</h4>
+<p class="small">The only fair column, because as-is every arm is pinned at its own geometry's floor.</p>
+<div class="scroll"><table>
+<tr><th>target</th><th class="num">Adam + finisher</th><th class="num">lobo + finisher</th><th class="num">lobo_soft + finisher</th></tr>
+<tr><td><code>sine</code> ($N{=}256$)</td><td class="num">$4.6\times10^{-12}$</td><td class="num">$5.6\times10^{-11}$</td><td class="num"><b>$9.0\times10^{-13}$</b></td></tr>
+<tr><td><code>sine_8pi</code> ($N{=}256$)</td><td class="num">$2.5\times10^{-4}$</td><td class="num">$4.2\times10^{-1}$</td><td class="num"><b>$1.0\times10^{-5}$</b></td></tr>
+<tr><td><code>runge</code> ($N{=}128$)</td><td class="num">$8.9\times10^{-5}$</td><td class="num">$9.4\times10^{-3}$</td><td class="num"><b>$2.8\times10^{-6}$</b></td></tr>
+<tr><td><code>sine_mixture</code> ($N{=}256$)</td><td class="num"><b>$5.3\times10^{-3}$</b></td><td class="num">$2.1\times10^{-1}$</td><td class="num">$2.2\times10^{-2}$</td></tr>
+<tr><td><code>exp</code> ($N{=}256$)</td><td class="num">$1.0\times10^{-13}$</td><td class="num">$1.9\times10^{-13}$</td><td class="num">$1.9\times10^{-13}$</td></tr>
+<tr><td><code>abs_cubed</code> ($N{=}256$)</td><td class="num">$2.8\times10^{-5}$</td><td class="num">$7.7\times10^{-5}$</td><td class="num"><b>$1.1\times10^{-5}$</b></td></tr>
+</table></div>
+
+<p>The hard-solving arm never improves the geometry — its finisher column equals its <code>floor0</code> column to two digits, in all 18 cells. The under-solving arm beats Adam-plus-finisher on four of six targets by $13\times$ to $32\times$. <b>But it is not reliable</b>: <code>sine_8pi</code> at $N{=}128$ returns $4.3\times10^{-1}$ — a total failure — sitting between $1.8\times10^{-4}$ at $N{=}64$ and $1.0\times10^{-5}$ at $N{=}256$. A rule that swings six orders on a width change is a rule that is not yet right.</p>
+
+<figure>
+<img src="figures/T4_grid_qi.png" alt="Error against width for six targets, QI init">
+<figcaption><b>How to read it.</b> One panel per target, eval rel $L_2$ against width on log-log; solid lines are the error reached, dotted the same arm after a finisher, black dashed the initial geometry's floor. The claim is the red line sitting <em>below</em> the black dashed line in essentially every panel — and flat at $10^{-16}$ on <code>sine</code> and <code>exp</code>.</figcaption>
+</figure>
+
+<figure>
+<img src="figures/T4_grid_rand.png" alt="Error against width for six targets, random init">
+<figcaption><b>How to read it.</b> Same layout, random init. Here the story is the <em>gap</em> between each arm's solid line and its own dotted line: a large gap means the run left a geometry much better than the error it reported. Note grey's dotted line (Adam + finisher) beating red's on the harder targets.</figcaption>
+</figure>
+
+<h2 id="verdict">18. Verdict: what survived</h2>
+
+<div class="scroll"><table>
+<tr><th>mechanism</th><th>verdict</th><th>evidence</th></tr>
+<tr><td>Single measured energy budget $E=\|\Delta^{\text{Adam}}\|$, split by $\rho$</td>
+    <td class="verdict-kept">KEPT</td>
+    <td>$\rho=0$ fails on random init ($1.6\times10^{-1}$ vs $5.7\times10^{-11}$). Exact reduction to Adam when $L$ is empty.</td></tr>
+<tr><td>Exact-line-search length on $A$</td>
+    <td class="verdict-kept">KEPT — load-bearing</td>
+    <td>Without it three of four cells end the run diverging, final error up to $3.2\times10^{2}$. Costs nothing: the JVP is already computed for $\rho$.</td></tr>
+<tr><td>Adam moments on all coordinates</td>
+    <td class="verdict-kept">KEPT</td>
+    <td>Makes the $A\!\leftrightarrow\!L$ handoff a non-event. <code>reset_moments</code> changes nothing.</td></tr>
+<tr><td>The certificate (probe + observability + column filter)</td>
+    <td class="verdict-kept">KEPT</td>
+    <td>Finds the readout blind; reproduces iteration 11's $B$ counts exactly; the column filter drops all 121 late admissions.</td></tr>
+<tr><td>Trust-region clip on $\Delta_L$</td>
+    <td class="verdict-cut">CUT</td>
+    <td>Costs 5–8 orders. The damping already sets the step length.</td></tr>
+<tr><td>Drift-matched damping as staleness insurance</td>
+    <td class="verdict-cut">CUT (repurposed)</td>
+    <td>Costs 4 orders at every-step cadence. $\mu$'s real job is solver tractability and deliberate under-solving, not staleness.</td></tr>
+</table></div>
+
+<h3>The two things worth arguing about</h3>
+<ol>
+<li><b>Solving every step is different in kind from solving every 200.</b> Iteration 11 sawtoothed: each solve hit the floor, the next 200 Adam steps walked it back up. Solving every step removes the walk-up <em>and</em> turns the repeated truncated solve into iterative refinement, which converges past the accuracy of any single truncated solve. That is where $2\times10^{-16}$ comes from against a single-solve floor of $2.3\times10^{-14}$.</li>
+<li><b>How hard to solve should be governed by how much the geometry still has to learn.</b> Two independent knobs — the damping $\alpha$ and the solver budget $\tau$ — produce the same trade in the same direction. <code>drift_gain</code> is my attempt to measure that quantity; it demonstrably works on some targets and fails badly on others, so the mechanism is real and the rule is not.</li>
+</ol>
+
+<h3>Open, in priority order</h3>
+<ul>
+<li>The greedy allocation is myopic. $L$'s one-step decrease essentially always beats $A$'s, so $\rho\to1$ and the geometry freezes. $A$'s value is the <em>floor it will reach</em>, not the decrease it makes this step. Is there an $O(d)$ observable for that?</li>
+<li>Should the regimes be sequenced rather than blended — under-solve while the drift gauge reads real motion, finish exactly when it quiets? That is expD10's tier-2/tier-3 split arriving from the other direction.</li>
+<li>What makes <code>sine_8pi</code> bistable across widths under <code>drift_gain</code> — is $\sqrt{1-\rho}$ latching, or is it the target?</li>
+<li>$\rho$ chatters between 0 and 1 once both gains hit rounding level. Floor it, or drive it from a smoothed observable.</li>
+</ul>
+
+<h3>Caveats I would not want glossed over</h3>
+<ul>
+<li>One seed throughout.</li>
+<li><code>floor_final</code> is a truncated-SVD solve, so it is a <em>proxy</em> for a finisher, not a measured finisher run.</li>
+<li>The reference arm's analytic Jacobian is architecture-specific (verified equal to the blind construction to $10^{-17}$, but its wall-clock is not a blind implementation's).</li>
+<li>"Random init" is PyTorch's stock initialisation, which for a $1\to W$ layer gives $w\sim U(-1,1)$ — a bandwidth regime far from the QI one. It is a hard case by construction, not a representative one.</li>
+</ul>
+
+<h2 id="files">19. Cost, memory, and the file map</h2>
+
+<h4>Per-step cost of the shipped path</h4>
+<div class="scroll"><table>
+<tr><th>item</th><th class="num">passes</th></tr>
+<tr><td>fused forward + backward (residual and gradient)</td><td class="num">2</td></tr>
+<tr><td>LSQR at $\tau$ iterations (one JVP + one VJP each)</td><td class="num">$2\tau$</td></tr>
+<tr><td>the two gain JVPs (which also give the line search)</td><td class="num">2</td></tr>
+<tr><td>the drift gauge JVP</td><td class="num">1</td></tr>
+<tr><td>$\sigma_1$ power iteration, amortised over 200 steps</td><td class="num">0.03</td></tr>
+<tr><td><b>total at $\tau=1$ / $\tau=3$</b></td><td class="num"><b>7 / 11</b></td></tr>
+</table></div>
+
+<h4>Persistent state</h4>
+<p>$\theta$, Adam's two moments, the membership mask, and one power-iteration vector. All $O(d)$ — Adam's own class. No block preconditioner, no stored Krylov basis, no per-sample cache. The reference <code>direct</code> arm materialises $J_L$ and is explicitly a measurement instrument, not a candidate.</p>
+
+<h4>Files</h4>
+<pre><code>experiments/expD14_lobotomy/iteration_0/
+  core0.py          the optimizer, the case builder, the certificate, the solvers
+  t1_pieces.py      T1  -- the five piece checks
+  t2_assembly.py    T2  -- the 10-arm ablation
+  t2b_alpha.py      T2b -- the damping rules, both metrics
+  t3_solver.py      T3  -- direct vs matrix-free LSQR
+  t4_grid.py        T4  -- the headline grid, certificate-discovered L
+  figs0.py          every figure on this page
+
+results/checkpoint_D_optimizers/expD14_lobotomy/iteration_0/
+  iteration_0_results.md    the writeup (this page is its long-form companion)
+  t{2,2b,3,4}*.jsonl        every run, with full trajectories
+  figures/                  the PNGs embedded above
+</code></pre>
+
+<p class="small" style="margin-top:40px">Everything runs in fp64 via <code>uv run --extra dev python …</code>. <code>results/</code> is gitignored except <code>*_results.md</code>, so this page and the figures are local artefacts, not tracked ones.</p>
+
+</div>
+</body>
+</html>
