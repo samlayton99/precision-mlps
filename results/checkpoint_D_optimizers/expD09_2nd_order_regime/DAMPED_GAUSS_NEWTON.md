@@ -1,6 +1,6 @@
 # Damped Gauss-Newton on the linear parameter block
 
-**The mu math, written out as Sam specified. Moved here from `results/` because it was untracked. Directly relevant to the open mu-schedule question; read alongside `experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` IV.5-IV.7.**
+**The mu math, written out as Sam specified. Moved here from `results/` because it was untracked. Directly relevant to the open mu-schedule question; read alongside `results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` IV.5-IV.7.**
 
 **Status:** math written down as specified by Sam; the three measured laws are data-obvious. The step-3 recommendation at the end is proposed, not approved.
 

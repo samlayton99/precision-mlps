@@ -76,10 +76,10 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expD09_2nd_order_regime/       step-2 recipe: machine eps on frozen Phi at O(d) state
   expD10_step2_hardening/        step-2 hardening ledger, tier structure, lessons T1-T12
   expD11_batching/               NEGATIVE: no O(d*k) solver reaches the fp64 floor
-  expD12_mu_ladder/              the mu ladder on a frozen Phi   (writeup: experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md)
-  expD13_drift_ladder/           the mu ladder on a drifting Phi (writeup: experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md)
+  expD12_mu_ladder/              the mu ladder on a frozen Phi   (writeup: results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md)
+  expD13_drift_ladder/           the mu ladder on a drifting Phi (writeup: results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md)
   expD14_lobotomy/               step 3, first stitching attempt. READ ITS CORRECTION HEADER
-  expD15_inclusion_score/        which parameters enter L (writeup: experiments/expD15_inclusion_score/METHOD_L_selection.md)
+  expD15_inclusion_score/        which parameters enter L (writeup: results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md)
   expD03/expD04/exp13            stubs, never run
   # Checkpoint E -- extend to 2D
   expE01_geometry_zoo_2d/        Six 2D ridge geometries head-to-head (hex folded in; ex-exp11)

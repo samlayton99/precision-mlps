@@ -4,7 +4,7 @@
 
 ## Scope
 
-Push the fixed-geometry + lstsq recipe past 1D--2D scalar regression toward real use, starting with differential equations: the PINN setting, done as a solve instead of training. Checkpoints A--D (1D) and E (2D) are the foundation; `experiments/expF01_linear_de_zoo/PINN_FEASIBILITY.md` is the background analysis (why the recipe transfers, the matrix anatomy, what is and is not possible).
+Push the fixed-geometry + lstsq recipe past 1D--2D scalar regression toward real use, starting with differential equations: the PINN setting, done as a solve instead of training. Checkpoints A--D (1D) and E (2D) are the foundation; `results/checkpoint_F_applications/expF01_linear_de_zoo/PINN_FEASIBILITY.md` is the background analysis (why the recipe transfers, the matrix anatomy, what is and is not possible).
 
 ## The story so far
 

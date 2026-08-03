@@ -1,6 +1,6 @@
 # Where everything lives
 
-Every surviving document in the repo, what it is for, and when to read it. Documents live **next to the experiment that produced them**; `docs/` holds only material that no single experiment owns.
+Every surviving document in the repo, what it is for, and when to read it. Documents live **next to the experiment's writeup under `results/`** (Sam reads `results/`, not `experiments/`); `experiments/` holds only code; `docs/` holds only program-level material that no single experiment owns.
 
 ## Read in this order
 
@@ -19,12 +19,12 @@ If a document is not linked from `ORIENTATION.md` or from this index, treat it a
 |---|---|
 | `docs/REQUIREMENTS.md` | the gate (above) |
 | `docs/requirements_and_lessons.md` | the evidence behind the gate: five requirements as originally written, three litmus tests, eight measured lessons with their measurements |
-| `experiments/expD09_2nd_order_regime/DAMPED_GAUSS_NEWTON.md` | the $\mu$ math written out: $d_\mu = \arg\min\|J_Ld+r\|^2 + \mu\|d\|^2$, the $\alpha = \sqrt\mu/\sigma_1$ correspondence, $\kappa_\mu = 1/\alpha$, three measured laws |
-| `experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` | **the step-2 solver in full.** The $\mu$ control rules (IV.5-IV.7), the damping floor $\alpha \ge r_\text{entry}$, the terminal-solve laws, the APPROVED row-separation result. Also the **only** writeup of expD12 and expD13, which have no results file. Covers expD09 through expD13. |
-| `experiments/expD15_inclusion_score/METHOD_L_selection.md` | **which parameters to solve.** Four working mechanisms with measured tradeoffs, costs, and enough implementation detail to rebuild them. The characterization: a parameter is in $L$ iff its Jacobian column does not move when $L$ is perturbed. |
-| `experiments/expD11_batching/SAM_SPEC_superseded.md` | Sam's original $O(m{+}n)$ rank-deficient least-squares spec. Answered negatively by expD11; kept for framing. |
-| `experiments/expD09_2nd_order_regime/SUBPROBLEM.md` | the frozen-$\Phi$ subproblem definition |
-| `experiments/expD10_step2_hardening/batching_test.md` | the batching test plan. T1 is corrected in place from expD11's negative result. |
+| `results/checkpoint_D_optimizers/expD09_2nd_order_regime/DAMPED_GAUSS_NEWTON.md` | the $\mu$ math written out: $d_\mu = \arg\min\|J_Ld+r\|^2 + \mu\|d\|^2$, the $\alpha = \sqrt\mu/\sigma_1$ correspondence, $\kappa_\mu = 1/\alpha$, three measured laws |
+| `results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` | **the step-2 solver in full.** The $\mu$ control rules (IV.5-IV.7), the damping floor $\alpha \ge r_\text{entry}$, the terminal-solve laws, the APPROVED row-separation result. Also the **only** writeup of expD12 and expD13, which have no results file. Covers expD09 through expD13. |
+| `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md` | **which parameters to solve.** Four working mechanisms with measured tradeoffs, costs, and enough implementation detail to rebuild them. The characterization: a parameter is in $L$ iff its Jacobian column does not move when $L$ is perturbed. |
+| `results/checkpoint_D_optimizers/expD11_batching/SAM_SPEC_superseded.md` | Sam's original $O(m{+}n)$ rank-deficient least-squares spec. Answered negatively by expD11; kept for framing. |
+| `results/checkpoint_D_optimizers/expD09_2nd_order_regime/SUBPROBLEM.md` | the frozen-$\Phi$ subproblem definition |
+| `results/checkpoint_D_optimizers/expD10_step2_hardening/batching_test.md` | the batching test plan. T1 is corrected in place from expD11's negative result. |
 
 **Experiment map, D07 onward.** Each writeup is at `results/checkpoint_D_optimizers/<exp>/`.
 
@@ -53,7 +53,7 @@ If a document is not linked from `ORIENTATION.md` or from this index, treat it a
 
 | document | contents |
 |---|---|
-| `experiments/expF01_linear_de_zoo/PINN_FEASIBILITY.md` | can the QI construction power a PINN. Analysis plus the reasoning behind expF01. |
+| `results/checkpoint_F_applications/expF01_linear_de_zoo/PINN_FEASIBILITY.md` | can the QI construction power a PINN. Analysis plus the reasoning behind expF01. |
 | `experiments/expF01_linear_de_zoo/pinn_poc.py` | the throwaway numpy proof-of-concept behind that analysis |
 | `docs/future_experiments.md` | the design spec for the non-optimizer checkpoints (E, F, G) |
 
@@ -61,7 +61,7 @@ If a document is not linked from `ORIENTATION.md` or from this index, treat it a
 
 `results/results.md` is the global cross-experiment synthesis. Per-experiment writeups are at `results/checkpoint_<A..G>_<name>/exp<X>NN_<name>/exp<X>NN_results.md`.
 
-`results/` is gitignored except `*_results.md`, `results/results.md`, and one pinned notebook. **That is why four load-bearing documents were invisible to git and nearly lost in the August 2026 cleanup.** Anything worth keeping goes in `docs/` or an `experiments/` folder, never in `results/`.
+**All `*.md` under `results/` is tracked** (the ignore exception was widened in August 2026 from `*_results.md`-only -- the narrow rule is how four load-bearing documents were nearly lost in the July cleanup). Data, caches and gif directories under `results/` remain ignored; figures and HTML explainers are tracked.
 
 ## Archive
 

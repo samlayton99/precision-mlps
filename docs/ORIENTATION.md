@@ -18,19 +18,19 @@ Step 3 decomposes into three sub-problems:
 
 | | status |
 |---|---|
-| **What to solve.** Which parameters enter the least-squares set $L$ | **solved**, `experiments/expD15_inclusion_score/METHOD_L_selection.md` |
+| **What to solve.** Which parameters enter the least-squares set $L$ | **solved**, `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md` |
 | **How hard to solve.** The damping $\mu$ and its schedule | **partly specified**, and the spec was violated. §3.1 |
 | **How Adam and the solve coexist.** Tempering Adam; not stunning its learning | **open, and confounded.** §3.2, §3.3 |
 
 ## 2. What is settled
 
-**The step-2 solver.** The recipe reaches machine epsilon on a frozen feature matrix in fp64 at $O(d)$ state (`expD09_recipe_results.md`), hardened across 6 targets, 4 widths, noise, batching, fp32, and 2-D (`expD10_hardening_results.md`). The full spec, including the damping control rules, is `experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md`.
+**The step-2 solver.** The recipe reaches machine epsilon on a frozen feature matrix in fp64 at $O(d)$ state (`expD09_recipe_results.md`), hardened across 6 targets, 4 widths, noise, batching, fp32, and 2-D (`expD10_hardening_results.md`). The full spec, including the damping control rules, is `results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md`.
 
 **The step-2 wall, and it is real.** No $O(d\cdot k)$ iterative solver reaches the fp64 floor on QI feature matrices (`expD11_results.md`, sharpened in `lead_B_results.md`). Reaching the floor requires stored orthogonality of size $c\approx r$, so $\Theta(d^2)$ state. The binding constraint is the **spectrum**, not batching or drift: the required window tracks the number of distinct singular-value scales, and QI spectra are gapless (median consecutive ratio 1.03), while a 2-level spectrum reaches $10^{-15}$ with zero stored state. `lead_B` localizes it to one sentence: a preconditioner reaches $\kappa = O(1)$ only by matching $R^{-1}$ to additive relative accuracy $1/\kappa$, and $R^{-1}$ has $\varepsilon$-rank $\approx d$ at that tolerance, so every $O(dk)$ family is a truncation that buys nothing. This forces the tiered design: a cheap recurring solver banking $10^{-7}$ to $10^{-9}$, plus a one-time finisher.
 
-**The linear block separates by rows** (approved by Sam). A weight matrix $W\in\mathbb R^{o\times h}$ is $o$ *independent* least-squares problems sharing one design matrix, so state is $h^2/2 + ho$, not $(oh)^2/2$. The governing size is the layer's **input** width. In `experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md`, marked APPROVED.
+**The linear block separates by rows** (approved by Sam). A weight matrix $W\in\mathbb R^{o\times h}$ is $o$ *independent* least-squares problems sharing one design matrix, so state is $h^2/2 + ho$, not $(oh)^2/2$. The governing size is the layer's **input** width. In `results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md`, marked APPROVED.
 
-**Which parameters to solve.** Four working mechanisms with measured tradeoffs, in `experiments/expD15_inclusion_score/METHOD_L_selection.md`. A parameter is in $L$ iff its Jacobian column does not move when $L$ is perturbed. The cheapest mechanism costs $O(\#\text{tensors})$ probes (7 to 28 measured), holds 100% precision on every architecture tested, and correctly refuses attention weights, layer-norm parameters and earlier blocks. Its limitation: the best set is sometimes a *mixed* set spanning several tensors by index, worth up to $40\times$.
+**Which parameters to solve.** Four working mechanisms with measured tradeoffs, in `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md`. A parameter is in $L$ iff its Jacobian column does not move when $L$ is perturbed. The cheapest mechanism costs $O(\#\text{tensors})$ probes (7 to 28 measured), holds 100% precision on every architecture tested, and correctly refuses attention weights, layer-norm parameters and earlier blocks. Its limitation: the best set is sometimes a *mixed* set spanning several tensors by index, worth up to $40\times$.
 
 **Adam preserves a good geometry but does not find one.** From the QI construction, an optimizer that solves the readout exactly reaches $\sim10^{-16}$; from random init it does not.
 
@@ -40,7 +40,7 @@ Step 3 decomposes into three sub-problems:
 
 $\mu$ is the damping in the block solve, $d_\mu = \arg\min_d \|J_L d + r\|^2 + \mu\|d\|^2$. Parameterize by $\alpha = \sqrt\mu/\sigma_1(J_L)$, never by $\mu$ directly.
 
-**Read `experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` sections IV.5-IV.7 and V.5-V.8 before designing anything here.** It already contains three control rules, and the last one is the guard the next phase most needs:
+**Read `results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` sections IV.5-IV.7 and V.5-V.8 before designing anything here.** It already contains three control rules, and the last one is the guard the next phase most needs:
 
 $$\text{(a) stop a level when}\quad \text{test}_2 = \frac{\|A^\top r - \mu x\|}{\|A\|\|r\|} \le \alpha, \qquad \text{(b) cap}\quad T_{\max} = \min(T_{\text{hard}},\ 5\alpha^{-3/4}),$$
 
@@ -124,7 +124,7 @@ Report all four metrics separately, because they are not interchangeable:
 ## 6. Next steps, in order
 
 1. **Clear the confound (§3.3).** Exact solve, unthrottled Adam geometry step, no energy split, scored on the final geometry's floor. One run per cell. Everything downstream depends on the answer.
-2. **Swap the discovery in.** expD14 used iteration 11's dense curvature probe: $\sim4m$ forward passes, never counted, and it collapses entirely in bf16 (its $10^{-3}$ relative step is below bf16's unit roundoff of $3.9\times10^{-3}$). `experiments/expD15_inclusion_score/METHOD_L_selection.md` replaces it at two passes with better accuracy. Straight substitution.
+2. **Swap the discovery in.** expD14 used iteration 11's dense curvature probe: $\sim4m$ forward passes, never counted, and it collapses entirely in bf16 (its $10^{-3}$ relative step is below bf16's unit roundoff of $3.9\times10^{-3}$). `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md` replaces it at two passes with better accuracy. Straight substitution.
 3. **Drive $\mu$ by the LM ratio**, against a fixed-$\alpha$ baseline and the expD12 ladder, **respecting the floor $\alpha \ge r_{\text{entry}}$**. Instrument coherent travel and the corrected Adam SNR at the same time; both are nearly free and they are the diagnostics for §3.2 and §3.3.
 4. **Run the deployable path in its shipped form.** The cheap $O(d)$ solver has never been composed with a discovered $L$; both numerical guards currently live only in the reference branch, so this is not a formality.
 5. **2-D throughout.**
@@ -139,23 +139,23 @@ Report all four metrics separately, because they are not interchangeable:
 | `docs/INDEX.md` | the map: every surviving document, what it is for, where it lives |
 | `docs/motivation.md` | the three-step program, Sam's framing. Start here |
 | `docs/requirements_and_lessons.md` | the evidence behind the gate: the requirements as originally written, the litmus tests, eight measured lessons with their measurements |
-| `experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` | the step-2 solver in full: the $\mu$ control rules, the damping floor, the terminal solve. Also the only writeup of expD12/expD13 |
-| `experiments/expD15_inclusion_score/METHOD_L_selection.md` | which parameters to solve: four methods, tradeoffs, costs |
-| `experiments/expD09_2nd_order_regime/DAMPED_GAUSS_NEWTON.md` | the $\mu$ math written out |
-| `experiments/expD10_step2_hardening/batching_test.md` | lessons T1-T12. Read before touching solver code. **T1 is corrected in place** |
+| `results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` | the step-2 solver in full: the $\mu$ control rules, the damping floor, the terminal solve. Also the only writeup of expD12/expD13 |
+| `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md` | which parameters to solve: four methods, tradeoffs, costs |
+| `results/checkpoint_D_optimizers/expD09_2nd_order_regime/DAMPED_GAUSS_NEWTON.md` | the $\mu$ math written out |
+| `results/checkpoint_D_optimizers/expD10_step2_hardening/batching_test.md` | lessons T1-T12. Read before touching solver code. **T1 is corrected in place** |
 | `results/.../expD10_step2_hardening/expD10_hardening_results.md` | the hardening ledger and the tier structure |
 | `results/.../expD11_batching/expD11_results.md` + `lead_B_results.md` | why no $O(dk)$ solver reaches the fp64 floor |
 | `results/.../expD09_2nd_order_regime/expD09_recipe_results.md` | the step-2 recipe |
 | `results/.../expD08_qi_init_nlcg/iteration_11/iteration_11_results.md` | the certificate, the coupling law, the settling regime |
 | `results/.../expD14_lobotomy/iteration_0/iteration_0_results.md` | the first stitching attempt. **Read its correction header** |
 | `results/.../expD15_inclusion_score/expD15_results.md` | discovery, experimental record |
-| `experiments/expD11_batching/SAM_SPEC_superseded.md` | Sam's $O(m{+}n)$ spec. Superseded by expD11's negative result; kept for framing |
+| `results/checkpoint_D_optimizers/expD11_batching/SAM_SPEC_superseded.md` | Sam's $O(m{+}n)$ spec. Superseded by expD11's negative result; kept for framing |
 
 **Live code.** `experiments/expD15_inclusion_score/` (discovery, current), `experiments/expD14_lobotomy/iteration_0/` (stitching), `experiments/expD09..expD13` (solver, $\mu$ ladder, drift ladder), `experiments/expD08_qi_init_nlcg/{run,iter11}.py` (imported by expD14 and expD07; the other 24 scripts were deleted).
 
 **What was removed, and why.** The expD08 campaign ran eleven optimizer iterations. Iterations 1-10, their per-iteration writeups, the tether documents, the working notes, the optimizer audit and 24 scripts were deleted, because iteration 11 supersedes all of them and the reusable content was already promoted into `requirements_and_lessons.md`. One nugget from the deleted audit is worth recording: it flagged a **per-tensor sampled probe** ($O(\#\text{tensors})$ forwards instead of $O(m)$) as "the requirement-5-compatible probe; should become THE probe everywhere" in July. expD15 independently rediscovered and validated exactly that, and it is now the recommended mechanism.
 
-Four documents were **untracked and nearly lost** (`results/` is gitignored except `*_results.md`): the motivation, the requirements and lessons, the damped-Gauss-Newton math, and the step-2 spec. All four were rescued. Documents now live **next to the experiment that produced them** (`STEP2_SOLVER_SPEC.md` in `expD12_mu_ladder/`, `METHOD_L_selection.md` in `expD15_inclusion_score/`, `DAMPED_GAUSS_NEWTON.md` in `expD09_2nd_order_regime/`), with `docs/` holding only program-level material. The expD11 leads were renamed to `lead_A_results.md` / `lead_B_results.md` so the tracking pattern picks them up. **If you write a document under `results/` that is not named `*_results.md`, it is not tracked.**
+Four documents were **untracked and nearly lost** (the old ignore rules tracked only `*_results.md` under `results/`): the motivation, the requirements and lessons, the damped-Gauss-Newton math, and the step-2 spec. All four were rescued. Documents now live **next to the experiment's writeup under `results/`** (`STEP2_SOLVER_SPEC.md` in `results/checkpoint_D_optimizers/expD12_mu_ladder/`, `METHOD_L_selection.md` in `results/checkpoint_D_optimizers/expD15_inclusion_score/`, and so on), because Sam reads `results/`, not `experiments/`; `experiments/` holds only code, `docs/` only program-level material. Since August 2026 **all `*.md` under `results/` is tracked**, so a new doc there is safe by default.
 
 ## 7b. Test-suite state
 
@@ -168,8 +168,8 @@ One class of bug was fixed during the cleanup and is worth knowing about, becaus
 Do not build on these.
 
 - **expD14's headline cost.** The arm producing $10^{-16}$ costs 572 passes per step against Adam's 4. Its cost table describes a cheaper arm never run in that configuration. Correction header is on the file.
-- **"The certificate is cheap."** Iteration 11's per-parameter curvature probe costs $2(2m{+}1)$ forwards, 5,538 at $N{=}256$, never counted in any cost table. Superseded by `experiments/expD15_inclusion_score/METHOD_L_selection.md`.
-- **"Precision-agnostic"** (expD14's solver). False: nine hardcoded fp64 constants, none derived from dtype. In bf16 the probe's relative step rounds away and the certificate admits the whole network. The discovery rule in `experiments/expD15_inclusion_score/METHOD_L_selection.md` does not share this defect; its zeros are bitwise zeros and survive any dtype.
+- **"The certificate is cheap."** Iteration 11's per-parameter curvature probe costs $2(2m{+}1)$ forwards, 5,538 at $N{=}256$, never counted in any cost table. Superseded by `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md`.
+- **"Precision-agnostic"** (expD14's solver). False: nine hardcoded fp64 constants, none derived from dtype. In bf16 the probe's relative step rounds away and the certificate admits the whole network. The discovery rule in `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md` does not share this defect; its zeros are bitwise zeros and survive any dtype.
 - **T1 in `batching_test.md`** ("steering degrades gracefully, baked-in whitening is poisoned by staleness"). Corrected in place by expD11 `lead_B`: scored against the drifted problem's *own* floor, stale block-QR sits at 0.5-1.5× that floor while block-Jacobi steering is 180× to $2\times10^6$× above it. The original reading was measuring the problem's floor moving.
 - **expD09 round 6's double-double result** read as a standalone existence proof. `lead_B` contradicts it: unpreconditioned dd-LSQR is within 2-5× of fp64-LSQR at matched iterations; extra precision only pays where a block preconditioner has already clustered the spectrum.
 - **"Recall is free"** in the discovery work. True at $10^{-3}$ precision, false at $10^{-8}$ where losing 3% of the set cost a factor of 47.

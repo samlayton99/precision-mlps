@@ -9,7 +9,7 @@
 > 3. **The shipped path was never run in its shipped form.** T3 is `lsqr` + oracle readout; T4 is `direct` + certificate. `lsqr` + certificate was never composed, and both numerical guards (the column filter and the rank truncation) live only in the `direct` branch.
 > 4. **"Precision-agnostic" is asserted and false.** Nine hardcoded fp64 constants, none derived from dtype. `PROBE_EPS = 1e-3` is a *relative* step and bf16's unit roundoff is $3.9\times10^{-3}$, so in bf16 the perturbation rounds away, every curvature reads zero, and the certificate admits the entire network.
 >
-> **What survives.** The QI-init result itself (all 18 cells at or below the frozen-geometry floor, ten at $\sim10^{-16}$), the ablation verdicts (the trust-region clip and drift-matched damping are net costs; the line-searched $A$ step is load-bearing), and the feature-learning finding, which remains **confounded** because no arm was ever run with the throttles off. The certificate is superseded by `experiments/expD15_inclusion_score/METHOD_L_selection.md`.
+> **What survives.** The QI-init result itself (all 18 cells at or below the frozen-geometry floor, ten at $\sim10^{-16}$), the ablation verdicts (the trust-region clip and drift-matched damping are net costs; the line-searched $A$ step is load-bearing), and the feature-learning finding, which remains **confounded** because no arm was ever run with the throttles off. The certificate is superseded by `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md`.
 
 
 ## TL;DR

@@ -1,9 +1,9 @@
 results/**
-# but keep the per-experiment writeups (results/<exp>/<exp>_results.md) tracked
+# but keep ALL markdown under results/ tracked -- writeups, method docs, specs.
+# (The old *_results.md-only rule is how four load-bearing docs nearly got
+# lost in July 2026; docs now live in results/ next to their writeups.)
 !results/**/
-!results/**/*_results.md
-!results/results.md
-!results/**/README.md
+!results/**/*.md
 # track long-form HTML explainers alongside the writeups
 !results/**/*.html
 # track figures/images everywhere under results/ (but never data or caches)

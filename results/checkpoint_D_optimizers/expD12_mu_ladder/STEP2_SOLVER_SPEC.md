@@ -1,6 +1,6 @@
 # Step 2: the least-squares solver, full spec
 
-**Status: draft, except the section marked APPROVED. Sources: expD08-expD13 plus `experiments/expD09_2nd_order_regime/DAMPED_GAUSS_NEWTON.md`. Every number is measured; anything asserted without measurement is marked *untested*.**
+**Status: draft, except the section marked APPROVED. Sources: expD08-expD13 plus `results/checkpoint_D_optimizers/expD09_2nd_order_regime/DAMPED_GAUSS_NEWTON.md`. Every number is measured; anything asserted without measurement is marked *untested*.**
 
 **This is the only writeup of expD12 (the mu ladder) and expD13 (the drift ladder); those experiments have no `*_results.md` of their own.** It is also where the mu-schedule control rules live (IV.5, IV.6) and where the guard that expD14 later violated is derived (V.6, V.7). Read IV.5-IV.7 and V.6-V.8 before designing any damping schedule.
 

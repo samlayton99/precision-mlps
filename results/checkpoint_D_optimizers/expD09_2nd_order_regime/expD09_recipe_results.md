@@ -5,7 +5,7 @@
 
 **Written for a reader with no prior context and no assumed background in numerical linear algebra.** Sections 1 to 6 build the method from scratch, defining every object as it appears. Sections 7 onward are the measured results and are the reference material. If you already know Krylov solvers and QR factorization, skip to Section 6.
 
-Companions: `experiments/expD09_2nd_order_regime/SUBPROBLEM.md` (the problem statement and the full experimental history, including everything that failed), `experiments/expD09_2nd_order_regime/validation/README.md` (the validation sweep), and the figures and run data alongside this file.
+Companions: `results/checkpoint_D_optimizers/expD09_2nd_order_regime/SUBPROBLEM.md` (the problem statement and the full experimental history, including everything that failed), `experiments/expD09_2nd_order_regime/validation/README.md` (the validation sweep), and the figures and run data alongside this file.
 
 **Which solver ran, and where.** Two different Krylov solvers produced the numbers in this document, and the distinction was previously undocumented:
 
