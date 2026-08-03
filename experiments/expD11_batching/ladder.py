@@ -2,7 +2,7 @@
 
 expD11 wall: reaching the fp64 floor needs c ~ r stored orthogonalization
 vectors, i.e. Theta(d*r) state.
-damped_gauss_newton.md: at damping mu the requirement vanishes (c* = 0) but the
+experiments/expD09_2nd_order_regime/DAMPED_GAUSS_NEWTON.md: at damping mu the requirement vanishes (c* = 0) but the
 accuracy is capped at the damped optimum.
 
 The idea under test: peel the spectrum in chunks.  Stage k damps at mu_k,

@@ -38,7 +38,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from run import (geometry_for_N, eval_bundle, refit_rel_l2, rel_l2_with_readout)
+# Load this experiment's run.py by explicit path: several experiments have a
+# run.py, and a bare `from run import ...` picks up whichever one is already in
+# sys.modules, which breaks pytest collection when two are imported together.
+import importlib.util as _ilu
+_rs = _ilu.spec_from_file_location("expd02_run", Path(__file__).resolve().parent / "run.py")
+_d02run = _ilu.module_from_spec(_rs); _rs.loader.exec_module(_d02run)
+geometry_for_N, eval_bundle = _d02run.geometry_for_N, _d02run.eval_bundle
+refit_rel_l2, rel_l2_with_readout = _d02run.refit_rel_l2, _d02run.rel_l2_with_readout
 from run_lambda_init import lstsq_solution
 
 RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_D_optimizers" / "expD02_adam_geometry"

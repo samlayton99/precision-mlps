@@ -9,7 +9,11 @@ import torch
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "experiments" / "expD08_qi_init_nlcg"))
-import run as d08  # noqa: E402
+# explicit-path load: expD07 also defines run.py, and a bare `import run`
+# picks up whichever is already in sys.modules during a full pytest session
+import importlib.util as _ilu  # noqa: E402
+_rs = _ilu.spec_from_file_location("d08_run_t8", REPO / "experiments" / "expD08_qi_init_nlcg" / "run.py")
+d08 = _ilu.module_from_spec(_rs); _rs.loader.exec_module(d08)
 
 torch.set_default_dtype(torch.float64)
 

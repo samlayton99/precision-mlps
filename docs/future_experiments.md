@@ -1,4 +1,6 @@
-# Open questions & proposed experiments -- master list
+# Open questions -- non-optimizer checkpoints
+
+**Scope: checkpoints A, B, C, E, F, G. The optimizer program (checkpoint D, expD07 onward) lives in `docs/ORIENTATION.md`.**
 
 Every open question and proposed experiment, collected from each experiment's `results.md`, `thoughts.md`, and the prior roadmap. Grouped by checkpoint, deduped, sorted most-to-least relevant within each. Established findings live in `results/results.md` and the per-experiment `expX_results.md`.
 
@@ -19,13 +21,10 @@ Every open question and proposed experiment, collected from each experiment's `r
 - **The last-mile step change.** Why does the final nudge to fully-uniform weights and centers give a sudden jump in precision, instead of gradual improvement? (thoughts; low priority)
 
 ## Checkpoint D -- optimizers
-- **Reparameterization (expD03).** Does optimizing in natural coordinates let plain gradient descent reach the floor that raw $(w,b)$ can't? Head-to-head: log-$\gamma$ ($\gamma{=}e^{\eta}$); one global $\lambda$ with $\gamma{=}\lambda/h$; dimensionless centers $c_k=-1+h(k+\delta_k)$; a readout scaled as $\alpha{=}a\gamma$. Pair each with a final lstsq refit. Direct test of expC05's one-way coupling. (expC05; prior roadmap)
-- **What does the trained geometry look like, and did it move?** Characterize a trained net's geometry: are centers uniform, what's their spread, what's $\gamma$? With QI init, how much do the first-layer params actually move before the refit, and what does that look like for runge? (expD02; thoughts)
-- **Initialization Regimes in greater depth** Expanding on expD02, what properties should we test about the trained solutions in the init regime. Is there an optimizer and initialization regime that work better? this is the real question.
-- **Variable projection (expD04).** Solve the readout exactly by lstsq at every step, and optimize only the nonlinear geometry $\theta=(\lambda,\delta_k)$ with Gauss-Newton / LM / quasi-Newton. Does it reach the floor where end-to-end Adam stalls? (prior roadmap)
-- **Can any optimizer solve the lstsq readout?** First-order Adam can't solve the readout on the ill-conditioned $\Phi$ (the 4th barrier, expD01). Can a second-order / quasi-Newton method get there -- SSBroyden (the paper's two-stage Adam$\to$SSBroyden), LM, or a preconditioned solver? (expD01; thoughts)
-- **Geometry-ladder levels 4-7 (expD01).** Continue the ladder: relax more constraints -- fixed $\gamma$ + free centers, then free $\gamma$ + free centers -- each with the readout either solved or trained. Pinpoint exactly which relaxation first loses precision. (expD01)
-- **Seed-average the finer expD02 trends** (coverage vs uniformity; scaled vs clean init). (expD02)
+
+**Moved. The optimizer program (expD07-expD15) is tracked in `docs/ORIENTATION.md`,** which holds the current state, the three open questions that define the next phase, the test matrix, and the list of claims later found wrong. Do not plan optimizer work from this file.
+
+Still-live items from the earlier expD01-expD06 work: how far the first-layer parameters move under QI init before the refit (expD02); which scale-aware initializer to promote as the deployable default (expD05); geometry-ladder levels 4-7, relaxing gamma and centers with the readout solved or trained (expD01). The `expD03_reparameterization` and `expD04_varpro` stubs were never run; expD04's question is partly answered by expD14, which is variable projection in all but name.
 
 ## Checkpoint E -- 2D
 

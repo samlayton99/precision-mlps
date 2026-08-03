@@ -1,6 +1,16 @@
 # expD14 iteration 0 -- the lobotomy: Adam and a least-squares solve sharing one step budget
 
-**Status: draft, pending Sam. All numbers final (T1-T4). Conclusions unsigned.**
+**Status: draft, pending Sam. Numbers are final (T1-T4), but FOUR COST AND SCOPE CLAIMS BELOW ARE WRONG. Read this header before the body.**
+
+> ### Corrections (audited after the body was written; the body was never revised)
+>
+> 1. **The headline cost is understated by 82x.** The arm that produced the $10^{-16}$ results is the `direct` reference solver at **572 passes per step** at $N{=}256$ (its own `passes` field, 1,717,289 / 3000), against stock Adam's 4 in the same harness. The cost table in the body describes the cheap `lsqr` arm at 7-11 passes, which was never run in the headline configuration. So the $10^{-16}$ result costs **143x Adam's per-step compute**, and T3 already measured that the 7-pass path reaches only $3.2\times10^{-3}$ on that cell.
+> 2. **The certificate probe is not counted at all.** `passes +=` never appears in the certificate block. The dense probe costs $2(2m{+}1)$ forwards, 5,538 at $N{=}256$; three probes is 79% of the entire pass budget the cost table claims for a whole 3000-step run. At $m=10^9$ one probe is $4\times10^9$ forwards.
+> 3. **The shipped path was never run in its shipped form.** T3 is `lsqr` + oracle readout; T4 is `direct` + certificate. `lsqr` + certificate was never composed, and both numerical guards (the column filter and the rank truncation) live only in the `direct` branch.
+> 4. **"Precision-agnostic" is asserted and false.** Nine hardcoded fp64 constants, none derived from dtype. `PROBE_EPS = 1e-3` is a *relative* step and bf16's unit roundoff is $3.9\times10^{-3}$, so in bf16 the perturbation rounds away, every curvature reads zero, and the certificate admits the entire network.
+>
+> **What survives.** The QI-init result itself (all 18 cells at or below the frozen-geometry floor, ten at $\sim10^{-16}$), the ablation verdicts (the trust-region clip and drift-matched damping are net costs; the line-searched $A$ step is load-bearing), and the feature-learning finding, which remains **confounded** because no arm was ever run with the throttles off. The certificate is superseded by `experiments/expD15_inclusion_score/METHOD_L_selection.md`.
+
 
 ## TL;DR
 

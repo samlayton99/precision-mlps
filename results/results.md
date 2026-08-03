@@ -69,14 +69,17 @@ We test whether training reaches the precision the geometry admits. `results/che
 - **expD02 adam_geometry** -- three wins (approved by Sam): (1) QI init + train both layers reaches $\sim 10^{-5}$, far better than standard-init training; (2) QI init + train + final lstsq refit recovers the construction floor ($\sim 5\times10^{-14}$) from the trained geometry; (3) scaled_xavier (right bandwidth, inexact centers) generalizes the gain. All in fp32. The recipe extends to $1\to\mathbb{R}^n$ via shared geometry + per-coordinate lstsq.
 - **expD05 scale_init_story** -- full repo-local fp64 rerun of the initialization story: 1080 rows over 6 targets, 4 resolutions, 5 seeds, and 9 initializer families, with 0 train/eval sanity flags. Adam alone does not close the non-oracle precision gap (best non-oracle trained row $\sim 7.1\times10^{-5}$), but scale-aware initializers beat standard affine medians on all 24 target-resolution blocks. Final lstsq refits are the stronger geometry check: scale-corrected refit medians beat standard refit medians on all 24 blocks and reach $\le 10^{-10}$ on 9/24 blocks, with the best refit at $\sim 1.0\times10^{-14}$. *(Pending Sam review for which deployable initializer to promote.)*
 
-**Open questions (Checkpoint D).**
-- **Did the coefficients move during training?** (expD02): with QI init, how much do the first-layer parameters change before the refit, and how does this look for runge?
-- **Promote the deployable scale-aware initializer** (expD05): decide between scale-corrected Xavier, QI-scale grids, and low-QI multiscale grids for the Checkpoint D recipe; the full matrix confirms the scale story, but the preferred deployable default is still a Sam-review choice.
-- **Geometry-ladder levels 4--7** (expD01): relax the geometry (free centers, free $\gamma$) with the readout solved or trained, to localize where precision is lost.
-- **Reparameterization** (`experiments/expD03_reparameterization`, stub): the natural test of the expC05 coupling finding -- optimize in $\gamma(x-c)$ / log-$\gamma$ coordinates.
-- **Variable projection** (`experiments/expD04_varpro`, stub): eliminate the readout exactly, optimize only the nonlinear geometry -- a diagnostic for whether the geometry block is the real failure.
+### The optimizer program (expD07-expD15): step 2 and step 3
 
----
+expD01-expD06 established that a good init plus a final solve works. expD07 onward is Sam's three-step program (`docs/motivation.md`): a general optimizer, a least-squares solver that scales like Adam, and a lobotomy that stitches them together. **Entry point for all of it: `docs/ORIENTATION.md`.**
+
+- **Step 2, the solver, is substantially done.** The recipe reaches machine epsilon on a frozen $\Phi$ at $O(d)$ state (expD09), hardened across 6 targets, 4 widths, noise, batching, fp32 and 2-D (expD10). Full spec, including the $\mu$ schedule and its control rules: `experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md`.
+- **One hard negative result.** No $O(d\cdot k)$ iterative solver reaches the fp64 floor on QI feature matrices (expD11, sharpened in `lead_B_results.md`). Reaching the floor needs stored orthogonality of size $c\approx r$, i.e. $\Theta(d^2)$. The binding constraint is the *spectrum*: the required window tracks the number of distinct singular-value scales, and QI spectra are gapless. This forces a tiered design, a cheap recurring solver banking $10^{-7}$ to $10^{-9}$ plus a one-time finisher.
+- **The linear block separates by rows** (approved): a weight matrix is $o$ independent least-squares problems sharing one design matrix, so state is $h^2/2 + ho$, not $(oh)^2/2$, and the governing size is the layer's *input* width.
+- **Step 3, which parameters to solve, is solved.** A parameter belongs in the least-squares set iff its Jacobian column does not move when that set is perturbed. Four working mechanisms with measured tradeoffs in `experiments/expD15_inclusion_score/METHOD_L_selection.md`; the cheapest costs $O(\#\text{tensors})$ probes, holds 100% precision on a transformer, a 5-block ResNet, conv nets and the 1-D/2-D geometry regimes, and correctly refuses attention weights, layer-norm parameters and earlier blocks.
+- **Step 3, the stitching, is open and partly confounded** (expD14). From QI init the assembled optimizer reaches $\sim10^{-16}$; from random init an in-training solve appears to suppress feature learning, but every arm carried untested throttles, so that finding is not established. Read the correction header on `expD14_lobotomy/iteration_0/iteration_0_results.md`: four of its cost and scope claims are wrong.
+
+**Open questions (Checkpoint D).** The three that define the next phase are in `docs/ORIENTATION.md` section 3: the $\mu$ schedule, tempering Adam so it accepts a solve, and stopping the solve from stunning Adam's learning. Older items that remain live: how much the first-layer parameters move under QI init before the refit (expD02); which scale-aware initializer to promote (expD05); geometry-ladder levels 4-7 (expD01). The `expD03_reparameterization` and `expD04_varpro` stubs were never run.
 
 ## Checkpoint E -- extending to 2D
 
@@ -92,7 +95,7 @@ We test whether training reaches the precision the geometry admits. `results/che
 
 ## Checkpoint F -- applications (differential equations)
 
-`results/checkpoint_F_applications/`. **Synthesis: `checkpoint_F_applications/expF_results.md`.** Background analysis: `docs/pinn_feasibility.md`.
+`results/checkpoint_F_applications/`. **Synthesis: `checkpoint_F_applications/expF_results.md`.** Background analysis: `experiments/expF01_linear_de_zoo/PINN_FEASIBILITY.md`.
 
 - **expF01 linear DE zoo** -- freezing the QI geometry makes a linear PDE residual linear in the readout, so the entire PINN loss is one least-squares problem $\|Aa-y\|^2$ over blocks $[L\Phi;\ \Phi_{bc};\ \Phi_{ic};\ \Phi_{data}]$. All nine linear problems (orders 1--3; interval, disk, space-time; IVP/Dirichlet/Neumann/inflow/Cauchy) reach the floor (rel $L_2\lesssim10^{-13}$) with **no training**. Time is a coordinate and the IC is a row block, so there is no time-stepping and nothing accumulates. *(Pending Sam.)*
 - **expF02 nonlinear DE zoo** -- Newton on the frozen geometry (each step a variable-coefficient linear PDE, same stacked lstsq) reaches machine-precision on classical 1D nonlinear ODEs (logistic, Bratu, Blasius) and the floor on **Monge-Ampere** ($1.2\times10^{-14}$, fully nonlinear) in 5 steps. Nonlinear hyperbolic without dissipation stagnates (inviscid Burgers $10^{-5}$; its viscous sibling $2.5\times10^{-10}$). *(Pending Sam.)*

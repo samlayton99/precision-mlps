@@ -56,6 +56,7 @@ Run:  uv run python experiments/expD08_qi_init_nlcg/iter11.py --grid
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import sys
@@ -68,7 +69,12 @@ import torch
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import run  # noqa: E402
+# Load this experiment's run.py by explicit path. A bare `import run` picks up
+# whichever run.py is already in sys.modules -- expD07 also has one -- which
+# breaks collection when both are imported in the same pytest session.
+_run_spec = importlib.util.spec_from_file_location("d08_run", HERE / "run.py")
+run = importlib.util.module_from_spec(_run_spec)
+_run_spec.loader.exec_module(run)
 
 expd06 = run.expd06
 OUT = run.OUT_DIR.parent / "iteration_11"

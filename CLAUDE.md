@@ -9,10 +9,16 @@ Three violations in trained networks explain the gap:
 2. **Weight blowup**: outer weights diverge instead of staying O(1)
 3. **Rank saturation**: features collapse instead of uniform utilization
 
+## Before you propose any optimizer mechanism
+
+**Read `docs/REQUIREMENTS.md` and run its section-8 checklist on paper first.** It holds the hard requirements, the complexity budget in numbers, how the computation actually hits a GPU, and a kill list of designs already measured dead. Feasibility, not correctness, is what has killed the most work on this project: mechanisms that worked numerically and could never scale, and mechanisms rebuilt after being measured dead months earlier. The checklist takes ten minutes and it is not optional.
+
+`docs/INDEX.md` maps every document in the repo.
+
 ## How to Succeed
 1. Always get context of the research! The papers/theory guiding the experiments are in the /papers/ folder. The main paper is `papers/QIs_workshop.pdf` ("Constructing Machine-Precision Neural Networks with Quasi-Interpolants"). NOTE: Section 3 (the construction) is NOT yet updated in that PDF -- read `papers/Section_3_Rewrite.pdf` IN ADDITION to `papers/QIs_workshop.pdf`, for the current construction (do not just read the rewrite on its own, it is only a single section rewritten), and `papers/practical_implementation.tex` for the fp64/mpmath implementation details. We are trying to complete this paper by finding an optimization strategy.
 2. Use the additional repo 'continuous-mlps' (next door neighbor to this repo in the file structure) as inspiration or a resource when you need it (it is a correct implementation of the paper), but not as something to just copy exactly.
-3. read docs/future_experiments.md every time. This is our main design spec doc that I will be working with you through.
+3. **read `docs/REQUIREMENTS.md` (the gate) and `docs/ORIENTATION.md` (the state) every time.** ORIENTATION is the entry point for the optimizer program: where it stands, the three open questions, the test matrix, and which claims in the record were later found wrong. `docs/INDEX.md` maps everything else. `docs/future_experiments.md` holds the open questions for the non-optimizer checkpoints (A/B/C/E/F/G).
 4. When implementing new machinery or experiments, always write and clearly communicate to me the tests that verify your implementation actually matches the research (e.g. show me the QI construction reaches machine eps precision after being first built, etc.)
 
 ## Architecture
@@ -59,20 +65,34 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expC04_center_geometry/        Center-placement comparison (uniform vs others)
   expC05_geometry_interpolation/ center/weight/bandwidth perturbation; one-way coupling; reparam argument
   expC06_soft_neuron_interp/     soft-neuron hump (low-degree polynomial basis); cascaded-geometry lead
-  # Checkpoint D -- can optimizers find the geometry
-  expD01_geometry_ladder/        Adam on frozen geometry stalls; lstsq solves (Phase 1)
+  # Checkpoint D -- can optimizers find the geometry, and the optimizer program
+  #   Entry point for D07 onward: docs/ORIENTATION.md
+  expD01_geometry_ladder/        Adam on frozen geometry stalls; lstsq solves
   expD02_adam_geometry/          Init x training-regime cube (QI-init + refit wins)
-  expD03_reparameterization/     Log-gamma / dimensionless coordinates (stub, live future)
-  expD04_varpro/                 Variable Projection reduced objective (stub, future)
-  exp13_solution_basins/         Hessian / basin landscape (stub, DEPRIORITIZED -- curvature ruled out)
+  expD05_scale_init_story/       fp64 initializer matrix (scale-aware families win)
+  expD06_gd_width_scaling/       GD width scaling
+  expD07_lstsq_optim_suite/      optimizer bake-off + the dl_test real-data litmus
+  expD08_qi_init_nlcg/           11-iteration optimizer campaign. ONLY iteration_11 survives
+  expD09_2nd_order_regime/       step-2 recipe: machine eps on frozen Phi at O(d) state
+  expD10_step2_hardening/        step-2 hardening ledger, tier structure, lessons T1-T12
+  expD11_batching/               NEGATIVE: no O(d*k) solver reaches the fp64 floor
+  expD12_mu_ladder/              the mu ladder on a frozen Phi   (writeup: experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md)
+  expD13_drift_ladder/           the mu ladder on a drifting Phi (writeup: experiments/expD12_mu_ladder/STEP2_SOLVER_SPEC.md)
+  expD14_lobotomy/               step 3, first stitching attempt. READ ITS CORRECTION HEADER
+  expD15_inclusion_score/        which parameters enter L (writeup: experiments/expD15_inclusion_score/METHOD_L_selection.md)
+  expD03/expD04/exp13            stubs, never run
   # Checkpoint E -- extend to 2D
   expE01_geometry_zoo_2d/        Six 2D ridge geometries head-to-head (hex folded in; ex-exp11)
   # Checkpoint F -- applications
   #   depth, higher input/output dim, non-MSE losses, physics tasks, transformer init
-  expF01_linear_de_zoo/         Nine linear ODEs/PDEs solved by frozen geometry + collocation lstsq (no training)
+  expF01..expF12/               DE zoo (linear + nonlinear), ablations/baselines, spline ridge,
+                                Newton-Burgers, PINN finisher, Darcy, Navier-Stokes, operator
+                                learning, FNO init, 3-D tensor NS. Synthesis: checkpoint_F_applications/expF_results.md
   # Checkpoint G -- generalization
   #   precision-vs-generalization; mask-the-data; soft-weight tradeoff; data-poor regions
   expG01_interactive_explorer/  Interactive Dash explorer (lambda, N, target, hold-out mask; live lstsq refit)
+  expG03_extrapolation/         Extrapolation sweep
+  expG04_cascade_multiband/     Band-count ablation
 
 tests/                        Unit tests
 results/                      Experiment results output, grouped: results/checkpoint_<A..G>_*/exp*/

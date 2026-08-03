@@ -73,9 +73,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 # Reuse the original expD02 machinery (fp64 eval/refit, geometry, schedules).
 import run as expD02
-from run import (DEVICE, TDTYPE, LAMBDA_STAR, N_TRAIN, N_EVAL, RCOND, features_np,
-                 geometry_for_N, eval_bundle, to_device_train,
-                 refit_rel_l2, rel_l2_with_readout, lr_at, eval_steps)
+# explicit-path load: several experiments define run.py and a bare import
+# picks up whichever is already in sys.modules (breaks pytest collection)
+import importlib.util as _ilu
+_rs = _ilu.spec_from_file_location('expd02_run', Path(__file__).resolve().parent / 'run.py')
+_d02run = _ilu.module_from_spec(_rs); _rs.loader.exec_module(_d02run)
+DEVICE = _d02run.DEVICE
+TDTYPE = _d02run.TDTYPE
+LAMBDA_STAR = _d02run.LAMBDA_STAR
+N_TRAIN = _d02run.N_TRAIN
+N_EVAL = _d02run.N_EVAL
+RCOND = _d02run.RCOND
+features_np = _d02run.features_np
+geometry_for_N = _d02run.geometry_for_N
+eval_bundle = _d02run.eval_bundle
+to_device_train = _d02run.to_device_train
+refit_rel_l2 = _d02run.refit_rel_l2
+rel_l2_with_readout = _d02run.rel_l2_with_readout
+lr_at = _d02run.lr_at
+eval_steps = _d02run.eval_steps
 from src.construction.center_geometry import trained_centers
 
 RESULTS_DIR = REPO_ROOT / "results" / "checkpoint_D_optimizers" / "expD02_adam_geometry"
