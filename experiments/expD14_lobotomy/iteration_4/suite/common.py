@@ -254,6 +254,7 @@ def train_generic(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
     mu = 0.0
     fgen = 1.0
     s_prev = 1.0
+    mode_latch = None
     for it in range(1, iters + 1):
         r, g = env["f_residgrad"](theta)
         passes += 2
@@ -286,8 +287,8 @@ def train_generic(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
                 keep = s > RCOND * s[0]
                 utr = U.T @ (-r)
                 if cool in ("fgen", "fgen2") or \
-                        (cool == "fabsc" and (it == 1 or
-                                              (it - 1) % refresh == 0)):
+                        (cool in ("fabsc", "gate", "latch") and
+                         (it == 1 or (it - 1) % refresh == 0)):
                     dstar = Vt.T @ (torch.where(keep, 1.0 / torch.where(
                         keep, s, torch.ones_like(s)),
                         torch.zeros_like(s)) * utr)
@@ -296,7 +297,7 @@ def train_generic(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
                     passes += 1
                     r_ho_new = r_ho + J_ho @ dstar
                     nho = float(torch.linalg.norm(r_ho))
-                    if cool == "fabsc":
+                    if cool in ("fabsc", "gate", "latch"):
                         s_prev = float(np.clip(
                             float(torch.linalg.norm(r_ho_new))
                             / env.get("y_norm_ho", y_norm), 0.0, 1.0))
@@ -307,9 +308,18 @@ def train_generic(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
                 if cool == "fgen2":
                     alpha = float(np.clip(r_entry * fgen,
                                           ALPHA_MIN, ALPHA_MAX))
-                elif cool == "fabsc":
+                elif cool in ("fabsc", "gate"):
                     fgen = s_prev
                     alpha = float(np.clip(s_prev, ALPHA_MIN, ALPHA_MAX))
+                elif cool == "latch":
+                    if mode_latch is None:
+                        mode_latch = "preserve" if s_prev < core4.S_REF \
+                            else "learn"
+                    fgen = s_prev
+                    if mode_latch == "learn":
+                        alpha = float(np.clip(r_entry, ALPHA_MIN, ALPHA_MAX))
+                    else:
+                        alpha = float(np.clip(s_prev, ALPHA_MIN, ALPHA_MAX))
                 mu = (alpha * sigma1) ** 2
                 dmu[live] = Vt.T @ (torch.where(keep, s / (s ** 2 + mu),
                                     torch.zeros_like(s)) * utr)
@@ -318,7 +328,15 @@ def train_generic(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
         stepA = adam_full.clone()
         if idx.numel():
             stepA[idx] = 0.0
-        coolf = fgen if cool in ("fgen", "fgen2", "fabsc") else 1.0
+        if cool == "gate":
+            coolf = float(min(1.0, fgen / core4.S_REF))
+        elif cool == "latch":
+            coolf = 1.0 if mode_latch == "learn" \
+                else float(min(1.0, fgen / core4.S_REF))
+        elif cool in ("fgen", "fgen2", "fabsc"):
+            coolf = fgen
+        else:
+            coolf = 1.0
         dth = coolf * stepA
         if dmu is not None:
             dth = dth.clone()
@@ -430,3 +448,160 @@ def train_adam(env, iters, *, lr=1e-3, betas=(0.9, 0.999), eps_adam=1e-8,
     return dict(hist=hist, fhist=fhist, snaps=snaps, theta=theta,
                 best_rel=float(np.min(hist["rel"])), final_rel=hist["rel"][-1],
                 floor_final=fl)
+
+
+# ------------------------------------------------- expE01-grade 2-D env --
+
+def env_2dqi(geom="radon", N=576, seed=0, n_train=5000, holdout_every=10):
+    """A 2-D case built from expE01's actual geometries, at a width where
+    the Radon construction genuinely dominates (expE01: gauss_bump reaches
+    ~6e-14 by N~576-1024; core15's small-N variant is the wrong benchmark).
+    geom = "radon" (build_radon_tensor, halo radius 2.5) or "random"
+    (build_random_ridges, radius 1.6). Target: gauss_bump. gamma from a
+    small offline lambda probe at build time."""
+    import importlib.util as _ilu
+    _sg = _ilu.spec_from_file_location(
+        "e01_geoms", REPO / "experiments" / "expE01_geometry_zoo_2d"
+        / "geometries.py")
+    g01 = _ilu.module_from_spec(_sg)
+    _sg.loader.exec_module(g01)
+
+    rng = np.random.default_rng(3000 + seed)
+    if geom == "radon":
+        dirs, offs = g01.build_radon_tensor(N, 2.5, seed=seed)
+    elif geom == "random":
+        dirs, offs = g01.build_random_ridges(N, 1.6, seed=seed)
+    else:
+        raise ValueError(geom)
+    W = dirs.shape[0]
+
+    def target(X):
+        return np.exp(-3.0 * (X ** 2).sum(1))
+
+    r_tr = np.sqrt(rng.uniform(0, 1, n_train))
+    a_tr = rng.uniform(0, 2 * np.pi, n_train)
+    Xall = np.c_[r_tr * np.cos(a_tr), r_tr * np.sin(a_tr)]
+    yall = target(Xall)
+    gx = np.linspace(-1, 1, 61)
+    GX, GY = np.meshgrid(gx, gx)
+    disk = GX ** 2 + GY ** 2 <= 1.0
+    Xev = np.c_[GX[disk], GY[disk]]
+    yev = target(Xev)
+
+    # offline lambda probe: gamma = lam / h_ref, h_ref = 2.8/sqrt(N)
+    h_ref = 2.8 / np.sqrt(N)
+    best = (None, np.inf)
+    for lam in (0.2, 0.3, 0.45, 0.7):
+        gam = lam / h_ref
+        z = np.tanh(gam * (Xall @ dirs.T - offs))
+        A_ = np.hstack([z, np.ones((n_train, 1))])
+        U, s_, Vt = np.linalg.svd(A_, full_matrices=False)
+        keep = s_ > 1e-15 * s_[0]
+        sol = Vt.T @ (np.where(keep, 1 / np.where(keep, s_, 1), 0)
+                      * (U.T @ yall))
+        ze = np.tanh(gam * (Xev @ dirs.T - offs))
+        e_ = float(np.linalg.norm(np.hstack([ze, np.ones((Xev.shape[0], 1))])
+                                  @ sol - yev) / np.linalg.norm(yev))
+        if e_ < best[1]:
+            best = (gam, e_)
+    gam = best[0]
+
+    A0 = gam * dirs
+    b0 = -gam * offs
+    m = 3 * W + 1 + W  # A(W,2) -> 2W, b W, v W, c0
+    # half-solved readout protocol (v = 0 is the probe trap)
+    z0 = np.tanh(Xall @ A0.T + b0)
+    Aug = np.hstack([z0, np.ones((n_train, 1))])
+    U, s_, Vt = np.linalg.svd(Aug, full_matrices=False)
+    mu_ = (1e-6 * s_[0]) ** 2
+    dsol = Vt.T @ ((s_ / (s_ ** 2 + mu_)) * (U.T @ yall))
+    v0 = 0.5 * dsol[:W] + 0.05 * np.abs(dsol[:W]).mean() \
+        * rng.standard_normal(W)
+    c00 = 0.5 * dsol[W]
+    pred = z0 @ v0 + c00
+    if np.linalg.norm(pred) > 0:
+        k = 0.5 * np.linalg.norm(yall) / np.linalg.norm(pred)
+        v0, c00 = v0 * k, c00 * k
+    th0 = torch.tensor(np.concatenate([A0.ravel(), b0, v0, [c00]]))
+
+    ho = np.zeros(n_train, bool)
+    ho[holdout_every // 2::holdout_every] = True
+    Xf, yf = torch.tensor(Xall[~ho]), torch.tensor(yall[~ho])
+    Xh, yh = torch.tensor(Xall[ho]), torch.tensor(yall[ho])
+    Xe, ye = torch.tensor(Xev), torch.tensor(yev)
+    ye_norm = float(torch.linalg.norm(ye))
+    dim = 2
+
+    def model(X, th):
+        A = th[:W * dim].reshape(W, dim)
+        return torch.tanh(X @ A.T + th[W * dim:W * dim + W]) \
+            @ th[W * dim + W:W * dim + 2 * W] + th[-1]
+
+    def jac(X, th):
+        with torch.no_grad():
+            A = th[:W * dim].reshape(W, dim)
+            t = torch.tanh(X @ A.T + th[W * dim:W * dim + W])
+            s2 = (1.0 - t * t) * th[W * dim + W:W * dim + 2 * W]
+            JA = (s2[:, :, None] * X[:, None, :]).reshape(X.shape[0], W * dim)
+            return torch.cat([JA, s2, t,
+                              torch.ones(X.shape[0], 1, dtype=th.dtype)], 1)
+
+    def f_residgrad(th):
+        thr = th.detach().requires_grad_(True)
+        pred = model(Xf, thr)
+        r = (pred - yf).detach()
+        (g,) = torch.autograd.grad(pred, thr,
+                                   grad_outputs=(2.0 / Xf.shape[0]) * r)
+        return r, g.detach()
+
+    ALPHAS_VAL = (0.0, 1e-12, 1e-10, 1e-8, 1e-6, 1e-4, 1e-2)
+
+    def floor_fn(th, idx=None):
+        """Validated finisher on the oracle readout block."""
+        J = jac(Xf, th)[:, W * dim + W:]
+        U, s_, Vt = torch.linalg.svd(J, full_matrices=False)
+        keep = s_ > 1e-15 * s_[0]
+        utr = U.T @ yf
+        Jh = jac(Xh, th)[:, W * dim + W:]
+        Je = jac(Xe, th)[:, W * dim + W:]
+        best_e, best_ho = np.inf, np.inf
+        for a_ in ALPHAS_VAL:
+            if a_ == 0.0:
+                inv = torch.where(keep, 1.0 / torch.where(keep, s_,
+                                  torch.ones_like(s_)),
+                                  torch.zeros_like(s_))
+            else:
+                mu2 = (a_ * float(s_[0])) ** 2
+                inv = s_ / (s_ ** 2 + mu2)
+            sol = Vt.T @ (inv * utr)
+            ho_e = float(torch.linalg.norm(Jh @ sol - yh))
+            if ho_e < best_ho:
+                best_ho = ho_e
+                best_e = float(torch.linalg.norm(Je @ sol - ye)) / ye_norm
+        return best_e, float("nan"), float("nan")
+
+    groups = {"A": np.arange(0, W * dim),
+              "b": np.arange(W * dim, W * dim + W),
+              "v": np.arange(W * dim + W, W * dim + 2 * W),
+              "c0": np.array([W * dim + 2 * W])}
+    geo = torch.zeros(W * dim + 2 * W + 1, dtype=torch.bool)
+    geo[:W * dim + W] = True
+
+    return dict(theta0=th0, m=int(th0.numel()), W=W, dim=dim,
+                case=f"2dqi_{geom}", fn="gauss_bump",
+                n_train=int(Xf.shape[0]), geo_mask=geo, groups=groups,
+                idx_readout=torch.arange(W * dim + W, W * dim + 2 * W + 1),
+                floor0=floor_fn(th0)[0], floor_fn=floor_fn,
+                f_residgrad=f_residgrad,
+                f_resid=lambda th: (model(Xf, th) - yf).detach(),
+                f_resid_ho=lambda th: (model(Xh, th) - yh).detach(),
+                f_jvp=lambda th, d: torch.func.jvp(
+                    lambda t: model(Xf, t), (th,), (d,))[1].detach(),
+                f_vjp=lambda th, u: _vjp(model, Xf, th, u),
+                f_jac_full=lambda th: jac(Xf, th),
+                f_jac_cols=lambda th, cols: jac(Xf, th)[:, cols],
+                f_jac_cols_ho=lambda th, cols: jac(Xh, th)[:, cols],
+                eval_rel=lambda th: float(torch.linalg.norm(
+                    model(Xe, th) - ye)) / ye_norm,
+                y_norm=float(torch.linalg.norm(yf)),
+                y_norm_ho=float(torch.linalg.norm(yh)))

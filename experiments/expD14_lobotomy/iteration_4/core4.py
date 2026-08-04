@@ -60,6 +60,7 @@ GAP_RADIUS, GAP_KEEP = 0.4, 0.04
 COL_FLOOR = 1e-8
 ALPHA_MIN, ALPHA_MAX = 1e-15, 1.0
 HOLDOUT_EVERY = 10          # every 10th kept point is held out of fit
+S_REF = 1e-2                # the gate: learn at full speed above this
 
 
 def build_case(fn_name, N, case="qi", seed=0):
@@ -130,19 +131,38 @@ def build_case(fn_name, N, case="qi", seed=0):
     def f_jac_cols_ho(th, cols):
         return _jac(xh, th)[:, cols]
 
-    # floor: fit on the FIT rows (what the optimizer can see), eval as core1
+    # floor: fit on the FIT rows (what the optimizer can see), eval as core1.
+    # VALIDATED: the damping of the terminal solve is chosen on the held-out
+    # rows. The raw truncated min-norm refit is worse than the in-run state
+    # in 26 of 132 t8 cells (it overfits the fit rows on datagap, and a
+    # single solve is cancellation-limited at ~1e-14 where in-run iterative
+    # refinement reaches 1e-16), so the finisher must validate its damping.
+    ALPHAS_VAL = (0.0, 1e-12, 1e-10, 1e-8, 1e-6, 1e-4, 1e-2)
+
     def _floor_split(th):
         t = th.detach().numpy()
         z = np.tanh(x_fit[:, None] * t[:W][None, :] + t[W:2 * W][None, :])
         A = np.hstack([z, np.ones((x_fit.size, 1))])
         U, s, Vt = np.linalg.svd(A, full_matrices=False)
         keep = s > RCOND * s[0]
-        sol = Vt.T @ (np.where(keep, 1.0 / np.where(keep, s, 1.0), 0.0)
-                      * (U.T @ y_fit))
+        utr = U.T @ y_fit
+        zh = np.tanh(x_ho[:, None] * t[:W][None, :] + t[W:2 * W][None, :])
+        A_ho = np.hstack([zh, np.ones((x_ho.size, 1))])
+        best_sol, best_ho = None, np.inf
+        for a_ in ALPHAS_VAL:
+            if a_ == 0.0:
+                inv = np.where(keep, 1.0 / np.where(keep, s, 1.0), 0.0)
+            else:
+                mu_ = (a_ * s[0]) ** 2
+                inv = s / (s ** 2 + mu_)
+            sol = Vt.T @ (inv * utr)
+            ho_err = float(np.linalg.norm(A_ho @ sol - y_ho))
+            if ho_err < best_ho:
+                best_ho, best_sol = ho_err, sol
         x_ev = np.linspace(-1.0, 1.0, N_EVAL)
         y_ev = d08run.make_fn(d08run.TARGETS[fn_name])(x_ev)
         ze = np.tanh(x_ev[:, None] * t[:W][None, :] + t[W:2 * W][None, :])
-        err = np.hstack([ze, np.ones((x_ev.size, 1))]) @ sol - y_ev
+        err = np.hstack([ze, np.ones((x_ev.size, 1))]) @ best_sol - y_ev
         ev_in = np.abs(x_ev) < GAP_RADIUS
         fl = float(np.linalg.norm(err) / np.linalg.norm(y_ev))
         fi = float(np.linalg.norm(err[ev_in]) / np.linalg.norm(y_ev[ev_in]))
@@ -220,6 +240,7 @@ def train_v4(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
     if snap_every:
         snaps["0"] = theta.numpy().copy().tolist()
     s_prev = 1.0
+    mode_latch = None
     for it in range(1, iters + 1):
         r, g = env["f_residgrad"](theta)
         passes += 2
@@ -259,8 +280,8 @@ def train_v4(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
                 keep = s > RCOND * s[0]
                 utr = U.T @ (-r)
                 if cool in ("fgen", "fgen2", "fabs") or \
-                        (cool == "fabsc" and (it == 1 or
-                                              (it - 1) % refresh == 0)):
+                        (cool in ("fabsc", "gate", "latch") and
+                         (it == 1 or (it - 1) % refresh == 0)):
                     # exact (undamped, truncated) direction on the fit rows,
                     # evaluated on the held-out rows
                     inv_e = torch.where(keep, 1.0 / torch.where(keep, s,
@@ -272,7 +293,7 @@ def train_v4(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
                     passes += 1
                     r_ho_new = r_ho + J_ho @ dstar
                     nho = float(torch.linalg.norm(r_ho))
-                    if cool in ("fabs", "fabsc"):
+                    if cool in ("fabs", "fabsc", "gate", "latch"):
                         # the ONE signal: the absolute held-out error the
                         # exact solve would leave. Noise reads ~1e-14 here,
                         # where the relative version reads 1.0 and releases
@@ -294,6 +315,30 @@ def train_v4(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
                     # cadence form: the held signal drives both dials
                     fgen = s_prev
                     alpha = float(np.clip(s_prev, ALPHA_MIN, ALPHA_MAX))
+                elif cool == "gate":
+                    # the gate: full-speed learning while the held-out
+                    # inexpressible error exceeds S_REF; freeze below it.
+                    # Cooling PROPORTIONAL to s decelerates learning in
+                    # proportion to remaining error (harmonic, not
+                    # geometric, convergence) -- measured killing rand.
+                    fgen = s_prev
+                    alpha = float(np.clip(s_prev, ALPHA_MIN, ALPHA_MAX))
+                elif cool == "latch":
+                    # THE MODE BIT, measured once at init: s0 separates the
+                    # regimes by five orders in every case measured.
+                    #   learn mode (s0 >= S_REF): alpha = r_entry, no
+                    #     cooling -- t8's `none` arm, the measured winner on
+                    #     stock-random. A deep (alpha = s) solve re-stuns
+                    #     learning even uncooled (latch probe: 1.5e-3 vs
+                    #     6.7e-7), so learn mode keeps the solve soft too.
+                    #   preserve mode (s0 < S_REF): the gate.
+                    if mode_latch is None:
+                        mode_latch = "preserve" if s_prev < S_REF else "learn"
+                    fgen = s_prev
+                    if mode_latch == "learn":
+                        alpha = float(np.clip(r_entry, ALPHA_MIN, ALPHA_MAX))
+                    else:
+                        alpha = float(np.clip(s_prev, ALPHA_MIN, ALPHA_MAX))
                 elif cool == "fabsd":
                     # the DEPLOYABLE form: alpha from the PREVIOUS step's
                     # signal (one-step lag), and the signal itself from the
@@ -319,8 +364,15 @@ def train_v4(env, iters, *, cool="fgen", lr=1e-3, betas=(0.9, 0.999),
         stepA = adam_full.clone()
         if idx.numel():
             stepA[idx] = 0.0
-        coolf = fgen if cool in ("fgen", "fgen2", "fabs", "fabsc",
-                                 "fabsd") else 1.0
+        if cool == "gate":
+            coolf = float(min(1.0, fgen / S_REF))
+        elif cool == "latch":
+            coolf = 1.0 if mode_latch == "learn" \
+                else float(min(1.0, fgen / S_REF))
+        elif cool in ("fgen", "fgen2", "fabs", "fabsc", "fabsd"):
+            coolf = fgen
+        else:
+            coolf = 1.0
         dth = coolf * stepA
         if dmu is not None:
             dth = dth.clone()
@@ -385,5 +437,7 @@ ARMS = {
     "fabs":  dict(cool="fabs"),
     "fabsc": dict(cool="fabsc"),
     "fabsd": dict(cool="fabsd"),
+    "gate":  dict(cool="gate"),
+    "latch": dict(cool="latch"),
     "none":  dict(cool="none"),
 }

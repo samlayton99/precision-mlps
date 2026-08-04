@@ -38,32 +38,37 @@ def jobs_list():
         for case, seeds in (("qi", [0]), ("clustered", [0]),
                             ("datagap", [0, 1]), ("rand", [0, 1])):
             for seed in seeds:
-                for arm in ("fgen", "adam"):
+                for arm in ("latch", "gate", "adam"):
                     jobs.append(dict(kind="scale", fn="sine_8pi", case=case,
                                      N=N, seed=seed, arm=arm))
     # loss curves
     for fn in ("sine", "sine_8pi", "runge", "sine_mixture", "exp",
                "abs_cubed"):
-        for arm in ("fgen", "adam"):
+        for arm in ("latch", "gate", "adam"):
             jobs.append(dict(kind="loss", fn=fn, case="rand", N=128, seed=0,
                              arm=arm))
     # gif snapshot runs (fgen and adam, for side-by-side)
     for case in ("qi", "clustered", "datagap", "rand"):
-        for arm in ("fgen", "adam"):
+        for arm in ("latch", "gate", "adam"):
             jobs.append(dict(kind="gif", fn="sine_8pi", case=case, N=128,
                              seed=0, arm=arm))
     # 2-D
     for case in ("qi", "clustered", "datagap", "random"):
-        for arm in ("fgen", "adam"):
+        for arm in ("latch", "gate", "adam"):
             jobs.append(dict(kind="twod", fn="target2d", case=case, N=48,
                              seed=0, arm=arm))
+    # expE01-grade 2-D (radon at N=576 vs random ridges)
+    for geom in ("radon", "random"):
+        for arm in ("latch", "gate", "adam"):
+            jobs.append(dict(kind="twod_qi", fn="gauss_bump", case=geom,
+                             N=576, seed=0, arm=arm))
     # dl2
-    for arm in ("fgen", "adam"):
+    for arm in ("latch", "gate", "adam"):
         jobs.append(dict(kind="dl2", fn="sine_mixture", case="dl2", N=32,
                          seed=0, arm=arm))
     # dltest
     for task in ("airfoil", "parkinsons", "bike_sharing"):
-        for arm in ("fgen", "adam"):
+        for arm in ("latch", "gate", "adam"):
             jobs.append(dict(kind="dltest", fn=task, case="real", N=64,
                              seed=0, arm=arm))
     return jobs
@@ -153,6 +158,9 @@ def run_cell(job):
     elif kind == "twod":
         env = sc.env_2d(job["case"], seed=job["seed"], N=job["N"])
         iters = 2000
+    elif kind == "twod_qi":
+        env = sc.env_2dqi(job["case"], N=job["N"], seed=job["seed"])
+        iters = 1500
     elif kind == "dl2":
         env = _dl2_env(sc, job["fn"])
         iters = 4000
@@ -162,9 +170,10 @@ def run_cell(job):
     else:
         raise ValueError(kind)
 
-    if arm == "fgen":
-        res = sc.train_generic(env, iters, cool="fabsc", seed=job["seed"],
-                               snap_every=snap)
+    if arm in ("latch", "gate", "fgen"):
+        cools = {"latch": "latch", "gate": "gate", "fgen": "fabsc"}
+        res = sc.train_generic(env, iters, cool=cools[arm],
+                               seed=job["seed"], snap_every=snap)
     else:
         res = sc.train_adam(env, iters, snap_every=snap)
 

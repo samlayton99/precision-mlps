@@ -27,7 +27,7 @@ _s.loader.exec_module(sc)
 FIGS = sc.FIGS
 FIGS.mkdir(parents=True, exist_ok=True)
 suite = sc.load(sc.RESULTS / "suite.jsonl")
-CF = {"fgen": "#2ca02c", "adam": "0.45"}
+CF = {"latch": "tab:blue", "adam": "tab:red"}
 
 
 def cells(kind, **kw):
@@ -39,21 +39,21 @@ def cells(kind, **kw):
 # ---- S1: scaling ------------------------------------------------------------
 fig, axes = plt.subplots(2, 2, figsize=(10, 8), sharex=True, sharey=True)
 for ax, case in zip(axes.flat, ("qi", "clustered", "datagap", "rand")):
-    for arm in ("adam", "fgen"):
+    for arm in ("adam", "latch"):
         Ns, reach, floor = [], [], []
         for N in (32, 64, 128, 256):
             cc = cells("scale", case=case, N=N, arm=arm)
             if cc:
                 Ns.append(N)
-                reach.append(np.median([c["final_rel"] for c in cc]))
+                reach.append(np.median([c["best_rel"] for c in cc]))
                 floor.append(np.median([c["floor_final"] for c in cc]))
-        ax.plot(Ns, reach, "o--", color=CF[arm], mfc="none", lw=1.0)
-        ax.plot(Ns, floor, "s-", color=CF[arm], lw=1.6)
+        ax.plot(Ns, reach, "o--", color=CF[arm], mfc="none", lw=1.2, ms=6)
+        ax.plot(Ns, floor, "o-", color=CF[arm], lw=1.8, ms=6)
     cc0 = cells("scale", case=case, arm="adam")
     f0 = {N: np.median([c["floor0"] for c in cells("scale", case=case, N=N,
                                                    arm="adam")])
           for N in (32, 64, 128, 256)}
-    ax.plot(list(f0), list(f0.values()), "k:", lw=1.0)
+    ax.plot(list(f0), list(f0.values()), "k--", lw=1.4)
     ax.set_xscale("log", base=2)
     ax.set_yscale("log")
     ax.set_ylim(1e-16, 3e0)
@@ -64,9 +64,9 @@ axes[1, 1].set_xlabel("width $N$")
 axes[0, 0].set_ylabel("eval rel $L_2$")
 axes[1, 0].set_ylabel("eval rel $L_2$")
 fig.legend(handles=[
-    plt.Line2D([], [], color=CF["fgen"], marker="s", lw=1.6,
-               label="optimizer + finisher (floor)"),
-    plt.Line2D([], [], color=CF["fgen"], marker="o", ls="--", mfc="none",
+    plt.Line2D([], [], color=CF["latch"], marker="s", lw=1.6,
+               label="optimizer + validated finisher"),
+    plt.Line2D([], [], color=CF["latch"], marker="o", ls="--", mfc="none",
                lw=1.0, label="optimizer, reached in-run"),
     plt.Line2D([], [], color=CF["adam"], marker="s", lw=1.6,
                label="Adam + finisher"),
@@ -75,7 +75,7 @@ fig.legend(handles=[
     plt.Line2D([], [], color="k", ls=":", lw=1.0,
                label="no training + finisher")],
     loc="upper center", bbox_to_anchor=(0.5, 1.0), ncol=3)
-fig.suptitle("width scaling, sine_8pi", y=0.90, fontsize=10)
+fig.suptitle("scaling -- best eval rel $L_2$ vs width (sine_8pi, 4000 iterations, validated finisher)", y=0.90, fontsize=11)
 fig.tight_layout(rect=(0, 0, 1, 0.88))
 fig.savefig(FIGS / "S1_scaling.png", dpi=150)
 plt.close(fig)
@@ -84,7 +84,7 @@ plt.close(fig)
 TARGETS6 = ["sine", "sine_8pi", "runge", "sine_mixture", "exp", "abs_cubed"]
 fig, axes = plt.subplots(2, 3, figsize=(13, 7), sharex=True, sharey=True)
 for ax, fn in zip(axes.flat, TARGETS6):
-    for arm in ("adam", "fgen"):
+    for arm in ("adam", "latch"):
         cc = cells("loss", fn=fn, arm=arm)
         if not cc:
             continue
@@ -101,8 +101,8 @@ for ax in axes[1]:
 for ax in axes[:, 0]:
     ax.set_ylabel("eval rel $L_2$")
 fig.legend(handles=[
-    plt.Line2D([], [], color=CF["fgen"], lw=1.2, label="optimizer, reached"),
-    plt.Line2D([], [], color=CF["fgen"], lw=1.0, ls="--",
+    plt.Line2D([], [], color=CF["latch"], lw=1.2, label="optimizer, reached"),
+    plt.Line2D([], [], color=CF["latch"], lw=1.0, ls="--",
                label="optimizer, floor (after finisher)"),
     plt.Line2D([], [], color=CF["adam"], lw=1.2, label="Adam, reached"),
     plt.Line2D([], [], color=CF["adam"], lw=1.0, ls="--",
@@ -158,7 +158,7 @@ def signal_grid(recs_by_case, title, fname, with_mu=False):
 t8 = sc.load(sc.core4.RESULTS / "t8_fgen.jsonl")
 one_d = {}
 for case in ("qi", "clustered", "datagap", "rand"):
-    cc = [r for r in t8 if r["arm"] == "fgen" and r["fn"] == "sine_8pi"
+    cc = [r for r in t8 if r["arm"] == "latch" and r["fn"] == "sine_8pi"
           and r["case"] == case and r["seed"] == 0]
     if cc:
         one_d[case] = cc[0]
@@ -168,7 +168,7 @@ if len(one_d) == 4:
 
 two_d = {}
 for case in ("qi", "clustered", "datagap", "random"):
-    cc = cells("twod", case=case, arm="fgen")
+    cc = cells("twod", case=case, arm="latch")
     if cc:
         two_d[case] = cc[0]
 if len(two_d) == 4:
@@ -182,7 +182,7 @@ DL = [("dl2", "sine_mixture", "2-layer MLP, sine_mixture"),
       ("dltest", "bike_sharing", "bike_sharing")]
 fig, axes = plt.subplots(1, 4, figsize=(16, 4), sharey=False)
 for ax, (kind, fn, title) in zip(axes, DL):
-    for arm in ("adam", "fgen"):
+    for arm in ("adam", "latch"):
         cc = cells(kind, fn=fn, arm=arm)
         if not cc:
             continue
@@ -195,8 +195,8 @@ for ax, (kind, fn, title) in zip(axes, DL):
     ax.grid(True, alpha=0.3)
 axes[0].set_ylabel("MSE")
 fig.legend(handles=[
-    plt.Line2D([], [], color=CF["fgen"], lw=1.2, label="optimizer, train"),
-    plt.Line2D([], [], color=CF["fgen"], lw=1.0, ls="--",
+    plt.Line2D([], [], color=CF["latch"], lw=1.2, label="optimizer, train"),
+    plt.Line2D([], [], color=CF["latch"], lw=1.0, ls="--",
                label="optimizer, test"),
     plt.Line2D([], [], color=CF["adam"], lw=1.2, label="Adam, train"),
     plt.Line2D([], [], color=CF["adam"], lw=1.0, ls="--",

@@ -18,7 +18,7 @@ ITERS = 4000
 TARGETS = ("sine", "sine_8pi", "runge")
 CASE_SEEDS = {"qi": [0], "clustered": [0],
               "datagap": [0, 1, 2], "rand": [0, 1, 2], "rand_scale": [0, 1, 2]}
-ARM_NAMES = ("fgen", "none", "fabs", "fabsc")
+ARM_NAMES = ("fgen", "none", "fabs", "fabsc", "gate", "latch")
 OUT = "t8_fgen.jsonl"
 
 
