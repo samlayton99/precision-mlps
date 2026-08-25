@@ -84,10 +84,12 @@ def _strong_wolfe(x, fk, gk, pk, gk_dot_pk, fg, lr, c1, c2, max_ls,
 
 def ssbroyden_minimize(x0, fg, max_steps=200, lr=0.5, c1=1e-3, c2=0.3, max_ls=80,
                        init_scale=True, tol=1e-23, track_history=False,
-                       max_restarts=3):
+                       max_restarts=3, step_callback=None):
     """Minimise `fg` from `x0` with SSB-II + strong Wolfe.
 
     tol: convergence tolerance on the gradient norm and on the step size.
+    step_callback: optional fn(step, x, f, grad_norm) invoked after each
+        accepted step (used by expD16 to log eval trajectories).
     Returns (x, SSBroydenInfo).
     """
     x = x0.detach().clone().to(torch.float64)
@@ -179,6 +181,8 @@ def ssbroyden_minimize(x0, fg, max_steps=200, lr=0.5, c1=1e-3, c2=0.3, max_ls=80
         info.f, info.grad_norm = f, gnorm
         if track_history:
             info.history.append(gnorm)
+        if step_callback is not None:
+            step_callback(step + 1, x, f, gnorm)
 
         if not math.isfinite(f):
             break

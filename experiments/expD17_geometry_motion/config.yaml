@@ -1,0 +1,14 @@
+# expD17 -- geometry motion under plain Adam (values mirrored in run.py; run.py is authoritative)
+steps: 5000
+eval_every: 50
+adam_lr: 3.0e-3          # classes interp1d / interp2d / pinn_inverse (expD16 convention)
+tabular_lr: 1.0e-3       # expF04's lr
+lambda_star: 0.25
+classes:
+  interp1d:     {problems: [sine, runge, sine_8pi], N: 128}
+  interp2d:     {problems: [gauss_bump, sine2d, mixed2d], N: 576, lambda: {gauss_bump: 0.26, sine2d: 0.08, mixed2d: 0.12}}
+  pinn_inverse: {problems: [burgers_nu, bratu_lam, allencahn_k], N: 512, lambda: 0.15}
+  tabular:      {problems: [superconductivity, sarcos, parkinsons], width: 256, init: scaled_psqrt}
+arms: [standard, qi]
+readout_init: zero       # both arms, all classes
+device: cpu              # fp64

@@ -1,0 +1,15 @@
+# expD22 -- CD-RGE (zero-order, Chaubard zero_order_rnn) on the expD16 suite.
+# run.py hardcodes this grid (like expD16); this file documents it.
+name: expD22_cdrge
+lambda_star: 0.25
+targets: [sine, exp, runge, sine_8pi]      # identical to expD16
+widths_n: [64, 128, 256]                   # model width W = N + 2*halo + 1
+inits: [qi, xavier]
+n_train: 2003                              # prime, equispaced, > max W -> overdetermined
+n_eval: 4001                               # prime, misaligned with train grid
+optimizer: cdrge                           # experiments/expD22_cdrge/cdrge.py
+lr_eq_eps: true                            # author advice: lr = eps throughout
+variants: see VARIANTS in run.py           # finalized by the tuning stages
+adam_reference: {steps: 3000, lr: 3.0e-3, warmup: 100, cosine: true}  # expD16 protocol
+seeds: [0, 1, 2]                           # final run: median + min-max band
+device: cpu                                # fp64 required; MPS is fp32-only

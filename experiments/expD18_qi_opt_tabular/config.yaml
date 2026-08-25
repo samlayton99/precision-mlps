@@ -1,0 +1,15 @@
+# expD18 -- the win-condition experiment (PROGRAM_FRAMING section 7 item 3)
+tasks: [superconductivity, sarcos, airfoil, parkinsons, bike_sharing, beijing_pm25]
+width: 256
+activation: tanh          # expF04's d=1 control: the QI-init advantage is tanh-bound
+init_arms: [std, qi]      # qi = expF04 scaled_psqrt (sqrt(N) ridge bundles, per-ridge
+                          # gamma, projection-sampled centers), the all20 winner
+opt_arms: [adam, qiopt]   # qiopt = minimal assembled QI optimizer (qi_opt.py)
+steps: 4000
+batch_size: 128
+lr: 0.001
+solve_cadence: 200
+seeds: [0, 1, 2]
+holdout_every: 10         # every 10th train row held out (finisher/probe validation)
+dtype: float64
+device: cpu
