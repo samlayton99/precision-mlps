@@ -15,30 +15,18 @@ If a document is not linked from `ORIENTATION.md` or from this index, treat it a
 
 ## The optimizer program (checkpoint D)
 
+**expD07 through expD15 are archived (2026-08-12).** The salvage record — what was achieved, what failed, what is still worth revisiting, with pointers into the archive — is **`results/checkpoint_D_optimizers/D07-D15_SALVAGE.md`**. Read that instead of the experiments. Code: `experiments/_archive/expD07..expD15`; results and method docs: `results/_archive/checkpoint_D_optimizers/expD07..expD15`; tests: `tests/_archive/` (excluded from collection via `pyproject.toml` addopts). Note `docs/ORIENTATION.md` predates expD14 iterations 1-4 and is stale where they disagree.
+
 | document | contents |
 |---|---|
 | `docs/REQUIREMENTS.md` | the gate (above) |
 | `docs/requirements_and_lessons.md` | the evidence behind the gate: five requirements as originally written, three litmus tests, eight measured lessons with their measurements |
-| `results/checkpoint_D_optimizers/expD09_2nd_order_regime/DAMPED_GAUSS_NEWTON.md` | the $\mu$ math written out: $d_\mu = \arg\min\|J_Ld+r\|^2 + \mu\|d\|^2$, the $\alpha = \sqrt\mu/\sigma_1$ correspondence, $\kappa_\mu = 1/\alpha$, three measured laws |
-| `results/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` | **the step-2 solver in full.** The $\mu$ control rules (IV.5-IV.7), the damping floor $\alpha \ge r_\text{entry}$, the terminal-solve laws, the APPROVED row-separation result. Also the **only** writeup of expD12 and expD13, which have no results file. Covers expD09 through expD13. |
-| `results/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md` | **which parameters to solve.** Four working mechanisms with measured tradeoffs, costs, and enough implementation detail to rebuild them. The characterization: a parameter is in $L$ iff its Jacobian column does not move when $L$ is perturbed. |
-| `results/checkpoint_D_optimizers/expD11_batching/SAM_SPEC_superseded.md` | Sam's original $O(m{+}n)$ rank-deficient least-squares spec. Answered negatively by expD11; kept for framing. |
-| `results/checkpoint_D_optimizers/expD09_2nd_order_regime/SUBPROBLEM.md` | the frozen-$\Phi$ subproblem definition |
-| `results/checkpoint_D_optimizers/expD10_step2_hardening/batching_test.md` | the batching test plan. T1 is corrected in place from expD11's negative result. |
-
-**Experiment map, D07 onward.** Each writeup is at `results/checkpoint_D_optimizers/<exp>/`.
-
-| experiment | question | writeup |
-|---|---|---|
-| expD07 | can standard optimizers reach the floor on real multilayer data | yes |
-| expD08 | QI-init nonlinear CG, the tether, batching | yes |
-| expD09 | the second-order regime, the recipe that hits machine epsilon at $O(d)$ state | yes |
-| expD10 | hardening across 6 targets, 4 widths, noise, batching, fp32, 2-D | yes |
-| expD11 | can any $O(dk)$ iterative solver reach the fp64 floor | yes, negative result |
-| expD12 | the $\mu$ ladder on a frozen $\Phi$ | **only** in `STEP2_SOLVER_SPEC.md` |
-| expD13 | the $\mu$ ladder on a drifting $\Phi$ | **only** in `STEP2_SOLVER_SPEC.md` |
-| expD14 | first stitch of Adam and the solve (iteration 0) | yes, with a correction header listing four wrong claims |
-| expD15 | which parameters enter $L$ | yes, plus `METHOD_L_selection.md` |
+| `results/checkpoint_D_optimizers/PROGRAM_FRAMING.md` | **the program-level context (Sam, 2026-08-12): the geometry/readout split, the four experiment axes, the three ways to win, the moonshot stated properly. Read before designing any optimizer or init experiment.** |
+| `results/checkpoint_D_optimizers/D07-D15_SALVAGE.md` | **the salvage record for the archived campaign** |
+| `results/checkpoint_D_optimizers/expD22_cdrge/expD22_results.md` | CD-RGE zero-order (Chaubard `zero_order_rnn`) on the expD16 suite: tuned best is a ZO Adam clone at ~50x the passes; the class is not precision-competitive. Collection canceled early by Sam. |
+| `results/_archive/checkpoint_D_optimizers/expD12_mu_ladder/STEP2_SOLVER_SPEC.md` | the step-2 solver in full: $\mu$ control rules, the damping floor $\alpha \ge r_\text{entry}$, terminal-solve laws, the APPROVED row-separation result. Only writeup of expD12/expD13. |
+| `results/_archive/checkpoint_D_optimizers/expD15_inclusion_score/METHOD_L_selection.md` | which parameters to solve: four mechanisms, tradeoffs, costs |
+| `results/_archive/checkpoint_D_optimizers/expD09_2nd_order_regime/{expD09_recipe_results.md, DAMPED_GAUSS_NEWTON.md, SUBPROBLEM.md}` | the block-QR + LSMR recipe, the $\mu$ math, the frozen-$\Phi$ subproblem |
 
 ## Construction and theory (checkpoints A through C)
 
@@ -65,4 +53,6 @@ If a document is not linked from `ORIENTATION.md` or from this index, treat it a
 
 ## Archive
 
-`results/_archive/expD08_qi_init_nlcg/` holds 311 MB of superseded data from the expD08 campaign: iterations 1 through 10, the tether study, the batching runs, and the hardening runs. Iteration 11 supersedes all of it and stays live at `results/checkpoint_D_optimizers/expD08_qi_init_nlcg/iteration_11/`. The archive is local only, ignored by git, and safe to delete. Its reusable content was promoted into `docs/REQUIREMENTS.md` and `docs/requirements_and_lessons.md` before archiving.
+`results/_archive/checkpoint_D_optimizers/expD07..expD15` holds the archived optimizer campaign (writeups, method docs and figures stay git-tracked; data does not). `experiments/_archive/` holds its code, `tests/_archive/` its tests. Entry point: `results/checkpoint_D_optimizers/D07-D15_SALVAGE.md`.
+
+`results/_archive/expD08_qi_init_nlcg/` holds 311 MB of superseded data from the expD08 campaign: iterations 1 through 10, the tether study, the batching runs, and the hardening runs. Iteration 11 supersedes all of it (now at `results/_archive/checkpoint_D_optimizers/expD08_qi_init_nlcg/iteration_11/`). That data dump is local only, ignored by git, and safe to delete. Its reusable content was promoted into `docs/REQUIREMENTS.md` and `docs/requirements_and_lessons.md` before archiving.

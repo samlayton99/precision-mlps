@@ -24,6 +24,7 @@ dev = ["pytest>=7.0", "matplotlib>=3.7"]
 include = ["src*", "experiments*"]
 
 [tool.pytest.ini_options]
+addopts = "--ignore=tests/_archive --ignore=experiments/_archive"
 markers = [
     "slow: marks tests that take >10s (mpmath construction). Deselect with -m 'not slow'.",
 ]
