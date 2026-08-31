@@ -37,17 +37,26 @@ If a document is not linked from `ORIENTATION.md` or from this index, treat it a
 | `docs/theory_magnitude_rule.md` | the readout-norm law, same Fourier tail, one spectral integral |
 | `docs/thoughts.md` | Sam's working notes on lstsq versus QI and the $\Phi$ null space |
 
-## Applications (checkpoints E through G)
+## Applications (checkpoints E through H)
 
 | document | contents |
 |---|---|
 | `results/checkpoint_F_applications/expF01_linear_de_zoo/PINN_FEASIBILITY.md` | can the QI construction power a PINN. Analysis plus the reasoning behind expF01. |
 | `experiments/expF01_linear_de_zoo/pinn_poc.py` | the throwaway numpy proof-of-concept behind that analysis |
 | `docs/future_experiments.md` | the design spec for the non-optimizer checkpoints (E, F, G) |
+| `results/checkpoint_H_highdim/expH01_highdim_suite/SUITE_SPEC.md` | Sam's specification of the checkpoint-H high-dimensional benchmark: the 80-task suite with genuinely multivariate targets (Version 3, the one built), plus the superseded 60-task suite (Version 2) and the 138-task factorial framing (Version 1, context) |
+| `results/checkpoint_H_highdim/expH01_highdim_suite/expH01_results.md` | the suite as built: the twelve function families, the common scaling, the data geometries, the three test sets, the predicted center density, the gallery figures, and the even-geometry reference that exercises it |
+| `results/checkpoint_H_highdim/expH02_nonuniform_spacing_1d/expH02_results.md` | smoothly non-uniform 1-D center spacing at constant lambda: works with the locally right gamma; the widest gap sets the width; a spacing jump that does not shrink with N stalls the error |
+| [Ridge Cascade](https://claude.ai/code/artifact/6e225ab0-8eb9-4a72-b8ff-a423b9caafe9) | interactive 3-D explorer of one two-hidden-layer ridge basis function (direction wheel, per-layer spreads, five second-layer sheets, tanh/swish/gelu with expC07 $\lambda$) |
+| `docs/ridge_quadrature_theory.md` | the operating theory of checkpoint H, formalized: Fourier-polar representation, the direction-snapping certificate $\|F-F_V\|\le r\int\|\xi\|\theta(\hat\xi,V)d|\mu|$, the $M$-free 1-D leg, certificate-to-projection, the max-of-two-floors bracket; each claim labeled theorem / exact-in-2D / measured / open |
+| `docs/highdim_open_questions.md` | Sam's eight open questions for checkpoint H (the 2-D direction cliff, the optimal center distribution, their interaction, global+local neurons, depth, gated MLPs, 3-D to the floor, whether Radon is the right picture) plus the bookmarked hole experiment |
+| `results/checkpoint_H_highdim/expH04_mesh_finding/expH04_results.md` | the mesh-finding ladder: what placement theory says (spectral rule for centers, the ridge direction tax, active subspaces), and the measured rungs from data-only monitors to the iterated active subspace in d = 3 and 5 |
+| `results/checkpoint_H_highdim/expH05_direction_cliff_2d/expH05_results.md` | the 2-D direction cliff on nine targets: error on a data ball versus the direction count at fixed along-direction resolution -- a plateau, then a 5-9 order collapse in two or three steps of $M$, then a floor near $10^{-14}$; the threshold rises with the ball radius and with the target's difficulty. Plus the budget-split follow-up: at fixed $MN$ the error is the worse of a direction-limited and an offset-limited floor, the best split is where they cross, and the optimal path doubles $M$ and $N$ in alternation |
+| `results/checkpoint_H_highdim/expH06_ridge_hierarchy/expH06_results.md` | the hierarchical ridge mesh in $d=3,4$: hidden-ridge recovery to the floor (projection pursuit + Gauss-Newton polish of directions), the greedy hierarchy (nested background + atoms, refine-vs-open by trial fits) against the even mesh, the 3-D floor curves and the push to the floor |
 
 ## Results
 
-`results/results.md` is the global cross-experiment synthesis. Per-experiment writeups are at `results/checkpoint_<A..G>_<name>/exp<X>NN_<name>/exp<X>NN_results.md`.
+`results/results.md` is the global cross-experiment synthesis. Per-experiment writeups are at `results/checkpoint_<A..H>_<name>/exp<X>NN_<name>/exp<X>NN_results.md`.
 
 **All `*.md` under `results/` is tracked** (the ignore exception was widened in August 2026 from `*_results.md`-only -- the narrow rule is how four load-bearing documents were nearly lost in the July cleanup). Data, caches and gif directories under `results/` remain ignored; figures and HTML explainers are tracked.
 

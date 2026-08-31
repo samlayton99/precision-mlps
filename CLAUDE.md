@@ -93,9 +93,31 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expG01_interactive_explorer/  Interactive Dash explorer (lambda, N, target, hold-out mask; live lstsq refit)
   expG03_extrapolation/         Extrapolation sweep
   expG04_cascade_multiband/     Band-count ablation
+  # Checkpoint H -- high-dimensional ridge/QI extension
+  #   80-task suite over [-1,1]^d, d=1..5, 16 per dimension (spec: SUITE_SPEC.md, Version 3). Targets are
+  #   genuinely multivariate (no target is a sum of 1-D profiles).
+  expH01_highdim_suite/         Self-contained: h01suite/ package (basis, targets, densities, tasks, metrics,
+                                even-geometry reference baseline) + run.py/viz.py (gallery, smoke, sweeps)
+  expH02_nonuniform_spacing_1d/ Smoothly non-uniform center spacing in 1-D with gamma_j = 0.25/h_j: 3 center
+                                distributions x 4 levels of non-uniformity x 4 targets x 4 data settings
+  expH03_distribution_matching/ PLACEHOLDER (not specified yet): ideal center placement for a data distribution
+  expH04_mesh_finding/          The mesh-finding ladder: monitor -> graded density -> centers (mesh.py), from
+                                data-only through true/estimated slope, residual, frequency, to the active
+                                subspace (gradient covariance) for directions; d = 1, 2, 3, 5 on suite tasks
+  expH05_direction_cliff_2d/    The 2-D direction cliff on 9 targets: data ball of radius r about an off-center
+                                point, ridge system recentered on it, sweep the direction count M (1..16) at a
+                                fixed 128 offsets per direction; error scored on the inner 90% of the ball.
+                                --split-exact: the directions-vs-offsets budget split on a power-of-two
+                                grid at r = 0.4 (exact iso-budget diagonals + the steepest-descent path)
+  expH06_ridge_hierarchy/       The hierarchical ridge mesh, d = 3, 4: nested background directions with coarse
+                                even blocks, atoms (directions found by projection pursuit on the residual and
+                                polished jointly by Gauss-Newton with the readout eliminated), and refine-vs-open
+                                arbitration by trial fits (the two-floor law in operation). h06/ package
+                                (core, targets, atoms, grow); --floors (3-D floor curves), --ridges (hidden
+                                ridge recovery), --grow (hierarchy vs even), --push (3-D to the floor)
 
 tests/                        Unit tests
-results/                      Experiment results output, grouped: results/checkpoint_<A..G>_*/exp*/
+results/                      Experiment results output, grouped: results/checkpoint_<A..H>_*/exp*/
                               The global cross-experiment summary is results/results.md.
 ```
 
