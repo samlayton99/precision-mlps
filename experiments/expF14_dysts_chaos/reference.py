@@ -26,6 +26,15 @@ CACHE_DIR = (REPO_ROOT / "results" / "checkpoint_F_applications"
              / "expF14_dysts_chaos" / "ref_cache")
 
 DPS = 30
+
+# mpmath's odefun is a Taylor method and assumes the field is analytic. That
+# fails on MacArthur, whose growth rate is a min over resources: the field is
+# only C^0 and the window crosses 9 kinks. Measured, at lambda_max*T = 3:
+# DOP853@1e-13, DOP853@1e-14 and Radau@1e-12 agree with each other to 8e-14,
+# while mpmath disagrees with ALL of them by 8.4e-5 and with itself (25 vs 40
+# digits) by 3.4e-7. The extended-precision route is simply wrong there, so
+# that system gets a convergence-verified fp64 reference instead.
+RK_REFERENCE = {"MacArthur": dict(rtol=1e-13, atol=1e-15, method="DOP853")}
 ODE_TOL_EXP = 25       # mpmath odefun tol = 10^-25
 DEGREE = 12
 
@@ -33,7 +42,13 @@ DEGREE = 12
 def _mp_rhs(sys):
     """Return a scalar-list rhs f(t, y) in mpmath for `sys`."""
     import mpmath as mp
-    p = {k: mp.mpf(v) for k, v in sys.params.items()}
+    def _mp(v):
+        arr = np.asarray(v)
+        if arr.ndim == 0:
+            return mp.mpf(float(arr))
+        return np.vectorize(lambda z: mp.mpf(float(z)), otypes=[object])(arr)
+
+    p = {k: _mp(v) for k, v in sys.params.items()}
     name = sys.name
     if name == "Lorenz":
         def f(t, y):
@@ -64,6 +79,58 @@ def _mp_rhs(sys):
         def f(t, y):
             return [(y[(i + 1) % d] - y[(i - 2) % d]) * y[(i - 1) % d] - y[i] + FF
                     for i in range(d)]
+    elif name == "InteriorSquirmer":
+        a, g, tau = p["a"], p["g"], p["tau"]
+        nmodes = len(a)
+
+        def f(t, y):
+            r, th, tt = y
+            phase = mp.mpf(1) / 2 + mp.tanh(tau * 20 * mp.sin(2 * mp.pi * tt / tau)) / 2
+            vr = mp.mpf(0)
+            vt = mp.mpf(0)
+            for i in range(nmodes):
+                nn = mp.mpf(i + 1)
+                A = a[i] * phase
+                G = g[i] * (1 - phase)
+                sn, cs = mp.sin(th * nn), mp.cos(th * nn)
+                rn = r ** nn
+                vr += (G * cs + A * sn) * (nn * rn * (r ** 2 - 1) / r)
+                vt += (2 * r + (r ** 2 - 1) * nn / r) * (A * cs - G * sn) * rn
+            return [vr, vt / r, mp.mpf(1)]
+
+    elif name == "DoublePendulum":
+        g, l1, l2, m1, m2 = (p["g"], p["l1"], p["l2"], p["m1"], p["m2"])
+
+        def f(t, y):
+            th1, th2, p1, p2 = y
+            cd, sd = mp.cos(th1 - th2), mp.sin(th1 - th2)
+            den = l1 * l2 * (m1 + m2 * sd ** 2)
+            th1d = (l2 * p1 - l1 * p2 * cd) / (l1 * den)
+            th2d = ((m1 + m2) * l1 * p2 - m2 * l2 * p1 * cd) / (m2 * l2 * den)
+            h1 = p1 * p2 * sd / den
+            h2 = (m2 * l2 * p1 ** 2) / (2 * l1 * den ** 2)
+            h2 += m2 * p2 * l2 * l1 * th2d / den / 2
+            h2 *= mp.sin(2 * (th1 - th2))
+            return [th1d, th2d,
+                    -(m1 + m2) * g * l1 * mp.sin(th1) - h1 + h2,
+                    -m2 * g * l2 * mp.sin(th2) + h1 - h2]
+
+    elif name == "MacArthur":
+        kk, cc, ss, rr0, dd, mm = (p["k"], p["c"], p["s"], p["r"], p["d"], p["m"])
+        ns = kk.shape[0]
+
+        def f(t, y):
+            nn, R = list(y[:ns]), list(y[ns:])
+            mu = [min(rr0 * R[j] / (kk[j][i] + R[j]) for j in range(ns))
+                  for i in range(ns)]
+            out = [nn[i] * (mu[i] - mm) for i in range(ns)]
+            for a in range(ns):
+                acc = dd * (ss[a] - R[a])
+                for i in range(ns):
+                    acc -= cc[a][i] * mu[i] * nn[i]
+                out.append(acc)
+            return out
+
     else:
         raise ValueError(name)
     return f
@@ -72,6 +139,8 @@ def _mp_rhs(sys):
 def reference(sys, T, n_eval, dps=DPS, use_cache=True, verbose=True):
     """Dense reference trajectory: (ts, Y) with ts uniform on [0, T], Y (n_eval, d)."""
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    if sys.name in RK_REFERENCE and dps == DPS:
+        return _rk_reference(sys, T, n_eval, verbose=verbose)
     key = f"{sys.name}_T{T:.10g}_n{n_eval}_dps{dps}.npz"
     path = CACHE_DIR / key
     if use_cache and path.exists():
@@ -99,6 +168,43 @@ def reference(sys, T, n_eval, dps=DPS, use_cache=True, verbose=True):
         mp.mp.dps = old
     np.savez(path, ts=ts, Y=Y)
     return ts, Y
+
+
+def _rk_reference(sys, T, n_eval, verbose=True):
+    """Convergence-verified fp64 reference for a non-analytic field."""
+    cfg = RK_REFERENCE[sys.name]
+    path = CACHE_DIR / f"{sys.name}_T{T:.10g}_n{n_eval}_rk.npz"
+    if path.exists():
+        z = np.load(path)
+        return z["ts"], z["Y"]
+    ts = np.linspace(0.0, T, n_eval)
+    Y, _ = rk_trajectory(sys, T, ts, cfg["rtol"], cfg["atol"], cfg["method"])
+    if verbose:
+        print(f"  RK reference {sys.name} T={T:.4f} ({cfg['method']} "
+              f"rtol={cfg['rtol']:.0e}); mpmath is not usable on this field",
+              flush=True)
+    np.savez(path, ts=ts, Y=Y)
+    return ts, Y
+
+
+def reference_uncertainty(sys, T, n_eval=2001):
+    """How well can we even measure error here? Spread over independent methods.
+
+    For an analytic field this compares mpmath at two working precisions. For a
+    field in RK_REFERENCE it compares three independent fp64 integrator families
+    (explicit RK, implicit RK, multistep) against the chosen reference -- the
+    only honest way to bound a reference that cannot be taken to extra digits.
+    """
+    ts, Y = reference(sys, T, n_eval, verbose=False)
+    if sys.name in RK_REFERENCE:
+        out = {}
+        for tag, (m, rt, at) in {"DOP853@1e-14": ("DOP853", 1e-14, 1e-16),
+                                 "Radau@1e-12": ("Radau", 1e-12, 1e-14),
+                                 "LSODA@1e-12": ("LSODA", 1e-12, 1e-14)}.items():
+            Z, _ = rk_trajectory(sys, T, ts, rt, at, m)
+            out[tag] = float(np.linalg.norm(Z - Y) / np.linalg.norm(Y))
+        return out
+    return {"mpmath 25 vs 40 digits": selfcheck(sys, T, min(n_eval, 501))["rel_l2"]}
 
 
 def rk_trajectory(sys, T, ts, rtol, atol, method="DOP853"):

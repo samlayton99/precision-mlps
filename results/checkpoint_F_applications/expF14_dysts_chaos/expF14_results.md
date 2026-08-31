@@ -4,10 +4,11 @@
 
 ## TL;DR
 
-- The expF01/expF02 recipe transfers to chaotic ODE systems unchanged: freeze the QI geometry in $t$, solve the readout, and the entire trajectory over three Lyapunov times comes out at the fp64 floor on all five systems -- $1.1\times10^{-13}$ (Lorenz), $4.3\times10^{-13}$ (Rössler), $1.4\times10^{-12}$ (Thomas), $4.9\times10^{-13}$ (Halvorsen), $1.3\times10^{-13}$ (Lorenz96) -- at $W=693$ neurons, in 4-5 Gauss-Newton steps, with no training and no time-stepping.
+- The expF01/expF02 recipe transfers to chaotic ODE systems unchanged: freeze the QI geometry in $t$, solve the readout, and the entire trajectory over three Lyapunov times comes out at the fp64 floor on all five of the first batch -- $1.1\times10^{-13}$ (Lorenz), $4.3\times10^{-13}$ (Rössler), $1.4\times10^{-12}$ (Thomas), $4.9\times10^{-13}$ (Halvorsen), $1.3\times10^{-13}$ (Lorenz96) -- at $W=693$ neurons, in 4-5 Gauss-Newton steps, with no training and no time-stepping. A second batch of three adds DoublePendulum ($3.3\times10^{-13}$) and two instructive failures.
 - **It beats the tightest fp64 Runge-Kutta on 4 of 5.** DOP853 at `rtol=1e-13` costs 5-10k function evaluations and lands at $5.8\times10^{-13}$ (Lorenz) / $1.2\times10^{-11}$ (Thomas); the QI solve is $5\times$ and $8.5\times$ better respectively. Rössler is the one loss ($3\times$).
 - Width scaling is the clean geometric descent Checkpoint B predicts, and it **stops at the interpolation floor of the same dictionary**, not at some solver-specific wall: the solve tracks that floor to within $1$-$1.5$ orders everywhere past resolution.
 - **The warm start is load-bearing and the geometry is load-bearing.** From $a_0=0$ Newton fails outright ($\sim10^{-1}$ to $10^{2}$) on every system; with random centres at the same width and bandwidth the solve loses 2-6 orders.
+- **Where it fails, it fails for a nameable reason and says so.** A near-square-wave drive (InteriorSquirmer) and a $C^0$ vector field (MacArthur) both defeat a single shared bandwidth. On both, the solve stops tracking its own dictionary's interpolation floor (318-1459$\times$ above it, versus 1-35$\times$ when it works) and the reference-free residual is 7 orders larger -- so the failure is detectable without knowing the answer.
 
 ## Question
 
@@ -118,6 +119,51 @@ expF01 measured $19$-$685\times$ for the same comparison on 2-D PDEs; in 1-D tim
 - **`figures/error_vs_horizon.png`** -- rel $L_2$ against $\lambda_{\max}T$ at fixed width, with the interpolation floor and the $\varepsilon_{\text{mach}}e^{\lambda_{\max}T}$ chaos line, separating the resolution wall from the conditioning wall.
 - **`figures/ablations.png`** and **`figures/init_and_signal.png`** -- centre placement, bandwidth basin, `rcond`, polynomial block, Newton start, warm-start tolerance; the initialisation ladder, the IC-row weight, and whether the reference-free residual ranks configurations.
 
+## Second batch: three systems chosen to break the method
+
+Sam picked three more, and each violates a different assumption the first five all satisfied. One passes; the two failures are more informative than the pass.
+
+| system | $d$ | assumption broken | rel $L_2$ at largest width |
+|---|---:|---|---:|
+| DoublePendulum | 4 | conservative (no attractor); $\lambda_{\max}=3.99$, the most chaotic of all eight | $3.3\times10^{-13}$ @ $W{=}693$ |
+| InteriorSquirmer | 3 | non-autonomous, driven by a near-square wave | $4.2\times10^{-5}$ @ $W{=}1385$ |
+| MacArthur | 10 | vector field only $C^0$ (growth rate is a `min`); $d=10$ | $3.7\times10^{-5}$ @ $W{=}463$ |
+
+**DoublePendulum works, and it settles the horizon question.** It reaches $3.3\times10^{-13}$ against an interpolation floor of $1.1\times10^{-14}$, from a warm start of $1.7\times10^{-10}$. More useful is its horizon curve, which is essentially **flat**: $5.8\times10^{-15}$, $4.0\times10^{-13}$, $5.0\times10^{-13}$, $5.0\times10^{-13}$, $5.4\times10^{-13}$ at $\lambda_{\max}T = 1,2,3,4,6$. The most chaotic system in the set is the *least* horizon-sensitive, because $\lambda_{\max}=3.99$ means even $\lambda_{\max}T=6$ is a window of only $T=1.5$ in absolute time. That is the cleanest available confirmation of the sweep-B reading: what binds is the absolute length of the window the dictionary must resolve, not how many Lyapunov times it contains. It is also the one system where the defaults are not optimal -- Chebyshev centres beat the uniform grid ($8.6\times10^{-14}$ vs $5.0\times10^{-13}$), and $\lambda=0.30$ or a down-weighted condition row reach $1.2$-$1.3\times10^{-14}$, worth about $40\times$.
+
+**InteriorSquirmer: machine precision until a switch enters the window, then a 12-order cliff.** Its third state is a clock, and the mode amplitudes are gated by $0.5 + 0.5\tanh\!\big(60\sin(2\pi t/3)\big)$ -- a near-square wave whose transition width is $0.016$ in $t$ (measured: $\max|\dot{\text{protocol}}| = 62.8$), with switches at $t = 1.5, 3.0, 4.5,\dots$ Counting the switches strictly inside each window:
+
+| $\lambda_{\max}T$ | $T$ | switches inside $(0,T)$ | rel $L_2$ at $W=463$ |
+|---:|---:|---:|---:|
+| 1 | 1.184 | 0 | $4.5\times10^{-15}$ |
+| 2 | 2.368 | 1 | $2.1\times10^{-3}$ |
+| 3 | 3.551 | 2 | $7.2\times10^{-3}$ |
+| 4 | 4.735 | 3 | $9.7\times10^{-3}$ |
+| 6 | 7.103 | 4 | $2.7\times10^{-2}$ |
+
+With no switch in the window the method is at machine precision, better than any other cell in the experiment. The first switch costs twelve orders. Widening helps only algebraically: the interpolation floor falls roughly as $W^{-6.5}$ (from $2.6\times10^{-3}$ at $W=237$ to $2.9\times10^{-8}$ at $W=1385$) instead of geometrically. One shared bandwidth cannot hold both the trajectory's own scale and a feature $200\times$ narrower, which is expC06's multi-scale finding arriving in the time domain -- and the cascaded multi-band geometry proposed there is the indicated fix.
+
+**MacArthur: algebraic convergence, exactly where the smoothness theory says it should be.** Its growth rate is $\mu_i = \min_j r R_j/(k_{ji} + R_j)$ -- Liebig's law of the minimum -- so the vector field is only $C^0$ and the trajectory only $C^1$. The limiting resource switches 9 times inside the window. expA07's smoothness stress test predicts precisely this: when the target is rougher than the kernel order requires, the geometric law is replaced by a steeper-looking but merely algebraic power law, and the lock never arrives at reachable width. Measured: the interpolation floor falls as about $W^{-4.4}$, reaching only $1.2\times10^{-7}$ at $W=463$. This is the one system in the set where machine precision is not available at any feasible width, and the reason is a property of the problem, not of the method.
+
+### The failures share one signature, and it is visible without a reference
+
+For the six systems that work, the solve tracks the interpolation floor of its own dictionary. For the two that fail, it does not:
+
+| | solve / interpolation floor | fresh-point PDE residual |
+|---|---:|---:|
+| Lorenz, Rössler, Lorenz96 | 1-4$\times$ | $10^{-11}$-$10^{-10}$ |
+| Halvorsen, DoublePendulum, Thomas | 12-35$\times$ | $10^{-11}$-$10^{-10}$ |
+| MacArthur | **318$\times$** | $1.0\times10^{-2}$ |
+| InteriorSquirmer | **1459$\times$** | $4.4\times10^{-4}$ |
+
+The reference-free residual separates the two groups by seven orders, so the failure is detectable in deployment. That matters, because **on both failures the solve is worse than the warm start it began from** -- InteriorSquirmer $4.2\times10^{-5}$ against a warm start of $3.0\times10^{-8}$ ($1390\times$ worse), MacArthur $3.7\times10^{-5}$ against $1.2\times10^{-7}$ ($317\times$ worse). A sharp or non-smooth feature lets the collocation residual be reduced by an aliased solution that is further from the truth. The operational rule is therefore: **do not apply the polish unconditionally** -- keep it only when its fresh stacked residual beats the warm start's.
+
+**No knob rescues either one, and that is itself the diagnosis.** Every ablation on InteriorSquirmer lands within $2\times$ of $7.2\times10^{-3}$, and every ablation on MacArthur within $2\times$ of $7.4\times10^{-5}$ -- centre placement, $\lambda$, `rcond`, and the polynomial block all null. Compare the six working systems, where centre placement alone moves the answer 2-8 orders. When nothing in the configuration moves the answer, the limit is the representation.
+
+### The extended-precision reference is not universal either
+
+This is the methodological finding, and it generalises past this experiment. `mpmath.odefun` is a Taylor method and assumes an analytic field. On MacArthur it is simply **wrong**: at $\lambda_{\max}T=3$ it disagrees with DOP853@$10^{-13}$, DOP853@$10^{-14}$ and Radau@$10^{-12}$ by $8.4\times10^{-5}$, while those three independent integrator families -- explicit Runge-Kutta, implicit Runge-Kutta, and (at $2.6\times10^{-12}$) the LSODA multistep -- agree with each other to $8\times10^{-14}$. Its own two-precision self-check, 25 versus 40 digits, differs by $3.4\times10^{-7}$, so extra digits do not help: the error is a method error, not a rounding error. MacArthur therefore uses a convergence-verified fp64 reference, and its DOP853 line is suppressed from the figures because there DOP853 *is* the reference. The repo leans on mpmath as ground truth throughout; that licence does not extend to non-analytic problems, and the only way to find out is to cross-check independent integrator families.
+
 ## Additional details
 
 **The fixed-point trap is structurally present, and did not fire.** Every one of these systems has fixed points, and $u \equiv$ (fixed point) is an *exact* solution of the ODE with an identically zero PDE residual -- only the initial-condition row rules it out. That is exactly the trap expF03 part 2 hit on the logistic IVP, so the backtracking criterion and the emitted diagnostic are both the **stacked** residual (PDE rows *and* the IC row). In these runs no failure took that branch: the diverged starts carry *large* PDE residuals ($3.9\times10^{1}$ for Lorenz cold, $3.2\times10^{7}$ for Rössler `bcfit`), so the PDE rows alone would have flagged them. The guard is cheap and the argument for it is structural, not empirical -- but it is not load-bearing on this evidence.
@@ -126,11 +172,11 @@ expF01 measured $19$-$685\times$ for the same comparison on 2-D PDEs; in 1-D tim
 
 **Why the reference had to be extended precision.** This is not a formality. Against mpmath at 30 digits, DOP853 at `rtol=1e-13` is $6.1\times10^{-13}$ on Lorenz and $1.1\times10^{-11}$ on Thomas -- i.e. a fp64 RK "reference" would have been *worse than the thing it was certifying* on four of the five systems, and would have reported the QI solve's error as its own.
 
-**Scope.** Five smooth, analytic, autonomous vector fields, $d\le4$, one coordinate, a single global window of at most a few Lyapunov times, noise-free, single collocation seed, and an initial condition taken exactly from the benchmark. The solve is dense and global: the system is $(d\,n_{\text{col}})\times(d(W{+}4))$ and the cost is cubic in width, so this is a precision result, not a claim of competitiveness with a stepper at loose tolerance -- at `rtol=1e-6` DOP853 answers in 9 ms. It says nothing about forecasting, about learning the vector field from data, about long-horizon rollout, or about the higher-dimensional systems in the benchmark.
+**Scope.** Eight vector fields, $d\le10$, one coordinate, a single global window of at most a few Lyapunov times, noise-free, single collocation seed, and an initial condition taken exactly from the benchmark. Six are smooth and autonomous; the second batch deliberately includes one non-autonomous and one non-analytic field, and both fail. The solve is dense and global: the system is $(d\,n_{\text{col}})\times(d(W{+}4))$ and the cost is cubic in width, so this is a precision result, not a claim of competitiveness with a stepper at loose tolerance -- at `rtol=1e-6` DOP853 answers in 9 ms. It says nothing about forecasting, about learning the vector field from data, about long-horizon rollout, or about the higher-dimensional systems in the benchmark.
 
 ## Conclusions
 
-*Pending Sam.* On five chaotic systems from the `dysts` benchmark, freezing the QI geometry in time and solving the readout reaches the repo's fp64 floor over three Lyapunov times, in a handful of Gauss-Newton steps and with no training -- and does so more accurately than the tightest fp64 Runge-Kutta on four of the five. Two things carry it, both inherited from earlier checkpoints rather than new here: the uniform-grid geometry (Checkpoint C), without which the same algorithm loses orders, and a cheap classical initialiser (expF03), without which Newton does not converge at all. What stops the descent is the interpolation floor of the dictionary itself, which is the honest limit and not a solver defect.
+*Pending Sam.* On six of eight chaotic systems from the `dysts` benchmark, freezing the QI geometry in time and solving the readout reaches the repo's fp64 floor over three Lyapunov times, in a handful of Gauss-Newton steps and with no training -- and does so more accurately than the tightest fp64 Runge-Kutta on four of the five smooth-and-autonomous ones. Two things carry it, both inherited from earlier checkpoints rather than new here: the uniform-grid geometry (Checkpoint C), without which the same algorithm loses orders, and a cheap classical initialiser (expF03), without which Newton does not converge at all. What stops the descent is the interpolation floor of the dictionary itself, which is the honest limit and not a solver defect. The two failures locate that limit precisely: a near-square-wave drive and a $C^0$ vector field both defeat a single shared bandwidth, both are detectable in deployment from the reference-free residual, and on both the polish must be withheld because it degrades the trajectory it started from.
 
 ## Baselines worth running (not run here; Sam's next step)
 

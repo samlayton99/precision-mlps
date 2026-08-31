@@ -51,6 +51,9 @@ SMOKE = "--smoke" in sys.argv
 PLOT_ONLY = "--plot" in sys.argv
 _only = [a for a in sys.argv if a.startswith("--only")]
 ONLY = set((_only[0].split("=", 1)[1] if _only else "ABCD").upper())
+_sys = [a for a in sys.argv if a.startswith("--systems")]
+SYSTEMS = ([n.strip() for n in _sys[0].split("=", 1)[1].split(",")] if _sys
+           else list(systems.SYSTEM_ORDER))
 
 # --- protocol constants -----------------------------------------------------
 LYAP_TIMES = 3.0                       # sweep A horizon: lambda_max * T
@@ -60,6 +63,13 @@ N_GRID = [48, 96, 128, 192, 256, 384]
 HORIZONS = [1.0, 2.0, 3.0, 4.0, 6.0]
 HORIZON_WIDTHS = [256]
 ABL_N = 256
+# MacArthur is d=10: the dense system is (d*n_col) x (d*(W+4)), so cost grows
+# like d^3 at fixed width. Cap its grids rather than its coverage.
+N_GRID_BY_SYSTEM = {"MacArthur": [48, 96, 128, 192, 256],
+                    # the squirmer's drive switches over dt ~ 0.008, so it is
+                    # pushed further in width to locate its resolution wall
+                    "InteriorSquirmer": [96, 192, 256, 384, 512, 768]}
+ABL_N_BY_SYSTEM = {"MacArthur": 128}
 INIT_GRID = ["warm", "cascade", "bcfit", "cold"]
 WMULT_GRID = [0.1, 1.0, 10.0]
 LAM_GRID = [0.15, 0.20, 0.25, 0.30, 0.40]
@@ -97,6 +107,7 @@ def measure(S, T, ts, Yref, N, **kw):
                 use_poly=cell["use_poly"], iters=cell["iters"],
                 hist=[float(h) for h in cell["hist"]], rk_nfev=cell["rk_nfev"],
                 rel_l2=rel, rel_l2_percomp=per, linf=linf,
+                diverged=bool(cell.get("diverged", False)),
                 warm_rel_l2=wrel, warm_linf=wlinf, init=cell["init"],
                 w_mult=cell["w_mult"], fresh=cell["fresh"],
                 cascade_W=cell.get("cascade_W"),
@@ -122,7 +133,8 @@ def sweep_width(S):
     T = S.horizon(LYAP_TIMES)
     ts, Yref = ref.reference(S, T, N_EVAL)
     cells, traj = [], {}
-    for N in N_GRID:
+    grid = N_GRID_BY_SYSTEM.get(S.name, N_GRID)
+    for N in grid:
         rec, cell = measure(S, T, ts, Yref, N)
         rec["interp_floor"] = core.interpolation_floor(S, T, N, ts, Yref)[0]
         cells.append(rec)
@@ -133,7 +145,7 @@ def sweep_width(S):
               f"({rec['seconds']}s)", flush=True)
     # nested-width self-consistency (deployable, needs no reference)
     for i in range(1, len(cells)):
-        a, b = N_GRID[i - 1], N_GRID[i]
+        a, b = grid[i - 1], grid[i]
         d = traj[b] - traj[a]
         cells[i]["selfconsistency"] = float(np.linalg.norm(d) / np.linalg.norm(traj[b]))
     return dict(T=T, periods=T / S.period, lyap=S.lyapunov, d=S.d,
@@ -164,7 +176,7 @@ def sweep_ablations(S):
     abl = {}
 
     def run(tag, **kw):
-        rec, _ = measure(S, T, ts, Yref, ABL_N, **kw)
+        rec, _ = measure(S, T, ts, Yref, ABL_N_BY_SYSTEM.get(S.name, ABL_N), **kw)
         print(f"  [C] {S.name:10s} {tag:28s} rel={rec['rel_l2']:.2e} "
               f"it={rec['iters']:2d} ({rec['seconds']}s)", flush=True)
         return rec
@@ -195,7 +207,7 @@ def sweep_init(S):
     out = {}
 
     def run(tag, **kw):
-        rec, _ = measure(S, T, ts, Yref, ABL_N, **kw)
+        rec, _ = measure(S, T, ts, Yref, ABL_N_BY_SYSTEM.get(S.name, ABL_N), **kw)
         print(f"  [D] {S.name:10s} {tag:24s} rel={rec['rel_l2']:.2e} "
               f"it={rec['iters']:2d} fresh(pde={rec['fresh']['pde']:.1e}, "
               f"ic={rec['fresh']['ic']:.1e}) ({rec['seconds']}s)", flush=True)
@@ -214,7 +226,7 @@ def run_all():
                       "rcond": core.RCOND, "lam": core.LAM,
                       "colloc_per_neuron": core.COLLOC_PER_NEURON,
                       "verification": {k: list(v) for k, v in checks.items()}}}
-    for name in systems.SYSTEM_ORDER:
+    for name in SYSTEMS:
         S = systems.System(name)
         rec = dict(d=S.d, params=S.params, ic=S.ic.tolist(), period=S.period,
                    lyapunov=S.lyapunov)
@@ -222,6 +234,8 @@ def run_all():
         if "A" in ONLY:
             rec["width"] = sweep_width(S)
             rec["ref_check"] = ref.crosscheck(S, S.horizon(LYAP_TIMES))
+            rec["ref_uncertainty"] = ref.reference_uncertainty(
+                S, S.horizon(LYAP_TIMES))
         if "B" in ONLY:
             rec["horizon"] = sweep_horizon(S)
         if "C" in ONLY:
@@ -230,18 +244,33 @@ def run_all():
             rec["init_sweep"] = sweep_init(S)
         rec["seconds"] = round(time.time() - t0, 1)
         data[name] = rec
+        _save_data(data)          # incremental: one crashed system must not
+                                  # discard every system that already finished
         print(f"{name} done in {rec['seconds']}s\n", flush=True)
+    return _save_data(data)
+
+
+def _save_data(data):
+    """Merge into the on-disk record and rewrite it. Called after every system."""
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    if DATA_PATH.exists():
-        old = json.loads(DATA_PATH.read_text())
-        for k, v in data.items():
-            if k in old and isinstance(old[k], dict) and isinstance(v, dict):
-                old[k].update(v)
-            else:
-                old[k] = v
-        data = old
-    DATA_PATH.write_text(json.dumps(data, indent=1))
-    return data
+    merged = json.loads(DATA_PATH.read_text()) if DATA_PATH.exists() else {}
+    for k, v in data.items():
+        if k in merged and isinstance(merged[k], dict) and isinstance(v, dict):
+            merged[k].update(v)
+        else:
+            merged[k] = v
+    DATA_PATH.write_text(json.dumps(merged, indent=1, default=_jsonable))
+    return merged
+
+
+def _jsonable(o):
+    """Several systems carry array-valued parameters (mode amplitudes, the
+    consumer matrices); json cannot encode those on its own."""
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    if isinstance(o, (np.floating, np.integer)):
+        return o.item()
+    raise TypeError(f"not JSON serialisable: {type(o).__name__}")
 
 
 # ---------------------------------------------------------------------------
@@ -257,9 +286,13 @@ def _int_xticks(ax, vals):
     ax.xaxis.set_minor_formatter(NullFormatter())
 
 
-def _panel_axes(n=5, ncol=3, figsize=(15.5, 8.6)):
-    fig, axes = plt.subplots(2, ncol, figsize=figsize)
-    axes = axes.ravel()
+def _panel_axes(n=None, ncol=3, figsize=None):
+    n = len(systems.SYSTEM_ORDER) if n is None else n
+    nrow = int(np.ceil(n / ncol))
+    if figsize is None:
+        figsize = (15.5, 4.3 * nrow)
+    fig, axes = plt.subplots(nrow, ncol, figsize=figsize)
+    axes = np.atleast_1d(axes).ravel()
     for ax in axes[n:]:
         ax.axis("off")
     return fig, axes
@@ -280,9 +313,12 @@ def fig_width(data):
                   label="interpolation floor")
         ax.axhline(cells[-1]["warm_rel_l2"], color="C2", ls="-.", lw=1.2,
                    label=f"RK warm start (rtol {WARM_RTOL:.0e})")
-        best_rk = min(w["rk"], key=lambda r: r["rel_l2"])
-        ax.axhline(best_rk["rel_l2"], color="C3", ls=":", lw=1.4,
-                   label=f"DOP853 rtol {best_rk['rtol']:.0e}")
+        # Suppressed where the reference IS a Runge-Kutta run: comparing DOP853
+        # to itself measures nothing.
+        if name not in ref.RK_REFERENCE:
+            best_rk = min(w["rk"], key=lambda r: r["rel_l2"])
+            ax.axhline(best_rk["rel_l2"], color="C3", ls=":", lw=1.4,
+                       label=f"DOP853 rtol {best_rk['rtol']:.0e}")
         ax.set_title(f"{name}  ($d={w['d']}$, $\\lambda_{{max}}T={LYAP_TIMES:.0f}$, "
                      f"{w['periods']:.1f} periods)", fontsize=10)
         ax.set_xlabel("total width $W$ (neurons)")
@@ -292,11 +328,11 @@ def fig_width(data):
         _int_xticks(ax, W)
         ax.grid(True, which="both", alpha=0.25)
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.0), ncol=5,
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 0.985), ncol=5,
                frameon=False, fontsize=10)
-    fig.suptitle("expF14 -- width scaling of the frozen-QI collocation solve on "
-                 "five dysts chaotic systems", y=1.055, fontsize=13,
-                 fontweight="bold")
+    fig.suptitle(f"expF14 -- width scaling of the frozen-QI collocation solve on "
+                 f"{len(systems.SYSTEM_ORDER)} dysts chaotic systems", y=1.02,
+                 fontsize=13, fontweight="bold")
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     _save(fig, "error_vs_width.png")
 
@@ -317,8 +353,9 @@ def fig_horizon(data):
         lt = np.array(lts, dtype=float)
         ax.semilogy(lt, 2.2e-16 * np.exp(lt), "k--", lw=1.2,
                     label=r"$\varepsilon_{mach}\,e^{\lambda_{max}T}$")
-        best = [min(r["rk"], key=lambda q: q["rel_l2"])["rel_l2"] for r in rows]
-        ax.semilogy(lts, best, "v-.", color="C3", lw=1.1, label="best DOP853")
+        if name not in ref.RK_REFERENCE:
+            best = [min(r["rk"], key=lambda q: q["rel_l2"])["rel_l2"] for r in rows]
+            ax.semilogy(lts, best, "v-.", color="C3", lw=1.1, label="best DOP853")
         ax.set_title(f"{name}", fontsize=11)
         ax.set_xlabel(r"horizon $\lambda_{max} T$ (Lyapunov times)")
         if i % 3 == 0:
@@ -326,10 +363,10 @@ def fig_horizon(data):
         ax.set_ylim(1e-16, 1e2)
         ax.grid(True, which="both", alpha=0.25)
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.0), ncol=6,
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 0.985), ncol=6,
                frameon=False, fontsize=9)
     fig.suptitle("expF14 -- how far in Lyapunov times a fixed neuron budget "
-                 "reaches at fp64", y=1.055, fontsize=13, fontweight="bold")
+                 "reaches at fp64", y=1.02, fontsize=13, fontweight="bold")
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     _save(fig, "error_vs_horizon.png")
 
@@ -360,13 +397,14 @@ def fig_representations(data):
             ax1 = fig.add_subplot(n, 3, 3 * i + 1)
             for c in range(S.d):
                 ax1.plot(ts, Yref[:, c], color="k", lw=1.4)
-                ax1.plot(ts, Yh[:, c], color=f"C{c}", lw=0.9, ls="--")
+                ax1.plot(ts, Yh[:, c], color=f"C{c % 10}", lw=0.9, ls="--")
             ax1.set_xlabel("$t$"); ax1.set_ylabel("state")
         ax1.set_title(f"{name}: phase portrait", fontsize=10, pad=26)
 
         ax2 = fig.add_subplot(n, 3, 3 * i + 2)
         for c in range(S.d):
-            ax2.plot(ts, Yref[:, c], color=f"C{c}", lw=1.4, label=f"$u_{c}$ ref")
+            ax2.plot(ts, Yref[:, c], color=f"C{c % 10}", lw=1.4,
+                     label=(f"$u_{c}$ ref" if S.d <= 5 else None))
             ax2.plot(ts, Yh[:, c], color="k", lw=0.7, ls="--",
                      label="QI solve" if c == 0 else None)
         ax2.set_xlabel("$t$"); ax2.set_ylabel("state")
@@ -456,7 +494,7 @@ def fig_ablations(data):
 
 
 def fig_newton(data):
-    fig, axes = _panel_axes(figsize=(15.5, 8.0))
+    fig, axes = _panel_axes()
     for i, name in enumerate(systems.SYSTEM_ORDER):
         ax = axes[i]
         for c in data[name]["width"]["cells"]:
@@ -476,7 +514,7 @@ def fig_newton(data):
 
 
 def fig_selfconsistency(data):
-    fig, axes = _panel_axes(figsize=(15.5, 8.0))
+    fig, axes = _panel_axes()
     for i, name in enumerate(systems.SYSTEM_ORDER):
         cells = data[name]["width"]["cells"]
         sc = [(c["W"], c["selfconsistency"], c["rel_l2"])
@@ -494,7 +532,7 @@ def fig_selfconsistency(data):
         ax.set_title(name, fontsize=10)
         ax.grid(True, which="both", alpha=0.25)
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 1.0), ncol=2,
+    fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 0.985), ncol=2,
                frameon=False, fontsize=10)
     fig.suptitle("expF14 -- nested-width self-consistency tracks the true error",
                  y=1.05, fontsize=13, fontweight="bold")

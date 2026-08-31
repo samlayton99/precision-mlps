@@ -1,35 +1,21 @@
-"""Does staying in Newton past the residual floor keep improving the solution?"""
 import sys, time
 from pathlib import Path
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+H = Path(__file__).resolve().parent; sys.path.insert(0, str(H))
 import numpy as np, systems, core, reference
-from reference import rk_trajectory
-
-def trace(name, N, lyapT=3.0, warm_rtol=1e-8, nsteps=10):
-    S = systems.System(name); T = S.horizon(lyapT)
+for name in ["InteriorSquirmer", "DoublePendulum", "MacArthur"]:
+    S = systems.System(name); T = S.horizon(3.0)
     ts, Yref = reference.reference(S, T, 6001)
-    centers, gamma = core.geometry(N)
-    W = centers.size; p = core.n_params(centers); n_col = 4 * W
-    s_col = np.linspace(-1, 1, n_col); t_col = T * (s_col + 1) / 2
-    D0 = core.dict_rows(s_col, centers, gamma, 0)
-    D1 = core.dict_rows(s_col, centers, gamma, 1)
-    Yrk, _ = rk_trajectory(S, T, t_col, warm_rtol, warm_rtol * 1e-3)
-    sigma = np.maximum(np.sqrt(np.mean(Yrk ** 2, axis=0)), 1e-12)
-    w_ic = np.sqrt(n_col)
-    B, g = core._ic_block(S, centers, gamma, sigma, p, w_ic)
-    M = np.vstack([D0, w_ic * core.dict_rows(np.array([-1.0]), centers, gamma, 0)])
-    rhs = np.vstack([Yrk / sigma[None, :], w_ic * (S.ic / sigma)[None, :]])
-    A = np.linalg.lstsq(M, rhs, rcond=core.RCOND)[0].T
-    row = []
-    for k in range(nsteps):
-        A, h = core.gauss_newton(S, A, D0, D1, sigma, T, B, g, max_it=1)
-        cell = dict(A=A, centers=centers, gamma=gamma, sigma=sigma, T=T, p=p)
-        e = core.errors(core.model_trajectory(cell, ts), Yref)
-        row.append((h[0], e[0]))
-    print(f"{name} N={N} warm={warm_rtol:.0e}: " +
-          "  ".join(f"[{i+1}] r={r:.1e} e={e:.2e}" for i, (r, e) in enumerate(row)),
-          flush=True)
-
-for name in ["Lorenz", "Rossler", "Thomas", "Lorenz96"]:
-    trace(name, 384)
+    print(f"== {name} d={S.d} T={T:.4f} ({T/S.period:.2f} periods) lam={S.lyapunov:.3f}", flush=True)
+    print("   ref uncertainty:", {k: '%.1e' % v for k, v in
+                                  reference.reference_uncertainty(S, T).items()}, flush=True)
+    for N in ([96, 192, 256] if S.d < 10 else [96, 128, 192]):
+        t0 = time.time()
+        try:
+            cell = core.solve_cell(S, T, N, warm_rtol=1e-8, warm_atol=1e-11)
+            e = core.errors(core.model_trajectory(cell, ts), Yref)
+            ew = core.errors(core.warm_trajectory(cell, ts), Yref)
+            ei = core.interpolation_floor(S, T, N, ts, Yref)
+            print(f"   N={N:4d} W={cell['W']:4d} it={cell['iters']:2d} warm={ew[0]:.2e} "
+                  f"solve={e[0]:.2e} interp={ei[0]:.2e} ({time.time()-t0:.1f}s)", flush=True)
+        except Exception as ex:
+            print(f"   N={N:4d} FAILED: {type(ex).__name__}: {ex}", flush=True)

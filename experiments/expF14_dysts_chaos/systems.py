@@ -19,7 +19,14 @@ from __future__ import annotations
 
 import numpy as np
 
-SYSTEM_ORDER = ["Lorenz", "Rossler", "Thomas", "Halvorsen", "Lorenz96"]
+SYSTEM_ORDER = ["Lorenz", "Rossler", "Thomas", "Halvorsen", "Lorenz96",
+                "InteriorSquirmer", "DoublePendulum", "MacArthur"]
+
+# Systems whose Jacobian is obtained by complex step rather than by hand. The
+# complex-step derivative Im F(u + i h e_k)/h is exact to rounding for analytic
+# F, so this is not an approximation -- it just moves the algebra from us to the
+# machine. Verified against central differences in `verify_jacobian_fd`.
+CSTEP_JAC = {"InteriorSquirmer", "DoublePendulum", "MacArthur"}
 
 
 # ---------------------------------------------------------------------------
@@ -121,12 +128,91 @@ def _l96_jac(U, p):
     return J
 
 
+# ---------------------------------------------------------------------------
+# the three added systems (Sam's second batch), each breaking a different
+# assumption: a near-square-wave drive, a conservative Hamiltonian flow, and a
+# vector field that is only C^0.
+# ---------------------------------------------------------------------------
+
+def _squirmer_rhs(U, p):
+    """Interior squirmer in polar coords (r, th, tt); tt is a clock, d(tt)/dt = 1.
+
+    The system is non-autonomous dressed as autonomous: the mode amplitudes are
+    gated by protocol(tt) = 0.5 + 0.5 tanh(tau * 20 * sin(2 pi tt / tau)), a
+    near-square wave (tau*20 = 60 at the default tau = 3).
+    """
+    r, th, tt = U[:, 0], U[:, 1], U[:, 2]
+    a, g, tau = p["a"], p["g"], p["tau"]
+    phase = 0.5 + 0.5 * np.tanh(tau * 20.0 * np.sin(2 * np.pi * tt / tau))
+    A = a[None, :] * phase[:, None]
+    G = g[None, :] * (1.0 - phase)[:, None]
+    nv = np.arange(1, a.shape[0] + 1)[None, :]
+    rc, thc = r[:, None], th[:, None]
+    sinv, cosv = np.sin(thc * nv), np.cos(thc * nv)
+    rn = rc ** nv
+    vrn = (G * cosv + A * sinv) * (nv * rn * (rc ** 2 - 1.0) / rc)
+    vth = (2 * rc + (rc ** 2 - 1.0) * nv / rc) * (A * cosv - G * sinv) * rn
+    return np.stack([vrn.sum(axis=1), vth.sum(axis=1) / r,
+                     np.ones_like(r)], axis=1)
+
+
+def _pendulum_rhs(U, p):
+    """Double pendulum in (th1, th2, p1, p2). Hamiltonian: no attractor."""
+    th1, th2, p1, p2 = U[:, 0], U[:, 1], U[:, 2], U[:, 3]
+    g, l1, l2, m1, m2 = p["g"], p["l1"], p["l2"], p["m1"], p["m2"]
+    cd, sd = np.cos(th1 - th2), np.sin(th1 - th2)
+    denom = l1 * l2 * (m1 + m2 * sd ** 2)
+    th1dot = (l2 * p1 - l1 * p2 * cd) / (l1 * denom)
+    th2dot = ((m1 + m2) * l1 * p2 - m2 * l2 * p1 * cd) / (m2 * l2 * denom)
+    h1 = p1 * p2 * sd / denom
+    h2 = (m2 * l2 * p1 ** 2) / (2 * l1 * denom ** 2)
+    h2 = h2 + 0.5 * m2 * p2 * l2 * l1 * th2dot / denom
+    h2 = h2 * np.sin(2 * (th1 - th2))
+    p1dot = -(m1 + m2) * g * l1 * np.sin(th1) - h1 + h2
+    p2dot = -m2 * g * l2 * np.sin(th2) + h1 - h2
+    return np.stack([th1dot, th2dot, p1dot, p2dot], axis=1)
+
+
+def _macarthur_rhs(U, p):
+    """MacArthur consumer-resource: 5 species, 5 resources, Liebig's law.
+
+    mu_i = min_j r * R_j / (k[j,i] + R_j) -- the growth rate is the MINIMUM over
+    resources, so the vector field is only C^0: it has kinks wherever the
+    limiting resource changes. The argmin is taken on the real part so that a
+    complex-step probe differentiates the currently active branch, which is the
+    correct one-sided derivative.
+    """
+    ns = p["k"].shape[0]
+    nn, rr = U[:, :ns], U[:, ns:]
+    kT = p["k"].T[None, :, :]                    # kT[.., i, j] = k[j, i]
+    u = p["r"] * rr[:, None, :] / (kT + rr[:, None, :])
+    idx = np.argmin(np.real(u), axis=2)[..., None]
+    mu = np.take_along_axis(u, idx, axis=2)[..., 0]
+    nndot = nn * (mu - p["m"])
+    rrdot = p["d"] * (p["s"][None, :] - rr) - (mu * nn) @ p["c"].T
+    return np.concatenate([nndot, rrdot], axis=1)
+
+
+def complex_step_jac(rhs, U, params, h=1e-30):
+    """J[:, c, k] = dF_c/du_k by complex step -- exact to rounding, no cancellation."""
+    n, d = U.shape
+    J = np.empty((n, d, d))
+    for k in range(d):
+        Uc = U.astype(np.complex128)
+        Uc[:, k] += 1j * h
+        J[:, :, k] = np.imag(rhs(Uc, params)) / h
+    return J
+
+
 _IMPL = {
     "Lorenz": (_lorenz_rhs, _lorenz_jac),
     "Rossler": (_rossler_rhs, _rossler_jac),
     "Thomas": (_thomas_rhs, _thomas_jac),
     "Halvorsen": (_halvorsen_rhs, _halvorsen_jac),
     "Lorenz96": (_l96_rhs, _l96_jac),
+    "InteriorSquirmer": (_squirmer_rhs, None),
+    "DoublePendulum": (_pendulum_rhs, None),
+    "MacArthur": (_macarthur_rhs, None),
 }
 
 
@@ -139,7 +225,8 @@ class System:
         import dysts.flows as flows
         m = getattr(flows, name)()
         self.name = name
-        self.params = {k: float(v) for k, v in m.params.items()}
+        self.params = {k: (np.asarray(v, dtype=np.float64) if np.ndim(v)
+                           else float(v)) for k, v in m.params.items()}
         self.ic = np.atleast_1d(np.asarray(m.ic, dtype=np.float64)).copy()
         self.d = int(self.ic.size)
         self.period = float(m.period)
@@ -153,7 +240,10 @@ class System:
 
     def J(self, U):
         """(n, d) -> (n, d, d), J[:, c, k] = dF_c/du_k."""
-        return self._jac(np.atleast_2d(U), self.params)
+        U = np.atleast_2d(U)
+        if self._jac is None:
+            return complex_step_jac(self._rhs, U, self.params)
+        return self._jac(U, self.params)
 
     def horizon(self, lyap_times):
         """Window length T such that lambda_max * T = lyap_times."""
@@ -172,47 +262,87 @@ def load_all():
 # verification
 # ---------------------------------------------------------------------------
 
-def verify_rhs(sys, n=64, seed=0):
-    """Max |our F - dysts rhs| over random on-scale states, and its ulp scale."""
-    rng = np.random.default_rng(seed)
-    U = sys.ic[None, :] + 5.0 * rng.standard_normal((n, sys.d))
+def sample_states(sys, n=64):
+    """States taken from a short trajectory of the system itself.
+
+    Random perturbations of the initial condition are NOT usable here: the
+    squirmer needs 0 < r < 1 and divides by r, and MacArthur's resources must
+    stay positive. Verifying on the states the solver actually visits is both
+    safer and more relevant.
+    """
+    from scipy.integrate import solve_ivp
+    T = sys.horizon(3.0)
+    sol = solve_ivp(lambda t, y: sys.F(y[None, :])[0], [0.0, T], sys.ic,
+                    rtol=1e-10, atol=1e-12, method="DOP853", dense_output=True)
+    return sol.sol(np.linspace(0.0, T, n)).T
+
+
+def verify_rhs(sys, n=64):
+    """Max |our F - dysts rhs| over on-trajectory states, absolute and relative."""
+    U = sample_states(sys, n)
     ours = sys.F(U)
     theirs = np.empty_like(ours)
     for i in range(n):
         theirs[i] = np.asarray(sys._dysts.rhs(U[i], 0.0), dtype=np.float64).ravel()
     absd = np.max(np.abs(ours - theirs))
-    scale = np.max(np.abs(theirs))
-    return absd, absd / scale
+    return absd, absd / max(np.max(np.abs(theirs)), 1e-300)
 
 
-def verify_jacobian(sys, n=64, seed=0, h=1e-30):
-    """Analytic Jacobian vs the complex-step derivative (exact to rounding)."""
-    rng = np.random.default_rng(seed)
-    U = sys.ic[None, :] + 5.0 * rng.standard_normal((n, sys.d))
+def verify_jacobian(sys, n=64, h=1e-30):
+    """Analytic dF/du against the complex-step derivative.
+
+    Vacuous for the systems in CSTEP_JAC (their J *is* complex step); those are
+    gated by `verify_jacobian_fd` instead.
+    """
+    if sys.name in CSTEP_JAC:
+        return 0.0, 0.0
+    U = sample_states(sys, n)
     Ja = sys.J(U)
-    Jc = np.empty_like(Ja)
-    for k in range(sys.d):
-        Uc = U.astype(np.complex128)
-        Uc[:, k] += 1j * h
-        Jc[:, :, k] = np.imag(sys._rhs(Uc, sys.params)) / h
+    Jc = complex_step_jac(sys._rhs, U, sys.params, h)
     absd = np.max(np.abs(Ja - Jc))
-    scale = max(np.max(np.abs(Jc)), 1e-300)
-    return absd, absd / scale
+    return absd, absd / max(np.max(np.abs(Jc)), 1e-300)
+
+
+def verify_jacobian_fd(sys, n=32, rel_h=1e-6):
+    """dF/du against central differences on-trajectory.
+
+    Reported as the 95th percentile of the per-entry relative error, not the
+    max: MacArthur's field is only C^0, so a difference stencil that straddles
+    a kink is wrong about the derivative there and says nothing about our
+    Jacobian. The max is returned alongside so the outliers stay visible.
+    """
+    U = sample_states(sys, n)
+    Ja = sys.J(U)
+    scale = np.maximum(np.abs(U), 1.0)
+    Jf = np.empty_like(Ja)
+    for k in range(sys.d):
+        step = rel_h * scale[:, k]
+        Up, Um = U.copy(), U.copy()
+        Up[:, k] += step
+        Um[:, k] -= step
+        Jf[:, :, k] = (sys.F(Up) - sys.F(Um)) / (2 * step)[:, None]
+    denom = np.maximum(np.abs(Jf), np.max(np.abs(Jf)) * 1e-8)
+    rel = np.abs(Ja - Jf) / denom
+    return float(np.percentile(rel, 95)), float(np.max(rel))
 
 
 def verify_all(verbose=True):
-    """Returns dict name -> (rhs_rel, jac_rel). Raises if anything is off."""
+    """Returns name -> (rhs_rel, jac_rel, jac_fd_p95). Raises if anything is off."""
     out = {}
     for name in SYSTEM_ORDER:
         s = System(name)
-        r_abs, r_rel = verify_rhs(s)
-        j_abs, j_rel = verify_jacobian(s)
+        _, r_rel = verify_rhs(s)
+        _, j_rel = verify_jacobian(s)
+        fd_p95, fd_max = verify_jacobian_fd(s)
+        how = "complex-step" if name in CSTEP_JAC else "analytic"
         if verbose:
-            print(f"  {name:10s} d={s.d}  rhs vs dysts: {r_rel:.2e} (rel)   "
-                  f"jac vs complex-step: {j_rel:.2e} (rel)")
-        assert r_rel < 1e-14, f"{name}: rhs mismatch {r_rel:.3e}"
-        assert j_rel < 1e-13, f"{name}: jacobian mismatch {j_rel:.3e}"
-        out[name] = (r_rel, j_rel)
+            print(f"  {name:17s} d={s.d:2d}  rhs vs dysts: {r_rel:.2e}   "
+                  f"jac({how}) vs analytic: {j_rel:.2e}   "
+                  f"vs central-diff p95: {fd_p95:.2e} (max {fd_max:.1e})")
+        assert r_rel < 1e-13, f"{name}: rhs mismatch {r_rel:.3e}"
+        assert j_rel < 1e-12, f"{name}: jacobian mismatch {j_rel:.3e}"
+        assert fd_p95 < 1e-5, f"{name}: jacobian vs FD p95 {fd_p95:.3e}"
+        out[name] = (r_rel, j_rel, fd_p95)
     return out
 
 

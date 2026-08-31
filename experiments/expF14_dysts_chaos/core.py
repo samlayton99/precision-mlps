@@ -160,13 +160,34 @@ def gauss_newton(sys, A0, D0, D1, sigma, T, B, g, rcond=RCOND, max_it=MAX_NEWTON
     d, p = A.shape
     hist = []
     no_progress = 0
+    diverged = False
     for it in range(max_it):
         R, J = _assemble(sys, A, D0, D1, sigma, T)
+        # A non-finite Jacobian means the iterate left the domain where the
+        # vector field is defined (the squirmer divides by r, so a cold start at
+        # r == 0 lands here). That is a divergence, not a crash: record it.
+        if not np.all(np.isfinite(J)):
+            diverged = True
+            break
         scale = max(np.abs(J).max(), 1e-300)
         Jst = np.vstack([J / scale, B])
         r, rn, rmax = _stacked(sys, A, D0, D1, sigma, T, B, g, scale)
         hist.append(rmax)
-        step = np.linalg.lstsq(Jst, -r, rcond=rcond)[0].reshape(d, p)
+        if not np.isfinite(rn):
+            diverged = True
+            break
+        try:
+            step = np.linalg.lstsq(Jst, -r, rcond=rcond)[0].reshape(d, p)
+        except np.linalg.LinAlgError:
+            # LAPACK gelsd occasionally fails to converge; gelsy is a different
+            # algorithm (complete orthogonal factorisation) and usually succeeds.
+            from scipy.linalg import lstsq as _slstsq
+            try:
+                step = _slstsq(Jst, -r, cond=rcond, lapack_driver="gelsy")[0]
+                step = step.reshape(d, p)
+            except Exception:
+                diverged = True
+                break
         alpha = 1.0
         for _ in range(10):
             _, new_n, _ = _stacked(sys, A + alpha * step, D0, D1, sigma, T, B, g, scale)
@@ -184,7 +205,7 @@ def gauss_newton(sys, A0, D0, D1, sigma, T, B, g, rcond=RCOND, max_it=MAX_NEWTON
                                             and hist[-1] > 0.5 * hist[-2]) else 0
         if small or no_progress >= 2:
             break
-    return A, hist
+    return A, hist, diverged
 
 
 # ---------------------------------------------------------------------------
@@ -254,16 +275,20 @@ def solve_cell(sys, T, N, lam=LAM, rcond=RCOND, geom="uniform", seed=0,
     else:
         raise ValueError(init)
 
-    A, hist = gauss_newton(sys, A0, D0, D1, sigma, T, B, g, rcond=rcond,
-                           max_it=max_it, verbose=verbose)
+    A, hist, diverged = gauss_newton(sys, A0, D0, D1, sigma, T, B, g, rcond=rcond,
+                                     max_it=max_it, verbose=verbose)
     cell = dict(A=A, A0=A0, centers=centers, gamma=gamma, sigma=sigma, T=T,
                 W=W, p=p, n_col=n_col, iters=len(hist), hist=hist,
                 rk_nfev=nfev, lam=lam, rcond=rcond, geom=geom, use_poly=use_poly,
-                init=init, w_mult=w_mult)
+                init=init, w_mult=w_mult, diverged=diverged)
     if sub is not None:
         cell["cascade_iters"] = sub["iters"]
         cell["cascade_W"] = sub["W"]
-    cell["fresh"] = fresh_residual(sys, cell)
+    try:
+        cell["fresh"] = fresh_residual(sys, cell)
+    except (ValueError, FloatingPointError):
+        cell["fresh"] = dict(pde=float("inf"), ic=float("inf"),
+                             stacked=float("inf"))
     return cell
 
 
