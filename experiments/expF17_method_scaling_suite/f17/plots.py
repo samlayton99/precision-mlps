@@ -325,20 +325,17 @@ def _dysts_panel(ax, cells, task):
     srel = 2.0 * t["ts"] / t["T"] - 1.0
     E = np.abs((d.rows(srel, 0) @ A.T) * sigma[None, :] - t["Yref"]) + 1e-18
     for c in range(E.shape[1]):
-        ax.semilogy(srel, E[:, c], lw=0.7, label=f"$u_{{{c + 1}}}$")
+        ax.semilogy(srel, E[:, c], lw=0.7)
     ax.axvline(-1.0, color="k", lw=2.5)   # IC row lives here
     ax.axvline(1.0, color="k", lw=1.0)
     ax.axvline(float(np.min(d.b / d.a)), color="red", ls=":", lw=1.6)
     ax.axvline(float(np.max(d.b / d.a)), color="red", ls=":", lw=1.6)
-    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.14), fontsize=5.5,
-              ncol=min(E.shape[1], 5), frameon=False, borderaxespad=0,
-              handlelength=1.0, columnspacing=0.8)
     ax.set_xlim(-EXT, EXT)
     ax.set_ylim(1e-17, 1e0)
     ax.grid(True, which="both", alpha=0.2)
     ax.set_title(f"{TASK_TITLE[task]} (QI)  W={cell['cols']}  "
                  f"rel={cell['rel_l2']:.1e}", fontsize=8,
-                 color=FAMILY_COLOR["dysts"], pad=16)
+                 color=FAMILY_COLOR["dysts"])
 
 
 def residual_figs(cells, tuning=None):
@@ -355,9 +352,19 @@ def residual_figs(cells, tuning=None):
         if pc is not None:
             fig.colorbar(pc, ax=list(axes), shrink=0.6,
                          label=r"$\log_{10}|\hat u - u^*|$ (grey = outside the box)")
+        fig.legend(handles=[
+            plt.Line2D([], [], color="red", ls=":", lw=1.6,
+                       label="dictionary coverage edge (outermost centers/offsets)"),
+            plt.Line2D([], [], color="k", lw=2.5, label="BC / IC location"),
+            plt.Line2D([], [], color="k", lw=1.0, label="train + score box"),
+            plt.Line2D([], [], color="C0", lw=0.9,
+                       label="state components $u_i$ (1-D panels, one line each)"),
+            plt.Rectangle((0, 0), 1, 1, fc="0.85", ec="none",
+                          label="outside the box (masked from the log scale)")],
+            loc="upper center", bbox_to_anchor=(0.5, 0.965), ncol=5,
+            frameon=False, fontsize=9)
         fig.suptitle(f"Plot 4 -- residual fields at best landed W (oracle, seed 0)"
-                     f" -- 2-D panels: {label}; dysts panels: QI.  "
-                     "Red dotted = dictionary coverage edge (outermost centers)",
+                     f" -- 2-D panels: {label}; dysts panels: QI",
                      y=0.985, fontsize=13)
         fig.savefig(st.RESULTS_DIR / fname, dpi=130)
         plt.close(fig)
