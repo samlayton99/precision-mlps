@@ -299,6 +299,13 @@ def _heat_panel(ax, cells, task, method):
     n_ax, cfg = cell["n_ax"], cell["config"]
     d = fd.build_dictionary(method, n_ax, cfg, fd.dict_rng(method, n_ax, 0),
                             fourier_x=t["periodic_fourier"])
+    # per-panel zoom: the coverage edge must always sit on-canvas (burgers'
+    # walked halo reaches r ~ 3.3; the fixed canvas hid its circle)
+    if d.meta["method"] == "qi_radon":
+        r_edge = float(np.max(np.abs(d.b) / np.hypot(d.a1, d.a2)))
+    else:
+        r_edge = float(max(np.abs(d.cx).max(), np.abs(d.cy).max()))
+    ext = max(1.6, 1.12 * r_edge)
     cmap = plt.get_cmap("magma").copy()
     cmap.set_bad("0.85")
     if task == "darcy_orig":
@@ -311,7 +318,7 @@ def _heat_panel(ax, cells, task, method):
                            vmin=-17, vmax=0)
     else:
         a, _ = sv.oracle_fit(t, d, 0)
-        g = np.linspace(-EXT, EXT, 240)
+        g = np.linspace(-ext, ext, 240)
         GX, GY = np.meshgrid(g, g)
         P = np.stack([GX.ravel(), GY.ravel()], axis=1)
         inside = (np.abs(P[:, 0]) <= 1.0) & (np.abs(P[:, 1]) <= 1.0)
@@ -323,7 +330,7 @@ def _heat_panel(ax, cells, task, method):
                                     - t["exact"](Pi)) + 1e-18)
         pc = ax.pcolormesh(GX, GY, np.ma.masked_invalid(E.reshape(GX.shape)),
                            shading="auto", cmap=cmap, vmin=-17, vmax=0)
-    ax.set_xlim(-EXT, EXT); ax.set_ylim(-EXT, EXT)
+    ax.set_xlim(-ext, ext); ax.set_ylim(-ext, ext)
     ax.add_patch(plt.Rectangle((-1, -1), 2, 2, fill=False, ec="k", lw=1.0))
     _coverage_edge(ax, d)
     _draw_bc_geometry(ax, task)
