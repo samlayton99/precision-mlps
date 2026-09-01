@@ -53,6 +53,28 @@ def knob_grid(method, n_ax):
     return None, [{}]
 
 
+def knob_step(method, knob, value, direction, size, is_1d=False):
+    """Edge-walk (Sam, 2026-09-01): one step outward at the grid's own spacing.
+    Returns the next candidate value, or None if clamped/invalid. Applied when
+    the argmin lands on the sweep boundary, at most 2 extensions -- identical
+    declared effort for every knobbed method."""
+    if knob == "halo":
+        h = value + (2 if direction > 0 else -2)
+        if h < 1:
+            return None
+        if is_1d:
+            return h if (size - 1) - 2 * h >= 3 else None
+        n_int = (size + 2 - 2 * h) if method == "qi_radon" else (size - 2 * h)
+        return h if n_int >= 3 else None
+    if knob == "R":
+        r = value * (2.0 if direction > 0 else 0.5)
+        return r if 0.25 <= r <= 32.0 else None
+    if knob == "epsh":
+        e = value * (2.0 if direction > 0 else 0.5)
+        return e if 0.125 <= e <= 8.0 else None
+    return None
+
+
 def cell_key(task, method, C, seed, regime, variant="base"):
     return f"{task}|{method}|{C}|{seed}|{regime}|{variant}"
 

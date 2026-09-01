@@ -88,12 +88,32 @@ def _grid_fig():
     return fig, axes.ravel()
 
 
-def _style_axis(ax, task):
+def _task_ticks(task, data=None):
+    """Discrete ticks at the widths actually in the protocol/data, so which
+    rungs have run is legible (Sam, 2026-09-01)."""
+    from .dicts import n_ax_for
+    if _is_1d(task):
+        ticks = set(pr.ladder_1d(task[len("dysts_"):]))
+    else:
+        ticks = {(n_ax_for(C) + 1) ** 2 for C in pr.LADDER}
+    if data:
+        for (t, m), rows in data.items():
+            if t == task:
+                ticks |= {r[0] for r in rows}
+    return sorted(ticks)
+
+
+def _style_axis(ax, task, data=None):
+    import matplotlib.ticker as mtick
     ax.set_title(TASK_TITLE.get(task, task), fontsize=10,
                  color=FAMILY_COLOR.get(TASK_FAMILY.get(task, "other"), "k"))
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_ylim(*YLIM)
     ax.set_xlim((32, 1100) if _is_1d(task) else (80, 12000))
+    ticks = _task_ticks(task, data)
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([str(t) for t in ticks], rotation=55, fontsize=6.5)
+    ax.xaxis.set_minor_locator(mtick.NullLocator())
     ax.axhline(1e-13, color="gray", lw=0.8, ls=":")
     if SOTA.get(task) is not None:
         ax.axhline(SOTA[task], color="k", lw=1.2, ls=":")
@@ -107,7 +127,7 @@ def plot_scaling(cells, regime, path, title):
     handles = {}
     for k, task in enumerate(ALL_TASKS):
         ax = axes[k]
-        _style_axis(ax, task)
+        _style_axis(ax, task, data)
         if k % 4 == 0:
             ax.set_ylabel("rel $L_2$")
         for method in _methods_for(task):
@@ -188,7 +208,7 @@ def plot_poly(cells, path):
     axes = axes.ravel()
     for k, task in enumerate(pr.TASK_ORDER):
         ax = axes[k]
-        _style_axis(ax, task)
+        _style_axis(ax, task, base)
         if k % 4 == 0:
             ax.set_ylabel("rel $L_2$ (oracle fit)")
         for method, col in (("qi_radon", "red"), ("qi_tensor", "blue")):
@@ -359,11 +379,15 @@ def residual_figs(cells, tuning=None):
                        label="dictionary coverage edge (outermost centers/offsets)"),
             plt.Line2D([], [], color="k", lw=2.5, label="BC / IC location"),
             plt.Line2D([], [], color="k", lw=1.0, label="train + score box"),
-            plt.Line2D([], [], color="C0", lw=0.9,
-                       label="state components $u_i$ (1-D panels, one line each)"),
             plt.Rectangle((0, 0), 1, 1, fc="0.85", ec="none",
-                          label="outside the box (masked from the log scale)")],
-            loc="upper center", bbox_to_anchor=(0.5, 0.965), ncol=5,
+                          label="outside the box (masked from the log scale)"),
+            plt.Line2D([], [], color="C0", lw=0.9,
+                       label="$u_1$ (state components, 1-D panels)"),
+            plt.Line2D([], [], color="C1", lw=0.9, label="$u_2$"),
+            plt.Line2D([], [], color="C2", lw=0.9, label="$u_3$"),
+            plt.Line2D([], [], color="C3", lw=0.9, label="$u_4$"),
+            plt.Line2D([], [], color="C4", lw=0.9, label=r"$u_5\,\ldots$")],
+            loc="upper center", bbox_to_anchor=(0.5, 0.975), ncol=5,
             frameon=False, fontsize=9)
         fig.suptitle(f"Plot 4 -- residual fields at best landed W (oracle, seed 0)"
                      f" -- 2-D panels: {label}; dysts panels: QI",

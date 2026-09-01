@@ -34,33 +34,51 @@ def frozen_config(task, method, C, tuning):
     tkey = f"{task}|{method}|{C}|oracle"
     if tkey in tuning:
         return tuning[tkey]["chosen"]
-    rows = []
     if task.startswith("dysts_"):
         from f17 import dicts1d as f1, solve1d as s1
         from f17.tasks1d import dysts_task
         t = dysts_task(task[len("dysts_"):])
         knob, grid = pr.knob_grid_1d(method, C)
-        for cfg in grid:
+        size, is_1d = C, True
+
+        def evaluate(cfg):
             d = f1.build_dictionary_1d(method, C, cfg, fd.dict_rng(method, C, 0))
-            A, sigma, info = s1.oracle_fit_1d(t, d, 0)
+            A, sigma, _ = s1.oracle_fit_1d(t, d, 0)
             m = s1.score_1d(t, d, A, sigma)
-            rows.append(dict(config=cfg, rel_l2=m["rel_l2"], linf=m["linf"]))
+            return dict(config=cfg, rel_l2=m["rel_l2"], linf=m["linf"])
     else:
         n_ax = fd.n_ax_for(C)
         knob, grid = pr.knob_grid(method, n_ax)
         t = TASKS[task]
-        for cfg in grid:
+        size, is_1d = n_ax, False
+
+        def evaluate(cfg):
             d = fd.build_dictionary(method, n_ax, cfg, fd.dict_rng(method, n_ax, 0),
                                     fourier_x=t["periodic_fourier"])
             if task == "darcy_orig":
-                a, info = sv.darcy_orig_fit(t, d, 0)
+                a, _ = sv.darcy_orig_fit(t, d, 0)
             else:
-                a, info = sv.oracle_fit(t, d, 0)
+                a, _ = sv.oracle_fit(t, d, 0)
             m = sv.score(t, d, a)
-            rows.append(dict(config=cfg, rel_l2=m["rel_l2"], linf=m["linf"]))
+            return dict(config=cfg, rel_l2=m["rel_l2"], linf=m["linf"])
+
+    rows = [evaluate(cfg) for cfg in grid]
+    walked = 0
+    while knob is not None and len(rows) >= 2 and walked < 2:
+        best = min(rows, key=lambda r: r["rel_l2"])
+        vals = sorted(r["config"][knob] for r in rows)
+        v = best["config"][knob]
+        if v not in (vals[0], vals[-1]):
+            break  # interior argmin: the walk is done
+        nxt = pr.knob_step(method, knob, v, +1 if v == vals[-1] else -1,
+                           size, is_1d=is_1d)
+        if nxt is None or any(r["config"][knob] == nxt for r in rows):
+            break
+        rows.append(evaluate({**best["config"], knob: nxt}))
+        walked += 1
     chosen = min(rows, key=lambda r: r["rel_l2"])["config"]
     rec = dict(task=task, method=method, C=C, regime="oracle", knob=knob,
-               grid=rows, chosen=chosen)
+               grid=rows, chosen=chosen, edge_walked=walked)
     store.save_tuning(rec)
     tuning[tkey] = rec
     return chosen
