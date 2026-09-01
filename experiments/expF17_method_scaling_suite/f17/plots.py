@@ -303,7 +303,9 @@ def _heat_panel(ax, cells, task, method):
     _coverage_edge(ax, d)
     _draw_bc_geometry(ax, task)
     ax.set_aspect("equal")
-    ax.set_title(f"{TASK_TITLE.get(task, task)}  W={cell['cols']}  "
+    halo = cell["config"].get("halo")
+    htxt = f"  halo={halo}" if halo is not None else ""
+    ax.set_title(f"{TASK_TITLE.get(task, task)}  W={cell['cols']}{htxt}  "
                  f"rel={cell['rel_l2']:.1e}", fontsize=8,
                  color=FAMILY_COLOR.get(TASK_FAMILY.get(task, "other"), "k"))
     return pc
@@ -334,8 +336,8 @@ def _dysts_panel(ax, cells, task):
     ax.set_ylim(1e-17, 1e0)
     ax.grid(True, which="both", alpha=0.2)
     ax.set_title(f"{TASK_TITLE[task]} (QI)  W={cell['cols']}  "
-                 f"rel={cell['rel_l2']:.1e}", fontsize=8,
-                 color=FAMILY_COLOR["dysts"])
+                 f"halo={cell['config'].get('halo')}  rel={cell['rel_l2']:.1e}",
+                 fontsize=8, color=FAMILY_COLOR["dysts"])
 
 
 def residual_figs(cells, tuning=None):
