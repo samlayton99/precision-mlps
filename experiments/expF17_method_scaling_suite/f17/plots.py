@@ -51,11 +51,11 @@ SOTA = {"convection_c40": 2.04e-13, "convection_c80": 1.10e-12,
         "darcy_orig": 1e-2}
 METHOD_COLOR = {"qi_radon": "C3", "qi_tensor": "C0", "elm": "C2",
                 "spectral": "C1", "bwler": "C8", "rbf_imq": "C4",
-                "rbf_phs": "C5", "qi_grid": "C3"}
+                "rbf_phs": "C5", "qi_grid": "C3", "pinn": "C6"}
 METHOD_LABEL = {"qi_radon": "QI-Radon", "qi_tensor": "QI-tensor", "elm": "ELM",
                 "spectral": "spectral (F/C)", "bwler": "BWLer (explicit)",
                 "rbf_imq": "RBF-IMQ", "rbf_phs": "RBF-PHS+p1",
-                "qi_grid": "QI"}
+                "qi_grid": "QI", "pinn": "PINN (trained)"}
 YLIM = (1e-16, 3e0)
 EXT = 2.25  # zoomed out: the radon offset circle (~1.9) must sit fully on-canvas
 
@@ -122,7 +122,9 @@ def _style_axis(ax, task, data=None):
 
 
 SCALING_PLOT_METHODS = {True: ["qi_grid", "elm"],          # 1-D
-                        False: ["qi_radon", "qi_tensor", "elm"]}  # 2-D
+                        False: ["qi_radon", "qi_tensor", "elm", "pinn"]}  # 2-D
+# pinn is on the scaling axis (Sam: it is the same 1-hidden-layer tanh
+# architecture, trained instead of solved); its cells land at the queue tail
 
 
 def plot_scaling(cells, regime, path, title):
@@ -148,7 +150,7 @@ def plot_scaling(cells, regime, path, title):
                             [r[1] * r[2] for r in rows],
                             color=METHOD_COLOR[method], alpha=0.15)
             handles[method] = ln
-    order = [m for m in ["qi_radon", "qi_tensor", "elm", "qi_grid"] if m in handles]
+    order = [m for m in ["qi_radon", "qi_tensor", "elm", "pinn", "qi_grid"] if m in handles]
     hs = [handles[m] for m in order]
     ls = [METHOD_LABEL[m] for m in order]
     hs.append(plt.Line2D([], [], color="k", ls=":", lw=1.2))
