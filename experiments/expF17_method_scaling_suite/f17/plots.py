@@ -55,9 +55,9 @@ METHOD_COLOR = {"qi_radon": "C3", "qi_tensor": "C0", "elm": "C2",
 METHOD_LABEL = {"qi_radon": "QI-Radon", "qi_tensor": "QI-tensor", "elm": "ELM",
                 "spectral": "spectral (F/C)", "bwler": "BWLer (explicit)",
                 "rbf_imq": "RBF-IMQ", "rbf_phs": "RBF-PHS+p1",
-                "qi_grid": "QI (grid, 1-D)"}
+                "qi_grid": "QI"}
 YLIM = (1e-16, 3e0)
-EXT = 1.25
+EXT = 2.25  # zoomed out: the radon offset circle (~1.9) must sit fully on-canvas
 
 
 def _is_1d(task):
@@ -246,6 +246,23 @@ def _draw_bc_geometry(ax, task):
                                         ec="k", lw=1.8))
 
 
+def _coverage_edge(ax, d):
+    """Red dotted line at the dictionary's sampled-area edge, from the ACTUAL
+    built geometry, so the translation is visible: radon = the centered circle
+    at the outermost offset radius (the domain square must sit inside it);
+    tensor = the outermost-centre square (ditto)."""
+    meta = d.meta
+    if meta["method"] == "qi_radon":
+        r = float(np.max(np.abs(d.b) / np.hypot(d.a1, d.a2)))
+        ax.add_patch(plt.Circle((0.0, 0.0), r, fill=False, ec="red", ls=":",
+                                lw=1.6))
+    elif meta["method"] == "qi_tensor":
+        x0, x1 = d.cx.min(), d.cx.max()
+        y0, y1 = d.cy.min(), d.cy.max()
+        ax.add_patch(plt.Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False,
+                                   ec="red", ls=":", lw=1.6))
+
+
 def _heat_panel(ax, cells, task, method):
     from . import dicts as fd, solve as sv
     from .tasks import TASKS
@@ -283,6 +300,7 @@ def _heat_panel(ax, cells, task, method):
                            shading="auto", cmap=cmap, vmin=-17, vmax=0)
     ax.set_xlim(-EXT, EXT); ax.set_ylim(-EXT, EXT)
     ax.add_patch(plt.Rectangle((-1, -1), 2, 2, fill=False, ec="k", lw=1.0))
+    _coverage_edge(ax, d)
     _draw_bc_geometry(ax, task)
     ax.set_aspect("equal")
     ax.set_title(f"{TASK_TITLE.get(task, task)}  W={cell['cols']}  "
@@ -307,15 +325,20 @@ def _dysts_panel(ax, cells, task):
     srel = 2.0 * t["ts"] / t["T"] - 1.0
     E = np.abs((d.rows(srel, 0) @ A.T) * sigma[None, :] - t["Yref"]) + 1e-18
     for c in range(E.shape[1]):
-        ax.semilogy(srel, E[:, c], lw=0.7)
+        ax.semilogy(srel, E[:, c], lw=0.7, label=f"$u_{{{c + 1}}}$")
     ax.axvline(-1.0, color="k", lw=2.5)   # IC row lives here
     ax.axvline(1.0, color="k", lw=1.0)
+    ax.axvline(float(np.min(d.b / d.a)), color="red", ls=":", lw=1.6)
+    ax.axvline(float(np.max(d.b / d.a)), color="red", ls=":", lw=1.6)
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.14), fontsize=5.5,
+              ncol=min(E.shape[1], 5), frameon=False, borderaxespad=0,
+              handlelength=1.0, columnspacing=0.8)
     ax.set_xlim(-EXT, EXT)
     ax.set_ylim(1e-17, 1e0)
     ax.grid(True, which="both", alpha=0.2)
-    ax.set_title(f"{TASK_TITLE[task]} (QI grid)  W={cell['cols']}  "
+    ax.set_title(f"{TASK_TITLE[task]} (QI)  W={cell['cols']}  "
                  f"rel={cell['rel_l2']:.1e}", fontsize=8,
-                 color=FAMILY_COLOR["dysts"])
+                 color=FAMILY_COLOR["dysts"], pad=16)
 
 
 def residual_figs(cells, tuning=None):
@@ -333,7 +356,8 @@ def residual_figs(cells, tuning=None):
             fig.colorbar(pc, ax=list(axes), shrink=0.6,
                          label=r"$\log_{10}|\hat u - u^*|$ (grey = outside the box)")
         fig.suptitle(f"Plot 4 -- residual fields at best landed W (oracle, seed 0)"
-                     f" -- 2-D panels: {label}; dysts panels: QI (grid)",
+                     f" -- 2-D panels: {label}; dysts panels: QI.  "
+                     "Red dotted = dictionary coverage edge (outermost centers)",
                      y=0.985, fontsize=13)
         fig.savefig(st.RESULTS_DIR / fname, dpi=130)
         plt.close(fig)
