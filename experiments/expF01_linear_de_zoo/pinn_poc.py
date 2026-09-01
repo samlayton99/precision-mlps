@@ -190,7 +190,7 @@ def lap_u2(p):
 def radon_tensor(N):
     J = int(round(np.sqrt(N)))            # directions
     M = int(np.ceil(N / J))               # offsets per direction
-    thetas = np.pi * (np.arange(J) + 0.5) / J
+    thetas = np.pi * np.arange(J) / J
     collar = 1.25
     ts = np.linspace(-collar, collar, M)
     dirs = np.stack([np.stack([np.cos(th) * np.ones(M), np.sin(th) * np.ones(M)], axis=1) for th in thetas]).reshape(-1, 2)

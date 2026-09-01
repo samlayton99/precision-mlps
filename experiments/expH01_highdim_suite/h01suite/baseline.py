@@ -62,7 +62,7 @@ def even_directions(d: int, n: int, seed: int = DIRECTION_SEED) -> np.ndarray:
     if d == 1:
         return np.ones((1, 1), dtype=np.float64)
     if d == 2:
-        th = 0.5 * np.pi / n + np.arange(n) * np.pi / n
+        th = np.arange(n) * np.pi / n
         return _canonical_sign(np.stack([np.cos(th), np.sin(th)], axis=1))
     if d == 3:
         # Spherical Fibonacci on the upper half sphere (opposite directions identified).

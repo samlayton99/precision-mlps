@@ -98,7 +98,7 @@ MONO_2D = [(0, 0), (1, 0), (0, 1), (2, 0), (1, 1), (0, 2),
 def radon_geometry(W, lam, collar=COLLAR):
     J = int(round(np.sqrt(W)))
     M = W // J
-    thetas = np.pi * (np.arange(J) + 0.5) / J
+    thetas = np.pi * np.arange(J) / J
     ts = np.linspace(-collar, collar, M)
     dirs = np.repeat(np.stack([np.cos(thetas), np.sin(thetas)], axis=1), M, axis=0)
     offs = np.tile(ts, J)

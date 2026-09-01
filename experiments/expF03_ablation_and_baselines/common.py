@@ -146,7 +146,7 @@ def geometry_1d(N, cfg):
 def radon_geometry(W, cfg, category):
     J = int(round(np.sqrt(W)))
     M = W // J
-    thetas = np.pi * (np.arange(J) + 0.5) / J
+    thetas = np.pi * np.arange(J) / J
     ts = np.linspace(-collar_for(cfg, category), collar_for(cfg, category), M)
     dirs = np.repeat(np.stack([np.cos(thetas), np.sin(thetas)], axis=1), M, axis=0)
     offs = np.tile(ts, J)

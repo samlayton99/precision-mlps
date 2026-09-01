@@ -181,7 +181,7 @@ def radon_geometry(W, lam, collar):
 
 
 def PI_THETAS(J):
-    return np.pi * (np.arange(J) + 0.5) / J
+    return np.pi * np.arange(J) / J
 
 
 def rows_2d(P, dirs, offs, gamma, terms):

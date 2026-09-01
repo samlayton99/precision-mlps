@@ -49,7 +49,7 @@ def _coeff_col(coeff, pts):
 
 
 def pi_thetas(J):
-    return np.pi * (np.arange(J) + 0.5) / J
+    return np.pi * np.arange(J) / J
 
 
 def radon_geometry(W, lam, collar=COLLAR_SQUARE):
