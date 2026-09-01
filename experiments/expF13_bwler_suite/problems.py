@@ -14,9 +14,18 @@ Physical setups (verbatim from bwler):
   wave        u_tt = c^2 u_xx,        (t,x) in [0,1]^2, c=2, u0 = sin(pi x)+0.5 sin(5 pi x),
               u_t(0,x)=0, Dirichlet u(t,0)=u(t,1)=0.
   burgers     u_t + u u_x = nu u_xx,  (t,x) in [0,1]x[-1,1], nu = 0.01/pi, u0 = -sin(pi x),
-              Dirichlet 0. No closed form; Chebfun pde15s reference (ref/*.mat).
+              Dirichlet 0. CLOSED FORM via Cole-Hopf (exact_colehopf below): a ratio of
+              heat-kernel integrals under Gauss-Hermite quadrature (200 nodes; max
+              deviation vs GH-600 on the 200x200 eval grid 2.9e-15, PDE residual ~1e-40
+              at 40 dps, independent trapezoid agrees to 6.7e-16). The whole-line
+              periodic solution satisfies u(+-1,t)=0 by odd symmetry, so it IS the
+              Dirichlet solution. The legacy Chebfun pde15s reference (ref/*.mat) is
+              only 6.0e-6 at its own nodes -- kept for comparison, never as an oracle.
   poisson_cg  Laplace on [-0.5,0.5]^2 minus four holes (centers (+-0.3,+-0.3), r=0.1),
-              u=1 outer square, u=0 hole circles. COMSOL float32 reference (~1e-2 ceiling).
+              u=1 outer square, u=0 hole circles. COMSOL reference; nodal accuracy
+              2.5e-5, measured against a converged method-of-fundamental-solutions
+              solve (2026-08-31) -- the "~1e-2 ceiling" previously recorded here was
+              wrong by 2.5 orders.
   poisson_man same geometry/BC structure, manufactured harmonic solution (true precision test).
 
 Problem dict format follows expF02 (lin_terms / nl / bc_blocks), with one addition:
@@ -37,6 +46,42 @@ PI = np.pi
 REF_DIR = Path(__file__).resolve().parent / "ref"
 
 NU_BURGERS = 0.01 / PI
+
+
+# ---------------------------------------------------------------------------
+# Cole-Hopf closed form for Burgers (verified 2026-08-31; see expF17 SPEC 13.2/16.8):
+#   u = -int sin(pi y) G dy / int G dy,  G = exp(-cos(pi y)/(2 pi nu)) * heat kernel,
+# evaluated with Gauss-Hermite in zeta where y = x - 2 sqrt(nu t) zeta.
+# ---------------------------------------------------------------------------
+
+def exact_colehopf(x, t, nu=NU_BURGERS, n=200):
+    """Exact Burgers solution for u0 = -sin(pi x), u(+-1, t) = 0, on PHYSICAL (x, t).
+
+    n=200 Gauss-Hermite nodes: max deviation vs GH-600 on the 200x200 eval grid
+    is < 3e-15 (n=75 is NOT enough at large t: 1.0e-12 near x=0, t=1)."""
+    from scipy.special import roots_hermite
+    x = np.atleast_1d(np.asarray(x, dtype=np.float64))
+    t = np.atleast_1d(np.asarray(t, dtype=np.float64))
+    out = np.empty_like(x)
+    z0 = t <= 0
+    out[z0] = -np.sin(PI * x[z0])
+    m = ~z0
+    if m.any():
+        zt, w = roots_hermite(n)
+        with np.errstate(divide="ignore"):
+            logw = np.log(w)[None, :]
+        y = x[m][:, None] - 2.0 * np.sqrt(nu * t[m])[:, None] * zt[None, :]
+        a = -np.cos(PI * y) / (2.0 * PI * nu) + logw
+        a -= a.max(axis=1, keepdims=True)
+        F = np.exp(a)
+        out[m] = -np.sum(np.sin(PI * y) * F, axis=1) / np.sum(F, axis=1)
+    return out
+
+
+def _burgers_exact_scaled(nu):
+    def u(P):
+        return exact_colehopf(P[:, 0], 0.5 * (P[:, 1] + 1.0), nu=nu)
+    return u
 
 
 # ---------------------------------------------------------------------------
@@ -147,7 +192,7 @@ def make_burgers(nu):
         nl=dict(fields=[(0, 0), (1, 0)],
                 res=lambda v, p: v[(0, 0)] * v[(1, 0)],
                 jac=lambda v, p: {(0, 0): v[(1, 0)], (1, 0): v[(0, 0)]}),
-        exact=None, forcing=0.0,
+        exact=_burgers_exact_scaled(nu), forcing=0.0,
         bc_blocks=[
             dict(where="ic", terms=[((0, 0), 1.0)], value=_burgers_ic),
             dict(where="left", terms=[((0, 0), 1.0)], value=0.0),
@@ -325,6 +370,17 @@ def verify_all(tol=5e-4, verbose=True):
         if verbose:
             print(f"  verified {key}")
 
+    # burgers Cole-Hopf oracle: IC, BC, and agreement with the legacy .mat
+    xs = np.linspace(-1.0, 1.0, 401)
+    e_ic_ch = np.max(np.abs(exact_colehopf(xs, np.zeros_like(xs)) + np.sin(PI * xs)))
+    tb = np.linspace(0.01, 1.0, 25)
+    e_bc_ch = max(np.max(np.abs(exact_colehopf(np.full_like(tb, -1.0), tb))),
+                  np.max(np.abs(exact_colehopf(np.full_like(tb, 1.0), tb))))
+    if e_ic_ch > 1e-14 or e_bc_ch > 1e-14:
+        failures.append(("burgers", "colehopf_ic_bc", (float(e_ic_ch), float(e_bc_ch))))
+    elif verbose:
+        print(f"  verified burgers Cole-Hopf oracle (IC {e_ic_ch:.1e}, BC {e_bc_ch:.1e})")
+
     # burgers reference: IC and BCs of the Chebfun solution
     u, t, x = load_burgers_reference()
     assert u.shape == (len(t), len(x)), "burgers ref orientation mismatch"
@@ -332,9 +388,16 @@ def verify_all(tol=5e-4, verbose=True):
     e_bc = max(np.max(np.abs(u[:, 0])), np.max(np.abs(u[:, -1])))
     if e_ic > 1e-12 or e_bc > 1e-12:
         failures.append(("burgers", "reference", (e_ic, e_bc)))
-    elif verbose:
-        print(f"  verified burgers reference (IC {e_ic:.1e}, BC {e_bc:.1e}, "
-              f"grid {u.shape})")
+    else:
+        sub = slice(0, len(t), 4)
+        XX, TT = np.meshgrid(x, t[sub], indexing="xy")
+        d_mat = np.max(np.abs(u[sub] - exact_colehopf(XX.ravel(), TT.ravel())
+                              .reshape(len(t[sub]), len(x))))
+        if not 1e-7 < d_mat < 5e-5:  # the .mat carries ~6e-6 of its own error
+            failures.append(("burgers", "mat_vs_colehopf", float(d_mat)))
+        elif verbose:
+            print(f"  verified burgers reference (IC {e_ic:.1e}, BC {e_bc:.1e}, "
+                  f"grid {u.shape}; .mat vs Cole-Hopf {d_mat:.1e} -- the .mat's own error)")
 
     # poisson reference: node classification and BC values
     Pn, vn = load_poisson_reference()
