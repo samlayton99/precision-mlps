@@ -81,9 +81,8 @@ def cell_key(task, method, C, seed, regime, variant="base"):
 
 # --- the dysts (1-D) arm ----------------------------------------------------
 
-LADDER_1D = [48, 96, 128, 192, 256, 384]
-LADDER_1D_BY_SYSTEM = {"MacArthur": [48, 96, 128, 192, 256],
-                       "InteriorSquirmer": [48, 96, 128, 192, 256, 384, 512, 768]}
+LADDER_1D = [64, 96, 128, 192, 256, 384, 512]  # Sam 2026-09-01: 48 too small
+LADDER_1D_BY_SYSTEM = {}  # uniform across systems (per-system exceptions dropped)
 SCALING_1D = ["qi_grid", "elm"]
 COMPARATORS_1D = ["spectral", "bwler", "rbf_imq", "rbf_phs"]
 METHODS_1D = SCALING_1D + COMPARATORS_1D
