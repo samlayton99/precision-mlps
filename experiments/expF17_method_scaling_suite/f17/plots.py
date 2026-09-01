@@ -213,7 +213,6 @@ def plot_poly(cells, path):
     """Plot 3: 2-D QI arms with (dotted) / without (solid) the deg-3 block."""
     base = _agg(cells, "oracle", "base", methods=["qi_radon", "qi_tensor"])
     poly = _agg(cells, "oracle", "poly", methods=["qi_radon", "qi_tensor"])
-    spec = _agg(cells, "oracle", "base", methods=["spectral"])
     fig, axes = plt.subplots(2, 4, figsize=(19, 9))
     axes = axes.ravel()
     for k, task in enumerate(pr.TASK_ORDER):
@@ -227,15 +226,11 @@ def plot_poly(cells, path):
                 if rows:
                     ax.plot([r[0] for r in rows], [r[1] for r in rows], ls,
                             color=col, marker="o", ms=3)
-        rows = spec.get((task, "spectral"))
-        if rows:
-            ax.axhline(min(r[1] for r in rows), color="C1", lw=1.1, ls="--")
     fig.legend(handles=[
         plt.Line2D([], [], color="red", ls="-", label="QI-Radon"),
         plt.Line2D([], [], color="blue", ls="-", label="QI-tensor"),
-        plt.Line2D([], [], color="k", ls=":", label="with deg-3 poly"),
-        plt.Line2D([], [], color="C1", ls="--", label="best spectral")],
-        loc="upper center", bbox_to_anchor=(0.5, 0.995), ncol=4, frameon=False)
+        plt.Line2D([], [], color="k", ls=":", label="with deg-3 poly (dotted)")],
+        loc="upper center", bbox_to_anchor=(0.5, 0.995), ncol=3, frameon=False)
     fig.suptitle("Plot 3 -- the polynomial block, applied to BOTH arms",
                  y=0.935, fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.90))

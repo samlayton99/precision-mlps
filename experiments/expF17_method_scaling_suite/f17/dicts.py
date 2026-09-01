@@ -137,22 +137,32 @@ class TensorDict:
         return out
 
 
-class RBFDict:
-    """IMQ (positive definite, no tail) or PHS r^3 + degree-1 tail, grid centres."""
+def _shape_for(cols_target, aspect):
+    """(nx, ny) with nx*ny ~ cols_target and ny/nx ~ aspect. Exact at aspect 1;
+    otherwise the actual product is what gets reported (never the nominal)."""
+    nx = max(2, int(round(np.sqrt(cols_target / aspect))))
+    ny = max(2, int(round(cols_target / nx)))
+    return nx, ny
 
-    def __init__(self, n_ax, kind, epsh=1.0, shift=(0.0, 0.0)):
-        n = n_ax + 1
-        h = 2.0 / (n - 1)
-        gx = np.linspace(-1.0, 1.0, n) + shift[0] * h
-        gy = np.linspace(-1.0, 1.0, n) + shift[1] * h
+
+class RBFDict:
+    """IMQ (positive definite, no tail) or PHS r^3 + degree-1 tail, grid centres.
+    aspect = ny/nx of the centre grid at fixed budget (SPEC 18.8)."""
+
+    def __init__(self, n_ax, kind, epsh=1.0, shift=(0.0, 0.0), aspect=1.0):
+        nx, ny = _shape_for((n_ax + 1) ** 2, aspect)
+        hx, hy = 2.0 / (nx - 1), 2.0 / (ny - 1)
+        gx = np.linspace(-1.0, 1.0, nx) + shift[0] * hx
+        gy = np.linspace(-1.0, 1.0, ny) + shift[1] * hy
         GX, GY = np.meshgrid(gx, gy, indexing="ij")
         self.C = np.stack([GX.ravel(), GY.ravel()], axis=1)
         self.kind = kind
-        self.eps = epsh / h if kind == "imq" else None
+        self.eps = epsh / np.sqrt(hx * hy) if kind == "imq" else None
         self.n_poly = 3 if kind == "phs" else 0
         self.cols = len(self.C) + self.n_poly
         self.meta = dict(method=f"rbf_{kind}", n_ax=n_ax, epsh=(epsh if kind == "imq" else None),
-                         n_centres=len(self.C), shift=list(shift))
+                         n_centres=len(self.C), shift=list(shift),
+                         aspect=aspect, shape=[nx, ny])
 
     def _derivs(self, P, ax, ay):
         dx = P[:, 0:1] - self.C[None, :, 0]
@@ -244,23 +254,24 @@ class SpectralDict:
     periodic, Chebyshev otherwise; Chebyshev on eta. Balanced (n x n) shape
     (declared benchmark rule, SPEC 16.6). Zero hyperparameters."""
 
-    def __init__(self, n_ax, fourier_x=False):
-        self.n = n_ax + 1
+    def __init__(self, n_ax, fourier_x=False, aspect=1.0):
+        self.nx, self.ny = _shape_for((n_ax + 1) ** 2, aspect)
         self.fx = fourier_x
-        self.cols = self.n ** 2
+        self.cols = self.nx * self.ny
         self.meta = dict(method="spectral", n_ax=n_ax,
                          basis_x=("fourier" if fourier_x else "chebyshev"),
-                         basis_y="chebyshev", shape=[self.n, self.n])
+                         basis_y="chebyshev", aspect=aspect,
+                         shape=[self.nx, self.ny])
 
     def _bx(self, x, order):
-        return (_fourier_basis if self.fx else _cheb_basis)(x, self.n, order)
+        return (_fourier_basis if self.fx else _cheb_basis)(x, self.nx, order)
 
     def rows(self, P, terms):
         out = None
         for (ax, ay), coeff in terms:
             cc = _coeff_col(coeff, P)
             Bx = self._bx(P[:, 0], ax)
-            By = _cheb_basis(P[:, 1], self.n, ay)
+            By = _cheb_basis(P[:, 1], self.ny, ay)
             blk = np.einsum("ip,iq->ipq", Bx, By).reshape(len(P), -1)
             out = (blk * cc if np.ndim(cc) else blk * cc) if out is None \
                 else out + (blk * cc if np.ndim(cc) else blk * cc)
@@ -276,22 +287,22 @@ class BWLerDict:
     optimization term in BWLer Thm 5.1 is zero and FD misspecification is pure
     loss), so the fd_k check is closed by argument, not by sweep."""
 
-    def __init__(self, n_ax):
-        self.n = n_ax + 1
-        j = np.arange(self.n)
-        self.nodes = np.cos(j * np.pi / (self.n - 1))  # CGL, endpoints included
-        V = _cheb_basis(self.nodes, self.n, 0)
-        self.Vinv = np.linalg.solve(V, np.eye(self.n))
-        self.cols = self.n ** 2
+    def __init__(self, n_ax, aspect=1.0):
+        self.nx, self.ny = _shape_for((n_ax + 1) ** 2, aspect)
+        self.Vinv = {}
+        for n in {self.nx, self.ny}:
+            nodes = np.cos(np.arange(n) * np.pi / (n - 1))  # CGL, endpoints in
+            self.Vinv[n] = np.linalg.solve(_cheb_basis(nodes, n, 0), np.eye(n))
+        self.cols = self.nx * self.ny
         self.meta = dict(method="bwler", n_ax=n_ax, fd_k="spectral",
-                         nodes="cgl", shape=[self.n, self.n])
+                         nodes="cgl", aspect=aspect, shape=[self.nx, self.ny])
 
     def rows(self, P, terms):
         out = None
         for (ax, ay), coeff in terms:
             cc = _coeff_col(coeff, P)
-            Lx = _cheb_basis(P[:, 0], self.n, ax) @ self.Vinv
-            Ly = _cheb_basis(P[:, 1], self.n, ay) @ self.Vinv
+            Lx = _cheb_basis(P[:, 0], self.nx, ax) @ self.Vinv[self.nx]
+            Ly = _cheb_basis(P[:, 1], self.ny, ay) @ self.Vinv[self.ny]
             blk = np.einsum("ip,iq->ipq", Lx, Ly).reshape(len(P), -1)
             out = (blk * cc if np.ndim(cc) else blk * cc) if out is None \
                 else out + (blk * cc if np.ndim(cc) else blk * cc)
@@ -357,13 +368,16 @@ def build_dictionary(method, n_ax, config, seed_rng, fourier_x=False, poly=False
         d = elm_dict(n_ax, config["R"], seed_rng)
     elif method == "rbf_imq":
         d = RBFDict(n_ax, "imq", epsh=config["epsh"],
-                    shift=tuple(seed_rng.uniform(-0.5, 0.5, 2)))
+                    shift=tuple(seed_rng.uniform(-0.5, 0.5, 2)),
+                    aspect=config.get("aspect", 1.0))
     elif method == "rbf_phs":
-        d = RBFDict(n_ax, "phs", shift=tuple(seed_rng.uniform(-0.5, 0.5, 2)))
+        d = RBFDict(n_ax, "phs", shift=tuple(seed_rng.uniform(-0.5, 0.5, 2)),
+                    aspect=config.get("aspect", 1.0))
     elif method == "spectral":
-        d = SpectralDict(n_ax, fourier_x=fourier_x)
+        d = SpectralDict(n_ax, fourier_x=fourier_x,
+                         aspect=config.get("aspect", 1.0))
     elif method == "bwler":
-        d = BWLerDict(n_ax)
+        d = BWLerDict(n_ax, aspect=config.get("aspect", 1.0))
     else:
         raise ValueError(method)
     return PolyAugmented(d) if poly else d

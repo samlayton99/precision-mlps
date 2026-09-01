@@ -42,36 +42,57 @@ def halo_candidates(n_ax, geometry):
     return cand
 
 
+ASPECTS = (0.25, 1.0, 4.0)  # ny/nx at fixed budget (reviewer finding 1, Sam-approved:
+                            # grid comparators get a declared aspect sweep; QI arms
+                            # stay balanced -- J/M baked per the direct 14.1 measurement)
+
+
 def knob_grid(method, n_ax):
-    """-> (knob_name, [config dicts]) for the declared 3-point check (17.5)."""
+    """-> (knob names, [config dicts]): the declared sweep (17.5 + 18.8).
+    Multi-knob methods sweep the factorial (14.2: knobs are not additive)."""
     if method in ("qi_radon", "qi_tensor"):
-        return "halo", [{"halo": h} for h in halo_candidates(n_ax, method)]
+        return ["halo"], [{"halo": h} for h in halo_candidates(n_ax, method)]
     if method == "elm":
-        return "R", [{"R": r} for r in (1.0, 2.0, 4.0)]
+        return ["R"], [{"R": r} for r in (1.0, 2.0, 4.0)]
     if method == "rbf_imq":
-        return "epsh", [{"epsh": e} for e in (0.5, 1.0, 2.0)]
-    return None, [{}]
+        return ["epsh", "aspect"], [{"epsh": e, "aspect": a}
+                                    for e in (0.5, 1.0, 2.0) for a in ASPECTS]
+    if method in ("spectral", "bwler"):
+        return ["aspect"], [{"aspect": a} for a in ASPECTS]
+    if method == "rbf_phs":
+        return ["aspect"], [{"aspect": a} for a in ASPECTS]
+    return [], [{}]
+
+
+MAX_WALK = 4  # extensions per knob (raised 2 -> 4, reviewer finding 2)
 
 
 def knob_step(method, knob, value, direction, size, is_1d=False):
-    """Edge-walk (Sam, 2026-09-01): one step outward at the grid's own spacing.
-    Returns the next candidate value, or None if clamped/invalid. Applied when
-    the argmin lands on the sweep boundary, at most 2 extensions -- identical
-    declared effort for every knobbed method."""
+    """Edge-walk: one step outward at the grid's own spacing when the argmin
+    lands on the sweep boundary, at most MAX_WALK extensions per knob --
+    identical declared effort for every knobbed method. Halo additionally gets
+    a +-1 refinement around the final argmin (Sam: halo is coarse and the QI
+    arms are sensitive near 8 -- no gaps)."""
     if knob == "halo":
         h = value + (2 if direction > 0 else -2)
-        if h < 1:
+        if h < 0:
             return None
         if is_1d:
             return h if (size - 1) - 2 * h >= 3 else None
         n_int = (size + 2 - 2 * h) if method == "qi_radon" else (size - 2 * h)
-        return h if n_int >= 3 else None
+        return h if n_int >= 3 else None  # h = 0 allowed: the walk can test it
     if knob == "R":
         r = value * (2.0 if direction > 0 else 0.5)
         return r if 0.25 <= r <= 32.0 else None
     if knob == "epsh":
         e = value * (2.0 if direction > 0 else 0.5)
         return e if 0.125 <= e <= 8.0 else None
+    if knob == "aspect":
+        a = value * (4.0 if direction > 0 else 0.25)
+        return a if 1.0 / 64 <= a <= 64.0 else None
+    if knob == "w_mult":
+        w = value * (3.0 if direction > 0 else 1.0 / 3.0)
+        return w if 0.01 <= w <= 100.0 else None
     return None
 
 
@@ -98,12 +119,12 @@ def knob_grid_1d(method, W):
         h0 = max(1, min(int(round(n_c / 8)), 8))
         h_max = (n_c - 3) // 2
         cand = sorted({max(1, min(h, h_max)) for h in (h0 - 2, h0, h0 + 2)})
-        return "halo", [{"halo": h} for h in cand]
+        return ["halo"], [{"halo": h} for h in cand]
     if method == "elm":
-        return "R", [{"R": r} for r in (1.0, 2.0, 4.0)]
+        return ["R"], [{"R": r} for r in (1.0, 2.0, 4.0)]
     if method == "rbf_imq":
-        return "epsh", [{"epsh": e} for e in (0.5, 1.0, 2.0)]
-    return None, [{}]
+        return ["epsh"], [{"epsh": e} for e in (0.5, 1.0, 2.0)]
+    return [], [{}]
 
 
 def build_queue(include_extras=False):

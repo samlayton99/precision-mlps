@@ -38,7 +38,7 @@ def frozen_config(task, method, C, tuning):
         from f17 import dicts1d as f1, solve1d as s1
         from f17.tasks1d import dysts_task
         t = dysts_task(task[len("dysts_"):])
-        knob, grid = pr.knob_grid_1d(method, C)
+        knobs, grid = pr.knob_grid_1d(method, C)
         size, is_1d = C, True
 
         def evaluate(cfg):
@@ -48,7 +48,7 @@ def frozen_config(task, method, C, tuning):
             return dict(config=cfg, rel_l2=m["rel_l2"], linf=m["linf"])
     else:
         n_ax = fd.n_ax_for(C)
-        knob, grid = pr.knob_grid(method, n_ax)
+        knobs, grid = pr.knob_grid(method, n_ax)
         t = TASKS[task]
         size, is_1d = n_ax, False
 
@@ -62,23 +62,53 @@ def frozen_config(task, method, C, tuning):
             m = sv.score(t, d, a)
             return dict(config=cfg, rel_l2=m["rel_l2"], linf=m["linf"])
 
+    def _halo_ok(h):
+        if h < 0:
+            return False
+        if is_1d:
+            return (size - 1) - 2 * h >= 3
+        n_int = (size + 2 - 2 * h) if method == "qi_radon" else (size - 2 * h)
+        return n_int >= 3
+
     rows = [evaluate(cfg) for cfg in grid]
-    walked = 0
-    while knob is not None and len(rows) >= 2 and walked < 2:
+    walked = {k: 0 for k in knobs}
+    progress = bool(knobs)
+    while progress:
+        progress = False
         best = min(rows, key=lambda r: r["rel_l2"])
-        vals = sorted(r["config"][knob] for r in rows)
-        v = best["config"][knob]
-        if v not in (vals[0], vals[-1]):
-            break  # interior argmin: the walk is done
-        nxt = pr.knob_step(method, knob, v, +1 if v == vals[-1] else -1,
-                           size, is_1d=is_1d)
-        if nxt is None or any(r["config"][knob] == nxt for r in rows):
-            break
-        rows.append(evaluate({**best["config"], knob: nxt}))
-        walked += 1
+        for k in knobs:
+            if walked[k] >= pr.MAX_WALK:
+                continue
+            vals = sorted({r["config"][k] for r in rows})
+            v = best["config"][k]
+            if len(vals) >= 2 and v not in (vals[0], vals[-1]):
+                continue  # interior argmin along this knob
+            nxt = pr.knob_step(method, k, v, +1 if v == vals[-1] else -1,
+                               size, is_1d=is_1d)
+            if nxt is None:
+                continue
+            cand = {**best["config"], k: nxt}
+            if any(r["config"] == cand for r in rows):
+                continue
+            rows.append(evaluate(cand))
+            walked[k] += 1
+            progress = True
+            break  # re-find the argmin after every evaluation
+    if "halo" in knobs:  # +-1 refinement: halo is coarse, the QI arms sensitive
+        for _ in range(4):
+            best = min(rows, key=lambda r: r["rel_l2"])
+            cands = [{**best["config"], "halo": best["config"]["halo"] + d}
+                     for d in (-1, 1)]
+            cands = [c for c in cands if _halo_ok(c["halo"])
+                     and not any(r["config"] == c for r in rows)]
+            if not cands:
+                break
+            for c in cands:
+                rows.append(evaluate(c))
     chosen = min(rows, key=lambda r: r["rel_l2"])["config"]
-    rec = dict(task=task, method=method, C=C, regime="oracle", knob=knob,
-               grid=rows, chosen=chosen, edge_walked=walked)
+    rec = dict(task=task, method=method, C=C, regime="oracle", knob=knobs,
+               grid=rows, chosen=chosen,
+               edge_walked=sum(walked.values()))
     store.save_tuning(rec)
     tuning[tkey] = rec
     return chosen
@@ -125,21 +155,32 @@ def dynamic_config(task, method, C, tuning):
     if tkey in tuning:
         return tuning[tkey]["chosen_dict"], tuning[tkey]["chosen"]["w_mult"]
     cfg = frozen_config(task, method, C, tuning)
-    rows = []
-    for w in W_MULT_GRID:
+
+    def evaluate_w(w):
         if task.startswith("dysts_"):
             from f17 import solve1d as s1
             from f17.tasks1d import dysts_task
             t = dysts_task(task[len("dysts_"):])
-            d, A, sigma, info = s1.dynamic_solve_1d(t, method, C, cfg, 0, w_mult=w)
+            d, A, sigma, _ = s1.dynamic_solve_1d(t, method, C, cfg, 0, w_mult=w)
             m = s1.score_1d(t, d, A, sigma)
         else:
             t = TASKS[task]
-            d, a, info = sv.dynamic_solve(t, method, fd.n_ax_for(C), cfg, 0,
-                                          fourier_x=t["periodic_fourier"],
-                                          w_mult=w)
+            d, a, _ = sv.dynamic_solve(t, method, fd.n_ax_for(C), cfg, 0,
+                                       fourier_x=t["periodic_fourier"], w_mult=w)
             m = sv.score(t, d, a)
-        rows.append(dict(w_mult=w, rel_l2=m["rel_l2"]))
+        return dict(w_mult=w, rel_l2=m["rel_l2"])
+
+    rows = [evaluate_w(w) for w in W_MULT_GRID]
+    for _ in range(pr.MAX_WALK):  # the same edge-walk (18.8)
+        best = min(rows, key=lambda r: r["rel_l2"])
+        vals = sorted(r["w_mult"] for r in rows)
+        if best["w_mult"] not in (vals[0], vals[-1]):
+            break
+        nxt = pr.knob_step(method, "w_mult", best["w_mult"],
+                           +1 if best["w_mult"] == vals[-1] else -1, 0)
+        if nxt is None or any(r["w_mult"] == nxt for r in rows):
+            break
+        rows.append(evaluate_w(nxt))
     chosen = min(rows, key=lambda r: r["rel_l2"])
     rec = dict(task=task, method=method, C=C, regime="dynamic", knob="w_mult",
                grid=rows, chosen={"w_mult": chosen["w_mult"]}, chosen_dict=cfg)

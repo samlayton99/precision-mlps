@@ -785,3 +785,42 @@ the same rule (its degree <=44 masked the instability at the core ladder, but
   ELM optima, and the trained-FNO ~1e-2 Darcy figure are currently cited as
   SOTA reference lines but have not been reproduced under our harness. Until
   then they are annotations, not measurements.
+
+## 18.8 FINAL PROTOCOL AMENDMENTS from the tuning-fairness review (2026-09-01, Sam-ruled)
+The independent reviewer verified: dynamic inheritance of oracle-tuned knobs (4
+spot re-tunes reproduce the inherited argmin), the w_mult grid, the RBF-IMQ
+walk bound (rank collapses below epsh 0.125), PHS tail degree (not first-order
+for global fits), the ELM bias convention, and the fd_k argument. It found two
+material defects, both flattering the QI arms:
+1. **The balanced-square rule was the spectral result on anisotropic tasks**:
+   shaped spectral (6 Fourier x 88 Chebyshev) reaches 5.5e-15 on convection_c80
+   at ~529 columns where the square shape records ~1.0 across the ladder.
+   RULING: grid comparators (spectral, bwler, rbf_imq, rbf_phs) get a declared
+   aspect knob, ny/nx in {1/4, 1, 4} at fixed budget with the standard walk
+   (rbf_imq sweeps epsh x aspect factorial, 9 cells); the QI arms stay balanced
+   -- J/M keeps its direct 14.1 measurement and stays BAKED. Reproduced in-build
+   before freezing.
+2. **The 1-D ELM walk cap bound its line 41-326x above optimum at large W**
+   (optima at R 16-32, cap was 16). RULING: walk cap raised 2 -> 4 extensions
+   per knob for every knobbed method.
+Further rulings: halo gets a +-1 REFINEMENT around the final argmin (halo is
+coarse and the QI arms are sensitive near 8; refinement may probe halo 0);
+w_mult gets the same walk (measured optimal at its boundary, so this is
+consistency, not correction); tuning records carry the full evaluated grid.
+
+**PINN protocol (adopted, cost-trimmed at Sam's instruction).** Single-hidden-
+layer tanh at the cell's actual column count, fp64, default init; Adam peak lr
+cosine-decayed over 20k steps then L-BFGS polish (cap 2k); lr swept {3e-4,
+1e-3, 3e-3} at seed 0 with the standard walk; dynamic adds the w_mult sweep;
+iteration budget FIXED (not a knob), wall-clock disclosed. Load-bearing
+certificate: every trained PINN also lands a frozen-feature lstsq REFIT of its
+readout (rcond 1e-15) -- the exact optimum over everything optimizer tuning
+could reach given the learned geometry -- plotted as a second linestyle.
+BWLer's published vanilla-PINN numbers plotted as reference dots on its tasks.
+2-D tasks only. PINN is ON the plot-1 scaling axis (same architecture, trained).
+
+**CLEAN SLATE (Sam).** All stores and generated plots archived to
+archive/pre-clean-run/ and the suite re-runs once, uninterrupted, under this
+frozen protocol. No mid-run protocol edits: any future change stops the run,
+wipes, and restarts. Plot 3 shows exactly 4 lines (radon/tensor x with/without
+poly); the best-spectral reference line is dropped from it.
