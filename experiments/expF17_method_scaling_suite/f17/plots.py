@@ -121,7 +121,15 @@ def _style_axis(ax, task, data=None):
     ax.set_xlabel("$W$")
 
 
+SCALING_PLOT_METHODS = {True: ["qi_grid", "elm"],          # 1-D
+                        False: ["qi_radon", "qi_tensor", "elm"]}  # 2-D
+
+
 def plot_scaling(cells, regime, path, title):
+    """Plot 1 carries ONLY the neural architectures (single-hidden-layer tanh
+    networks), where hidden-unit scaling is a shared, meaningful axis (SPEC 3,
+    14.3). Spectral/BWLer/RBF are not neural networks -- they appear at best
+    configuration on plot 2, the full cross-method comparison."""
     data = _agg(cells, regime)
     fig, axes = _grid_fig()
     handles = {}
@@ -130,7 +138,7 @@ def plot_scaling(cells, regime, path, title):
         _style_axis(ax, task, data)
         if k % 4 == 0:
             ax.set_ylabel("rel $L_2$")
-        for method in _methods_for(task):
+        for method in SCALING_PLOT_METHODS[_is_1d(task)]:
             rows = data.get((task, method))
             if not rows:
                 continue
@@ -140,7 +148,7 @@ def plot_scaling(cells, regime, path, title):
                             [r[1] * r[2] for r in rows],
                             color=METHOD_COLOR[method], alpha=0.15)
             handles[method] = ln
-    order = [m for m in list(pr.ALL_METHODS) + ["qi_grid"] if m in handles]
+    order = [m for m in ["qi_radon", "qi_tensor", "elm", "qi_grid"] if m in handles]
     hs = [handles[m] for m in order]
     ls = [METHOD_LABEL[m] for m in order]
     hs.append(plt.Line2D([], [], color="k", ls=":", lw=1.2))

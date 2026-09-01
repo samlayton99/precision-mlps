@@ -183,11 +183,17 @@ def run_cell(entry, tuning):
     return rec
 
 
-def run_queue(include_extras=False, max_cells=None, only=None, replot_every=15):
+SCALING_SET = set(pr.SCALING_METHODS) | set(pr.SCALING_1D)
+
+
+def run_queue(include_extras=False, max_cells=None, only=None, replot_every=15,
+              scaling_only=False):
     from f17 import plots
     cells = store.load()
     tuning = store.load_tuning()
     queue = pr.build_queue(include_extras=include_extras)
+    if scaling_only:
+        queue = [e for e in queue if e["method"] in SCALING_SET]
     if only:
         queue = [e for e in queue
                  if all(str(e[k]) == v for k, v in only.items())]
@@ -239,7 +245,7 @@ def main():
         if "--smoke" in args and max_cells is None:
             max_cells = 12
         run_queue(include_extras=("--extras" in args), max_cells=max_cells,
-                  only=only)
+                  only=only, scaling_only=("--scaling-only" in args))
         return
     print(__doc__)
 
