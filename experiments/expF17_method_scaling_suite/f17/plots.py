@@ -109,7 +109,7 @@ def _style_axis(ax, task, data=None):
                  color=FAMILY_COLOR.get(TASK_FAMILY.get(task, "other"), "k"))
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_ylim(*YLIM)
-    ax.set_xlim((32, 1100) if _is_1d(task) else (80, 12000))
+    ax.set_xlim((56, 590) if _is_1d(task) else (80, 12000))
     ticks = _task_ticks(task, data)
     ax.set_xticks(ticks)
     ax.set_xticklabels([str(t) for t in ticks], rotation=55, fontsize=6.5)

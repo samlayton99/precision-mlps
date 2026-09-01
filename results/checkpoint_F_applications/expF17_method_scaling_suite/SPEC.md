@@ -764,3 +764,24 @@ the same rule (its degree <=44 masked the instability at the core ladder, but
   FD-verified in expF13).
 - Store wiped to `*.pre-protocol-freeze.jsonl.bak` before launch so every
   landed cell is under the final frozen protocol.
+
+## 18.7 Rulings during the run (2026-09-01, ongoing)
+- **Edge-walk tuning rule ADOPTED** (amends 17.5): argmin on a sweep boundary
+  extends the grid one step outward at its own spacing, at most twice --
+  identical declared effort for every knobbed method. Motivating measurement:
+  ELM chose the R=4 boundary in 60/84 sweeps (Dong & Yang's width-growing
+  optimum); 139 affected (task, method, W) combos invalidated and re-run.
+- **1-D ladder = {64, 96, 128, 192, 256, 384, 512}**, uniform across systems
+  (48 dropped as below-resolution; MacArthur cap and InteriorSquirmer 768
+  exception dropped; off-ladder landed cells purged).
+- **Dynamic arm ON HOLD** at Sam's instruction pending tuning-fairness review
+  (an independent fresh-context reviewer is auditing the knob table, the PINN
+  tuning question, and the dynamic-inheritance assumption).
+- **Plot conventions**: discrete labeled ticks at the protocol widths (log
+  scale kept); dysts panels x-window (56, 590); chosen halo printed in
+  residual-panel titles; plot-4 legend is a single two-row figure legend.
+- **NEXT PHASE (Sam): reproduce published baselines in-house** rather than
+  taking literature numbers on faith -- the BWLer Table-2 values, Dong & Yang
+  ELM optima, and the trained-FNO ~1e-2 Darcy figure are currently cited as
+  SOTA reference lines but have not been reproduced under our harness. Until
+  then they are annotations, not measurements.
