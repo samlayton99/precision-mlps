@@ -152,9 +152,10 @@ def dynamic_config(task, method, C, tuning):
     dynamic regime, selected on the scored metric (17.1), frozen, identical
     declared effort for every method."""
     tkey = f"{task}|{method}|{C}|dynamic"
-    if tkey in tuning:
-        return tuning[tkey]["chosen_dict"], tuning[tkey]["chosen"]["w_mult"]
     cfg = frozen_config(task, method, C, tuning)
+    if tkey in tuning and tuning[tkey]["chosen_dict"] == cfg:
+        return cfg, tuning[tkey]["chosen"]["w_mult"]
+    # (a w_mult record made under a superseded dictionary config is stale)
 
     def evaluate_w(w):
         if task.startswith("dysts_"):
@@ -227,7 +228,7 @@ def run_cell(entry, tuning):
 SCALING_SET = set(pr.SCALING_METHODS) | set(pr.SCALING_1D)
 
 
-def run_queue(include_extras=False, max_cells=None, only=None, replot_every=15,
+def run_queue(include_extras=False, max_cells=None, only=None, replot_every=1,
               scaling_only=False):
     from f17 import plots
     cells = store.load()
@@ -238,15 +239,30 @@ def run_queue(include_extras=False, max_cells=None, only=None, replot_every=15,
     if only:
         queue = [e for e in queue
                  if all(str(e[k]) == v for k, v in only.items())]
-    pending = [e for e in queue
-               if pr.cell_key(e["task"], e["method"], e["C"], e["seed"],
-                              e["regime"], e["variant"]) not in cells]
+    def _key(e):
+        return pr.cell_key(e["task"], e["method"], e["C"], e["seed"],
+                           e["regime"], e["variant"])
+
+    def _stale(e):
+        """A landed dynamic/poly cell whose inherited dictionary config no
+        longer matches the (re-)tuned oracle config must re-run (the protocol
+        is 'dynamic inherits the oracle-tuned config'). Decided lazily, after
+        the oracle phase has re-tuned that (task, method, W)."""
+        rec = cells.get(_key(e))
+        if rec is None or e["regime"] == "oracle":
+            return False
+        return rec["config"] != frozen_config(e["task"], e["method"], e["C"], tuning)
+
+    pending = [e for e in queue if _key(e) not in cells]
     print(f"queue: {len(queue)} cells, {len(queue) - len(pending)} landed, "
-          f"{len(pending)} pending", flush=True)
+          f"{len(pending)} pending (+ any dynamic cells whose inherited config "
+          f"changes under re-tuning)", flush=True)
     n_done = 0
     t_start = time.time()
     prev_task = None
-    for entry in pending:
+    for entry in queue:
+        if _key(entry) in cells and not _stale(entry):
+            continue
         rec = run_cell(entry, tuning)
         n_done += 1
         print(f"[{n_done}/{len(pending)}] {rec['key']:52s} rel_l2={rec['rel_l2']:.2e} "

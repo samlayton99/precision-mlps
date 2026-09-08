@@ -824,3 +824,43 @@ archive/pre-clean-run/ and the suite re-runs once, uninterrupted, under this
 frozen protocol. No mid-run protocol edits: any future change stops the run,
 wipes, and restarts. Plot 3 shows exactly 4 lines (radon/tensor x with/without
 poly); the best-spectral reference line is dropped from it.
+
+## 18.9 ORACLE FOOTPRINT AMENDMENT (2026-09-01, audit finding, Sam-ruled)
+**Finding.** The 2-D oracle regime was boundary-limited, not dictionary-limited:
+the 4C data were drawn from the OPEN square, so no point ever sat on the boundary
+lines the 200x200 score grid contains, and the halo columns were left unpinned
+there. Measured on darcy_man at W=2025 (same dictionary, seed 0): the outermost
+2% band carried ~97% of the squared error (RMS 9.2e-13 vs 2.1e-14 interior);
+oracle 3.4e-13 (radon) / 8.5e-13 (tensor) / 1.7e-11 (ELM) against a full-grid
+fit of 3.5e-14 / 1.4e-13 / 1.8e-12. The dynamic arm, whose BC rows sit on the
+perimeter, landed BELOW the oracle (3.3e-14 / 6.7e-14 / 8.1e-13). The offset was
+~8x across the resolved ladder on every task, uniform across methods (fairness
+intact; absolute floors and the 1a-vs-1b relation wrong). A grid-node draw
+recovers only 1.4-2.6x; dense perimeter rows recover all of it. The 1-D arm and
+darcy_orig were immune (they draw from the reference nodes, endpoints included).
+**Ruling (Sam).** Oracle data footprint = the CLOSED square: 4C interior points
+as before PLUS the dynamic arm's perimeter set (640 points; +480 hole-ring points
+for poisson_man) with exact values, unweighted. Test:
+`test_oracle_footprint_is_the_closed_square` (matches the full-grid fit within
+2x; edge RMS < 5x interior). Score unchanged (closed square + disk); Sam asked
+whether to additionally score an inner region -- NOT adopted: with the fix the
+edge layer is gone, the disk metric already provides the inner view, and
+excluding the boundary would hide IC/BC failures in the dynamic arm.
+**Restart policy.** Oracle cells and oracle tuning records archived to
+archive/pre-oracle-footprint-fix/ and wiped; DYNAMIC cells kept (Sam: the
+dynamic solve is correct). Because the dynamic arm inherits the oracle-tuned
+dictionary config, the runner now treats a landed dynamic cell as stale and
+re-runs it iff its inherited config differs from the re-tuned oracle argmin
+(likewise a w_mult record made under a superseded config).
+
+## 18.10 PINN ARM COST RULINGS (2026-09-01, Sam)
+Measured full-budget cost (4 threads, fp64 CPU): 27 min (oracle) / 68 min
+(dynamic) per training run at W = 2025, ~7 / ~19 min at W = 1024, seconds to
+minutes below. Rulings: (1) the PINN ladder stops at 1024 (no 2025 rung);
+(2) seed 0 only at 1024, three seeds below; (3) both PINN walks (lr, w_mult)
+are capped at 2 extensions instead of MAX_WALK = 4 ("it can't really compete
+anyway"). Everything else in 18.8 stands: fixed 20k Adam + 2k L-BFGS budget,
+lr grid {3e-4, 1e-3, 3e-3}, dynamic inherits lr and sweeps w_mult, the
+frozen-feature refit certificate on every cell, literature MLP dots (BWLer
+Table 2: c40 1.94e-3, c80 6.88e-4, wave 1.27e-2, reaction 9.92e-3, Burgers
+1.33e-2). Runner: run_pinn.py (separate from run.py; same stores).

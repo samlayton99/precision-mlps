@@ -49,6 +49,10 @@ TASK_FAMILY = {"convection_c40": "bwler", "convection_c80": "bwler",
 SOTA = {"convection_c40": 2.04e-13, "convection_c80": 1.10e-12,
         "reaction": 6.94e-11, "wave": 1.26e-11, "burgers": 4.63e-3,
         "darcy_orig": 1e-2}
+# BWLer Table 2, "MLP (from literature)" column: the vanilla-PINN reference
+# dots for the PINN arm (SPEC 18.8); drawn at the right edge of plot 1
+PINN_LIT = {"convection_c40": 1.94e-3, "convection_c80": 6.88e-4,
+            "wave": 1.27e-2, "reaction": 9.92e-3, "burgers": 1.33e-2}
 METHOD_COLOR = {"qi_radon": "C3", "qi_tensor": "C0", "elm": "C2",
                 "spectral": "C1", "bwler": "C8", "rbf_imq": "C4",
                 "rbf_phs": "C5", "qi_grid": "C3", "pinn": "C6"}
@@ -65,7 +69,8 @@ def _is_1d(task):
 
 
 def _methods_for(task):
-    return pr.METHODS_1D if _is_1d(task) else pr.ALL_METHODS
+    # the PINN arm (run_pinn.py) is 2-D only; plot 2 shows every method
+    return pr.METHODS_1D if _is_1d(task) else pr.ALL_METHODS + ["pinn"]
 
 
 def _agg(cells, regime, variant="base", methods=None):
@@ -89,17 +94,17 @@ def _grid_fig():
 
 
 def _task_ticks(task, data=None):
-    """Discrete ticks at the widths actually in the protocol/data, so which
-    rungs have run is legible (Sam, 2026-09-01)."""
+    """Discrete ticks at the protocol ladder ONLY -- the exact QI column identity
+    (n_ax+1)^2 plus the declared extras. Methods whose column count is slightly
+    off the identity (comparator aspect sweeps, the +3 PHS block, the +10 poly
+    block) plot at their true column count with NO tick (Sam, 2026-09-02).
+    `data` is accepted for call compatibility and ignored."""
     from .dicts import n_ax_for
     if _is_1d(task):
-        ticks = set(pr.ladder_1d(task[len("dysts_"):]))
+        ticks = set(pr.ladder_1d(task[len("dysts_"):])) | set(pr.EXTRA_LADDER_1D)
     else:
-        ticks = {(n_ax_for(C) + 1) ** 2 for C in pr.LADDER}
-    if data:
-        for (t, m), rows in data.items():
-            if t == task:
-                ticks |= {r[0] for r in rows}
+        Cs = list(pr.LADDER) + list(pr.EXTRA_LADDER.get(task, []))
+        ticks = {(n_ax_for(C) + 1) ** 2 for C in Cs}
     return sorted(ticks)
 
 
@@ -109,7 +114,7 @@ def _style_axis(ax, task, data=None):
                  color=FAMILY_COLOR.get(TASK_FAMILY.get(task, "other"), "k"))
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_ylim(*YLIM)
-    ax.set_xlim((56, 590) if _is_1d(task) else (80, 12000))
+    ax.set_xlim((56, 1150) if _is_1d(task) else (80, 12000))
     ticks = _task_ticks(task, data)
     ax.set_xticks(ticks)
     ax.set_xticklabels([str(t) for t in ticks], rotation=55, fontsize=6.5)
@@ -133,6 +138,7 @@ def plot_scaling(cells, regime, path, title):
     14.3). Spectral/BWLer/RBF are not neural networks -- they appear at best
     configuration on plot 2, the full cross-method comparison."""
     data = _agg(cells, regime)
+    refit = _agg(cells, regime, "refit", methods=["pinn"])
     fig, axes = _grid_fig()
     handles = {}
     for k, task in enumerate(ALL_TASKS):
@@ -150,9 +156,22 @@ def plot_scaling(cells, regime, path, title):
                             [r[1] * r[2] for r in rows],
                             color=METHOD_COLOR[method], alpha=0.15)
             handles[method] = ln
+        rows = refit.get((task, "pinn"))
+        if rows:  # the frozen-feature certificate: same geometry, exact readout
+            handles["pinn_refit"] = ax.plot(
+                [r[0] for r in rows], [r[1] for r in rows], "o--",
+                color=METHOD_COLOR["pinn"], ms=4, mfc="none")[0]
+        if task in PINN_LIT and (task, "pinn") in data:
+            handles["pinn_lit"] = ax.plot(
+                [9000], [PINN_LIT[task]], "D", color=METHOD_COLOR["pinn"],
+                ms=7, mfc="none")[0]
     order = [m for m in ["qi_radon", "qi_tensor", "elm", "pinn", "qi_grid"] if m in handles]
     hs = [handles[m] for m in order]
     ls = [METHOD_LABEL[m] for m in order]
+    if "pinn_refit" in handles:
+        hs.append(handles["pinn_refit"]); ls.append("PINN frozen-feature refit")
+    if "pinn_lit" in handles:
+        hs.append(handles["pinn_lit"]); ls.append("vanilla PINN (literature, BWLer Tab. 2)")
     hs.append(plt.Line2D([], [], color="k", ls=":", lw=1.2))
     ls.append("published best (BWLer/FNO)")
     fig.legend(hs, ls, loc="upper center", bbox_to_anchor=(0.5, 0.997),
@@ -189,10 +208,15 @@ def plot_comparators(cells, path_png, path_md):
             ax.set_xticks(xs)
             ax.set_xticklabels([METHOD_LABEL[m] for m in ms], rotation=40,
                                ha="right", fontsize=7)
-            ax.set_ylim(*YLIM)
-            ax.axhline(1e-13, color="gray", lw=0.8, ls=":")
-            if SOTA.get(task) is not None:
-                ax.axhline(SOTA[task], color="k", lw=1.2, ls=":")
+        else:
+            ax.set_xticks([])
+            ax.text(0.5, 0.5, "blocked\n(reference pending)", ha="center",
+                    va="center", transform=ax.transAxes, fontsize=9, color="gray")
+        ax.set_yscale("log")
+        ax.set_ylim(*YLIM)
+        ax.axhline(1e-13, color="gray", lw=0.8, ls=":")
+        if SOTA.get(task) is not None:
+            ax.axhline(SOTA[task], color="k", lw=1.2, ls=":")
         ax.set_title(TASK_TITLE.get(task, task), fontsize=10,
                      color=FAMILY_COLOR.get(TASK_FAMILY.get(task, "other"), "k"))
         ax.grid(True, axis="y", which="both", alpha=0.2)
@@ -201,9 +225,18 @@ def plot_comparators(cells, path_png, path_md):
         lines.append("|---|---|---|---|---|")
         for (m, regime), (gm, sg, c) in sorted(best.items()):
             lines.append(f"| {METHOD_LABEL[m]} | {regime} | {c} | {gm:.2e} | {sg:.2f} |")
-    fig.suptitle("Plot 2 -- best configuration per method "
-                 "(solid = oracle, faded = dynamic)", y=0.985, fontsize=13)
-    fig.tight_layout(rect=(0, 0, 1, 0.965))
+    from matplotlib.patches import Patch
+    fig.legend(handles=[
+        Patch(facecolor="0.35", alpha=1.0, label="oracle regime (fit the known solution)"),
+        Patch(facecolor="0.35", alpha=0.45, label="dynamic regime (solve the PDE / ODE)"),
+        plt.Line2D([], [], color="k", ls=":", lw=1.2, label="published best (BWLer / FNO)"),
+        plt.Line2D([], [], color="gray", ls=":", lw=0.8, label="fp64 floor, rel $L_2 = 10^{-13}$")],
+        loc="upper center", bbox_to_anchor=(0.5, 0.975), ncol=4, frameon=False,
+        fontsize=10)
+    fig.suptitle("Plot 2 -- best result per method: geomean rel $L_2$ over 3 seeds "
+                 "at each method's best (W, tuned config); bar colour = method",
+                 y=0.995, fontsize=12)
+    fig.tight_layout(rect=(0, 0, 1, 0.945))
     fig.savefig(path_png, dpi=130)
     plt.close(fig)
     path_md.write_text("\n".join(lines) + "\n")
@@ -228,9 +261,11 @@ def plot_poly(cells, path):
                             color=col, marker="o", ms=3)
     fig.legend(handles=[
         plt.Line2D([], [], color="red", ls="-", label="QI-Radon"),
+        plt.Line2D([], [], color="red", ls=":", label="QI-Radon + deg-3 poly"),
         plt.Line2D([], [], color="blue", ls="-", label="QI-tensor"),
-        plt.Line2D([], [], color="k", ls=":", label="with deg-3 poly (dotted)")],
-        loc="upper center", bbox_to_anchor=(0.5, 0.995), ncol=3, frameon=False)
+        plt.Line2D([], [], color="blue", ls=":", label="QI-tensor + deg-3 poly"),
+        plt.Line2D([], [], color="k", ls=":", lw=1.2, label="published best")],
+        loc="upper center", bbox_to_anchor=(0.5, 0.995), ncol=5, frameon=False)
     fig.suptitle("Plot 3 -- the polynomial block, applied to BOTH arms",
                  y=0.935, fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.90))

@@ -1,8 +1,8 @@
 """expF17 solve engine. One path for every method, both regimes.
 
-Oracle regime: truncated lstsq fit of the oracle on 4C shuffled uniform points
-(rcond = 1e-15, gelsd; the normal equations are never formed -- expA01 measured
-them at ~7 decades).
+Oracle regime: truncated lstsq fit of the oracle on 4C shuffled uniform interior
+points plus the perimeter set (rcond = 1e-15, gelsd; the normal equations are
+never formed -- expA01 measured them at ~7 decades).
 
 Dynamic regime: strong-form collocation. Interior rows = the task's lin_terms
 (+ Gauss-Newton on nl), BC blocks as weighted rows (weight sqrt(n_pde/n_blk),
@@ -121,10 +121,26 @@ def build_bcs(task, d, n_pde, w_mult=1.0):
 # oracle regime
 # ---------------------------------------------------------------------------
 
+def perimeter_points(task):
+    """The closed square's boundary (and the hole rings for poisson_man): the
+    same point sets the dynamic arm's BC rows sit on."""
+    Pb = _square()
+    if task["mask"] is not None:
+        Pb = np.vstack([Pb, _holes()])
+    return Pb
+
+
 def oracle_fit(task, d, seed):
+    """Data footprint = the CLOSED square (SPEC 18.9): 4C interior points plus
+    the perimeter set with exact values. An open-square draw never lands on the
+    boundary lines the score grid contains, leaving the halo columns unpinned
+    there: measured 7-10x on every method at the floor (the dynamic arm, whose
+    BC rows sit on the perimeter, landed BELOW the oracle). With the perimeter
+    rows the fit matches a full-grid fit."""
     rng = np.random.default_rng(90_000 + seed)  # collocation RNG (13.9)
     P = interior_points(task, OVERSAMPLE * d.cols, rng,
                         method=d.meta.get("method"))
+    P = np.vstack([P, perimeter_points(task)])
     y = task["exact"](P)
     t0 = time.time()
     A = d.rows(P, [((0, 0), 1.0)])

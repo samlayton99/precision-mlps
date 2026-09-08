@@ -17,8 +17,13 @@ from __future__ import annotations
 import numpy as np
 
 LADDER = [128, 256, 512, 1024, 2048]
+# Sam 2026-09-01: the 4096 rung for EVERY 2-D task (wave also 8192, oracle
+# only -- the dynamic 8192 is "too much and not necessary"), both regimes,
+# scaling methods, all seeds -- run right after plot 1 resolves
 EXTRA_LADDER = {"convection_c40": [4096], "convection_c80": [4096],
-                "wave": [4096, 8192], "darcy_man": [4096]}
+                "reaction": [4096], "wave": [4096, 8192], "burgers": [4096],
+                "poisson_man": [4096], "darcy_man": [4096], "darcy_orig": [4096]}
+EXTRA_MAX_C_DYNAMIC = 4096
 SEEDS = [0, 1, 2]
 
 SCALING_METHODS = ["qi_radon", "qi_tensor", "elm"]
@@ -104,6 +109,11 @@ def cell_key(task, method, C, seed, regime, variant="base"):
 
 LADDER_1D = [64, 96, 128, 192, 256, 384, 512]  # Sam 2026-09-01: 48 too small
 LADDER_1D_BY_SYSTEM = {}  # uniform across systems (per-system exceptions dropped)
+# Sam 2026-09-01: the 1024 rung for the dysts systems, scaling methods, both
+# regimes -- part of the extras phase. MacArthur's dynamic 1024 is skipped: its
+# panel is reference-capped at ~5e-8 and the cell costs ~20 min of Gauss-Newton.
+EXTRA_LADDER_1D = [1024]
+EXTRA_1D_SKIP_DYNAMIC = {"MacArthur"}
 SCALING_1D = ["qi_grid", "elm"]
 COMPARATORS_1D = ["spectral", "bwler", "rbf_imq", "rbf_phs"]
 METHODS_1D = SCALING_1D + COMPARATORS_1D
@@ -130,7 +140,9 @@ def knob_grid_1d(method, W):
 def build_queue(include_extras=False):
     """Plot-resolution order (Sam, 2026-09-01): plot 1a fully resolves first
     (oracle regime, scaling methods, all 16 tasks), then 1b (dynamic, scaling),
-    then plot 2 (comparators, oracle then dynamic), then plot 3 (poly).
+    then the 4096 extras (plot 1's top rung, both regimes), then plot 2
+    (comparators, oracle then dynamic), then plot 3 (poly). The PINN arm
+    (run_pinn.py) runs after all of it.
     Within a phase: task (outer) -> method -> width -> seed (inner), so a
     single line fills to completion, then the next method, then the next task."""
     from .tasks import TASKS
@@ -162,6 +174,31 @@ def build_queue(include_extras=False):
     # phase B -- plot 1b: dynamic, scaling methods
     add_2d("dynamic", "base", SCALING_METHODS)
     add_1d("dynamic", SCALING_1D)
+    # phase B' -- the 4096 (+8192 wave) extras, oracle then dynamic
+    if include_extras:
+        for regime in ("oracle", "dynamic"):
+            for task in TASK_ORDER:
+                t = TASKS[task]
+                if task not in EXTRA_LADDER or t.get("blocked") or (
+                        regime == "dynamic" and not t["dynamic"]):
+                    continue
+                for method in SCALING_METHODS:
+                    for C in EXTRA_LADDER[task]:
+                        if regime == "dynamic" and C > EXTRA_MAX_C_DYNAMIC:
+                            continue
+                        for seed in SEEDS:
+                            q.append(dict(task=task, method=method, C=C,
+                                          seed=seed, regime=regime,
+                                          variant="base"))
+            for name in SYSTEMS_1D:
+                if regime == "dynamic" and name in EXTRA_1D_SKIP_DYNAMIC:
+                    continue
+                for method in SCALING_1D:
+                    for W in EXTRA_LADDER_1D:
+                        for seed in SEEDS:
+                            q.append(dict(task=f"dysts_{name}", method=method,
+                                          C=W, seed=seed, regime=regime,
+                                          variant="base"))
     # phase C -- plot 2: comparators, oracle then dynamic
     add_2d("oracle", "base", COMPARATORS)
     add_1d("oracle", COMPARATORS_1D)
@@ -170,15 +207,6 @@ def build_queue(include_extras=False):
     # phase D -- plot 3: the polynomial ablation (2-D QI arms)
     add_2d("oracle", "poly", ["qi_radon", "qi_tensor"])
     add_2d("dynamic", "poly", ["qi_radon", "qi_tensor"])
-    if include_extras:
-        for task, ladder in EXTRA_LADDER.items():
-            for regime in ("oracle", "dynamic"):
-                for method in SCALING_METHODS:
-                    for C in ladder:
-                        for seed in SEEDS:
-                            q.append(dict(task=task, method=method, C=C,
-                                          seed=seed, regime=regime,
-                                          variant="base"))
     return q
 
 

@@ -88,6 +88,10 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expF01..expF12/               DE zoo (linear + nonlinear), ablations/baselines, spline ridge,
                                 Newton-Burgers, PINN finisher, Darcy, Navier-Stokes, operator
                                 learning, FNO init, 3-D tensor NS. Synthesis: checkpoint_F_applications/expF_results.md
+  expF18_ns_spacetime/          2-D + time incompressible Navier-Stokes (drifting Taylor-Green, exact) on the
+                                expH06 space-time ridge mesh (d = 3), primitive (u, v, p) on one shared geometry,
+                                Gauss-Newton collocation lstsq, width ladder + oracle ceiling; gif / error-vs-time /
+                                residual heatmaps. problem.py, ridge3d.py, run.py (--oracle --tune --solve --plot --gif)
   # Checkpoint G -- generalization
   #   precision-vs-generalization; mask-the-data; soft-weight tradeoff; data-poor regions
   expG01_interactive_explorer/  Interactive Dash explorer (lambda, N, target, hold-out mask; live lstsq refit)
@@ -115,6 +119,17 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
                                 arbitration by trial fits (the two-floor law in operation). h06/ package
                                 (core, targets, atoms, grow); --floors (3-D floor curves), --ridges (hidden
                                 ridge recovery), --grow (hierarchy vs even), --push (3-D to the floor)
+  # Checkpoint I -- depth theory: composing QI blocks
+  #   theory: results/checkpoint_I_depth_theory/compositional_qi_theory.md (the conditional theorem,
+  #   KAT as universality only, the untied compositional ridge-QI block)
+  expI01_compositional_qi/      Self-contained Colab notebook (build_notebook.py writes it; --smoke runs it at
+                                QUICK size on CPU): the two-level block (rank-1 KAT tie, range-tracked outer
+                                QI, solved readout) vs shallow ridge-QI vs tanh MLP at matched params/FLOPs;
+                                oracle / adam / varpro / Gauss-Newton arms. Plan + checklist:
+                                results/checkpoint_I_depth_theory/expI01_compositional_qi/PLAN.md
+                                qiblocks.py: the layer library (RidgeQILayer, QINet, QIFFN, solvers, fit, GN,
+                                to_mlp, export); `python qiblocks.py` runs its self-tests. Directions exist only
+                                in layer 1; later layers are QI banks on their input channels + the rank-S tensor.
 
 tests/                        Unit tests
 results/                      Experiment results output, grouped: results/checkpoint_<A..H>_*/exp*/

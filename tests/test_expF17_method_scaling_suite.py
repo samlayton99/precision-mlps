@@ -18,7 +18,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "experiments" / "expF17_method_scaling_suite"))
 
-from f17 import dicts as fd
+from f17 import dicts as fd, solve as sv
 from f17.tasks import TASKS, verify_oracles
 
 RNG = np.random.default_rng(3)
@@ -117,6 +117,28 @@ def test_qi_floor_anchor_step0():
         v, *_ = np.linalg.lstsq(A, ytr, rcond=1e-13)
         err = np.linalg.norm(d.rows(Pte, [((0, 0), 1.0)]) @ v - yte) / np.linalg.norm(yte)
         assert err < 3 * anchor, (method, err, anchor)
+
+
+def test_oracle_footprint_is_the_closed_square():
+    """SPEC 18.9: an open-square draw leaves the halo columns unpinned on the
+    boundary lines the score grid contains (measured 7-10x at the floor, with
+    the dynamic arm landing BELOW the oracle). The protocol oracle must match a
+    fit on the full score grid to within 2x and carry no edge layer."""
+    prob = TASKS["darcy_man"]
+    n_ax = 31
+    d = fd.build_dictionary("qi_radon", n_ax, {"halo": 5}, np.random.default_rng(0))
+    a, info = sv.oracle_fit(prob, d, 0)
+    assert info["n_data"] == 4 * d.cols + 640
+    m = sv.score(prob, d, a)
+    Pg, ug, _ = sv.eval_data(prob)
+    a_full, _ = sv.lstsq(d.rows(Pg, [((0, 0), 1.0)]), ug)
+    m_full = sv.score(prob, d, a_full)
+    assert m["rel_l2"] < 2 * m_full["rel_l2"], (m["rel_l2"], m_full["rel_l2"])
+    err = np.abs(d.rows(Pg, [((0, 0), 1.0)]) @ a - ug)
+    dist = 1 - np.max(np.abs(Pg), axis=1)
+    edge = np.sqrt(np.mean(err[dist < 0.02] ** 2))
+    inner = np.sqrt(np.mean(err[dist >= 0.1] ** 2))
+    assert edge < 5 * inner, (edge, inner)
 
 
 def test_spectral_hits_floor_on_wave():
@@ -271,3 +293,60 @@ def test_translation_end_to_end():
         scale = max(1.0, np.abs(lin @ a).max())
         rel = np.abs(r - fv).max() / scale
         assert rel < tol, (key, rel)
+
+
+# --- the PINN arm (SPEC 18.8) --------------------------------------------------
+
+def test_pinn_closed_form_derivatives_match_autograd():
+    import torch
+    from f17 import pinn
+    params = pinn.init_params(6, 0)
+    P = (torch.rand(40, 2, dtype=torch.float64) * 2 - 1).requires_grad_(True)
+    D = pinn.net_derivs(params, P, [(0, 0), (1, 0), (0, 1), (2, 0), (0, 2)])
+    g = torch.autograd.grad(D[(0, 0)].sum(), P, create_graph=True)[0]
+    gxx = torch.autograd.grad(g[:, 0].sum(), P, create_graph=True)[0][:, 0]
+    gyy = torch.autograd.grad(g[:, 1].sum(), P, create_graph=True)[0][:, 1]
+    for got, want in ((D[(1, 0)], g[:, 0]), (D[(0, 1)], g[:, 1]),
+                      (D[(2, 0)], gxx), (D[(0, 2)], gyy)):
+        assert float((got - want).abs().max()) < 1e-13
+
+
+def test_pinn_is_the_elm_architecture_and_footprint():
+    """Column identity (n_ax+1)^2, the RidgeDict readback reproduces the
+    network, and the data footprints equal the solved arms' (oracle: 4C + the
+    closed square's perimeter; dynamic: 4C interior + build_bcs' point sets)."""
+    import torch
+    from f17 import pinn
+    t = TASKS["darcy_man"]
+    n_ax = 10
+    params = pinn.init_params(n_ax, 1)
+    d, a = pinn.as_dict(params)
+    assert d.cols == (n_ax + 1) ** 2
+    P = np.random.default_rng(0).uniform(-1, 1, (30, 2))
+    u_net = pinn.net_derivs(params, torch.as_tensor(P), [(0, 0)])[(0, 0)].detach().numpy()
+    assert np.max(np.abs(d.rows(P, [((0, 0), 1.0)]) @ a - u_net)) < 1e-14
+    od = pinn.oracle_data(t, n_ax, 0)
+    assert od["n_data"] == 4 * d.cols + 640
+    dd = pinn.dynamic_data(t, n_ax, 0)
+    assert dd["n_data"] == 4 * d.cols
+    bcs = sv.build_bcs(t, d, dd["n_data"])
+    assert [len(g) for (_, g, _) in bcs] == [len(g) for (_, _, _, g) in dd["blocks"]]
+    # seeds perturb the init, reproducibly
+    p2 = pinn.init_params(n_ax, 1)
+    assert all(torch.equal(x, y) for x, y in zip(params, p2))
+    assert not torch.equal(params[0], pinn.init_params(n_ax, 2)[0])
+
+
+def test_pinn_short_budget_trains_and_refit_never_worse():
+    """A reduced-budget run on a smooth task: the loss falls by orders of
+    magnitude, the trained score is finite, and the frozen-feature refit (the
+    certificate) is at least as good as the trained readout in both regimes."""
+    from f17 import pinn
+    t = TASKS["darcy_man"]
+    for regime in ("oracle", "dynamic"):
+        m_tr, m_rf, info = pinn.run_pinn(t, 8, regime, 0, 1e-3, w_mult=1.0,
+                                         adam_steps=800, lbfgs_iters=200)
+        assert info["hist"][0][1] / info["loss_final"] > 30
+        assert np.isfinite(m_tr["rel_l2"]) and m_tr["rel_l2"] < 1.0
+        assert m_rf["rel_l2"] <= 1.05 * m_tr["rel_l2"]
+        assert info["loss_final"] <= info["loss_adam"]

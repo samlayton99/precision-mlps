@@ -2,7 +2,7 @@
 
 **Status:** draft-pending-Sam (single seed for the hierarchy and the even cells; three seeds for the ridge recovery; nothing committed).
 
-## TL;DR
+## TL;DRw
 
 - Hidden ridge directions can be learned exactly. Sums of 1, 2, 4, 8 hidden ridges in $d=3$ and $d=4$ (3 seeds each, 24 cases) are recovered to $2$-$10\times10^{-13}$ with the directions exact to fp64, by projection pursuit on the residual followed by a joint Gauss-Newton polish of all directions with the readout eliminated. The polish is the step that matters: projection pursuit alone leaves 20-80% of the residual per atom.
 - The two-floor law holds in 3-D (46 of 48 exact cells within 10% of $\max(e_M,e_N)$), directions bind, and the coarse-$N$ split wins: at 4096 units, 256-512 directions with 8-16 offsets beat 64-128 directions with 32-64. The even nested-direction mesh reaches the fp64 floor in 3-D on the $r=0.3$ ball on four of six targets at 9216 units ($M=192$, $N=48$): fast waves $8\times10^{-13}$, composition $2\times10^{-13}$, gauss $2\times10^{-14}$, product sines $9\times10^{-14}$; radial Runge $1.4\times10^{-12}$ at $(320,24)$.
