@@ -96,19 +96,20 @@ def _A_and_derivs(theta, W, x):
     return A, phi, sech2
 
 
-def solve_readout(theta, W, x, y):
-    """Exact readout solve. One QR (also gives Q for the Kaufman projection);
-    solve via R in the well-conditioned common case, fall back to truncated
-    lstsq only when the geometry drives A near-singular (keeps c_hat bounded)."""
+RCOND = 1e-13   # relative singular-value truncation of the readout solve
+
+
+def solve_readout(theta, W, x, y, rcond=RCOND):
+    """Truncated-SVD readout solve. The returned Q spans ONLY the retained left singular
+    subspace, so the Kaufman projector (I - Q Q^T) and the head solve use the same
+    effective rank. (The earlier version solved a truncated head but projected with
+    every column of an unpivoted QR of A, i.e. off directions the head had discarded.)"""
     A, phi, sech2 = _A_and_derivs(theta, W, x)
-    Q, R = np.linalg.qr(A)
-    rdiag = np.abs(np.diag(R))
-    if rdiag.size and rdiag.min() > 1e-12 * rdiag.max():
-        c_hat = np.linalg.solve(R, Q.T @ y)
-    else:
-        c_hat, *_ = np.linalg.lstsq(A, y, rcond=1e-13)
+    U, s, Vt = np.linalg.svd(A, full_matrices=False)
+    keep = s > rcond * s[0]
+    c_hat = Vt[keep].T @ ((U[:, keep].T @ y) / s[keep])
     r = A @ c_hat - y
-    return A, phi, sech2, Q, c_hat, r
+    return A, phi, sech2, U[:, keep], c_hat, r
 
 
 def reduced_jac(phi, sech2, Q, c_hat, W, x):
@@ -132,9 +133,21 @@ def eval_rel_l2(theta, W, xt, yt, xe, ye):
 
 
 def varpro_adam_then_gn(theta0, W, xt, yt, xe, ye, warmup, gn_iters,
-                        adam_lr=1e-2, mu0=1e-3):
+                        adam_lr=1e-2, mu0=1e-3, keep_theta=False, trace=None):
     theta = theta0.copy()
-    best = eval_rel_l2(theta, W, xt, yt, xe, ye)
+    def _rec(stage, it, r, accepted=True):
+        if trace is not None:
+            a = theta[:W]; c = -theta[W:] / a; ins = (c >= -1) & (c <= 1)
+            trace.append(dict(stage=stage, it=it, train_rel=float(np.linalg.norm(r) / np.linalg.norm(yt)),
+                              eval_rel=eval_rel_l2(theta, W, xt, yt, xe, ye),
+                              gamma_med=float(np.median(np.abs(a)[ins])) if ins.any() else float('nan'),
+                              inside_frac=float(ins.mean()), accepted=bool(accepted)))
+    # `init` is the refit error of the STARTING geometry (readout solved, nothing trained).
+    # Any optimizer claim lives in the gap between `init` and `final`; `best` (the minimum
+    # eval error along the trajectory, seeded with `init`) is eval-set selection and is
+    # kept only for reference -- never plot it.
+    init = eval_rel_l2(theta, W, xt, yt, xe, ye)
+    best = init
 
     # ---- stage 1: Adam warmup on theta (VarPro reduced gradient) ----
     m = np.zeros_like(theta); vv = np.zeros_like(theta)
@@ -151,12 +164,14 @@ def varpro_adam_then_gn(theta0, W, xt, yt, xe, ye, warmup, gn_iters,
         theta = theta - adam_lr * mh / (np.sqrt(vh) + eps)
         if t % 50 == 0:
             best = min(best, eval_rel_l2(theta, W, xt, yt, xe, ye))
+            _rec('adam', t, r)
 
     # ---- stage 2: LM Gauss-Newton on theta ----
     _, phi, sech2, Q, c_hat, r = solve_readout(theta, W, xt, yt)
     loss = float(r @ r)
     mu = mu0
-    for _ in range(gn_iters):
+    _rec('gn', 0, r)
+    for gi in range(1, gn_iters + 1):
         J = reduced_jac(phi, sech2, Q, c_hat, W, xt)
         JtJ = J.T @ J
         Jtr = J.T @ r
@@ -179,9 +194,13 @@ def varpro_adam_then_gn(theta0, W, xt, yt, xe, ye, warmup, gn_iters,
             if mu > 1e14:
                 break
         best = min(best, eval_rel_l2(theta, W, xt, yt, xe, ye))
+        _rec('gn', gi, r, accepted)
         if not accepted:
             break
-    return best, eval_rel_l2(theta, W, xt, yt, xe, ye)
+    final = eval_rel_l2(theta, W, xt, yt, xe, ye)
+    if keep_theta:
+        return init, best, final, theta
+    return init, best, final
 
 
 def make_data(target_name, n_train, n_eval):
@@ -205,12 +224,13 @@ def run(targets, resolutions, seeds, warmup, gn_iters, n_train, n_eval, inits=No
                     i += 1
                     st = d05.build_initial_state(family, target, geom, seed)
                     theta0 = np.concatenate([st.input_weights, st.input_biases]).astype(np.float64)
-                    best, final = varpro_adam_then_gn(theta0, W, xt, yt, xe, ye, warmup, gn_iters)
+                    init, best, final = varpro_adam_then_gn(theta0, W, xt, yt, xe, ye, warmup, gn_iters)
                     rows.append({"target": target, "resolution": resolution, "width": W,
                                  "seed": seed, "geom_init": label,
-                                 "vpgn_best_eval_rel_l2": best, "vpgn_final_eval_rel_l2": final})
+                                 "vpgn_init_eval_rel_l2": init, "vpgn_final_eval_rel_l2": final,
+                                 "vpgn_best_eval_rel_l2": best})
                     print(f"[{i:3d}/{total}] {target:>6s} N={resolution:<4d} W={W:<4d} "
-                          f"seed={seed} geom={label:<7s} best={best:.2e}", flush=True)
+                          f"seed={seed} geom={label:<7s} init={init:.2e} final={final:.2e}", flush=True)
     return rows
 
 
@@ -267,15 +287,18 @@ def plot(rows):
         widths = sorted({int(r["width"]) for r in trows})
         present = [g for g in GEOM_INITS if any(r["geom_init"] == g for r in trows)]
         for geom in present:
-            med_y, lo, hi = [], [], []
+            med_y, lo, hi, med_init = [], [], [], []
             for w in widths:
-                vals = [float(r["vpgn_best_eval_rel_l2"]) for r in trows
-                        if int(r["width"]) == w and r["geom_init"] == geom]
+                sel = [r for r in trows if int(r["width"]) == w and r["geom_init"] == geom]
+                vals = [float(r["vpgn_final_eval_rel_l2"]) for r in sel]
                 med_y.append(med(vals))
                 lo.append(min(vals) if vals else float("nan"))
                 hi.append(max(vals) if vals else float("nan"))
+                med_init.append(med([float(r["vpgn_init_eval_rel_l2"]) for r in sel]))
             c = GEOM_COLORS[geom]
-            ax.plot(widths, med_y, "-o", color=c, label=GEOM_LABELS[geom], zorder=3)
+            ax.plot(widths, med_y, "-o", color=c, label=GEOM_LABELS[geom] + " (final)", zorder=3)
+            ax.plot(widths, med_init, "--", color=c, lw=1.0, alpha=0.8,
+                    label=GEOM_LABELS[geom] + " (init refit)", zorder=2)
             ax.fill_between(widths, lo, hi, color=c, alpha=0.15, zorder=1)
         ax.axhline(FLOOR, color="0.6", ls=":", lw=1.1, zorder=0)
         ax.set_xscale("log"); ax.set_yscale("log")
@@ -292,10 +315,11 @@ def plot(rows):
     handles, labels = axes[0][0].get_legend_handles_labels()
     handles.append(plt.Line2D([0], [0], color="0.6", ls=":", lw=1.1))
     labels.append(f"fp64 floor ({FLOOR:.0e})")
-    fig.legend(handles, labels, loc="upper center", ncol=len(labels),
+    fig.legend(handles, labels, loc="upper center", ncol=min(len(labels), 5),
                bbox_to_anchor=(0.5, 1.0), fontsize=9, framealpha=0.9)
-    fig.suptitle("expD04 VarPro + Adam→Gauss-Newton: convergence vs width, "
-                 "QI vs Xavier geometry (readout projected out)", y=1.03, fontsize=13)
+    fig.suptitle("expD04 VarPro + Adam→Gauss-Newton: FINAL iterate vs width, by geometry init "
+                 "(solid = after optimization, dashed = refit of the untrained init geometry)",
+                 y=1.03, fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     out = RESULTS_DIR / "figures" / "varpro_gn_convergence_grid.png"
     out.parent.mkdir(parents=True, exist_ok=True)

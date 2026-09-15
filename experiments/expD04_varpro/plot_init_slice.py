@@ -55,8 +55,8 @@ def main():
     nrow = math.ceil(len(targets) / ncol)
     fig, axes = plt.subplots(nrow, ncol, figsize=(6.0 * ncol, 4.2 * nrow), squeeze=False)
 
-    def val(target, init, N):
-        return median([float(r["vpgn_best_eval_rel_l2"]) for r in rows
+    def val(target, init, N, col="vpgn_final_eval_rel_l2"):
+        return median([float(r[col]) for r in rows
                        if r["target"] == target and r["geom_init"] == init
                        and int(r["resolution"]) == N])
 
@@ -64,7 +64,10 @@ def main():
         ax = axes[idx // ncol][idx % ncol]
         for init, label, color in present_inits:
             ys = [val(target, init, N) for N in Ns]
-            ax.loglog(Ns, ys, "-o", color=color, ms=5, label=label)
+            ax.loglog(Ns, ys, "-o", color=color, ms=5, label=label + " (final)")
+            # refit of the UNTRAINED init geometry: the optimizer's contribution is the gap
+            y0 = [val(target, init, N, "vpgn_init_eval_rel_l2") for N in Ns]
+            ax.loglog(Ns, y0, "--", color=color, lw=1.0, alpha=0.8, label=label + " (init refit)")
         ax.axhline(FLOOR, ls="--", color="k", lw=1.3, label="fp64 floor")
         ax.set_title(target, fontsize=12)
         ax.grid(True, alpha=0.3, which="both")
@@ -80,10 +83,10 @@ def main():
     handles, labels = axes[0][0].get_legend_handles_labels()
     fig.tight_layout(rect=[0, 0, 1, 0.92])
     fig.suptitle("expD04 init slice -- VarPro + Adam→Gauss-Newton (readout projected out)\n"
-                 r"eval relative $L_2$ vs width, by geometry initialization",
-                 fontsize=13, y=0.99, va="top")
-    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.95),
-               ncol=len(labels), fontsize=9, frameon=True, borderaxespad=0)
+                 r"FINAL iterate (solid) vs refit of the untrained init geometry (dashed), by geometry init",
+                 fontsize=12, y=1.04, va="top")
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.97),
+               ncol=min(len(labels), 5), fontsize=8, frameon=True, borderaxespad=0)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, dpi=150, bbox_inches="tight")
     plt.close(fig)

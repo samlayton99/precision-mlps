@@ -80,7 +80,8 @@ def residual_and_grad(p, W, x, y):
 
 def adam_then_gn(p0, W, xt, yt, xe, ye, warmup, gn_iters, adam_lr=1e-3, mu0=1e-3):
     p = p0.copy()
-    best = rel_l2(predict(p, W, xe), ye)
+    init = rel_l2(predict(p, W, xe), ye)    # untrained start (random readout)
+    best = init                              # eval-selected minimum: reference only
     # ---- Adam warmup on ALL params ----
     m = np.zeros_like(p); vv = np.zeros_like(p)
     b1, b2, eps = 0.9, 0.999, 1e-12
@@ -117,7 +118,7 @@ def adam_then_gn(p0, W, xt, yt, xe, ye, warmup, gn_iters, adam_lr=1e-3, mu0=1e-3
         best = min(best, rel_l2(predict(p, W, xe), ye))
         if not accepted:
             break
-    return best, rel_l2(predict(p, W, xe), ye)
+    return init, best, rel_l2(predict(p, W, xe), ye)
 
 
 def main():
@@ -136,11 +137,12 @@ def main():
                 st = d05.build_initial_state(FAMILY, target, geom, seed)
                 p0 = np.concatenate([st.input_weights, st.input_biases,
                                      st.readout_weights, [st.readout_bias]]).astype(np.float64)
-                best, final = adam_then_gn(p0, W, xt, yt, xe, ye, WARMUP, GN_ITERS)
+                init, best, final = adam_then_gn(p0, W, xt, yt, xe, ye, WARMUP, GN_ITERS)
                 rows.append({"target": target, "resolution": resolution, "width": W,
-                             "seed": seed, "adamgn_best_eval_rel_l2": best})
+                             "seed": seed, "adamgn_init_eval_rel_l2": init,
+                             "adamgn_final_eval_rel_l2": final, "adamgn_best_eval_rel_l2": best})
                 print(f"[{i:2d}/{total}] {target:>12s} N={resolution:<4d} W={W:<4d} "
-                      f"seed={seed} adamgn_best={best:.2e}", flush=True)
+                      f"seed={seed} init={init:.2e} final={final:.2e}", flush=True)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))

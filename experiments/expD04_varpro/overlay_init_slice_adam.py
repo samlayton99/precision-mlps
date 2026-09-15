@@ -46,16 +46,16 @@ BASELINE_LABEL = "QI + lstsq (construction floor)"
 
 # our result files -> (path, value column, optional row filter)
 SOURCES = {
-    "free_adam":  (D04 / "free_qi_adam_summary.csv",    "adam_best_eval_rel_l2",   lambda r: True),
-    "fullnet_gn": (D04 / "adam_gn_fullnet_summary.csv", "adamgn_best_eval_rel_l2", lambda r: True),
-    "varpro_gn":  (D04 / "varpro_gn_summary.csv",       "vpgn_best_eval_rel_l2",   lambda r: r["geom_init"] == "qi"),
-    "lbfgs_both": (D04 / "second_order_lbfgs_summary.csv",    "best_eval_rel_l2",
+    "free_adam":  (D04 / "free_qi_adam_summary.csv",    "adam_final_eval_rel_l2",   lambda r: True),
+    "fullnet_gn": (D04 / "adam_gn_fullnet_summary.csv", "adamgn_final_eval_rel_l2", lambda r: True),
+    "varpro_gn":  (D04 / "varpro_gn_summary.csv",       "vpgn_final_eval_rel_l2",   lambda r: r["geom_init"] == "qi"),
+    "lbfgs_both": (D04 / "second_order_lbfgs_summary.csv",    "final_eval_rel_l2",
                    lambda r: r["regime"] == "both"),
-    "lbfgs_lstsq": (D04 / "second_order_lbfgs_summary.csv",   "best_eval_rel_l2",
+    "lbfgs_lstsq": (D04 / "second_order_lbfgs_summary.csv",   "final_eval_rel_l2",
                     lambda r: r["regime"] == "lstsq"),
-    "ssb_both": (D04 / "second_order_ssbroyden_summary.csv",  "best_eval_rel_l2",
+    "ssb_both": (D04 / "second_order_ssbroyden_summary.csv",  "final_eval_rel_l2",
                  lambda r: r["regime"] == "both"),
-    "ssb_lstsq": (D04 / "second_order_ssbroyden_summary.csv", "best_eval_rel_l2",
+    "ssb_lstsq": (D04 / "second_order_ssbroyden_summary.csv", "final_eval_rel_l2",
                   lambda r: r["regime"] == "lstsq"),
 }
 

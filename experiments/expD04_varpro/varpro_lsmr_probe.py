@@ -50,6 +50,7 @@ SEEDS = (0, 1)
 FAMILY = "qi_geom_random_readout"          # free QI geometry, readout projected out
 WARMUP = 100
 GN_STEPS = 30
+RCOND = 1e-13             # relative singular-value truncation of the readout solve
 LSMR_ATOL = 1e-13
 LSMR_MAXIT = 120          # capped inner budget (Newton tolerates a loose inner solve)
 N_TRAIN, N_EVAL = 2003, 4001
@@ -63,14 +64,13 @@ def solve_readout(theta, W, x, y):
     a, b = theta[:W], theta[W:]
     phi = np.tanh(x[:, None] * a[None, :] + b[None, :])
     A = np.concatenate([phi, np.ones((x.size, 1))], axis=1)
-    Q, R = np.linalg.qr(A)
-    rdiag = np.abs(np.diag(R))
-    if rdiag.size and rdiag.min() > 1e-13 * rdiag.max():
-        c = np.linalg.solve(R, Q.T @ y)
-    else:
-        c, *_ = np.linalg.lstsq(A, y, rcond=1e-13)
+    # Truncated SVD; Q = retained left singular vectors only, so the Kaufman projector in
+    # gn_operator uses the same effective rank as the head solve.
+    U, s, Vt = np.linalg.svd(A, full_matrices=False)
+    keep = s > RCOND * s[0]
+    c = Vt[keep].T @ ((U[:, keep].T @ y) / s[keep])
     r = A @ c - y
-    return phi, Q, c, r
+    return phi, U[:, keep], c, r
 
 
 def gn_operator(phi, Q, c, W, x, n):
@@ -109,7 +109,8 @@ def run_case(target, resolution, seed):
     theta = np.concatenate([st.input_weights, st.input_biases]).astype(np.float64)
     n = N_TRAIN
 
-    best = eval_rel(theta, W, xt, yt, xe, ye)
+    init = eval_rel(theta, W, xt, yt, xe, ye)   # refit of the untrained init geometry
+    best = init                                  # eval-selected minimum: reference only
 
     # Adam warmup on geometry (VarPro reduced gradient = J^T r, matrix-free)
     m = np.zeros_like(theta); vv = np.zeros_like(theta); b1, b2, eps = 0.9, 0.999, 1e-12
@@ -144,7 +145,7 @@ def run_case(target, resolution, seed):
         if not accepted or abs(prev - loss) <= 1e-30:
             break
         prev = loss
-    return W, best
+    return W, init, best, eval_rel(theta, W, xt, yt, xe, ye)
 
 
 def main(argv=None):
@@ -162,11 +163,12 @@ def main(argv=None):
         for resolution in resolutions:
             for seed in seeds:
                 i += 1
-                W, best = run_case(target, resolution, seed)
+                W, init, best, final = run_case(target, resolution, seed)
                 rows.append({"target": target, "resolution": resolution, "width": W,
-                             "seed": seed, "lsmr_best_eval_rel_l2": best})
+                             "seed": seed, "lsmr_init_eval_rel_l2": init,
+                             "lsmr_final_eval_rel_l2": final, "lsmr_best_eval_rel_l2": best})
                 print(f"[{i:2d}/{total}] {target:>12s} N={resolution:<4d} W={W:<4d} "
-                      f"seed={seed} best={best:.2e}", flush=True)
+                      f"seed={seed} init={init:.2e} final={final:.2e}", flush=True)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))

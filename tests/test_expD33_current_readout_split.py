@@ -53,9 +53,11 @@ def test_zero_current_readout_annuls_signal_but_not_varpro_gradient():
 
 
 @pytest.mark.parametrize('mu',[100,1000,25000])
-def test_three_updates_against_independent_pytorch_streams(monkeypatch,mu):
+@pytest.mark.parametrize('scheduled',[False,True])
+def test_three_updates_against_independent_pytorch_streams(monkeypatch,mu,scheduled):
     torch.set_default_dtype(torch.float64);torch.set_num_threads(2)
     cfg=config();state=initial()
+    if scheduled:cfg['lr_schedule']=dict(kind='cosine',start_step=0,min_factor=.001)
     monkeypatch.setattr(exp.profile,'initial_state',lambda arm,cfg:{k:v.copy() for k,v in state.items()})
     x=torch.tensor(exp.profile.previous.midpoint_grid(cfg['n_train']))
     y=torch.tensor(exp.profile.previous.matched.target_values('runge',x.numpy(),cfg))
@@ -65,7 +67,10 @@ def test_three_updates_against_independent_pytorch_streams(monkeypatch,mu):
                             eps=cfg['adam_epsilon']) for q,factor in zip(virtual,(mu,1))]
     readout=torch.optim.Adam([p['v']],lr=cfg['learning_rate'],betas=tuple(cfg['adam_betas']),eps=cfg['adam_epsilon'])
     expected={k:[v.detach().numpy().copy()] for k,v in p.items()}
-    for _ in range(cfg['steps']):
+    for step in range(cfg['steps']):
+        eta=cfg['learning_rate']*(.001+.999*.5*(1+np.cos(np.pi*step/cfg['steps']))) if scheduled else cfg['learning_rate']
+        for opt,factor in zip(adams,(mu,1)):opt.param_groups[0]['lr']=eta*factor
+        readout.param_groups[0]['lr']=eta
         gout,gL,gv=torch_signals(p,x,y,cfg['readout_rcond'])
         movements=[]
         for q,opt,g in zip(virtual,adams,(gout,gL-gout)):

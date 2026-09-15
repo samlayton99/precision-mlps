@@ -52,9 +52,12 @@ def main():
                     d05.Case(target=target, resolution=resolution, seed=seed, family=FAMILY), cfg)
                 rows.append({"target": target, "resolution": resolution,
                              "width": summary["width"], "seed": seed,
+                             "adam_init_eval_rel_l2": summary["initial_eval_rel_l2"],
+                             "adam_final_eval_rel_l2": summary["final_eval_rel_l2"],
                              "adam_best_eval_rel_l2": summary["best_eval_rel_l2"]})
                 print(f"[{i:2d}/{total}] {target:>12s} N={resolution:<4d} W={summary['width']:<4d} "
-                      f"seed={seed} adam_best={summary['best_eval_rel_l2']:.2e}", flush=True)
+                      f"seed={seed} init={summary['initial_eval_rel_l2']:.2e} "
+                      f"final={summary['final_eval_rel_l2']:.2e}", flush=True)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))

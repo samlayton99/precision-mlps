@@ -2,6 +2,8 @@
 
 **Status:** approved (Sam, 2026-07-16).
 
+> **2026-09-08 addendum.** The follow-up work on this rule (fiber theorem evidence, the frequency-resolved rule, the two-wall rule and its pre-registered test, the halo ladder) is consolidated in `lambda_rule/hardened_rule.md` in this folder, after an adversarial review (`lambda_rule/SKEPTIC_REVIEW_2026-09-08.md`). Two corrections to this writeup from that work: the rule predicts the *wall*, and the measured minima sit on the flat floor to its left; and the anchor $\varepsilon^\ast$ is unnecessary, $A_K(\lambda)=\varepsilon_{\text{mach}}$ gives $0.244/0.699/0.445$.
+
 ## TL;DR
 
 - A single kernel invariant, anchored at tanh's $\lambda^*=0.25$, predicts the optimal bandwidth of every activation tested: choose $\lambda$ so the kernel's **Fourier tail at the first grid harmonic** equals machine epsilon. Predictions: sech$^2$ 0.250, gaussian 0.530, tanh 0.250, sigmoid 0.500 (exact), gelu 0.707, swish 0.455 -- all six confirmed by the measured minima (gelu measured 0.716, swish 0.437).

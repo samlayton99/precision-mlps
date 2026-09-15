@@ -65,6 +65,17 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expC04_center_geometry/        Center-placement comparison (uniform vs others)
   expC05_geometry_interpolation/ center/weight/bandwidth perturbation; one-way coupling; reparam argument
   expC06_soft_neuron_interp/     soft-neuron hump (low-degree polynomial basis); cascaded-geometry lead
+  expC07_lambda_energy_rule/     the aliasing rule: lambda* solves |Khat(2pi/lambda)|/|Khat(0)| = eps per activation (tanh 0.25,
+                                 gelu 0.707, swish 0.455); fiber_check.py verifies the exact fiber-theorem floor
+  expC07_lambda_energy_rule/lambda_rule/  consolidated ex-expC08/C09/C10 (2026-09-08): fiber-floor evidence on tones and general targets,
+                                 the frequency-resolved rule's failure, the pre-registered two-wall test, the halo ladder;
+                                 READ results/.../expC07_lambda_energy_rule/lambda_rule/hardened_rule.md (what survives the
+                                 skeptic review) before citing any lambda claim; superseded writeups in its archive/
+  expC08_anchor_rule/            the lambda anchor rule (2026-09-10): lambda from B * R_{K,r}(lambda, N, omega) <= eps_p (first ghost pair
+                                 of the fiber theory at one representative frequency); exploratory sweeps (max vs mean frequency,
+                                 4 activations incl. gaussian r=0) and a hashed pre-registered test on 10 fresh targets, widths 48-384,
+                                 precisions 11-53 bits + native fp32; anchor_rule_v1.md is the frozen statement; lands at the
+                                 valley corner except under-resolved high-frequency content; v1n = B/||f||_inf (amplitude fix)
   # Checkpoint D -- can optimizers find the geometry, and the optimizer program
   #   Entry point for D07 onward: docs/ORIENTATION.md
   expD01_geometry_ladder/        Adam on frozen geometry stalls; lstsq solves

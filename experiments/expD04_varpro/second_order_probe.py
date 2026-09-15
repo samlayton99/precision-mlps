@@ -62,6 +62,7 @@ N_TRAIN, N_EVAL = 2003, 4001
 LBFGS_ROUNDS, LBFGS_MAX_ITER = 8, 250
 SSB_STEPS = 2000       # SSBroyden outer steps (each with its own Wolfe search)
 TOL = 1e-23            # convergence tolerance for second-order optimizers
+RCOND = 1e-13          # relative singular-value truncation of the readout solve
 
 
 def rel_l2_t(pred, y):
@@ -77,21 +78,16 @@ def solve_readout_t(phi, y):
     geometry has driven the feature matrix degenerate (so it stays finite).
     """
     A = torch.cat([phi, torch.ones(phi.shape[0], 1, dtype=phi.dtype, device=phi.device)], dim=1)
-    try:
-        Q, R = torch.linalg.qr(A)
-        rdiag = torch.diagonal(R).abs()
-        if float(rdiag.min()) > 1e-13 * float(rdiag.max()):
-            sol = torch.linalg.solve_triangular(R, Q.T @ y.reshape(-1, 1), upper=True).reshape(-1)
-            if torch.isfinite(sol).all():
-                return A, sol
-    except RuntimeError:
-        pass
-    AtA = A.T @ A
-    Aty = A.T @ y.reshape(-1)
-    eps = 1e-14 * torch.diagonal(AtA).abs().max().clamp_min(1e-300)
-    ridge = eps * torch.eye(AtA.shape[0], dtype=A.dtype, device=A.device)
-    sol = torch.linalg.solve(AtA + ridge, Aty)
-    return A, sol
+    # Truncated SVD (QR first, then SVD of the small R), same solver as the other arms.
+    # The earlier version fell back to the normal equations plus a ridge whenever the
+    # unpivoted-QR diagonal check failed -- which it does on every QI geometry (saturated
+    # halo columns) -- capping the readout near sqrt(eps) and masquerading as an
+    # optimizer wall for the LBFGS/SSBroyden lstsq arms.
+    Q, R = torch.linalg.qr(A)
+    U, s, Vh = torch.linalg.svd(R, full_matrices=False)
+    keep = s > RCOND * s[0]
+    z = (U[:, keep].T @ (Q.T @ y.reshape(-1))) / s[keep]
+    return A, Vh[keep].T @ z
 
 
 def run_case_ssbroyden(regime, target, resolution, seed):
@@ -135,17 +131,10 @@ def run_case_ssbroyden(regime, target, resolution, seed):
     def eval_at(x):
         return rel_l2_t(predict(x, xe), ye)
 
-    best = eval_at(x0)
-    seen = {"best": best}
-
-    # track the best eval error along the trajectory, not just the endpoint
-    def wrapped_fg(x):
-        f, g = fg(x)
-        return f, g
-
-    x_star, info = ssbroyden_minimize(x0, wrapped_fg, max_steps=SSB_STEPS, tol=TOL)
-    seen["best"] = min(seen["best"], eval_at(x_star))
-    return W, seen["best"]
+    init = eval_at(x0)            # eval error of the untrained start (lstsq regime: init refit)
+    x_star, info = ssbroyden_minimize(x0, fg, max_steps=SSB_STEPS, tol=TOL)
+    final = eval_at(x_star)
+    return W, init, final, min(init, final)
 
 
 def run_case(regime, target, resolution, seed):
@@ -194,7 +183,8 @@ def run_case(regime, target, resolution, seed):
             pe = feats(xe) @ sol[:W] + sol[W]
         return rel_l2_t(pe, ye)
 
-    best = eval_rel()
+    init = eval_rel()             # eval error of the untrained start (lstsq regime: init refit)
+    best = init                   # eval-selected minimum along the trajectory: reference only
     opt = torch.optim.LBFGS(params, lr=1.0, max_iter=LBFGS_MAX_ITER,
                             history_size=100, line_search_fn="strong_wolfe",
                             tolerance_grad=TOL, tolerance_change=TOL)
@@ -218,7 +208,7 @@ def run_case(regime, target, resolution, seed):
         if not np.isfinite(r):
             break
         best = min(best, r)
-    return W, best
+    return W, init, eval_rel(), best
 
 
 def main(argv=None):
@@ -242,14 +232,16 @@ def main(argv=None):
                     for seed in seeds:
                         i += 1
                         if opt_name == "ssbroyden":
-                            W, best = run_case_ssbroyden(regime, target, resolution, seed)
+                            W, init, final, best = run_case_ssbroyden(regime, target, resolution, seed)
                         else:
-                            W, best = run_case(regime, target, resolution, seed)
+                            W, init, final, best = run_case(regime, target, resolution, seed)
                         rows.append({"regime": regime, "optimizer": opt_name, "target": target,
                                      "resolution": resolution, "width": W, "seed": seed,
+                                     "init_eval_rel_l2": init, "final_eval_rel_l2": final,
                                      "best_eval_rel_l2": best})
                         print(f"[{i:3d}/{total}] {regime:>5s} {opt_name:>9s} {target:>12s} "
-                              f"N={resolution:<4d} W={W:<4d} seed={seed} best={best:.2e}", flush=True)
+                              f"N={resolution:<4d} W={W:<4d} seed={seed} init={init:.2e} "
+                              f"final={final:.2e}", flush=True)
     out = out_path(optimizers)
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", newline="") as f:

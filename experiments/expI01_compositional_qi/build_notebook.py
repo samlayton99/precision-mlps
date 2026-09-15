@@ -427,8 +427,9 @@ def gauss_newton(model, D, iters=GN_IT, mu=1e-2, chunk=None, verbose=False):
     for it in range(iters):
         with torch.no_grad():
             J0 = jacobian(theta)
-            A = torch.cat([model.feats(Ztr), torch.ones(len(ytr), 1, device=DEV)], 1); Q, _ = torch.linalg.qr(A)
-            J = J0 - Q @ (Q.T @ J0)                                       # Kaufman: project off the readout span
+            A = torch.cat([model.feats(Ztr), torch.ones(len(ytr), 1, device=DEV)], 1)
+            Qa, R = torch.linalg.qr(A); Ur, s, _ = torch.linalg.svd(R, full_matrices=False); Q = Qa @ Ur[:, s > RCOND * s[0]]
+            J = J0 - Q @ (Q.T @ J0)                                       # Kaufman: project off the RETAINED readout span (same truncation as tsvd_solve)
             g = J.T @ r; H = J.T @ J; accepted = False
             for _ in range(8):
                 delta = torch.linalg.solve(H + mu * torch.diag(H.diagonal().clamp_min(1e-12)), -g)

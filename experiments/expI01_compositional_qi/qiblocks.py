@@ -356,7 +356,11 @@ def gauss_newton(model, Xtr, Ytr, Xte=None, Yte=None, iters=30, mu=1e-2, rcond=1
     for it in range(iters):
         with torch.no_grad():
             J0 = jacobian(theta)
-            A = torch.cat([model.feats(Xtr), torch.ones(len(Ytr), 1, device=dev, dtype=theta.dtype)], 1); Q, _ = torch.linalg.qr(A)
+            A = torch.cat([model.feats(Xtr), torch.ones(len(Ytr), 1, device=dev, dtype=theta.dtype)], 1)
+            # Kaufman projector restricted to the RETAINED left singular subspace of A (same truncation as
+            # tsvd_solve), not the full column space of an unpivoted QR -- the head is solved on the retained
+            # modes, so the projector must use the same effective rank.
+            Qa, R = torch.linalg.qr(A); Ur, s, _ = torch.linalg.svd(R, full_matrices=False); Q = Qa @ Ur[:, s > rcond * s[0]]
             q = Ytr.shape[1]
             J = J0 - torch.cat([Q @ (Q.T @ J0[i * len(Ytr):(i + 1) * len(Ytr)]) for i in range(q)], 0) if q > 1 else J0 - Q @ (Q.T @ J0)
             g = J.T @ r; Hm = J.T @ J; accepted = False

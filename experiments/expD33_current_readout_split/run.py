@@ -61,6 +61,8 @@ def train(target,mu,cfg):
     history,snapshots,audits=[],{},[]
     best_F=np.inf;best_step=None;best_state=None;status='complete'
     for step in range(cfg['steps']+1):
+        eta=prior.learning_rate_at(cfg,step)
+        for group in readout.param_groups:group['lr']=eta
         for value in p.values():value.grad=None
         prediction=torch.tanh(tx[:,None]*p['a']+p['b'])@p['v'][:-1]+p['v'][-1]
         loss=.5*(prediction-ty).square().mean()
@@ -76,7 +78,7 @@ def train(target,mu,cfg):
         delta=eta*(mu*uout+urest)
         if not (np.isfinite(delta).all() and all(torch.isfinite(v.grad).all() for v in p.values())):
             status=f'nonfinite gradient or direction at {step}';break
-        row=dict(step=step,L=float(loss.detach()),F=d['F'],mean_gamma=float(np.mean(abs(state['a']))),
+        row=dict(step=step,learning_rate=eta,L=float(loss.detach()),F=d['F'],mean_gamma=float(np.mean(abs(state['a']))),
                  refit_train_relative_l2=d['refit_train_relative_l2'],
                  max_gamma=float(np.max(abs(state['a']))),readout_norm=float(np.linalg.norm(state['v'])),
                  profile_coefficient_norm=float(np.linalg.norm(d['vstar'])),rank=d['rank'],

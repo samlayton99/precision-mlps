@@ -42,3 +42,5 @@ Pre-build checklist for this diagnostic:
 9. Existing fixed-mu and ordinary-Adam trajectories are the controls; no additional controller, smoothing, clipping, or retuning is introduced.
 10. No production/litmus-test claim; those gates remain unmet by per-step dense SVD.
 11. Verify achieved post-Adam ratios at every applied step and compare a multi-step trainer run against independently differentiated objectives and independent Adam histories. Plot actual loss, refitted relative L2, and readable mean gamma. Record failed runs rather than hiding them.
+
+Dynamic-ratio extension complete: all 40 runs reach step 10,000; maximum relative discrepancy from the prescribed post-Adam ratio is 1.11e-15. Seventeen implementation checks pass. Both figures are rendered and visually checked, and endpoint/best-saved refits have finite dense-grid/cutoff checks. Outputs and protocol are linked in the existing writeup and session catalogue. No performance interpretation added.

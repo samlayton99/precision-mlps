@@ -45,6 +45,8 @@ The dynamic-ratio extension replaces the fixed outside multiplier with $\mu_t=r\
 
 **Code & data**
 
+- [Dynamic-ratio constant-rate figure](/Users/sam/my-repos/research/collaborations/precisionMLPs/results/checkpoint_D_optimizers/expD31_split_adam/dynamic_ratio/figures/constant.png), [dynamic-ratio cosine-decay figure](/Users/sam/my-repos/research/collaborations/precisionMLPs/results/checkpoint_D_optimizers/expD31_split_adam/dynamic_ratio/figures/cosine.png), and [recorded ratios and endpoint checks](/Users/sam/my-repos/research/collaborations/precisionMLPs/results/checkpoint_D_optimizers/expD31_split_adam/dynamic_ratio/data/summary.json).
+
 - [Dynamic-ratio runner](/Users/sam/my-repos/research/collaborations/precisionMLPs/experiments/expD31_split_adam/dynamic_ratio.py), [dynamic-ratio tests](/Users/sam/my-repos/research/collaborations/precisionMLPs/tests/test_expD31_dynamic_ratio.py), and [dynamic-ratio data](/Users/sam/my-repos/research/collaborations/precisionMLPs/results/checkpoint_D_optimizers/expD31_split_adam/dynamic_ratio/data). Configurations are embedded in each trajectory.
 
 
@@ -108,6 +110,9 @@ The same initial numerical sensitivity remains: alternative backends or SVD driv
 
 ### Figures
 
+- **Dynamic ratio, constant learning rate:** four function columns, with actual squared training loss, refitted relative $L_2$ error, and linear mean gamma as the three rows. Viridis identifies $r=0.01,0.1,1,10,100$. Black dotted curves reuse the matched ordinary-Adam control; middle-row circles score saved refits independently, and the dashed reference is QI. The controller chooses $\mu_t$ after Adam so the geometry-contribution norm ratio is the selected $r$.
+- **Dynamic ratio, cosine decay:** the same quantities and axis limits, with the common learning rate decreasing from $0.002$ to $0.000002$. Across the two versions, all 40 trajectories complete 10,000 steps. Recorded post-Adam ratios match their prescribed values to at most $1.12\times10^{-15}$ relative discrepancy. Effective multipliers and numerical-sensitivity audits are retained in the trajectory files. The 17 selected implementation tests pass, including independent multi-step Adam comparisons under both schedules. No new performance interpretation is added.
+
 - **Constant-rate loss and update balance:** four function columns; top is the unweighted scalar loss ratio $F_\tau/G_\tau$, with $G_\tau=L-F_\tau$. Bottom is $\|\eta_t\mu u_F\|_2/\|\eta_tu_G\|_2$, the ratio of the recorded geometry-update contributions after Adam and outside scaling. This bottom row matches the kind of ratio used in the current-readout projected-split figure. Viridis colors identify the four multipliers; the dashed line marks equal magnitudes. Update ratios omit the final state's unapplied proposed update.
 - **Cosine-decay loss and update balance:** the same ratios, colors, and corresponding axis limits for the saved decay trajectories. Both rows use logarithmic vertical axes and all 10,000 applied steps. Checks confirm finite positive operands and $F_\tau+G_\tau=L$ in every plotted trajectory. Ratios of norms do not encode angles or cancellation.
 
@@ -123,6 +128,8 @@ The same initial numerical sensitivity remains: alternative backends or SVD driv
 - **Independent-grid verification:** initialization rows and target columns; categorical horizontal positions are ordinary Adam and the three split weights. Black is the actual trained model's independent error, blue the relative training projection reference, and orange the evaluated refit on the independent grid. The striking orange/blue separation in Xavier/Runge at the largest weight exposes the failure hidden by the sampled refit metric.
 
 ## Additional details
+
+Machine epsilon is a relative spacing near one, not an absolute loss threshold. A squared loss can be well below epsilon while its derivative is much larger: $F(\theta)=\theta^2/2$ at $\theta=10^{-10}$ gives $F=5\times10^{-21}$ and $F'=10^{-10}$. These values are far from float64 underflow. The separate numerical questions are whether the computed residual and projected derivative are accurate, and whether the resulting update can alter the stored parameters. Enforcing an update-norm ratio controls relative magnitude; it does not certify the accuracy of the direction being amplified.
 
 The long-run extension passes the 15 selected implementation checks across the split-Adam, schedule, and current-readout suites. The schedule tests check the endpoints and monotonicity, then compare three scheduled updates against an independently differentiated scalar objective and three independent PyTorch Adam optimizers. They verify that the common rate reaches the readout and both geometry streams, with the multiplier outside normalization. The earlier numerical-sensitivity and diagnostic-cost qualifications still apply.
 

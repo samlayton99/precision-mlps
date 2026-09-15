@@ -1,6 +1,6 @@
 # Session catalogue — expD24 through expD33
 
-This follows the session from the initial paper discussion through the matched four-way comparison, the scale-barrier investigation, an explanatory figure collection, the fixed-geometry spectrum sweep, the readout-information/freezing experiments, the loss-gradient decomposition, the approximation-gradient weighting test, extreme-gamma center sampling, the six-weight mu sweep, and separate Adam streams with outside weighting. There are **146 available plots: 136 PNGs and 10 GIFs**, all linked below. Deleted and superseded versions are recorded in their original place in the progression. This is an inventory, not a results writeup.
+This follows the session from the initial paper discussion through the matched four-way comparison, the scale-barrier investigation, an explanatory figure collection, the fixed-geometry spectrum sweep, the readout-information/freezing experiments, the loss-gradient decomposition, the approximation-gradient weighting test, extreme-gamma center sampling, the six-weight mu sweep, and separate Adam streams with outside weighting. There are **148 available plots: 138 PNGs and 10 GIFs**, all linked below. Deleted and superseded versions are recorded in their original place in the progression. This is an inventory, not a results writeup.
 
 **Training-domain correction:** Earlier comparisons containing the Gaussian-envelope row used a whole-line objective and a tail-cancelling model for that row, while the other targets used finite-interval training. Those comparisons did not hold the training samples or model constraints fixed across functions. Movement 12 corrects the steps 0–5 comparison; movement 14 extends matched training to four functions and four initializations for 2,000 steps. The earlier whole-line results remain records of their different objective.
 
@@ -425,6 +425,13 @@ The companion subtracts curve 1 from curve 2 and curve 3 from curve 4. Both redu
 
 - [Constant-rate balance — scalar losses and the two update contributions](../results/checkpoint_D_optimizers/expD31_split_adam/long_run/figures/balance_constant.png)
 - [Cosine-decay balance — scalar losses and the two update contributions](../results/checkpoint_D_optimizers/expD31_split_adam/long_run/figures/balance_cosine.png)
+
+**30. Prescribe the post-Adam F/G update ratio dynamically**
+
+**Asked and ran:** Replace fixed multipliers with $\mu_t=r\|u_G\|_2/\|u_F\|_2$, for $r=0.01,0.1,1,10,100$. All 40 Xavier trajectories finish 10,000 steps across the four functions and both common-rate policies. Adam histories and readout updates remain unchanged. Record actual loss, refitted relative error, mean gamma, effective multipliers, and achieved ratios. The two figures retain the preceding layout and matched axes. Seventeen implementation tests pass; every recorded applied-step ratio matches its target within floating-point tolerance.
+
+- [Dynamic ratio — constant learning rate](../results/checkpoint_D_optimizers/expD31_split_adam/dynamic_ratio/figures/constant.png)
+- [Dynamic ratio — cosine learning-rate decay](../results/checkpoint_D_optimizers/expD31_split_adam/dynamic_ratio/figures/cosine.png)
 
 **Catalogue preservation notes**
 

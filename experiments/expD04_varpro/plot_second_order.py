@@ -53,9 +53,9 @@ REGIMES = {
         "out": "second_order_both.png",
         "lines": [
             ("Adam (expD02, QI init)", "#1f77b4", "o", cube_src("adam_both")),
-            ("LBFGS",     "#e377c2", "P", csv_src("second_order_lbfgs_summary.csv",     "best_eval_rel_l2", lambda r: r["regime"] == "both")),
-            ("SSBroyden", "#bcbd22", "D", csv_src("second_order_ssbroyden_summary.csv", "best_eval_rel_l2", lambda r: r["regime"] == "both")),
-            ("Gauss-Newton (full net)", "#17becf", "v", csv_src("adam_gn_fullnet_summary.csv", "adamgn_best_eval_rel_l2", lambda r: True)),
+            ("LBFGS",     "#e377c2", "P", csv_src("second_order_lbfgs_summary.csv",     "final_eval_rel_l2", lambda r: r["regime"] == "both")),
+            ("SSBroyden", "#bcbd22", "D", csv_src("second_order_ssbroyden_summary.csv", "final_eval_rel_l2", lambda r: r["regime"] == "both")),
+            ("Gauss-Newton (full net)", "#17becf", "v", csv_src("adam_gn_fullnet_summary.csv", "adamgn_final_eval_rel_l2", lambda r: True)),
         ],
     },
     "lstsq": {
@@ -63,9 +63,9 @@ REGIMES = {
         "out": "second_order_lstsq.png",
         "lines": [
             ("Adam + lstsq (expD02, QI init)", "#1f77b4", "o", cube_src("adam_first_lstsq")),
-            ("LBFGS + lstsq",     "#e377c2", "P", csv_src("second_order_lbfgs_summary.csv",     "best_eval_rel_l2", lambda r: r["regime"] == "lstsq")),
-            ("SSBroyden + lstsq", "#bcbd22", "D", csv_src("second_order_ssbroyden_summary.csv", "best_eval_rel_l2", lambda r: r["regime"] == "lstsq")),
-            ("Gauss-Newton (VarPro) ← ours", "#d62728", "*", csv_src("varpro_gn_summary.csv", "vpgn_best_eval_rel_l2", lambda r: r["geom_init"] == "qi")),
+            ("LBFGS + lstsq",     "#e377c2", "P", csv_src("second_order_lbfgs_summary.csv",     "final_eval_rel_l2", lambda r: r["regime"] == "lstsq")),
+            ("SSBroyden + lstsq", "#bcbd22", "D", csv_src("second_order_ssbroyden_summary.csv", "final_eval_rel_l2", lambda r: r["regime"] == "lstsq")),
+            ("Gauss-Newton (VarPro) ← ours", "#d62728", "*", csv_src("varpro_gn_summary.csv", "vpgn_final_eval_rel_l2", lambda r: r["geom_init"] == "qi")),
         ],
     },
 }
