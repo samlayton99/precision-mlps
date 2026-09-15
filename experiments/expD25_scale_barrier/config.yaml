@@ -1,0 +1,12 @@
+steps: 2000
+learning_rate: 0.002
+resolution: 128
+halo: 24
+seed: 0
+n_train: 1024
+n_eval: 8192
+threads: 2
+targets: [sine, sine_mixture, runge, gaussian_envelope]
+initializations: [xavier, gamma_1, gamma_4, gamma_16]
+geometry_lr_multipliers: [1, 100, 10000]
+readout_rcond: 1.0e-13

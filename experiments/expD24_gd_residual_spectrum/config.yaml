@@ -1,0 +1,28 @@
+name: expD24_gd_residual_spectrum
+checkpoint: D
+targets: [sine, sine_mixture, runge, abs_cubed]
+# C05 convention: N interior intervals, W = N + 2*halo + 1 actual neurons.
+resolutions: [128]
+seed: 0
+steps: 2000
+learning_rate: 0.002
+lambda_star: 0.25
+halo: 24  # Sam's updated default; 24 neurons per side, independent of N.
+n_train: 1024
+n_eval: 8192
+max_mode: 32
+frequency_points: 2049
+animation_seconds: 16.0
+sampling: midpoint
+domain: [-1.0, 1.0]
+device: cpu
+threads: 2
+arms: [xavier, scaled_xavier, qi_zero]
+# C05 draws both a and b uniformly on +/-sqrt(6/(W+1)).
+# scaled_xavier: (a,b) *= (lambda_star/h)/mean(abs(a)); centers/signs unchanged.
+# Xavier arms share random Glorot readout c; d=0. QI arm has c=d=0.
+# All arms use raw (a,b,c,d) coordinates and full-batch GD on half-MSE.
+# Complex Fourier transform evaluated at every step; selected frames are saved.
+# Results: spectrum.gif, loss.png, and one compressed data.npz (includes config).
+# analyze.py adds frequency_learning.png and spectral_coverage.png from saved data.
+# Writeup awaits Sam's commission.
