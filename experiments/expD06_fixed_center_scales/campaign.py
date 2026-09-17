@@ -149,8 +149,8 @@ def main():
     args = parser.parse_args()
     if args.mode != "pilot" and args.selected is None:
         parser.error("Confirmation and controls require a saved selection file.")
-    if jax.default_backend() != "gpu":
-        raise RuntimeError("The campaign requires one explicitly selected GPU per worker.")
+    if jax.default_backend() != "gpu" or len(jax.devices()) != 1:
+        raise RuntimeError("The campaign requires exactly one visible GPU per worker.")
     args.root.mkdir(parents=True, exist_ok=True)
     output = args.root / "runs" / args.mode
     output.mkdir(parents=True, exist_ok=True)
@@ -163,10 +163,15 @@ def main():
     stage = "boundary" if args.boundary else "expanded" if args.expanded else "initial"
     write_json(args.root / f"manifest_{args.mode}_{args.optimizer}_{stage}.json", records)
     source_hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(__file__).parent.glob("*.py")}
+    allocation = {name: os.environ.get(name) for name in (
+        "SLURM_JOB_ID", "SLURM_ARRAY_JOB_ID", "SLURM_ARRAY_TASK_ID", "SLURM_STEP_ID",
+        "SLURM_JOB_GPUS", "SLURM_STEP_GPUS", "SLURM_CPUS_PER_TASK")}
+    runtime = {"jax": jax.__version__, "optax": optax.__version__, "devices": str(jax.devices()),
+               "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+               "x64": jax.config.x64_enabled, "host": os.uname().nodename, "slurm": allocation}
+    print(json.dumps({"worker_start": args.optimizer, **runtime}), flush=True)
     write_json(args.root / f"environment_{args.optimizer}_{os.getpid()}.json",
-               {"jax": jax.__version__, "optax": optax.__version__, "devices": str(jax.devices()),
-                "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"), "x64": jax.config.x64_enabled,
-                "source_sha256": source_hashes, "minimum_steps": MIN_STEPS,
+               {**runtime, "source_sha256": source_hashes, "minimum_steps": MIN_STEPS,
                 "pip_freeze": subprocess.check_output([os.sys.executable, "-m", "pip", "freeze"], text=True)})
     ledger_path = args.root / f"budget_{args.optimizer}.json"
     ledger = json.loads(ledger_path.read_text()) if ledger_path.exists() else {"seconds_used": 0.0}
@@ -178,6 +183,8 @@ def main():
     session_deadline = min(deadline, start + args.session_seconds) if args.session_seconds else deadline
     ledger["active_since"] = time.time()
     ledger["limit_seconds"] = args.gpu_hours * 3600
+    ledger["slurm_job_id"] = os.environ.get("SLURM_JOB_ID")
+    ledger.pop("last_end_reason", None)
     write_json(ledger_path, ledger)
     frontier = MIN_STEPS
     last_batch_seconds = 30.0
