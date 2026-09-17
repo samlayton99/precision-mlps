@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 import csv
 import json
@@ -15,6 +16,8 @@ import numpy as np
 from . import core, diagnostics
 from .run import Case, write_json
 
+DIAGNOSTICS_REVISION = 2
+
 
 def analyze_one(task):
     folder_name, step, cutoff, evaluate_test = task
@@ -25,7 +28,7 @@ def analyze_one(task):
     summary_path = output / f"metrics_{suffix}.json"
     if summary_path.exists():
         existing = json.loads(summary_path.read_text())
-        if not evaluate_test or "test" in existing:
+        if existing.get("diagnostics_revision") == DIAGNOSTICS_REVISION and (not evaluate_test or "test" in existing):
             return existing
     start = time.monotonic()
     case = Case(**json.loads((folder / "case.json").read_text()))
@@ -44,7 +47,7 @@ def analyze_one(task):
     refit_pred = diagnostics.prediction(val_x, g.centers, arrays["readout_refit"], gamma)
     arrays.update({"x_validation": val_x, "target_validation": val_y,
                    "prediction_validation": pred, "prediction_refit_validation": refit_pred})
-    summary = {"case": case.key, "step": step, "cutoff": cutoff,
+    summary = {"case": case.key, "step": step, "cutoff": cutoff, "diagnostics_revision": DIAGNOSTICS_REVISION,
                "validation": diagnostics.errors(pred, val_y),
                "refit_validation": diagnostics.errors(refit_pred, val_y),
                "rank": int(arrays["retained_rank"]),
@@ -54,6 +57,9 @@ def analyze_one(task):
                "gradient_perpendicular_norm": float(np.linalg.norm(arrays["gradient_perpendicular"])),
                "gradient_reconstruction_error": float(np.linalg.norm(arrays["band_gradient_lambda"].sum(axis=0)
                                                                         - arrays["gradient_lambda"])),
+               "perpendicular_reconstruction_error": float(np.linalg.norm(arrays["band_gradient_perpendicular"].sum(axis=0)
+                                                                             - arrays["gradient_perpendicular"])),
+               "band_subtraction_error_norm": float(np.linalg.norm(arrays["band_gradient_subtraction_error"])),
                "cpu_gpu_prediction_max_difference": float(np.max(np.abs(pred - checkpoint["prediction_validation"]))) }
     if evaluate_test:
         test_x = diagnostics.midpoint_grid(65536)
@@ -111,15 +117,23 @@ def write_summary(rows, path):
 
 
 def representative_rows(rows):
-    """Post-hoc display choices use live validation error, never refitted error."""
-    selected = {}
+    """Show seed 0 at the best two-seed rate pair; never select by refitted error."""
+    candidates = defaultdict(list)
     for row in rows:
-        if row["seed"] != 0 or row["step"] < 20000 or not np.isfinite(row["validation_rms"]):
+        if row["seed"] not in (0, 1) or row["step"] < 20000 or not np.isfinite(row["validation_rms"]):
             continue
-        key = row["optimizer"], row["arm"], row["initialization"], row["n"], row["target"]
-        if key not in selected or row["validation_rms"] < selected[key]["validation_rms"]:
-            selected[key] = row
-    return list(selected.values())
+        key = (row["optimizer"], row["arm"], row["initialization"], row["n"], row["target"],
+               row["rate_r"], row["rate_g"])
+        candidates[key].append(row)
+    selected = {}
+    for key, pair in candidates.items():
+        if {r["seed"] for r in pair} != {0, 1} or len({r["step"] for r in pair}) != 1:
+            continue
+        score = np.mean([np.log(max(r["validation_rms"], 1e-300)) for r in pair])
+        group = key[:5]
+        if group not in selected or score < selected[group][0]:
+            selected[group] = score, next(r for r in pair if r["seed"] == 0)
+    return [row for _, row in selected.values()]
 
 
 def plot_evidence(rows, output):
@@ -156,7 +170,8 @@ def plot_evidence(rows, output):
         ax.grid(True, alpha=.2)
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(.5, 1), ncol=4, fontsize=8)
-    fig.suptitle("Pilot representatives chosen by current trained validation error; outcomes may be unfinished", y=.91, fontsize=11)
+    fig.suptitle("Seed 0 at each best two-seed rate pair; selection uses trained validation error; runs may be unfinished",
+                 y=.91, fontsize=10)
     fig.tight_layout(rect=(0, 0, 1, .89))
     fig.savefig(output / "pilot_trajectories.png", dpi=180)
     plt.close(fig)
@@ -226,6 +241,48 @@ def plot_evidence(rows, output):
     fig.savefig(output / "pilot_mechanism.png", dpi=180)
     plt.close(fig)
 
+    fig, axes = plt.subplots(len(detailed), 3, figsize=(15, 3.8 * len(detailed)), squeeze=False)
+    for panels, row in zip(axes, detailed):
+        path = Path(row["folder"]) / "analysis" / f"diagnostics_{row['step']:09d}_tau1e-12.npz"
+        if not path.exists():
+            for panel in panels:
+                panel.text(.5, .5, f"{row['optimizer']} / {row['arm']}: analysis pending",
+                           ha="center", va="center", transform=panel.transAxes)
+                panel.set_axis_off()
+            continue
+        with np.load(path) as arrays:
+            count = len(arrays["residual_fft"])
+            frequency = np.abs(arrays["fft_angular_frequency"][:count // 2 + 1])
+            for key, label in [("residual_fft", "live"), ("parallel_fft", "readout-accessible"),
+                               ("perpendicular_fft", "perpendicular"), ("refit_fft", "after refit")]:
+                energy = np.abs(arrays[key][:len(frequency)])**2
+                panels[0].loglog(frequency[1:], np.maximum(energy[1:], 1e-40), label=label)
+            centers = arrays["band_bounds"].mean(axis=1)
+            centers[0] = 0
+            angular_centers = centers * frequency[1]
+            for key, label in [("band_gradient_lambda", "full"), ("band_gradient_parallel", "parallel"),
+                               ("band_gradient_perpendicular", "perpendicular")]:
+                panels[1].plot(angular_centers, np.linalg.norm(arrays[key], axis=1), ".-", label=label)
+            panels[1].set_xscale("symlog", linthresh=frequency[1])
+            panels[1].set_yscale("log")
+            for key, label in [("band_predicted_descent_readout", "readout"),
+                               ("band_predicted_descent_geometry", "geometry")]:
+                panels[2].plot(angular_centers, arrays[key], ".-", label=label)
+            panels[2].set_xscale("symlog", linthresh=frequency[1])
+            panels[2].set_yscale("symlog", linthresh=1e-16)
+        panels[0].set(title=f"{row['optimizer']} / {row['arm']} at {row['step']:,}",
+                      ylabel="DFT coefficient energy", xlabel="Angular frequency")
+        panels[1].set(title="Signed gradients summed within each band",
+                      ylabel="Norm across slope coordinates", xlabel="Band angular frequency (0 = DC)")
+        panels[2].set(title="Next-update linear descent by block",
+                      ylabel="Positive predicts loss decrease", xlabel="Band angular frequency (0 = DC)")
+        for panel in panels:
+            panel.legend(loc="lower center", bbox_to_anchor=(.5, 1.1), ncol=2, fontsize=7)
+            panel.grid(True, alpha=.2)
+    fig.tight_layout(h_pad=5)
+    fig.savefig(output / "pilot_frequency_split.png", dpi=180)
+    plt.close(fig)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -258,7 +315,14 @@ def main():
         with ProcessPoolExecutor(max_workers=args.workers, mp_context=multiprocessing.get_context("spawn")) as pool:
             for result in pool.map(analyze_one, tasks):
                 print(json.dumps(result), flush=True)
-    rows = all_rows(args.root, args.step)
+    # Keep the cohort and horizons captured before analysis. New GPU checkpoints
+    # must not silently change representative choices after their analysis finishes.
+    for row in rows:
+        path = Path(row["folder"]) / "analysis" / f"metrics_{row['step']:09d}_tau1e-12.json"
+        if path.exists():
+            result = json.loads(path.read_text())
+            row["refit_validation_rms"] = result["refit_validation"]["rms"]
+            row["retained_rank"] = result["rank"]
     evidence = args.root / (f"evidence_{args.step:09d}" if args.step is not None else "evidence_latest")
     evidence.mkdir(exist_ok=True)
     write_summary(rows, evidence / "summary.csv")

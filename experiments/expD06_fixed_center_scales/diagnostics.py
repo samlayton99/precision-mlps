@@ -38,9 +38,11 @@ def gradient_bands(r, a, j, projected_j):
     bounds, rb, spectrum = band_residuals(r)
     total = rb @ j
     parallel = rb @ projected_j
+    perpendicular = rb @ (j - projected_j)
     return {"band_bounds": bounds, "residual_fft": spectrum,
             "band_energy": np.sum(rb**2, axis=1), "band_gradient_lambda": total,
-            "band_gradient_parallel": parallel, "band_gradient_perpendicular": total - parallel,
+            "band_gradient_parallel": parallel, "band_gradient_perpendicular": perpendicular,
+            "band_gradient_subtraction_error": total - parallel - perpendicular,
             "band_gradient_readout": rb @ a}
 
 
