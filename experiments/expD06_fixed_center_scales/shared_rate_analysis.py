@@ -62,7 +62,7 @@ def main():
     write_json(output / "selection.json", {
         "constraint": "One shared trained-coordinate rate; fixed reference metric, bias scale, and epsilon",
         "included": sorted(keys), "representatives": choices[0]["cases"],
-        "reason": "All five shared-rate candidates; inspect the lowest paired late-window error, the next larger rate, and the same-rate raw control",
+        "reason": "All five shared-rate candidates; inspect the lowest paired late-window error, the next larger rate, and unscaled training at the same shared rate",
         "new_training_steps": 0})
 
     import matplotlib
@@ -71,9 +71,9 @@ def main():
     from matplotlib.ticker import NullLocator
     fig, axes = plt.subplots(1, 3, figsize=(13, 4.2), layout="constrained")
     horizon = steps[1:]
-    groups = [("raw", 1e-3, "Unscaled, eta=0.001", "#777777"),
-              ("both", 1e-3, "Prescribed scales, eta=0.001", "#0072B2"),
-              ("both", 1e-2, "Prescribed scales, eta=0.01", "#D55E00")]
+    groups = [("raw", 1e-3, "Unscaled training, eta=0.001", "#777777"),
+              ("both", 1e-3, "Scaled training, eta=0.001", "#0072B2"),
+              ("both", 1e-2, "Scaled training, eta=0.01", "#D55E00")]
     indexed = {(m["case"], m["step"], m["cutoff"]): m for m in metrics}
     for arm, rate, label, color in groups:
         for row in representatives:
