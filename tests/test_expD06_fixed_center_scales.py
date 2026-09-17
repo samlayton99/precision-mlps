@@ -8,6 +8,7 @@ pytest.importorskip("optax")
 import jax.numpy as jnp
 
 from experiments.expD06_fixed_center_scales import core
+from experiments.expD06_fixed_center_scales import diagnostics
 
 
 def test_reference_envelopes_and_halo_slots():
@@ -88,3 +89,45 @@ def test_halo_metric_ablation_preserves_physical_initialization_and_bias_scale()
     assert np.all(ordinary[1:][g.corrected_halo] == math.sqrt(g.ordinary_alpha))
     p = core.to_params(c, gamma, ordinary, gs)
     np.testing.assert_allclose(core.physical(p, ordinary, gs)[0], c)
+
+
+def test_fourier_split_reconstructs_energy_and_signed_gradients():
+    rng = np.random.default_rng(18)
+    for size in [32, 33]:
+        r = rng.normal(size=size)
+        a = rng.normal(size=(size, 4))
+        j = rng.normal(size=(size, 6))
+        u, _ = np.linalg.qr(a)
+        pj = u @ (u.T @ j)
+        out = diagnostics.gradient_bands(r, a, j, pj)
+        np.testing.assert_allclose(out["band_energy"].sum(), r @ r, rtol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_lambda"].sum(axis=0), j.T @ r, atol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_parallel"].sum(axis=0), pj.T @ r, atol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_readout"].sum(axis=0), a.T @ r, atol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_lambda"], out["band_gradient_parallel"]
+                                   + out["band_gradient_perpendicular"], atol=1e-14)
+
+
+def test_detached_refit_and_gradient_diagnostics():
+    rng = np.random.default_rng(4)
+    centers = np.linspace(-1.1, 1.1, 9)
+    gamma = np.linspace(1, 5, 9)
+    c = rng.normal(size=10)
+    x = np.linspace(-1, 1, 65)
+    y = core.target(x, "sine", np)
+    d = np.linspace(0.5, 2, 10)
+    dc, dl = rng.normal(size=10) * 1e-5, rng.normal(size=9) * 1e-5
+    before = [v.copy() for v in (c, gamma, d)]
+    out = diagnostics.checkpoint_arrays(x, y, centers, 0.25, d, c, gamma, {},
+                                        delta_c=dc, delta_lambda=dl)
+    for old, current in zip(before, (c, gamma, d)):
+        np.testing.assert_array_equal(old, current)
+    assert np.linalg.norm(out["residual_refit"]) < np.linalg.norm(out["residual_train"])
+    np.testing.assert_allclose(out["residual_parallel"] + out["residual_perpendicular"],
+                               out["residual_train"], atol=1e-14)
+    np.testing.assert_allclose(out["prediction_change_measured"], out["prediction_change_readout"]
+                               + out["prediction_change_geometry"] + out["prediction_change_interaction"], atol=1e-14)
+    params = core.to_params(c, gamma, d, 4.0)
+    grad = jax.grad(core.loss)(params, jnp.asarray(x), jnp.asarray(y), centers, d, 4.0)
+    np.testing.assert_allclose(out["gradient_lambda"], grad["slope"], rtol=1e-12, atol=1e-13)
+    np.testing.assert_allclose(out["gradient_readout"], grad["readout"] / d, rtol=1e-12, atol=1e-13)
