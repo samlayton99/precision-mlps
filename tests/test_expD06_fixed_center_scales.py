@@ -188,3 +188,18 @@ def test_rate_manifest_covers_native_and_scale_matched_controls():
         expected = raw["base_lr"] * raw["bandwidth_to_readout_ratio"] * g.h**(-2 if optimizer == "gd" else -1)
         assert raw["case"]["rate_g"] == expected
         assert {r["case"]["seed"] for r in expanded} == {0, 1}
+
+
+def test_nonfinite_checkpoint_is_recorded_as_failure(tmp_path):
+    case = run.Case()
+    g = core.geometry(case.n)
+    c, gamma = core.initial_physical(g, 0, "xavier")
+    cs, gs = core.coordinate_scales(g, "both")
+    state = core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer("adam"))
+    arrays = {"c": c, "gamma": gamma, "prediction_train": np.full(3, 1e200)}
+    row = run.record_checkpoint(tmp_path, case, state, 2, arrays)
+    assert row == {"step": 2, "finite": False}
+    assert run.convergence_status([row]) == "nonfinite"
+    assert (tmp_path / case.key / "state_000000002.pkl").exists()
+    with np.load(tmp_path / case.key / "checkpoint_000000002.npz") as stored:
+        np.testing.assert_array_equal(stored["c"], c)

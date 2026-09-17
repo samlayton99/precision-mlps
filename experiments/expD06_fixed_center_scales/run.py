@@ -52,6 +52,14 @@ def write_json(path, value):
     temporary.replace(path)
 
 
+def save_arrays(path, **arrays):
+    path = Path(path)
+    temporary = path.with_suffix(".tmp")
+    with temporary.open("wb") as stream:
+        np.savez_compressed(stream, **arrays)
+    temporary.replace(path)
+
+
 def save_state(path, state, step):
     host = jax.tree.map(lambda x: np.array(x), state)
     path = Path(path)
@@ -139,7 +147,7 @@ def record_checkpoint(root, case, state, step, arrays, window_losses=None):
             # Before the first update the stored zero moments define a zero diagnostic ratio.
             moments[f"adam_{block}_sqrt_v_over_epsilon"] = np.sqrt(nu / (1 - .999**count)) / 1e-8 if count else np.zeros_like(nu)
     save_state(folder / f"state_{step:09d}.pkl", state, step)
-    np.savez_compressed(folder / f"checkpoint_{step:09d}.npz", **arrays, **moments,
+    save_arrays(folder / f"checkpoint_{step:09d}.npz", **arrays, **moments,
                         lambda_travel=np.asarray(state["lambda_travel"]),
                         readout_travel=np.asarray(state["readout_travel"]),
                         sign_crossings=np.asarray(state["sign_crossings"]),
@@ -256,8 +264,23 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
                            if (output / c.key / "events.json").exists() else []) for c in cases]
     active = np.ones(len(cases), dtype=bool)
     wall_start = time.monotonic()
+    trace_written = start
+
+    def flush_trace(at_step):
+        nonlocal trace_written
+        if at_step <= trace_written or not all_traces:
+            return
+        values = np.concatenate(all_traces, axis=1)[:, trace_written - start:at_step - start]
+        for i, case in enumerate(cases):
+            save_arrays(output / case.key / f"trace_{trace_written:09d}_{at_step:09d}.npz",
+                        start_step=trace_written, trace=values[i], columns=np.asarray(core.TRACE_COLUMNS))
+        trace_written = at_step
 
     def save(current, at_step, indices, losses=None, event=False):
+        if not event:
+            # Commit traces before latest.json advances, so an interrupted worker resumes
+            # without silently dropping the per-step evidence preceding its checkpoint.
+            flush_trace(at_step)
         evaluated = jax.device_get(evaluate(current, cs, gs, rr, rg))
         for i in indices:
             arrays = {key: value[i] for key, value in evaluated.items()}
@@ -306,11 +329,7 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
             save(state, step, np.flatnonzero(active), losses)
     if step not in checkpoints:
         save(state, step, np.flatnonzero(active), np.concatenate(all_traces, axis=1)[:, :, 0] if all_traces else None)
-    if all_traces:
-        trace_array = np.concatenate(all_traces, axis=1)
-        for i, case in enumerate(cases):
-            np.savez_compressed(output / case.key / f"trace_{start:09d}_{step:09d}.npz",
-                                start_step=start, trace=trace_array[i], columns=np.asarray(core.TRACE_COLUMNS))
+    flush_trace(step)
     return [json.loads((output / c.key / "latest.json").read_text()) for c in cases]
 
 
