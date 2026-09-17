@@ -1,10 +1,12 @@
 # Fixed-center bandwidth acquisition
 
-This experiment tests whether readout and bandwidth update scales change acquisition of useful tanh geometry. It uses JAX and Optax in FP64, with fixed grid and halo centers, independent signed slopes, and paired physical initialization across Raw and Both coordinates. The reference bandwidth is $\lambda=0.25$ and the halo radius is $R=\lceil\sqrt N\rceil$.
+This experiment asks whether one shared learning rate, with the prescribed readout and slope scales, sustains useful geometry learning. The current answer is in the [shared-rate report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/scale_learning_consolidation.md). It uses JAX and Optax in FP64, with fixed grid and halo centers, independent signed slopes, and paired physical initialization across Raw and Both coordinates. The reference bandwidth is $\lambda=0.25$ and the halo radius is $R=\lceil\sqrt N\rceil$.
 
 Install the optional `jax-experiments` dependency group for CPU development. On the remote H200 host, use an isolated environment with the CUDA 12 JAX extra and record its exact installed versions. This experiment does not change the repository's existing PyTorch runners.
 
-The two parameter blocks minimize one mean squared error objective. Their separate learning rates control their relative contributions to learning. Every finite scientific run must receive at least 20,000 updates; rates remain fixed within a run. Shorter executions are implementation checks or throughput benchmarks, never scientific comparisons or rate-selection evidence.
+The scientific baseline trains $\mathbf c=D\mathbf a$ and $\boldsymbol\gamma=\boldsymbol\lambda/h$ with **one shared base rate**, $\eta_a=\eta_\lambda=\eta$, including the output bias. The fixed reference metric supplies the relative scales automatically. Tune only $\eta$; independent block-rate ratios are outside this baseline. The two blocks minimize one half mean squared error objective. Every finite scientific run must receive at least 20,000 updates; rates remain fixed within a run. Shorter executions are implementation checks or throughput benchmarks, never scientific comparisons or rate-selection evidence.
+
+`shared_rate_analysis.py` filters the existing pilot to the exact shared-rate Adam/reference-envelope setup and paired unscaled controls, then analyzes their saved checkpoints without new training. Run it with `--root /workspace/junmiaoh/experiments/precision-mlps/runs/pilot` inside an eight-CPU Slurm allocation, with GPU execution disabled and two BLAS threads. Its assertions verify the 16 expected cases and complete 320k traces. The historical launchers below reproduce earlier work; their independent-rate and crossed matrices are not the current baseline.
 
 `core.py` defines the reference envelopes, paired initialization, coordinate maps, and compiled training chunks. The tanh derivative uses the equivalent stable $4e^{-2|u|}/(1+e^{-2|u|})^2$ expression to avoid cancellation in $1-\tanh^2 u$.
 
@@ -26,7 +28,7 @@ A frontier is a continuation checkpoint, not a claim of convergence. Repeat with
 
 Each case preserves its configuration and reference geometry, full parameter/Optax checkpoints, complete compact per-step traces, predictions, per-neuron gradients, proposed next updates, and residual-reduction event checkpoints. Loading a checkpoint restores parameters, moments, counters, and accumulated travel. The full-batch deterministic training phase consumes no new random draws after initialization.
 
-## Base-rate and relative-rate search
+## Historical base-rate and relative-rate search
 
 `campaign.py` runs one optimizer per GPU worker. Its initial grid uses base rates $10^{-4},10^{-3},10^{-2}$ and bandwidth/readout ratios $0.1,1,10$. The expanded grid uses five base rates from $10^{-5}$ through $10^{-1}$ and five ratios from $0.01$ through $100$. Two physical initializations and two paired seeds are evaluated in both coordinate arms. Each finite trial receives the full 20,000-step minimum, followed by constant-rate continuation.
 
@@ -58,7 +60,7 @@ Run `python -m experiments.expD06_fixed_center_scales.consolidate --root /worksp
 
 The consolidation refits every available 320k geometry and analyzes both seeds at each group's best paired endpoint and late-window rate pair, plus shared-LR controls. Representative histories retain projected and full residuals, signed forces, actual updates, core/halo probes, and Adam moment-to-epsilon ratios; cutoff checks use $10^{-10},10^{-12},10^{-14}$. Output is data and figures under `consolidation/`. The scientific report is authored separately after inspecting those artifacts. No new training or readout replacement occurs during consolidation.
 
-## Focused initialization and coordinate comparison
+## Historical initialization and coordinate comparison
 
 `focused.py` specifies 88 new Adam trajectories at $N=512$ on the unit-RMS sine target, with fresh paired seeds 2 and 3. Every trajectory retains physical Xavier slopes, fixed centers, trainable readouts, and constant rates through the common 320k horizon. The physical slope draw has standard deviation $(5/3)\sqrt{2/(W+1)}$; canonicalizing its initial sign into the readout preserves the signed-Xavier function, and later slopes may cross zero. Bias starts at zero.
 
