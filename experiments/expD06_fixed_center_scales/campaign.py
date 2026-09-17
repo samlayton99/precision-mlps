@@ -89,6 +89,30 @@ def confirmation_manifest(selected):
     return records
 
 
+def control_manifest(selected, mode):
+    records = []
+    for config in selected:
+        base = Case(**config)
+        if mode == "halo":
+            if (base.arm, base.initialization) != ("both", "envelope"):
+                continue
+            for n in [512, 1024]:
+                for seed in [2, 3, 4]:
+                    for halo_init in ["full", "ordinary"]:
+                        for halo_metric in ["full", "ordinary"]:
+                            case = replace(base, n=n, seed=seed, halo_init=halo_init, halo_metric=halo_metric)
+                            records.append({"case": asdict(case), "key": case.key, "grid": "halo_factorial"})
+        elif mode == "sampling":
+            for n in [512, 1024]:
+                for target in ["sine", "mixed"]:
+                    for samples in [16, 32]:
+                        case = replace(base, n=n, target=target, seed=2, samples_per_cell=samples)
+                        records.append({"case": asdict(case), "key": case.key, "grid": "sampling_refinement"})
+        else:
+            raise ValueError(f"Unknown control mode {mode!r}")
+    return records
+
+
 def pending_groups(records, output, frontier):
     groups = defaultdict(list)
     for record in records:
@@ -109,20 +133,25 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--optimizer", choices=["gd", "adam"], required=True)
     parser.add_argument("--expanded", action="store_true")
-    parser.add_argument("--mode", choices=["pilot", "confirmation"], default="pilot")
+    parser.add_argument("--mode", choices=["pilot", "confirmation", "halo", "sampling"], default="pilot")
     parser.add_argument("--selected", type=Path)
     parser.add_argument("--max-frontier", type=int, help="Pause for analysis here; unfinished runs remain continuing.")
     parser.add_argument("--gpu-hours", type=float, default=11.9,
                         help="Cumulative worker limit across resumptions; two workers stay below 24 GPU-hours.")
     parser.add_argument("--batch-size", type=int, default=4)
     args = parser.parse_args()
+    if args.mode != "pilot" and args.selected is None:
+        parser.error("Confirmation and controls require a saved selection file.")
     if jax.default_backend() != "gpu":
         raise RuntimeError("The campaign requires one explicitly selected GPU per worker.")
     args.root.mkdir(parents=True, exist_ok=True)
     output = args.root / "runs" / args.mode
     output.mkdir(parents=True, exist_ok=True)
-    records = (pilot_manifest(args.optimizer, args.expanded) if args.mode == "pilot"
-               else confirmation_manifest(json.loads(args.selected.read_text())))
+    if args.mode == "pilot":
+        records = pilot_manifest(args.optimizer, args.expanded)
+    else:
+        selected = json.loads(args.selected.read_text())
+        records = confirmation_manifest(selected) if args.mode == "confirmation" else control_manifest(selected, args.mode)
     records = [r for r in records if r["case"]["optimizer"] == args.optimizer]
     stage = "expanded" if args.expanded else "initial"
     write_json(args.root / f"manifest_{args.mode}_{args.optimizer}_{stage}.json", records)

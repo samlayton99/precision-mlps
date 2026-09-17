@@ -211,3 +211,21 @@ def test_nonfinite_checkpoint_is_recorded_as_failure(tmp_path):
     assert (tmp_path / case.key / "state_000000002.pkl").exists()
     with np.load(tmp_path / case.key / "checkpoint_000000002.npz") as stored:
         np.testing.assert_array_equal(stored["c"], c)
+
+
+def test_followup_matrices_keep_rates_fixed_and_seeds_separate():
+    from dataclasses import asdict, replace
+    base = run.Case(arm="both", initialization="envelope", rate_r=.01, rate_g=.001)
+    selected = [asdict(base), asdict(replace(base, arm="raw"))]
+    confirmation = campaign.confirmation_manifest(selected)
+    assert len(confirmation) == 90
+    assert {r["case"]["seed"] for r in confirmation} == set(range(2, 7))
+    assert {r["case"]["n"] for r in confirmation} == {512, 1024, 2048}
+    halo = campaign.control_manifest(selected, "halo")
+    assert len(halo) == 24
+    assert {(r["case"]["halo_init"], r["case"]["halo_metric"]) for r in halo} == {
+        (a, b) for a in ["full", "ordinary"] for b in ["full", "ordinary"]}
+    sampling = campaign.control_manifest(selected, "sampling")
+    assert len(sampling) == 16
+    for row in confirmation + halo + sampling:
+        assert row["case"]["rate_r"] == base.rate_r and row["case"]["rate_g"] == base.rate_g
