@@ -88,6 +88,9 @@ def initial_physical(g: Geometry, seed: int, family: str, halo_init="full"):
     gamma = np.abs(gamma_draw) * (5 / 3) * math.sqrt(2 / (g.width + 1))
     if family == "xavier":
         weights = math.sqrt(2 / (g.width + 1)) * xi
+    elif family in {"xavier_a_uniform", "xavier_a_reference"}:
+        scale = math.sqrt(g.h) if family == "xavier_a_uniform" else g.d[1:]
+        weights = scale * math.sqrt(2 / (g.width + 1)) * xi
     elif family == "envelope":
         allowances = g.alpha[1:].copy()
         if halo_init == "ordinary":
@@ -98,12 +101,16 @@ def initial_physical(g: Geometry, seed: int, family: str, halo_init="full"):
     return np.r_[0.0, weights * np.sign(gamma_draw)], gamma
 
 
-def coordinate_scales(g: Geometry, arm: str, halo_metric="full"):
+def coordinate_scales(g: Geometry, arm: str, halo_metric="full", unscaled_bias=False):
     if arm == "raw":
         return np.ones(g.width + 1), 1.0
+    if arm == "uniform":
+        return np.r_[1., np.full(g.width, math.sqrt(g.h))], 1 / g.h
     if arm != "both":
         raise ValueError(f"Unknown arm {arm!r}")
     d = g.d.copy()
+    if unscaled_bias:
+        d[0] = 1.
     if halo_metric == "ordinary":
         d[1:][g.corrected_halo] = math.sqrt(g.ordinary_alpha)
     return d, 1 / g.h
@@ -152,6 +159,19 @@ def optimizer(name: str, eps=1e-8):
     raise ValueError(f"Unknown optimizer {name!r}")
 
 
+def optimizer_direction(name, tx, grads, state, params, epsilon_r=None, epsilon_g=None):
+    """Keep Optax's moment state; optionally use explicit per-coordinate epsilons."""
+    updates, state = tx.update(grads, state, params)
+    if name == "adam" and epsilon_r is not None:
+        adam = state[0]
+        updates = {}
+        for block, epsilon in [("readout", epsilon_r), ("slope", epsilon_g)]:
+            mu = adam.mu[block] / (1 - jnp.asarray(.9, dtype=adam.mu[block].dtype)**adam.count)
+            nu = adam.nu[block] / (1 - jnp.asarray(.999, dtype=adam.nu[block].dtype)**adam.count)
+            updates[block] = -mu / (jnp.sqrt(nu) + epsilon)
+    return updates, state
+
+
 def initial_state(params, tx):
     return {"params": params, "opt": tx.init(params),
             "lambda_travel": jnp.zeros_like(params["slope"]),
@@ -173,11 +193,11 @@ def make_chunk(g: Geometry, name: str, target_name: str, samples_per_cell=16, st
     distance_bound = jnp.maximum(jnp.abs(-1 - centers), jnp.abs(1 - centers))
     tx = optimizer(name, eps)
 
-    def chunk(state, c_scale, gamma_scale, rate_r, rate_g):
+    def chunk(state, c_scale, gamma_scale, rate_r, rate_g, epsilon_r=None, epsilon_g=None):
         def step(current, _):
             params = current["params"]
             value, grads = jax.value_and_grad(loss)(params, x, y, centers, c_scale, gamma_scale)
-            direction, opt_state = tx.update(grads, current["opt"], params)
+            direction, opt_state = optimizer_direction(name, tx, grads, current["opt"], params, epsilon_r, epsilon_g)
             updates = {"readout": rate_r * direction["readout"],
                        "slope": rate_g * direction["slope"]}
             dc = c_scale * updates["readout"]

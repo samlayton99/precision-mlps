@@ -24,20 +24,21 @@ def test_reference_envelopes_and_halo_slots():
     np.testing.assert_allclose(g.alpha.max(), 10.763909685873035)
 
 
-@pytest.mark.parametrize("family", ["xavier", "envelope"])
+@pytest.mark.parametrize("family", ["xavier", "envelope", "xavier_a_uniform", "xavier_a_reference"])
 def test_paired_physical_initialization_and_fixed_centers(family):
     g = core.geometry(512)
     c, gamma = core.initial_physical(g, 3, family)
     x = jnp.linspace(-1, 1, 37)
     predictions = []
-    for arm in ["raw", "both"]:
+    for arm in ["raw", "uniform", "both"]:
         cs, gs = core.coordinate_scales(g, arm)
         params = core.to_params(c, gamma, cs, gs)
         predictions.append(core.predict(params, x, g.centers, cs, gs))
         changed_gamma = gamma * 1.37
         beta = -changed_gamma * g.centers
         np.testing.assert_allclose(-beta / changed_gamma, g.centers, atol=1e-15)
-    np.testing.assert_allclose(*predictions, rtol=2e-13, atol=2e-14)
+    for prediction in predictions[1:]:
+        np.testing.assert_allclose(prediction, predictions[0], rtol=2e-13, atol=2e-14)
 
 
 def test_stable_tanh_derivative_and_finite_difference():
@@ -269,3 +270,99 @@ def test_paired_window_choice_can_differ_from_endpoint_choice():
             for rate, end, window in [(.001, .01, .01), (.01, .0001, .1)] for seed in [0, 1]]
     assert paired_choices(rows, "endpoint")[0]["rate_r"] == .01
     assert paired_choices(rows, "window")[0]["rate_r"] == .001
+
+
+def test_focused_manifest_crosses_initialization_and_map_without_bias_confound():
+    from collections import Counter
+    from experiments.expD06_fixed_center_scales.focused import manifest
+    records = manifest()
+    assert Counter(r["kind"] for r in records) == {"primary": 48, "epsilon_control": 16, "shared_lr_control": 24}
+    assert len({r["key"] for r in records}) == 88
+    assert {r["case"]["seed"] for r in records} == {2, 3}
+    g = core.geometry(512)
+    for row in records:
+        case = run.Case(**row["case"])
+        cs, gs, rates, er, eg = run.case_settings(case, g)
+        assert cs[0] == 1 and er[0] == 1e-8
+        assert rates[0] == case.bias_rate
+        if case.arm == "raw":
+            assert case.rate_r == case.rate_g == case.bias_rate
+            continue
+        np.testing.assert_allclose((rates * cs)[1:][g.core], row["uniform_readout_lr"] * np.sqrt(g.h))
+        assert case.bias_rate == row["uniform_readout_lr"] * np.sqrt(g.h)
+        assert gs == 1 / g.h
+        if case.epsilon_mode == "native":
+            np.testing.assert_allclose((er / cs)[1:][g.core], 1e-8 / np.sqrt(g.h))
+            assert eg / gs == 1e-8 * g.h
+        else:
+            np.testing.assert_allclose(er / cs, 1e-8)
+            assert eg / gs == 1e-8
+    base_c, base_gamma = core.initial_physical(g, 2, "xavier")
+    for family, scale in [("xavier_a_uniform", np.sqrt(g.h)), ("xavier_a_reference", g.d[1:])]:
+        c, gamma = core.initial_physical(g, 2, family)
+        np.testing.assert_allclose(c[1:], base_c[1:] * scale, rtol=2e-15)
+        np.testing.assert_array_equal(gamma, base_gamma)
+        assert c[0] == 0
+
+
+@pytest.mark.parametrize("arm", ["uniform", "both"])
+def test_adam_multistep_coordinate_equivalence_with_nonzero_moments(arm):
+    g = core.geometry(128)
+    cs, gs = core.coordinate_scales(g, arm, unscaled_bias=True)
+    c, gamma = core.initial_physical(g, 2, "xavier_a_uniform")
+    tx = core.optimizer("adam")
+    mapped = core.initial_state(core.to_params(c, gamma, cs, gs), tx)
+    raw = core.initial_state(core.to_params(c, gamma, np.ones_like(cs), 1.), tx)
+    # Nonzero moment history must transform with the gradient and its square.
+    chunk = core.make_chunk(g, "adam", "sine", samples_per_cell=1, steps=11)
+    er = jnp.linspace(1e-7, 3e-7, cs.size)
+    eg = 1e-7
+    for _ in range(2):
+        mapped, _ = chunk(mapped, cs, gs, 1e-4, 1e-6, er, eg)
+        raw, _ = chunk(raw, np.ones_like(cs), 1., 1e-4 * cs, 1e-6 * gs, er / cs, eg / gs)
+        expected_c, expected_gamma = core.physical(mapped["params"], cs, gs)
+        np.testing.assert_allclose(raw["params"]["readout"], expected_c, rtol=1e-11, atol=2e-15)
+        np.testing.assert_allclose(raw["params"]["slope"], expected_gamma, rtol=1e-11, atol=2e-15)
+        for block, scale in [("readout", cs), ("slope", gs)]:
+            np.testing.assert_allclose(mapped["opt"][0].mu[block], raw["opt"][0].mu[block] * scale, rtol=1e-11, atol=2e-15)
+            np.testing.assert_allclose(mapped["opt"][0].nu[block], raw["opt"][0].nu[block] * scale**2, rtol=1e-11, atol=2e-15)
+
+
+def test_explicit_epsilon_preserves_optax_update_and_checkpoint_resume(tmp_path):
+    g = core.geometry(128)
+    case = run.Case(n=128, arm="uniform", epsilon_mode="physical", bias_rate=1e-5)
+    cs, gs, rr, er, eg = run.case_settings(case, g)
+    c, gamma = core.initial_physical(g, 3, "xavier_a_reference")
+    state = core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer("adam"))
+    chunk = core.make_chunk(g, "adam", "sine", samples_per_cell=1, steps=9)
+    native, _ = chunk(state, cs, gs, rr, case.rate_g)
+    explicit, _ = chunk(state, cs, gs, rr, case.rate_g, np.full(cs.size, 1e-8), 1e-8)
+    for a, b in zip(jax.tree.leaves(native), jax.tree.leaves(explicit)):
+        np.testing.assert_allclose(a, b, rtol=2e-12, atol=2e-15)
+    advanced, _ = chunk(state, cs, gs, rr, case.rate_g, er, eg)
+    path = tmp_path / "configured.pkl"
+    run.save_state(path, advanced, 9)
+    restored, _ = run.load_state(path)
+    resumed, _ = chunk(restored, cs, gs, rr, case.rate_g, er, eg)
+    expected, _ = chunk(advanced, cs, gs, rr, case.rate_g, er, eg)
+    for a, b in zip(jax.tree.leaves(resumed), jax.tree.leaves(expected)):
+        np.testing.assert_array_equal(a, b)
+        if np.issubdtype(np.asarray(a).dtype, np.floating):
+            assert a.dtype == np.float64
+    batch = core.make_chunk(g, "adam", "sine", samples_per_cell=1, steps=9, batched=True)
+    batched, _ = batch(run.stack_states([restored, state]), jnp.stack([cs, cs]), jnp.array([gs, gs]),
+                       jnp.stack([rr, rr]), jnp.array([case.rate_g, case.rate_g]), jnp.stack([er, er]), jnp.array([eg, eg]))
+    for a, b in zip(jax.tree.leaves(run.unstack_state(batched, 0)), jax.tree.leaves(expected)):
+        np.testing.assert_allclose(a, b, rtol=2e-12, atol=2e-15)
+
+
+def test_case_extensions_preserve_legacy_checkpoint_identity():
+    from dataclasses import asdict
+    import hashlib
+    import json
+    case = run.Case()
+    legacy = asdict(case)
+    for field in ["epsilon_mode", "bias_rate", "dense_validation"]:
+        legacy.pop(field)
+    digest = hashlib.sha256(json.dumps(legacy, sort_keys=True).encode()).hexdigest()[:12]
+    assert case.key.endswith(digest)

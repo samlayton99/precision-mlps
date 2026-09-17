@@ -38,11 +38,35 @@ class Case:
     validation_points: int = 32768
     halo_init: str = "full"
     halo_metric: str = "full"
+    epsilon_mode: str = "legacy"
+    bias_rate: float | None = None
+    dense_validation: bool = False
 
     @property
     def key(self):
-        digest = hashlib.sha256(json.dumps(asdict(self), sort_keys=True).encode()).hexdigest()[:12]
+        config = asdict(self)
+        # Preserve every existing checkpoint identity when extensions are unused.
+        for name, default in {"epsilon_mode": "legacy", "bias_rate": None, "dense_validation": False}.items():
+            if config[name] == default:
+                config.pop(name)
+        digest = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:12]
         return f"{self.target}_N{self.n}_{self.optimizer}_{self.arm}_{self.initialization}_s{self.seed}_{digest}"
+
+
+def case_settings(case, g):
+    cs, gs = core.coordinate_scales(g, case.arm, case.halo_metric, case.bias_rate is not None)
+    if case.epsilon_mode not in {"legacy", "native", "physical"}:
+        raise ValueError(f"Unknown epsilon convention {case.epsilon_mode}")
+    er, eg = np.full(g.width + 1, 1e-8), 1e-8
+    rr = np.full(g.width + 1, case.rate_r)
+    if case.bias_rate is not None:
+        rr[0] = case.bias_rate / cs[0]
+    if case.epsilon_mode == "physical":
+        er, eg = er * cs, eg * gs
+    elif case.epsilon_mode == "native" and case.arm == "both":
+        # Ordinary physical epsilon matches uniform coordinates, as does its LR.
+        er[1:] *= np.sqrt(g.ordinary_alpha / g.h)
+    return cs, gs, rr, er, eg
 
 
 def write_json(path, value):
@@ -84,7 +108,7 @@ def unstack_state(state, index):
 
 
 @lru_cache(maxsize=32)
-def kernels(n, name, target_name, samples_per_cell, validation_points):
+def kernels(n, name, target_name, samples_per_cell, validation_points, configured=False):
     g = core.geometry(n)
     chunks = {length: core.make_chunk(g, name, target_name, samples_per_cell, length, batched=True)
               for length in [1, 100]}
@@ -93,12 +117,12 @@ def kernels(n, name, target_name, samples_per_cell, validation_points):
     val_x = jnp.asarray(diagnostics.midpoint_grid(validation_points))
     tx = core.optimizer(name)
 
-    def evaluate(state, cs, gs, rr, rg):
+    def evaluate(state, cs, gs, rr, rg, er=None, eg=None):
         params = state["params"]
         pred_train = core.predict(params, train_x, g.centers, cs, gs)
         pred_val = core.predict(params, val_x, g.centers, cs, gs)
         grad = jax.grad(core.loss)(params, train_x, train_y, g.centers, cs, gs)
-        update, _ = tx.update(grad, state["opt"], params)
+        update, _ = core.optimizer_direction(name, tx, grad, state["opt"], params, er, eg)
         c, gamma = core.physical(params, cs, gs)
         return {"c": c, "gamma": gamma, "lambda": g.h * gamma,
                 "prediction_train": pred_train, "prediction_validation": pred_val,
@@ -107,10 +131,15 @@ def kernels(n, name, target_name, samples_per_cell, validation_points):
                 "next_delta_c": rr * cs * update["readout"],
                 "next_delta_lambda": rg * gs * g.h * update["slope"]}
 
-    def replay(state, count, cs, gs, rr, rg):
-        return jax.lax.fori_loop(0, count, lambda _, current: chunks[1](current, cs, gs, rr, rg)[0], state)
+    def replay(state, count, cs, gs, rr, rg, er=None, eg=None):
+        return jax.lax.fori_loop(0, count, lambda _, current: chunks[1](current, cs, gs, rr, rg, er, eg)[0], state)
 
-    return chunks, jax.jit(jax.vmap(evaluate)), jax.jit(replay)
+    def validation(state, cs, gs):
+        prediction = core.predict(state["params"], val_x, g.centers, cs, gs)
+        residual = prediction - core.target(val_x, target_name)
+        return jnp.sqrt(jnp.mean(residual**2))
+
+    return chunks, jax.jit(jax.vmap(evaluate)), jax.jit(replay), jax.jit(jax.vmap(validation))
 
 
 def checkpoint_steps(frontier):
@@ -162,12 +191,13 @@ def record_checkpoint(root, case, state, step, arrays, window_losses=None):
         adam = state["opt"][0]
         count = int(adam.count)
         moments["adam_count"] = count
-        for block in ["readout", "slope"]:
+        _, _, _, epsilon_r, epsilon_g = case_settings(case, g)
+        for block, epsilon in [("readout", epsilon_r), ("slope", epsilon_g)]:
             mu, nu = np.asarray(adam.mu[block]), np.asarray(adam.nu[block])
             moments[f"adam_{block}_mu"] = mu
             moments[f"adam_{block}_nu"] = nu
             # Before the first update the stored zero moments define a zero diagnostic ratio.
-            moments[f"adam_{block}_sqrt_v_over_epsilon"] = np.sqrt(nu / (1 - .999**count)) / 1e-8 if count else np.zeros_like(nu)
+            moments[f"adam_{block}_sqrt_v_over_epsilon"] = np.sqrt(nu / (1 - .999**count)) / epsilon if count else np.zeros_like(nu)
     save_state(folder / f"state_{step:09d}.pkl", state, step)
     save_arrays(folder / f"checkpoint_{step:09d}.npz", **arrays, **moments,
                         lambda_travel=np.asarray(state["lambda_travel"]),
@@ -249,7 +279,7 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
         raise ValueError("Scientific runs require at least 20,000 updates; use core directly for checks.")
     output = Path(output)
     first = cases[0]
-    shape = lambda c: (c.n, c.optimizer, c.target, c.samples_per_cell, c.validation_points)
+    shape = lambda c: (c.n, c.optimizer, c.target, c.samples_per_cell, c.validation_points, c.epsilon_mode != "legacy")
     if any(shape(c) != shape(first) for c in cases):
         raise ValueError("A compiled batch must share width, optimizer, target, and sample grids.")
     states, starts, scales, histories = [], [], [], []
@@ -258,11 +288,14 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
         folder.mkdir(parents=True, exist_ok=True)
         write_json(folder / "case.json", asdict(case))
         g = core.geometry(case.n)
-        cs, gs = core.coordinate_scales(g, case.arm, case.halo_metric)
-        scales.append((cs, gs))
+        cs, gs, rates, er, eg = case_settings(case, g)
+        scales.append((cs, gs, rates, er, eg))
         np.savez_compressed(folder / "reference.npz", centers=g.centers, alpha=g.alpha, d=g.d,
                             core=g.core, corrected_halo=g.corrected_halo, c_scale=cs, gamma_scale=gs,
-                            h=g.h, radius=g.radius, lambda_reference=core.LAMBDA_REF)
+                            h=g.h, radius=g.radius, lambda_reference=core.LAMBDA_REF,
+                            physical_readout_lr=rates * cs**(2 if case.optimizer == "gd" else 1),
+                            physical_gamma_lr=case.rate_g * gs**(2 if case.optimizer == "gd" else 1),
+                            physical_epsilon_readout=er / cs, physical_epsilon_gamma=eg / gs)
         previous = folder / "latest.json"
         if previous.exists():
             summary = json.loads(previous.read_text())
@@ -291,9 +324,10 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
     state = stack_states(states)
     cs = jnp.asarray(np.stack([s[0] for s in scales]))
     gs = jnp.asarray([s[1] for s in scales])
-    rr = jnp.asarray([c.rate_r for c in cases])
+    rr = jnp.asarray(np.stack([s[2] for s in scales])) if first.epsilon_mode != "legacy" else jnp.asarray([c.rate_r for c in cases])
     rg = jnp.asarray([c.rate_g for c in cases])
-    chunks, evaluate, replay = kernels(*shape(first))
+    extra = (jnp.asarray(np.stack([s[3] for s in scales])), jnp.asarray([s[4] for s in scales])) if first.epsilon_mode != "legacy" else ()
+    chunks, evaluate, replay, validation = kernels(*shape(first))
     checkpoints = set(checkpoint_steps(frontier))
     all_traces = []
     event_exponents = [set(json.loads((output / c.key / "events.json").read_text())
@@ -301,6 +335,8 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
     active = np.ones(len(cases), dtype=bool)
     wall_start = time.monotonic()
     trace_written = start
+    validation_records = [json.loads((output / c.key / "validation_trace.json").read_text())
+                          if (output / c.key / "validation_trace.json").exists() else [] for c in cases]
 
     def flush_trace(at_step):
         nonlocal trace_written
@@ -317,7 +353,7 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
             # Commit traces before latest.json advances, so an interrupted worker resumes
             # without silently dropping the per-step evidence preceding its checkpoint.
             flush_trace(at_step)
-        evaluated = jax.device_get(evaluate(current, cs, gs, rr, rg))
+        evaluated = jax.device_get(evaluate(current, cs, gs, rr, rg, *extra))
         for i in indices:
             arrays = {key: value[i] for key, value in evaluated.items()}
             losses = None
@@ -342,7 +378,7 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
         distance = min([s - step for s in checkpoints if s > step] + [frontier - step])
         length = 100 if distance >= 100 else 1
         before = state
-        state, trace = chunks[length](state, cs, gs, rr, rg)
+        state, trace = chunks[length](state, cs, gs, rr, rg, *extra)
         trace = np.asarray(trace)
         all_traces.append(trace)
         for i in np.flatnonzero(active):
@@ -353,13 +389,21 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
                 hits = np.flatnonzero(residuals <= initial_rms[i] * 10.0**(-exponent))
                 if len(hits):
                     offset = int(hits[0])
-                    event_state = before if offset == 0 else replay(before, offset, cs, gs, rr, rg)
+                    event_state = before if offset == 0 else replay(before, offset, cs, gs, rr, rg, *extra)
                     save(event_state, step + offset, [i], event=True)
                     event_exponents[i].add(exponent)
                     write_json(output / cases[i].key / "events.json", sorted(event_exponents[i]))
                     write_json(output / cases[i].key / f"event_reduction_1e-{exponent}.json",
                                {"step": step + offset, "residual_ratio": 10.0**(-exponent)})
         step += length
+        if any(c.dense_validation for c in cases) and 260000 <= step <= 320000 and step % 1000 == 0:
+            values = np.asarray(validation(state, cs, gs))
+            for i, case in enumerate(cases):
+                if case.dense_validation and active[i] and np.isfinite(values[i]):
+                    # Replace any samples ahead of the last durable state after a resume.
+                    validation_records[i] = [r for r in validation_records[i] if r["step"] < step]
+                    validation_records[i].append({"step": step, "validation_rms": float(values[i])})
+                    write_json(output / case.key / "validation_trace.json", validation_records[i])
         nonfinite = ~np.isfinite(trace).all(axis=(1, 2)) & active
         if nonfinite.any():
             save(state, step, np.flatnonzero(nonfinite))
