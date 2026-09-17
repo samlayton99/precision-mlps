@@ -229,3 +229,14 @@ def test_followup_matrices_keep_rates_fixed_and_seeds_separate():
     assert len(sampling) == 16
     for row in confirmation + halo + sampling:
         assert row["case"]["rate_r"] == base.rate_r and row["case"]["rate_g"] == base.rate_g
+
+
+def test_convergence_window_survives_session_boundaries(tmp_path):
+    losses = np.arange(12, dtype=float)**2
+    for left, right in [(0, 3), (3, 8), (8, 12)]:
+        run.save_arrays(tmp_path / f"trace_{left:09d}_{right:09d}.npz", trace=losses[left:right, None])
+    np.testing.assert_array_equal(run.trace_window_losses(tmp_path, 2, 11), losses[2:11])
+    assert run.trace_window_losses(tmp_path, 2, 13) is None
+    window = run.loss_window_summary(run.trace_window_losses(tmp_path, 6, 12), 12)
+    assert window["start_step"] == 6
+    assert window["mean"] == np.mean(losses[6:12])

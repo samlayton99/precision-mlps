@@ -126,6 +126,28 @@ def checkpoint_steps(frontier):
     return sorted(s for s in steps if s <= frontier) + ([] if frontier in steps else [frontier])
 
 
+def trace_window_losses(folder, begin, end):
+    """Recover a complete convergence window even when SSH interrupted its advance."""
+    losses = np.empty(end - begin)
+    covered = np.zeros(end - begin, dtype=bool)
+    for path in Path(folder).glob("trace_*.npz"):
+        _, left, right = path.stem.split("_")
+        left, right = int(left), int(right)
+        lo, hi = max(begin, left), min(end, right)
+        if lo >= hi:
+            continue
+        with np.load(path) as saved:
+            losses[lo - begin:hi - begin] = saved["trace"][lo - left:hi - left, 0]
+        covered[lo - begin:hi - begin] = True
+    return losses if covered.all() else None
+
+
+def loss_window_summary(losses, end):
+    return {"mean": float(np.mean(losses)), "min": float(np.min(losses)),
+            "max": float(np.max(losses)), "std": float(np.std(losses)),
+            "start_step": end - len(losses)}
+
+
 def record_checkpoint(root, case, state, step, arrays, window_losses=None):
     folder = root / case.key
     folder.mkdir(parents=True, exist_ok=True)
@@ -170,8 +192,7 @@ def record_checkpoint(root, case, state, step, arrays, window_losses=None):
                     "lambda_travel_rms": float(np.linalg.norm(np.asarray(state["lambda_travel"])) / np.sqrt(g.width)),
                     "readout_travel_scaled_rms": float(np.sqrt(np.mean((np.asarray(state["readout_travel"]) / g.alpha)**2)))})
         if window_losses is not None and len(window_losses):
-            row["window_loss"] = {"mean": float(np.mean(window_losses)), "min": float(np.min(window_losses)),
-                                  "max": float(np.max(window_losses)), "std": float(np.std(window_losses))}
+            row["window_loss"] = loss_window_summary(window_losses, step)
     write_json(folder / f"metrics_{step:09d}.json", row)
     return row
 
@@ -182,7 +203,12 @@ def convergence_status(history, checkpoint_dir=None, min_steps=MIN_STEPS):
         return "nonfinite"
     if history[-1]["step"] < min_steps:
         return "continuing"
-    windows = [r for r in history if r["step"] >= min_steps and "window_loss" in r]
+    def complete_doubled_window(row):
+        step = row["step"]
+        ratio = step // min_steps
+        return (step >= min_steps and step % min_steps == 0 and ratio & (ratio - 1) == 0
+                and row.get("window_loss", {}).get("start_step") == (0 if step == min_steps else step // 2))
+    windows = [r for r in history if complete_doubled_window(r)]
     if len(windows) < 4:
         return "continuing"
     recent = windows[-4:]
@@ -242,6 +268,16 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
             summary = json.loads(previous.read_text())
             state, start = load_state(folder / f"state_{summary['step']:09d}.pkl")
             history = summary["history"]
+            # Earlier worker versions summarized only the part since a restart.
+            # Rebuild those summaries from the durable, complete per-step traces.
+            for row in history:
+                if "window_loss" in row and "start_step" not in row["window_loss"]:
+                    begin = 0 if row["step"] == MIN_STEPS else row["step"] // 2
+                    losses = trace_window_losses(folder, begin, row["step"])
+                    if losses is None:
+                        row.pop("window_loss")
+                    else:
+                        row["window_loss"] = loss_window_summary(losses, row["step"])
         else:
             c, gamma = core.initial_physical(g, case.seed, case.initialization, case.halo_init)
             state = core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer(case.optimizer))
@@ -276,7 +312,7 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
                         start_step=trace_written, trace=values[i], columns=np.asarray(core.TRACE_COLUMNS))
         trace_written = at_step
 
-    def save(current, at_step, indices, losses=None, event=False):
+    def save(current, at_step, indices, event=False):
         if not event:
             # Commit traces before latest.json advances, so an interrupted worker resumes
             # without silently dropping the per-step evidence preceding its checkpoint.
@@ -284,8 +320,11 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
         evaluated = jax.device_get(evaluate(current, cs, gs, rr, rg))
         for i in indices:
             arrays = {key: value[i] for key, value in evaluated.items()}
-            row = record_checkpoint(output, cases[i], unstack_state(current, i), at_step, arrays,
-                                    None if losses is None else losses[i])
+            losses = None
+            if not event and at_step == frontier:
+                begin = 0 if at_step == MIN_STEPS else at_step // 2
+                losses = trace_window_losses(output / cases[i].key, begin, at_step)
+            row = record_checkpoint(output, cases[i], unstack_state(current, i), at_step, arrays, losses)
             if not event:
                 if not histories[i] or histories[i][-1]["step"] != at_step:
                     histories[i].append(row)
@@ -325,10 +364,9 @@ def run_batch(cases, output, frontier, deadline=float("inf")):
         if nonfinite.any():
             save(state, step, np.flatnonzero(nonfinite))
         if step in checkpoints:
-            losses = np.concatenate(all_traces, axis=1)[:, :, 0] if step == frontier else None
-            save(state, step, np.flatnonzero(active), losses)
+            save(state, step, np.flatnonzero(active))
     if step not in checkpoints:
-        save(state, step, np.flatnonzero(active), np.concatenate(all_traces, axis=1)[:, :, 0] if all_traces else None)
+        save(state, step, np.flatnonzero(active))
     flush_trace(step)
     return [json.loads((output / c.key / "latest.json").read_text()) for c in cases]
 

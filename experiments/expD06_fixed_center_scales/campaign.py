@@ -139,6 +139,8 @@ def main():
     parser.add_argument("--gpu-hours", type=float, default=11.9,
                         help="Cumulative worker limit across resumptions; two workers stay below 24 GPU-hours.")
     parser.add_argument("--batch-size", type=int, default=4)
+    parser.add_argument("--session-seconds", type=float,
+                        help="Checkpoint and exit 75 for reconnection; the scientific trajectory remains continuing.")
     args = parser.parse_args()
     if args.mode != "pilot" and args.selected is None:
         parser.error("Confirmation and controls require a saved selection file.")
@@ -168,26 +170,31 @@ def main():
     start = time.monotonic()
     remaining = max(0, args.gpu_hours * 3600 - ledger["seconds_used"])
     deadline = start + remaining
+    session_deadline = min(deadline, start + args.session_seconds) if args.session_seconds else deadline
     ledger["active_since"] = time.time()
     write_json(ledger_path, ledger)
     frontier = MIN_STEPS
     last_batch_seconds = 30.0
     try:
-        while time.monotonic() < deadline:
+        while time.monotonic() < session_deadline:
             groups = pending_groups(records, output, frontier)
             for cases in groups.values():
                 for i in range(0, len(cases), args.batch_size):
+                    if time.monotonic() >= session_deadline:
+                        return 75 if session_deadline < deadline else None
                     # Reserve enough time to finish the 20k minimum for a newly started batch.
                     if deadline - time.monotonic() < max(60, 2 * last_batch_seconds):
                         return
                     batch = cases[i:i + args.batch_size]
                     batch_start = time.monotonic()
-                    results = run_batch(batch, output, frontier, deadline)
+                    results = run_batch(batch, output, frontier, session_deadline)
                     last_batch_seconds = time.monotonic() - batch_start
                     print(json.dumps({"frontier": frontier, "seconds": last_batch_seconds,
                                       "cases": [c.key for c in batch],
                                       "status": [r["status"] for r in results],
                                       "validation_rms": [r["history"][-1].get("validation", {}).get("rms") for r in results]}), flush=True)
+                    if time.monotonic() >= session_deadline:
+                        return 75 if session_deadline < deadline else None
             print(json.dumps({"frontier_complete": frontier, "optimizer": args.optimizer,
                               "worker_seconds": time.monotonic() - start}), flush=True)
             if args.max_frontier and frontier >= args.max_frontier:
@@ -195,6 +202,8 @@ def main():
             if not pending_groups(records, output, frontier * 2):
                 break
             frontier *= 2
+        if session_deadline < deadline and time.monotonic() >= session_deadline:
+            return 75
     finally:
         ledger["seconds_used"] += time.monotonic() - start
         ledger.pop("active_since", None)
@@ -203,4 +212,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
