@@ -112,6 +112,13 @@ def checkpoint_arrays(x, y, centers, h, d_reference, c, gamma, masks, cutoff=1e-
         for region, mask in all_masks.items():
             output[f"probe_{label}_{region}_cos"] = multiplier * np.linalg.norm(transform[:, mask].real, axis=1)
             output[f"probe_{label}_{region}_sin"] = multiplier * np.linalg.norm(transform[:, mask].imag, axis=1)
+            direction = np.where(mask, np.sign(gamma), 0.0)
+            length = np.linalg.norm(direction)
+            if length:
+                direction /= length
+            collective = transform @ direction
+            output[f"probe_{label}_{region}_signed_cos"] = multiplier * collective.real
+            output[f"probe_{label}_{region}_signed_sin"] = -multiplier * collective.imag
     if delta_c is not None and delta_lambda is not None:
         output["next_delta_readout"] = delta_c
         output["next_delta_lambda"] = delta_lambda

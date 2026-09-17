@@ -133,6 +133,14 @@ def test_detached_refit_and_gradient_diagnostics():
     grad = jax.grad(core.loss)(params, jnp.asarray(x), jnp.asarray(y), centers, d, 4.0)
     np.testing.assert_allclose(out["gradient_lambda"], grad["slope"], rtol=1e-12, atol=1e-13)
     np.testing.assert_allclose(out["gradient_readout"], grad["readout"] / d, rtol=1e-12, atol=1e-13)
+    direction = np.sign(gamma) / np.sqrt(len(gamma))
+    tangent = c[1:] * (x[:, None] - centers) / .25
+    tangent *= 1 / np.cosh((x[:, None] - centers) * gamma)**2
+    tangent = tangent @ direction / np.sqrt(len(x))
+    phase = 2 * np.pi * 3 * np.arange(len(x)) / len(x)
+    probe = np.sqrt(2 / len(x)) * np.sin(phase)
+    np.testing.assert_allclose(out["probe_raw_all_signed_sin"][3], probe @ tangent, atol=1e-14)
+    np.testing.assert_allclose(out["force_all"][:2].sum(), -out["gradient_lambda"] @ direction, atol=1e-13)
 
 
 def test_scientific_runner_enforces_twenty_thousand_steps(tmp_path):
