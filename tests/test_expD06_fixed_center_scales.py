@@ -9,6 +9,7 @@ import jax.numpy as jnp
 
 from experiments.expD06_fixed_center_scales import core
 from experiments.expD06_fixed_center_scales import diagnostics
+from experiments.expD06_fixed_center_scales import run
 
 
 def test_reference_envelopes_and_halo_slots():
@@ -131,3 +132,44 @@ def test_detached_refit_and_gradient_diagnostics():
     grad = jax.grad(core.loss)(params, jnp.asarray(x), jnp.asarray(y), centers, d, 4.0)
     np.testing.assert_allclose(out["gradient_lambda"], grad["slope"], rtol=1e-12, atol=1e-13)
     np.testing.assert_allclose(out["gradient_readout"], grad["readout"] / d, rtol=1e-12, atol=1e-13)
+
+
+def test_scientific_runner_enforces_twenty_thousand_steps(tmp_path):
+    with pytest.raises(ValueError, match="20,000"):
+        run.run_batch([run.Case()], tmp_path, 19999)
+    assert run.convergence_status([{"step": 19999, "finite": True}]) == "continuing"
+
+
+@pytest.mark.parametrize("optimizer", ["gd", "adam"])
+def test_checkpoint_resume_matches_uninterrupted(optimizer, tmp_path):
+    g = core.geometry(128)
+    c, gamma = core.initial_physical(g, 7, "xavier")
+    cs, gs = core.coordinate_scales(g, "both")
+    state = core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer(optimizer))
+    chunk = core.make_chunk(g, optimizer, "sine", samples_per_cell=1, steps=7)
+    after_seven, _ = chunk(state, cs, gs, 1e-5, 1e-6)
+    path = tmp_path / "checkpoint.pkl"
+    run.save_state(path, after_seven, 7)
+    restored, step = run.load_state(path)
+    assert step == 7
+    continued, _ = chunk(restored, cs, gs, 1e-5, 1e-6)
+    uninterrupted, _ = chunk(after_seven, cs, gs, 1e-5, 1e-6)
+    for a, b in zip(jax.tree.leaves(continued), jax.tree.leaves(uninterrupted)):
+        np.testing.assert_array_equal(a, b)
+
+
+def test_batched_runs_are_independent():
+    g = core.geometry(128)
+    cs, gs = core.coordinate_scales(g, "both")
+    states = []
+    for seed in [0, 1]:
+        c, gamma = core.initial_physical(g, seed, "xavier")
+        states.append(core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer("adam")))
+    batch = core.make_chunk(g, "adam", "sine", 1, 5, batched=True)
+    result, _ = batch(run.stack_states(states), jnp.stack([cs, cs]), jnp.array([gs, gs]),
+                      jnp.array([1e-4, 1e-3]), jnp.array([1e-6, 1e-5]))
+    single = core.make_chunk(g, "adam", "sine", 1, 5)
+    for i, (rr, rg) in enumerate([(1e-4, 1e-6), (1e-3, 1e-5)]):
+        expected, _ = single(states[i], cs, gs, rr, rg)
+        for a, b in zip(jax.tree.leaves(run.unstack_state(result, i)), jax.tree.leaves(expected)):
+            np.testing.assert_allclose(a, b, rtol=2e-13, atol=1e-15)
