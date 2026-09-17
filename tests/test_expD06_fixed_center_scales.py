@@ -366,3 +366,28 @@ def test_case_extensions_preserve_legacy_checkpoint_identity():
         legacy.pop(field)
     digest = hashlib.sha256(json.dumps(legacy, sort_keys=True).encode()).hexdigest()[:12]
     assert case.key.endswith(digest)
+
+
+def test_spectral_export_preserves_rms_and_signed_forces(tmp_path):
+    import json
+    from experiments.expD06_fixed_center_scales.consolidate import spectral_evidence
+    g = core.geometry(128)
+    c, gamma = core.initial_physical(g, 2, "xavier_a_uniform")
+    x = np.linspace(-1, 1, 257)
+    arrays = diagnostics.checkpoint_arrays(x, core.target(x, "sine", np), g.centers, g.h, g.d, c, gamma,
+                                          g.masks, delta_c=np.zeros_like(c), delta_lambda=np.zeros_like(gamma))
+    folder = tmp_path / "case"
+    (folder / "analysis").mkdir(parents=True)
+    (tmp_path / "figures").mkdir()
+    # Synthetic unit-test checkpoint; no scientific trajectory is claimed.
+    run.save_arrays(folder / "checkpoint_000320000.npz", gamma=gamma)
+    run.save_arrays(folder / "analysis" / "diagnostics_000320000_tau1e-12.npz", **arrays)
+    row = {"key":"fixture", "folder":str(folder), "n":128, "optimizer":"adam", "arm":"uniform",
+           "initialization":"xavier_a_uniform", "seed":2, "rate_r":1e-3, "rate_g":1e-3}
+    spectral_evidence([row], [{"score_key":"window_rms_320000", "cases":["fixture"]}], tmp_path)
+    result = json.loads((tmp_path / "spectral_history.json").read_text())[0]
+    np.testing.assert_allclose(np.linalg.norm(result["train_band_rms"]), np.sqrt(np.mean(arrays["residual_train"]**2)))
+    np.testing.assert_allclose(sum(result["all_parallel_signed_force"]), arrays["force_all"][0], atol=1e-13)
+    np.testing.assert_allclose(sum(result["all_perpendicular_signed_force"]), arrays["force_all"][1], atol=1e-13)
+    assert result["update_prediction_reconstruction_max_error"] == 0
+    assert (tmp_path / "figures" / "spectral_fixture.png").exists()
