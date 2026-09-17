@@ -178,7 +178,7 @@ def figures(rows, choices, mechanism, output):
     fig.tight_layout(rect=(0, 0, .96, .94))
     if scatter is not None:
         fig.colorbar(scatter, cax=fig.add_axes([.97, .2, .008, .6]), label="log10 window RMS")
-    fig.savefig(output / "lr_windows.png", dpi=130)
+    fig.savefig(output / "lr_windows.png", dpi=130, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -279,8 +279,9 @@ def focused_comparisons(rows, output):
     conditions = [(arm, rr, rg) for arm in ["uniform", "both"] for rr, rg in [(1e-4, 1e-3), (1e-3, 1e-3), (1e-3, 1e-2)]]
     paired = []
     fig, axes = plt.subplots(1, 3, figsize=(17, 5), layout="constrained")
-    fields = ["window_validation_320000", "lambda_median_320000", "refit_320000"]
-    for ax, field in zip(axes, fields):
+    fields = ["window_rms_320000", "lambda_median_320000", "refit_320000"]
+    titles = ["Complete training-window RMS", "Median |lambda|", "Detached validation refit RMS"]
+    for ax, field, title in zip(axes, fields, titles):
         values = np.full((4, 6), np.nan)
         for i, family in enumerate(families):
             for j, (arm, rr, rg) in enumerate(conditions):
@@ -289,7 +290,9 @@ def focused_comparisons(rows, output):
                 if len(group) == 2:
                     values[i, j] = np.mean([np.log10(max(r[field], 1e-300)) for r in group])
         im = ax.imshow(values, aspect="auto")
-        ax.set(yticks=range(4), yticklabels=families, xticks=range(6), xticklabels=[f"{a}\n{r:g}/{g:g}" for a,r,g in conditions], title=field.replace("_320000", ""))
+        ax.set(yticks=range(4), yticklabels=families, xticks=range(6),
+               xticklabels=[f"{a}\n{r:.0e}\n{g:.0e}" for a,r,g in conditions],
+               xlabel="Map / uniform-coordinate readout LR / slope LR", title=title)
         ax.tick_params(axis="x", labelsize=7)
         for (i, j), value in np.ndenumerate(values):
             if np.isfinite(value):
@@ -304,8 +307,35 @@ def focused_comparisons(rows, output):
             continue
         native = next(r for r in records if r["kind"] == "primary" and all(r[k] == row[k] for k in ["arm", "initialization", "seed", "rate_r", "rate_g"]))
         paired.append({"physical_epsilon_case": row["key"], "native_case": native["key"], **{
-            f"{field}_physical_over_native": row[field] / native[field] for field in fields if field in row and field in native}})
+            f"{field}_physical_over_native": row[field] / native[field]
+            for field in fields + ["window_validation_320000"] if field in row and field in native}})
     write_json(output / "epsilon_contrasts.json", paired)
+    fig, axes = plt.subplots(1, 2, figsize=(13, 6), layout="constrained")
+    groups = defaultdict(list)
+    for row in records:
+        if row["initialization"] != "xavier_a_uniform" or row["arm"] == "both":
+            continue
+        label = f"{row['arm']} {row['rate_r']:g}/{row['rate_g']:g}, {row['epsilon_mode']} epsilon"
+        groups[label].append(row)
+    horizons = [20000, 80000, 160000, 320000]
+    for label, pair in groups.items():
+        if len(pair) != 2:
+            continue
+        for ax, field in zip(axes, ["lambda_median", "window_rms"]):
+            if not all(f"{field}_{step}" in r for r in pair for step in horizons):
+                continue
+            values = np.array([[r[f"{field}_{step}"] for step in horizons] for r in pair])
+            mean = np.sqrt(values.prod(axis=0))
+            line, = ax.loglog(horizons, mean, ".-", label=label)
+            ax.fill_between(horizons, values.min(axis=0), values.max(axis=0), color=line.get_color(), alpha=.12)
+    axes[0].axhline(.25, color="black", linestyle="--", linewidth=.8)
+    axes[0].set(ylabel="Median |lambda|", xlabel="Updates")
+    axes[1].set(ylabel="Training RMS over preceding 20k updates", xlabel="Updates")
+    handles, labels = axes[1].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="outside lower center", ncol=2, fontsize=8)
+    fig.suptitle("Xavier on a with w=sqrt(h) a; physical Xavier gamma; geometric means and two-seed ranges")
+    fig.savefig(output / "figures" / "focused_xavier_a_trajectories.png", dpi=150)
+    plt.close(fig)
 
 
 def trajectory_figures(rows, choices, mechanism, output):

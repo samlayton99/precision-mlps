@@ -1,5 +1,7 @@
 # Fixed-center scale learning: protocol and interim pilot
 
+The [320k consolidation and crossed initialization study](scale_learning_consolidation.md) supersedes the status and endpoint rankings below. This report preserves the earlier 20k observations and execution history.
+
 The experiment is implemented. Across the expanded grid and its boundary extension, 485 finite trials have completed at least 20,000 updates, and 59 larger-rate GD trials failed numerically. The clearest result so far is that trained error, bandwidth growth, and the quality of the current feature geometry can move differently. Small trained error does not establish convergence, and larger bandwidth does not consistently improve the geometry. These are interim, validation-selected observations on one target and width. The convergence study has resumed through Slurm after correcting the earlier launches outside the scheduler; trained width/target comparisons remain unfinished.
 
 | Term | Meaning |
