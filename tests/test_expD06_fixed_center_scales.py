@@ -245,3 +245,27 @@ def test_convergence_window_survives_session_boundaries(tmp_path):
     window = run.loss_window_summary(run.trace_window_losses(tmp_path, 6, 12), 12)
     assert window["start_step"] == 6
     assert window["mean"] == np.mean(losses[6:12])
+
+
+def test_consolidation_preserves_oscillations_and_requires_complete_traces(tmp_path):
+    from experiments.expD06_fixed_center_scales.consolidate import trace_windows
+    rms = np.array([1., .01, 1., .01, 1., .01])
+    trace = np.zeros((6, 5))
+    trace[:, 0] = rms**2 / 2
+    for left, right in [(0, 2), (2, 6)]:
+        run.save_arrays(tmp_path / f"trace_{left:09d}_{right:09d}.npz", trace=trace[left:right])
+    row = trace_windows(tmp_path, [(0, 6)])[0]
+    np.testing.assert_allclose(row["training_rms_over_time"], np.sqrt(np.mean(rms**2)))
+    assert row["training_rms_over_time"] > 50 * rms[-1]
+    with pytest.raises(ValueError, match="Missing"):
+        trace_windows(tmp_path, [(0, 7)])
+
+
+def test_paired_window_choice_can_differ_from_endpoint_choice():
+    from experiments.expD06_fixed_center_scales.consolidate import paired_choices
+    rows = [{"optimizer": "adam", "arm": "both", "initialization": "xavier", "seed": seed,
+             "rate_r": rate, "rate_g": .01, "key": f"{rate}_{seed}",
+             "endpoint": end, "window": window}
+            for rate, end, window in [(.001, .01, .01), (.01, .0001, .1)] for seed in [0, 1]]
+    assert paired_choices(rows, "endpoint")[0]["rate_r"] == .01
+    assert paired_choices(rows, "window")[0]["rate_r"] == .001
