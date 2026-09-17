@@ -10,6 +10,7 @@ import jax.numpy as jnp
 from experiments.expD06_fixed_center_scales import core
 from experiments.expD06_fixed_center_scales import diagnostics
 from experiments.expD06_fixed_center_scales import run
+from experiments.expD06_fixed_center_scales import campaign
 
 
 def test_reference_envelopes_and_halo_slots():
@@ -173,3 +174,17 @@ def test_batched_runs_are_independent():
         expected, _ = single(states[i], cs, gs, rr, rg)
         for a, b in zip(jax.tree.leaves(run.unstack_state(result, i)), jax.tree.leaves(expected)):
             np.testing.assert_allclose(a, b, rtol=2e-13, atol=1e-15)
+
+
+def test_rate_manifest_covers_native_and_scale_matched_controls():
+    for optimizer in ["gd", "adam"]:
+        initial = campaign.pilot_manifest(optimizer)
+        expanded = campaign.pilot_manifest(optimizer, expanded=True)
+        assert len(initial) == 84 and len(expanded) == 212
+        assert len({r["key"] for r in expanded}) == len(expanded)
+        assert {r["key"] for r in initial} <= {r["key"] for r in expanded}
+        g = core.geometry(512)
+        raw = next(r for r in initial if r["case"]["arm"] == "raw" and r["grid"] == "ordinary_update_matched")
+        expected = raw["base_lr"] * raw["bandwidth_to_readout_ratio"] * g.h**(-2 if optimizer == "gd" else -1)
+        assert raw["case"]["rate_g"] == expected
+        assert {r["case"]["seed"] for r in expanded} == {0, 1}

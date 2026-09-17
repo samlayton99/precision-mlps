@@ -156,6 +156,7 @@ def initial_state(params, tx):
     return {"params": params, "opt": tx.init(params),
             "lambda_travel": jnp.zeros_like(params["slope"]),
             "readout_travel": jnp.zeros_like(params["readout"]),
+            "sign_crossings": jnp.zeros(params["slope"].shape, dtype=jnp.int64),
             "gd_lambda_budget": jnp.zeros_like(params["slope"])}
 
 
@@ -186,9 +187,12 @@ def make_chunk(g: Geometry, name: str, target_name: str, samples_per_cell=16, st
             if name == "gd":
                 budget = budget + (g.h * rate_g * gamma_scale**2 * distance_bound
                                    * jnp.abs(c[1:]) * jnp.sqrt(2 * value))
-            next_state = {"params": optax.apply_updates(params, updates), "opt": opt_state,
+            next_params = optax.apply_updates(params, updates)
+            crossings = (params["slope"] * next_params["slope"]) < 0
+            next_state = {"params": next_params, "opt": opt_state,
                           "lambda_travel": current["lambda_travel"] + jnp.abs(dl),
                           "readout_travel": current["readout_travel"] + jnp.abs(dc),
+                          "sign_crossings": current["sign_crossings"] + crossings,
                           "gd_lambda_budget": budget}
             stats = jnp.array([value, jnp.sqrt(jnp.mean(dl**2)),
                                jnp.sqrt(jnp.mean((dc / jnp.asarray(g.alpha))**2)),

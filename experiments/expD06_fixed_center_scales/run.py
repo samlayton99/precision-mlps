@@ -127,10 +127,22 @@ def record_checkpoint(root, case, state, step, arrays, window_losses=None):
         finite = (all(np.isfinite(np.linalg.norm(v)) for v in arrays.values())
                   and all(np.all(np.isfinite(v)) for v in jax.tree.leaves(state))
                   and np.isfinite(np.linalg.norm(np.asarray(state["readout_travel"]) / g.alpha)))
+    moments = {}
+    if case.optimizer == "adam":
+        adam = state["opt"][0]
+        count = int(adam.count)
+        moments["adam_count"] = count
+        for block in ["readout", "slope"]:
+            mu, nu = np.asarray(adam.mu[block]), np.asarray(adam.nu[block])
+            moments[f"adam_{block}_mu"] = mu
+            moments[f"adam_{block}_nu"] = nu
+            # Before the first update the stored zero moments define a zero diagnostic ratio.
+            moments[f"adam_{block}_sqrt_v_over_epsilon"] = np.sqrt(nu / (1 - .999**count)) / 1e-8 if count else np.zeros_like(nu)
     save_state(folder / f"state_{step:09d}.pkl", state, step)
-    np.savez_compressed(folder / f"checkpoint_{step:09d}.npz", **arrays,
+    np.savez_compressed(folder / f"checkpoint_{step:09d}.npz", **arrays, **moments,
                         lambda_travel=np.asarray(state["lambda_travel"]),
                         readout_travel=np.asarray(state["readout_travel"]),
+                        sign_crossings=np.asarray(state["sign_crossings"]),
                         gd_lambda_budget=np.asarray(state["gd_lambda_budget"]))
     row = {"step": step, "finite": bool(finite)}
     if finite:
