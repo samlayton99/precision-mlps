@@ -17,6 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "matplotlib>=3.7"]
+jax-experiments = ["jax>=0.4.35", "optax>=0.2.3"]
 
 [tool.setuptools.packages.find]
 include = ["src*", "experiments*"]
