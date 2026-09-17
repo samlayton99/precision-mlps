@@ -105,6 +105,7 @@ def test_fourier_split_reconstructs_energy_and_signed_gradients():
         np.testing.assert_allclose(out["band_energy"].sum(), r @ r, rtol=1e-14)
         np.testing.assert_allclose(out["band_gradient_lambda"].sum(axis=0), j.T @ r, atol=1e-14)
         np.testing.assert_allclose(out["band_gradient_parallel"].sum(axis=0), pj.T @ r, atol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_perpendicular"].sum(axis=0), (j - pj).T @ r, atol=1e-14)
         np.testing.assert_allclose(out["band_gradient_readout"].sum(axis=0), a.T @ r, atol=1e-14)
         np.testing.assert_allclose(out["band_gradient_lambda"], out["band_gradient_parallel"]
                                    + out["band_gradient_perpendicular"], atol=1e-14)
@@ -196,6 +197,10 @@ def test_rate_manifest_covers_native_and_scale_matched_controls():
         expected = raw["base_lr"] * raw["bandwidth_to_readout_ratio"] * g.h**(-2 if optimizer == "gd" else -1)
         assert raw["case"]["rate_g"] == expected
         assert {r["case"]["seed"] for r in expanded} == {0, 1}
+        boundary = campaign.pilot_manifest(optimizer, boundary=True)
+        assert len(boundary) == (292 if optimizer == "gd" else 252)
+        assert len({r["key"] for r in boundary}) == len(boundary)
+        assert {r["key"] for r in expanded} <= {r["key"] for r in boundary}
 
 
 def test_nonfinite_checkpoint_is_recorded_as_failure(tmp_path):

@@ -20,9 +20,13 @@ from . import core
 from .run import Case, MIN_STEPS, TERMINAL, run_batch, write_json
 
 
-def pilot_manifest(optimizer, expanded=False):
-    bases = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1] if expanded else [1e-4, 1e-3, 1e-2]
-    ratios = [.01, .1, 1., 10., 100.] if expanded else [.1, 1., 10.]
+def pilot_manifest(optimizer, expanded=False, boundary=False):
+    bases = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1] if expanded or boundary else [1e-4, 1e-3, 1e-2]
+    ratios = [.01, .1, 1., 10., 100.] if expanded or boundary else [.1, 1., 10.]
+    if boundary and optimizer == "gd":
+        bases += [.3, 1.]
+    if boundary and optimizer == "adam":
+        ratios += [1000.]
     g = core.geometry(512)
     records = []
     for initialization in ["xavier", "envelope"]:
@@ -133,6 +137,7 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--optimizer", choices=["gd", "adam"], required=True)
     parser.add_argument("--expanded", action="store_true")
+    parser.add_argument("--boundary", action="store_true", help="Extend the boundaries reached by the 20k pilot winners.")
     parser.add_argument("--mode", choices=["pilot", "confirmation", "halo", "sampling"], default="pilot")
     parser.add_argument("--selected", type=Path)
     parser.add_argument("--max-frontier", type=int, help="Pause for analysis here; unfinished runs remain continuing.")
@@ -150,12 +155,12 @@ def main():
     output = args.root / "runs" / args.mode
     output.mkdir(parents=True, exist_ok=True)
     if args.mode == "pilot":
-        records = pilot_manifest(args.optimizer, args.expanded)
+        records = pilot_manifest(args.optimizer, args.expanded, args.boundary)
     else:
         selected = json.loads(args.selected.read_text())
         records = confirmation_manifest(selected) if args.mode == "confirmation" else control_manifest(selected, args.mode)
     records = [r for r in records if r["case"]["optimizer"] == args.optimizer]
-    stage = "expanded" if args.expanded else "initial"
+    stage = "boundary" if args.boundary else "expanded" if args.expanded else "initial"
     write_json(args.root / f"manifest_{args.mode}_{args.optimizer}_{stage}.json", records)
     source_hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(__file__).parent.glob("*.py")}
     write_json(args.root / f"environment_{args.optimizer}_{os.getpid()}.json",
