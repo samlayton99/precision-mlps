@@ -24,13 +24,30 @@ Here $\mathbf c$ includes the output bias. The fixed diagonal $D$ comes from the
 
 Hold initialization fixed: physical slopes use tanh Xavier, $\widetilde\gamma_{j,0}=(5/3)\sqrt{2/(W+1)}\,g_j$; physical readouts use the note's reference-envelope law $\widetilde w_{j,0}=\alpha_j\operatorname{sign}(\xi_j)$ with $d_j=\sqrt{\alpha_j}$ and independent standard normal draws $g_j,\xi_j$; output bias starts at zero. Initial slope signs are absorbed into readouts without changing the function. The unscaled control starts from exactly the same physical network and trains $(\mathbf c,\boldsymbol\gamma)$ with one shared $\eta$. Both use full-batch FP64 Adam, moments $(0.9,0.999)$, and trained-coordinate epsilon $10^{-8}$ throughout.
 
-This report uses only existing pilot runs satisfying that contract: 10 scaled runs at $\eta\in\{10^{-5},10^{-4},10^{-3},10^{-2},10^{-1}\}$ and six unscaled controls at $\eta\in\{10^{-4},10^{-3},10^{-2}\}$, each with seeds 0 and 1. All completed 320,000 updates and have verified complete traces. The user's shared-rate clarification supersedes the earlier independent-rate search in the protocol; results with unequal coordinate rates do not answer this question and are excluded.
+The baseline evidence uses existing pilot runs satisfying that contract: 10 scaled runs at $\eta\in\{10^{-5},10^{-4},10^{-3},10^{-2},10^{-1}\}$ and six unscaled controls at $\eta\in\{10^{-4},10^{-3},10^{-2}\}$, each with seeds 0 and 1. All completed 320,000 updates and have verified complete traces. The user's shared-rate clarification supersedes the earlier independent-rate search in the protocol. Unequal-rate results appear only in the explicitly identified historical comparison below, to explain the earlier reported errors.
 
 The target is $\sqrt2\sin(2\pi x)$ on $[-1,1]$, with $N=512$, $R=23$, and $W=559$. Training uses 8,193 endpoint-inclusive samples; diagnostic validation uses 32,768 midpoint samples. The final test grid remains unused. Detached solves use the same $D$ and relative SVD cutoff $10^{-12}$ in both arms. This is an optimization study, not a final held-out evaluation.
 
+### Effective learning rates in physical parameters
+
+At $N=512$, $h=1/256$, $d_{\rm ordinary}=0.09307517$, and $d_{\rm bias}=3.28083978$. The shared coordinate rate $\eta=10^{-3}$ therefore gives the following physical Adam prefactors. These multiply Adam's normalized moments; they are not measured parameter displacements or rates of error reduction.
+
+**Table 1. Physical Adam prefactors at the same shared base rate $\eta=10^{-3}$.**
+
+| Physical parameter | Unscaled control | Prescribed scales | Scaled / unscaled |
+|---|---:|---:|---:|
+| Ordinary readout weights, including uncorrected halo | $10^{-3}$ | $9.3075\times10^{-5}$ | 0.0931 |
+| Corrected halo readout weights | $10^{-3}$ | $9.3075\times10^{-5}$ to $1.0224\times10^{-3}$ | 0.0931 to 1.0224 |
+| Output bias | $10^{-3}$ | $3.2808\times10^{-3}$ | 3.2808 |
+| Physical slopes $\gamma$ | $10^{-3}$ | 0.256 | 256 |
+
+Thus ordinary readout prefactors are 10.74 times smaller, slope prefactors are 256 times larger, and the output-bias prefactor is 3.28 times larger. The corrected halo is not uniformly slowed. Setting the shared rate to $10^{-2}$ multiplies every scaled prefactor in this table by ten without changing their ratios.
+
+The physical epsilon thresholds also follow the coordinate map: $1.0744\times10^{-7}$ for ordinary readouts, $3.0480\times10^{-9}$ for the bias, and $3.90625\times10^{-11}$ for slopes, versus $10^{-8}$ throughout the unscaled control. Hence the prefactor ratios alone are not exact ratios of actual updates. The [computed rate record](shared_rate_analysis/effective_rates.json) stores all 560 readout/bias prefactors and epsilons, slope settings, and source cases, calculated using `core.geometry` and `run.case_settings`.
+
 ## What the shared-rate runs show
 
-**Table 1. Results at 320,000 updates; entries show seed 0 / seed 1. Training RMS uses updates 300k–320k.**
+**Table 2. Results at 320,000 updates; entries show seed 0 / seed 1. Training RMS uses updates 300k–320k.**
 
 | Setup | Shared $\eta$ | Training-window RMS | Median $\lvert\lambda\rvert$ | Detached refit RMS |
 |---|---|---|---|---|
@@ -42,12 +59,22 @@ Among the five sampled shared rates, $10^{-3}$ has the lowest paired geometric m
 
 At $\eta=10^{-3}$, scaled median bandwidths grow from 0.00882 / 0.0160 at 20k to 0.0231 / 0.0658 at 160k and 0.0329 / 0.0808 at 320k. The corresponding unscaled medians at 20k are 0.000492 / 0.000653 and remain small through 320k. Scaling therefore sustains substantially more geometry movement after the early fitting phase. The final scaled refits require readout $\ell_1$ norms of 16.6 / 16.2, so their accuracy is not obtained only with enormous coefficients.
 
+This demonstrates accurate approximation with the learned features, not good conditioning of the full readout problem. The SVD retains only 204 / 313 of the 560 feature columns' singular directions at the stated cutoff. A highly accurate truncated solve does not imply that Adam can quickly find its readout coefficients.
+
 <figure>
   <img src="shared_rate_analysis/figures/shared_rate_trajectories.png" alt="Two-seed trajectories of bandwidth, complete training-window error, and detached readout error for shared-rate scaled training and its unscaled control" style="max-width: 100%;">
   <figcaption>One initialization and one shared rate per run. Blue is the prescribed scaling at the lowest-error sampled shared rate; orange increases that shared rate tenfold; gray is the paired unscaled control at the same base rate as blue. Solid and dashed lines show the two seeds separately. The dotted bandwidth reference is 0.25, not a required median for a heterogeneous learned dictionary. The first training window includes initialization.</figcaption>
 </figure>
 
 Useful features do not yet translate into a precise live fit. At $\eta=10^{-3}$, the final three training windows are 0.00246, 0.00230, 0.00212 for seed 0 and 0.001128, 0.001115, 0.001108 for seed 1, with substantial within-window oscillations. Error is still improving, especially in seed 0; these runs must not be called converged. Raising the shared rate to $10^{-2}$ brings median bandwidths above 0.25 but worsens both sustained training error and the final detached fit. Merely reaching that median does not establish the intended geometry.
+
+### Why earlier errors reached $10^{-4}$
+
+There are two separate comparisons. First, endpoint error can be much smaller than sustained error: the current shared-$10^{-3}$ runs have final validation RMS $5.58\times10^{-4}$ / $6.27\times10^{-5}$, but training-window RMS $2.12\times10^{-3}$ / $1.11\times10^{-3}$. A favorable oscillation phase is not a sustained $10^{-4}$ result.
+
+Second, the earlier reference-scaled runs did achieve sustained RMS $1.48\times10^{-4}$ / $1.52\times10^{-4}$ on the same target, width, initialization, seeds, and 300k–320k window. They used unequal coordinate rates $(\eta_a,\eta_\lambda)=(10^{-4},10^{-2})$. Their physical ordinary-readout, bias, and slope prefactors were respectively $9.3075\times10^{-6}$, $3.2808\times10^{-4}$, and 2.56. Relative to the shared-$10^{-3}$ baseline, every readout/bias prefactor was ten times smaller and the slope prefactor ten times larger. This extra ratio is outside the shared-rate prescription. The approximately $10^{-4}$ historical Raw result likewise used unequal physical rates, $9.3075\times10^{-6}$ and 2.56; it was not the unscaled shared-rate control.
+
+The lower live error did not reflect better features in the reference-scaled comparison: those earlier detached errors were about $2\times10^{-7}$, with refitted coefficient norms above 20,000. At the same geometry coordinate rate $10^{-2}$, reducing the readout coordinate rate from $10^{-2}$ to $10^{-4}$ lowered sustained error from about 0.011 to 0.00015, even though the final refit worsened. This supports sensitivity to readout step size and joint optimizer dynamics; it does not isolate a particular oscillation mechanism or establish the shared-rate prescription. The [rate record](shared_rate_analysis/effective_rates.json) preserves the historical configurations and comparable error measurements.
 
 ## What the residual and gradient evidence says
 
