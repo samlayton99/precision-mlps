@@ -177,6 +177,7 @@ def main():
     deadline = start + remaining
     session_deadline = min(deadline, start + args.session_seconds) if args.session_seconds else deadline
     ledger["active_since"] = time.time()
+    ledger["limit_seconds"] = args.gpu_hours * 3600
     write_json(ledger_path, ledger)
     frontier = MIN_STEPS
     last_batch_seconds = 30.0
