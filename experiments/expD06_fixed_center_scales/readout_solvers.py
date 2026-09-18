@@ -81,7 +81,7 @@ def linear_chunk(length, capture=False, batched=True):
             direction = jnp.where(algorithm == 0, -grad, jnp.where(algorithm == 1, -momentum, adam))
             mu = jnp.where(algorithm == 1, momentum, jnp.where(algorithm >= 2, adam_mu, mu))
             nu = jnp.where(algorithm >= 2, adam_nu, nu)
-            fallback = (algorithm < 3) & (jnp.vdot(grad, direction) >= 0)
+            fallback = (algorithm > 0) & (algorithm < 3) & (jnp.vdot(grad, direction) > 0)
             direction = jnp.where(fallback, -grad, direction)
             directional = jnp.vdot(grad, direction)
             phase = jnp.minimum((start + index) / 80_000, 1.)

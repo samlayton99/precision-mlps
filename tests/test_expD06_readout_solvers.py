@@ -56,3 +56,15 @@ def test_warm_adam_moments_and_resume_match_live_frozen_readout(tmp_path):
     restored, at = run.load_state(tmp_path / "linear.pkl")
     resumed, _ = rs.linear_chunk(4, False, False)(restored, b, y, t, 4, at)
     np.testing.assert_array_equal(actual["z"], resumed["z"])
+
+
+def test_uphill_momentum_uses_gradient_and_records_fallback():
+    state = rs.initial_state(np.zeros(2), 1, mu=np.ones(2) * 100)
+    updated, trace = rs.linear_chunk(1, False, False)(state, np.eye(2), np.ones(2), np.eye(2), 1, 0)
+    np.testing.assert_allclose(updated["z"], [.1, .1])
+    assert int(updated["fallbacks"]) == 1
+    assert trace[0, 6] == 1
+    zero = rs.initial_state(np.zeros(2), 0)
+    end, _ = rs.linear_chunk(1, False, False)(zero, np.eye(2), np.zeros(2), np.eye(2), 0, 0)
+    assert int(end["fallbacks"]) == 0
+    assert int(end["stagnations"]) == 1

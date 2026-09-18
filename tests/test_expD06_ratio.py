@@ -52,6 +52,10 @@ def test_case_matrix(tmp_path):
     assert {b.case.target for group in tails for b in group} == {"sine", "quadratic", "mixed"}
     assert all(b.case.arm == "both" and b.case.initialization == "envelope" for group in tails for b in group)
     assert all(b.source_step == 160_000 for group in tails for b in group)
+    indices = ratio.dense_sample_indices()
+    np.testing.assert_array_equal(indices // 32, np.arange(64))
+    np.testing.assert_array_equal(indices, ratio.dense_sample_indices())
+    assert indices[0] == 0 and len(np.unique(indices % 32)) > 16
 
 
 def test_dense_evidence_is_actual_physical_motion():

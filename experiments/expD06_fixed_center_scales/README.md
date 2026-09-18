@@ -75,7 +75,9 @@ span at both cutoffs $10^{-10},10^{-12}$. The first intervention lowers the
 geometry rate tenfold over 20k. After another 40k at fixed rates, a persistent
 stall permits a threefold readout-rate increase only if readout-only
 counterfactual steps lower mean MSE and lower MSE in at least 95% of 64
-systematically sampled states from the latest 2048-state window. There are
+stratified sampled states from the latest 2048-state window. One state is
+selected per block of 32 using fixed random offsets (seed 391), to avoid
+aliasing periodic optimizer motion. There are
 at most two interventions. Thresholds are operational choices. Every check,
 rejection, source window, cutoff, counterfactual, and schedule extension is
 saved in `feedback.json`; no validation observation controls this policy.
@@ -116,7 +118,7 @@ eight-hour allocation ledger before submitting any phase.
 `ratio_analysis.py` exports evidence and plots from a completed common primary
 horizon, including ancestors' actual checkpoints. It checks three SVD cutoffs
 and doubles the training-grid density for detached fits. Each final dense
-window retains all 2048 physical parameter states; 64 systematic samples
+window retains all 2048 physical parameter states; 64 stratified samples
 receive Fourier gradient decomposition, actual-update attribution, and
 readout/geometry/interaction loss budgets. A single SVD basis, fixed at the
 window's first state, tracks residual and update directions across that

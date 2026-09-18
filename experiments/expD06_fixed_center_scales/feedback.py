@@ -53,8 +53,8 @@ def readout_counterfactual(folder, step):
     x = np.linspace(-1, 1, case.n * case.samples_per_cell + 1)
     y = core.target(x, case.target, np)
     changes, states = [], []
-    # Fixed systematic sample of 64 states in the latest 2048-state window.
-    wanted = set((step - 2048 + np.arange(64) * 32).tolist())
+    # Predeclared offsets do not depend on losses, updates, or validation.
+    wanted = set((step - 2048 + ratio.dense_sample_indices()).tolist())
     for path in sorted(folder.glob("dense_*.npz")):
         _, lo, hi = path.stem.split("_")
         if int(hi) <= step - 2048 or int(lo) >= step:
@@ -81,7 +81,7 @@ def feedback_step(output, branch, end, deadline):
     ledger = json.loads(path.read_text()) if path.exists() else {
         "knots": [list(k) for k in branch.knots], "events": [], "interventions": 0,
         "last_end": branch.source_step, "policy": "two stalled windows; span>95% at 1e-10 and 1e-12",
-        "counterfactual_sampling": "64 equally spaced states in latest 2048; training data only"}
+        "counterfactual_sampling": "64 strata of 32 states, fixed jitter seed 391; training data only"}
     at = ratio.advance_group(output, [branch], end, deadline, [ledger["knots"]], ledger["last_end"])
     if at != end or at % ratio.WINDOW or any(e["step"] == at for e in ledger["events"]):
         return at

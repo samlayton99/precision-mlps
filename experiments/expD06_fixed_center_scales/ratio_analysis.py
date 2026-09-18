@@ -97,7 +97,7 @@ def dense_analysis(folder, end, output, case):
     basis_a = diagnostics.features(x, g.centers, dense["gamma"][0]) / root_m
     u, singular, vh = svd(basis_a * g.d, full_matrices=False)
     rows = []
-    for index in np.arange(0, 2048, 32):
+    for index in ratio.dense_sample_indices():
         c, gamma, dc, dl = (dense[k][index] for k in ("c", "gamma", "delta_c", "delta_lambda"))
         r, pieces, budget = update_budget(x, y, g.centers, g.h, c, gamma, dc, dl)
         normalized = r / root_m
@@ -116,6 +116,7 @@ def dense_analysis(folder, end, output, case):
             alignment.append(float(-delta @ gradient / max(np.linalg.norm(delta) * np.linalg.norm(gradient), 1e-300)))
         rows.append({"step": dense["step"][index], **budget, "residual_mse": normalized @ normalized,
                      "singular_residual_coefficients": coefficients,
+                     "singular_readout_gradient_coefficients": vh @ (g.d * dense["gradient_c"][index]),
                      "singular_update_coefficients": (pieces / root_m) @ u,
                      "band_energy": np.sum(rb**2, axis=1),
                      "band_gradient_c": bands_c, "band_gradient_lambda": bands_l,
@@ -201,6 +202,8 @@ def endpoint_figure(output, ancestry, record):
         fig, axes = plt.subplots(2, 2, figsize=(12, 7), layout="constrained")
         singular = dense["singular_values"]
         axes[0, 0].loglog(singular, np.mean(dense["singular_residual_coefficients"]**2, axis=0), ".")
+        axes[0, 0].axvline(1e-12 * singular[0], color="black", ls=":", label="reference cutoff 1e-12")
+        axes[0, 0].legend(fontsize=8)
         axes[0, 0].set(xlabel="Singular value of fixed window-start A D", ylabel="Mean residual MSE in mode")
         bins = dense["band_bounds"][:, 0]
         for block, field in [("readout", "band_signed_readout_descent"), ("geometry", "band_signed_geometry_descent")]:
@@ -287,7 +290,7 @@ def analyze_dictionary(task):
         modal = {"coefficients": coeff, "singular_values": singular}
         dense = read_dense(path, end)
         # The same prescribed-coordinate SVD basis is used for both solvers.
-        indices = np.arange(0, 2048, 32)
+        indices = ratio.dense_sample_indices()
         residuals = a @ dense["c"][indices].T - y[:, None]
         changes = a @ dense["delta_c"][indices].T
         modal.update(dense_step=dense["step"][indices], dense_residual_coefficients=(u.T @ residuals).T,

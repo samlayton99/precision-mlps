@@ -23,6 +23,13 @@ ARMS = {"shared": (1e-6, 1e-6), "slow_geometry": (1e-6, 1e-7),
         "faster_readout": (1e-5, 1e-6), "both_changes": (1e-5, 1e-7)}
 
 
+def dense_sample_indices():
+    """Fixed stratified sample avoids aliasing a regular optimizer oscillation."""
+    offsets = np.random.default_rng(391).integers(0, 32, 64)
+    offsets[0] = 0
+    return np.arange(64) * 32 + offsets
+
+
 def schedule(step, knots):
     """Cosine interpolation of [absolute step, eta_a, eta_lambda] rows."""
     knots = jnp.asarray(knots)
