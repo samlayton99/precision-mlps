@@ -1,6 +1,6 @@
 # Changing the relative readout and geometry rates
 
-Does slowing geometry let the readout continue learning, or does it remove a useful route for reducing the residual? **None of the three late rate interventions improves the mean training MSE in any of the 12 width/target/seed cases at 1.1 million updates.** Readouts keep moving, mostly in sensitive directions that poorly match the remaining residual; small geometry updates still supply consistent improvement in weak directions. Frozen-geometry controls and the early and feedback interventions support that distinction. Changing readout coordinates helps some targets, but does not universally fix conditioning. The campaign and analysis are complete within 7.797 allocated GPU-hours; budget-limited trajectories are not declared converged. Two seeds establish paired observations, not a population-level significance claim.
+Does slowing geometry let the readout continue learning, or does it remove a useful route for reducing the residual? **None of the three late rate interventions improves the mean training MSE in any of the 12 width/target/seed cases at 1.1 million updates.** Readouts keep moving, mostly in sensitive directions that poorly match the remaining residual; small geometry updates still supply consistent improvement in weak directions. Frozen-geometry controls and the early and feedback interventions support that distinction. Neighbor-difference readout coordinates improve Adam on all three targets at both widths with uniform geometry; GD, momentum, and learned geometries show exceptions. The campaign and analysis are complete within 7.797 allocated GPU-hours; budget-limited trajectories are not declared converged. Two seeds establish paired observations, not a population-level significance claim.
 
 **Table 1. Terminology used throughout this study.**
 
@@ -158,7 +158,7 @@ The frozen comparison uses all 24 learned dictionaries at 160k and six uniform $
 
 Freezing the higher-acquisition-rate geometry and preserving its readout moments leaves sine's 280k–300k mean MSE within 0.2–0.7% above joint training. On mixed, freezing raises MSE by 27–32% at $N=512$ and 4.9–5.5% at $N=1024$. Every one of the 24 frozen continuations has higher window MSE than its matched joint control at this horizon. Resetting the readout moments changes frozen-window MSE by only $-0.335\%$ to $+0.060\%$. Thus neither geometry motion nor stale moment memory explains away the late readout limitation in these comparisons. Freezing geometry removes useful descent, especially on mixed.
 
-## Readout coordinates help some targets and hurt others
+## Neighbor-difference readouts improve Adam across uniform targets
 
 **The uniform-reference plot below does not start from a learned geometry checkpoint.** It prescribes $\lambda_j=0.25$ for every neuron, hence $\gamma_j=0.25/h$, freezes all slopes and centers, and trains only the readouts from zero for 140k updates. Its curves are first-order training trajectories, not detached least-squares refits.
 
@@ -199,6 +199,55 @@ $$
 
 The trained variables are $\theta_0,\ldots,\theta_W$; the bias retains its original scale $D_0$ and is excluded from the cumulative sum. For learned dictionaries with signed slopes, the code first absorbs each negative slope's sign into its corresponding readout before applying the same construction to positive-slope features. This is an invertible, data-independent, non-diagonal readout map. It changes optimization coordinates while leaving geometry fixed, and is a separate experiment from changing the scalar readout/geometry LR ratio. It is not whitening.
 
+### Why differencing acts as a preconditioner
+
+There is an exact GD interpretation of this map and a simple limiting case that explains the benefit. Let $L$ be the lower bidiagonal difference matrix, so $(Lq)_j=q_j-q_{j-1}$ with $q_0=0$, and let $S=\operatorname{diag}(S_1,\ldots,S_W)$. For the positive slopes in the uniform-reference comparison, $w=LS\theta$. Applying ordinary GD to $\theta$ induces the physical update
+
+$$
+\Delta w=-\eta\,\underbrace{LS^2L^T}_{P}\,\nabla_w\mathcal L,
+\qquad
+\Delta b=-\eta D_0^2\,\partial_b\mathcal L.
+$$
+
+Thus $P$ is a fixed positive-definite preconditioner with a weighted discrete-Laplacian form, including its boundary terms. If $A_w$ is the matrix of tanh columns divided by the square root of the sample count, the hidden-readout block of the half-MSE Hessian in the new coordinates is
+
+$$
+H_\theta=S L^T A_w^T A_w L S.
+$$
+
+The columns of $A_wL$ are precisely neighboring tanh differences followed by the final tanh. This algebra follows directly from the implemented coordinate map. It is exact for GD; Adam adds coordinatewise moment normalization, so its update is not equivalent to GD with this one fixed matrix.
+
+The sharp-step limit makes the reason for cancellation explicit. For equally spaced centers and $\gamma\to\infty$, ignoring values exactly at a center,
+
+$$
+\phi_j(x)-\phi_{j+1}(x)
+\longrightarrow 2\,\mathbf 1_{(z_j,z_{j+1})}(x).
+$$
+
+These cell functions have disjoint interiors. With uniform probability measure on $[-1,1]$, their interior Gram matrix is
+
+$$
+\frac12\int_{-1}^{1}
+[\phi_i(x)-\phi_{i+1}(x)]
+[\phi_j(x)-\phi_{j+1}(x)]\,dx
+\longrightarrow 2h\,\delta_{ij},
+$$
+
+for cells fully inside the domain. In unscaled $q$ coordinates this block is a multiple of the identity. In the implemented $\theta$ coordinates it becomes $2h\operatorname{diag}(S_j^2)$. This is an interior-block statement: it excludes the bias, final anchor feature, and halo cells. Differencing removes the nonlocal correlations of cumulative step features, while the additional scale choice still affects conditioning.
+
+At finite slope the bumps overlap. Their exact form is a smoothed cell indicator,
+
+$$
+\phi_j(x)-\phi_{j+1}(x)
+=\int_{z_j}^{z_{j+1}}\gamma\,\operatorname{sech}^2\!\bigl(\gamma(x-z)\bigr)\,dz.
+$$
+
+This explains why local corrections become easier to express in an individual coordinate, but does not remove the smoothing of very fine spatial patterns. Constructing localized kernels from differences of shifted sigmoids is established in approximation theory; see the density function in Section 2 of [Costarelli (2022)](https://journals.vilniustech.lt/index.php/MMA/article/download/15974/11323/67690). That result is not an Adam convergence theorem or a justification for our particular cumulative weights.
+
+A finite-slope conditioning theorem would need upper and lower bounds on the Gram matrix of these overlapping bumps, then account for $S$, the bias/anchor, and the finite-domain halo. The corresponding framework for translates is the Gramian characterization of stable bases in [Aldroubi et al., Section 2](https://mate.dm.uba.ar/~hafg/papers/determining03.pdf). We have not established those bounds for the implemented system or proved that its cumulative scaling is optimal. The observed 32–37-fold increase in the median relative singular value describes the middle of the spectrum; it does not establish a well-conditioned full matrix, whose smallest computed singular values remain near or below floating-point resolution.
+
+### What improves across targets
+
 The six line-search methods use Armijo constant $10^{-4}$, halving, at most 40 trials, and initial trials 0.1 for GD/momentum or 0.001 for Adam. Subsequent trials double the last accepted rate, capped at one. An uphill momentum or Adam direction falls back to the negative gradient. These are empirical first-order comparisons, separate from the theory-scaled shared-rate joint baseline.
 
 **Table 6. Uniform $\lambda=0.25$ dictionaries: mean training MSE over frozen updates 120k–140k, starting from zero readouts. Entries are prescribed coordinates / neighbor-difference coordinates. Several difference-coordinate Adam curves encounter numerical stalls; their values are achieved errors, not convergence floors.**
@@ -212,7 +261,9 @@ The six line-search methods use Armijo constant $10^{-4}$, halving, at most 40 t
 | 1024, quadratic | $2.08\times10^{-7}$ / $4.49\times10^{-6}$ | $1.12\times10^{-8}$ / $4.77\times10^{-7}$ | $3.17\times10^{-8}$ / $2.49\times10^{-13}$ |
 | 1024, mixed | $2.72\times10^{-6}$ / $2.41\times10^{-7}$ | $1.25\times10^{-7}$ / $2.62\times10^{-8}$ | $2.05\times10^{-8}$ / $7.34\times10^{-12}$ |
 
-Neighbor differences improve Adam's measured error on all six uniform dictionaries and 16 of the 24 learned dictionaries at this horizon. They help GD and momentum on uniform sine and mixed, but hurt both on uniform quadratic. Therefore this coordinate change is not a universal conditioning fix. Some learned Adam runs also develop numerical stalls; the paired numerical audit below addresses selected affected cases without reclassifying them as intrinsic optimization limits.
+**For Adam, neighbor differences help every target at both widths in the uniform-reference plot.** The reductions in final-window MSE are 313 and 638 times for sine, 21,380 and 127,320 times for quadratic, and 1,206 and 2,796 times for mixed, respectively at $N=512$ and $1024$. This is substantial evidence of an optimization benefit at identical geometry. It does not require geometry learning to explain the improvement.
+
+The exceptions concern other comparisons: GD and momentum improve on uniform sine and mixed but become worse on uniform quadratic. Quadratic MSE rises by 6.9–21.6 times for GD and 9.1–42.5 times for momentum. On the learned dictionaries, neighbor differences improve Adam in 16 of 24 cases. Thus the benefit is broad for Adam on uniform geometry, without being uniform across optimizers and learned geometries. Some Adam curves contain numerical stalls; these are achieved finite-budget errors rather than certified convergence floors, as the paired audit below shows.
 
 <figure>
   <img src="ratio_solver_analysis/uniform_solver_comparison.png" alt="GD, momentum, and Adam training curves through 140k readout updates in both coordinate systems on the six uniform dictionaries" style="max-width: 100%;">
@@ -273,7 +324,7 @@ The largest singular values limit a stable scalar step; small singular values th
 
 The least-squares system and geometry are linked: $B$ depends on every $\gamma_j$. Changing gamma can change its singular values and the target's projections. A larger median $\lambda$ is therefore not guaranteed to improve the relevant conditioning. Localized tanh derivatives still leave tanh columns with correlated constant tails, and even the uniform reference dictionary has slow first-order readout solves. Geometry can also reduce an error by moving features, offering another route through output space without having to create a new direction outside the readout span. This explains how its small late updates can remain useful when a detached readout fit already represents the target accurately.
 
-The narrow hypothesis is well supported: **changing only the scalar readout/geometry rate ratio does not repair the fixed readout system's conditioning.** It can change which geometry is learned during joint training, a separate effect that the untested early opposing schedule could address. A change of readout coordinates is different: $c=Tz$ changes the first-order system from $AD$ to $AT$ even at identical gamma. The neighbor-difference comparisons show that such a change can substantially improve optimization, while the quadratic counterexample rules out a universal benefit. Thus these results do not support the broader statement that all reparameterizations leave the bottleneck unchanged.
+The narrow hypothesis is well supported: **changing only the scalar readout/geometry rate ratio does not repair the fixed readout system's conditioning.** It can change which geometry is learned during joint training, a separate effect that the untested early opposing schedule could address. A change of readout coordinates is different: $c=Tz$ changes the first-order system from $AD$ to $AT$ even at identical gamma. Neighbor differences substantially improve Adam on every uniform target/width case, including quadratic; the quadratic counterexamples concern GD and momentum. Thus these results do not support the broader statement that all reparameterizations leave the bottleneck unchanged.
 
 The prescribed scales put the updates in the intended units; they do not impose a loss whose minimizer must have uniform bandwidth 0.25 or small coefficients. The mixed-target acquisition comparison supports a geometry barrier, while sine shows that economical representation can coexist with slow readout optimization. The late measurements do not identify an exponential slowdown law or prove that out-of-span attenuation causes the plateau. They distinguish representation, target-dependent least-squares conditioning, and the optimizer's actual motion rather than treating one bandwidth statistic as a certificate that all three are satisfactory.
 
@@ -317,6 +368,7 @@ Slurm accounting records **28,069 GPU-seconds, or 7.79694 GPU-hours**, including
 - [Regional readout contributions](ratio_340000_analysis/regional_readout_summary.json), reconstructed from the consecutive physical states and saved band gradients.
 - [Fourier boundary-sensitivity check](ratio_340000_analysis/boundary_sensitivity.json), using the separately identified 340k endpoints and an optional Hann taper.
 - [Uniform-reference diagnostics](ratio_uniform_reference/evidence.json), with the same fixed centers, reference metric, and sampling grid. Table 5 uses the prescribed-coordinate projector; coordinate-dependent truncations are not pooled.
+- [Preconditioner algebra check](ratio_uniform_reference/preconditioner_algebra_check.json), verifying the implemented GD map to $2.8\times10^{-15}$ maximum absolute error and the sharp-step interior Gram identity on cell-midpoint samples. These check the algebra and ideal limit, not finite-slope convergence.
 - [Acquisition animation, seed 0](ratio_acquisition_analysis/animations/N512_sine_acquire_0.01/seed_0.html) and [seed 1](ratio_acquisition_analysis/animations/N512_sine_acquire_0.01/seed_1.html), each showing $w$ above $\gamma$.
 - [Allocation ledger](ratio_campaign/allocation_ledger.json) and [final Slurm accounting](ratio_campaign/final_slurm_accounting.txt). Remote source runs are under `/workspace/junmiaoh/experiments/precision-mlps/runs/ratios/`; the numerical audit is in the sibling `ratio_line_search_audit/` directory.
 
