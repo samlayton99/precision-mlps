@@ -160,7 +160,44 @@ Freezing the higher-acquisition-rate geometry and preserving its readout moments
 
 ## Readout coordinates help some targets and hurt others
 
-**Prescribed coordinates** retain $c=Da$. **Neighbor-difference coordinates** first absorb the fixed slope signs into readouts, then express adjacent positive-slope tanh columns through their differences, retaining the final tanh column and the bias. Cumulative signed readouts give the inverse map. The coordinate scales are the square roots of cumulative reference envelopes. This is an invertible, data-independent, non-diagonal change of coordinates: it preserves the dictionary's function space, but changes first-order optimization. It is not whitening or a new scalar rate ratio.
+**The uniform-reference plot below does not start from a learned geometry checkpoint.** It prescribes $\lambda_j=0.25$ for every neuron, hence $\gamma_j=0.25/h$, freezes all slopes and centers, and trains only the readouts from zero for 140k updates. Its curves are first-order training trajectories, not detached least-squares refits.
+
+**Prescribed coordinates** retain $c=Da$. To define **neighbor-difference coordinates**, order the $W$ centers from left to right and write the frozen features and output as
+
+$$
+\phi_j(x)=\tanh\!\left(\frac{0.25}{h}(x-z_j)\right),
+\qquad
+f(x)=b+\sum_{j=1}^{W}w_j\phi_j(x).
+$$
+
+Introduce cumulative readouts
+
+$$
+q_0=0,
+\qquad q_j=\sum_{k=1}^{j}w_k,
+\qquad w_j=q_j-q_{j-1}.
+$$
+
+Substituting and collecting adjacent terms gives the exact identity
+
+$$
+\boxed{
+f(x)=b+\sum_{j=1}^{W-1}q_j\bigl[\phi_j(x)-\phi_{j+1}(x)\bigr]
++q_W\phi_W(x).
+}
+$$
+
+Thus the optimizer can adjust coefficients of neighboring-feature differences instead of coefficients of individual tanhs. For these uniform slopes, each difference cancels the constant tails and forms a localized bump. Keeping the final tanh and bias preserves exactly the original function space; the inverse $w_j=q_j-q_{j-1}$ recovers the physical readouts.
+
+The implementation also scales the cumulative coefficients. If $\alpha_k$ is the fixed theoretical reference envelope for readout $k$, define
+
+$$
+S_j=\left(\sum_{k=1}^{j}\alpha_k\right)^{1/2},
+\qquad q_j=S_j\theta_j,
+\qquad b=D_0\theta_0.
+$$
+
+The trained variables are $\theta_0,\ldots,\theta_W$; the bias retains its original scale $D_0$ and is excluded from the cumulative sum. For learned dictionaries with signed slopes, the code first absorbs each negative slope's sign into its corresponding readout before applying the same construction to positive-slope features. This is an invertible, data-independent, non-diagonal readout map. It changes optimization coordinates while leaving geometry fixed, and is a separate experiment from changing the scalar readout/geometry LR ratio. It is not whitening.
 
 The six line-search methods use Armijo constant $10^{-4}$, halving, at most 40 trials, and initial trials 0.1 for GD/momentum or 0.001 for Adam. Subsequent trials double the last accepted rate, capped at one. An uphill momentum or Adam direction falls back to the negative gradient. These are empirical first-order comparisons, separate from the theory-scaled shared-rate joint baseline.
 
@@ -179,7 +216,7 @@ Neighbor differences improve Adam's measured error on all six uniform dictionari
 
 <figure>
   <img src="ratio_solver_analysis/uniform_solver_comparison.png" alt="GD, momentum, and Adam training curves through 140k readout updates in both coordinate systems on the six uniform dictionaries" style="max-width: 100%;">
-  <figcaption>Uniform bandwidth 0.25, zero initial prediction, original Armijo implementation. Curves show endpoint MSE, while Table 6 uses complete-window means. Neighbor differences greatly reduce Adam's achieved error in these cases, but some flat curves contain failed numerical updates. The paired audit below distinguishes those failures from slow but nonzero progress.</figcaption>
+  <figcaption>Prescribed, frozen uniform bandwidth 0.25; no learned geometry checkpoint is used. Readouts start at zero. Solid lines use prescribed coordinates and dashed lines use neighbor-difference coordinates; blue is GD, orange is momentum, and green is Adam. Curves show endpoint MSE under the original Armijo implementation, while Table 6 uses complete-window means. Some flat curves contain failed numerical updates; the paired audit below distinguishes those failures from slow but nonzero progress.</figcaption>
 </figure>
 
 The target's position in the singular basis explains why a larger typical singular value is insufficient. In the uniform dictionaries, neighbor differences raise the median relative singular value by about 32–37 times, yet the quadratic target loads directions that remain slower under GD. A detached constant-step GD calculation gives, for dictionary $B=U\Sigma V^T$ and target vector $y$ both normalized by the square root of the sample count, zero initial readout, and step $1/\sigma_{\max}^2$,
