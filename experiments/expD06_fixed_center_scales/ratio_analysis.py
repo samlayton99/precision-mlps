@@ -260,32 +260,111 @@ def analyze_case(task):
     run.write_json(output / "evidence.json", record)
     endpoint_figure(output, ancestry, record)
     spectral_history_figure(output, ancestry, record)
+    spectral_window_figure(output, record)
     return record
 
 
+def spectral_groups(count):
+    """Partition the saved dyadic bands, keeping the cited 64–127/128–255 apart."""
+    return [(0, 1, "DC (k=0)"), (1, 2, "k=1"), (2, 5, "k=2–15"),
+            (5, 7, "k=16–63"), (7, 8, "k=64–127"), (8, 9, "k=128–255"),
+            (9, count, "k≥256")]
+
+
 def spectral_history_figure(output, ancestry, record):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4), layout="constrained")
+    fig, axes = plt.subplots(2, 2, figsize=(13, 8), layout="constrained")
     energy = ancestry["residual_band_mse"]
-    # Dyadic DFT bands are DC, [1,2), [2,4), ...; combine for readable curves.
-    for left, right, label in [(0, 1, "DC"), (1, 3, "DFT 1–3"), (3, 5, "DFT 4–15"),
-                               (5, 7, "DFT 16–63"), (7, 9, "DFT 64–255"), (9, energy.shape[1], "DFT ≥256")]:
-        if left < right:
-            axes[0].semilogy(ancestry["step"], energy[:, left:right].sum(axis=1), label=label)
-    axes[0].set(xlabel="Total updates", ylabel="Residual MSE in frequency band")
-    axes[0].legend(fontsize=8)
+    for left, right, label in spectral_groups(energy.shape[1]):
+        values = energy[:, left:right].sum(axis=1)
+        axes[0, 0].semilogy(ancestry["step"], values, label=label)
+        axes[0, 1].plot(ancestry["step"], 100 * values / ancestry["train_mse"], label=label)
+    axes[0, 0].set(ylabel="Residual MSE in frequency band")
+    axes[0, 0].legend(fontsize=8, ncol=2)
+    axes[0, 1].set(ylabel="Share of checkpoint residual MSE (%)", ylim=(0, 100))
     h = 2 / record["case"]["n"]
     quantiles = np.quantile(np.abs(ancestry["gamma"] * h), [.1, .5, .9], axis=1)
     for values, label in zip(quantiles, ["10th percentile", "Median", "90th percentile"]):
-        axes[1].semilogy(ancestry["step"], values, label=label)
-    axes[1].axhline(.25, color="black", ls=":", label="Reference 0.25")
-    axes[1].set(xlabel="Total updates", ylabel="Absolute bandwidth |lambda|")
-    axes[1].legend(fontsize=8)
-    for ax in axes:
+        axes[1, 0].semilogy(ancestry["step"], values, label=label)
+    axes[1, 0].axhline(.25, color="black", ls=":", label="Reference 0.25")
+    axes[1, 0].set(ylabel="Absolute bandwidth |lambda|")
+    axes[1, 0].legend(fontsize=8)
+    for field, label, style in [("eta_a", "Readout scalar LR", "-"), ("eta_lambda", "Geometry scalar LR", "--")]:
+        axes[1, 1].semilogy(ancestry["step"], ancestry[field], style, label=label)
+    axes[1, 1].set(ylabel="Scalar LR before the fixed D and h factors")
+    axes[1, 1].legend(fontsize=8)
+    for ax in axes.flat:
+        ax.set_xlabel("Total updates")
         update_axis(ax)
         ax.grid(alpha=.2)
     fig.suptitle(f"{LABELS.get(record['label'], record['label'])}: {record['case']['target']}, "
                  f"N={record['case']['n']}, seed {record['case']['seed']} — saved checkpoint values")
     fig.savefig(output / "spectral_history.png", dpi=140)
+    plt.close(fig)
+
+
+def spectral_window_figure(output, record):
+    """Use exactly the sampled states and denominators cited in the report."""
+    with np.load(output / "dense_mechanism.npz") as dense:
+        energy = dense["band_energy"].mean(axis=0)
+        mse = dense["residual_mse"].mean()
+        np.testing.assert_allclose(energy.sum(), mse, rtol=1e-12, atol=0)
+        groups = spectral_groups(len(energy))
+        values = np.array([energy[lo:hi].sum() for lo, hi, _ in groups])
+        percentages = 100 * values / mse
+        # Saved signed descent is for half-MSE. Convert to linear MSE reduction.
+        descent = 2 * dense["band_signed_readout_descent"].mean(axis=0)
+        descent = np.array([descent[lo:hi].sum() for lo, hi, _ in groups])
+        relative = dense["singular_values"] / dense["singular_values"][0]
+        modes = [dense["singular_residual_coefficients"]**2,
+                 dense["singular_update_coefficients"][:, 0]**2]
+        totals = [mse, dense["quadratic_mse_cost"][:, 0].mean()]
+        modal = []
+        for coefficients, total in zip(modes, totals):
+            mean = coefficients.mean(axis=0)
+            parts = [mean[relative < 1e-4].sum(), mean[(relative >= 1e-4) & (relative < .1)].sum(),
+                     mean[relative >= .1].sum(), max(0., total - mean.sum())]
+            modal.append(100 * np.asarray(parts) / total)
+        summary = {"basis_step": int(dense["step"][0]), "sample_steps": dense["step"].tolist(),
+                   "sampled_mean_mse": float(mse), "fourier_labels": [x[2] for x in groups],
+                   "fourier_mean_mse": values.tolist(), "fourier_percent": percentages.tolist(),
+                   "readout_linear_mse_reduction": descent.tolist(),
+                   "modal_labels": ["s < 1e-4", "1e-4 ≤ s < 0.1", "s ≥ 0.1", "Outside fixed U"],
+                   "modal_percent": dict(zip(["residual", "readout_update"], [x.tolist() for x in modal])),
+                   "aggregation": "Ratio of sampled mean energies, not mean of per-state percentages",
+                   "source_sha256": hashlib.sha256((output / "dense_mechanism.npz").read_bytes()).hexdigest()}
+    run.write_json(output / "spectral_window.json", summary)
+    fig, axes = plt.subplots(2, 2, figsize=(13, 9), layout="constrained")
+    positions = np.arange(len(groups))
+    colors = [f"C{i}" for i in positions]
+    for ax, vals in [(axes[0, 0], values), (axes[0, 1], percentages), (axes[1, 0], descent)]:
+        ax.barh(positions, vals, color=colors)
+        ax.set_yticks(positions, summary["fourier_labels"])
+        ax.invert_yaxis()
+        ax.grid(axis="x", alpha=.2)
+    axes[0, 0].set(xscale="log", xlabel="Mean residual MSE in band", title="Absolute residual error")
+    axes[0, 1].set(xlabel="Share of sampled residual MSE (%)", xlim=(0, 108), title="Same error, expressed as percentages")
+    for i, value in enumerate(percentages):
+        label = "<0.01%" if 0 < value < .01 else f"{value:.2f}%"
+        axes[0, 1].text(value + 1, i, label, va="center", fontsize=8)
+    axes[1, 0].set_xscale("symlog", linthresh=1e-18)
+    axes[1, 0].set_xlim(min(0., descent.min()) * 1.5, max(0., descent.max()) * 1.5)
+    axes[1, 0].axvline(0, color="black", lw=.7)
+    axes[1, 0].set(xlabel="Mean linear MSE reduction from readout update",
+                   title="Positive means descent; quadratic cost excluded")
+    positions = np.arange(4)
+    for offset, vals, label in [(-.18, modal[0], "Residual"), (.18, modal[1], "Readout update")]:
+        axes[1, 1].barh(positions + offset, vals, height=.36, label=label)
+    axes[1, 1].set_yticks(positions, summary["modal_labels"])
+    axes[1, 1].invert_yaxis()
+    axes[1, 1].set(xlabel="Share of each quantity's own function-space energy (%)", xlim=(0, 103),
+                   title="SVD directions: different basis from Fourier")
+    axes[1, 1].legend(fontsize=8)
+    axes[1, 1].grid(axis="x", alpha=.2)
+    fig.suptitle(f"{LABELS.get(record['label'], record['label'])}: {record['case']['target']}, "
+                 f"N={record['case']['n']}, seed {record['case']['seed']}; report horizon {record['end']:,}\n"
+                 f"64 stratified states from updates {record['end']-2048:,}–{record['end']-1:,}; "
+                 "DC = mean residual (zero frequency)")
+    fig.savefig(output / "spectral_window.png", dpi=150)
     plt.close(fig)
 
 

@@ -20,6 +20,8 @@ Does slowing geometry let the readout continue learning, or does it remove a use
 | Detached refit | SVD least-squares diagnostic at a saved geometry. It never replaces the trained readout. |
 | $\tau$ | Relative singular-value cutoff used in a detached refit. |
 | DFT band | A band of discrete Fourier indices on the actual training grid, including both frequency signs. These describe the sampled residual; finite-window leakage can mix frequencies. |
+| DC | The zero-frequency Fourier component: a constant residual offset. Its MSE contribution is the squared mean residual. |
+| Singular direction | A pattern on the training grid given by a left singular vector of the scaled readout matrix $AD$; generally not a single Fourier frequency. |
 
 ## The comparison holds the theory scales fixed
 
@@ -37,6 +39,8 @@ At update 160k, each higher-acquisition-rate checkpoint is copied with its Adam 
 | Slower geometry | $10^{-6}$ | $10^{-7}$ | Geometry divided by 10 |
 | Faster readout | $10^{-5}$ | $10^{-6}$ | Readout multiplied by 10 |
 | Both changes | $10^{-5}$ | $10^{-7}$ | Both scalar changes |
+
+The common decay to $10^{-6}$ is an empirical schedule choice, not a consequence of the theory scales. The ratio changes occur after that decay: even the increased readout rate remains far below the original $10^{-2}$. These comparisons therefore address the late, low-rate regime. They do not test a sustained readout increase and geometry decrease starting from the original shared rate without first decaying both blocks.
 
 For Adam, the physical rate factors are $\eta_aD_j$ for each readout and $\eta_\lambda/h$ for each slope. These factors multiply normalized moment directions; they are not the actual parameter displacements. With the corresponding physical moments, epsilon becomes $\epsilon/D_j$ and $\epsilon h$, respectively. For GD the induced factors would instead be $\eta_aD_j^2$ and $\eta_\lambda/h^2$. This campaign changes the two scalar rates explicitly; it neither changes $D$ nor applies the length-scale factors twice.
 
@@ -75,13 +79,33 @@ This evidence does not support the simple explanation that geometry motion is th
 
 The 340k diagnostics give a more specific explanation than lost plasticity. For the sine control at $N=1024$, seed 0, the RMS of accumulated absolute readout travel from 160k to 340k is $4.28\times10^{-4}$, whereas the RMS net displacement is only $1.21\times10^{-7}$. Increasing the readout rate tenfold raises accumulated travel to $4.37\times10^{-3}$ but leaves net displacement near $1.21\times10^{-7}$. The parameters keep moving; most of that motion cancels.
 
-A fixed SVD basis at the start of the final 2048-update window distinguishes directions by their sensitivity. Define a relative singular value $s=\sigma/\sigma_{\max}$. In the two sine seeds, 76.3% and 80.9% of residual energy lies in directions with $s<10^{-4}$. Yet 99.8% of the readout update's projected function-space energy lies in directions with $s\geq0.1$. On the mixed target at $N=512$, more than 99.5% of residual energy lies below $10^{-4}$, while more than 99.8% of readout update energy lies above $0.1$. These thresholds summarize the spectra after observation; they are not acceptance criteria.
+The measurements below use 64 stratified states from updates 337,952–339,999, one from each block of 32 saved states with fixed random offsets. They describe this sampled late window, not the single 340k checkpoint or the full 20k window used for the primary MSE comparison. Let $A(\gamma)$ contain the bias and tanh features divided by $\sqrt M$, where $M$ is the training sample count, and let $r=(\hat f-y)/\sqrt M$. Then $\|r\|^2$ is MSE. We fix the SVD $B_0=A(\gamma_{337952})D=U\Sigma V^T$ at the beginning of the window. A left singular vector $u_i$ is an output pattern on the training grid; its singular value measures the output sensitivity to the corresponding direction in scaled readout parameters.
 
-Fourier decomposition shows the corresponding mismatch. In the $N=512$ mixed control, seed 0, 81% of residual MSE lies in DFT indices 64–127 and another 12% in 128–255, while the largest readout-update descent terms are DC and the lowest frequencies. In the $N=1024$ sine case, raising the readout rate makes DC and the first frequency pair account for about 92% of the sampled residual energy. This is consistent with the increased excursions coming from low-frequency readout motion, rather than beneficially attacking the weak residual modes.
+Define $s_i=\sigma_i/\sigma_{\max}$. Residual energy in a set of singular directions is $\sum_i|u_i^Tr_t|^2$. Readout-update energy uses $\sum_i|u_i^T\delta r_{w,t}|^2$, with the actual readout-only output change $\delta r_{w,t}=A(\gamma_t)\Delta c_t$. Each percentage divides the sampled mean band energy by the sampled mean total energy of that same quantity. Residual percentages and update percentages therefore have different denominators. They are neither percentages of parameters nor fractions of error reduction. Any energy outside the fixed thin $U$ basis is counted separately.
+
+In the two sine/1024 seeds, 76.3% and 80.9% of residual energy lies at $s<10^{-4}$, while about 99.8% of readout-update energy lies at $s\geq0.1$. On mixed/512, more than 99.5% of residual energy lies below $10^{-4}$ and more than 99.8% of readout-update energy lies above 0.1. The mixed seed-0 figure below shows these quantities directly: 99.60% versus 99.87%. These thresholds summarize the spectra after observation; they are not acceptance criteria. Concentrated update energy alone does not prove zero progress in weak directions; the motion and finite-update measurements provide the additional evidence of cancellation.
+
+Fourier analysis uses the same normalized residuals and sampled states, but a different basis. We apply an orthonormal DFT $F$ to each $r_t$, pair positive and negative indices, and sum $|(Fr_t)_k|^2$ within each band. Band energies add to MSE by Parseval's identity. The plotted percentage is
+
+$$
+100\,\frac{\operatorname{mean}_t E_b(t)}{\operatorname{mean}_t\|r_t\|^2},
+\qquad E_b(t)=\sum_{k\in b}|(Fr_t)_k|^2.
+$$
+
+This is a ratio of means, not a mean of per-state percentages. **DC means zero frequency:** the constant offset of the residual, with energy $(\operatorname{mean}_x(\hat f-y))^2$. The index $k$ counts cycles across the DFT period, which is the sample count times the grid spacing; it is not a neuron index. The remaining bands include both frequency signs. No taper is used in these measurements.
+
+For mixed/512, seed 0, sampled mean MSE is $4.9243\times10^{-9}$. The 64–127 band contributes $3.9927\times10^{-9}$, or **81.08%**, and 128–255 contributes $5.9717\times10^{-10}$, or **12.13%**. Yet the largest signed linear readout descent terms occur at DC and low frequencies. The figure shows absolute MSE and percentages side by side, using exactly the same samples as those numbers. Its lower-left panel is $-2\langle Q_b r,A\Delta c\rangle$, the signed linear contribution to MSE reduction in band $b$; it excludes the positive quadratic update cost and is not a net improvement measurement.
 
 <figure>
-  <img src="ratio_primary_analysis/high_shared/mixed_N512_adam_both_envelope_s0_770e6899dded/spectral_history.png" alt="Line plots of residual frequency-band MSE and bandwidth quantiles throughout 1.1 million updates on mixed/512" style="max-width: 100%;">
-  <figcaption>Mixed, N=512, seed 0, shared-rate history. The high-frequency residual persists after the common rate decay suppresses the low-frequency excursions. DFT indices 64–255 account for 91% of checkpoint residual energy at 160k and 95% at 1.1m. Bandwidth quantiles move little over this late period, although the small geometry updates still contribute coherent descent in weak modes. These are saved checkpoint values, distinct from the complete-window means used to compare interventions.</figcaption>
+  <img src="ratio_340000_analysis/high_shared/mixed_N512_adam_both_envelope_s0_770e6899dded/spectral_window.png" alt="Matched 340k-window diagnostics for mixed/512 seed 0: absolute Fourier-band MSE, percentages including 81.08 percent in 64–127 and 12.13 percent in 128–255, signed linear readout descent, and singular-mode energy percentages" style="max-width: 100%;">
+  <figcaption>Mixed, N=512, seed 0, shared scalar rate 10^-6. All four panels use the same 64 sampled states from the final 2048 updates before 340k. The top panels express the same Fourier residual energies in absolute units and percentages. The lower-left panel shows signed linear readout descent, excluding quadratic costs. The lower-right panel uses the fixed window-start SVD and divides residual and update energies by their own totals. Fourier bands and singular directions are distinct decompositions.</figcaption>
+</figure>
+
+For sine/1024, seed 0, DC plus the $k=1$ pair accounts for 22.4% of sampled residual MSE under the shared rate and 92.1% under faster readout. The [shared-rate figure](ratio_340000_analysis/high_shared/sine_N1024_adam_both_envelope_s0_160a6008c214/spectral_window.png) and [faster-readout figure](ratio_340000_analysis/high_faster_readout/sine_N1024_adam_both_envelope_s0_160a6008c214/spectral_window.png) show both measurements. This supports low-frequency excursions under the larger readout rate. It does not identify individual Fourier bands with individual singular modes.
+
+<figure>
+  <img src="ratio_primary_analysis/high_shared/mixed_N512_adam_both_envelope_s0_770e6899dded/spectral_history.png" alt="Checkpoint history showing separate 64–127 and 128–255 curves in absolute MSE and percentage units, bandwidth quantiles, and both scalar learning rates" style="max-width: 100%;">
+  <figcaption>Mixed, N=512, seed 0, full shared-rate history. The upper panels show the same checkpoint Fourier-band energies in MSE and percentage units; 64–127 and 128–255 are separate curves. Their combined share is 91% at 160k and 95% at 1.1m. The lower panels show bandwidth quantiles and the actual common scalar decay. These are individual checkpoint measurements, distinct from the sampled-window figure above and the complete-window means used to compare interventions.</figcaption>
 </figure>
 
 Suppressing boundary discontinuities with a Hann window does not remove the mixed target's high-frequency residual: at the 340k endpoint, indices 64–255 contain 95–99% of the tapered residual energy in the two $N=512$ seeds. Only 2–5% of their untapered residual energy lies in the outer 10% of the domain. The taper is a diagnostic only; it never changes the training objective. These checks support an interior spectral effect, without equating a finite-grid Fourier spectrum to the whole-line exponential attenuation formula.
@@ -202,9 +226,19 @@ All 81 recorded tests of a threefold readout step reject it. Every sampled mean 
 
 ## What this says about the bandwidth hypothesis
 
-The prescribed scales put readout and geometry updates in the intended units; they do not impose an objective whose minimizer must have uniform bandwidth 0.25. The training loss penalizes prediction error, not heterogeneous slopes or large coefficients. Different histories can therefore enter different dictionaries with similar trained error but very different coefficient requirements and first-order accessibility. The mixed-target acquisition comparison supports a substantial geometry barrier. The sine comparisons show that even economical representation can coexist with slow readout training.
+The evidence supports a **readout least-squares conditioning bottleneck at the current geometry**. For plain GD with frozen geometry and $B=AD$, each singular residual coefficient $e_i=u_i^Tr$ evolves exactly as
 
-The late regime is more specific than all learning becoming exponentially slow. Large readout excursions mainly occupy strong directions, while the remaining residual occupies weak ones. Geometry continues to make small, coherent improvements, predominantly within the retained readout span. These measurements do not identify an exponential slowdown law or prove that out-of-span attenuation is the cause of the late plateau. They instead motivate an optimizer that damps strong-mode excursions while preserving descent in target-loaded weak directions. The neighbor-difference results demonstrate that altering those directions can matter, and the quadratic counterexample shows why a target-independent conditioning statistic alone is insufficient.
+$$
+e_i(t+1)=(1-\eta_a\sigma_i^2)e_i(t).
+$$
+
+The largest singular values limit a stable scalar step; small singular values then decay slowly. At the illustrative choice $\eta_a=1/\sigma_{\max}^2$, a mode with $s=10^{-4}$ contracts by only $1-10^{-8}$ per update. Multiplying one readout scalar rate does not change the ratio of these curvatures. Adam adds momentum and a changing diagonal scaling, so this GD recurrence is not a quantitative prediction of its trajectory. The measured concentration of actual Adam updates in strong directions, cancelling parameter motion, and continued plateau under frozen geometry supply the experimental evidence. They support slow weak-mode progress, not a claim that progress is mathematically impossible.
+
+The least-squares system and geometry are linked: $B$ depends on every $\gamma_j$. Changing gamma can change its singular values and the target's projections. A larger median $\lambda$ is therefore not guaranteed to improve the relevant conditioning. Localized tanh derivatives still leave tanh columns with correlated constant tails, and even the uniform reference dictionary has slow first-order readout solves. Geometry can also reduce an error by moving features, offering another route through output space without having to create a new direction outside the readout span. This explains how its small late updates can remain useful when a detached readout fit already represents the target accurately.
+
+The narrow hypothesis is well supported: **changing only the scalar readout/geometry rate ratio does not repair the fixed readout system's conditioning.** It can change which geometry is learned during joint training, a separate effect that the untested early opposing schedule could address. A change of readout coordinates is different: $c=Tz$ changes the first-order system from $AD$ to $AT$ even at identical gamma. The neighbor-difference comparisons show that such a change can substantially improve optimization, while the quadratic counterexample rules out a universal benefit. Thus these results do not support the broader statement that all reparameterizations leave the bottleneck unchanged.
+
+The prescribed scales put the updates in the intended units; they do not impose a loss whose minimizer must have uniform bandwidth 0.25 or small coefficients. The mixed-target acquisition comparison supports a geometry barrier, while sine shows that economical representation can coexist with slow readout optimization. The late measurements do not identify an exponential slowdown law or prove that out-of-span attenuation causes the plateau. They distinguish representation, target-dependent least-squares conditioning, and the optimizer's actual motion rather than treating one bandwidth statistic as a certificate that all three are satisfactory.
 
 ## Evidence and completion status
 
@@ -242,6 +276,7 @@ Slurm accounting records **28,069 GPU-seconds, or 7.79694 GPU-hours**, including
 - [Historical comparison at 1.68m](ratio_campaign/historical_1680k_windows.json), using complete windows and the existing lower-rate continuation evidence. Earlier lower-rate training is excluded from this campaign's new GPU charge.
 - [Acquisition evidence](ratio_acquisition_analysis/evidence.json), including endpoints, cutoff checks, sampling refinement, and finite-update audits.
 - [340k mechanism evidence](ratio_340000_analysis/evidence.json), with per-case `dense_mechanism.npz` files for the modal and Fourier measurements. The original provenance's available common horizon is 360k; the explicit analysis cap and all primary records are 340k. Subsequent exports distinguish available and analyzed horizons explicitly.
+- [Cited spectral-window values](ratio_340000_analysis/high_shared/mixed_N512_adam_both_envelope_s0_770e6899dded/spectral_window.json), including exact sample indices, energy denominators, band labels, and the source-array hash. The companion figure uses the same samples for every panel.
 - [Regional readout contributions](ratio_340000_analysis/regional_readout_summary.json), reconstructed from the consecutive physical states and saved band gradients.
 - [Fourier boundary-sensitivity check](ratio_340000_analysis/boundary_sensitivity.json), using the separately identified 340k endpoints and an optional Hann taper.
 - [Uniform-reference diagnostics](ratio_uniform_reference/evidence.json), with the same fixed centers, reference metric, and sampling grid. Table 5 uses the prescribed-coordinate projector; coordinate-dependent truncations are not pooled.
