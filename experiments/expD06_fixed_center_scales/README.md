@@ -31,8 +31,7 @@ Each case preserves its configuration and reference geometry, full parameter/Opt
 ## Paired continuation at the learned geometry
 
 The [relative-rate report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/relative_rate_results.md)
-records the matched comparisons and distinguishes completed evidence from
-the remaining allocated work.
+records the matched comparisons, numerical limitations, and allocation accounting.
 
 The new relative-rate study uses `ratio.py` and `ratio.sbatch`. It keeps the
 theory coordinates $c=Da$, $\gamma=\lambda/h$, the reference $D$ at
@@ -139,6 +138,14 @@ The original runs remain separate controls. The audit records its source
 hashes, complete traces, dense windows, counters, and validation diagnostics
 under `runs/ratio_line_search_audit/`. Its `--seed` argument partitions work
 between two GPUs; it does not introduce new random initializations.
+
+`analyze_line_search_audit.py --root <audit-directory> --output <export-directory>`
+verifies identical initial parameters and optimizer state in each pair and
+compares complete 20k windows at the common additional horizon. It exports
+MSE, validation error, actual net physical displacement, accepted rates,
+gradient/loss evaluation counts, and numerical-stagnation counts for all 84
+arms. The figure selects the four persistent stalls identified before the
+audit. The guards are interpreted as a combined intervention.
 
 Use `--export=ALL,D06_MODULE=feedback` or
 `--export=ALL,D06_MODULE=readout_solvers` with `ratio.sbatch` to run those
