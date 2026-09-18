@@ -435,7 +435,8 @@ def analyze_dictionary(task):
             if losses is None:
                 raise ValueError(f"Incomplete solver trace: {path}")
             windows.append({"end": right, "mse_mean": float(2 * np.mean(losses)),
-                            "mse_quantiles": np.quantile(2*losses, [0, .1, .5, .9, 1]).tolist()})
+                            "mse_quantiles": np.quantile(2*losses, [0, .1, .5, .9, 1]).tolist(),
+                            "endpoint_mse": json.loads((path / f"metrics_{right:09d}.json").read_text())["train_mse"]})
         metrics["windows"] = windows
         records.append(metrics)
     run.save_arrays(output / "conditioning.npz", **spectra, gamma=gamma, centers=g.centers)
@@ -460,6 +461,39 @@ def analyze_dictionary(task):
     fig.savefig(output / "solvers.png", dpi=140)
     plt.close(fig)
     return result
+
+
+def plot_solver_comparisons(records, output):
+    complete = [r for r in records if r["end"] >= 20000]
+    if not complete:
+        return
+    ends = {r["end"] for r in complete}
+    if len(ends) != 1:
+        raise ValueError("Use a common solver horizon before comparing dictionaries")
+    algorithms = [("gd", "GD", "C0"), ("momentum", "Momentum", "C1"), ("adam", "Adam", "C2")]
+    fig, axes = plt.subplots(2, 3, figsize=(13, 7), layout="constrained")
+    for row, n in enumerate((512, 1024)):
+        for col, target in enumerate(("sine", "quadratic", "mixed")):
+            ax = axes[row, col]
+            record = next((r for r in complete if r["dictionary"] == f"{target}_N{n}_uniform"), None)
+            if record:
+                for algorithm, label, color in algorithms:
+                    for coordinates, linestyle in [("prescribed", "-"), ("differences", "--")]:
+                        solver = next(s for s in record["solvers"] if s["label"] == f"{coordinates}_{algorithm}_armijo")
+                        ax.semilogy([w["end"] for w in solver["windows"]],
+                                    [w["endpoint_mse"] for w in solver["windows"]],
+                                    color=color, ls=linestyle, marker="o" if coordinates == "prescribed" else "^",
+                                    ms=3, label=f"{label}, {coordinates}")
+            ax.set(title=f"{target}, N={n}", xlabel="Readout updates", ylabel="Endpoint training MSE")
+            update_axis(ax)
+            ax.grid(alpha=.2)
+            ax.set_xlim(0, max(ends)*1.03)
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, [s.replace("differences", "neighbor differences") for s in labels],
+               loc="outside lower center", ncol=3, fontsize=9)
+    fig.suptitle("Uniform lambda=0.25: identical zero predictions initially; loss-only line search for every curve")
+    fig.savefig(output / "uniform_solver_comparison.png", dpi=140)
+    plt.close(fig)
 
 
 def main():
@@ -511,6 +545,7 @@ def main():
     with ProcessPoolExecutor(args.workers, mp_context=multiprocessing.get_context("spawn")) as pool:
         solver_records = list(pool.map(analyze_dictionary, solver_tasks))
     run.write_json(args.output / "solver_evidence.json", solver_records)
+    plot_solver_comparisons(solver_records, args.output)
     print(json.dumps({"analyzed": len(records), "common_primary_horizon": common}), flush=True)
 
 
