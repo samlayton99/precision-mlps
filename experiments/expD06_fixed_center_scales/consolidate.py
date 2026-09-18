@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 
 from . import core
-from .analyze import analyze_one, write_summary
+from .analyze import DIAGNOSTICS_REVISION, analyze_one, write_summary
 from .run import Case, write_json
 
 
@@ -195,7 +195,7 @@ def spectral_evidence(rows, choices, output):
         folder = Path(row["folder"])
         for path in sorted((folder / "analysis").glob("metrics_*_tau*.json")):
             m = json.loads(path.read_text())
-            if m.get("diagnostics_revision") != 2:
+            if m.get("diagnostics_revision") != DIAGNOSTICS_REVISION:
                 continue
             audit_rows.append({"key": row["key"], "step": m["step"], "cutoff": m["cutoff"], **{
                 field: m[field] for field in ["gradient_reconstruction_error", "perpendicular_reconstruction_error",

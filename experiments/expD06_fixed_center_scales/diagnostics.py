@@ -76,6 +76,10 @@ def checkpoint_arrays(x, y, centers, h, d_reference, c, gamma, masks, cutoff=1e-
         "residual_refit": refit_r * root_m,
         "readout_refit": c_star, "readout_correction_prediction": a @ (c_star - c) * root_m,
         "singular_values": s, "retained_rank": np.array(keep.sum()), "cutoff": np.array(cutoff),
+        "singular_residual_coefficients": u.T @ r,
+        "singular_target_coefficients": u.T @ normalized_y,
+        "singular_readout_gradient_coefficients": s * (u.T @ r),
+        "singular_unrepresented_residual_mse": np.array(np.sum((r-u@(u.T@r))**2)),
         "gradient_lambda": j.T @ r, "gradient_readout": a.T @ r,
         "gradient_parallel": projected_j.T @ r,
         "gradient_perpendicular": perpendicular_j.T @ r,
@@ -126,12 +130,14 @@ def checkpoint_arrays(x, y, centers, h, d_reference, c, gamma, masks, cutoff=1e-
         output["next_delta_lambda"] = delta_lambda
         output["band_predicted_descent_geometry"] = -output["band_gradient_lambda"] @ delta_lambda
         output["band_predicted_descent_readout"] = -output["band_gradient_readout"] @ delta_c
+        output["band_predicted_descent_bias"] = -output["band_gradient_readout"][:, 0] * delta_c[0]
         changed_a = features(x, centers, gamma + delta_lambda / h) / root_m
         readout_change = a @ delta_c
         geometry_change = (changed_a - a) @ c
         interaction = (changed_a - a) @ delta_c
         measured = changed_a @ (c + delta_c) - a @ c
         output.update({"prediction_change_readout": root_m * readout_change,
+                       "prediction_change_bias": np.full(count, delta_c[0]),
                        "prediction_change_geometry": root_m * geometry_change,
                        "prediction_change_interaction": root_m * interaction,
                        "prediction_change_measured": root_m * measured,
@@ -141,6 +147,6 @@ def checkpoint_arrays(x, y, centers, h, d_reference, c, gamma, masks, cutoff=1e-
 
 def errors(pred, y):
     residual = pred - y
-    return {"rms": float(np.sqrt(np.mean(residual**2))),
+    return {"mse": float(np.mean(residual**2)), "rms": float(np.sqrt(np.mean(residual**2))),
             "rel_l2": float(np.linalg.norm(residual) / np.linalg.norm(y)),
             "linf": float(np.max(np.abs(residual)))}

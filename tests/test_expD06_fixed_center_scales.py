@@ -127,6 +127,11 @@ def test_detached_refit_and_gradient_diagnostics():
     for old, current in zip(before, (c, gamma, d)):
         np.testing.assert_array_equal(old, current)
     assert np.linalg.norm(out["residual_refit"]) < np.linalg.norm(out["residual_train"])
+    np.testing.assert_allclose(np.sum(out["singular_residual_coefficients"]**2)
+                               + out["singular_unrepresented_residual_mse"],
+                               np.mean(out["residual_train"]**2), rtol=2e-13)
+    np.testing.assert_allclose(np.sum(out["singular_readout_gradient_coefficients"]**2),
+                               np.sum((d*out["gradient_readout"])**2), rtol=2e-13)
     np.testing.assert_allclose(out["residual_parallel"] + out["residual_perpendicular"],
                                out["residual_train"], atol=1e-14)
     np.testing.assert_allclose(out["prediction_change_measured"], out["prediction_change_readout"]

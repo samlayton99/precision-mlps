@@ -53,3 +53,27 @@ def test_freezing_geometry_preserves_slopes_but_trains_readout():
     np.testing.assert_array_equal(dense["delta_lambda"], 0.)
     assert np.linalg.norm(np.asarray(frozen["params"]["readout"]-warm["params"]["readout"])) > 0
     assert int(frozen["opt"][0].count) == int(warm["opt"][0].count) + 8
+
+
+def test_four_branches_do_not_share_optimizer_updates():
+    g = core.geometry(128)
+    cs, gs = core.coordinate_scales(g, "both")
+    c, gamma = core.initial_physical(g, 0, "envelope")
+    initial = core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer("adam"))
+    flags = [(False, False), (False, True), (True, False), (True, True)]
+    batch, _ = stall.scheduled_chunk(g, 1, 8)(run.stack_states([initial]*4), 79998,
+                                              np.array([f for f, _ in flags]), np.array([d for _, d in flags]))
+    for i, (frozen, decay) in enumerate(flags):
+        expected, _ = stall.scheduled_chunk(g, 1, 8, batched=False)(initial, 79998, frozen, decay)
+        tree_close(expected, run.unstack_state(batch, i))
+
+
+def test_settling_checks_only_compare_windows_after_decay():
+    rows = []
+    for step, begin in [(20000, 0), (40000, 20000), (80000, 40000),
+                        (100000, 80000), (120000, 100000), (160000, 120000), (240000, 160000)]:
+        rows.append({"step": step, "finite": True, "validation": {"rms": 1.}, "c_l1": 1.,
+                     "band_energy": [1.], "lambda_quantiles": [.1]*5,
+                     "window_loss": {"start_step": begin, "mean": .5, "std": .1}})
+    assert run.convergence_status(rows[:-1], step_offset=80000) == "continuing"
+    assert run.convergence_status(rows, step_offset=80000) == "oscillatory"

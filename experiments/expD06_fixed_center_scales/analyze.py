@@ -16,7 +16,7 @@ import numpy as np
 from . import core, diagnostics
 from .run import Case, write_json
 
-DIAGNOSTICS_REVISION = 2
+DIAGNOSTICS_REVISION = 3
 
 
 def analyze_one(task):
