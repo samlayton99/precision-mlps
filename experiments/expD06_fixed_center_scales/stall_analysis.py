@@ -281,6 +281,7 @@ def group_figures(pair, output, construction):
             row[2].semilogy(e["history_steps"]+e["offset"], positive(np.quantile(abs(h["lambda"]), q, axis=1)), label=label)
         row[2].axhline(.25, color="black", ls=":", label="construction 0.25")
         row[2].set(title=f"Seed {e['case'].seed}: |lambda|", xlabel="Total updates")
+        row[2].ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
         row[2].legend(fontsize=7)
     fig.suptitle(title+" — checkpoint parameter histories (rows are saved states)")
     save_plot(fig, output, group+"_parameters")
@@ -302,7 +303,7 @@ def group_figures(pair, output, construction):
             ax.set(yscale="symlog", xlabel="Fixed center", ylabel="Physical readout coefficient",
                    title=f"Seed {seed}: {label}")
             if label == "Halo":
-                ticks = [0, g.radius-1, g.radius, 2*g.radius-1]
+                ticks = [0, g.radius//2, g.radius+g.radius//2, 2*g.radius-1]
                 ax.set(xticks=ticks, xticklabels=[f"{g.centers[mask][i]:.3f}" for i in ticks],
                        xlabel="Halo slots, labeled by fixed center (core omitted)")
                 ax.axvline(g.radius-.5, color="black", lw=.6)
@@ -351,6 +352,7 @@ def group_figures(pair, output, construction):
         row[2].set(title="Directions and cancellation", ylim=(-1.1, 1.1), ylabel="Cosine")
         for ax in row:
             ax.set(xlabel="Total updates")
+            ax.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
             ax.legend(fontsize=7)
             ax.grid(alpha=.2)
     fig.suptitle(title+" — checkpoint gradients and actual optimizer steps")
@@ -372,7 +374,8 @@ def group_figures(pair, output, construction):
         frequencies = np.arange(len(d["probe_raw_all_cos"]))
         for part in ["raw", "perpendicular"]:
             response = np.hypot(d[f"probe_{part}_all_cos"], d[f"probe_{part}_all_sin"])
-            row[2].loglog(frequencies[1:], positive(response[1:]), label=part)
+            label = "Full tangent" if part == "raw" else "Out-of-span tangent"
+            row[2].loglog(frequencies[1:], positive(response[1:]), label=label)
         row[2].set(title="Unit-RMS Fourier sensitivity", xlabel="DFT index", ylabel="Tangent response norm")
         for ax in row:
             ax.legend(fontsize=7)
@@ -450,8 +453,10 @@ def main():
     tasks = [(str(folder), step, 1e-12, False) for folder, _, steps, *_ in specs for step in steps]
     tasks += [(str(folder), step, cutoff, False) for folder, end, _, _, _, _ in specs
               for step in [20000, end] for cutoff in [1e-10, 1e-14]]
+    unique_tasks = sorted(set(tasks))
     with ProcessPoolExecutor(args.workers, mp_context=multiprocessing.get_context("spawn")) as pool:
-        metrics = list(pool.map(analyze_one, sorted(set(tasks))))
+        metrics = [{"source": task[0], **result}
+                   for task, result in zip(unique_tasks, pool.map(analyze_one, unique_tasks))]
     run.write_json(output/"cutoff_and_numerical_audit.json", metrics)
     construction = sine_coefficients(dps=80, quadrature_degree=9)
     low = sine_coefficients(dps=50, quadrature_degree=7)
