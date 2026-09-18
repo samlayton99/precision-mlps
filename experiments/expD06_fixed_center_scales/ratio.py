@@ -116,7 +116,7 @@ def prepare(root, branch):
     return state, step, []
 
 
-def advance_group(root, branches, frontier, deadline=float("inf")):
+def advance_group(root, branches, frontier, deadline=float("inf"), runtime_knots=None, settle_after=None):
     """Advance a matched group. Durable traces precede checkpoint promotion."""
     case = branches[0].case
     if any((b.case.n, b.case.target, b.case.samples_per_cell, b.case.validation_points) !=
@@ -134,7 +134,7 @@ def advance_group(root, branches, frontier, deadline=float("inf")):
     g = core.geometry(case.n)
     cs, gs = core.coordinate_scales(g, "both")
     cs, gs = jnp.broadcast_to(cs, (len(branches), len(cs))), jnp.full(len(branches), gs)
-    knots = jnp.asarray([b.knots for b in branches])
+    knots = jnp.asarray(runtime_knots if runtime_knots is not None else [b.knots for b in branches])
     _, evaluate, _, _ = run.kernels(case.n, "adam", case.target, case.samples_per_cell, case.validation_points)
     traces, dense = [], []
     written = at
@@ -157,11 +157,12 @@ def advance_group(root, branches, frontier, deadline=float("inf")):
         evaluated = jax.device_get(evaluate(state, cs, gs, rates[:, 0], rates[:, 1]))
         for i, branch in enumerate(branches):
             folder = branch.folder(root)
-            elapsed = at - branch.settle_after
+            settling_origin = branch.settle_after if settle_after is None else settle_after
+            elapsed = at - settling_origin
             multiple = elapsed // WINDOW
             begin = max(branch.source_step, at - WINDOW)
             if elapsed >= WINDOW and elapsed % WINDOW == 0 and multiple & (multiple - 1) == 0:
-                begin = branch.settle_after + (0 if multiple == 1 else elapsed // 2)
+                begin = settling_origin + (0 if multiple == 1 else elapsed // 2)
             losses = run.trace_window_losses(folder, begin, at) if begin < at else None
             arrays = {k: v[i] for k, v in evaluated.items()}
             arrays.update(eta_a=np.asarray(rates[i, 0]), eta_lambda=np.asarray(rates[i, 1]),
@@ -170,7 +171,7 @@ def advance_group(root, branches, frontier, deadline=float("inf")):
             row = run.record_checkpoint(folder.parent, branch.case, run.unstack_state(state, i), at, arrays, losses)
             row.update(eta_a=float(rates[i, 0]), eta_lambda=float(rates[i, 1]))
             histories[i] = [r for r in histories[i] if r["step"] < at] + [row]
-            status = run.convergence_status(histories[i], folder, step_offset=branch.settle_after)
+            status = run.convergence_status(histories[i], folder, step_offset=settling_origin)
             run.write_json(folder / "latest.json", {"step": at, "status": status, "history": histories[i],
                            "source_step": branch.source_step, "minimum_new_updates": WINDOW,
                            "completed_minimum": at - branch.source_step >= WINDOW})

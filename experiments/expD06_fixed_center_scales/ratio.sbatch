@@ -17,6 +17,7 @@ experiment_root=/workspace/junmiaoh/experiments/precision-mlps
 cd "${experiment_root}/code"
 export JAX_PLATFORMS=cuda JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false
 export OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2
+D06_MODULE="${D06_MODULE:-ratio}"
 srun --ntasks=1 flock "${experiment_root}/ratios_${SLURM_ARRAY_TASK_ID}.lock" \
-    "${experiment_root}/.venv/bin/python" -u -m experiments.expD06_fixed_center_scales.ratio \
+    "${experiment_root}/.venv/bin/python" -u -m "experiments.expD06_fixed_center_scales.${D06_MODULE}" \
     --root "${experiment_root}" --seed "${SLURM_ARRAY_TASK_ID}" "$@"

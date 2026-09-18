@@ -68,6 +68,18 @@ and 0.7h reserve. Reconcile Slurm allocation elapsed times before submission;
 Python runtime alone is not the charge. CPU analyses request zero GPUs.
 These limits supersede the historical pilot allowance below.
 
+`feedback.py` adds one training-only policy from the same high-acquisition
+160k checkpoints. It checks every 20k: improvement below 5% in each of two
+successive window means, and more than 95% of residual energy in the readout
+span at both cutoffs $10^{-10},10^{-12}$. The first intervention lowers the
+geometry rate tenfold over 20k. After another 40k at fixed rates, a persistent
+stall permits a threefold readout-rate increase only if readout-only
+counterfactual steps lower mean MSE and lower MSE in at least 95% of 64
+systematically sampled states from the latest 2048-state window. There are
+at most two interventions. Thresholds are operational choices. Every check,
+rejection, source window, cutoff, counterfactual, and schedule extension is
+saved in `feedback.json`; no validation observation controls this policy.
+
 `continue_stall.py` resumes the shared-rate scaled Adam/envelope runs, seeds 0 and 1, from update 320,000. Each seed has four branches: joint or frozen geometry, crossed with constant $\eta=10^{-3}$ or a shared cosine decay to $10^{-6}$ over 80,000 additional updates followed by a constant tail. All branches preserve the source parameters and Adam moments. Freezing leaves every slope unchanged; its unused geometry moments continue evolving independently of the readout moments. No readout is frozen or replaced by a detached solve.
 
 Submit `stall.sbatch` through Slurm. Each one-GPU worker advances all four branches for its seed, with a cumulative two-hour worker cap and at most two concurrent GPUs. Reconcile the existing campaign budget before submission. Checkpoint and trace steps under `runs/stall/<branch>/<source-case>/` count **additional** updates; add 320,000 for the full trajectory. Full checkpoints occur every 1,000 updates; dense parameters, gradients, and actual updates cover the first 2,048 steps and the last 2,048 steps of every 20,000-step window. Complete scalar traces cover every update. Convergence checks use doubled windows after the schedule reaches its constant tail at 80k, so the first possible stationary/oscillatory classification is at 240k additional updates. Budget interruptions remain unconverged and resumable. The four branches continue to a common horizon until all have a terminal classification or the worker budget is exhausted.
