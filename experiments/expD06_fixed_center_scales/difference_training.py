@@ -110,12 +110,14 @@ def evaluator(n, coordinates, samples_per_cell=16):
         gamma = state["lam"] / g.h
         phi = core.tanh((x[:, None] - jnp.asarray(g.centers)) * gamma)
         pred = c[0] + phi @ c[1:]
-        pv = c[0] + core.tanh((xv[:, None] - jnp.asarray(g.centers)) * gamma) @ c[1:]
+        # Bounded validation kernels avoid a giant fused reduction in CUDA compilation.
+        def validation_block(xblock):
+            return c[0] + core.tanh((xblock[:, None] - jnp.asarray(g.centers)) * gamma) @ c[1:]
+        pv = jax.lax.map(validation_block, xv.reshape(-1, 512)).reshape(-1)
         q = jnp.cumsum(c[1:])
         alternate = c[0] + (phi[:, :-1]-phi[:, 1:]) @ q[:-1] + phi[:, -1]*q[-1]
         return {"c": c, "gamma": gamma, "lambda": state["lam"], "z": state["z"],
-                "prediction_train": pred, "train_mse": jnp.mean((pred-y)**2),
-                "validation_mse": jnp.mean((pv-yv)**2), "alternate_eval_max": jnp.max(jnp.abs(pred-alternate)),
+                "prediction_train": pred, "prediction_validation": pv, "prediction_alternate": alternate,
                 "travel_c": state["travel_c"], "travel_lambda": state["travel_lambda"]}
     return jax.jit(jax.vmap(evaluate))
 
@@ -182,6 +184,11 @@ def advance_group(output, cases, frontier, deadline=float("inf"), samples_per_ce
                 np.savez(path/f'dense_{int(detail["step"][i,0]):09d}_{at:09d}.npz', **{k:v[i] for k,v in detail.items()})
             single = run.unstack_state(host, i)
             data = {k:v[i] for k,v in arrays.items()}
+            yt = core.target(np.linspace(-1, 1, samples_per_cell*n+1), "sine", np)
+            yv = core.target(diagnostics.midpoint_grid(32768), "sine", np)
+            data['train_mse'] = np.mean((data['prediction_train']-yt)**2)
+            data['validation_mse'] = np.mean((data.pop('prediction_validation')-yv)**2)
+            data['alternate_eval_max'] = np.max(np.abs(data['prediction_train']-data.pop('prediction_alternate')))
             run.save_arrays(path/f'checkpoint_{at:09d}.npz', **data)
             run.save_state(path/f'state_{at:09d}.pkl', single, at)
             fail = int(single['failed'])
