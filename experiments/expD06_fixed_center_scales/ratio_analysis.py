@@ -380,7 +380,7 @@ def plot_comparisons(records, output):
 
 
 def analyze_dictionary(task):
-    folder, output = map(Path, task)
+    folder, output = map(Path, task[:2])
     output.mkdir(parents=True, exist_ok=True)
     meta = json.loads((folder / "dictionary.json").read_text())
     case = run.Case(**meta["case"])
@@ -395,6 +395,8 @@ def analyze_dictionary(task):
                                   compute_uv=False)
     end = min(json.loads((folder / spec[0] / "latest.json").read_text())["step"] for spec in meta["specifications"])
     end = end // 20000 * 20000
+    if len(task) == 3:
+        end = min(end, task[2])
     refits = []
     for tau in (1e-10, 1e-12, 1e-14):
         keep = singular > tau * singular[0]
@@ -498,9 +500,14 @@ def main():
     else:
         records = []
     dictionaries = sorted(p.parent for p in (root / "solvers").glob("*/dictionary.json"))
-    solver_tasks = [(str(p), str(args.output / "solvers" / p.name)) for p in dictionaries
-                    if all((p / spec[0] / "latest.json").exists()
-                           for spec in json.loads((p / "dictionary.json").read_text())["specifications"])]
+    ready = [p for p in dictionaries if all((p / spec[0] / "latest.json").exists()
+                 for spec in json.loads((p / "dictionary.json").read_text())["specifications"])]
+    common_solver = min(json.loads((p / spec[0] / "latest.json").read_text())["step"]
+                        for p in ready for spec in json.loads((p / "dictionary.json").read_text())["specifications"]) // 20000 * 20000 if ready else None
+    solver_tasks = [(str(p), str(args.output / "solvers" / p.name), common_solver) for p in ready]
+    run.write_json(args.output / "solver_provenance.json", {"common_solver_horizon": common_solver,
+        "expected_dictionaries": 30, "ready_dictionaries": len(ready),
+        "dictionaries_present": len(dictionaries), "comparison": "same update horizon across all exported dictionaries"})
     with ProcessPoolExecutor(args.workers, mp_context=multiprocessing.get_context("spawn")) as pool:
         solver_records = list(pool.map(analyze_dictionary, solver_tasks))
     run.write_json(args.output / "solver_evidence.json", solver_records)
