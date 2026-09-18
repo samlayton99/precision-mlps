@@ -1,98 +1,162 @@
-# Does one shared learning rate with the prescribed scales sustain useful geometry learning?
+# Shared scale prescription: geometry, oscillation, and the remaining readout error
 
-**Scaled training helps acquire useful geometry, but sustained useful geometry learning and high-precision joint convergence are not established.** At the shared Adam rate $\eta=10^{-3}$, accurate features are already present by 20,000 updates. Bandwidths keep growing through 320,000 updates, but their checkpoint gradients are dominated by error the readout could fit. Final detached readout errors are $6.3\times10^{-12}$ and $5.1\times10^{-11}$, while live training-window errors remain $2.1\times10^{-3}$ and $1.1\times10^{-3}$. Paired unscaled training learns much worse geometry. This is partial support for the proposed intervention on one target, one width, and two seeds.
+**The prescribed scaling acquires features that represent this target accurately, but the readout problem remains ill-conditioned. Decaying the one shared Adam learning rate reduces sustained MSE from about $10^{-6}$ to $10^{-10}$. Freezing geometry alone does not remove the oscillation floor.** With decay, joint training outperforms frozen geometry, and its remaining residual concentrates in weak readout singular directions. Both step size and slow fitting of those directions matter. Continued geometry movement is mostly driven by readout-accessible error; these results do not establish sustained learning driven by the out-of-reach residual. This evidence covers one sine target, one width, and two seeds. The decayed runs are still improving.
 
-**Definitions used below.**
+**Table 1. Terminology and normalization used throughout this report.**
 
 | Term | Meaning |
 |---|---|
-| Unscaled training | Update the network's readout weights, output bias, and slopes directly, all with the same base rate $\eta$ |
-| Scaled training | Update their rescaled versions, all with the same base rate $\eta$; the fixed scales from the note determine the resulting changes to the network parameters |
-| $\eta$ | One shared learning rate for all trained coordinates, including the output bias |
-| $w_j,\gamma_j$ | A neuron's output weight and slope, appearing in $w_j\tanh(\gamma_j(x-x_j))$ |
-| $a_j=w_j/d_j$, $\lambda_j=h\gamma_j$ | The rescaled variables updated in scaled training; $d_j$ is the prescribed readout scale and $h$ is center spacing. Reported bandwidths use $\lvert\lambda_j\rvert$. |
-| Training-window RMS | RMS over every training sample and every update in the preceding 20,000 steps |
-| Detached refit | Validation RMS after fitting only the saved geometry's readout by truncated SVD; never fed into training |
+| Unscaled training | Update physical readouts, output bias, and slopes directly with one shared base rate $\eta$ |
+| Scaled training | Update $\mathbf a=D^{-1}\mathbf c$ and $\boldsymbol\lambda=h\boldsymbol\gamma$, both with the same $\eta$; $D$ and $h$ supply the prescribed scales |
+| $\mathbf c=(b,w_1,\ldots,w_W)$ | Physical output bias and neuron readout coefficients |
+| $\gamma_j$, $\lambda_j=h\gamma_j$ | Physical slope and dimensionless bandwidth; distribution plots show $\lvert\lambda\rvert$ |
+| MSE | Mean squared prediction error; the optimizer minimizes **half-MSE**, and RMS is $\sqrt{\mathrm{MSE}}$ |
+| Window MSE | Mean training MSE over **every update** in the stated 20,000-update interval |
+| Detached refit | Truncated-SVD readout solve at saved geometry; its coefficients are never fed into training |
+| Readout-accessible / out-of-span | Components under the retained SVD projector $P_\tau$ and its complement; this is a numerical span at cutoff $\tau$ |
 
-## The single prescription being tested
+Older source files call scaled training `both` or “reparametrized,” and unscaled training `raw`. Those are source aliases, not additional methods.
 
-Both methods use the same network, initial predictions, data, loss, and fixed centers. The difference is which variables the optimizer updates. **Unscaled training** updates $w_j$ and $\gamma_j$ directly. **Scaled training** updates $a_j=w_j/d_j$ and $\lambda_j=h\gamma_j$, then obtains the network parameters through $w_j=d_ja_j$ and $\gamma_j=\lambda_j/h$. These are rescaled versions of the same parameters, not additional neurons or parameters. A change $\Delta a_j$ produces $\Delta w_j=d_j\Delta a_j$; a change $\Delta\lambda_j$ produces $\Delta\gamma_j=\Delta\lambda_j/h$.
+## The experiment and its single shared learning rate
 
-Earlier descriptions called scaled training “reparametrized” or “Both,” and unscaled training “Raw” or “the control.” Those were aliases for these two methods. This report uses **scaled training** and **unscaled training** throughout; the formulas specify the scaling precisely.
-
-Use center spacing $h=2/N$, halo radius $R=\lceil\sqrt N\rceil$, and independent signed slopes. In scaled training, collect the readouts and output bias into $\mathbf c$ and train jointly using
+The network is
 
 $$
-\mathbf c=D\mathbf a,\qquad \boldsymbol\gamma=\boldsymbol\lambda/h,
+f(x)=b+\sum_{j=1}^{W}w_j\tanh\bigl(\gamma_j(x-x_j)\bigr),\qquad
+\mathbf c=D\mathbf a,\quad \boldsymbol\gamma=\boldsymbol\lambda/h,
 \qquad \boxed{\eta_a=\eta_\lambda=\eta}.
 $$
 
-Here $\mathbf c$ includes the output bias. The fixed diagonal $D$ comes from the reference envelopes in the [scale note](../../../docs/correcting_scales.md), evaluated once at $\lambda_{\rm ref}=0.25$, including bias and halo allowances. Ordinary diagonal entries scale as $\sqrt h$. Adam in these coordinates therefore supplies physical update prefactors $\eta d_j$ and $\eta/h$, with physical epsilons $10^{-8}/d_j$ and $h\,10^{-8}$. These transformations are applied automatically through the parametrization. There is no independent multiplier for either block.
+Centers are fixed. The target is $\sqrt2\sin(2\pi x)$ on $[-1,1]$, with $N=512$, spacing $h=1/256$, halo radius $R=\lceil\sqrt N\rceil=23$, and $W=559$ neurons. Full-batch FP64 training uses 8,193 endpoint-inclusive samples. The 32,768-point midpoint grid is diagnostic validation; the final test grid remains unused. These are optimization results, not a final held-out evaluation.
 
-Hold initialization fixed: physical slopes use tanh Xavier, $\widetilde\gamma_{j,0}=(5/3)\sqrt{2/(W+1)}\,g_j$; physical readouts use the note's reference-envelope law $\widetilde w_{j,0}=\alpha_j\operatorname{sign}(\xi_j)$ with $d_j=\sqrt{\alpha_j}$ and independent standard normal draws $g_j,\xi_j$; output bias starts at zero. Initial slope signs are absorbed into readouts without changing the function. Unscaled training starts from exactly the same physical network and trains $(\mathbf c,\boldsymbol\gamma)$ with one shared $\eta$. Both methods use full-batch FP64 Adam, moments $(0.9,0.999)$, and trained-coordinate epsilon $10^{-8}$ throughout.
+The [scale note](../../../docs/correcting_scales.md) defines fixed reference allowances $\alpha_j$ and $d_j=\sqrt{\alpha_j}$ for $D$, including bias and corrected halo slots, evaluated at $\lambda_{\rm ref}=0.25$. Physical slopes start from tanh Xavier with standard deviation $(5/3)\sqrt{2/(W+1)}$. Physical readouts start at $w_j=\alpha_j\operatorname{sign}(\xi_j)$ with independent Gaussian draws; bias starts at zero. Initial slope signs are absorbed into readouts without changing the function. This **reference-envelope initialization is not Gaussian Xavier on $a$**. Initialization is held fixed here: scaled and unscaled training start from identical physical networks for each seed.
 
-The baseline evidence uses existing pilot runs satisfying that contract: 10 runs of scaled training at $\eta\in\{10^{-5},10^{-4},10^{-3},10^{-2},10^{-1}\}$ and six runs of unscaled training at $\eta\in\{10^{-4},10^{-3},10^{-2}\}$, each with seeds 0 and 1. All completed 320,000 updates and have verified complete traces. The user's shared-rate clarification supersedes the earlier independent-rate search in the protocol. Unequal-rate results appear only in the explicitly identified historical comparison below, to explain the earlier reported errors.
+Adam uses moments $(0.9,0.999)$ and trained-coordinate epsilon $10^{-8}$. GD is full-batch gradient descent without momentum. For coordinate scale $s$, GD supplies physical rate $\eta s^2$; Adam supplies physical prefactor $\eta s$ and physical epsilon $10^{-8}/s$. Adam prefactors multiply normalized moments and are not observed displacements.
 
-The target is $\sqrt2\sin(2\pi x)$ on $[-1,1]$, with $N=512$, $R=23$, and $W=559$. Training uses 8,193 endpoint-inclusive samples; diagnostic validation uses 32,768 midpoint samples. The final test grid remains unused. Detached solves use the same $D$ and relative SVD cutoff $10^{-12}$ in both arms. This is an optimization study, not a final held-out evaluation.
+**Table 2. Physical rates induced by the shared prescription at this width, including bias and halo.**
 
-### Effective learning rates in physical parameters
+| Physical parameter | Unscaled Adam, $\eta=10^{-3}$ | Scaled Adam, $\eta=10^{-3}$ | Unscaled GD, $\eta=10^{-2}$ | Scaled GD, $\eta=10^{-2}$ |
+|---|---:|---:|---:|---:|
+| Ordinary readout, including uncorrected halo | $10^{-3}$ | $9.3075\times10^{-5}$ | $10^{-2}$ | $8.6630\times10^{-5}$ |
+| Corrected halo readout | $10^{-3}$ | $9.3075\times10^{-5}$–$1.0224\times10^{-3}$ | $10^{-2}$ | $8.6630\times10^{-5}$–$1.0452\times10^{-2}$ |
+| Output bias | $10^{-3}$ | $3.2808\times10^{-3}$ | $10^{-2}$ | $0.10764$ |
+| Slope $\gamma$ | $10^{-3}$ | $0.256$ | $10^{-2}$ | $655.36$ |
 
-At $N=512$, $h=1/256$, $d_{\rm ordinary}=0.09307517$, and $d_{\rm bias}=3.28083978$. The shared coordinate rate $\eta=10^{-3}$ therefore gives the following physical Adam prefactors. These multiply Adam's normalized moments; they are not measured parameter displacements or rates of error reduction.
+Scaled Adam's physical epsilons are $1.0744\times10^{-7}$ on ordinary readouts, $3.0480\times10^{-9}$ on bias, and $3.90625\times10^{-11}$ on slopes, versus $10^{-8}$ throughout unscaled Adam. The decay below ends at $\eta=10^{-6}$, dividing all scaled Adam prefactors by 1,000 while keeping their ratios and epsilons fixed. [Per-coordinate records](stall_analysis/evidence.json) retain all 560 readout/bias entries.
 
-**Table 1. Physical Adam prefactors at the same shared base rate $\eta=10^{-3}$.**
+The earlier $(10^{-4},10^{-2})$ run **did use $D$**: those were unequal coordinate rates $(\eta_a,\eta_\lambda)$. Its ordinary-readout, bias, and slope Adam prefactors were $9.3075\times10^{-6}$, $3.2808\times10^{-4}$, and $2.56$. A separate historical unscaled run used physical rates $9.3075\times10^{-6}$ and $2.56$ without $D$. Neither implements the one-shared-rate prescription.
 
-| Physical parameter | Unscaled training | Scaled training | Scaled / unscaled |
-|---|---:|---:|---:|
-| Ordinary readout weights, including uncorrected halo | $10^{-3}$ | $9.3075\times10^{-5}$ | 0.0931 |
-| Corrected halo readout weights | $10^{-3}$ | $9.3075\times10^{-5}$ to $1.0224\times10^{-3}$ | 0.0931 to 1.0224 |
-| Output bias | $10^{-3}$ | $3.2808\times10^{-3}$ | 3.2808 |
-| Physical slopes $\gamma$ | $10^{-3}$ | 0.256 | 256 |
+## Adam and GD baselines at 320,000 updates
 
-Thus ordinary readout prefactors are 10.74 times smaller, slope prefactors are 256 times larger, and the output-bias prefactor is 3.28 times larger. The corrected halo is not uniformly slowed. Setting the shared rate to $10^{-2}$ multiplies every scaled prefactor in this table by ten without changing their ratios.
+**Table 3. Complete training-window MSE over updates 300k–320k, seed 0 / seed 1. No endpoint selection or detached fitting is included.**
 
-The physical epsilon thresholds also follow the coordinate map: $1.0744\times10^{-7}$ for ordinary readouts, $3.0480\times10^{-9}$ for the bias, and $3.90625\times10^{-11}$ for slopes, versus $10^{-8}$ throughout unscaled training. Hence the prefactor ratios alone are not exact ratios of actual updates. The [computed rate record](shared_rate_analysis/effective_rates.json) stores all 560 readout/bias prefactors and epsilons, slope settings, and source cases, calculated using `core.geometry` and `run.case_settings`.
+| Optimizer and training method | Shared $\eta$ | Window MSE |
+|---|---:|---:|
+| Adam, unscaled training | $10^{-3}$ | $9.70\times10^{-4}$ / $1.70\times10^{-4}$ |
+| Adam, scaled training | $10^{-3}$ | $4.50\times10^{-6}$ / $1.23\times10^{-6}$ |
+| Adam, scaled training | $10^{-2}$ | $1.20\times10^{-4}$ / $1.21\times10^{-4}$ |
+| GD, unscaled training | $10^{-2}$ | $1.23\times10^{-1}$ / $6.59\times10^{-2}$ |
+| GD, scaled training | $10^{-2}$ | $2.14\times10^{-5}$ / $6.45\times10^{-6}$ |
+| GD, scaled training | $10^{-1}$ | $1.11\times10^{-6}$ / $9.65\times10^{-7}$ |
 
-## What the shared-rate runs show
+The GD baselines show smooth progress. Scaled GD at $\eta=0.1$ reaches about $10^{-6}$ MSE without Adam's large oscillations. Over 160k–320k, its bandwidth net displacement and accumulated travel are both about $0.0032$ RMS. Scaled Adam at $\eta=10^{-3}$ travels 4.83 / 4.09 in bandwidth RMS over that interval, despite net displacement of only 0.0624 / 0.0700. Much of its motion therefore revisits parameter space rather than producing net change.
 
-**Table 2. Results at 320,000 updates; entries show seed 0 / seed 1. Training RMS uses updates 300k–320k.**
-
-| Setup | Shared $\eta$ | Training-window RMS | Median $\lvert\lambda\rvert$ | Detached refit RMS |
-|---|---|---|---|---|
-| Unscaled training | $10^{-3}$ | 0.0312 / 0.0130 | 0.000507 / 0.000236 | $7.52\times10^{-4}$ / $2.41\times10^{-5}$ |
-| Scaled training | $10^{-3}$ | 0.00212 / 0.00111 | 0.0329 / 0.0808 | $6.32\times10^{-12}$ / $5.15\times10^{-11}$ |
-| Scaled training | $10^{-2}$ | 0.01098 / 0.01098 | 0.321 / 0.329 | $4.00\times10^{-8}$ / $1.42\times10^{-8}$ |
-
-Among the five sampled shared rates, $10^{-3}$ has the lowest paired geometric mean of late-window training RMS. This is a descriptive choice within the existing grid, not a converged optimum or a final validation selection. Smaller rates leave large error and small median bandwidths; $10^{-1}$ has window RMS above 0.1. The complete [filtered rate table](shared_rate_analysis/summary.csv) retains every candidate.
-
-At $\eta=10^{-3}$, scaled median bandwidths grow from 0.00882 / 0.0160 at 20k to 0.0231 / 0.0658 at 160k and 0.0329 / 0.0808 at 320k. The corresponding unscaled medians at 20k are 0.000492 / 0.000653 and remain small through 320k. Scaling therefore sustains substantially more geometry movement after the early fitting phase. The final scaled refits require readout $\ell_1$ norms of 16.6 / 16.2, so their accuracy is not obtained only with enormous coefficients.
-
-This demonstrates accurate approximation with the learned features, not good conditioning of the full readout problem. The SVD retains only 204 / 313 of the 560 feature columns' singular directions at the stated cutoff. A highly accurate truncated solve does not imply that Adam can quickly find its readout coefficients.
+These are selected comparisons from the [complete 36-case shared-rate grid](stall_analysis/shared_rate_grid.json), not equally extensive optimizer tuning. Unscaled GD was searched only through $\eta=0.01$; scaled GD at $0.3$ and $1$ failed numerically. All finite displayed runs completed 320k updates and remained nonstationary. Scaled Adam's $10^{-3}$ shared rate was selected descriptively from the existing decade grid using late-window error, before the continuation intervention.
 
 <figure>
-  <img src="shared_rate_analysis/figures/shared_rate_trajectories.png" alt="Two-seed trajectories of bandwidth, complete training-window error, and detached readout error for scaled training and unscaled training" style="max-width: 100%;">
-  <figcaption>One initialization and one shared rate per run. Blue is scaled training at the lowest-error sampled shared rate; orange is scaled training with that shared rate increased tenfold; gray is unscaled training at the same base rate as blue. Solid and dashed lines show the two seeds separately. The dotted bandwidth reference is 0.25, not a required median for a heterogeneous learned dictionary. The first training window includes initialization.</figcaption>
+  <img src="stall_analysis/figures/optimization.png" alt="Adam and GD training MSE, individual-step ranges, validation checkpoints, and detached refit errors for scaled and unscaled training across two seeds" style="max-width: 100%;">
+  <figcaption>Figure 1. Baselines through 320k updates. Curves average training MSE in 1k bins; shading shows the 10th–90th percentiles of individual-step MSE. Crosses are validation checkpoints; dotted curves are detached validation refits. Adam endpoints can be far below sustained error, whereas GD progresses smoothly.</figcaption>
 </figure>
 
-Useful features do not yet translate into a precise live fit. At $\eta=10^{-3}$, the final three training windows are 0.00246, 0.00230, 0.00212 for seed 0 and 0.001128, 0.001115, 0.001108 for seed 1, with substantial within-window oscillations. Error is still improving, especially in seed 0; these runs must not be called converged. Raising the shared rate to $10^{-2}$ brings median bandwidths above 0.25 but worsens both sustained training error and the final detached fit. Merely reaching that median does not establish the intended geometry.
+## What geometry and coefficients were learned?
 
-### Why earlier errors reached $10^{-4}$
+At scaled Adam's shared $\eta=10^{-3}$, median $|\lambda|$ reaches 0.0329 / 0.0808 and maxima reach 0.849 / 0.637. Slopes remain heterogeneous. A uniform construction's $\lambda=0.25$ is a reference, not a requirement that every learned slope or the median equal 0.25.
 
-There are two separate comparisons. First, endpoint error can be much smaller than sustained error: the current shared-$10^{-3}$ runs have final validation RMS $5.58\times10^{-4}$ / $6.27\times10^{-5}$, but training-window RMS $2.12\times10^{-3}$ / $1.11\times10^{-3}$. A favorable oscillation phase is not a sustained $10^{-4}$ result.
+The final detached refit has validation MSE $3.99\times10^{-23}$ / $2.65\times10^{-21}$, with physical coefficient $\ell_1$ norms 16.6 / 16.2. Live coefficient norms are 24.0 / 13.8. Accurate representation is available with moderate coefficients, but only 204 / 313 of the 560 readout directions survive relative SVD cutoff $10^{-12}$. Calling this “good geometry conditioning” would be incorrect: it is good representability in an ill-conditioned dictionary.
 
-Second, earlier scaled training with unequal rates did achieve sustained RMS $1.48\times10^{-4}$ / $1.52\times10^{-4}$ on the same target, width, initialization, seeds, and 300k–320k window. It used $(\eta_a,\eta_\lambda)=(10^{-4},10^{-2})$. Its physical ordinary-readout, bias, and slope prefactors were respectively $9.3075\times10^{-6}$, $3.2808\times10^{-4}$, and 2.56. Relative to scaled training with shared $\eta=10^{-3}$, every readout/bias prefactor was ten times smaller and the slope prefactor ten times larger. This extra ratio is outside the shared-rate prescription. Earlier unscaled training with unequal physical rates, $9.3075\times10^{-6}$ and 2.56, likewise reached approximately $10^{-4}$; it did not use one shared rate.
+<figure>
+  <img src="stall_analysis/figures/adam_scaled_0.001_parameters.png" alt="Physical readout and slope histories by fixed center, and bandwidth quantiles for both seeds" style="max-width: 100%;">
+  <figcaption>Figure 2. Scaled Adam, shared rate 0.001: every saved parameter checkpoint through 320k. Heatmap rows are saved states, not uniformly spaced times; black lines mark domain edges. Geometry keeps moving after accurate detached fits are available.</figcaption>
+</figure>
 
-The lower live error did not reflect better features in the comparison of scaled training at different rates: those earlier detached errors were about $2\times10^{-7}$, with refitted coefficient norms above 20,000. At the same geometry coordinate rate $10^{-2}$, reducing the readout coordinate rate from $10^{-2}$ to $10^{-4}$ lowered sustained error from about 0.011 to 0.00015, even though the final refit worsened. This supports sensitivity to readout step size and joint optimizer dynamics; it does not isolate a particular oscillation mechanism or establish the shared-rate prescription. The [rate record](shared_rate_analysis/effective_rates.json) preserves the historical configurations and comparable error measurements.
+For a target-specific coefficient reference, we evaluated the boundary-corrected construction from [the theorem note](../../../theorem_for_sam.pdf), using the same $N=512$, radius-23 halo, and uniform $\lambda=0.25$. Its validation MSE is $1.48\times10^{-31}$ after FP64 export, with coefficient $\ell_1$ norm 6.75. Coefficients stabilize when increasing arithmetic precision from 50 to 80 decimal digits and quadrature degree from 7 to 9. The reference allowances $\pm\alpha_j$ define $D$; they are **not** the target-specific construction coefficients or a proved bound for the unit-RMS sine's complex extension.
 
-## What the residual and gradient evidence says
+<figure>
+  <img src="stall_analysis/figures/adam_scaled_0.001_coefficients.png" alt="Learned coefficients versus a refit on learned slopes and boundary-corrected construction coefficients, with core and halo panels" style="max-width: 100%;">
+  <figcaption>Figure 3. Final coefficients at 320k, with slope signs canonicalized for display. The detached fit uses learned slopes; the construction uses uniform slope 64. Coefficient differences cannot be interpreted as error in a common basis. Bias values are printed separately, and halo slots are expanded for visibility.</figcaption>
+</figure>
 
-At $\eta=10^{-3}$, detached errors are already $2.8\times10^{-11}$ / $1.4\times10^{-11}$ at 20k. Later bandwidth growth therefore does not demonstrate escape from a persistently inaccurate feature space. At 320k, the norms of the bandwidth-gradient component shared with readout fitting are $2.3\times10^{-3}$ / $1.5\times10^{-6}$; the components outside the retained readout span are only about $10^{-16}$ / $10^{-17}$. At these checkpoints, geometry is responding overwhelmingly to readout-accessible error. Continued parameter movement is not evidence that the out-of-reach residual is driving productive geometry improvement.
+Corrected-halo weight RMS is 0.676 / 0.399, versus core RMS 0.0531 / 0.0223. Halo coefficients and bias cannot be omitted from optimizer accounting. These observations measure participation, not an isolated causal halo benefit. [GD parameter histories](stall_analysis/figures/gd_scaled_0.1_parameters.png) and [GD coefficients](stall_analysis/figures/gd_scaled_0.1_coefficients.png) provide the smooth-training comparison. GD's median bandwidths are 0.0906 / 0.0648, but maxima reach 16.6 / 6.48; smooth error reduction does not mean every slope approaches the uniform construction's bandwidth.
 
-The largest out-of-span residual Fourier band shifts from DFT indices 4–7 initially to 32–63 / 128–255 at 320k, while total out-of-span residual RMS falls to approximately $7\times10^{-12}$ / $5\times10^{-11}$. This is consistent with depletion of coarse residual, but does not establish an exponential frequency-dependent gradient law. The tiny perpendicular gradients are numerically sensitive; their exact signs are not interpreted. Changing the SVD cutoff from $10^{-10}$ to $10^{-14}$ gives final refit errors between roughly $10^{-9}$ and $10^{-13}$, preserving the large gap from the live error. The [signed spectral histories](shared_rate_analysis/spectral_history.json), [gradient diagnostics](shared_rate_analysis/mechanism.json), and [cutoff checks](shared_rate_analysis/cutoff_sensitivity.json) retain both seeds.
+## Residual frequencies, gradient directions, and actual movement
 
-Increasing the same shared rate to $10^{-2}$ also acquires accurate features by 20k, but subsequently loses accuracy as bandwidths grow. Thus the evidence supports early geometry acquisition; it does not yet demonstrate the intended sustained useful geometry learning. Convergence, other widths and targets, and tuning the single shared rate between the sampled decades remain unresolved.
+Let $r=(f-y)/\sqrt M$, and let $A$ include bias and the same sample normalization. The detached SVD uses $AD=U\Sigma V^T$. With $P_\tau$ projecting onto retained left singular vectors, record $P_\tau r$ and $(I-P_\tau)r$ separately. For the bandwidth tangent $J_\lambda$,
 
-## Evidence and reproduction
+$$
+g_\lambda=J_\lambda^Tr
+=(P_\tau J_\lambda)^Tr+((I-P_\tau)J_\lambda)^Tr.
+$$
 
-The [selection record](shared_rate_analysis/selection.json), [window records](shared_rate_analysis/windows.json), and [checkpoint metrics](shared_rate_analysis/checkpoint_metrics.json) identify the included cases and measurements. The source is the saved pilot checkpoints, not the later crossed study. All new work for this report is detached analysis; no training updates were added or readouts replaced.
+For each orthogonal Fourier-band projector $Q_b$, the stored signed terms are $(P_\tau J_\lambda)^TQ_br$ and $((I-P_\tau)J_\lambda)^TQ_br$. Summing bands reconstructs the gradient without assuming that Fourier and readout projectors commute. Unit-RMS sine/cosine probes separately measure tangent sensitivity, distinguishing small residual amplitude from weak sensitivity.
 
-Run `python -m experiments.expD06_fixed_center_scales.shared_rate_analysis --root /workspace/junmiaoh/experiments/precision-mlps/runs/pilot` inside an eight-CPU Slurm allocation with `JAX_PLATFORMS=cpu`, `CUDA_VISIBLE_DEVICES=''`, and two BLAS threads. The script verifies the exact 16-case subset, reuses the existing diagnostics, and emits data and the figure. CPU Slurm job 305 completed the export after a path-type correction to job 304; neither used GPUs. All 27 focused experiment tests pass. The [numerical audit](shared_rate_analysis/numerical_audit.json) records reconstruction and CPU/GPU prediction checks. The report is authored directly from those inspected artifacts. Earlier broad analyses remain in the evidence directories and Git history; they are not used to establish the shared-rate result.
+<figure>
+  <img src="stall_analysis/figures/adam_scaled_0.001_spectra.png" alt="Fourier-band MSE of full, readout-accessible, and out-of-span residuals over Adam checkpoints" style="max-width: 100%;">
+  <figcaption>Figure 4. Scaled Adam, shared rate 0.001, both seeds. Out-of-span residual falls to about 1e-11 RMS while readout-accessible error remains. Axes show DFT indices on the endpoint-inclusive training vector; the common color scale exposes the magnitude gap.</figcaption>
+</figure>
+
+At 320k, bandwidth-gradient norms are $2.32\times10^{-3}$ / $1.47\times10^{-6}$, while out-of-span components are $1.26\times10^{-16}$ / $2.15\times10^{-17}$. Geometry predominantly responds to error the readout can represent. The dominant out-of-span Fourier band shifts from indices 4–7 initially to 32–63 / 128–255. This supports depletion of coarse residual; it does not verify an exponential frequency-dependent gradient law. Tiny projected forces require cutoff and boundary-sensitivity checks, and their exact signs are not treated as reliable evidence.
+
+<figure>
+  <img src="stall_analysis/figures/adam_scaled_0.001_fourier_gradients.png" alt="Per-band readout and geometry gradients, signed predicted descent under actual updates, and Fourier probe sensitivity" style="max-width: 100%;">
+  <figcaption>Figure 5. Fourier diagnostics at 320k. Positive signed descent predicts linearized loss reduction; bias is shown separately and is also included in the full readout term. Individual band norms can exceed the norm of their signed sum because bands cancel.</figcaption>
+</figure>
+
+Neither block has stopped moving: readout-update RMS is $3.05\times10^{-6}$ / $1.32\times10^{-8}$ and bandwidth-update RMS is $1.29\times10^{-5}$ / $3.23\times10^{-6}$. Readout and geometry function-step cosines are 0.291 / $-0.156$, so uniform cancellation is unsupported. Readout moment denominators exceed Adam's epsilon at all coordinates; 0.9% / 7.7% of slope coordinates are epsilon-dominated. [Gradient and actual-step histories](stall_analysis/figures/adam_scaled_0.001_gradients.png) retain these measurements over time. The two endpoint phases differ substantially, motivating dense continuation traces.
+
+## Separate step-size effects from geometry motion
+
+Each seed's scaled Adam state at 320k is forked into four continuations, preserving all parameters and Adam moments. Cross **joint / frozen geometry** with **constant / decaying shared LR**. Constant means $\eta=10^{-3}$. Decay means one cosine schedule from $10^{-3}$ to $10^{-6}$ over 80k additional updates, then a constant tail. Frozen geometry leaves every slope exactly unchanged while training readout and bias. No readout is frozen or replaced by a solve.
+
+The common reporting horizon is 1,360,000 additional updates, or **1,680,000 total**. This is a saved snapshot; training continues beyond it.
+
+**Table 4. Complete training-window MSE over total updates 1.66m–1.68m, seed 0 / seed 1. All branches use scaled training and the same source state within each seed.**
+
+| Geometry | Shared LR | Window MSE |
+|---|---|---:|
+| Joint training | Constant $10^{-3}$ | $1.17\times10^{-6}$ / $1.10\times10^{-6}$ |
+| Joint training | Decay to $10^{-6}$ | $1.46\times10^{-10}$ / $9.34\times10^{-11}$ |
+| Frozen geometry | Constant $10^{-3}$ | $1.16\times10^{-6}$ / $1.11\times10^{-6}$ |
+| Frozen geometry | Decay to $10^{-6}$ | $9.56\times10^{-8}$ / $3.17\times10^{-9}$ |
+
+Decay lowers joint-training MSE by about 8,050 / 11,750 times. Freezing geometry alone leaves the sustained floor almost unchanged. With decay, joint training is 656 / 34 times more accurate than frozen geometry. This controlled comparison supports a step-size contribution to the floor and a benefit from continued geometry adjustment under the smaller shared rate. “Geometry is simply too fast for readout” is therefore insufficient. The joint-decay detached refits remain near $2.6\times10^{-22}$ MSE, so the remaining live error is not a representation floor.
+
+<figure>
+  <img src="stall_continuation_analysis/figures/optimization.png" alt="Adam continuation MSE for joint or frozen geometry crossed with constant or decaying shared learning rate" style="max-width: 100%;">
+  <figcaption>Figure 6. Eight continuations from two 320k source states at the same total update count. Shared LR decay suppresses the sustained oscillation floor. Joint training with decay fits more accurately than frozen geometry with decay, although both admit very accurate detached fits.</figcaption>
+</figure>
+
+<figure>
+  <img src="stall_continuation_analysis/figures/joint_decay_dense.png" alt="Every-step loss, physical readout and slope movement, and gradient-step alignment over 2048 consecutive updates of joint training with decay" style="max-width: 100%;">
+  <figcaption>Figure 7. Joint training with decay: 2,048 consecutive states ending at the reporting horizon. Readout curves include bias, three core centers, and both outer halo centers. Small loss bursts and parameter drift remain; sparse checkpoints alone would conceal them.</figcaption>
+</figure>
+
+For fixed geometry, the readout loss is convex. A very accurate detached least-squares solution establishes representability but does not guarantee rapid convergence of Adam with inherited moments and a chosen schedule. If $r_i=u_i^Tr$, the scaled readout gradient in singular direction $i$ is $\sigma_i r_i$: appreciable residual can produce a very small gradient when $\sigma_i$ is small. Squared singular values control fixed-step GD's linear convergence factors; they are not an exact model of Adam's time-varying preconditioner.
+
+At this horizon, 87.6% / 84.9% of joint-decay residual energy lies at singular values below $10^{-3}$, and 82.7% / 78.0% below $10^{-5}$. The corresponding below-$10^{-3}$ fractions for joint constant-rate training are 0.86% / 0.26%. Frozen geometry with decay has over 99.95% below $10^{-3}$. These descriptive thresholds refer to the sample-normalized $AD$ spectrum, not a preselected success criterion. Fractions depend on oscillation phase: at the earlier 1.16m-total checkpoint, joint-decay fractions exceeded 99.9%. Weak-direction residual and small remaining oscillations coexist.
+
+Across the continuation, joint constant-rate bandwidth travel is 35.5 / 29.8 RMS, versus net displacement 0.176 / 0.147. With decay those become 1.12 / 0.897 travel and 0.0224 / 0.0215 net displacement; most travel occurred during the initial decay. In the final dense 2,048-step window, the maximum physical slope change is still 0.00657 / 0.00621, with maximum readout/bias change $5.89\times10^{-7}$ / $9.65\times10^{-7}$. Slopes in both frozen branches remain exactly unchanged. Gradients and updates are measurable; the evidence does not support complete signal loss in either trained block. About 1–2% of the joint-decay steps point uphill within each block, and a downhill first-order direction need not reduce loss at finite step size.
+
+<figure>
+  <img src="stall_continuation_analysis/figures/joint_decay_singular.png" alt="Readout singular spectra and remaining residual MSE by singular direction at the common continuation horizon" style="max-width: 100%;">
+  <figcaption>Figure 8. Joint training with decay, using the reference-scaled, sample-normalized feature matrix including bias. Residual energy concentrates in weak retained singular directions. The cutoff line distinguishes truncated directions from slowly fitted directions retained by the detached solve.</figcaption>
+</figure>
+
+## Best Adam results and verification
+
+The historical audit separates a fortunate checkpoint from sustained accuracy. Among recorded D06 pilot/focused runs, the best validation checkpoint is MSE $1.46\times10^{-11}$ at 160k, with unequal physical readout/slope rates $9.3075\times10^{-5}$ and $25.6$. The best complete historical 20k training window is MSE $8.50\times10^{-9}$ over 280k–300k, using unequal physical rates $9.3075\times10^{-6}$ and $25.6$. These correspond to RMS $3.83\times10^{-6}$ and $9.22\times10^{-5}$. The new shared-decay runs improve on that sustained result, while not establishing a new best single validation checkpoint. [The audit](stall_analysis/historical_adam_audit.json) records exact cases. Older D02/D05 reports use different initializations, precisions, or targets and lack full raw results locally; this is not a certified global ranking of every repository experiment.
+
+All **194 repository tests pass**, including Adam-state restoration, equivalence of constant-rate continuation to the original update, exact frozen slopes, independent batched branches, schedule endpoints, convergence-window eligibility, construction refinement, and singular-mode identities. Analysis verifies complete finite traces. Baseline Parseval error is at most $4.5\times10^{-16}$; Fourier-gradient and measured function-update closure are checked separately. Detached fits are repeated at relative SVD cutoffs $10^{-10},10^{-12},10^{-14}$; the large live/refit gap survives. These checks establish numerical consistency, not convergence or a frequency-decay theorem.
+
+The [baseline evidence](stall_analysis/evidence.json), [continuation evidence](stall_continuation_analysis/evidence.json), [dense motion records](stall_continuation_analysis/dense_evidence.json), [construction check](stall_analysis/construction_verification.json), and cutoff audits ([baseline](stall_analysis/cutoff_and_numerical_audit.json), [continuation](stall_continuation_analysis/cutoff_and_numerical_audit.json)) preserve results. Each analysis directory also contains physical parameter histories, signed per-neuron Fourier arrays, and source hashes in `analysis_provenance.json`.
+
+The implementation is in [`continue_stall.py`](../../../experiments/expD06_fixed_center_scales/continue_stall.py) and [`stall_analysis.py`](../../../experiments/expD06_fixed_center_scales/stall_analysis.py), with commands in the [experiment README](../../../experiments/expD06_fixed_center_scales/README.md). Slurm array 308 runs four branches per seed on two H200s; saved environments identify JAX 0.10.2, Optax 0.2.8, and matching training-source hashes ([seed 0](stall_run_provenance/environment_stall_308.json), [seed 1](stall_run_provenance/environment_stall_309.json)). CPU-only jobs 320/321 finalize the baseline and common-horizon exports. The two-hour cap per GPU worker is a resource limit, not convergence: any case still improving remains explicitly unconverged and resumable. Stationarity requires stable errors, spectra, predictions, and small parameter travel over consecutive doubled windows after the schedule ends; stable oscillation has a separate classification. The report horizon does not stop training.
