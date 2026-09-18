@@ -28,6 +28,30 @@ A frontier is a continuation checkpoint, not a claim of convergence. Repeat with
 
 Each case preserves its configuration and reference geometry, full parameter/Optax checkpoints, complete compact per-step traces, predictions, per-neuron gradients, proposed next updates, and residual-reduction event checkpoints. Loading a checkpoint restores parameters, moments, counters, and accumulated travel. The full-batch deterministic training phase consumes no new random draws after initialization.
 
+## Constant shared-rate sweep with neighbor differences
+
+`difference_training.py` tests the [combined scale and difference prescription](../../docs/neighbor_difference_conditioning.md#combining-the-reference-scales-with-differences). Both arms evaluate the same physical tanh sum and differentiate it before pulling the readout gradient back through their respective maps. This isolates the coordinate metric from changes in forward evaluation. Checkpoints also compare the algebraically equivalent difference-form evaluation to detect cancellation.
+
+Start with full-batch FP64 GD on normalized sine, $N=512$, seed 0, the existing $16N+1$ training grid, and $R=\lceil\sqrt N\rceil$ halo. All centers stay fixed; both readouts and slopes learn. Compare **scaled training** ($w=D_wa$, $b=d_ba_b$, $\gamma=\lambda/h$) with **scaled neighbor differences** ($w=LS\theta$, $b=d_b\theta_b$, $\gamma=\lambda/h$). Keep the fixed reference construction at $\lambda_{\rm ref}=0.25$. Initialize both arms from the same `xavier_a_reference` physical network: Xavier on $a$, physical-slope Xavier, and zero bias. Convert that same network to cumulative coordinates; do not draw new independent $\theta$ values.
+
+Use the following initial grid of **constant shared scalar rates**, matched across the two coordinate arms:
+
+$$
+\eta\in\{10^{-5},\ 3\times10^{-5},\ 10^{-4},\ 3\times10^{-4},\ 10^{-3},\ 3\times10^{-3},\ 10^{-2},\ 3\times10^{-2}\}.
+$$
+
+This gives 16 runs of **100,000 updates each**. The grid is an empirical scalar-rate search, not an additional theoretical scale prescription or a claimed optimum. Both trained blocks receive the same constant scalar throughout each run. No backtracking, schedules, clipping, separate block rates, or in-training least-squares solves are used. Every finite run reaches 100k; a nonfinite update is recorded as a numerical failure without silently lowering its LR. A best rate at the grid boundary calls for extending the grid, with the same 100k horizon and matched arms. A poor early loss is not grounds for screening a run out.
+
+Rank rates by mean training MSE over updates 80k–100k, and report window variability and trends alongside that mean. Compare coordinates at each matched rate as well as each arm's best tested rate. Preserve per-step MSE, gradient norms and physical-update norms; parameter checkpoints with physical $w$, $\gamma$, and $\lambda$; residual Fourier spectra; and a final 2048-update dense window for gradient/update decomposition. A detached readout refit at the saved geometry diagnoses the remaining optimization gap and never changes training. The 32,768-point midpoint validation grid is diagnostic; the rate ranking uses training-window error. No held-out test selection or generalization claim is made.
+
+The 100k comparison measures finite-horizon optimization performance, not a certified floor. After the initial sweep, extend a boundary optimum with matched rates if the remaining budget permits. Transfer the union of the two selected scalar rates, unchanged, to $N=512$, seed 1; then $N=1024$, seeds 0 and 1, in that order. Both arms receive each transferred rate. Remaining resources go to paired 100k continuations of the selected cases. Selection uses training-window means; numerical failures remain in the accounting. No claim of convergence follows from simply reaching a frontier.
+
+The separately authorized budget is **two GPU-hours**, including compilation, checks, I/O, and failed allocations, with at most two GPUs concurrently. Reconcile actual Slurm allocation times and reserve the full requested walltime before each submission. This budget is separate from the completed eight-hour relative-rate campaign. All remote computation, including detached CPU diagnostics, runs through Slurm.
+
+Submit `difference_training.sbatch --cases <absolute-matrix.json> --seconds <worker-deadline>` from the remote code directory, overriding its walltime only after checking the budget. The initial matrix is `difference_pilot.json`. Array worker 0 advances scaled training; worker 1 advances scaled neighbor differences. Each requests one GPU. A deadline checkpoints and pauses unfinished runs; resume uses the same matrix and frontier. It does not change the rate or turn a partial trajectory into an eligible 100k result.
+
+Every update records half-MSE, native and physical gradient norms, physical movement, sign crossings, constant scalar rate, and zero-motion flags. Full parameter checkpoints occur at 0, 1, 10, 100, 1k, and every 2k. Dense windows retain all physical states, gradients, and rounded updates for the final 2048 updates before 20k, 60k, 100k, and later 100k frontiers. Numerical failure freezes only that batch member and records its first failing update. The first-order trajectories never receive detached refit coefficients.
+
 ## Paired continuation at the learned geometry
 
 The [relative-rate report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/relative_rate_results.md)

@@ -258,7 +258,11 @@ $$
 
 This combines the prescribed slope scale with a coupled readout preconditioner. There is one scalar rate, but no longer a separate effective scalar rate for each physical readout: neighboring gradient entries contribute to its update. Keeping the full correlated metric $CD_w^2C^T$ on $q$ would reproduce the original physical mobility $D_w^2$ exactly. Replacing that correlated metric by its diagonal $S^2$ is the additional preconditioning choice; the variance/envelope argument motivates it without proving it optimal. Adam can use the same coordinates, but these GD update and step-size guarantees do not become Adam guarantees.
 
-### Which scalar learning rate is justified
+### Constant shared learning-rate ablation
+
+The coordinate maps prescribe the relative physical updates. The absolute shared scalar $\eta$ is an experimental ablation: keep it constant for all 100,000 updates of each run, with exactly the same value for readouts and slopes. Compare the original scaled coordinates and scaled neighbor differences at each matched scalar rate and physical initialization. The [experiment protocol](../experiments/expD06_fixed_center_scales/README.md#constant-shared-rate-sweep-with-neighbor-differences) specifies the first grid. There is no backtracking, rate decay, gradient clipping, or independently tuned block rate in this comparison.
+
+The frozen-readout calculation below provides a stability diagnostic. It does not select or adapt the joint-training rate. Learning slopes makes the loss nonlinear, so the fixed-dictionary bound alone does not certify joint stability; the constant-rate ablation measures which shared rates are stable and effective.
 
 For a **frozen** geometry, let $B$ be the complete sampled feature matrix in the chosen readout coordinates, including bias, anchor, and halos, divided by $\sqrt M$. The half-MSE Hessian is exactly $B^TB$. Any positive step below $2/\|B\|_2^2$ is stable on its nonzero modes; a conservative, fully prescribed choice is
 
@@ -271,16 +275,6 @@ U=\|B\|_F^2\ \text{is one directly computable choice}.
 $$
 
 It guarantees $\mathcal L(z-\eta g)\le\mathcal L(z)-\eta\|g\|^2/2$ for the readout gradient $g$. This prescription uses the actual scaled features and needs no inverse, least-squares training update, or target-based LR search. It can be conservative. Proposition 1 also gives $U=4hS_{\max}^2$ for its whole-line difference block, but that expression omits the full experiment's bias and anchor and cannot be used as their bound.
-
-For **joint readout and slope learning**, fixed centers do not make the loss quadratic. Writing the normalized residual as $r$ and its Jacobian with respect to all trained coordinates as $J$,
-
-$$
-\nabla^2\mathcal L=J^TJ+\sum_i r_i\nabla^2r_i.
-$$
-
-The residual term and changing geometry prevent the frozen-readout bound, or $1/\|J\|_F^2$ alone, from certifying a fixed joint rate. The next minimal GD comparison can instead prescribe one shared scalar by a joint-loss Armijo rule: start its first trial at $1/\|J_0\|_F^2$, subsequently try twice the previous accepted rate, and halve until the full joint step gives sufficient decrease with Armijo constant $10^{-4}$. Both blocks receive the same accepted scalar. These backtracking constants are declared algorithm choices, not an optimum derived from the construction. The same rule in both coordinate arms may accept different scalar histories, which must be reported; this compares coordinates under the same selection rule, not at identical numerical rates.
-
-For numerical accuracy, evaluate a trial's half-MSE change as $(r_{\rm raw}^T\Delta f+\|\Delta f\|^2/2)/M$, using the actual trial predictions, rather than subtracting nearly equal losses. A failed search or an unchanged floating-point parameter state is a numerical event, not evidence of convergence. The line-search proposal is not a claim that the joint training algorithm has been implemented or run.
 
 ### Conditioning is a rate barrier, not an error floor
 

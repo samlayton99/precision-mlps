@@ -1,0 +1,81 @@
+import json
+
+import numpy as np
+import pytest
+
+jax = pytest.importorskip("jax")
+jnp = pytest.importorskip("jax.numpy")
+
+from experiments.expD06_fixed_center_scales import core, difference_training as dt, run
+
+
+def tree_close(a, b):
+    for x, y in zip(jax.tree.leaves(a), jax.tree.leaves(b)):
+        np.testing.assert_allclose(x, y, rtol=3e-12, atol=3e-14)
+
+
+@pytest.mark.parametrize("coord", dt.COORDINATES)
+def test_invertible_map_and_pullback(coord):
+    g = core.geometry(128)
+    c, gamma = core.initial_physical(g, 0, "xavier_a_reference")
+    z = jnp.asarray(dt.encode(c, g, coord))
+    np.testing.assert_allclose(dt.decode(z, g, coord), c, atol=2e-16)
+    x = jnp.linspace(-1, 1, 257)
+    y = core.target(x, "sine")
+    lam = jnp.asarray(gamma * g.h) * jnp.where(jnp.arange(g.width) % 2, -1, 1)
+    gc = jax.grad(dt.physical_loss)(jnp.asarray(c), lam, x, y, g)
+    actual = jax.grad(lambda a: dt.physical_loss(dt.decode(a, g, coord), lam, x, y, g))(z)
+    np.testing.assert_allclose(dt.pullback(gc, g, coord), actual, atol=2e-14)
+
+
+@pytest.mark.parametrize("coord", dt.COORDINATES)
+def test_shared_rate_physical_step_and_dense_motion(coord):
+    g = core.geometry(128)
+    state = dt.initial(g, 0, coord)
+    eta = 1e-5
+    end, (trace, dense) = dt.chunk(128, coord, 6, True, 1, False)(state, eta, 0)
+    c = np.asarray(dt.decode(state["z"], g, coord))
+    gc = np.asarray(dense["gradient_c"][0])
+    if coord == "scaled":
+        expected_dc = -eta * g.alpha * gc
+    else:
+        s2 = np.cumsum(g.alpha[1:])
+        dq = -eta * s2 * (gc[1:] - np.r_[gc[2:], 0.])
+        expected_dc = np.r_[-eta*g.alpha[0]*gc[0], dq - np.r_[0., dq[:-1]]]
+    np.testing.assert_allclose(dense["delta_c"][0], expected_dc, atol=1e-16)
+    np.testing.assert_allclose(dense["delta_lambda"][0], -eta*dense["gradient_lambda"][0], atol=1e-17)
+    final_c = dt.decode(end["z"], g, coord)
+    np.testing.assert_allclose(np.diff(np.r_[dense["c"], final_c[None]], axis=0), dense["delta_c"], atol=3e-16)
+    np.testing.assert_allclose(np.diff(np.r_[dense["gamma"]*g.h, end["lam"][None]], axis=0), dense["delta_lambda"], atol=1e-17)
+    np.testing.assert_array_equal(trace[:, -1], np.full(6, eta))
+
+
+def test_batched_failure_isolation_and_paired_initialization():
+    g = core.geometry(128)
+    states = [dt.initial(g, 0, coord) for coord in dt.COORDINATES]
+    np.testing.assert_allclose(dt.decode(states[0]["z"], g, dt.COORDINATES[0]),
+                               dt.decode(states[1]["z"], g, dt.COORDINATES[1]), atol=2e-16)
+    np.testing.assert_array_equal(states[0]["lam"], states[1]["lam"])
+    single, _ = dt.chunk(128, "scaled", 8, False, 1, False)(states[0], 1e-5, 0)
+    batch, _ = dt.chunk(128, "scaled", 8, False, 1)(run.stack_states([states[0]]*2), jnp.array([1e-5, 1e308]), 0)
+    tree_close(single, run.unstack_state(batch, 0))
+    assert int(batch["failed"][1]) > 0
+    assert int(batch["failed"][0]) == 0
+
+
+def test_saved_resume_and_fixed_centers(tmp_path):
+    case = dict(n=128, seed=0, coordinates="scaled_differences", eta=1e-5)
+    dt.advance_group(tmp_path, [case], 4, samples_per_cell=1)
+    dt.advance_group(tmp_path, [case], 8, samples_per_cell=1)
+    path = tmp_path/dt.case_key(case)
+    actual, step = run.load_state(path/"state_000000008.pkl")
+    g = core.geometry(128)
+    expected, _ = dt.chunk(128, case["coordinates"], 8, False, 1, False)(dt.initial(g, 0, case["coordinates"]), 1e-5, 0)
+    tree_close(actual, expected)
+    assert step == 8
+    assert json.loads((path/"latest.json").read_text())["completed_updates"] == 8
+    with np.load(path/"reference.npz") as a:
+        np.testing.assert_array_equal(a["centers"], g.centers)
+    with np.load(path/"checkpoint_000000008.npz") as a:
+        assert a["alternate_eval_max"] < 1e-14
+    assert sum(np.load(p)["trace"].shape[0] for p in path.glob("trace_*.npz")) == 8
