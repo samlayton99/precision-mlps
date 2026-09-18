@@ -1,6 +1,6 @@
 import numpy as np
 from experiments.expD06_fixed_center_scales import core, diagnostics
-from experiments.expD06_fixed_center_scales.ratio_analysis import update_budget, read_dense
+from experiments.expD06_fixed_center_scales.ratio_analysis import update_budget, read_dense, frozen_rate_limits
 from experiments.expD06_fixed_center_scales.run import save_arrays
 
 
@@ -28,3 +28,12 @@ def test_dense_reader_handles_interrupted_overlapping_saves(tmp_path):
     dense = read_dense(tmp_path, 2048)
     np.testing.assert_array_equal(dense["step"], np.arange(2048))
     np.testing.assert_array_equal(dense["c"][:, 0], np.arange(2048))
+
+
+def test_adam_limiting_stability_matches_the_linearized_moment_dynamics():
+    beta, epsilon, curvature = .9, 1e-8, 17.
+    bound = frozen_rate_limits(np.sqrt(curvature), epsilon, beta)["adam_epsilon_limit"]
+    for factor, stable in [(.9, True), (1.1, False)]:
+        k = factor * bound / epsilon
+        matrix = np.array([[1-k*(1-beta)*curvature, -k*beta], [(1-beta)*curvature, beta]])
+        assert (np.max(np.abs(np.linalg.eigvals(matrix))) < 1) == stable

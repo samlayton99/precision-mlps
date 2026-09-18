@@ -133,6 +133,16 @@ projector for both coordinate maps, while separately reporting both singular
 spectra. Thus changing numerical rank under a coordinate change cannot
 silently redefine the residual attributed to the dictionary.
 
+The analysis also records a limiting stability diagnostic for a frozen
+readout quadratic. With $L=\sigma_{\max}(AD)^2$, constant-rate GD requires
+$\eta L<2$. Momentum as implemented here requires $\eta L<2(1+\beta_1)$.
+After Adam's second-moment square root decays below epsilon at a stationary solution,
+its first-moment linearization requires
+$\eta L<2(1+\beta_1)\epsilon/(1-\beta_1)$. This is an asymptotic local bound,
+not a claim that the current trajectory is epsilon dominated, nor a
+prediction of its observed error floor. Captured moment-to-epsilon ratios
+and measured finite-update loss budgets provide that separate evidence.
+
 Submit `ratio_analysis.sbatch --output <new-export-directory> --horizon 340000`
 after that common horizon is available, and repeat into a separate directory
 after all allocated continuations finish. The export records incomplete

@@ -18,6 +18,18 @@ from scipy.linalg import svd
 from . import analyze, core, diagnostics, ratio, readout_solvers, run
 
 
+def frozen_rate_limits(sigma_max, epsilon=1e-8, beta1=.9):
+    """Local linear stability at a stationary least-squares solution, late count.
+
+    GD: eta*L<2. Momentum uses m'=beta*m+g. Adam near zero gradient
+    uses m'=beta*m+(1-beta)*g and denominator epsilon after sqrt(v) decays.
+    These are limiting stability diagnostics, not measured convergence rates.
+    """
+    curvature = float(sigma_max)**2
+    return {"gd": 2 / curvature, "momentum": 2 * (1 + beta1) / curvature,
+            "adam_epsilon_limit": 2 * (1 + beta1) * epsilon / ((1-beta1) * curvature)}
+
+
 def update_budget(x, y, centers, h, c, gamma, dc, dl):
     """Exact finite-update contributions, including the bilinear interaction."""
     a = diagnostics.features(x, centers, gamma)
@@ -161,6 +173,7 @@ def analyze_case(task):
         keep = [k for k in cp.files if k.startswith(("band_", "force_", "singular_", "gradient_", "probe_"))
                 or k in ("readout_refit", "residual_train", "residual_parallel", "residual_perpendicular")]
         run.save_arrays(output / "endpoint.npz", **{k: cp[k] for k in keep})
+        stability = frozen_rate_limits(cp["singular_values"][0])
     detail = dense_analysis(folder, end, output, case)
     g = core.geometry(case.n)
     with np.load(folder / f"checkpoint_{end:09d}.npz") as cp:
@@ -169,9 +182,24 @@ def analyze_case(task):
                     "bias_factor": ra * g.d[0], "readout_factor_range": [float(ra*g.d[1:].min()), float(ra*g.d[1:].max())],
                     "gamma_factor": rg / g.h, "lambda_median": float(np.median(np.abs(cp["lambda"]))),
                     "lambda_quantiles": np.quantile(np.abs(cp["lambda"]), [0, .1, .5, .9, 1]).tolist()}
+        origin = int(np.flatnonzero(ancestry["step"] == meta["source_step"])[0])
+        start_c, start_gamma = ancestry["c"][origin], ancestry["gamma"][origin]
+        prior_c_travel, prior_l_travel = np.zeros_like(cp["c"]), np.zeros_like(cp["lambda"])
+        if meta["source"]:
+            with np.load(Path(meta["source"]) / f"checkpoint_{meta['source_step']:09d}.npz") as source:
+                prior_c_travel, prior_l_travel = source["readout_travel"], source["lambda_travel"]
+        physical.update(readout_l1=float(np.abs(cp["c"]).sum()), native_readout_l2=float(np.linalg.norm(cp["c"] / g.d)),
+                        readout_net_rms=float(np.sqrt(np.mean((cp["c"]-start_c)**2))),
+                        lambda_net_rms=float(np.sqrt(np.mean((cp["lambda"]-g.h*start_gamma)**2))),
+                        readout_path_rms=float(np.sqrt(np.mean((cp["readout_travel"]-prior_c_travel)**2))),
+                        lambda_path_rms=float(np.sqrt(np.mean((cp["lambda_travel"]-prior_l_travel)**2))),
+                        next_readout_update_rms=float(np.sqrt(np.mean(cp["next_delta_c"]**2))),
+                        next_lambda_update_rms=float(np.sqrt(np.mean(cp["next_delta_lambda"]**2))))
         physical["adam_moment_over_epsilon_quantiles"] = {
             block: np.quantile(cp[f"adam_{block}_sqrt_v_over_epsilon"], [0, .1, .5, .9, 1]).tolist()
             for block in ("readout", "slope")}
+        physical["adam_epsilon_dominated_fraction"] = {
+            block: float(np.mean(cp[f"adam_{block}_sqrt_v_over_epsilon"] < 1)) for block in ("readout", "slope")}
         # Refinement is diagnostic only: never feed the refitted c into a run.
         x_fine = np.linspace(-1, 1, 2 * case.samples_per_cell * case.n + 1)
         y_fine = core.target(x_fine, case.target, np)
@@ -191,6 +219,7 @@ def analyze_case(task):
     record = {"folder": str(folder), "label": meta["label"], "case": case.__dict__, "end": end,
               "source_step": meta["source_step"], "windows": windows, "endpoint": physical,
               "cutoffs": cutoffs, "sampling_refinement": sampling, "dense": detail,
+              "frozen_readout_limiting_stability": stability,
               "complete_minimum": end-meta["source_step"] >= 20000}
     run.write_json(output / "evidence.json", record)
     endpoint_figure(output, ancestry, record)
@@ -240,7 +269,8 @@ def plot_comparisons(records, output):
                 ax = axes[seed, column]
                 for row in records:
                     case = row["case"]
-                    if (case["n"], case["target"], case["seed"]) != (n, target, seed) or row["label"].startswith("acquire"):
+                    primary_label = row["label"].startswith("high_") or row["label"] == "low_shared"
+                    if (case["n"], case["target"], case["seed"]) != (n, target, seed) or not primary_label:
                         continue
                     ax.semilogy([w["end"] for w in row["windows"]], [w["mse_mean"] for w in row["windows"]],
                                 label=row["label"].replace("_", " "))
@@ -250,6 +280,29 @@ def plot_comparisons(records, output):
                     ax.legend(fontsize=7)
         fig.suptitle(f"Fixed theory coordinates, Adam: N={n}")
         fig.savefig(output / f"optimization_N{n}.png", dpi=140)
+        plt.close(fig)
+        fig, axes = plt.subplots(2, 3, figsize=(14, 7), layout="constrained")
+        for column, target in enumerate(("sine", "quadratic", "mixed")):
+            for seed in (0, 1):
+                ax = axes[seed, column]
+                matching = [r for r in records if (r["case"]["n"], r["case"]["target"], r["case"]["seed"])
+                            == (n, target, seed) and r["label"].startswith("high_")]
+                baseline = next((r for r in matching if r["label"] == "high_shared"), None)
+                if baseline:
+                    shared = {w["end"]: w["mse_mean"] for w in baseline["windows"]}
+                    for row in matching:
+                        if row["label"] == "high_shared":
+                            continue
+                        windows = [w for w in row["windows"] if w["end"] in shared]
+                        ax.semilogy([w["end"] for w in windows],
+                                    [w["mse_mean"] / shared[w["end"]] for w in windows],
+                                    label=row["label"].removeprefix("high_").replace("_", " "))
+                    ax.legend(fontsize=8)
+                ax.axhline(1, color="black", ls=":")
+                ax.set(title=f"{target}, seed {seed}", xlabel="Total updates", ylabel="MSE / matched shared-rate MSE")
+                ax.grid(alpha=.2)
+        fig.suptitle(f"Rate-ratio interventions from the identical 160k state: N={n}; below one means improvement")
+        fig.savefig(output / f"relative_effects_N{n}.png", dpi=140)
         plt.close(fig)
 
 
@@ -312,6 +365,7 @@ def analyze_dictionary(task):
         records.append(metrics)
     run.save_arrays(output / "conditioning.npz", **spectra, gamma=gamma, centers=g.centers)
     result = {"dictionary": folder.name, "case": meta["case"], "end": end, "reference_cutoffs": refits,
+              "limiting_stability": {coord: frozen_rate_limits(s[0]) for coord, s in spectra.items()},
               "modal_basis": "same SVD of prescribed A D for all optimizers and coordinates", "solvers": records}
     run.write_json(output / "evidence.json", result)
     fig, axes = plt.subplots(1, 2, figsize=(12, 4), layout="constrained")
