@@ -30,6 +30,10 @@ Each case preserves its configuration and reference geometry, full parameter/Opt
 
 ## Paired continuation at the learned geometry
 
+The [relative-rate report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/relative_rate_results.md)
+records the matched comparisons and distinguishes completed evidence from
+the remaining allocated work.
+
 The new relative-rate study uses `ratio.py` and `ratio.sbatch`. It keeps the
 theory coordinates $c=Da$, $\gamma=\lambda/h$, the reference $D$ at
 $\lambda_{\rm ref}=0.25$, fixed centers, and the existing square-root halo.
