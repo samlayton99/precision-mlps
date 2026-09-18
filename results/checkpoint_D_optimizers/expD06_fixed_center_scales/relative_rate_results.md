@@ -131,14 +131,14 @@ All 60 primary branches completed 1.1m updates; a subset reached 1.12m before th
 
 Saved evidence includes complete per-step scalar traces; 20k checkpoints with parameters and Adam moments; dense physical parameters, signed gradients, and actual updates; Fourier-band residuals and forces; fixed-basis singular-mode projections; core/halo contributions; coefficient norms; and exact readout/geometry/interaction contributions to finite-step MSE changes. Detached fits use three cutoffs and a doubled sampling density. Per-seed movies place physical $w$ above physical $\gamma$ at fixed centers and slow the first 320k checkpoints.
 
-**Table 6. Parameter movies through 340k, with separate seeds. Each page includes the full trajectory and a magnified view of the final 2048 updates. The first 320k checkpoints are held for one second each; actual update counts and both scalar rates remain visible.**
+**Table 6. Parameter movies through 1.1m, with separate seeds. Each page includes the full trajectory and a magnified view of the final 2048 updates. The first 320k checkpoints are held for one second each; actual update counts and both scalar rates remain visible.**
 
 | Target and width | Intervention | Seed 0 | Seed 1 |
 |---|---|---|---|
-| Sine, 512 | Shared rate | [Movie](ratio_340000_analysis/animations/N512_sine_high_shared/seed_0.html) | [Movie](ratio_340000_analysis/animations/N512_sine_high_shared/seed_1.html) |
-| Sine, 512 | Both changes | [Movie](ratio_340000_analysis/animations/N512_sine_high_both_changes/seed_0.html) | [Movie](ratio_340000_analysis/animations/N512_sine_high_both_changes/seed_1.html) |
-| Mixed, 1024 | Shared rate | [Movie](ratio_340000_analysis/animations/N1024_mixed_high_shared/seed_0.html) | [Movie](ratio_340000_analysis/animations/N1024_mixed_high_shared/seed_1.html) |
-| Mixed, 1024 | Both changes | [Movie](ratio_340000_analysis/animations/N1024_mixed_high_both_changes/seed_0.html) | [Movie](ratio_340000_analysis/animations/N1024_mixed_high_both_changes/seed_1.html) |
+| Sine, 512 | Shared rate | [Movie](ratio_primary_analysis/animations/N512_sine_high_shared/seed_0.html) | [Movie](ratio_primary_analysis/animations/N512_sine_high_shared/seed_1.html) |
+| Sine, 512 | Both changes | [Movie](ratio_primary_analysis/animations/N512_sine_high_both_changes/seed_0.html) | [Movie](ratio_primary_analysis/animations/N512_sine_high_both_changes/seed_1.html) |
+| Mixed, 1024 | Shared rate | [Movie](ratio_primary_analysis/animations/N1024_mixed_high_shared/seed_0.html) | [Movie](ratio_primary_analysis/animations/N1024_mixed_high_shared/seed_1.html) |
+| Mixed, 1024 | Both changes | [Movie](ratio_primary_analysis/animations/N1024_mixed_high_both_changes/seed_0.html) | [Movie](ratio_primary_analysis/animations/N1024_mixed_high_both_changes/seed_1.html) |
 
 The full and magnified views have different vertical scales. Each view keeps its scales fixed through time and shared between its two seeds. Read the labeled physical units when comparing different interventions.
 
