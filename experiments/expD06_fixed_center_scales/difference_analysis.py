@@ -19,6 +19,17 @@ LABELS = {"scaled": "Scaled", "scaled_differences": "Scaled neighbor differences
 CUTOFFS = (1e-10, 1e-12, 1e-14)
 
 
+def projected_forces(j, r, u):
+    parallel=u@(u.T@r)
+    perpendicular=r-parallel
+    naive=j.T@perpendicular
+    # A second projection removes leakage of the much larger in-span residual.
+    # In exact arithmetic (I-P)^2=I-P. This avoids forming a dense projected J.
+    perpendicular-=u@(u.T@perpendicular)
+    gp,gn=j.T@parallel,j.T@perpendicular
+    return gp,gn,np.linalg.norm(naive-gn),np.linalg.norm(j.T@r-gp-gn)
+
+
 def read_trace(folder, end):
     steps, traces = [], []
     for path in sorted(folder.glob("trace_*.npz")):
@@ -146,7 +157,7 @@ def spectral_probe(g, c, gamma, coord, eta, samples=16):
     j = c[1:]*distances*(4*e/(1+e)**2)/(g.h*root_m)
     retained = s > 1e-12*s[0]
     parallel = u[:, retained]@coefficients[retained]
-    glp, gln = j.T@parallel, j.T@(r-parallel)
+    glp,gln,leakage,split_error=projected_forces(j,r,u[:,retained])
     grad = b.T@r
     frozen_delta = -eta*(b@grad)
     expected_coefficients = (1-eta*s**2)*coefficients
@@ -160,11 +171,12 @@ def spectral_probe(g, c, gamma, coord, eta, samples=16):
         cf = training.decode(z, g, coord, np)
         residual = a@cf-y/root_m
         validation = diagnostics.prediction(xv, g.centers, cf, gamma)-core.target(xv, "sine", np)
-        rp=u[:,keep]@(u[:,keep].T@r)
+        gp,gn,leak,closure=projected_forces(j,r,u[:,keep])
         refits.append(dict(cutoff=cutoff, rank=int(keep.sum()), train_mse=float(residual@residual),
                            validation_mse=float(np.mean(validation**2)), physical_coefficient_norm=float(np.linalg.norm(cf)),
-                           gradient_lambda_parallel_norm=float(np.linalg.norm(j.T@rp)),
-                           gradient_lambda_perpendicular_norm=float(np.linalg.norm(j.T@(r-rp)))))
+                           gradient_lambda_parallel_norm=float(np.linalg.norm(gp)),
+                           gradient_lambda_perpendicular_norm=float(np.linalg.norm(gn)),
+                           projection_leakage_norm=float(leak),gradient_split_closure_norm=float(closure)))
         cv[f"refit_c_{cutoff:g}"] = cf
     record = dict(coordinates=coord, eta=eta, train_mse=float(r@r), sigma_max=float(s[0]),
                   smallest_singular=float(s[-1]), resolved_condition_1e12=float(s[0]/s[retained][-1]),
@@ -177,6 +189,7 @@ def spectral_probe(g, c, gamma, coord, eta, samples=16):
                   refits=refits, residual_outside_retained_span_mse=float(np.sum((r-parallel)**2)),
                   gradient_lambda_parallel_norm=float(np.linalg.norm(glp)),
                   gradient_lambda_perpendicular_norm=float(np.linalg.norm(gln)),
+                  projection_leakage_norm=float(leakage),gradient_split_closure_norm=float(split_error),
                   readout_gradient_norm=float(np.linalg.norm(grad)),
                   frozen_readout_mse_change=float(2*r@frozen_delta+frozen_delta@frozen_delta),
                   frozen_local_mse_timescale=(float((r@r)/(2*eta*(grad@grad))) if eta and grad@grad else None),
@@ -222,6 +235,7 @@ def dense_probe(folder, g, case, end, output):
         coefficients = u.T@normalized
         keep = singular > 1e-12*singular[0]
         parallel = u[:, keep]@coefficients[keep]
+        gp,gn,leak,split_error=projected_forces(j,normalized,u[:,keep])
         rows.append(dict(step=dense["step"][index], **budget, residual_mse=normalized@normalized,
                          singular_residual_coefficients=coefficients,
                          singular_update_coefficients=(pieces/root_m)@u,
@@ -230,10 +244,12 @@ def dense_probe(folder, g, case, end, output):
                          band_gradient_lambda=gradient_l,
                          band_readout_linear_mse_change=2*gradient_c@dc,
                          band_geometry_linear_mse_change=2*gradient_l@dl,
-                         gradient_lambda_parallel=j.T@parallel,
-                         gradient_lambda_perpendicular=j.T@(normalized-parallel),
+                         gradient_lambda_parallel=gp,gradient_lambda_perpendicular=gn,
+                         projection_leakage_norm=leak,gradient_split_closure_norm=split_error,
                          gradient_closure=np.array([np.linalg.norm(gradient_c.sum(axis=0)-dense["gradient_c"][index]),
                                                     np.linalg.norm(gradient_l.sum(axis=0)-dense["gradient_lambda"][index])]),
+                         update_identity_error=np.array([np.max(np.abs(dc-training.decode(-case["eta"]*gn,g,case["coordinates"],np))),
+                                                          np.max(np.abs(dl+case["eta"]*dense["gradient_lambda"][index]))]),
                          readout_geometry_cosine=pieces[0]@pieces[1]/max(np.linalg.norm(pieces[0])*np.linalg.norm(pieces[1]), 1e-300)))
     arrays = {k:np.stack([r[k] for r in rows]) for k in rows[0]}
     run.save_arrays(output/f"dense_{end}.npz", **arrays, singular_values=singular, band_bounds=bounds)
@@ -243,6 +259,7 @@ def dense_probe(folder, g, case, end, output):
                   mean_quadratic_cost=arrays["quadratic_mse_cost"].mean(axis=0).tolist(),
                   maximum_prediction_closure=float(arrays["closure_max"].max()),
                   maximum_gradient_closure=arrays["gradient_closure"].max(axis=0).tolist(),
+                  maximum_update_identity_error=arrays["update_identity_error"].max(axis=0).tolist(),
                   mean_readout_geometry_cosine=float(arrays["readout_geometry_cosine"].mean()),
                   geometry_perpendicular_to_parallel_norm=float(np.linalg.norm(arrays["gradient_lambda_perpendicular"])/max(np.linalg.norm(arrays["gradient_lambda_parallel"]),1e-300)))
     with np.load(folder/f"checkpoint_{end:09d}.npz") as cp:
@@ -311,6 +328,20 @@ def uniform_references(output):
             print(json.dumps(dict(uniform_n=n, uniform_lambda=lam)), flush=True)
 
 
+def audit_endpoint_projection(root,output,case,end):
+    key=training.case_key(case);dest=output/key;dest.mkdir(parents=True,exist_ok=True)
+    with np.load(root/key/f"checkpoint_{end:09d}.npz") as cp:
+        stats,arrays,_=spectral_probe(core.geometry(case["n"]),cp["c"],cp["gamma"],case["coordinates"],case["eta"])
+    run.write_json(dest/"projection_audit.json",stats)
+    run.save_arrays(dest/f'spectrum_{end}_{case["coordinates"]}.npz',**arrays)
+    if (dest/"mechanism.json").exists():
+        record=json.loads((dest/"mechanism.json").read_text())
+        record["checkpoints"][str(end)][case["coordinates"]]=stats
+        record["endpoint_projection_audit"]="Perpendicular residual reprojected to suppress floating-point leakage"
+        run.write_json(dest/"mechanism.json",record)
+    print(json.dumps(dict(projection_audit=key,end=end)),flush=True)
+
+
 def figures(output):
     rows = json.loads((output/"summary.json").read_text())
     end=rows[0].get("comparison_step",100000)
@@ -355,7 +386,8 @@ def figures(output):
         fig, axes = plt.subplots(2, 2, figsize=(13,8), layout="constrained")
         for other in training.COORDINATES:
             with np.load(path.parent/f"spectrum_{end}_{other}.npz") as a:
-                axes[0,0].semilogy(np.arange(1,len(a["singular_values"])+1), a["singular_values"]/a["singular_values"][0], label=LABELS[other])
+                axes[0,0].semilogy(np.arange(1,len(a["singular_values"])+1), a["singular_values"]/a["singular_values"][0],
+                                  label=f'{LABELS[other]} (sigma max {a["singular_values"][0]:.3g})')
         with np.load(path.parent/f"dense_{end}.npz") as a:
             bounds, energy = a["band_bounds"], a["band_mse"].mean(axis=0)
             labels = ["DC" if lo==0 else str(lo) if hi-lo==1 else f"{lo}–{hi-1}" for lo,hi in bounds]
@@ -450,9 +482,10 @@ def figures(output):
         fig.savefig(output/"uniform_conditioning.png",dpi=160);plt.close(fig)
 
 
-def animations(output):
+def animations(output, late=False):
     from matplotlib.animation import FuncAnimation, FFMpegWriter
     from .animate_parameters import player_html
+    matplotlib.rcParams["animation.embed_limit"]=256
     rows=json.loads((output/"summary.json").read_text())
     for seed in (0,1):
         selected=[]
@@ -462,35 +495,54 @@ def animations(output):
         if len(selected)!=2: continue
         histories=[]
         for row in selected:
-            with np.load(output/row["key"]/"history.npz") as a: histories.append(dict(a))
+            with np.load(output/row["key"]/"history.npz") as a: h=dict(a)
+            if late:
+                with np.load(output/row["key"]/f'dense_parameters_{int(h["step"][-1])}.npz') as a:
+                    h={**dict(a),"centers":h["centers"]}
+            histories.append(h)
         common=sorted(set(histories[0]["step"])&set(histories[1]["step"]))
+        if late:
+            common=common[::8]+([common[-1]] if common[-1] not in common[::8] else [])
+            frames=common;fps=20
+        elif common[-1]>300000:
+            common=[s for s in common if s<1000 or s<=300000 and s%10000==0 or s>300000 and s%100000==0 or s==common[-1]]
+            frames=np.repeat(common,[6 if s<=300000 else 1 for s in common]);fps=6
+        else:
+            frames=common;fps=1
         fig,axes=plt.subplots(2,2,figsize=(13,7),layout="constrained",sharex=True)
-        lines=[]
+        lines=[];bias_labels=[]
         for j,(row,h) in enumerate(zip(selected,histories)):
             for i,field in enumerate(("c","gamma")):
                 values=h[field][:,1:] if field=="c" else h[field]
+                if late: values=values-values[0]
                 bound=max(float(np.max(np.abs(values)))*1.05,1e-8)
                 line,=axes[i,j].plot(h["centers"],values[0],".",ms=3)
                 lines.append((line,i,j,field))
-                axes[i,j].set(ylim=(-bound,bound),ylabel="Physical w" if i==0 else "Physical gamma")
-                axes[i,j].set_yscale("symlog",linthresh=.01 if i==0 else .1)
+                axes[i,j].set(ylim=(-bound,bound),ylabel=("Change in " if late else "")+("physical w" if i==0 else "physical gamma"))
+                axes[i,j].set_yscale("symlog",linthresh=max(bound/1000,1e-15) if late else .01 if i==0 else .1)
                 axes[i,j].grid(alpha=.15)
                 axes[i,j].axvspan(h["centers"][0],-1,color=".93")
                 axes[i,j].axvspan(1,h["centers"][-1],color=".93")
             axes[0,j].set_title(f'{LABELS[row["coordinates"]]}; constant shared eta={row["eta"]:g}')
             axes[1,j].set_xlabel("Fixed physical center")
+            bias_labels.append(axes[0,j].text(.02,.97,"",transform=axes[0,j].transAxes,va="top",fontsize=9))
         heading=fig.suptitle("")
         def update(frame):
-            step=common[frame]
+            step=frames[frame]
             for line,i,j,field in lines:
                 h=histories[j]; index=int(np.searchsorted(h["step"],step))
-                line.set_ydata(h[field][index,1:] if field=="c" else h[field][index])
-            heading.set_text(f"Seed {seed}; update {step:,}; actual checkpoints, no interpolation\nPhysical readouts above physical slopes; one checkpoint per second")
-        movie=FuncAnimation(fig,update,frames=len(common),interval=1000,repeat=False)
-        movie.save(output/f"seed_{seed}.mp4",writer=FFMpegWriter(fps=1,codec="libx264",bitrate=1500),dpi=100)
-        (output/f"seed_{seed}.html").write_text(player_html(movie,1))
-        update(len(common)-1);fig.savefig(output/f"seed_{seed}_last.png",dpi=120);plt.close(fig)
-        run.write_json(output/f"animation_seed_{seed}.json",dict(cases=[r["key"] for r in selected],steps=[int(s) for s in common],fps=1))
+                value=h[field][index]-h[field][0] if late else h[field][index]
+                line.set_ydata(value[1:] if field=="c" else value)
+                if field=="c": bias_labels[j].set_text(f'Bias b={h["c"][index,0]:+.5g}')
+            cadence=(f'Changes since {histories[0]["step"][0]:,}; every 8 updates at 20 frames/s' if late else
+                     "First 300k: one checkpoint/s; later: six/s" if frames[-1]>300000 else "One checkpoint per second")
+            heading.set_text(f"Seed {seed}; update {step:,}; actual saved states, no interpolation\n{cadence}")
+        movie=FuncAnimation(fig,update,frames=len(frames),interval=1000/fps,repeat=False)
+        suffix="_late" if late else ""
+        movie.save(output/f"seed_{seed}{suffix}.mp4",writer=FFMpegWriter(fps=fps,codec="libx264",bitrate=1500),dpi=100)
+        (output/f"seed_{seed}{suffix}.html").write_text(player_html(movie,fps))
+        update(len(frames)-1);fig.savefig(output/f"seed_{seed}{suffix}_last.png",dpi=120);plt.close(fig)
+        run.write_json(output/f"animation_seed_{seed}{suffix}.json",dict(cases=[r["key"] for r in selected],steps=[int(s) for s in frames],fps=fps))
 
 
 def main():
@@ -502,13 +554,16 @@ def main():
     parser.add_argument("--uniform", action="store_true")
     parser.add_argument("--figures", action="store_true")
     parser.add_argument("--animations", action="store_true")
+    parser.add_argument("--late",action="store_true",help="Animate the final dense window as changes from its first state")
+    parser.add_argument("--projection-only",action="store_true")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     if args.animations:
-        animations(args.output)
+        animations(args.output,args.late)
     elif args.cases:
         for case in json.loads(args.cases.read_text()):
-            analyze_case(args.root, args.output, case, args.end)
+            if args.projection_only: audit_endpoint_projection(args.root,args.output,case,args.end)
+            else: analyze_case(args.root, args.output, case, args.end)
     elif args.uniform:
         uniform_references(args.output)
     elif args.figures:

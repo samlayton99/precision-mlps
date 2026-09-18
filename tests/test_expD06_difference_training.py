@@ -100,3 +100,25 @@ def test_detached_spectral_normalization_and_frozen_step(coord):
     np.testing.assert_allclose(arrays["band_mse"].sum(),record["train_mse"],atol=1e-14)
     assert record["readout_stability_limit"] == 2/record["sigma_max"]**2
     assert all(r["train_mse"] < record["train_mse"] for r in record["refits"])
+
+
+def test_projected_force_removes_large_in_span_roundoff():
+    from experiments.expD06_fixed_center_scales.difference_analysis import projected_forces
+    rng=np.random.default_rng(391)
+    u=np.linalg.qr(rng.normal(size=(80,9)))[0]
+    j=u@rng.normal(size=(9,13))
+    small=rng.normal(size=80)*1e-10
+    small-=u@(u.T@small)
+    r=u@rng.normal(size=9)+small
+    gp,gn,leak,closure=projected_forces(j,r,u)
+    assert np.linalg.norm(gn)<1e-23
+    assert leak>1000*np.linalg.norm(gn)
+    np.testing.assert_allclose(gp+gn,j.T@r,atol=3e-14)
+    assert closure<3e-14
+    complete=np.linalg.qr(rng.normal(size=(80,80)))[0]
+    u,v=complete[:,:9],complete[:,9:14]
+    outside=rng.normal(size=(5,13));beta=rng.normal(size=5)
+    j=u@rng.normal(size=(9,13))+1e-4*v@outside
+    r=u@rng.normal(size=9)+1e-8*v@beta
+    _,gn,_,_=projected_forces(j,r,u)
+    np.testing.assert_allclose(gn,1e-12*outside.T@beta,rtol=1e-6,atol=2e-19)
