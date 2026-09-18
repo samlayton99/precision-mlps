@@ -11,11 +11,21 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator, FuncFormatter
 import jax
 import numpy as np
 from scipy.linalg import svd
 
 from . import analyze, core, diagnostics, ratio, readout_solvers, run
+
+LABELS = {"low_shared": "Shared (acquisition 1e-3)", "high_shared": "Shared (acquisition 1e-2)",
+          "high_slow_geometry": "Slower geometry", "high_faster_readout": "Faster readout",
+          "high_both_changes": "Both changes"}
+
+
+def update_axis(ax):
+    ax.xaxis.set_major_locator(MaxNLocator(5))
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: f"{x/1000:g}k"))
 
 
 def frozen_rate_limits(sigma_max, epsilon=1e-8, beta1=.9):
@@ -78,6 +88,8 @@ def history(folder, end):
         parent = history(Path(meta["source"]), meta["source_step"])
         rows = {int(t): {k: parent[k][i] for k in parent if k != "step"} for i, t in enumerate(parent["step"])}
     case = run.Case(**json.loads((folder / "case.json").read_text()))
+    x = np.linspace(-1, 1, case.n * case.samples_per_cell + 1)
+    y = core.target(x, case.target, np)
     knots = meta["knots"] if meta else None
     if (folder / "feedback.json").exists():
         knots = json.loads((folder / "feedback.json").read_text())["knots"]
@@ -87,7 +99,11 @@ def history(folder, end):
             continue
         with np.load(path) as cp:
             rates = np.asarray(ratio.schedule(t, knots)) if knots else np.array([case.rate_r, case.rate_g])
+            residual = (cp["prediction_train"] - y) / np.sqrt(len(y))
+            _, residual_bands, _ = diagnostics.band_residuals(residual)
             rows[t] = {"c": cp["c"], "gamma": cp["gamma"], "eta_a": rates[0], "eta_lambda": rates[1],
+                       "train_mse": float(residual @ residual),
+                       "residual_band_mse": np.sum(residual_bands**2, axis=1),
                        "validation_mse": float(np.mean((cp["prediction_validation"] -
                            core.target(diagnostics.midpoint_grid(case.validation_points), case.target, np))**2))}
     times = sorted(rows)
@@ -230,7 +246,34 @@ def analyze_case(task):
               "complete_minimum": end-meta["source_step"] >= 20000}
     run.write_json(output / "evidence.json", record)
     endpoint_figure(output, ancestry, record)
+    spectral_history_figure(output, ancestry, record)
     return record
+
+
+def spectral_history_figure(output, ancestry, record):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4), layout="constrained")
+    energy = ancestry["residual_band_mse"]
+    # Dyadic DFT bands are DC, [1,2), [2,4), ...; combine for readable curves.
+    for left, right, label in [(0, 1, "DC"), (1, 3, "DFT 1–3"), (3, 5, "DFT 4–15"),
+                               (5, 7, "DFT 16–63"), (7, 9, "DFT 64–255"), (9, energy.shape[1], "DFT ≥256")]:
+        if left < right:
+            axes[0].semilogy(ancestry["step"], energy[:, left:right].sum(axis=1), label=label)
+    axes[0].set(xlabel="Total updates", ylabel="Residual MSE in frequency band")
+    axes[0].legend(fontsize=8)
+    h = 2 / record["case"]["n"]
+    quantiles = np.quantile(np.abs(ancestry["gamma"] * h), [.1, .5, .9], axis=1)
+    for values, label in zip(quantiles, ["10th percentile", "Median", "90th percentile"]):
+        axes[1].semilogy(ancestry["step"], values, label=label)
+    axes[1].axhline(.25, color="black", ls=":", label="Reference 0.25")
+    axes[1].set(xlabel="Total updates", ylabel="Absolute bandwidth |lambda|")
+    axes[1].legend(fontsize=8)
+    for ax in axes:
+        update_axis(ax)
+        ax.grid(alpha=.2)
+    fig.suptitle(f"{LABELS.get(record['label'], record['label'])}: {record['case']['target']}, "
+                 f"N={record['case']['n']}, seed {record['case']['seed']} — saved checkpoint values")
+    fig.savefig(output / "spectral_history.png", dpi=140)
+    plt.close(fig)
 
 
 def endpoint_figure(output, ancestry, record):
@@ -280,9 +323,10 @@ def plot_comparisons(records, output):
                     if (case["n"], case["target"], case["seed"]) != (n, target, seed) or not primary_label:
                         continue
                     ax.semilogy([w["end"] for w in row["windows"]], [w["mse_mean"] for w in row["windows"]],
-                                label=row["label"].replace("_", " "))
+                                label=LABELS.get(row["label"], row["label"]))
                 ax.set(title=f"{target}, seed {seed}", xlabel="Total updates", ylabel="20k-window training MSE")
                 ax.grid(alpha=.2)
+                update_axis(ax)
                 if ax.lines:
                     ax.legend(fontsize=7)
         fig.suptitle(f"Fixed theory coordinates, Adam: N={n}")
@@ -303,11 +347,12 @@ def plot_comparisons(records, output):
                         windows = [w for w in row["windows"] if w["end"] in shared]
                         ax.semilogy([w["end"] for w in windows],
                                     [w["mse_mean"] / shared[w["end"]] for w in windows],
-                                    label=row["label"].removeprefix("high_").replace("_", " "))
+                                    label=LABELS[row["label"]])
                     ax.legend(fontsize=8)
                 ax.axhline(1, color="black", ls=":")
                 ax.set(title=f"{target}, seed {seed}", xlabel="Total updates", ylabel="MSE / matched shared-rate MSE")
                 ax.grid(alpha=.2)
+                update_axis(ax)
         fig.suptitle(f"Rate-ratio interventions from the identical 160k state: N={n}; below one means improvement")
         fig.savefig(output / f"relative_effects_N{n}.png", dpi=140)
         plt.close(fig)

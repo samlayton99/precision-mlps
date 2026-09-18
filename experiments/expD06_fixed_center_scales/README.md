@@ -136,6 +136,9 @@ window. Frozen solvers use the same prescribed-coordinate reference SVD
 projector for both coordinate maps, while separately reporting both singular
 spectra. Thus changing numerical rank under a coordinate change cannot
 silently redefine the residual attributed to the dictionary.
+Checkpoint histories also retain residual MSE in every dyadic Fourier band;
+line plots show its evolution beside bandwidth quantiles. These sampled
+checkpoint errors are distinct from complete-window MSE statistics.
 
 The analysis also records a limiting stability diagnostic for a frozen
 readout quadratic. With $L=\sigma_{\max}(AD)^2$, constant-rate GD requires
