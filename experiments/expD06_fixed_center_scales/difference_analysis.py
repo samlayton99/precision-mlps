@@ -271,8 +271,16 @@ def analyze_case(root, output, case, end):
             print(json.dumps(dict(case=key, dense_end=frontier)), flush=True)
     with np.load(folder/f"checkpoint_{end:09d}.npz") as cp:
         doubled, arrays, _ = spectral_probe(g, cp["c"], cp["gamma"], case["coordinates"], case["eta"], samples=32)
+        # Detached post-hoc check: sign canonicalization preserves the function but
+        # changes the coupled readout metric. It is never fed back into training.
+        canonical_c=cp["c"].copy()
+        canonical_c[1:]*=np.sign(cp["gamma"])
+        canonical, canonical_arrays, _ = spectral_probe(g, canonical_c, np.abs(cp["gamma"]),
+                                                        "scaled_differences", case["eta"])
     record["doubled_training_grid"] = doubled
+    record["canonical_sign_diagnostic"] = canonical
     run.save_arrays(dest/"spectrum_doubled_grid.npz", **arrays)
+    run.save_arrays(dest/"spectrum_canonical_signs.npz", **canonical_arrays)
     run.write_json(dest/"mechanism.json", record)
 
 
