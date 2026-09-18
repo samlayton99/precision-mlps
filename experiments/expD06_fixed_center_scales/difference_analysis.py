@@ -62,6 +62,7 @@ def summarize(root, output, end=100000):
         case = json.loads((folder/"case.json").read_text())
         latest = json.loads((folder/"latest.json").read_text())
         row = {k:case[k] for k in ("n", "seed", "coordinates", "eta")}
+        row["comparison_step"]=end
         row.update(key=folder.name, completed_updates=latest["completed_updates"], failed_update=latest["failed_update"])
         row["eligible"] = latest["completed_updates"] >= end and not latest["failed_update"]
         if row["eligible"]:
@@ -89,6 +90,9 @@ def summarize(root, output, end=100000):
             dest = output/folder.name
             dest.mkdir(exist_ok=True, parents=True)
             run.save_arrays(dest/"history.npz", **h, band_bounds=bounds, centers=g.centers)
+            blocks=2*trace[:end//20000*20000,0].reshape(-1,20000)
+            run.save_arrays(dest/"window_mse.npz",step=20000*(np.arange(len(blocks))+1),
+                            mean=blocks.mean(axis=1),quantiles=np.quantile(blocks,[0,.1,.5,.9,1],axis=1))
         rows.append(row)
     run.write_json(output/"summary.json", rows)
     pairs=[]
@@ -198,7 +202,7 @@ def spectral_probe(g, c, gamma, coord, eta, samples=16):
 
 def dense_probe(folder, g, case, end, output):
     dense = ratio_analysis.read_dense(folder, end)
-    _, _, (u, singular, vh) = spectral_probe(g, dense["c"][0], dense["gamma"][0], case["coordinates"], case["eta"])
+    first, _, (u, singular, vh) = spectral_probe(g, dense["c"][0], dense["gamma"][0], case["coordinates"], case["eta"])
     x = np.linspace(-1, 1, 16*g.n+1)
     y = core.target(x, "sine", np)
     root_m = np.sqrt(len(x))
@@ -241,6 +245,8 @@ def dense_probe(folder, g, case, end, output):
                   maximum_gradient_closure=arrays["gradient_closure"].max(axis=0).tolist(),
                   mean_readout_geometry_cosine=float(arrays["readout_geometry_cosine"].mean()),
                   geometry_perpendicular_to_parallel_norm=float(np.linalg.norm(arrays["gradient_lambda_perpendicular"])/max(np.linalg.norm(arrays["gradient_lambda_parallel"]),1e-300)))
+    with np.load(folder/f"checkpoint_{end:09d}.npz") as cp:
+        result["all_2048_mean_mse_change"]=float((cp["train_mse"]-first["train_mse"])/2048)
     result["modal_fractions"] = [dict(relative_singular_threshold=t,
         residual_below=float(np.mean(np.sum(arrays["singular_residual_coefficients"][:, singular<t*singular[0]]**2, axis=1))/arrays["residual_mse"].mean()),
         update_below=(np.mean(np.sum(arrays["singular_update_coefficients"][:, :, singular<t*singular[0]]**2, axis=2), axis=0)/
@@ -307,6 +313,7 @@ def uniform_references(output):
 
 def figures(output):
     rows = json.loads((output/"summary.json").read_text())
+    end=rows[0].get("comparison_step",100000)
     fig, axes = plt.subplots(1, 2, figsize=(12,4), layout="constrained")
     for ci,coord in enumerate(training.COORDINATES):
         group = sorted([r for r in rows if r["eligible"] and r["n"] == 512 and r["seed"] == 0 and r["coordinates"] == coord], key=lambda r:r["eta"])
@@ -318,22 +325,40 @@ def figures(output):
         selected = min(group, key=lambda r:(r["window_mean_mse"], r["eta"]))
         with np.load(output/selected["key"]/"history.npz") as h:
             axes[1].loglog(np.maximum(h["step"],1), h["train_mse"], label=f'{LABELS[coord]}, eta={selected["eta"]:g}')
-    axes[0].set(xlabel="Constant shared eta", ylabel="Mean training MSE, updates 80k–100k", title="Matched scalar-rate comparison; N=512, seed 0")
+    axes[0].set(xlabel="Constant shared eta", ylabel=f"Mean training MSE, updates {end-20000:,}–{end:,}",
+                title="Matched scalar-rate comparison; N=512, seed 0" if end==100000 else "Selected continuations; no new rate selection")
     axes[0].text(.02,.02,"× = nonfinite update; symbol height is not MSE",transform=axes[0].transAxes,fontsize=8)
     axes[1].set(xlabel="Updates", ylabel="Checkpoint training MSE", title="Each arm's best tested scalar rate")
     for ax in axes:
         ax.grid(alpha=.2); ax.legend(fontsize=8)
     fig.savefig(output/"rate_sweep.png", dpi=160); plt.close(fig)
+    if end>100000:
+        fig,ax=plt.subplots(figsize=(9,5),layout="constrained")
+        for r in rows:
+            if not r["eligible"] or r["n"]!=512: continue
+            with np.load(output/r["key"]/"window_mse.npz") as a:
+                color="C0" if r["coordinates"]=="scaled" else "C1"
+                ax.loglog(a["step"],a["mean"],color=color,ls="-" if r["seed"]==0 else "--",
+                          label=f'{LABELS[r["coordinates"]]}, seed {r["seed"]}, eta={r["eta"]:g}')
+                ax.fill_between(a["step"],a["quantiles"][1],a["quantiles"][3],color=color,alpha=.09)
+        ax.set(xlabel="Updates (window end)",ylabel="Training MSE",title="Constant-rate continuation: 20k means and 10–90% ranges")
+        ax.grid(alpha=.2);ax.legend(fontsize=8)
+        fig.savefig(output/"continuation_progress.png",dpi=160);plt.close(fig)
     for path in sorted(output.glob("N*/mechanism.json")):
         record = json.loads(path.read_text())
         coord, end = record["case"]["coordinates"], record["end"]
+        required=[path.parent/f"spectrum_{end}_{c}.npz" for c in training.COORDINATES]
+        required += [path.parent/f"dense_{end}.npz",path.parent/"history.npz"]
+        if not all(p.exists() for p in required):
+            print(json.dumps(dict(incomplete_figure_export=path.parent.name)),flush=True)
+            continue
         fig, axes = plt.subplots(2, 2, figsize=(13,8), layout="constrained")
         for other in training.COORDINATES:
             with np.load(path.parent/f"spectrum_{end}_{other}.npz") as a:
                 axes[0,0].semilogy(np.arange(1,len(a["singular_values"])+1), a["singular_values"]/a["singular_values"][0], label=LABELS[other])
         with np.load(path.parent/f"dense_{end}.npz") as a:
             bounds, energy = a["band_bounds"], a["band_mse"].mean(axis=0)
-            labels = ["DC" if lo==0 else f"{lo}–{hi-1}" for lo,hi in bounds]
+            labels = ["DC" if lo==0 else str(lo) if hi-lo==1 else f"{lo}–{hi-1}" for lo,hi in bounds]
             axes[0,1].bar(np.arange(len(labels)), energy)
             percent = 100*energy/energy.sum()
             for i in np.flatnonzero(percent>=1):
@@ -344,12 +369,13 @@ def figures(output):
             for ax in (axes[0,1], axes[1,1]):
                 ax.set_xticks(np.arange(len(labels)), labels, rotation=55, ha="right")
             s = a["singular_values"]/a["singular_values"][0]
-            axes[1,0].loglog(s, np.mean(a["singular_residual_coefficients"]**2, axis=0), ".", label="Residual MSE")
-            axes[1,0].loglog(s, np.mean(a["singular_update_coefficients"][:,0]**2, axis=0), ".", label="Readout update energy")
+            resolved = s >= 1e-14
+            axes[1,0].loglog(s[resolved], np.mean(a["singular_residual_coefficients"]**2, axis=0)[resolved], ".", label="Residual MSE")
+            axes[1,0].loglog(s[resolved], np.mean(a["singular_update_coefficients"][:,0]**2, axis=0)[resolved], ".", label="Readout update energy")
         axes[0,0].axhline(1e-12,color=".5",ls="--",lw=1)
         axes[0,0].set(xlabel="Singular-value index", ylabel="Relative singular value", title="Same learned geometry, two coordinate maps")
         axes[0,1].set(xlabel="DFT index band (both signs)", ylabel="Residual MSE", title="Mean over 64 sampled late-window states; labels are fractions")
-        axes[1,0].set(xlabel="Relative singular value, fixed window-start basis", ylabel="Mean squared modal coefficient", title="Residual occupancy and actual readout motion")
+        axes[1,0].set(xlabel="Relative singular value, fixed window-start basis", ylabel="Mean squared modal coefficient", title="Residual and readout motion; values below 1e-14 omitted")
         axes[1,1].set(xlabel="DFT index band (both signs)", ylabel="Signed linear MSE change per update", title="Negative values reduce MSE; mean of 64 states")
         axes[1,1].set_yscale("symlog", linthresh=1e-18)
         for ax in axes.flat:
@@ -358,6 +384,28 @@ def figures(output):
             ax.legend(fontsize=8)
         fig.suptitle(f'{LABELS[coord]}, N={record["case"]["n"]}, seed={record["case"]["seed"]}, eta={record["case"]["eta"]:g}; update {end:,}')
         fig.savefig(path.parent/"mechanism.png", dpi=150); plt.close(fig)
+        with np.load(path.parent/f"spectrum_{end}_{coord}.npz") as a:
+            residual=a["residual"]; x=np.linspace(-1,1,len(residual))
+            taper=np.hanning(len(x)); tapered=residual*taper/np.sqrt(np.mean(taper*taper))
+            bounds,bands,_=diagnostics.band_residuals(tapered/np.sqrt(len(x)))
+            audit=dict(endpoint_step=end,outer_tenth_mse_fraction=float(np.sum(residual[np.abs(x)>.9]**2)/np.sum(residual**2)),
+                       endpoint_residual_jump=float(residual[-1]-residual[0]),
+                       tapered_over_original_mse=float(np.sum(tapered**2)/np.sum(residual**2)),
+                       band_bounds=bounds.tolist(),tapered_band_mse=np.sum(bands**2,axis=1).tolist())
+            with np.load(path.parent/f"dense_{end}.npz") as dense_a:
+                audit["all_2048_mean_mse_change"]=float((np.mean(residual**2)-dense_a["residual_mse"][0])/2048)
+            run.write_json(path.parent/"spatial_audit.json",audit)
+            fig,axes=plt.subplots(1,2,figsize=(12,4),layout="constrained")
+            axes[0].plot(x,residual,lw=1);axes[0].set(xlabel="Physical x",ylabel="Prediction minus target",title=f"Actual residual at update {end:,}")
+            axes[0].axvspan(-1,-.9,color=".93");axes[0].axvspan(.9,1,color=".93")
+            labels=["DC" if lo==0 else str(lo) if hi-lo==1 else f"{lo}–{hi-1}" for lo,hi in bounds]
+            axes[1].semilogy(np.arange(len(bounds)),a["band_mse"],"o-",label="Original residual")
+            axes[1].semilogy(np.arange(len(bounds)),np.sum(bands**2,axis=1),"o-",label="Hann weighted; unit mean-square window")
+            axes[1].set_xticks(np.arange(len(bounds)),labels,rotation=55,ha="right")
+            axes[1].set(ylabel="Band MSE",xlabel="DFT index band (both signs)",title="Boundary sensitivity; weighting changes the measured norm")
+            axes[1].legend(fontsize=8)
+            for ax in axes: ax.grid(alpha=.2)
+            fig.savefig(path.parent/"residual_shape.png",dpi=150);plt.close(fig)
         with np.load(path.parent/"history.npz") as h:
             fig, axes = plt.subplots(2,2,figsize=(12,7),layout="constrained")
             centers = h["centers"]
@@ -387,14 +435,16 @@ def figures(output):
     uniform=output/"uniform"/"summary.json"
     if uniform.exists():
         rows=json.loads(uniform.read_text())
-        fig,axes=plt.subplots(1,2,figsize=(12,4),layout="constrained")
+        fig,axes=plt.subplots(1,3,figsize=(16,4),layout="constrained")
         for n,style in ((512,"-"),(1024,"--")):
             for coord,color in zip(training.COORDINATES,("C0","C1")):
                 group=[r for r in rows if r["n"]==n and r["coordinates"]==coord]
                 axes[0].semilogy([r["uniform_lambda"] for r in group],[r["resolved_condition_1e12"] for r in group],"o"+style,color=color,label=f"{LABELS[coord]}, N={n}")
                 axes[1].plot([r["uniform_lambda"] for r in group],[r["retained_rank_1e12"]/r["total_columns"] for r in group],"o"+style,color=color)
+                axes[2].semilogy([r["uniform_lambda"] for r in group],[r["refits"][1]["train_mse"] for r in group],"o"+style,color=color)
         axes[0].set(xlabel="Prescribed uniform lambda",ylabel="Condition number on retained modes",title="Full scaled matrix: bias, anchor, and halos included")
         axes[1].set(xlabel="Prescribed uniform lambda",ylabel="Retained rank / number of columns",title="Relative cutoff 1e-12; unresolved modes are excluded")
+        axes[2].set(xlabel="Prescribed uniform lambda",ylabel="Detached readout-fit training MSE",title="Sine approximation and conditioning differ")
         axes[0].legend(fontsize=7)
         for ax in axes: ax.grid(alpha=.2)
         fig.savefig(output/"uniform_conditioning.png",dpi=160);plt.close(fig)
