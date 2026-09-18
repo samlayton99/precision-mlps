@@ -246,10 +246,13 @@ def main():
     run.write_json(args.output/f'manifest_worker{args.worker}.json', {
         'cases': cases, 'frontier': args.frontier,
         'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()})
-    for group in groups.values():
-        if time.monotonic() >= started+args.seconds-30:
-            break
-        advance_group(args.output, group, args.frontier, started+args.seconds-30)
+    # Longer selected continuations advance every seed in common 100k blocks.
+    frontiers = sorted({*range(100000, args.frontier+1, 100000), args.frontier})
+    for frontier in frontiers:
+        for group in groups.values():
+            if time.monotonic() >= started+args.seconds-30:
+                return
+            advance_group(args.output, group, frontier, started+args.seconds-30)
 
 
 if __name__ == '__main__':
