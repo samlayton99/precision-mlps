@@ -30,6 +30,44 @@ Each case preserves its configuration and reference geometry, full parameter/Opt
 
 ## Paired continuation at the learned geometry
 
+The new relative-rate study uses `ratio.py` and `ratio.sbatch`. It keeps the
+theory coordinates $c=Da$, $\gamma=\lambda/h$, the reference $D$ at
+$\lambda_{\rm ref}=0.25$, fixed centers, and the existing square-root halo.
+Only the scalar rates $\eta_a(t)$ and $\eta_\lambda(t)$ change. Initialization
+is physical Xavier on slopes and the legacy signed reference-envelope draw
+on physical readouts; the latter is not Gaussian Xavier on $a$. Training
+minimizes half-MSE. Comparisons use MSE. Validation is diagnostic; test data
+are not evaluated.
+
+The core matrix is $N=512,1024$, sine/quadratic/mixed targets, seeds 0 and 1.
+Both shared acquisition rates $10^{-3},10^{-2}$ run through 80k, then decay
+over 80k to $10^{-6}$. Exact existing checkpoints are reused with hashes.
+At 160k the high-rate history branches into a $2\times2$ change: readout rates
+$10^{-6},10^{-5}$ and geometry rates $10^{-6},10^{-7}$, reached by a 20k
+cosine transition. The low-rate history retains the shared control. This
+gives 60 primary continuations. The initial common reporting horizon is
+340k; subsequent matched advances remain eligible for continuation.
+Two historical high-rate sine/512 runs also decay from 320k to compare with
+the existing low-rate tails. Four early handoffs lower geometry tenfold
+at 20k (sine/512 and mixed/1024, both seeds).
+
+Folders store explicit schedule knots, absolute update indices, source hashes,
+native rates, physical Adam rate factors $\eta_aD,\eta_\lambda/h$, optimizer
+state, complete scalar traces, and checkpoints every 20k. Dense parameters,
+signed gradients, and actual updates cover 2048 consecutive states before
+and after each 20k frontier. Forks preserve moments. Interrupted groups
+resume at their common saved state. A budget stop is unfinished; oscillation
+is a diagnosis rather than convergence. Each finite new branch must complete
+at least 20k updates before scientific comparison.
+
+The authorized new allocation budget is eight GPU-hours, at most two GPUs
+concurrently, including compilation, I/O, and unsuccessful allocations.
+Phase allowances are 0.3h verification, 4.5h primary/historical training,
+0.4h early handoffs, 0.8h feedback, 1.3h frozen-dictionary first-order solves,
+and 0.7h reserve. Reconcile Slurm allocation elapsed times before submission;
+Python runtime alone is not the charge. CPU analyses request zero GPUs.
+These limits supersede the historical pilot allowance below.
+
 `continue_stall.py` resumes the shared-rate scaled Adam/envelope runs, seeds 0 and 1, from update 320,000. Each seed has four branches: joint or frozen geometry, crossed with constant $\eta=10^{-3}$ or a shared cosine decay to $10^{-6}$ over 80,000 additional updates followed by a constant tail. All branches preserve the source parameters and Adam moments. Freezing leaves every slope unchanged; its unused geometry moments continue evolving independently of the readout moments. No readout is frozen or replaced by a detached solve.
 
 Submit `stall.sbatch` through Slurm. Each one-GPU worker advances all four branches for its seed, with a cumulative two-hour worker cap and at most two concurrent GPUs. Reconcile the existing campaign budget before submission. Checkpoint and trace steps under `runs/stall/<branch>/<source-case>/` count **additional** updates; add 320,000 for the full trajectory. Full checkpoints occur every 1,000 updates; dense parameters, gradients, and actual updates cover the first 2,048 steps and the last 2,048 steps of every 20,000-step window. Complete scalar traces cover every update. Convergence checks use doubled windows after the schedule reaches its constant tail at 80k, so the first possible stationary/oscillatory classification is at 240k additional updates. Budget interruptions remain unconverged and resumable. The four branches continue to a common horizon until all have a terminal classification or the worker budget is exhausted.

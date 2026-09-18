@@ -412,8 +412,9 @@ def main():
     parser.add_argument("--continuations", action="store_true")
     parser.add_argument("--additional-steps", type=int, default=0, help="Fixed common continuation horizon; zero uses latest complete 20k boundary")
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--output", type=Path, help="Separate export for a newer completed horizon")
     args = parser.parse_args()
-    output = args.root / "runs" / ("stall_continuation_analysis" if args.continuations else "stall_analysis")
+    output = args.output or args.root / "runs" / ("stall_continuation_analysis" if args.continuations else "stall_analysis")
     (output / "figures").mkdir(parents=True, exist_ok=True)
     run.write_json(output/"analysis_provenance.json", {
         "diagnostics_revision": 3, "source_sha256": {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
