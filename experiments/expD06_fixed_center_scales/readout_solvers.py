@@ -140,10 +140,15 @@ def specifications(learned):
 def solve_group(output, name, case, gamma, source, frontier, deadline):
     folder = output / "solvers" / name
     folder.mkdir(parents=True, exist_ok=True)
+    specs = specifications(source is not None)
+    latest_paths = [folder / label / "latest.json" for label, _, _, _ in specs]
+    if all(path.exists() for path in latest_paths):
+        completed = min(json.loads(path.read_text())["step"] for path in latest_paths)
+        if completed >= frontier:
+            return
     g = core.geometry(case.n)
     x = np.linspace(-1, 1, case.n * case.samples_per_cell + 1)
     y = jnp.asarray(core.target(x, case.target, np) / np.sqrt(len(x)))
-    specs = specifications(source is not None)
     transforms = {coord: coordinate_map(g, gamma, coord) for coord in ("prescribed", "differences")}
     dictionaries = {coord: dictionary(x, g, gamma, coord) / np.sqrt(len(x)) for coord in transforms}
     metadata = {"case": case.__dict__, "gamma_sha256": hashlib.sha256(np.asarray(gamma).tobytes()).hexdigest(),

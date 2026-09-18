@@ -119,6 +119,8 @@ as numerical stagnations, separately from convergence. Saved evidence
 includes gradient/loss evaluation counts, accepted rates, fallbacks, timing,
 coefficient paths, and 2048-state dense windows. Each frozen solve receives
 at least 20k updates before comparison, subject to explicit budget reporting.
+On resume, a completed frontier is skipped before rebuilding its dictionaries;
+unfinished frontiers reload the saved parameters and optimizer state.
 
 Use `--export=ALL,D06_MODULE=feedback` or
 `--export=ALL,D06_MODULE=readout_solvers` with `ratio.sbatch` to run those
