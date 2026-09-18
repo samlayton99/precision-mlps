@@ -215,6 +215,87 @@ The theorem applies directly to unscaled $q$ coefficients of equal-slope, unifor
 
 Accordingly, the theorem explains a structural benefit and separates it from the remaining geometry-dependent smoothing. It does not prove that the full experimental matrix is well-conditioned, that lambda 0.25 is optimal for optimization, or that Adam has a particular convergence rate. The empirical comparisons remain in the [experiment report](../results/checkpoint_D_optimizers/expD06_fixed_center_scales/relative_rate_results.md#neighbor-difference-readouts-improve-adam-across-uniform-targets).
 
+## Combining the reference scales with differences
+
+The original scaled training uses $w=D_w a$, $b=d_ba_b$, and $\gamma=\lambda/h$, where $D_w=\operatorname{diag}(\sqrt{\alpha_j})$ contains the hidden-readout scales from the fixed reference construction. The following extension derives scales for cumulative readouts from the same allowances. It changes the readout metric deliberately; it is not an identity preserving the original optimizer or a guarantee that training reaches the reference bandwidth.
+
+Let $C$ be the square cumulative-sum matrix and $L=C^{-1}$ its lower bidiagonal inverse. For all $W$ neurons, including the final anchor, set
+
+$$
+q=Cw,\qquad
+s_j^2=\sum_{k=1}^{j}\alpha_k,\qquad
+S=\operatorname{diag}(s_j),\qquad
+\boxed{w=LS\theta,\quad b=d_b\theta_b,\quad\gamma=\lambda/h.}
+$$
+
+There are two direct justifications for $S$. First, the construction bounds $|w_k|\le\alpha_k$ imply $|q_j|\le\sum_{k\le j}\alpha_k=s_j^2$. Applying the original square-root-envelope prescription to $q$ therefore yields $S$. This transfers reference bounds; it does not impose bounds on trained coefficients.
+
+Second, suppose the original scaled coefficients $a_j$ have independent Xavier draws with common variance $\sigma_a^2=2/(W+1)$. Then
+
+$$
+\operatorname{Cov}(q)=\sigma_a^2 CD_w^2C^T,
+\qquad
+\operatorname{Var}(q_j)=\sigma_a^2s_j^2,
+\qquad
+\operatorname{Var}(\theta_j)=\sigma_a^2.
+$$
+
+Thus the new trained coefficients retain the same marginal initialization variance. They are correlated: independent Xavier draws of $\theta$ would produce a different physical network. A paired comparison must draw $a$ and physical $\gamma$ once, form $w=D_wa$ and $\lambda=h\gamma$, and initialize the difference arm with $\theta=S^{-1}Cw$. Bias starts at zero. Use physical-slope Xavier with tanh gain $5/3$; absorbing initial slope signs into readouts preserves the signed-draw function. This is the existing `xavier_a_reference` initialization in [core.py](../experiments/expD06_fixed_center_scales/core.py), distinct from the historical signed-envelope initialization.
+
+Apply $S$ **before** differencing. For $j<W$, the column multiplying $\theta_j$ is then $s_j(\phi_j-\phi_{j+1})$; the final column is $s_W\phi_W$. Applying unequal neuron scales after differencing would instead produce $d_j\phi_j-d_{j+1}\phi_{j+1}$, whose tails do not cancel when $d_j\ne d_{j+1}$. Do not multiply by $D_w$ again. Keep this map fixed during training, including after slope sign crossings; changing signs or scales online would define another algorithm. Once slopes have different signs, the feature differences need not retain tail cancellation, which should be diagnosed rather than silently corrected.
+
+With one shared GD rate $\eta$, gradient descent on $(\theta_b,\theta,\lambda)$ gives exactly
+
+$$
+\boxed{
+\Delta w=-\eta LS^2L^T\nabla_w\mathcal L,
+\qquad
+\Delta b=-\eta d_b^2\partial_b\mathcal L,
+\qquad
+\Delta\gamma=-\eta h^{-2}\nabla_\gamma\mathcal L.
+}
+$$
+
+This combines the prescribed slope scale with a coupled readout preconditioner. There is one scalar rate, but no longer a separate effective scalar rate for each physical readout: neighboring gradient entries contribute to its update. Keeping the full correlated metric $CD_w^2C^T$ on $q$ would reproduce the original physical mobility $D_w^2$ exactly. Replacing that correlated metric by its diagonal $S^2$ is the additional preconditioning choice; the variance/envelope argument motivates it without proving it optimal. Adam can use the same coordinates, but these GD update and step-size guarantees do not become Adam guarantees.
+
+### Which scalar learning rate is justified
+
+For a **frozen** geometry, let $B$ be the complete sampled feature matrix in the chosen readout coordinates, including bias, anchor, and halos, divided by $\sqrt M$. The half-MSE Hessian is exactly $B^TB$. Any positive step below $2/\|B\|_2^2$ is stable on its nonzero modes; a conservative, fully prescribed choice is
+
+$$
+\eta=\frac1U,
+\qquad
+U\ge\|B\|_2^2,
+\qquad
+U=\|B\|_F^2\ \text{is one directly computable choice}.
+$$
+
+It guarantees $\mathcal L(z-\eta g)\le\mathcal L(z)-\eta\|g\|^2/2$ for the readout gradient $g$. This prescription uses the actual scaled features and needs no inverse, least-squares training update, or target-based LR search. It can be conservative. Proposition 1 also gives $U=4hS_{\max}^2$ for its whole-line difference block, but that expression omits the full experiment's bias and anchor and cannot be used as their bound.
+
+For **joint readout and slope learning**, fixed centers do not make the loss quadratic. Writing the normalized residual as $r$ and its Jacobian with respect to all trained coordinates as $J$,
+
+$$
+\nabla^2\mathcal L=J^TJ+\sum_i r_i\nabla^2r_i.
+$$
+
+The residual term and changing geometry prevent the frozen-readout bound, or $1/\|J\|_F^2$ alone, from certifying a fixed joint rate. The next minimal GD comparison can instead prescribe one shared scalar by a joint-loss Armijo rule: start its first trial at $1/\|J_0\|_F^2$, subsequently try twice the previous accepted rate, and halve until the full joint step gives sufficient decrease with Armijo constant $10^{-4}$. Both blocks receive the same accepted scalar. These backtracking constants are declared algorithm choices, not an optimum derived from the construction. The same rule in both coordinate arms may accept different scalar histories, which must be reported; this compares coordinates under the same selection rule, not at identical numerical rates.
+
+For numerical accuracy, evaluate a trial's half-MSE change as $(r_{\rm raw}^T\Delta f+\|\Delta f\|^2/2)/M$, using the actual trial predictions, rather than subtracting nearly equal losses. A failed search or an unchanged floating-point parameter state is a numerical event, not evidence of convergence. The line-search proposal is not a claim that the joint training algorithm has been implemented or run.
+
+### Conditioning is a rate barrier, not an error floor
+
+For a fixed dictionary and ordinary GD, each attainable residual singular component satisfies
+
+$$
+e_i(t)=(1-\eta\sigma_i^2)^t e_i(0).
+$$
+
+A positive but tiny singular value therefore causes slow convergence; it does not create a nonzero optimization floor in exact arithmetic. Residual components outside the feature span remain as representation error. With a step of order $1/\sigma_{\max}^2$, a singular-value ratio of order $10^7$ permits a worst-direction time scale of order $10^{14}$ updates. That worst direction matters only insofar as the target and current residual occupy it.
+
+This is not a universal bound for every first-order algorithm. Acceleration and conjugate-gradient methods have different condition-number dependence, and changing coordinates changes the condition number itself; see [Shewchuk, Sections 6 and 9](https://www.cs.cmu.edu/~quake-papers/painless-conjugate-gradient.pdf) for the quadratic comparison. The first paired experiment should distinguish measured training error, remaining target-loaded weak modes, numerical stagnation, and the diagnostic refit error, rather than label a finite-budget plateau a fundamental floor.
+
 ## Numerical cross-checks
 
 The proof is analytic. Independent numerical checks confirm its normalizations and matrix identities: the sech-squared Fourier transform by quadrature; the finite-slope singular-value bounds for $m=8,32,64$ at $\lambda=0.25,1$; and the exact sharp-step condition numbers for $m=8,32,128$. Finite-slope checks use midpoint quadrature with 64 points per cell and padding of $20/\lambda$ cells on each side. The alternating-mode constants were evaluated with 70-digit arithmetic, eight positive series terms, and a geometric bound on the remaining tail. Values and numerical settings are saved in [the theorem check artifact](../results/checkpoint_D_optimizers/expD06_fixed_center_scales/ratio_uniform_reference/neighbor_difference_theorem_checks.json). These are local algebra/quadrature checks, with no new training runs.
+
+The [combined-coordinate check](../results/checkpoint_D_optimizers/expD06_fixed_center_scales/ratio_uniform_reference/combined_coordinate_checks.json) verifies the matched physical initialization, cumulative variances, full nonlinear gradient transformations, and one certified frozen-readout step at $N=512$, seed 0. This is an implementation-level identity check, not a training comparison or rate-selection result.
