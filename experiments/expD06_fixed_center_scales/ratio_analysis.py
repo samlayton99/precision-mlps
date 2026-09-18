@@ -174,7 +174,15 @@ def dense_analysis(folder, end, output, case):
             "mean_linear_mse_change": np.mean(arrays["linear_mse_change"], axis=0).tolist(),
             "mean_quadratic_mse_cost": np.mean(arrays["quadratic_mse_cost"], axis=0).tolist(),
             "median_readout_geometry_cosine": float(np.median(arrays["readout_geometry_cosine"])),
-            "median_descent_alignment": np.median(arrays["descent_alignment"], axis=0).tolist()}
+            "median_descent_alignment": np.median(arrays["descent_alignment"], axis=0).tolist(),
+            "modal_energy_fractions": [{"relative_singular_threshold": threshold,
+                "residual_below": float(np.mean(np.sum(arrays["singular_residual_coefficients"][:, singular < threshold*singular[0]]**2, axis=1)) / np.mean(arrays["residual_mse"])),
+                "update_below": (np.mean(np.sum(arrays["singular_update_coefficients"][:, :, singular < threshold*singular[0]]**2, axis=2), axis=0) /
+                                  np.maximum(np.mean(arrays["quadratic_mse_cost"][:, :3], axis=0), 1e-300)).tolist()}
+                for threshold in (.1, .001, .0001, 1e-6)],
+            "geometry_gradient_perpendicular_over_parallel": float(
+                np.linalg.norm(arrays["gradient_lambda_perpendicular_fixed_basis"]) /
+                max(np.linalg.norm(arrays["gradient_lambda_parallel_fixed_basis"]), 1e-300))}
 
 
 def analyze_case(task):
@@ -280,14 +288,21 @@ def endpoint_figure(output, ancestry, record):
     with np.load(output / "endpoint.npz") as endpoint, np.load(output / "dense_mechanism.npz") as dense:
         fig, axes = plt.subplots(2, 2, figsize=(12, 7), layout="constrained")
         singular = dense["singular_values"]
-        axes[0, 0].loglog(singular, np.mean(dense["singular_residual_coefficients"]**2, axis=0), ".")
-        axes[0, 0].axvline(1e-12 * singular[0], color="black", ls=":", label="reference cutoff 1e-12")
+        order = np.argsort(singular)
+        modes = np.mean(dense["singular_update_coefficients"]**2, axis=0)
+        for values, total, label in [
+            (np.mean(dense["singular_residual_coefficients"]**2, axis=0), np.mean(dense["residual_mse"]), "Residual"),
+            (modes[0], np.mean(dense["quadratic_mse_cost"][:, 0]), "Readout update"),
+            (modes[1], np.mean(dense["quadratic_mse_cost"][:, 1]), "Geometry update")]:
+            axes[0, 0].semilogx(singular[order] / singular[0], np.cumsum(values[order]) / max(total, 1e-300), label=label)
+        axes[0, 0].axvline(1e-12, color="black", ls=":", label="reference cutoff 1e-12")
         axes[0, 0].legend(fontsize=8)
-        axes[0, 0].set(xlabel="Singular value of fixed window-start A D", ylabel="Mean residual MSE in mode")
+        axes[0, 0].set(xlabel="Relative singular value of fixed window-start A D",
+                       ylabel="Cumulative fraction of energy", xlim=(1e-14, 1), ylim=(-.02, 1.02))
         bins = dense["band_bounds"][:, 0]
         for block, field in [("readout", "band_signed_readout_descent"), ("geometry", "band_signed_geometry_descent")]:
             axes[0, 1].plot(bins, np.mean(dense[field], axis=0), ".-", label=block)
-        axes[0, 1].set(xlabel="Lowest DFT index in band", ylabel="Mean signed linearized half-MSE reduction")
+        axes[0, 1].set(xlabel="Lowest DFT index in band", ylabel="Signed linearized half-MSE reduction")
         axes[0, 1].set_xscale("symlog", linthresh=1)
         axes[0, 1].set_yscale("symlog", linthresh=1e-20)
         axes[0, 1].legend()
@@ -306,7 +321,8 @@ def endpoint_figure(output, ancestry, record):
         axes[1, 1].legend(fontsize=8)
         for ax in axes.flat:
             ax.grid(alpha=.2)
-        fig.suptitle(f"{record['label']}: {record['case']['target']}, N={record['case']['n']}, seed {record['case']['seed']}, update {record['end']:,}")
+        fig.suptitle(f"{LABELS.get(record['label'], record['label'])}: {record['case']['target']}, N={record['case']['n']}\n"
+                     f"Seed {record['case']['seed']}, update {record['end']:,}; 64 sampled states in the last 2048 updates")
         fig.savefig(output / "mechanism.png", dpi=140)
         plt.close(fig)
 

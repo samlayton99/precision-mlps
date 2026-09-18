@@ -17,6 +17,7 @@ Does slowing geometry let the readout continue learning, or does it remove a use
 | MSE | Mean squared residual. Training differentiates half-MSE; every error in this report is MSE. |
 | Detached refit | SVD least-squares diagnostic at a saved geometry. It never replaces the trained readout. |
 | $\tau$ | Relative singular-value cutoff used in a detached refit. |
+| DFT band | A band of discrete Fourier indices on the actual training grid, including both frequency signs. These describe the sampled residual; finite-window leakage can mix frequencies. |
 
 ## The comparison holds the theory scales fixed
 
@@ -48,20 +49,42 @@ For Adam, the physical rate factors are $\eta_aD_j$ for each readout and $\eta_\
 
 | $N$, target | Shared-rate MSE | Slower geometry / shared | Faster readout / shared | Both / shared |
 |---|---:|---:|---:|---:|
-| 512, sine | $3.69$–$5.82\times10^{-11}$ | 1.006–1.007 | 2.992–4.138 | 3.042–4.144 |
+| 512, sine | $(3.69$–$5.82)\times10^{-11}$ | 1.006–1.007 | 2.992–4.138 | 3.042–4.144 |
 | 512, quadratic | $6.83\times10^{-11}$–$1.01\times10^{-10}$ | 1.014–1.038 | 2.100–2.675 | 2.111–2.699 |
-| 512, mixed | $4.98$–$9.72\times10^{-9}$ | 1.150–1.167 | 1.005–1.024 | 1.159–1.192 |
-| 1024, sine | $6.18$–$6.52\times10^{-12}$ | 1.002–1.004 | 27.704–30.085 | 27.978–29.948 |
-| 1024, quadratic | $8.48$–$8.52\times10^{-12}$ | 1.008–1.009 | 21.628–21.685 | 21.542–22.248 |
-| 1024, mixed | $2.77$–$4.04\times10^{-10}$ | 1.045–1.054 | 1.442–1.650 | 1.481–1.692 |
+| 512, mixed | $(4.98$–$9.72)\times10^{-9}$ | 1.150–1.167 | 1.005–1.024 | 1.159–1.192 |
+| 1024, sine | $(6.18$–$6.52)\times10^{-12}$ | 1.002–1.004 | 27.704–30.085 | 27.978–29.948 |
+| 1024, quadratic | $(8.48$–$8.52)\times10^{-12}$ | 1.008–1.009 | 21.628–21.685 | 21.542–22.248 |
+| 1024, mixed | $(2.77$–$4.04)\times10^{-10}$ | 1.045–1.054 | 1.442–1.650 | 1.481–1.692 |
 
 The distinction between a typical step and occasional excursions matters. For sine at $N=1024$, seed 0, increasing the readout rate changes the median MSE from $5.25\times10^{-12}$ to $6.36\times10^{-12}$, but changes the mean from $6.52\times10^{-12}$ to $1.81\times10^{-10}$. Its 90th percentile rises from $8.20\times10^{-12}$ to $4.07\times10^{-10}$. An isolated endpoint can miss this behavior. The slower-geometry intervention gives essentially the same distribution as the shared control in this example; on the mixed target it is consistently worse at both widths.
 
-This evidence does not support the simple explanation that geometry motion is the dominant obstruction and readout learning merely needs a larger rate. It does not yet identify which residual modes produce the excursions, or exclude benefits from an earlier handoff or another rate schedule. Those questions require the saved finite-update and modal measurements, and the remaining interventions.
+This evidence does not support the simple explanation that geometry motion is the dominant obstruction and readout learning merely needs a larger rate. It does not exclude benefits from an earlier handoff or another rate schedule. The finite-update and modal measurements below narrow the mechanism behind the observed excursions.
+
+<figure>
+  <img src="ratio_340000_analysis/relative_effects_N1024.png" alt="Paired MSE ratios for all three targets and both seeds at width 1024; raising the readout rate raises window MSE" style="max-width: 100%;">
+  <figcaption>At N=1024, each curve divides a complete 20k-window MSE by its matched shared-rate control. The 160k–180k window includes the transition. Subsequent windows show persistent additional error from the larger readout rate; slowing geometry alone is close to neutral on sine and quadratic and detrimental on the mixed target.</figcaption>
+</figure>
+
+## The readouts move mostly in directions different from the remaining residual
+
+The 340k diagnostics give a more specific explanation than lost plasticity. For the sine control at $N=1024$, seed 0, the RMS of accumulated absolute readout travel from 160k to 340k is $4.28\times10^{-4}$, whereas the RMS net displacement is only $1.21\times10^{-7}$. Increasing the readout rate tenfold raises accumulated travel to $4.37\times10^{-3}$ but leaves net displacement near $1.21\times10^{-7}$. The parameters keep moving; most of that motion cancels.
+
+A fixed SVD basis at the start of the final 2048-update window distinguishes directions by their sensitivity. Define a relative singular value $s=\sigma/\sigma_{\max}$. In the two sine seeds, 76.3% and 80.9% of residual energy lies in directions with $s<10^{-4}$. Yet 99.8% of the readout update's projected function-space energy lies in directions with $s\geq0.1$. On the mixed target at $N=512$, more than 99.5% of residual energy lies below $10^{-4}$, while more than 99.8% of readout update energy lies above $0.1$. These thresholds summarize the spectra after observation; they are not acceptance criteria.
+
+Fourier decomposition shows the corresponding mismatch. In the $N=512$ mixed control, seed 0, 81% of residual MSE lies in DFT indices 64–127 and another 12% in 128–255, while the largest readout-update descent terms are DC and the lowest frequencies. In the $N=1024$ sine case, raising the readout rate makes DC and the first frequency pair account for about 92% of the sampled residual energy. This is consistent with the increased excursions coming from low-frequency readout motion, rather than beneficially attacking the weak residual modes.
+
+The finite-update budget supports that interpretation. In the shared sine control, seed 0, the readout's sampled mean linear MSE change is $-6.32\times10^{-12}$ and its quadratic cost is $+6.23\times10^{-12}$; the geometry terms are orders of magnitude smaller. These are averages over 64 stratified states, so their small difference must not be treated as an accurate long-window drift estimate. Complete scalar traces determine improvement and oscillation.
+
+Geometry still supplies a different update direction. Its motion is much less concentrated in the strongest singular modes than readout motion. The geometry gradient perpendicular to the retained readout span is also tiny relative to its parallel component: about $3.3\times10^{-5}$ to $5.5\times10^{-4}$ on the two sine/1024 seeds, and $8.6\times10^{-8}$ to $1.4\times10^{-6}$ on mixed/512. This uses the window-start projector and cutoff $10^{-12}$. The observations support a useful geometry contribution within the readout-accessible span; they do not establish that learning new out-of-span geometry is driving the late improvement. Slowing geometry removes some of this contribution and worsens mixed-target convergence at the measured horizon.
+
+<figure>
+  <img src="ratio_340000_analysis/high_shared/sine_N1024_adam_both_envelope_s0_160a6008c214/mechanism.png" alt="Cumulative singular-mode energies separate the remaining residual from readout motion; finite-step readout descent nearly cancels its quadratic cost" style="max-width: 100%;">
+  <figcaption>Sine, N=1024, seed 0, shared scalar rate 10^-6 at update 340k. The upper-left curves accumulate function-space energy from weak to strong singular directions in one fixed window-start basis. The other panels show signed Fourier-band descent, the exact finite-step loss budget, and trained versus detached-fit coefficients. All temporal averages use 64 stratified states from the final 2048 updates. Prediction-decomposition closure is below 10^-14 across all 84 analyzed acquisition and primary cases.</figcaption>
+</figure>
 
 ## A small least-squares error does not establish easy readout optimization
 
-The acquisition checkpoints already separate representability from iterative accessibility. At $N=512$, sine, seed 0, the higher acquisition rate produces median $|\lambda|=0.262$ and live validation MSE $5.38\times10^{-11}$. A detached refit can lower that error much further, but its coefficient norm grows sharply as weaker directions are admitted.
+The acquisition checkpoints already separate representability from iterative accessibility. At $N=512$, sine, seed 0, the higher acquisition rate produces median $|\lambda|=0.262$, live validation MSE $5.38\times10^{-11}$, and physical coefficient $\ell_1$ norm 10.74. A detached refit can lower that error much further, but its coefficient norm grows sharply as weaker directions are admitted.
 
 **Table 5. The same learned dictionary at update 160k, refitted with three singular-value cutoffs. Coefficient norms include the output bias. These are detached diagnostics, not trained models.**
 
@@ -88,6 +111,7 @@ The eight-GPU-hour limit includes compilation, I/O, and the controlled cancellat
 - [Protocol and commands](../../../experiments/expD06_fixed_center_scales/README.md#paired-continuation-at-the-learned-geometry).
 - [Exact 340k window statistics](ratio_campaign/340k_windows.json), derived from all 60 complete 320k–340k traces in `ratio_campaign/340k_scalar_inputs/`.
 - [Acquisition evidence](ratio_acquisition_analysis/evidence.json), including endpoints, cutoff checks, sampling refinement, and finite-update audits.
+- [340k mechanism evidence](ratio_340000_analysis/evidence.json), with per-case `dense_mechanism.npz` files for the modal and Fourier measurements. The original provenance's available common horizon is 360k; the explicit analysis cap and all primary records are 340k. Subsequent exports distinguish available and analyzed horizons explicitly.
 - [Acquisition animation, seed 0](ratio_acquisition_analysis/animations/N512_sine_acquire_0.01/seed_0.html) and [seed 1](ratio_acquisition_analysis/animations/N512_sine_acquire_0.01/seed_1.html), each showing $w$ above $\gamma$.
 - [Allocation ledger](ratio_campaign/allocation_ledger.json). Remote source runs are under `/workspace/junmiaoh/experiments/precision-mlps/runs/ratios/`.
 
