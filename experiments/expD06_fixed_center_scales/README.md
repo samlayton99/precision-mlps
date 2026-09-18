@@ -80,6 +80,39 @@ at most two interventions. Thresholds are operational choices. Every check,
 rejection, source window, cutoff, counterfactual, and schedule extension is
 saved in `feedback.json`; no validation observation controls this policy.
 
+`readout_solvers.py` compares frozen dictionaries at the 160k checkpoints
+from both acquisition histories, plus a uniform $\lambda=0.25$ dictionary
+at each width and target. GD, momentum GD (0.9), and Adam (0.9/0.999,
+$\epsilon=10^{-8}$) use loss-only Armijo backtracking, separately from an
+ordinary scheduled-Adam control. All zero-start comparisons have identical
+initial predictions. Warm-start prescribed-coordinate Adam additionally
+compares saved moments against reset moments, at rate $10^{-6}$.
+
+The second coordinate map canonicalizes the frozen slope signs, then uses
+neighbor differences $\phi_j-\phi_{j+1}$ and the final feature as an anchor,
+with the bias unchanged. If $v_j$ are canonical physical weights, then
+$q_j=\sum_{k\leq j}v_k$ and $v_j=q_j-q_{j-1}$. The fixed scales on $q_j$
+are $\sqrt{\sum_{k\leq j}\alpha_k}$; the bias keeps its original scale.
+This invertible, data-independent map preserves the represented functions.
+It is not singular-vector whitening. The optimizer accesses cached feature
+matrices through matrix-vector products, never normal equations or a
+curvature inverse. Detached SVD diagnostics do not enter training.
+
+Line-search trials start at 0.1 for GD/momentum or 0.001 for Adam. Later
+trials double the previous accepted rate up to one, then halve until the
+Armijo condition with coefficient $10^{-4}$ holds, with at most 40 trials.
+An uphill momentum/Adam proposal falls back to the negative gradient for
+that step. Failed searches and unchanged floating-point states are counted
+as numerical stagnations, separately from convergence. Saved evidence
+includes gradient/loss evaluation counts, accepted rates, fallbacks, timing,
+coefficient paths, and 2048-state dense windows. Each frozen solve receives
+at least 20k updates before comparison, subject to explicit budget reporting.
+
+Use `--export=ALL,D06_MODULE=feedback` or
+`--export=ALL,D06_MODULE=readout_solvers` with `ratio.sbatch` to run those
+phases. Pass `--seconds` below the allocation walltime and reconcile the
+eight-hour allocation ledger before submitting any phase.
+
 `continue_stall.py` resumes the shared-rate scaled Adam/envelope runs, seeds 0 and 1, from update 320,000. Each seed has four branches: joint or frozen geometry, crossed with constant $\eta=10^{-3}$ or a shared cosine decay to $10^{-6}$ over 80,000 additional updates followed by a constant tail. All branches preserve the source parameters and Adam moments. Freezing leaves every slope unchanged; its unused geometry moments continue evolving independently of the readout moments. No readout is frozen or replaced by a detached solve.
 
 Submit `stall.sbatch` through Slurm. Each one-GPU worker advances all four branches for its seed, with a cumulative two-hour worker cap and at most two concurrent GPUs. Reconcile the existing campaign budget before submission. Checkpoint and trace steps under `runs/stall/<branch>/<source-case>/` count **additional** updates; add 320,000 for the full trajectory. Full checkpoints occur every 1,000 updates; dense parameters, gradients, and actual updates cover the first 2,048 steps and the last 2,048 steps of every 20,000-step window. Complete scalar traces cover every update. Convergence checks use doubled windows after the schedule reaches its constant tail at 80k, so the first possible stationary/oscillatory classification is at 240k additional updates. Budget interruptions remain unconverged and resumable. The four branches continue to a common horizon until all have a terminal classification or the worker budget is exhausted.
