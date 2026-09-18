@@ -195,7 +195,7 @@ def solve_group(output, name, case, gamma, source, frontier, deadline):
             if joined is not None:
                 run.save_arrays(path / f"trace_{written:09d}_{at:09d}.npz", trace=joined[i], columns=TRACE_COLUMNS)
             if detail is not None:
-                run.save_arrays(path / f"dense_{written:09d}_{at:09d}.npz", **{k: v[i] for k, v in detail.items()})
+                ratio.save_dense(path / f"dense_{written:09d}_{at:09d}.npz", **{k: v[i] for k, v in detail.items()})
             single = run.unstack_state(host, i)
             c = transforms[coord] @ single["z"]
             residual = dictionaries[coord] @ single["z"] - np.asarray(y)

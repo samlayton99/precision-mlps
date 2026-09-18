@@ -30,6 +30,15 @@ def dense_sample_indices():
     return np.arange(64) * 32 + offsets
 
 
+def save_dense(path, **arrays):
+    """Preserve FP64 evidence without compressing while a GPU allocation idles."""
+    path = Path(path)
+    temporary = path.with_suffix(".tmp")
+    with temporary.open("wb") as stream:
+        np.savez(stream, **arrays)
+    temporary.replace(path)
+
+
 def schedule(step, knots):
     """Cosine interpolation of [absolute step, eta_a, eta_lambda] rows."""
     knots = jnp.asarray(knots)
@@ -157,8 +166,8 @@ def advance_group(root, branches, frontier, deadline=float("inf"), runtime_knots
         if dense:
             detail = {k: np.concatenate([d[k] for d in dense], axis=1) for k in dense[0]}
             for i, branch in enumerate(branches):
-                run.save_arrays(branch.folder(root) / f"dense_{written:09d}_{at:09d}.npz",
-                                **{k: v[i] for k, v in detail.items()})
+                save_dense(branch.folder(root) / f"dense_{written:09d}_{at:09d}.npz",
+                           **{k: v[i] for k, v in detail.items()})
             dense.clear()
         rates = jax.vmap(lambda k: schedule(at, k))(knots)
         evaluated = jax.device_get(evaluate(state, cs, gs, rates[:, 0], rates[:, 1]))

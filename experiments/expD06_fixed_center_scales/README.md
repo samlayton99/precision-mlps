@@ -60,6 +60,12 @@ resume at their common saved state. A budget stop is unfinished; oscillation
 is a diagnosis rather than convergence. Each finite new branch must complete
 at least 20k updates before scientific comparison.
 
+Dense NPZ archives retain every FP64 value without compression. A CPU-only
+benchmark on an actual 512-width dense window took 4.53 seconds to compress
+110 MB to 95 MB, versus 0.18 seconds to serialize the same arrays directly.
+Both archive forms are readable by the same analysis. This avoids spending
+the GPU allocation on compression; smaller diagnostic exports remain compressed.
+
 The authorized new allocation budget is eight GPU-hours, at most two GPUs
 concurrently, including compilation, I/O, and unsuccessful allocations.
 Phase allowances are 0.3h verification, 4.5h primary/historical training,
