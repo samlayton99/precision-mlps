@@ -89,6 +89,18 @@ def summarize(root, output, end=100000):
             run.save_arrays(dest/"history.npz", **h, band_bounds=bounds, centers=g.centers)
         rows.append(row)
     run.write_json(output/"summary.json", rows)
+    pairs=[]
+    for n,seed in sorted({(r["n"],r["seed"]) for r in rows}):
+        paths=[]
+        for coord in training.COORDINATES:
+            group=[r for r in rows if (r["n"],r["seed"],r["coordinates"])==(n,seed,coord)]
+            if group: paths.append(root/group[0]["key"]/"checkpoint_000000000.npz")
+        if len(paths)==2:
+            with np.load(paths[0]) as a, np.load(paths[1]) as b:
+                errors={k:float(np.max(np.abs(a[k]-b[k]))) for k in ("c","gamma","prediction_train")}
+                for k in errors: np.testing.assert_allclose(a[k],b[k],rtol=1e-12,atol=1e-12)
+            pairs.append(dict(n=n,seed=seed,maximum_initial_difference=errors))
+    run.write_json(output/"initial_pairing.json",pairs)
     if rows:
         fields = list(dict.fromkeys(k for r in rows for k in r))
         with (output/"summary.csv").open("w") as stream:
@@ -148,12 +160,28 @@ def spectral_probe(g, c, gamma, coord, eta, samples=16):
     record = dict(coordinates=coord, eta=eta, train_mse=float(r@r), sigma_max=float(s[0]),
                   smallest_singular=float(s[-1]), resolved_condition_1e12=float(s[0]/s[retained][-1]),
                   retained_rank_1e12=int(retained.sum()), total_columns=len(s),
+                  adjacent_sign_disagreement=float(np.mean(gamma[:-1]*gamma[1:]<0)),
+                  adjacent_absolute_gamma_ratio_quantiles=np.quantile(
+                      np.maximum(np.abs(gamma[:-1]),np.abs(gamma[1:]))/
+                      np.maximum(np.minimum(np.abs(gamma[:-1]),np.abs(gamma[1:])),1e-300),[.5,.9,.99]).tolist(),
                   readout_stability_limit=float(2/s[0]**2), eta_sigma_max_squared=float(eta*s[0]**2),
                   refits=refits, residual_outside_retained_span_mse=float(np.sum((r-parallel)**2)),
                   gradient_lambda_parallel_norm=float(np.linalg.norm(glp)),
                   gradient_lambda_perpendicular_norm=float(np.linalg.norm(gln)),
+                  readout_gradient_norm=float(np.linalg.norm(grad)),
+                  frozen_readout_mse_change=float(2*r@frozen_delta+frozen_delta@frozen_delta),
+                  frozen_local_mse_timescale=(float((r@r)/(2*eta*(grad@grad))) if eta and grad@grad else None),
                   modal_prediction_max_error=float(np.max(np.abs(actual_coefficients-expected_coefficients))),
                   fourier_parseval_error=float(abs(np.sum(rb**2)-r@r)))
+    forces={}
+    for region,mask in g.masks.items():
+        direction=np.where(mask,np.sign(gamma),0.)
+        direction/=max(np.linalg.norm(direction),1.)
+        tangent=j@direction
+        perp=tangent-u[:,retained]@(u[:,retained].T@tangent)
+        forces[region]=dict(parallel_force=float(-direction@glp),perpendicular_force=float(-direction@gln),
+                            tangent_norm=float(np.linalg.norm(tangent)),perpendicular_tangent_norm=float(np.linalg.norm(perp)))
+    record["regional_scale_forces"]=forces
     arrays = dict(singular_values=s, residual_coefficients=coefficients, residual=r*root_m,
                   modal_gradient=s*coefficients, frozen_modal_delta=-eta*s**2*coefficients,
                   band_bounds=bounds, band_mse=np.sum(rb**2, axis=1),
