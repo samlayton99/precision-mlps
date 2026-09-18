@@ -215,6 +215,8 @@ The theorem applies directly to unscaled $q$ coefficients of equal-slope, unifor
 
 Accordingly, the theorem explains a structural benefit and separates it from the remaining geometry-dependent smoothing. It does not prove that the full experimental matrix is well-conditioned, that lambda 0.25 is optimal for optimization, or that Adam has a particular convergence rate. The empirical comparisons remain in the [experiment report](../results/checkpoint_D_optimizers/expD06_fixed_center_scales/relative_rate_results.md#neighbor-difference-readouts-improve-adam-across-uniform-targets).
 
+The subsequent [constant-rate joint GD experiment](../results/checkpoint_D_optimizers/expD06_fixed_center_scales/conditioning_results.md) tests the combined scale prescription from paired Xavier initializations. It measures learned signed geometry, residual occupancy of weak modes, and actual update budgets; its joint-training results should be distinguished from the fixed uniform dictionaries above.
+
 ## A separate near-null direction from the halo
 
 The full finite-interval matrix has a simple obstruction absent from the whole-line bump block. Suppose its normalized bias column is $d_b\mathbf 1/\sqrt M$, its final column is $t\phi_W/\sqrt M$, and the rightmost center is $x_W=1+Rh$. Here $t=d_W$ for scaled readouts and $t=S_{WW}$ for scaled neighbor differences. Let the rightmost slope be $\gamma_W=\lambda/h>0$ and let all $M\ge W+1$ observation points lie in $[-1,1]$. No assumption on the other slopes is needed.

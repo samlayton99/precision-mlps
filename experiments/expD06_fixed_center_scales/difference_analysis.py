@@ -516,11 +516,12 @@ def animations(output, late=False):
             with np.load(output/row["key"]/"history.npz") as a: h=dict(a)
             if late:
                 with np.load(output/row["key"]/f'dense_parameters_{int(h["step"][-1])}.npz') as a:
-                    h={**dict(a),"centers":h["centers"]}
+                    # Consecutive states expose short-period oscillations that a
+                    # fixed stride could hide. Keep the movie compact and complete.
+                    h={**{k:a[k][-256:] for k in ("step","c","gamma")},"centers":h["centers"]}
             histories.append(h)
         common=sorted(set(histories[0]["step"])&set(histories[1]["step"]))
         if late:
-            common=common[::8]+([common[-1]] if common[-1] not in common[::8] else [])
             frames=common;fps=20
         elif common[-1]>300000:
             common=[s for s in common if s<1000 or s<=300000 and s%10000==0 or s>300000 and s%100000==0 or s==common[-1]]
@@ -552,7 +553,7 @@ def animations(output, late=False):
                 value=h[field][index]-h[field][0] if late else h[field][index]
                 line.set_ydata(value[1:] if field=="c" else value)
                 if field=="c": bias_labels[j].set_text(f'Bias b={h["c"][index,0]:+.5g}')
-            cadence=(f'Changes since {histories[0]["step"][0]:,}; every 8 updates at 20 frames/s' if late else
+            cadence=(f'Changes since {histories[0]["step"][0]:,}; consecutive updates at 20 frames/s' if late else
                      "First 300k: one checkpoint/s; later: six/s" if frames[-1]>300000 else "One checkpoint per second")
             heading.set_text(f"Seed {seed}; update {step:,}; actual saved states, no interpolation\n{cadence}")
         movie=FuncAnimation(fig,update,frames=len(frames),interval=1000/fps,repeat=False)
@@ -572,7 +573,7 @@ def main():
     parser.add_argument("--uniform", action="store_true")
     parser.add_argument("--figures", action="store_true")
     parser.add_argument("--animations", action="store_true")
-    parser.add_argument("--late",action="store_true",help="Animate the final dense window as changes from its first state")
+    parser.add_argument("--late",action="store_true",help="Animate the final 256 consecutive dense states as changes from the first displayed state")
     parser.add_argument("--projection-only",action="store_true")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
