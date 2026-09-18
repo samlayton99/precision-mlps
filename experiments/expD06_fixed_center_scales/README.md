@@ -122,6 +122,24 @@ at least 20k updates before comparison, subject to explicit budget reporting.
 On resume, a completed frontier is skipped before rebuilding its dictionaries;
 unfinished frontiers reload the saved parameters and optimizer state.
 
+Recorded numerical stagnation prompted a separate paired audit,
+`line_search_audit.py`, within the remaining allocation. It forks the six
+uniform dictionaries and the learned quadratic/512 dictionary with observed
+momentum stagnation at one common saved horizon. For every GD, momentum, and
+Adam arm in both coordinate maps, it preserves parameters and moments and
+compares the original Armijo evaluation with the algebraically identical
+loss change $r^TB\Delta z+\|B\Delta z\|^2/2$. Here $B\Delta z$ uses the
+rounded parameter displacement. This avoids comparing nearly equal losses;
+an inherited zero trial rate restarts from the existing advertised initial
+rate. A gradient fallback uses the advertised GD trial rate 0.1, rather than
+inheriting a potentially tiny rate from an Adam-normalized direction. These
+guards are reported together as a numerical repair, not an isolated test of
+loss evaluation alone. There is no curvature inverse or least-squares update.
+The original runs remain separate controls. The audit records its source
+hashes, complete traces, dense windows, counters, and validation diagnostics
+under `runs/ratio_line_search_audit/`. Its `--seed` argument partitions work
+between two GPUs; it does not introduce new random initializations.
+
 Use `--export=ALL,D06_MODULE=feedback` or
 `--export=ALL,D06_MODULE=readout_solvers` with `ratio.sbatch` to run those
 phases. Pass `--seconds` below the allocation walltime and reconcile the

@@ -64,8 +64,8 @@ TRACE_COLUMNS = ("half_mse", "eta", "gradient_norm", "physical_update_rms", "gra
                  "loss_evaluations", "fallback", "stagnation")
 
 
-@lru_cache(maxsize=12)
-def linear_chunk(length, capture=False, batched=True):
+@lru_cache(maxsize=24)
+def linear_chunk(length, capture=False, batched=True, stable_armijo=False):
     """Algorithm IDs: GD=0, momentum=.9=1, Adam=2, scheduled Adam=3, fixed Adam=4."""
     def advance(state, b, y, transform, algorithm, start):
         def step(current, index):
@@ -90,15 +90,28 @@ def linear_chunk(length, capture=False, batched=True):
             # double the last accepted eta, capped at one.
             trial = jnp.where(start + index == 0, current["eta"], jnp.minimum(1., 2 * current["eta"]))
             trial = jnp.where(algorithm == 3, scheduled, jnp.where(algorithm == 4, 1e-6, trial))
+            if stable_armijo:
+                # A zero rate from earlier underflow is an absorbing state.
+                trial = jnp.where((algorithm < 3) & (trial <= 0),
+                                  jnp.where(algorithm >= 2, .001, .1), trial)
+                # An unnormalized gradient fallback needs the GD trial scale,
+                # rather than the tiny rate accepted for a normalized Adam step.
+                trial = jnp.where(fallback, .1, trial)
 
             def candidate(eta):
+                if stable_armijo:
+                    # Same quadratic loss difference, evaluated without subtracting
+                    # nearly equal losses. Use the actual rounded parameter change.
+                    change = b @ ((z + eta * direction) - z)
+                    return jnp.vdot(r, change) + .5 * jnp.vdot(change, change)
                 residual = b @ (z + eta * direction) - y
                 return .5 * jnp.vdot(residual, residual)
 
             first_loss = candidate(trial)
+            comparison_origin = 0. if stable_armijo else loss
             def keep_searching(search):
                 eta, value, attempts = search
-                return (algorithm < 3) & (attempts < 40) & (~jnp.isfinite(value) | (value > loss + 1e-4 * eta * directional))
+                return (algorithm < 3) & (attempts < 40) & (~jnp.isfinite(value) | (value > comparison_origin + 1e-4 * eta * directional))
 
             def halve(search):
                 eta, _, attempts = search
@@ -106,7 +119,7 @@ def linear_chunk(length, capture=False, batched=True):
                 return eta, candidate(eta), attempts + 1
 
             eta, after, attempts = jax.lax.while_loop(keep_searching, halve, (trial, first_loss, jnp.asarray(1)))
-            accepted = jnp.isfinite(after) & ((algorithm >= 3) | (after <= loss + 1e-4 * eta * directional))
+            accepted = jnp.isfinite(after) & ((algorithm >= 3) | (after <= comparison_origin + 1e-4 * eta * directional))
             dz = jnp.where(accepted, eta * direction, jnp.zeros_like(z))
             dc = transform @ dz
             stagnant = (~accepted) | jnp.all(z + dz == z)

@@ -68,3 +68,37 @@ def test_uphill_momentum_uses_gradient_and_records_fallback():
     end, _ = rs.linear_chunk(1, False, False)(zero, np.eye(2), np.zeros(2), np.eye(2), 0, 0)
     assert int(end["fallbacks"]) == 0
     assert int(end["stagnations"]) == 1
+
+
+def test_stable_armijo_resolves_descent_below_an_irreducible_loss():
+    b = np.array([[10.], [0.]])
+    y = np.array([1e-10, 1.])
+    state = rs.initial_state(np.zeros(1), 0)
+    direct, _ = rs.linear_chunk(1, False, False)(state, b, y, np.eye(1), 0, 0)
+    stable, _ = rs.linear_chunk(1, False, False, True)(state, b, y, np.eye(1), 0, 0)
+    # The total half-MSE rounds to 0.5 throughout, hiding the first component.
+    assert abs((b @ np.asarray(direct["z"]) - y)[0]) > abs(y[0])
+    assert abs((b @ np.asarray(stable["z"]) - y)[0]) < abs(y[0])
+
+
+def test_stable_armijo_recovers_from_a_zero_rate_without_resetting_moments():
+    state = rs.initial_state(np.zeros(2), 2, mu=np.array([-.1, -.1]),
+                             nu=np.array([.01, .01]), count=20000)
+    state["eta"] = np.array(0.)
+    direct, _ = rs.linear_chunk(1, False, False)(state, np.eye(2), np.ones(2), np.eye(2), 2, 20000)
+    stable, _ = rs.linear_chunk(1, False, False, True)(state, np.eye(2), np.ones(2), np.eye(2), 2, 20000)
+    np.testing.assert_array_equal(direct["z"], state["z"])
+    assert np.linalg.norm(stable["z"] - 1) < np.sqrt(2)
+    np.testing.assert_array_equal(stable["mu"], direct["mu"])
+    np.testing.assert_array_equal(stable["nu"], direct["nu"])
+
+
+def test_gradient_fallback_uses_its_own_trial_scale():
+    state = rs.initial_state(np.ones(2), 2, mu=np.ones(2) * -100,
+                             nu=np.ones(2), count=20000)
+    state["eta"] = np.array(1e-20)
+    direct, _ = rs.linear_chunk(1, False, False)(state, np.eye(2), np.zeros(2), np.eye(2), 2, 20000)
+    stable, _ = rs.linear_chunk(1, False, False, True)(state, np.eye(2), np.zeros(2), np.eye(2), 2, 20000)
+    np.testing.assert_array_equal(direct["z"], state["z"])
+    np.testing.assert_allclose(stable["z"], [.9, .9])
+    assert int(stable["fallbacks"]) == 1
