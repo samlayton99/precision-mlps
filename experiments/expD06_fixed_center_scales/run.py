@@ -227,22 +227,22 @@ def record_checkpoint(root, case, state, step, arrays, window_losses=None):
     return row
 
 
-def convergence_status(history, checkpoint_dir=None, min_steps=MIN_STEPS):
+def convergence_status(history, checkpoint_dir=None, min_steps=MIN_STEPS, step_offset=0):
     """Use successively doubled windows; every finite scientific case reaches 20k."""
     if not history[-1]["finite"]:
         return "nonfinite"
-    if history[-1]["step"] < min_steps:
+    if history[-1]["step"] - step_offset < min_steps:
         return "continuing"
     def complete_doubled_window(row):
-        step = row["step"]
+        step = row["step"] - step_offset
         ratio = step // min_steps
         return (step >= min_steps and step % min_steps == 0 and ratio & (ratio - 1) == 0
-                and row.get("window_loss", {}).get("start_step") == (0 if step == min_steps else step // 2))
+                and row.get("window_loss", {}).get("start_step") == step_offset + (0 if step == min_steps else step // 2))
     windows = [r for r in history if complete_doubled_window(r)]
     if len(windows) < 4:
         return "continuing"
     recent = windows[-4:]
-    if any(b["step"] != 2 * a["step"] for a, b in zip(recent, recent[1:])):
+    if any(b["step"] - step_offset != 2 * (a["step"] - step_offset) for a, b in zip(recent, recent[1:])):
         return "continuing"
     stationary = oscillatory = True
     snapshots = None

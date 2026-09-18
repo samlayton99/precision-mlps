@@ -185,7 +185,7 @@ TRACE_COLUMNS = ("loss_before_update", "lambda_update_rms", "readout_update_rms"
 
 
 def make_chunk(g: Geometry, name: str, target_name: str, samples_per_cell=16, steps=100,
-               batched=False, eps=1e-8):
+               batched=False, eps=1e-8, capture=False):
     """Compile many steps once; rates/scales are runtime arguments, not static keys."""
     x = jnp.linspace(-1.0, 1.0, samples_per_cell * g.n + 1)
     y = target(x, target_name)
@@ -218,6 +218,13 @@ def make_chunk(g: Geometry, name: str, target_name: str, samples_per_cell=16, st
                                jnp.sqrt(jnp.mean((dc / jnp.asarray(g.alpha))**2)),
                                jnp.sqrt(jnp.mean((grads["slope"] / (g.h * gamma_scale))**2)),
                                jnp.sqrt(jnp.mean((grads["readout"] / c_scale)**2))])
+            if capture:
+                c, gamma = physical(params, c_scale, gamma_scale)
+                evidence = {"c": c, "gamma": gamma,
+                            "gradient_c": grads["readout"] / c_scale,
+                            "gradient_lambda": grads["slope"] / (g.h * gamma_scale),
+                            "delta_c": dc, "delta_lambda": dl}
+                return next_state, (stats, evidence)
             return next_state, stats
         return jax.lax.scan(step, state, None, length=steps)
 
