@@ -406,7 +406,8 @@ def main():
     folders = sorted(p.parent for p in root.glob("*/*/schedule.json") if (p.parent / "latest.json").exists())
     latest = {f: json.loads((f / "latest.json").read_text())["step"] for f in folders}
     primary = [f for f in folders if f.parent.name.startswith("high_") or f.parent.name == "low_shared"]
-    common = min(latest[f] for f in primary) // 20000 * 20000 if len(primary) == 60 else None
+    available_common = min(latest[f] for f in primary) // 20000 * 20000 if len(primary) == 60 else None
+    common = min(available_common, args.horizon) if available_common and args.horizon else available_common
     args.output.mkdir(parents=True, exist_ok=True)
     tasks = []
     for folder in folders:
@@ -419,7 +420,8 @@ def main():
         if end - meta["source_step"] < 20000:
             continue
         tasks.append((str(folder), end, str(args.output / folder.parent.name / folder.name)))
-    run.write_json(args.output / "provenance.json", {"common_primary_horizon": common, "primary_cases_present": len(primary),
+    run.write_json(args.output / "provenance.json", {"common_primary_horizon": common,
+        "available_common_primary_horizon": available_common, "primary_cases_present": len(primary),
         "tasks": tasks, "test_evaluation": False,
         "source_hashes": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(__file__).parent.glob("*.py")}})
     if not args.solvers_only:
