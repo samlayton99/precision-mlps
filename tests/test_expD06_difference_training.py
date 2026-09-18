@@ -124,6 +124,26 @@ def test_projected_force_removes_large_in_span_roundoff():
     np.testing.assert_allclose(gn,1e-12*outside.T@beta,rtol=1e-6,atol=2e-19)
 
 
+@pytest.mark.parametrize("coord", dt.COORDINATES)
+def test_dense_analysis_keeps_readout_and_geometry_gradients_separate(tmp_path, monkeypatch, coord):
+    from experiments.expD06_fixed_center_scales import difference_analysis as analysis
+    g=core.geometry(128);eta=1e-5;length=4
+    state,(trace,dense)=dt.chunk(128,coord,length,True,16,False)(dt.initial(g,0,coord),eta,0)
+    dense={k:np.asarray(v) for k,v in dense.items()}
+    dense["step"]=np.arange(length)
+    monkeypatch.setattr(analysis.ratio_analysis,"read_dense",lambda folder,end:dense)
+    monkeypatch.setattr(analysis.ratio,"dense_sample_indices",lambda:np.arange(length))
+    x=jnp.linspace(-1,1,16*g.n+1)
+    mse=2*dt.physical_loss(dt.decode(state["z"],g,coord),state["lam"],x,core.target(x,"sine"),g)
+    np.savez(tmp_path/f"checkpoint_{length:09d}.npz",train_mse=float(mse))
+    result=analysis.dense_probe(tmp_path,g,dict(n=128,seed=0,coordinates=coord,eta=eta),length,tmp_path)
+    assert max(result["maximum_update_identity_error"])<1e-15
+    assert max(result["maximum_gradient_closure"])<1e-12
+    with np.load(tmp_path/f"dense_{length}.npz") as a:
+        assert a["singular_native_gradient_coefficients"].shape==(length,g.width+1)
+        assert a["gradient_lambda_perpendicular"].shape==(length,g.width)
+
+
 @pytest.mark.parametrize("coord",dt.COORDINATES)
 def test_halo_pair_bound_and_cancellation(coord):
     from experiments.expD06_fixed_center_scales import diagnostics,difference_analysis as analysis

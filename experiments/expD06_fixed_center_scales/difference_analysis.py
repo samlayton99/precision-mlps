@@ -247,7 +247,7 @@ def dense_probe(folder, g, case, end, output):
         j = c[1:]*distances*4*e/(1+e)**2/(g.h*root_m)
         bounds, rb, _ = diagnostics.band_residuals(normalized)
         gradient_c, gradient_l = rb@a, rb@j
-        gn = np.asarray(training.pullback(dense["gradient_c"][index], g, case["coordinates"]))
+        gradient_native = np.asarray(training.pullback(dense["gradient_c"][index], g, case["coordinates"]))
         coefficients = u.T@normalized
         keep = singular > 1e-12*singular[0]
         parallel = u[:, keep]@coefficients[keep]
@@ -255,7 +255,7 @@ def dense_probe(folder, g, case, end, output):
         rows.append(dict(step=dense["step"][index], **budget, residual_mse=normalized@normalized,
                          singular_residual_coefficients=coefficients,
                          singular_update_coefficients=(pieces/root_m)@u,
-                         singular_native_gradient_coefficients=vh@gn,
+                         singular_native_gradient_coefficients=vh@gradient_native,
                          band_mse=np.sum(rb**2, axis=1), band_gradient_native=rb@b,
                          band_gradient_lambda=gradient_l,
                          band_readout_linear_mse_change=2*gradient_c@dc,
@@ -264,7 +264,7 @@ def dense_probe(folder, g, case, end, output):
                          projection_leakage_norm=leak,gradient_split_closure_norm=split_error,
                          gradient_closure=np.array([np.linalg.norm(gradient_c.sum(axis=0)-dense["gradient_c"][index]),
                                                     np.linalg.norm(gradient_l.sum(axis=0)-dense["gradient_lambda"][index])]),
-                         update_identity_error=np.array([np.max(np.abs(dc-training.decode(-case["eta"]*gn,g,case["coordinates"],np))),
+                         update_identity_error=np.array([np.max(np.abs(dc-training.decode(-case["eta"]*gradient_native,g,case["coordinates"],np))),
                                                           np.max(np.abs(dl+case["eta"]*dense["gradient_lambda"][index]))]),
                          readout_geometry_cosine=pieces[0]@pieces[1]/max(np.linalg.norm(pieces[0])*np.linalg.norm(pieces[1]), 1e-300)))
     arrays = {k:np.stack([r[k] for r in rows]) for k in rows[0]}
