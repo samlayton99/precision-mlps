@@ -67,7 +67,7 @@ def player_html(animation, fps):
     return html
 
 
-def render(centers, histories, seed, mode, output):
+def render(centers, histories, seed, mode, output, title="Scaled training, Adam"):
     dense = mode == "late"
     history = histories[seed]
     # The late movie shows every eighth saved state, plus the final state.
@@ -113,7 +113,9 @@ def render(centers, histories, seed, mode, output):
         step = int(history["step"][i])
         phase = "late movement magnified" if dense else "full training overview"
         eta = .001 if step <= SOURCE_STEP else 1e-6+.5*(.001-1e-6)*(1+np.cos(np.pi*min((step-SOURCE_STEP)/80000, 1)))
-        heading.set_text(f"Seed {seed} — {phase}\nScaled training, Adam  |  update {step:,}  |  shared LR {eta:.3g}")
+        rates = (f"readout LR {history['eta_a'][i]:.3g}; geometry LR {history['eta_lambda'][i]:.3g}"
+                 if "eta_a" in history else f"shared LR {eta:.3g}")
+        heading.set_text(f"Seed {seed} — {phase}\n{title}  |  update {step:,}  |  {rates}")
         for row, field in enumerate(fields):
             for dots, mask in zip(points[row], [core, ~core]):
                 dots.set_offsets(np.column_stack([centers[mask], values[row][i, mask]]))

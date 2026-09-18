@@ -113,6 +113,35 @@ Use `--export=ALL,D06_MODULE=feedback` or
 phases. Pass `--seconds` below the allocation walltime and reconcile the
 eight-hour allocation ledger before submitting any phase.
 
+`ratio_analysis.py` exports evidence and plots from a completed common primary
+horizon, including ancestors' actual checkpoints. It checks three SVD cutoffs
+and doubles the training-grid density for detached fits. Each final dense
+window retains all 2048 physical parameter states; 64 systematic samples
+receive Fourier gradient decomposition, actual-update attribution, and
+readout/geometry/interaction loss budgets. A single SVD basis, fixed at the
+window's first state, tracks residual and update directions across that
+window. Frozen solvers use the same prescribed-coordinate reference SVD
+projector for both coordinate maps, while separately reporting both singular
+spectra. Thus changing numerical rank under a coordinate change cannot
+silently redefine the residual attributed to the dictionary.
+
+Submit `ratio_analysis.sbatch --output <new-export-directory> --horizon 340000`
+after that common horizon is available, and repeat into a separate directory
+after all allocated continuations finish. The export records incomplete
+matrix coverage and excludes branches with fewer than 20k new updates.
+`--solvers-only` exports the frozen-dictionary block without repeating joint
+diagnostics. Figures use MSE and label native rates explicitly. Reports are
+authored directly after inspecting these outputs.
+
+After downloading an export, run `animate_ratios --analysis <export> --n 512
+--target sine` as a D06 Python module. It reuses the per-seed movie renderer:
+physical $w$ above physical $\gamma$, fixed physical centers, and the first
+320k shown slowly. Both actual scalar rates appear in every frame. The
+default compares the shared and both-changes branches; `--labels` selects
+other recorded branches. Repeat with `--n 1024 --target mixed` for the second
+focused view. Every seed gets its own HTML and MP4 files, including a
+magnified late-window view.
+
 `continue_stall.py` resumes the shared-rate scaled Adam/envelope runs, seeds 0 and 1, from update 320,000. Each seed has four branches: joint or frozen geometry, crossed with constant $\eta=10^{-3}$ or a shared cosine decay to $10^{-6}$ over 80,000 additional updates followed by a constant tail. All branches preserve the source parameters and Adam moments. Freezing leaves every slope unchanged; its unused geometry moments continue evolving independently of the readout moments. No readout is frozen or replaced by a detached solve.
 
 Submit `stall.sbatch` through Slurm. Each one-GPU worker advances all four branches for its seed, with a cumulative two-hour worker cap and at most two concurrent GPUs. Reconcile the existing campaign budget before submission. Checkpoint and trace steps under `runs/stall/<branch>/<source-case>/` count **additional** updates; add 320,000 for the full trajectory. Full checkpoints occur every 1,000 updates; dense parameters, gradients, and actual updates cover the first 2,048 steps and the last 2,048 steps of every 20,000-step window. Complete scalar traces cover every update. Convergence checks use doubled windows after the schedule reaches its constant tail at 80k, so the first possible stationary/oscillatory classification is at 240k additional updates. Budget interruptions remain unconverged and resumable. The four branches continue to a common horizon until all have a terminal classification or the worker budget is exhausted.
