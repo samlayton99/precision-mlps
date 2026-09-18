@@ -142,6 +142,22 @@ def mapped_features(a, g, coord):
     return np.column_stack((a[:, 0]*g.d[0], (a[:, 1:-1]-a[:, 2:])*s[:-1], a[:, -1]*s[-1]))
 
 
+def halo_cancellation_bound(g, lam, coord):
+    """Analytic near-null bias/outer-anchor direction on the observation interval."""
+    scale=g.d[-1] if coord=="scaled" else np.sqrt(g.alpha[1:].sum())
+    db=g.d[0];vector_norm=np.sqrt(1+(scale/db)**2)
+    upper=2*scale*np.exp(-2*lam*g.radius)/vector_norm
+    x=np.linspace(-1,1,16*g.n+1)
+    u=(lam/g.h)*(x-g.centers[-1])
+    e=np.exp(2*u)
+    # Compute 1+tanh(u) without subtracting two almost equal numbers.
+    pair=scale*(2*e/(1+e))/vector_norm
+    return dict(n=g.n,uniform_lambda=lam,coordinates=coord,
+                sigma_min_upper_bound=upper,condition_lower_bound=g.d[0]/upper,
+                normalized_pair_image_norm=float(np.sqrt(np.mean(pair**2))),
+                naive_tanh_plus_one_max=float(np.max(1+np.tanh(u))))
+
+
 def spectral_probe(g, c, gamma, coord, eta, samples=16):
     x = np.linspace(-1, 1, samples*g.n+1)
     y = core.target(x, "sine", np)
@@ -467,6 +483,8 @@ def figures(output):
     uniform=output/"uniform"/"summary.json"
     if uniform.exists():
         rows=json.loads(uniform.read_text())
+        run.write_json(output/"uniform"/"halo_cancellation_bounds.json",
+                       [halo_cancellation_bound(core.geometry(r["n"]),r["uniform_lambda"],r["coordinates"]) for r in rows])
         fig,axes=plt.subplots(1,3,figsize=(16,4),layout="constrained")
         for n,style in ((512,"-"),(1024,"--")):
             for coord,color in zip(training.COORDINATES,("C0","C1")):

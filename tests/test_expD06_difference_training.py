@@ -122,3 +122,19 @@ def test_projected_force_removes_large_in_span_roundoff():
     r=u@rng.normal(size=9)+1e-8*v@beta
     _,gn,_,_=projected_forces(j,r,u)
     np.testing.assert_allclose(gn,1e-12*outside.T@beta,rtol=1e-6,atol=2e-19)
+
+
+@pytest.mark.parametrize("coord",dt.COORDINATES)
+def test_halo_pair_bound_and_cancellation(coord):
+    from experiments.expD06_fixed_center_scales import diagnostics,difference_analysis as analysis
+    g=core.geometry(128);lam=.125
+    a=diagnostics.features(np.linspace(-1,1,16*g.n+1),g.centers,np.full(g.width,lam/g.h))/np.sqrt(16*g.n+1)
+    b=analysis.mapped_features(a,g,coord)
+    scale=g.d[-1] if coord=="scaled" else np.sqrt(g.alpha[1:].sum())
+    v=np.zeros(g.width+1);v[0]=scale/g.d[0];v[-1]=1;v/=np.linalg.norm(v)
+    result=analysis.halo_cancellation_bound(g,lam,coord)
+    np.testing.assert_allclose(np.linalg.norm(b@v),result["normalized_pair_image_norm"],rtol=1e-12)
+    assert result["normalized_pair_image_norm"]<=result["sigma_min_upper_bound"]
+    saturated=analysis.halo_cancellation_bound(core.geometry(512),1.,coord)
+    assert saturated["naive_tanh_plus_one_max"]==0.
+    assert saturated["normalized_pair_image_norm"]>0.

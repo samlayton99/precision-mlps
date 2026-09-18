@@ -211,9 +211,38 @@ The theorem applies directly to unscaled $q$ coefficients of equal-slope, unifor
 - **Finite observation window and halos.** Restricting the integral to $[-1,1]$ can reduce the norm of a halo bump almost to zero. The whole-line lower bound therefore does not transfer automatically. The bias and final tanh anchor also require a separate analysis.
 - **Cumulative envelope scales.** The optimizer trains $\theta$ with $q=S\theta$. On the theorem's block, $\kappa(B_mS)\le C_\lambda\,S_{\max}/S_{\min}$. This does not prove those scales are optimal, and a width-dependent scale ratio can introduce its own width dependence.
 - **Discrete sampling.** The continuous Gram matrix must be compared with the sampled one. A quadrature error estimate in operator norm is needed for a rigorous sampled lower bound, especially when $a_\lambda$ is small.
-- **Unequal learned slopes.** The convolution and translated-basis arguments use a common slope. For unequal slopes, neighboring differences still cancel their asymptotic tails but need not form the same positive localized bumps.
+- **Unequal learned slopes.** The convolution and translated-basis arguments use a common slope. Unequal nonzero slopes with the same sign still cancel their asymptotic tails but need not form the same positive localized bumps. Opposite signs lose that tail cancellation.
 
 Accordingly, the theorem explains a structural benefit and separates it from the remaining geometry-dependent smoothing. It does not prove that the full experimental matrix is well-conditioned, that lambda 0.25 is optimal for optimization, or that Adam has a particular convergence rate. The empirical comparisons remain in the [experiment report](../results/checkpoint_D_optimizers/expD06_fixed_center_scales/relative_rate_results.md#neighbor-difference-readouts-improve-adam-across-uniform-targets).
+
+## A separate near-null direction from the halo
+
+The full finite-interval matrix has a simple obstruction absent from the whole-line bump block. Suppose its normalized bias column is $d_b\mathbf 1/\sqrt M$, its final column is $t\phi_W/\sqrt M$, and the rightmost center is $x_W=1+Rh$. Here $t=d_W$ for scaled readouts and $t=S_{WW}$ for scaled neighbor differences. Let the rightmost slope be $\gamma_W=\lambda/h>0$ and let all $M\ge W+1$ observation points lie in $[-1,1]$. No assumption on the other slopes is needed.
+
+For every observed $x$,
+
+$$
+0<1+\phi_W(x)
+=\frac{2e^{2\gamma_W(x-x_W)}}{1+e^{2\gamma_W(x-x_W)}}
+\le 2e^{-2\lambda R}.
+$$
+
+Choose a coefficient vector $v$ with only two nonzero entries: $v_b=t/d_b$ and $v_W=1$. Then $Bv=t(\mathbf1+\phi_W)/\sqrt M$ and $\|v\|^2=1+(t/d_b)^2$. Since $\sigma_{\max}(B)\ge d_b$, the variational definition of the extreme singular values gives
+
+$$
+\boxed{\displaystyle
+\sigma_{\min}(B)\le
+\frac{2t}{\sqrt{1+(t/d_b)^2}}e^{-2\lambda R},
+\qquad
+\kappa_2(B)\ge
+\frac{\sqrt{d_b^2+t^2}}{2t}e^{2\lambda R}.}
+$$
+
+If the matrix is rank deficient, its full condition number is infinite and the second inequality remains valid. For a negative rightmost slope, reverse the bias coefficient's sign and use $\lambda=h|\gamma_W|$.
+
+With $R=\lceil\sqrt N\rceil$, this supplies an exponential-in-$\sqrt N$ lower bound for the **full** condition number at fixed positive $\lambda$, even when the interior difference block has a width-independent bound. Increasing localization weakens these out-of-domain tail directions while improving the interior smoothing spectrum. The two effects need not move together. The bound is target independent: it does not establish that the current residual needs the near-null direction, or give a universal first-order lower bound.
+
+For the finite-precision audit, evaluate $1+\tanh u$ for $u\le0$ as $2e^{2u}/(1+e^{2u})$. Direct addition can return zero while the analytic expression remains representable. A cutoff-based retained condition number therefore cannot be identified with the full real-arithmetic condition number. The experiment's [bound measurements](../results/checkpoint_D_optimizers/expD06_fixed_center_scales/conditioning_analysis/uniform/halo_cancellation_bounds.json) report these quantities separately.
 
 ## Combining the reference scales with differences
 
