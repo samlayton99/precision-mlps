@@ -23,6 +23,8 @@ def read_trace(folder, end):
     steps, traces = [], []
     for path in sorted(folder.glob("trace_*.npz")):
         _, lo, hi = path.stem.split("_")
+        if int(lo) >= end:
+            continue
         with np.load(path) as a:
             np.testing.assert_array_equal(a["columns"], training.TRACE_COLUMNS)
             assert len(a["trace"]) == int(hi)-int(lo)
@@ -154,8 +156,11 @@ def spectral_probe(g, c, gamma, coord, eta, samples=16):
         cf = training.decode(z, g, coord, np)
         residual = a@cf-y/root_m
         validation = diagnostics.prediction(xv, g.centers, cf, gamma)-core.target(xv, "sine", np)
+        rp=u[:,keep]@(u[:,keep].T@r)
         refits.append(dict(cutoff=cutoff, rank=int(keep.sum()), train_mse=float(residual@residual),
-                           validation_mse=float(np.mean(validation**2)), physical_coefficient_norm=float(np.linalg.norm(cf))))
+                           validation_mse=float(np.mean(validation**2)), physical_coefficient_norm=float(np.linalg.norm(cf)),
+                           gradient_lambda_parallel_norm=float(np.linalg.norm(j.T@rp)),
+                           gradient_lambda_perpendicular_norm=float(np.linalg.norm(j.T@(r-rp)))))
         cv[f"refit_c_{cutoff:g}"] = cf
     record = dict(coordinates=coord, eta=eta, train_mse=float(r@r), sigma_max=float(s[0]),
                   smallest_singular=float(s[-1]), resolved_condition_1e12=float(s[0]/s[retained][-1]),
@@ -303,15 +308,18 @@ def uniform_references(output):
 def figures(output):
     rows = json.loads((output/"summary.json").read_text())
     fig, axes = plt.subplots(1, 2, figsize=(12,4), layout="constrained")
-    for coord in training.COORDINATES:
+    for ci,coord in enumerate(training.COORDINATES):
         group = sorted([r for r in rows if r["eligible"] and r["n"] == 512 and r["seed"] == 0 and r["coordinates"] == coord], key=lambda r:r["eta"])
         if not group:
             continue
         axes[0].loglog([r["eta"] for r in group], [r["window_mean_mse"] for r in group], "o-", label=LABELS[coord])
+        failed=[r["eta"] for r in rows if r["failed_update"] and r["n"]==512 and r["seed"]==0 and r["coordinates"]==coord]
+        axes[0].scatter(failed,np.full(len(failed),1.5+.5*ci),marker="x",color=f"C{ci}",s=50)
         selected = min(group, key=lambda r:(r["window_mean_mse"], r["eta"]))
         with np.load(output/selected["key"]/"history.npz") as h:
             axes[1].loglog(np.maximum(h["step"],1), h["train_mse"], label=f'{LABELS[coord]}, eta={selected["eta"]:g}')
     axes[0].set(xlabel="Constant shared eta", ylabel="Mean training MSE, updates 80k–100k", title="Matched scalar-rate comparison; N=512, seed 0")
+    axes[0].text(.02,.02,"× = nonfinite update; symbol height is not MSE",transform=axes[0].transAxes,fontsize=8)
     axes[1].set(xlabel="Updates", ylabel="Checkpoint training MSE", title="Each arm's best tested scalar rate")
     for ax in axes:
         ax.grid(alpha=.2); ax.legend(fontsize=8)
