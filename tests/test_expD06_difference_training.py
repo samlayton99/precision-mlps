@@ -79,3 +79,24 @@ def test_saved_resume_and_fixed_centers(tmp_path):
     with np.load(path/"checkpoint_000000008.npz") as a:
         assert a["alternate_eval_max"] < 1e-14
     assert sum(np.load(p)["trace"].shape[0] for p in path.glob("trace_*.npz")) == 8
+
+
+@pytest.mark.parametrize("coord", dt.COORDINATES)
+def test_detached_spectral_normalization_and_frozen_step(coord):
+    from experiments.expD06_fixed_center_scales import diagnostics, difference_analysis as analysis
+    g = core.geometry(128)
+    rng = np.random.default_rng(22)
+    c = rng.normal(size=g.width+1)*.02
+    gamma = rng.uniform(.15,.5,size=g.width)/g.h
+    eta = 1e-4
+    record, arrays, _ = analysis.spectral_probe(g, c, gamma, coord, eta, samples=2)
+    assert record["modal_prediction_max_error"] < 1e-12
+    assert record["fourier_parseval_error"] < 1e-12
+    x = np.linspace(-1,1,257)
+    a = diagnostics.features(x,g.centers,gamma)/np.sqrt(len(x))
+    b = analysis.mapped_features(a,g,coord)
+    z = dt.encode(c,g,coord)
+    np.testing.assert_allclose(a@c,b@z,atol=1e-14)
+    np.testing.assert_allclose(arrays["band_mse"].sum(),record["train_mse"],atol=1e-14)
+    assert record["readout_stability_limit"] == 2/record["sigma_max"]**2
+    assert all(r["train_mse"] < record["train_mse"] for r in record["refits"])
