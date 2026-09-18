@@ -87,7 +87,7 @@ def render(centers, histories, seed, mode, output, title="Scaled training, Adam"
     core = np.abs(centers) <= 1
     points, annotations = [], []
     for row, (field, ax) in enumerate(zip(fields, axes)):
-        title = "Readout weights w" if field == "c" else "Physical slopes gamma"
+        parameter_title = "Readout weights w" if field == "c" else "Physical slopes gamma"
         ylabel = ("Change in w" if field == "c" else "Change in gamma") if dense else ("Physical w" if field == "c" else "Physical gamma")
         ax.axvspan(centers[0]-.01, -1, color=".93")
         ax.axvspan(1, centers[-1]+.01, color=".93")
@@ -97,7 +97,7 @@ def render(centers, histories, seed, mode, output, title="Scaled training, Adam"
                        for mask, label, color, marker in [(core, "Core", "#2466a6", "o"),
                                                           (~core, "Halo", "#c15a14", "^")]])
         ax.set(ylim=(-bounds[row], bounds[row]), xlim=(centers[0]-.025, centers[-1]+.025),
-               ylabel=ylabel, title=title)
+               ylabel=ylabel, title=parameter_title)
         ax.set_yscale("symlog", linthresh=thresholds[row])
         ax.grid(alpha=.18)
         ax.legend(loc="lower right", fontsize=9)

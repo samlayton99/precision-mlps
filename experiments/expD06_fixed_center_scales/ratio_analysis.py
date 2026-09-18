@@ -122,6 +122,10 @@ def dense_analysis(folder, end, output, case):
         retained = singular > 1e-12 * singular[0]
         parallel = u[:, retained] @ coefficients[retained]
         bands_c, bands_l = rb @ a, rb @ j
+        region_readout = np.stack([-bands_c[:, 0] * dc[0]] +
+                                  [-bands_c[:, 1:][:, mask] @ dc[1:][mask] for mask in g.masks.values()])
+        region_geometry = np.stack([np.zeros(len(bounds))] +
+                                   [-bands_l[:, mask] @ dl[mask] for mask in g.masks.values()])
         norm_w, norm_g = np.linalg.norm(pieces[0]), np.linalg.norm(pieces[1])
         alignment = []
         for delta, gradient in [(dc, dense["gradient_c"][index]), (dl, dense["gradient_lambda"][index])]:
@@ -134,6 +138,8 @@ def dense_analysis(folder, end, output, case):
                      "band_gradient_c": bands_c, "band_gradient_lambda": bands_l,
                      "band_signed_readout_descent": -bands_c @ dc,
                      "band_signed_geometry_descent": -bands_l @ dl,
+                     "regional_band_readout_descent": region_readout,
+                     "regional_band_geometry_descent": region_geometry,
                      "gradient_lambda_parallel_fixed_basis": j.T @ parallel,
                      "gradient_lambda_perpendicular_fixed_basis": j.T @ (normalized - parallel),
                      "gradient_sum_error": np.array([np.linalg.norm(bands_c.sum(axis=0)-dense["gradient_c"][index]),
@@ -143,6 +149,7 @@ def dense_analysis(folder, end, output, case):
     arrays = {k: np.stack([r[k] for r in rows]) for k in rows[0]}
     run.save_arrays(output / "dense_mechanism.npz", **arrays, singular_values=singular, band_bounds=bounds,
                     basis_c=dense["c"][0], basis_gamma=dense["gamma"][0], basis_vh=vh,
+                    region_labels=np.asarray(["bias", *g.masks]),
                     mse_piece_order=np.array(["readout", "geometry", "interaction", "joint"]))
     return {"saved_states": 2048, "analyzed_states": 64, "basis_step": int(dense["step"][0]),
             "maximum_prediction_closure_error": float(np.max(arrays["closure_max"])),
