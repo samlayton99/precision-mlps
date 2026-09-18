@@ -1,6 +1,6 @@
 # Changing the relative readout and geometry rates
 
-Does slowing geometry let the readout continue learning, or does it remove a useful route for reducing the residual? **At the first common horizon, 340k updates, none of the three late rate interventions improves the mean training MSE in any of the 12 width/target/seed cases.** Raising the readout rate often increases occasional error excursions while barely changing the median error. These are intermediate results from an eight-GPU-hour campaign; continued training, frozen-dictionary solvers, and the feedback policy are still running or queued. Two seeds establish paired observations, not a population-level significance claim.
+Does slowing geometry let the readout continue learning, or does it remove a useful route for reducing the residual? **None of the three late rate interventions improves the mean training MSE in any of the 12 width/target/seed cases at either 340k or 820k updates.** Raising the readout rate often increases occasional error excursions while barely changing the median error. These are intermediate results from an eight-GPU-hour campaign; continued training, frozen-dictionary solvers, and the feedback policy are still running or queued. Two seeds establish paired observations, not a population-level significance claim.
 
 **Table 1. Terminology used throughout this study.**
 
@@ -60,6 +60,8 @@ For Adam, the physical rate factors are $\eta_aD_j$ for each readout and $\eta_\
 
 The distinction between a typical step and occasional excursions matters. For sine at $N=1024$, seed 0, increasing the readout rate changes the median MSE from $5.25\times10^{-12}$ to $6.36\times10^{-12}$, but changes the mean from $6.52\times10^{-12}$ to $1.81\times10^{-10}$. Its 90th percentile rises from $8.20\times10^{-12}$ to $4.07\times10^{-10}$. An isolated endpoint can miss this behavior. The slower-geometry intervention gives essentially the same distribution as the shared control in this example; on the mixed target it is consistently worse at both widths.
 
+The complete 800k–820k windows preserve this ordering in all 12 cells. Slower geometry now raises mixed-target MSE by 37–39% at $N=512$ and 15–18% at $N=1024$. The shared mixed-target controls continue improving between the two reporting horizons, so they are not described as converged. In contrast, the sine controls' window means change little, and faster readout retains its larger excursions.
+
 This evidence does not support the simple explanation that geometry motion is the dominant obstruction and readout learning merely needs a larger rate. It does not exclude benefits from an earlier handoff or another rate schedule. The finite-update and modal measurements below narrow the mechanism behind the observed excursions.
 
 <figure>
@@ -111,7 +113,7 @@ At this acquisition checkpoint, the median $\sqrt{\hat v}/\epsilon$ is about 54 
 
 ## Evidence and completion status
 
-All 60 primary branches completed the 340k comparison and continue beyond it. The frozen-dictionary block, earlier geometry handoffs, feedback rule, and historical higher-rate continuations remain pending in this interim report. No branch is declared converged merely because a budget limit or reporting horizon was reached.
+All 60 primary branches completed the 820k scalar comparison and continue beyond it; the detailed spectral and motion figures use the explicitly stated 340k horizon. The frozen-dictionary block, earlier geometry handoffs, feedback rule, and historical higher-rate continuations remain pending in this interim report. No branch is declared converged merely because a budget limit or reporting horizon was reached.
 
 Saved evidence includes complete per-step scalar traces; 20k checkpoints with parameters and Adam moments; dense physical parameters, signed gradients, and actual updates; Fourier-band residuals and forces; fixed-basis singular-mode projections; core/halo contributions; coefficient norms; and exact readout/geometry/interaction contributions to finite-step MSE changes. Detached fits use three cutoffs and a doubled sampling density. Per-seed movies place physical $w$ above physical $\gamma$ at fixed centers and slow the first 320k checkpoints.
 
@@ -132,6 +134,7 @@ The eight-GPU-hour limit includes compilation, I/O, and the controlled cancellat
 
 - [Protocol and commands](../../../experiments/expD06_fixed_center_scales/README.md#paired-continuation-at-the-learned-geometry).
 - [Exact 340k window statistics](ratio_campaign/340k_windows.json), derived from all 60 complete 320k–340k traces in `ratio_campaign/340k_scalar_inputs/`.
+- [Exact 820k window statistics](ratio_campaign/820k_windows.json), with complete 800k–820k traces and 820k checkpoints in `ratio_campaign/820k_scalar_inputs/`.
 - [Acquisition evidence](ratio_acquisition_analysis/evidence.json), including endpoints, cutoff checks, sampling refinement, and finite-update audits.
 - [340k mechanism evidence](ratio_340000_analysis/evidence.json), with per-case `dense_mechanism.npz` files for the modal and Fourier measurements. The original provenance's available common horizon is 360k; the explicit analysis cap and all primary records are 340k. Subsequent exports distinguish available and analyzed horizons explicitly.
 - [Regional readout contributions](ratio_340000_analysis/regional_readout_summary.json), reconstructed from the consecutive physical states and saved band gradients.
