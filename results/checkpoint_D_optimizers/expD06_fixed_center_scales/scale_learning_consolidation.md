@@ -75,9 +75,22 @@ At scaled Adam's shared $\eta=10^{-3}$, median $|\lambda|$ reaches 0.0329 / 0.08
 The final detached refit has validation MSE $3.99\times10^{-23}$ / $2.65\times10^{-21}$, with physical coefficient $\ell_1$ norms 16.6 / 16.2. Live coefficient norms are 24.0 / 13.8. Accurate representation is available with moderate coefficients, but only 204 / 313 of the 560 readout directions survive relative SVD cutoff $10^{-12}$. Calling this “good geometry conditioning” would be incorrect: it is good representability in an ill-conditioned dictionary.
 
 <figure>
-  <img src="stall_analysis/figures/adam_scaled_0.001_parameters.png" alt="Physical readout and slope histories by fixed center, and bandwidth quantiles for both seeds" style="max-width: 100%;">
-  <figcaption>Figure 2. Scaled Adam, shared rate 0.001: every saved parameter checkpoint through 320k. Heatmap rows are saved states, not uniformly spaced times; black lines mark domain edges. Geometry keeps moving after accurate detached fits are available.</figcaption>
+  <video controls preload="metadata" poster="animations/readouts_overview_last.png" style="max-width: 100%;" aria-label="Physical readout weights moving at their fixed centers through training, seeds zero and one">
+    <source src="animations/readouts_overview.mp4" type="video/mp4">
+    Readout animation: open the linked MP4 or interactive player below.
+  </video>
+  <figcaption>Figure 2a. Physical readout weights at all 559 fixed centers, seeds 0 and 1. Playback follows the shared-rate scaled Adam trajectory from initialization through 320k, then the joint-decay continuation to 1.68m. Blue circles mark core neurons; orange triangles mark halo neurons. Bias is displayed separately. The vertical scale stays fixed and is logarithmic outside a small linear region around zero. Frames use actual common checkpoints with unequal training-update gaps; no intermediate states are invented.</figcaption>
 </figure>
+
+<figure>
+  <video controls preload="metadata" poster="animations/gammas_overview_last.png" style="max-width: 100%;" aria-label="Signed physical slopes moving at their fixed centers through training, seeds zero and one">
+    <source src="animations/gammas_overview.mp4" type="video/mp4">
+    Gamma animation: open the linked MP4 or interactive player below.
+  </video>
+  <figcaption>Figure 2b. Signed physical slopes gamma at the same centers and checkpoints as Figure 2a. Horizontal positions never move, and signs are retained as trained. The displayed update counter, rather than playback time, identifies training progress. Geometry continues to move after accurate detached fits are available, but its late movement is small on this full-trajectory scale.</figcaption>
+</figure>
+
+Open the interactive players for [readouts](animations/readouts.html) and [gammas](animations/gammas.html) to pause, step through individual frames, scrub the timeline, or change playback speed. Direct videos are also available: [readout overview](animations/readouts_overview.mp4) and [gamma overview](animations/gammas_overview.mp4). Each interactive player includes a second, magnified movie of changes during total updates 1,677,952–1,679,999: [late readout movement](animations/readouts_late.mp4), [late gamma movement](animations/gammas_late.mp4). These subtract the window's initial values, keep a fixed vertical scale, and show every eighth recorded state plus the final state. They illustrate motion; the complete per-update traces remain the evidence for oscillation statistics.
 
 For a target-specific coefficient reference, we evaluated the boundary-corrected construction from [the theorem note](../../../theorem_for_sam.pdf), using the same $N=512$, radius-23 halo, and uniform $\lambda=0.25$. Its validation MSE is $1.48\times10^{-31}$ after FP64 export, with coefficient $\ell_1$ norm 6.75. Coefficients stabilize when increasing arithmetic precision from 50 to 80 decimal digits and quadrature degree from 7 to 9. The reference allowances $\pm\alpha_j$ define $D$; they are **not** the target-specific construction coefficients or a proved bound for the unit-RMS sine's complex extension.
 
