@@ -115,7 +115,7 @@ def render(centers, histories, seed, mode, output, title="Scaled training, Adam"
         eta = .001 if step <= SOURCE_STEP else 1e-6+.5*(.001-1e-6)*(1+np.cos(np.pi*min((step-SOURCE_STEP)/80000, 1)))
         rates = (f"readout LR {history['eta_a'][i]:.3g}; geometry LR {history['eta_lambda'][i]:.3g}"
                  if "eta_a" in history else f"shared LR {eta:.3g}")
-        heading.set_text(f"Seed {seed} — {phase}\n{title}  |  update {step:,}  |  {rates}")
+        heading.set_text(f"{title}\nSeed {seed} — {phase}\nUpdate {step:,}  |  {rates}")
         for row, field in enumerate(fields):
             for dots, mask in zip(points[row], [core, ~core]):
                 dots.set_offsets(np.column_stack([centers[mask], values[row][i, mask]]))

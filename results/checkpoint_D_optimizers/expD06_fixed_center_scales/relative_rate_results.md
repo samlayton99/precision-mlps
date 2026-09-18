@@ -8,7 +8,7 @@ Does slowing geometry let the readout continue learning, or does it remove a use
 |---|---|
 | Physical readouts $c=(b,w)$ | Output bias and coefficients multiplying the tanh features. |
 | Physical slopes $\gamma$ | Slopes attached to the fixed physical centers. |
-| Bandwidth $\lambda=h\gamma$ | Signed dimensionless slope; reported localization quantiles use $|\lambda|$. Here $h=2/N$. |
+| Bandwidth $\lambda=h\gamma$ | Signed dimensionless slope; reported localization quantiles use $\lvert\lambda\rvert$. Here $h=2/N$. |
 | Scaled training | Train $a,\lambda$ with $c=Da$ and $\gamma=\lambda/h$. $D$ is fixed at the theoretical reference bandwidth $0.25$. |
 | Shared rate | The same scalar rate for $a$ and $\lambda$. The prescribed physical scales still differ. |
 | Slower geometry | Change only the scalar geometry rate to one tenth of the shared control. |
@@ -51,12 +51,12 @@ For Adam, the physical rate factors are $\eta_aD_j$ for each readout and $\eta_\
 
 | $N$, target | Shared-rate MSE | Slower geometry / shared | Faster readout / shared | Both / shared |
 |---|---:|---:|---:|---:|
-| 512, sine | $(3.69$–$5.82)\times10^{-11}$ | 1.006–1.007 | 2.992–4.138 | 3.042–4.144 |
+| 512, sine | $[3.69,5.82]\times10^{-11}$ | 1.006–1.007 | 2.992–4.138 | 3.042–4.144 |
 | 512, quadratic | $6.83\times10^{-11}$–$1.01\times10^{-10}$ | 1.014–1.038 | 2.100–2.675 | 2.111–2.699 |
-| 512, mixed | $(4.98$–$9.72)\times10^{-9}$ | 1.150–1.167 | 1.005–1.024 | 1.159–1.192 |
-| 1024, sine | $(6.18$–$6.52)\times10^{-12}$ | 1.002–1.004 | 27.704–30.085 | 27.978–29.948 |
-| 1024, quadratic | $(8.48$–$8.52)\times10^{-12}$ | 1.008–1.009 | 21.628–21.685 | 21.542–22.248 |
-| 1024, mixed | $(2.77$–$4.04)\times10^{-10}$ | 1.045–1.054 | 1.442–1.650 | 1.481–1.692 |
+| 512, mixed | $[4.98,9.72]\times10^{-9}$ | 1.150–1.167 | 1.005–1.024 | 1.159–1.192 |
+| 1024, sine | $[6.18,6.52]\times10^{-12}$ | 1.002–1.004 | 27.704–30.085 | 27.978–29.948 |
+| 1024, quadratic | $[8.48,8.52]\times10^{-12}$ | 1.008–1.009 | 21.628–21.685 | 21.542–22.248 |
+| 1024, mixed | $[2.77,4.04]\times10^{-10}$ | 1.045–1.054 | 1.442–1.650 | 1.481–1.692 |
 
 The distinction between a typical step and occasional excursions matters. For sine at $N=1024$, seed 0, increasing the readout rate changes the median MSE from $5.25\times10^{-12}$ to $6.36\times10^{-12}$, but changes the mean from $6.52\times10^{-12}$ to $1.81\times10^{-10}$. Its 90th percentile rises from $8.20\times10^{-12}$ to $4.07\times10^{-10}$. An isolated endpoint can miss this behavior. The slower-geometry intervention gives essentially the same distribution as the shared control in this example; on the mixed target it is consistently worse at both widths.
 
@@ -114,6 +114,17 @@ At this acquisition checkpoint, the median $\sqrt{\hat v}/\epsilon$ is about 54 
 All 60 primary branches completed the 340k comparison and continue beyond it. The frozen-dictionary block, earlier geometry handoffs, feedback rule, and historical higher-rate continuations remain pending in this interim report. No branch is declared converged merely because a budget limit or reporting horizon was reached.
 
 Saved evidence includes complete per-step scalar traces; 20k checkpoints with parameters and Adam moments; dense physical parameters, signed gradients, and actual updates; Fourier-band residuals and forces; fixed-basis singular-mode projections; core/halo contributions; coefficient norms; and exact readout/geometry/interaction contributions to finite-step MSE changes. Detached fits use three cutoffs and a doubled sampling density. Per-seed movies place physical $w$ above physical $\gamma$ at fixed centers and slow the first 320k checkpoints.
+
+**Table 6. Parameter movies through 340k, with separate seeds. Each page includes the full trajectory and a magnified view of the final 2048 updates. The first 320k checkpoints are held for one second each; actual update counts and both scalar rates remain visible.**
+
+| Target and width | Intervention | Seed 0 | Seed 1 |
+|---|---|---|---|
+| Sine, 512 | Shared rate | [Movie](ratio_340000_analysis/animations/N512_sine_high_shared/seed_0.html) | [Movie](ratio_340000_analysis/animations/N512_sine_high_shared/seed_1.html) |
+| Sine, 512 | Both changes | [Movie](ratio_340000_analysis/animations/N512_sine_high_both_changes/seed_0.html) | [Movie](ratio_340000_analysis/animations/N512_sine_high_both_changes/seed_1.html) |
+| Mixed, 1024 | Shared rate | [Movie](ratio_340000_analysis/animations/N1024_mixed_high_shared/seed_0.html) | [Movie](ratio_340000_analysis/animations/N1024_mixed_high_shared/seed_1.html) |
+| Mixed, 1024 | Both changes | [Movie](ratio_340000_analysis/animations/N1024_mixed_high_both_changes/seed_0.html) | [Movie](ratio_340000_analysis/animations/N1024_mixed_high_both_changes/seed_1.html) |
+
+The full and magnified views have different vertical scales. Each view keeps its scales fixed through time and shared between its two seeds. Read the labeled physical units when comparing different interventions.
 
 The eight-GPU-hour limit includes compilation, I/O, and the controlled cancellation used to replace slow compressed dense saves with lossless uncompressed saves. At most two GPUs are allocated concurrently. Analyses run in zero-GPU Slurm allocations. Actual allocation charges will be reconciled before the final report; reserved and completed allocations are distinguished in the ledger.
 
