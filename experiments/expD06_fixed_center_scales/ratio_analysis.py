@@ -231,6 +231,11 @@ def analyze_case(task):
             for block in ("readout", "slope")}
         physical["adam_epsilon_dominated_fraction"] = {
             block: float(np.mean(cp[f"adam_{block}_sqrt_v_over_epsilon"] < 1)) for block in ("readout", "slope")}
+        _, _, _, epsilon_r, epsilon_g = run.case_settings(case, g)
+        physical["native_moment_multiplier_quantiles"] = {
+            block: np.quantile(rate / (np.asarray(epsilon) * (1 + cp[f"adam_{block}_sqrt_v_over_epsilon"])),
+                               [0, .1, .5, .9, 1]).tolist()
+            for block, rate, epsilon in [("readout", ra, epsilon_r), ("slope", rg, epsilon_g)]}
         # Refinement is diagnostic only: never feed the refitted c into a run.
         x_fine = np.linspace(-1, 1, 2 * case.samples_per_cell * case.n + 1)
         y_fine = core.target(x_fine, case.target, np)
