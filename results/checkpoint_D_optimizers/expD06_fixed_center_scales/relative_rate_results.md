@@ -90,15 +90,18 @@ Regional readout accounting also shows that the effect is distributed. Across al
 
 The acquisition checkpoints already separate representability from iterative accessibility. At $N=512$, sine, seed 0, the higher acquisition rate produces median $|\lambda|=0.262$, live validation MSE $5.38\times10^{-11}$, and physical coefficient $\ell_1$ norm 10.74. A detached refit can lower that error much further, but its coefficient norm grows sharply as weaker directions are admitted.
 
-**Table 5. The same learned dictionary at update 160k, refitted with three singular-value cutoffs. Coefficient norms include the output bias. These are detached diagnostics, not trained models.**
+**Table 5. Sine, N=512, seed 0: the learned dictionary at update 160k and a uniform reference dictionary on exactly the same centers. Coefficient norms include the output bias. These are detached diagnostics, not trained models.**
 
-| Relative cutoff $\tau$ | Retained rank | Refit validation MSE | Physical coefficient $\ell_1$ norm |
-|---:|---:|---:|---:|
-| $10^{-10}$ | 455 | $6.32\times10^{-15}$ | 101.6 |
-| $10^{-12}$ | 496 | $7.52\times10^{-18}$ | 980.0 |
-| $10^{-14}$ | 518 | $2.04\times10^{-19}$ | 13,104 |
+| Geometry | Relative cutoff $\tau$ | Retained rank | Refit validation MSE | Physical coefficient $\ell_1$ norm |
+|---|---:|---:|---:|---:|
+| Learned | $10^{-10}$ | 455 | $6.32\times10^{-15}$ | 101.6 |
+| Learned | $10^{-12}$ | 496 | $7.52\times10^{-18}$ | 980.0 |
+| Learned | $10^{-14}$ | 518 | $2.04\times10^{-19}$ | 13,104 |
+| Uniform $\lambda=0.25$ | $10^{-12}$ | 520 | $6.86\times10^{-25}$ | 6.04 |
 
-Doubling the fitting-grid density gives closely matching refit errors, while the weakest coefficient norms remain more sensitive. Thus the dictionary can represent a much smaller residual, but reaching that residual can require large coefficients in weak singular directions. Also, localized tanh derivatives do not make the tanh feature columns themselves disjoint: each feature still approaches constant tails. The frozen-dictionary comparison will test GD, momentum GD, and Adam in the prescribed coordinates and in fixed neighbor-difference coordinates that preserve the represented function space. It uses first-order updates and loss-only line searches, never a least-squares training update.
+Doubling the learned dictionary's fitting-grid density gives closely matching refit errors, while the weakest coefficient norms remain more sensitive. Thus the learned dictionary can represent a much smaller residual, but reaching that residual can require large coefficients in weak singular directions. **A learned median bandwidth near 0.25 does not reproduce the uniform construction geometry:** the reference dictionary attains a much smaller residual with modest coefficients. This comparison supports examining the full learned slope distribution and target-loaded singular directions, rather than declaring the geometry correct from its median alone.
+
+Localized tanh derivatives also do not make the tanh feature columns themselves disjoint: each feature still approaches constant tails. The frozen-dictionary comparison will test GD, momentum GD, and Adam in the prescribed coordinates and in fixed neighbor-difference coordinates that preserve the represented function space. It uses first-order updates and loss-only line searches, never a least-squares training update.
 
 At this acquisition checkpoint, the median $\sqrt{\hat v}/\epsilon$ is about 54 for readouts and 0.0094 for geometry. Most geometry coordinates are already epsilon dominated; most readout coordinates are not. Consequently, multiplying a nominal Adam rate need not create proportionate useful motion in the two blocks. These moment measurements motivate inspecting actual updates; they do not by themselves explain the plateau.
 
@@ -117,6 +120,7 @@ The eight-GPU-hour limit includes compilation, I/O, and the controlled cancellat
 - [Acquisition evidence](ratio_acquisition_analysis/evidence.json), including endpoints, cutoff checks, sampling refinement, and finite-update audits.
 - [340k mechanism evidence](ratio_340000_analysis/evidence.json), with per-case `dense_mechanism.npz` files for the modal and Fourier measurements. The original provenance's available common horizon is 360k; the explicit analysis cap and all primary records are 340k. Subsequent exports distinguish available and analyzed horizons explicitly.
 - [Regional readout contributions](ratio_340000_analysis/regional_readout_summary.json), reconstructed from the consecutive physical states and saved band gradients.
+- [Uniform-reference diagnostics](ratio_uniform_reference/evidence.json), with the same fixed centers, reference metric, and sampling grid. Table 5 uses the prescribed-coordinate projector; coordinate-dependent truncations are not pooled.
 - [Acquisition animation, seed 0](ratio_acquisition_analysis/animations/N512_sine_acquire_0.01/seed_0.html) and [seed 1](ratio_acquisition_analysis/animations/N512_sine_acquire_0.01/seed_1.html), each showing $w$ above $\gamma$.
 - [Allocation ledger](ratio_campaign/allocation_ledger.json). Remote source runs are under `/workspace/junmiaoh/experiments/precision-mlps/runs/ratios/`.
 
