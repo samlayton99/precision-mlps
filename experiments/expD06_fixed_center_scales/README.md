@@ -432,6 +432,10 @@ and compares $\eta\lambda_{\max}(\nabla^2L)$ with the quadratic GD stability
 boundary 2. This is a local diagnostic of alternating steps, not a convergence
 theorem for the nonlinear trajectory. Both seeds and maps are checked at the
 mandatory and continuation horizons; no optimizer setting is changed.
+The analytic frozen-readout recurrence is also repeated at the final saved
+geometries, so an early conditioning measurement is not treated as a statement
+about the late trajectory. `--frozen-only` exports those diagnostics without
+repeating the separate width-1024 damping experiment.
 
 The observed alternating steps and local curvature motivate one conditional
 post-hoc confirmation block: width-512 GD at the next smaller original-grid

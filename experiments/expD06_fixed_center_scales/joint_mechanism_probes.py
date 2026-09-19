@@ -219,6 +219,7 @@ def main():
     parser.add_argument('--analysis',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--workers',type=int,default=4)
     parser.add_argument('--stability-only',action='store_true',help='Audit local GD curvature at three consecutive saved states, N=512')
+    parser.add_argument('--frozen-only',action='store_true',help='Repeat frozen-mode and frequency diagnostics without the N1024 damping probe')
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     records=json.loads((args.analysis/'summary.json').read_text())
     if args.stability_only:
@@ -231,6 +232,10 @@ def main():
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
         frozen=list(pool.map(frozen_case,[(args.analysis,args.output,r) for r in records]))
     run.write_json(args.output/'frozen_summary.json',frozen)
+    if args.frozen_only:
+        run.write_json(args.output/'provenance.json',dict(source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            input_summary_sha256=hashlib.sha256((args.analysis/'summary.json').read_bytes()).hexdigest(),training_states_modified=False))
+        return
     references=[reference_frequency(n) for n in (512,1024)]
     run.write_json(args.output/'reference_frequency.json',references)
     source=next(r for r in records if (r['case']['n'],r['case']['seed'],r['case']['optimizer'],r['case']['coordinates'])==(1024,0,'gn','parameter_scale'))
