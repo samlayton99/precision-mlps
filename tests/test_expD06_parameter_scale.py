@@ -111,3 +111,14 @@ def test_common_projection_and_actual_next_update(optimizer):
         records.append(record)
     assert records[0]["reference_retained_rank"]==records[1]["reference_retained_rank"]
     np.testing.assert_allclose([r["mse"] for r in records[0]["refits"]],[r["mse"] for r in records[1]["refits"]],atol=1e-12)
+
+
+def test_analysis_rejects_missing_comparison_checkpoint(tmp_path,monkeypatch):
+    from experiments.expD06_fixed_center_scales import parameter_scale_analysis as analysis
+    root=tmp_path/"runs";root.mkdir()
+    manifest=tmp_path/"selected.json"
+    run.write_json(manifest,[campaign.case("gd","scaled",.01)])
+    monkeypatch.setattr("sys.argv",["analysis","--root",str(root),"--output",str(tmp_path/"export"),
+                                  "--cases",str(manifest),"--end","100000"])
+    with pytest.raises(ValueError,match="Every requested case"):
+        analysis.main()

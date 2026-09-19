@@ -174,6 +174,8 @@ def analyze_case(task):
     for dense_end in (2048,end):
         audit=dense_audit(folder,g,case,dense_end,dest)
         mse=2*trace[dense_end-2048:dense_end,0]
+        with np.load(folder/f"checkpoint_{dense_end:09d}.npz") as cp:
+            mse=np.r_[mse,float(cp["train_mse"])]
         changes=np.diff(mse)
         audit["consecutive_loss_changes"]=dict(intervals=len(changes),mean=float(changes.mean()),
             mean_absolute=float(np.abs(changes).mean()),net=float(mse[-1]-mse[0]),
@@ -374,6 +376,8 @@ def main():
         cases=json.loads(args.cases.read_text())
         tasks=[(args.root,args.output,c,args.end) for c in cases if (args.root/training.case_key(c)/f"checkpoint_{args.end:09d}.npz").exists()
                and not json.loads((args.root/training.case_key(c)/"latest.json").read_text())["failed_update"]]
+        if len(tasks)!=len(cases):
+            raise ValueError("Every requested case must be finite and have a checkpoint at the comparison horizon")
         with ProcessPoolExecutor(max_workers=args.workers) as pool:records=list(pool.map(analyze_case,tasks))
         run.write_json(args.output/"summary.json",records)
     figures(args.output)
