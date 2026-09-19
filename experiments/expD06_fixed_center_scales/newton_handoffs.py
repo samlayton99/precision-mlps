@@ -64,6 +64,7 @@ def main():
     parser.add_argument('--frontier',type=int,default=20000)
     parser.add_argument('--benchmark',action='store_true')
     parser.add_argument('--only',choices=('newton','others'))
+    parser.add_argument('--continue-blocks',action='store_true',help='Continue viable Newton and Adam-to-GN runs in equal 10k increments')
     parser.add_argument('--require-gpu',action='store_true')
     parser.add_argument('--ssbroyden-source',type=Path)
     args=parser.parse_args();args.root.mkdir(parents=True,exist_ok=True)
@@ -73,6 +74,21 @@ def main():
     if args.require_gpu:ratio.gpu_environment(args.root)
     deadline=time.monotonic()+args.seconds-45
     cases=[c for c in json.loads((args.root/'cases.json').read_text()) if c['seed']==args.worker]
+    if args.continue_blocks:
+        cases=[c for c in cases if c['optimizer']=='newton' or (c['optimizer']=='gn' and c.get('warm_start'))]
+        while time.monotonic()<deadline:
+            active=[]
+            for config in cases:
+                latest=json.loads((args.root/first.case_key(config)/'latest.json').read_text())
+                if latest['status']!='continuing':continue
+                if latest['completed_updates']<20000:raise ValueError('Complete the mandatory horizon before continuation')
+                active.append((config,latest['completed_updates']))
+            if not active:return
+            frontier=(min(step for _,step in active)//10000+1)*10000
+            for config,_ in active:
+                if time.monotonic()>=deadline:return
+                joint.advance_higher(args.root,config,frontier,deadline,args.ssbroyden_source)
+        return
     for config in cases:
         if args.only=='newton' and config['optimizer']!='newton':continue
         if args.only=='others' and config['optimizer']=='newton':continue
