@@ -23,6 +23,9 @@ TRACE_COLUMNS = ("half_mse", "gradient_native_readout_norm", "gradient_lambda_no
 
 
 def decode(z, g, coordinates, xp=jnp):
+    if coordinates == "parameter_differences":
+        q = z[1:] * xp.asarray(np.cumsum(g.alpha[1:]))
+        return xp.concatenate((z[:1] * g.alpha[0], q - xp.concatenate((xp.zeros(1), q[:-1]))))
     if coordinates == "parameter_scale":
         return z * xp.asarray(g.alpha)
     if coordinates == "scaled":
@@ -34,6 +37,8 @@ def decode(z, g, coordinates, xp=jnp):
 
 
 def encode(c, g, coordinates):
+    if coordinates == "parameter_differences":
+        return np.r_[c[0] / g.alpha[0], np.cumsum(c[1:]) / np.cumsum(g.alpha[1:])]
     if coordinates == "parameter_scale":
         return c / g.alpha
     if coordinates == "scaled":
@@ -44,6 +49,9 @@ def encode(c, g, coordinates):
 
 
 def pullback(gc, g, coordinates):
+    if coordinates == "parameter_differences":
+        s = jnp.asarray(np.cumsum(g.alpha[1:]))
+        return jnp.concatenate((gc[:1] * g.alpha[0], s * (gc[1:] - jnp.r_[gc[2:], 0.])))
     if coordinates == "parameter_scale":
         return gc * jnp.asarray(g.alpha)
     if coordinates == "scaled":
@@ -70,7 +78,7 @@ def physical_loss(c, lam, x, y, g):
 
 
 @lru_cache(maxsize=48)
-def chunk(n, coordinates, length, capture=False, samples_per_cell=16, batched=True, optimizer="gd"):
+def chunk(n, coordinates, length, capture=False, samples_per_cell=16, batched=True, optimizer="gd", native_epsilon=None):
     g = core.geometry(n)
     x = jnp.linspace(-1, 1, samples_per_cell * n + 1)
     y = core.target(x, "sine")
@@ -78,8 +86,14 @@ def chunk(n, coordinates, length, capture=False, samples_per_cell=16, batched=Tr
     tx = core.optimizer(optimizer)
     # Preserve the control's physical epsilon=1e-8/D in both diagonal maps.
     epsilon_r = 1e-8 * (g.d if coordinates == "parameter_scale" else np.ones(g.width+1))
-    if optimizer == "adam" and coordinates not in ("scaled", "parameter_scale"):
+    epsilon_g = 1e-8
+    if native_epsilon is not None:
+        epsilon_r = np.full(g.width+1, native_epsilon)
+        epsilon_g = native_epsilon
+    if optimizer == "adam" and coordinates not in ("scaled", "parameter_scale", "parameter_differences"):
         raise ValueError("Adam comparison supports the two diagonal normalizations")
+    if optimizer == "adam" and coordinates == "parameter_differences" and native_epsilon is None:
+        raise ValueError("Neighbor-difference Adam requires an explicit native epsilon")
 
     def advance(state, eta, start):
         def step(current, offset):
@@ -89,7 +103,7 @@ def chunk(n, coordinates, length, capture=False, samples_per_cell=16, batched=Tr
             if optimizer == "adam":
                 params = {"readout": current["z"], "slope": current["lam"]}
                 direction, opt = core.optimizer_direction("adam", tx, {"readout": gz, "slope": gl},
-                                                         current["opt"], params, jnp.asarray(epsilon_r), 1e-8)
+                                                         current["opt"], params, jnp.asarray(epsilon_r), epsilon_g)
                 dz, dl_proposed = eta * direction["readout"], eta * direction["slope"]
             else:
                 dz, dl_proposed = -eta * gz, -eta * gl
@@ -127,7 +141,7 @@ def chunk(n, coordinates, length, capture=False, samples_per_cell=16, batched=Tr
 
 
 @lru_cache(maxsize=8)
-def evaluator(n, coordinates, samples_per_cell=16, optimizer="gd"):
+def evaluator(n, coordinates, samples_per_cell=16, optimizer="gd", native_epsilon=None):
     g = core.geometry(n)
     x = jnp.linspace(-1, 1, samples_per_cell*n+1)
     xv = jnp.asarray(diagnostics.midpoint_grid(32768))
@@ -150,7 +164,9 @@ def evaluator(n, coordinates, samples_per_cell=16, optimizer="gd"):
             adam = state["opt"][0]
             result["adam_count"] = adam.count
             epsilon = 1e-8 * (g.d if coordinates == "parameter_scale" else np.ones(g.width+1))
-            for block, eps in (("readout", jnp.asarray(epsilon)), ("slope", 1e-8)):
+            if native_epsilon is not None:
+                epsilon = np.full(g.width+1, native_epsilon)
+            for block, eps in (("readout", jnp.asarray(epsilon)), ("slope", 1e-8 if native_epsilon is None else native_epsilon)):
                 result[f"adam_{block}_mu"] = adam.mu[block]
                 result[f"adam_{block}_nu"] = adam.nu[block]
                 result[f"adam_{block}_sqrt_v_over_epsilon"] = jnp.sqrt(adam.nu[block] / jnp.maximum(1-.999**adam.count, 1e-300))/eps
@@ -159,6 +175,9 @@ def evaluator(n, coordinates, samples_per_cell=16, optimizer="gd"):
 
 
 def case_key(case):
+    if case.get("campaign") == "joint_conditioning":
+        digest = hashlib.sha256(json.dumps(case, sort_keys=True).encode()).hexdigest()[:10]
+        return f"{case['optimizer']}_N{case['n']}_s{case['seed']}_{case['coordinates']}_{digest}"
     prefix = f"{case['optimizer']}_" if case.get("campaign") == "parameter_scale" else ""
     return f"{prefix}N{case['n']}_s{case['seed']}_{case['coordinates']}_eta{case['eta']:.8g}"
 
@@ -175,11 +194,14 @@ def dense_windows(frontier):
 def advance_group(output, cases, frontier, deadline=float("inf"), samples_per_cell=16):
     n, coord, seed = (cases[0][k] for k in ("n", "coordinates", "seed"))
     optimizer = cases[0].get("optimizer", "gd")
-    parameter_campaign = cases[0].get("campaign") == "parameter_scale"
+    parameter_campaign = cases[0].get("campaign") in ("parameter_scale", "joint_conditioning")
+    native_epsilon = cases[0].get("native_epsilon")
     if any((c["n"], c["coordinates"], c["seed"]) != (n, coord, seed) for c in cases):
         raise ValueError("A batch must share width, coordinates, and seed")
     if any(c.get("optimizer", "gd") != optimizer for c in cases):
         raise ValueError("A batch must share optimizer")
+    if any(c.get("native_epsilon") != native_epsilon for c in cases):
+        raise ValueError("A batch must share epsilon convention")
     if any(c["eta"] <= 0 or not np.isfinite(c["eta"]) for c in cases):
         raise ValueError("Each case needs one positive finite eta")
     g = core.geometry(n)
@@ -195,7 +217,7 @@ def advance_group(output, cases, frontier, deadline=float("inf"), samples_per_ce
                         samples_per_cell=samples_per_cell, validation_points=32768, objective="half-MSE",
                         reference_lambda=.25, constant_shared_rate=True)
         if parameter_campaign:
-            metadata["epsilon_mode"] = "matched_reference"
+            metadata["epsilon_mode"] = "matched_reference" if native_epsilon is None else "native"
         if (path/'case.json').exists() and json.loads((path/'case.json').read_text()) != metadata:
             raise ValueError(f"Changed configuration at {path}")
         run.write_json(path/'case.json', metadata)
@@ -220,7 +242,7 @@ def advance_group(output, cases, frontier, deadline=float("inf"), samples_per_ce
     def save():
         nonlocal traces, dense, trace_start
         host = jax.device_get(state)
-        arrays = jax.device_get(evaluator(n, coord, samples_per_cell, optimizer)(state))
+        arrays = jax.device_get(evaluator(n, coord, samples_per_cell, optimizer, native_epsilon)(state))
         joined = np.concatenate(traces, axis=1) if traces else None
         detail = {k: np.concatenate([d[k] for d in dense], axis=1) for k in dense[0]} if dense else None
         for i, path in enumerate(paths):
@@ -254,7 +276,8 @@ def advance_group(output, cases, frontier, deadline=float("inf"), samples_per_ce
         distance = boundary-at
         length = 1000 if distance >= 1000 else 100 if distance >= 100 else 1
         capture = any(lo <= at < hi for lo, hi in windows)
-        state, result = chunk(n, coord, length, capture, samples_per_cell, optimizer=optimizer)(state, eta, at)
+        state, result = chunk(n, coord, length, capture, samples_per_cell, optimizer=optimizer,
+                              native_epsilon=native_epsilon)(state, eta, at)
         result = jax.device_get(result)
         if capture:
             trace, detail = result

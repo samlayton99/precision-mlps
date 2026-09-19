@@ -254,6 +254,36 @@ The late view requires the three `dense_001357000_001358000.npz`, `dense_0013580
 
 Matplotlib and the local `ffmpeg` executable produce four MP4s, two standalone HTML pages (`animations/seed_0.html` and `animations/seed_1.html`) with overview and late players, and still frames for inspection. Players provide pause/step/scrub/speed controls and embed their images and controls without network dependencies. `animations/provenance.json` records input hashes, physical centers, row order, playback cadence, exact displayed steps including early holds, and the source hash. This export uses the existing report horizon rather than silently extending the scientific comparison to newer training states.
 
+## Joint conditioning: individual scales and neighboring differences
+
+The new `joint_conditioning` campaign compares individual parameter scales with
+and without neighboring differences under GD, Adam, damped Gauss–Newton, and
+SSBroyden. It has a fresh cap of **28,800 allocated GPU-seconds**, at most two
+concurrent GPUs, and uses Slurm for all remote computation. The sine target,
+FP64 half-MSE objective, fixed centers, reference allowances, and paired physical
+Xavier initialization are unchanged.
+
+For `parameter_scale`, $c_j=\alpha_j u_j$. For `parameter_differences`, set
+$A_j=\sum_{k\le j}\alpha_k$, train $q_j=A_jv_j$, and recover
+$w_j=q_j-q_{j-1}$ with $q_0=0$. Both train $b=\alpha_bu_b$ and
+$\gamma=\lambda/h$. The last feature remains an anchor. The map stays fixed
+after sign crossings; do not multiply by the individual scales again after
+differencing. The physical initialization is paired by exact coordinate
+conversion, not an independent draw on cumulative coefficients.
+
+GD and Adam use one constant shared scalar rate for both blocks. This campaign
+uses an explicitly specified native Adam epsilon, initially $10^{-12}$ outside
+the square root, with no inside-square-root floor. Unlike the preceding diagonal
+comparison, it does not claim matching physical epsilons across a nondiagonal map.
+Historical optimizer defaults and saved configurations remain unchanged.
+
+Every finite first-order trial receives at least 100k updates; higher-order
+trials require 20k accepted physical updates unless they blow up or their search
+fails. Rejected trials and unchanged states do not count as accepted updates.
+Numerical failure, budget interruption, and convergence are distinct outcomes.
+The main matrix uses width 512, seed 0, with seed 1 and width 1024 transferred
+only when complete comparison blocks fit the remaining budget.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)
