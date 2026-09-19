@@ -1,0 +1,496 @@
+{
+  "cap_gpu_seconds": 28800,
+  "max_concurrent_gpus": 2,
+  "campaign": "joint_conditioning",
+  "completed_allocations": [
+    {
+      "job_id": 398,
+      "purpose": "CPU setup, missing dependency",
+      "state": "FAILED",
+      "elapsed_seconds": 32,
+      "gpus": 0
+    },
+    {
+      "job_id": 399,
+      "purpose": "CPU setup and numerical verification",
+      "state": "COMPLETED",
+      "elapsed_seconds": 51,
+      "gpus": 0
+    },
+    {
+      "job_id": 401,
+      "array_id": "400_0",
+      "purpose": "Resumable pilot benchmark",
+      "state": "COMPLETED",
+      "elapsed_seconds": 33,
+      "gpus": 1
+    },
+    {
+      "job_id": 400,
+      "array_id": "400_1",
+      "purpose": "Resumable pilot benchmark",
+      "state": "COMPLETED",
+      "elapsed_seconds": 36,
+      "gpus": 1
+    },
+    {
+      "job_id": 403,
+      "array_id": "402_0",
+      "purpose": "Pilot to mandatory horizons",
+      "state": "COMPLETED",
+      "elapsed_seconds": 664,
+      "gpus": 1
+    },
+    {
+      "job_id": 402,
+      "array_id": "402_1",
+      "purpose": "Pilot to mandatory horizons",
+      "state": "COMPLETED",
+      "elapsed_seconds": 680,
+      "gpus": 1
+    },
+    {
+      "job_id": 404,
+      "purpose": "CPU pilot selection",
+      "state": "COMPLETED",
+      "elapsed_seconds": 9,
+      "gpus": 0
+    },
+    {
+      "job_id": 406,
+      "array_id": "405_0",
+      "purpose": "Guard comparisons, original SSB retained as audit",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1049,
+      "gpus": 1
+    },
+    {
+      "job_id": 405,
+      "array_id": "405_1",
+      "purpose": "Guard comparisons, original SSB retained as audit",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1099,
+      "gpus": 1
+    },
+    {
+      "job_id": 407,
+      "purpose": "CPU analysis reservation replaced to fit quota",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "gpus": 0
+    },
+    {
+      "job_id": 409,
+      "purpose": "CPU pilot analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 80,
+      "gpus": 0
+    },
+    {
+      "job_id": 410,
+      "purpose": "CPU integration verification",
+      "state": "COMPLETED",
+      "elapsed_seconds": 37,
+      "gpus": 0
+    },
+    {
+      "job_id": 412,
+      "array_id": "411_0",
+      "purpose": "Corrected SSBroyden default and guard comparisons",
+      "state": "COMPLETED",
+      "elapsed_seconds": 457,
+      "gpus": 1
+    },
+    {
+      "job_id": 411,
+      "array_id": "411_1",
+      "purpose": "Corrected SSBroyden default and guard comparisons",
+      "state": "COMPLETED",
+      "elapsed_seconds": 518,
+      "gpus": 1
+    },
+    {
+      "job_id": 413,
+      "purpose": "CPU scientific guard selection",
+      "state": "COMPLETED",
+      "elapsed_seconds": 10,
+      "gpus": 0
+    },
+    {
+      "job_id": 415,
+      "array_id": "414_0",
+      "purpose": "Width 512 seed 1 confirmation",
+      "state": "COMPLETED",
+      "elapsed_seconds": 687,
+      "gpus": 1
+    },
+    {
+      "job_id": 414,
+      "array_id": "414_1",
+      "purpose": "Width 512 seed 1 confirmation",
+      "state": "COMPLETED",
+      "elapsed_seconds": 778,
+      "gpus": 1
+    },
+    {
+      "job_id": 418,
+      "array_id": "416_0",
+      "purpose": "Width 1024 resumable benchmark",
+      "state": "COMPLETED",
+      "elapsed_seconds": 40,
+      "gpus": 1
+    },
+    {
+      "job_id": 416,
+      "array_id": "416_1",
+      "purpose": "Width 1024 resumable benchmark",
+      "state": "COMPLETED",
+      "elapsed_seconds": 43,
+      "gpus": 1
+    },
+    {
+      "job_id": 417,
+      "array_id": null,
+      "purpose": "CPU corrected SSB guard analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 90,
+      "gpus": 0
+    },
+    {
+      "job_id": 421,
+      "purpose": "CPU selected analysis and corrected SSB guards",
+      "state": "COMPLETED",
+      "elapsed_seconds": 223,
+      "gpus": 0,
+      "note": "First analysis subcommand failed on a stale combined manifest; corrected and repeated in job 423. Guard subcommand completed."
+    },
+    {
+      "job_id": 423,
+      "purpose": "CPU selected N512 mandatory-horizon analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 154,
+      "gpus": 0
+    },
+    {
+      "job_id": 424,
+      "purpose": "CPU N1024 construction-reference verification",
+      "state": "COMPLETED",
+      "elapsed_seconds": 15,
+      "gpus": 0
+    },
+    {
+      "job_id": 420,
+      "array_id": "419_0",
+      "purpose": "Width 1024 seed 0 mandatory horizons",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1840,
+      "gpus": 1
+    },
+    {
+      "job_id": 419,
+      "array_id": "419_1",
+      "purpose": "Width 1024 seed 0 mandatory horizons",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1836,
+      "gpus": 1
+    },
+    {
+      "job_id": 427,
+      "array_id": "422_0",
+      "purpose": "Width 1024 seed 1 mandatory horizons",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1787,
+      "gpus": 1
+    },
+    {
+      "job_id": 422,
+      "array_id": "422_1",
+      "purpose": "Width 1024 seed 1 mandatory horizons",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1841,
+      "gpus": 1
+    },
+    {
+      "job_id": 428,
+      "array_id": "425_0",
+      "purpose": "N512 first-order continuation to 300k",
+      "state": "COMPLETED",
+      "elapsed_seconds": 97,
+      "gpus": 1
+    },
+    {
+      "job_id": 425,
+      "array_id": "425_1",
+      "purpose": "N512 first-order continuation to 300k",
+      "state": "COMPLETED",
+      "elapsed_seconds": 98,
+      "gpus": 1
+    },
+    {
+      "job_id": 426,
+      "purpose": "CPU full mandatory-horizon analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 836,
+      "gpus": 0
+    },
+    {
+      "job_id": 430,
+      "array_id": "429_0",
+      "purpose": "Cancelled continuation loader bottleneck; no accepted updates",
+      "state": "CANCELLED",
+      "elapsed_seconds": 786,
+      "gpus": 1
+    },
+    {
+      "job_id": 429,
+      "array_id": "429_1",
+      "purpose": "Cancelled continuation loader bottleneck; no accepted updates",
+      "state": "CANCELLED",
+      "elapsed_seconds": 786,
+      "gpus": 1
+    },
+    {
+      "job_id": 431,
+      "purpose": "Pending dependency replaced after loader fix",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "gpus": 0
+    },
+    {
+      "job_id": 432,
+      "purpose": "Pending dependency replaced after loader fix",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "gpus": 0
+    },
+    {
+      "job_id": 437,
+      "purpose": "Unstarted continuation replaced by paired metric restart",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "gpus": 0
+    },
+    {
+      "job_id": 434,
+      "purpose": "CPU frozen-mode and damping probes",
+      "state": "COMPLETED",
+      "elapsed_seconds": 72,
+      "gpus": 0
+    },
+    {
+      "job_id": 438,
+      "purpose": "CPU frequency-capacity probes",
+      "state": "COMPLETED",
+      "elapsed_seconds": 80,
+      "gpus": 0
+    },
+    {
+      "job_id": 439,
+      "purpose": "CPU frequency-dependent gamma-force probes",
+      "state": "COMPLETED",
+      "elapsed_seconds": 80,
+      "gpus": 0
+    },
+    {
+      "job_id": 435,
+      "array_id": "433_0",
+      "purpose": "N512 higher-order continuation to 40k",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1233,
+      "gpus": 1
+    },
+    {
+      "job_id": 433,
+      "array_id": "433_1",
+      "purpose": "N512 higher-order continuation to 40k",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1459,
+      "gpus": 1
+    },
+    {
+      "job_id": 442,
+      "array_id": "436_0",
+      "purpose": "N512 first-order continuation to 1.3M",
+      "state": "COMPLETED",
+      "elapsed_seconds": 411,
+      "gpus": 1
+    },
+    {
+      "job_id": 436,
+      "array_id": "436_1",
+      "purpose": "N512 first-order continuation to 1.3M",
+      "state": "COMPLETED",
+      "elapsed_seconds": 420,
+      "gpus": 1
+    },
+    {
+      "job_id": 445,
+      "purpose": "Pending launcher replaced to correct --manifest argument",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "gpus": 0
+    },
+    {
+      "job_id": 446,
+      "purpose": "Pending launcher replaced to correct --manifest argument",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "gpus": 0
+    },
+    {
+      "job_id": 441,
+      "purpose": "CPU intermediate continuation analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 205,
+      "gpus": 0
+    },
+    {
+      "job_id": 449,
+      "purpose": "CPU exact local GD curvature audit",
+      "state": "COMPLETED",
+      "elapsed_seconds": 12,
+      "gpus": 0
+    },
+    {
+      "job_id": 444,
+      "array_id": "440_0",
+      "purpose": "Paired N1024 GN checkpoint restart",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1506,
+      "gpus": 1
+    },
+    {
+      "job_id": 440,
+      "array_id": "440_1",
+      "purpose": "Paired N1024 GN checkpoint restart",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1460,
+      "gpus": 1
+    },
+    {
+      "job_id": 443,
+      "purpose": "CPU paired-restart analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 177,
+      "gpus": 0
+    },
+    {
+      "job_id": 452,
+      "purpose": "CPU runtime package and GPU inventory record",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1,
+      "gpus": 0
+    },
+    {
+      "job_id": 454,
+      "purpose": "CPU full-grid MP80 gradient audit",
+      "state": "COMPLETED",
+      "elapsed_seconds": 51,
+      "gpus": 0
+    },
+    {
+      "job_id": 451,
+      "array_id": "447_0",
+      "purpose": "N512 unchanged first-order continuation to 5.3M",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1626,
+      "gpus": 1
+    },
+    {
+      "job_id": 447,
+      "array_id": "447_1",
+      "purpose": "N512 unchanged first-order continuation to 5.3M",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1652,
+      "gpus": 1
+    },
+    {
+      "job_id": 448,
+      "purpose": "CPU final selected-horizon analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 262,
+      "gpus": 0
+    },
+    {
+      "job_id": 450,
+      "purpose": "CPU final selected GD curvature audit",
+      "state": "COMPLETED",
+      "elapsed_seconds": 6,
+      "gpus": 0
+    },
+    {
+      "job_id": 453,
+      "purpose": "CPU final selected frozen-mode and frequency probes",
+      "state": "COMPLETED",
+      "elapsed_seconds": 9,
+      "gpus": 0
+    },
+    {
+      "job_id": 456,
+      "array_id": "455_0",
+      "purpose": "N512 GD next-lower constant shared rates to 5.3M",
+      "state": "COMPLETED",
+      "elapsed_seconds": 999,
+      "gpus": 1
+    },
+    {
+      "job_id": 455,
+      "array_id": "455_1",
+      "purpose": "N512 GD next-lower constant shared rates to 5.3M",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1006,
+      "gpus": 1
+    },
+    {
+      "job_id": 457,
+      "purpose": "CPU lower-rate GD complete analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 92,
+      "gpus": 0
+    },
+    {
+      "job_id": 458,
+      "purpose": "CPU lower-rate local curvature and frozen modes",
+      "state": "COMPLETED",
+      "elapsed_seconds": 9,
+      "gpus": 0
+    },
+    {
+      "job_id": 459,
+      "purpose": "CPU raw archive SHA256 manifest",
+      "state": "COMPLETED",
+      "elapsed_seconds": 174,
+      "gpus": 0
+    },
+    {
+      "job_id": 460,
+      "purpose": "CPU curvature history, initial figure limits",
+      "state": "COMPLETED",
+      "elapsed_seconds": 36,
+      "gpus": 0
+    },
+    {
+      "job_id": 462,
+      "purpose": "CPU curvature history, corrected final export",
+      "state": "COMPLETED",
+      "elapsed_seconds": 32,
+      "gpus": 0
+    },
+    {
+      "job_id": 466,
+      "purpose": "CPU scale sensitivity; missing reference artifact before export",
+      "state": "FAILED",
+      "elapsed_seconds": 10,
+      "gpus": 0
+    },
+    {
+      "job_id": 467,
+      "purpose": "CPU scale sensitivity with verified construction references",
+      "state": "COMPLETED",
+      "elapsed_seconds": 10,
+      "gpus": 0
+    }
+  ],
+  "consumed_gpu_seconds": 26927,
+  "pending_allocations": []
+}

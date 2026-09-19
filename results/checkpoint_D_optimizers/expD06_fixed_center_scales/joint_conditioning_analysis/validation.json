@@ -1,0 +1,22 @@
+{
+  "full_suite": {
+    "command": "MPLCONFIGDIR=/tmp/precision-mpl-cache PYTHONPATH=. JAX_PLATFORMS=cpu .venv/bin/python -m pytest -q",
+    "passed": 257,
+    "skipped": 4,
+    "warnings": 7,
+    "elapsed_seconds": 60.04,
+    "exit_code": 0,
+    "implementation_commit": "92a87405252f7eade144d1a07f97dfc3272475a9",
+    "raw_log": "validation_full_suite.log"
+  },
+  "pinned_ssb_environment": {
+    "command": "MPLCONFIGDIR=/tmp/precision-mpl-cache PYTHONPATH=. JAX_PLATFORMS=cpu /tmp/precision-curvature-venv/bin/python -m pytest -q tests/test_expD06_joint_conditioning.py",
+    "passed": 24,
+    "elapsed_seconds": 12.09,
+    "exit_code": 0
+  },
+  "record_kind": "Full-suite raw log retained; pinned-environment counts are observed earlier tool results.",
+  "curvature_history": "Eight independently loaded endpoint Hessians agree within 1e-11; all source history hashes match.",
+  "movies": "All eight MP4 files decode with ffmpeg without warnings or errors; representative frames and linked figures visually inspected.",
+  "scale_sensitivity": "Ten input hashes verified; geometry-mode region energies sum to one; zero-slope rank-two and localized-column integral checks agree within 1e-12."
+}

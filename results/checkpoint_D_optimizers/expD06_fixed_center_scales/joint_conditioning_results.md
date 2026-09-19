@@ -1,12 +1,24 @@
 # Joint training with individual scales and neighboring readouts
 
-Neighboring readouts improve GD substantially and accelerate the early progress
-of damped Gauss–Newton, but do not uniformly improve Adam or final higher-order
-accuracy. Curvature-aware methods reach much lower errors than the constant-rate
-first-order runs. Their remaining limitations differ: damping and slow joint
-motion for GN, and curvature guards or loss of a descent direction for SSBroyden.
-None of these results makes the construction bandwidth $0.25$ a uniquely learned
-geometry. This is one smooth target, two widths, and two paired seeds.
+The prescribed parameter scales leave a substantial joint conditioning problem
+and do not make bandwidth $0.25$ a uniquely learned geometry.
+A fixed-readout diagnostic shows that geometry sensitivity changes by many
+orders of magnitude as slopes become localized; parameter units alone do not
+maintain the same functional balance along training.
+Neighboring readouts help GD and damped Gauss–Newton substantially. After 5.3
+million updates, however, constant-rate GD still alternates near its local
+stability boundary, including when the shared rate is reduced by 3.33. Adam
+reaches much smaller errors between persistent excursions. Weak readout modes
+remain slow even when geometry is held fixed in a diagnostic calculation.
+
+Curvature-aware training reaches MSE around $10^{-18}$ on this sine without
+recovering the construction's localization. A paired GN restart isolates the
+benefit of changing the damping metric, while higher-frequency detached fits
+show the limits of the broad learned geometry. SSBroyden's numerical guards
+introduce a separate tradeoff between stalled curvature updates and loss of a
+descent direction. These conclusions concern one trained target, two widths,
+and two paired seeds; the finite-budget horizons do not establish a training
+floor or a universal exponential slowdown law.
 
 **Notation and evidence roles.** Errors are MSE; the training objective is half-MSE.
 
@@ -657,6 +669,71 @@ mode. Heterogeneous or opposite-sign slopes also change that localization
 argument. Adam's diagonal adaptation is not a full spectral inverse, whereas
 GN and SSBroyden use cross-parameter curvature information.
 
+There is a concrete reason the same parameter scales do not maintain the same
+balance throughout training. For small nonzero Xavier slopes,
+
+$$
+\frac{\partial f}{\partial\lambda_j}
+=\frac{w_j}{h}(x-t_j)\operatorname{sech}^2(\gamma_j(x-t_j))
+\ \approx\ \frac{w_j}{h}(x-t_j).
+$$
+
+With ordinary $w_j=O(h)$, each such column can have order-one size. These
+leading columns all lie in the two-dimensional span of $1$ and $x$, also the
+leading readout span at small nonzero slopes. Thus a large geometry Jacobian
+does not necessarily supply a force toward new frequencies: a residual
+orthogonal to that span removes this leading contribution. Higher-order tanh
+terms and their small singular directions then matter.
+
+At a fixed positive localized bandwidth, set $u=\lambda(x-t_j)/h$. Holding
+the readout fixed, the continuum squared column norm obeys
+
+$$
+\left\|\frac{\partial f}{\partial\lambda_j}\right\|_{L^2([-1,1],dx/2)}^2
+\le \frac{w_j^2h}{2\lambda^3}
+\int_{\mathbb R}u^2\operatorname{sech}^4u\,du
+=O(h^3)\quad\text{when }w_j=O(h).
+$$
+
+The factor $h$ from spatial localization remains after parameter normalization.
+Changing a localized slope influences a narrow part of the domain, and its
+effect is still multiplied by the physical readout $w_j$. Normalizing the
+sizes of the parameters does not remove either fact.
+This bound concerns ordinary coefficients at fixed bandwidth; corrected halos
+need their own coefficient magnitudes. It is a column-sensitivity statement,
+not by itself a bound on the full condition number or a joint-training rate.
+
+A detached calculation checks this effect on the actual initialized readouts.
+It holds those readouts fixed and replaces only the slopes by uniform
+$\lambda=0.25$; neither state is trained in this comparison. Across both seeds,
+the **largest core geometry Gram eigenvalue** falls by factors
+$1.20\times10^7$–$1.28\times10^7$ at width 512 and $1.96\times10^8$–$2.07\times10^8$ at width
+1024. Hence this sensitivity change does not require a change of readout
+amplitudes. The actual construction is included as a separate reference.
+
+**Native block sensitivity at initialization and localization.** Entries are largest squared singular values, equivalently largest eigenvalues of $J_{\rm block}^TJ_{\rm block}$, with training-grid normalization $1/\sqrt M$. Initialization rows show seed 0. Geometry uses core slopes; interior readout blocks exclude bias and halos, and neighboring columns require both centers in the core. These are sensitivities, not learning rates or condition numbers.
+
+| State and block | $N=512$ | $N=1024$ |
+|---|---:|---:|
+| Xavier state, core geometry | $370$ | $696$ |
+| Same readouts, uniform $\lambda=0.25$, core geometry | $2.88\times10^{-5}$ | $3.36\times10^{-6}$ |
+| Actual construction, core geometry | $1.27\times10^{-4}$ | $1.68\times10^{-5}$ |
+| Actual construction, individual-scale interior readout | $0.0156$ | $0.00702$ |
+| Actual construction, neighboring interior readout | $0.358$ | $0.114$ |
+
+The broad-slope, rank-two approximation predicts the full initialization
+geometry-block maximum within 0.6–6.2% across these four states. Corrected halos
+carry 50.9–75.6% of that leading geometry mode's squared parameter norm;
+ordinary core parameters alone do not describe initialization sensitivity.
+At the construction, the bias and halo readout columns also make the full
+readout maxima substantially larger than the interior values in the table.
+The [sensitivity records](joint_conditioning_analysis/scale_sensitivity/scale_sensitivity.json)
+retain all blocks and seeds. Independent checks recover the rank-two formula
+at zero slopes and the localized-column integral on the dense grid to floating
+point accuracy. This supports a state-dependent sensitivity mechanism in
+addition to the small residual projections measured above; it does not
+prescribe a new independent geometry rate.
+
 There are also two distinct sources of poor conditioning. The
 [neighbor-difference theorem](../../../docs/neighbor_difference_conditioning.md)
 shows that differencing removes a cumulative-coordinate penalty for a uniform
@@ -752,3 +829,84 @@ environment recorded in the per-allocation metadata. The compact committed
 evidence includes histories, window loss distributions, the displayed figures,
 and these numerical records; full checkpoint states, dense per-parameter
 gradients, and traces are retained separately from Git.
+The complete raw archive is also saved locally in `joint_conditioning_raw/`
+beside this analysis directory: **31,407 files, 60.09 GiB**. Every listed file
+passes a size and SHA256 comparison against the
+[remote archive manifest](joint_conditioning_analysis/joint_conditioning_raw_manifest.json);
+the [verification record](joint_conditioning_analysis/archive_verification.json)
+records completion. Raw optimizer states and dense arrays remain outside Git.
+The [campaign evidence manifest](joint_conditioning_analysis/campaign_evidence_manifest.json)
+also seals the compact artifacts committed with the report.
+
+The [run inventory](joint_conditioning_analysis/run_inventory.json) contains
+**88 scientific run identities**: 72 reach their required minimum horizon,
+eight GD trials stop with nonfinite values, and eight corrected SSBroyden
+trials stop with search failures. Ten earlier SSBroyden integration-audit
+trajectories are preserved separately and excluded from scientific selection.
+Continuing a trajectory does not count as a new run; the two paired GN restart
+arms do have separate identities. The main transferred comparison contains
+32 selected runs, not 88 independent seed replicates.
+
+Final [Slurm accounting](joint_conditioning_analysis/accounting_verification.json)
+matches the [allocation ledger](joint_conditioning_analysis/budget.json):
+**26,927 GPU-seconds, or 7.480 GPU-hours**, with at most two GPUs concurrently.
+This includes compilation, failed trials, the integration audit, and cancelled
+allocation time. The H200 training environment used JAX 0.10.2, Optax 0.2.8,
+Equinox 0.13.8, Lineax 0.1.1, and the pinned SSBroyden/Optimistix source above.
+[Package versions](joint_conditioning_analysis/protocol/packages.txt),
+[GPU inventory](joint_conditioning_analysis/protocol/gpu_inventory.csv), and
+per-allocation source hashes accompany the protocol manifests.
+
+The [validation record](joint_conditioning_analysis/validation.json) reports
+257 passing repository tests, four skips, and seven deprecation warnings.
+The pinned SSBroyden environment passes all 24 focused integration tests.
+Checks include paired physical initialization, map/Jacobian agreement,
+accepted-step scaling, optimizer-state continuation, the exact Hessian against
+automatic differentiation, and the fixed-dictionary recurrence. All eight
+movies decode successfully; the linked figures and representative movie frames
+were inspected. Numerical checks establish trust in these measurements, not
+convergence of the training runs.
+The final detached sensitivity extension separately checks its zero-slope
+formula and localized-column integral, with relative discrepancies below
+$10^{-12}$, and verifies all ten input-file hashes.
+
+For reproduction, use the pinned environment and run analysis within a
+CPU-only Slurm allocation. Here `experiment_raw` is the raw run directory and
+`experiment_analysis` is this report's analysis directory. Use fresh output
+directories to preserve the reported snapshots:
+
+```bash
+export JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES=
+export OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2
+python -m experiments.expD06_fixed_center_scales.joint_analysis \
+  --root "$experiment_raw" --output "$experiment_analysis/mandatory_reproduced" \
+  --cases "$experiment_analysis/protocol/selected_all.json" --minimum-horizon
+python -m experiments.expD06_fixed_center_scales.joint_analysis \
+  --root "$experiment_raw" --output "$experiment_analysis/final_reproduced" \
+  --cases "$experiment_analysis/protocol/selected_N512.json"
+python -m experiments.expD06_fixed_center_scales.joint_analysis \
+  --root "$experiment_raw" --output "$experiment_analysis/lower_reproduced" \
+  --cases "$experiment_analysis/protocol/lower_rate_confirmation.json"
+python -m experiments.expD06_fixed_center_scales.curvature_history \
+  --analyses "$experiment_analysis/final_reproduced" "$experiment_analysis/lower_reproduced" \
+  --output "$experiment_analysis/curvature_reproduced"
+```
+
+`joint_figures --output <export>` renders the learning, spectral, coefficient,
+and slope figures; `--movies` renders the per-seed parameter animations.
+`--compare-rates <selected-export>` renders the paired constant-rate comparison
+from a lower-rate export. The fixed-horizon, continuation, and lower-rate
+evidence manifests record hashes of their curated artifacts. Detached probes
+also retain source-checkpoint hashes and all cutoff variants.
+Copy the committed `construction_N512.npz` and `construction_N1024.npz`
+references into a reproduced export when rendering construction overlays or
+running `scale_sensitivity`; their precision checks and hashes remain in the
+mandatory evidence. This reuses the verified construction, not a fitted
+substitute at the learned slopes.
+
+The unresolved scientific question is whether joint training on a target that
+needs fine spatial structure develops useful localization under these same
+scales. Changing only the right-hand side of a detached fit does not answer
+that dynamics question. Nor do these runs establish the best possible constant
+rate at every horizon, a converged numerical floor, or an exponential law for
+the joint nonlinear dynamics.
