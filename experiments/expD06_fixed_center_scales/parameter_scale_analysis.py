@@ -282,11 +282,17 @@ def figures(output):
             fig.savefig(dest/"parameter_snapshots.png",dpi=150);plt.close(fig)
 
 
-def animations(output):
+def animations(output, optimizer_choice=None, seed_choice=None, workers=4):
+    if optimizer_choice is None:
+        with ProcessPoolExecutor(max_workers=min(workers,4)) as pool:
+            futures=[pool.submit(animations,output,opt,seed) for opt in campaign.OPTIMIZERS for seed in (0,1)]
+            for future in futures:future.result()
+        return
     from matplotlib.animation import FuncAnimation,FFMpegWriter
     records=json.loads((output/"summary.json").read_text())
     for optimizer in campaign.OPTIMIZERS:
         for seed in (0,1):
+            if (optimizer,seed)!=(optimizer_choice,seed_choice):continue
             pair=[]
             for coord in campaign.MAPS:
                 candidates=[r for r in records if (r["case"]["optimizer"],r["case"]["coordinates"],r["case"]["n"],r["case"]["seed"])==(optimizer,coord,512,seed)]
@@ -316,6 +322,10 @@ def animations(output):
                         line,=axes[row,col].plot(h["centers"],values[0],".",ms=3);lines.append((line,row,col,field))
                         axes[row,col].set(ylim=(-bound,bound),ylabel=("Change in " if late else "")+("physical w" if row==0 else "physical gamma"))
                         axes[row,col].set_yscale("symlog",linthresh=max(bound/1000,1e-15) if late else .01 if row==0 else .1)
+                        if late:
+                            exponent=np.floor(np.log10(bound))
+                            ticks=10.**np.arange(exponent-2,exponent+1)
+                            axes[row,col].set_yticks(np.r_[-ticks[::-1],0.,ticks])
                         axes[row,col].axvspan(h["centers"][0],-1,color=".93");axes[row,col].axvspan(1,h["centers"][-1],color=".93")
                         axes[row,col].grid(alpha=.15)
                     c=record["case"]
@@ -334,7 +344,7 @@ def animations(output):
                                    (f'Consecutive updates; changes since {histories[0]["step"][0]:,}' if late else 'First 300k: one checkpoint/second; later: six/second'))
                 movie=FuncAnimation(fig,update,frames=len(frames),interval=1000/fps,repeat=False)
                 name=f'{optimizer}_seed_{seed}'+("_late" if late else "")
-                movie.save(output/f'{name}.mp4',writer=FFMpegWriter(fps=fps,codec="libx264",bitrate=1400),dpi=100)
+                movie.save(output/f'{name}.mp4',writer=FFMpegWriter(fps=fps,codec="libx264",bitrate=1400,extra_args=["-threads","1"]),dpi=100)
                 update(len(frames)//2);fig.savefig(output/f'{name}_middle.png',dpi=100);plt.close(fig)
                 run.write_json(output/f'{name}_animation.json',dict(cases=[training.case_key(r["case"]) for r in pair],steps=[int(s) for s in frames],fps=fps))
 
@@ -347,9 +357,15 @@ def main():
     parser.add_argument("--figures-only",action="store_true")
     parser.add_argument("--movies",action="store_true")
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
-    if args.movies:animations(args.output);return
+    if args.movies:animations(args.output,workers=args.workers);return
     if args.figures_only:figures(args.output);return
     rows=campaign.table(args.root)
+    for row in rows:
+        if row["eligible"]:
+            g=core.geometry(row["n"])
+            with np.load(args.root/row["key"]/"checkpoint_000100000.npz") as cp:
+                row["core_abs_lambda_median_at_100k"]=float(np.median(np.abs(cp["lambda"][g.core])))
+                row["physical_readout_norm_at_100k"]=float(np.linalg.norm(cp["c"]))
     run.write_json(args.output/"sweep_summary.json",rows)
     fields=list(dict.fromkeys(k for row in rows for k in row))
     with (args.output/"sweep_summary.csv").open("w") as f:
