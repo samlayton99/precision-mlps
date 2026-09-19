@@ -1,0 +1,63 @@
+{
+  "cap_gpu_seconds": 7200,
+  "allocations": [
+    {
+      "purpose": "initial sweep",
+      "array_id": 351,
+      "tasks": 2,
+      "reserved_seconds_per_task": 900,
+      "charged_gpu_seconds": 634
+    },
+    {
+      "purpose": "bounded-evaluator verification, resumable first 1k",
+      "array_id": 353,
+      "tasks": 1,
+      "reserved_seconds_per_task": 300,
+      "charged_gpu_seconds": 8
+    },
+    {
+      "purpose": "initial sweep to 100k",
+      "array_id": 354,
+      "tasks": 2,
+      "reserved_seconds_per_task": 900,
+      "charged_gpu_seconds": 142
+    },
+    {
+      "purpose": "paired upper-boundary extension to 100k",
+      "array_id": 358,
+      "tasks": 2,
+      "reserved_seconds_per_task": 300,
+      "charged_gpu_seconds": 51
+    },
+    {
+      "purpose": "unchanged-rate confirmation, three contexts",
+      "array_id": 361,
+      "tasks": 2,
+      "reserved_seconds_per_task": 600,
+      "charged_gpu_seconds": 237
+    },
+    {
+      "purpose": "paired selected continuations to 1m",
+      "array_id": 364,
+      "tasks": 2,
+      "reserved_seconds_per_task": 900,
+      "charged_gpu_seconds": 405
+    },
+    {
+      "purpose": "paired selected continuations toward 5m",
+      "array_id": 367,
+      "tasks": 2,
+      "reserved_seconds_per_task": 1200,
+      "charged_gpu_seconds": 1764
+    },
+    {
+      "purpose": "final budget-limited paired continuations",
+      "array_id": 371,
+      "tasks": 2,
+      "reserved_seconds_per_task": 1860,
+      "charged_gpu_seconds": 3546
+    }
+  ],
+  "total_charged_gpu_seconds": 6787,
+  "comparison_horizon": 13000000
+}
