@@ -204,3 +204,26 @@ def test_detached_joint_decomposition():
     predicted=(a@dc+j@dl)*np.sqrt(len(x))
     f=lambda e:diagnostics.prediction(x,g.centers,c+e*dc,gamma+e*dl/g.h)
     np.testing.assert_allclose((f(eps)-f(-eps))/(2*eps),predicted,atol=2e-12)
+
+
+def test_ssb_accepted_step_matches_secant_scaling_formula():
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    source=ssb_source();z=jnp.array([1.,2.,3.]);target=jnp.full(3,.1);diag=jnp.geomspace(1.,30.,3)
+    loss=lambda p:.5*jnp.sum(diag*(p-target)**2)
+    solver=ho.ssb_solver(source,integration='accepted_step')
+    result,evidence=ho.ssb_step(solver,loss,lambda p:(p,p))(ho.ssb_initial(solver,loss,z))
+    assert int(result['count'])==1 and 0<float(evidence['step_size'])<.1
+    s=np.asarray(result['z']-z);y=np.asarray(diag)*s;grad=np.asarray(diag*(z-target))
+    rho=1/(s@y);h=(y@y)*rho;b=(s@s)*rho;a=b*h-1
+    np.testing.assert_allclose(b,-float(evidence['step_size'])*(s@grad)*rho,rtol=1e-12)
+    ck=np.sqrt(abs(a/(1+a)));rm=min(1.,h*(1-ck))
+    theta=max((rm-1)/a,min(1/rm,(1-b)/b));sigma=1+theta*a
+    rp=min(1.,1/b);sigma_power=abs(sigma)**(1/(1-len(z)))
+    tau=min(rp*sigma_power,sigma) if theta<=0 else rp*min(sigma_power,1/theta)
+    phi=(1-theta)/(1+a*theta);v=s*rho-y/(y@y)
+    expected=(np.eye(len(z))-np.outer(y,y)/(y@y)+phi*(y@y)*np.outer(v,v))/tau+rho*np.outer(s,s)
+    np.testing.assert_allclose(result['solver'].f_info.hessian_inv.pytree,expected,rtol=2e-12,atol=2e-14)
+    assert np.linalg.eigvalsh(expected).min()>0
+    original=ho.ssb_solver(source,integration='pinned')
+    original_result,_=ho.ssb_step(original,loss,lambda p:(p,p))(ho.ssb_initial(original,loss,z))
+    assert np.linalg.norm(np.asarray(original_result['solver'].f_info.hessian_inv.pytree)-expected)>1e-3

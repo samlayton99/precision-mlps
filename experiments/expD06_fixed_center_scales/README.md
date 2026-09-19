@@ -310,13 +310,32 @@ Rank-deficient minimum-norm solutions need not have identical parameter steps.
 SSBroyden uses the [specified library](https://github.com/IvanBioli/ssbroyden_optimistix)
 at commit `4c87785c68f0fec6b09000f474daef76fb181eea`, with its Optimistix
 submodule at `8cd4931713658f8dfe4423ead6f11b348b675540`. The adapter checks
-the source hash and substitutes only the explicit $s^Ty$ threshold, initially
+the source hash and exposes the explicit $s^Ty$ threshold, initially
 $10^{-24}$. Zoom starts each search at one, uses $c_1=10^{-4}$, $c_2=0.9$,
 the library's approximate-Wolfe $c_3=10^{-6}$, and at most 64 evaluations.
 Its minimum step and interval thresholds initially equal $10^{-15}$.
 An accepted state with no representable physical change is recorded as a
 terminal numerical stall, not counted toward the horizon. Initial evaluations
 and rejected line-search points likewise do not count.
+
+An integration audit found that this pinned source passed Zoom's **next proposed
+step** into the SSBroyden scaling calculation. That calculation requires the
+**accepted step** $\alpha_k$, since
+
+$$
+b_k=\frac{s_k^TB_ks_k}{s_k^Ty_k}
+=-\alpha_k\frac{s_k^Tg_k}{s_k^Ty_k},\qquad s_k=-\alpha_kH_kg_k.
+$$
+
+The `accepted_step` adapter corrects this one argument using
+`search_state.stepsize`; the search and scaling formulas otherwise remain those
+of the pinned library. A non-unit-step quadratic check verifies the resulting
+inverse-Hessian update against the formula in the
+[authors' technical note](https://arxiv.org/html/2603.10599v1#S2).
+Cases explicitly record `ssb_integration=accepted_step` in their identities.
+Earlier source-matching runs remain audit evidence and are excluded from
+scientific SSBroyden selection; their early search failures do not establish
+a limitation of the correctly integrated method.
 
 Guard comparisons change one setting at a time: Adam epsilon outside the square
 root ($10^{-8},10^{-12},10^{-15}$, with `eps_root=0`); SSBroyden curvature

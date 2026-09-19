@@ -138,8 +138,8 @@ def gn_initial(z):
 
 
 @lru_cache(maxsize=12)
-def ssb_module(source,curvature_epsilon):
-    """Load the pinned source with one auditable threshold substitution.
+def ssb_module(source,curvature_epsilon,integration='pinned'):
+    """Load pinned source with explicit guard and optional integration patches.
 
     The module name contains the threshold so complete Equinox states can be
     unpickled after recreating the same solver. No upstream file is modified.
@@ -152,6 +152,13 @@ def ssb_module(source,curvature_epsilon):
     if code.count(needle)!=1:
         raise ValueError("Unexpected SSBroyden source; cannot apply the recorded guard patch")
     code=code.replace(needle,"inner_nonzero = inner > CURVATURE_EPSILON")
+    if integration=='accepted_step':
+        # Zoom returns the NEXT proposal (one), while self-scaling needs the
+        # step that produced this accepted secant pair: b=s.T B s/(s.T y).
+        needle='                state.hessian_update_state,\n                step_size,\n            )'
+        if code.count(needle)!=1:raise ValueError('Unexpected Hessian-update call')
+        code=code.replace(needle,'                state.hessian_update_state,\n                search_state.stepsize,\n            )')
+    elif integration!='pinned':raise ValueError(integration)
     name="precision_ssbroyden_"+hashlib.sha256((code+repr(curvature_epsilon)).encode()).hexdigest()[:12]
     module=types.ModuleType(name);module.__file__=str(path)
     module.CURVATURE_EPSILON=float(curvature_epsilon)
@@ -160,9 +167,9 @@ def ssb_module(source,curvature_epsilon):
     return module
 
 
-def ssb_solver(source,curvature_epsilon=1e-24,search_threshold=1e-15):
+def ssb_solver(source,curvature_epsilon=1e-24,search_threshold=1e-15,integration='pinned'):
     from optimistix._solver.zoom import Zoom
-    module=ssb_module(str(source),curvature_epsilon)
+    module=ssb_module(str(source),curvature_epsilon,integration)
     search=Zoom(c1=1e-4,c2=.9,c3=1e-6,max_stepsize=1.,initial_guess_strategy="one",
                 min_interval_length=search_threshold,min_stepsize=search_threshold,line_search_max_steps=64)
     return module.SSBroyden(rtol=0.,atol=0.,search=search)

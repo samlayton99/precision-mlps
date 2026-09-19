@@ -27,7 +27,7 @@ def case(optimizer,coordinates,eta=1.,n=512,seed=0,**kwargs):
     row=dict(campaign="joint_conditioning",optimizer=optimizer,coordinates=coordinates,eta=eta,n=n,seed=seed)
     if optimizer in ("gd","adam"):row["native_epsilon"]=1e-12
     if optimizer=="gn":row["damping_floor"]=1e-24
-    if optimizer=="ssbroyden":row.update(curvature_epsilon=1e-24,search_threshold=1e-15)
+    if optimizer=="ssbroyden":row.update(curvature_epsilon=1e-24,search_threshold=1e-15,ssb_integration='accepted_step')
     return dict(row,**kwargs)
 
 
@@ -75,7 +75,7 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
         state=higher.gn_initial(z)
         advance=higher.gn_step(residual,jacobian,physical,config['damping_floor'])
     else:
-        solver=higher.ssb_solver(source,config['curvature_epsilon'],config['search_threshold'])
+        solver=higher.ssb_solver(source,config['curvature_epsilon'],config['search_threshold'],config.get('ssb_integration','pinned'))
         state=higher.ssb_initial(solver,loss,z)
         advance=higher.ssb_step(solver,loss,physical,config['curvature_epsilon'])
     if latest:
@@ -176,7 +176,8 @@ def selections(rows):
     for opt in OPTIMIZERS:
         for coord in MAPS:
             pool=[r for r in rows if r['eligible'] and r['case']['n']==512 and r['case']['seed']==0
-                  and (r['case']['optimizer'],r['case']['coordinates'])==(opt,coord)]
+                  and (r['case']['optimizer'],r['case']['coordinates'])==(opt,coord)
+                  and (opt!='ssbroyden' or r['case'].get('ssb_integration')=='accepted_step')]
             if not pool:
                 if opt in ('gn','ssbroyden'):selected.append(case(opt,coord));continue
                 raise ValueError(f'No completed first-order comparison for {opt}, {coord}')
