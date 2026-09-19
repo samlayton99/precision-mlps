@@ -1,0 +1,115 @@
+{
+  "role": "Checks of a whole-line uniform-grid theorem; not the finite-window halo training matrix",
+  "lambda_quarter": {
+    "gram_lower": "0.00000000000001808342922912730821585512264528184195562033463649350916690132584922066",
+    "gram_upper": "4",
+    "singular_condition_upper": "14872692.54963350586929926133904658858763555453793281589742308743397533",
+    "symbol_at_pi": "0.00000000000003616685845825461643171024529056368576388881812493168050107424510297919",
+    "symbol_tail_upper": "1.714620725669209919582858333686184056347189245986111607841745597415132e-288",
+    "dc_to_alternating_singular_gain_ratio": "10516581.7563484950412938199963276109331166369282786671032555606315806"
+  },
+  "quadrature": {
+    "rule": "uniform midpoint",
+    "samples_per_cell": 64,
+    "padding_cells": "20/lambda",
+    "measure": "Lebesgue on truncated whole line"
+  },
+  "finite_block_checks": [
+    {
+      "lambda_": 0.25,
+      "cells": 8,
+      "bump_sigma_max": 1.4708197833074361,
+      "bump_sigma_min": 0.00010819234420711653,
+      "bump_condition": 13594.490387340093,
+      "physical_zero_sum_condition": 74048.73545655148,
+      "incidence_condition": 5.671281819617712
+    },
+    {
+      "lambda_": 0.25,
+      "cells": 32,
+      "bump_sigma_max": 1.91343490737577,
+      "bump_sigma_min": 3.9330591901393437e-07,
+      "bump_condition": 4865004.096996514,
+      "physical_zero_sum_condition": 101547861.29826306,
+      "incidence_condition": 20.992583461395576
+    },
+    {
+      "lambda_": 0.25,
+      "cells": 64,
+      "bump_sigma_max": 1.9737791658503954,
+      "bump_sigma_min": 2.1970375494586957e-07,
+      "bump_condition": 8983820.81060332,
+      "physical_zero_sum_condition": 371316040.68826985,
+      "incidence_condition": 41.37222952447459
+    },
+    {
+      "lambda_": 1.0,
+      "cells": 8,
+      "bump_sigma_max": 1.908801988176841,
+      "bump_sigma_min": 0.17347283888195597,
+      "bump_condition": 11.003463138547783,
+      "physical_zero_sum_condition": 62.27456086064143,
+      "incidence_condition": 5.671281819617712
+    },
+    {
+      "lambda_": 1.0,
+      "cells": 32,
+      "bump_sigma_max": 1.992175261303448,
+      "bump_sigma_min": 0.13074459495684188,
+      "bump_condition": 15.237151959980103,
+      "physical_zero_sum_condition": 319.8447482378053,
+      "incidence_condition": 20.992583461395576
+    },
+    {
+      "lambda_": 1.0,
+      "cells": 64,
+      "bump_sigma_max": 1.9979339513895342,
+      "bump_sigma_min": 0.12854517270530266,
+      "bump_condition": 15.542660290868447,
+      "physical_zero_sum_condition": 643.028231633643,
+      "incidence_condition": 41.37222952447459
+    }
+  ],
+  "fourier_checks": [
+    {
+      "lambda_": 0.25,
+      "omega": 0.0,
+      "absolute_error": 0.0
+    },
+    {
+      "lambda_": 0.25,
+      "omega": 0.5,
+      "absolute_error": 5.551115123125783e-17
+    },
+    {
+      "lambda_": 0.25,
+      "omega": 3.141592653589793,
+      "absolute_error": 6.202062590068673e-17
+    },
+    {
+      "lambda_": 1.0,
+      "omega": 3.141592653589793,
+      "absolute_error": 1.3877787807814457e-17
+    }
+  ],
+  "sharp_step_checks": [
+    {
+      "cells": 8,
+      "physical_condition": 5.671281819617708,
+      "exact_condition": 5.671281819617709,
+      "difference_condition": 1.0
+    },
+    {
+      "cells": 32,
+      "physical_condition": 20.992583461395537,
+      "exact_condition": 20.992583461395554,
+      "difference_condition": 1.0
+    },
+    {
+      "cells": 128,
+      "physical_condition": 82.11989169005876,
+      "exact_condition": 82.11989169005867,
+      "difference_condition": 1.0
+    }
+  ]
+}

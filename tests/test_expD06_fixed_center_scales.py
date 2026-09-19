@@ -1,0 +1,398 @@
+import math
+
+import numpy as np
+import pytest
+
+jax = pytest.importorskip("jax")
+pytest.importorskip("optax")
+import jax.numpy as jnp
+
+from experiments.expD06_fixed_center_scales import core
+from experiments.expD06_fixed_center_scales import diagnostics
+from experiments.expD06_fixed_center_scales import run
+from experiments.expD06_fixed_center_scales import campaign
+
+
+def test_reference_envelopes_and_halo_slots():
+    g = core.geometry(512)
+    assert g.width == 559 and g.radius == 23
+    assert g.corrected_halo.sum() == 24
+    assert not np.any(g.core & g.corrected_halo)
+    np.testing.assert_allclose(g.alpha[1:], g.alpha[:0:-1])
+    assert g.alpha[0] == 1 + g.alpha[1:].sum()
+    np.testing.assert_allclose(g.ordinary_alpha, 0.008662986733781007)
+    np.testing.assert_allclose(g.alpha.max(), 10.763909685873035)
+
+
+@pytest.mark.parametrize("family", ["xavier", "envelope", "xavier_a_uniform", "xavier_a_reference"])
+def test_paired_physical_initialization_and_fixed_centers(family):
+    g = core.geometry(512)
+    c, gamma = core.initial_physical(g, 3, family)
+    x = jnp.linspace(-1, 1, 37)
+    predictions = []
+    for arm in ["raw", "uniform", "both"]:
+        cs, gs = core.coordinate_scales(g, arm)
+        params = core.to_params(c, gamma, cs, gs)
+        predictions.append(core.predict(params, x, g.centers, cs, gs))
+        changed_gamma = gamma * 1.37
+        beta = -changed_gamma * g.centers
+        np.testing.assert_allclose(-beta / changed_gamma, g.centers, atol=1e-15)
+    for prediction in predictions[1:]:
+        np.testing.assert_allclose(prediction, predictions[0], rtol=2e-13, atol=2e-14)
+
+
+def test_stable_tanh_derivative_and_finite_difference():
+    np.testing.assert_allclose(jax.grad(core.tanh)(20.0), 4 * math.exp(-40), rtol=1e-14)
+    g = core.geometry(512)
+    c, gamma = core.initial_physical(g, 0, "envelope")
+    cs, gs = core.coordinate_scales(g, "both")
+    p = core.to_params(c, gamma, cs, gs)
+    x = jnp.linspace(-1, 1, 65)
+    objective = lambda params: core.loss(params, x, core.target(x, "sine"), g.centers, cs, gs)
+    gradient = jax.grad(objective)(p)["slope"]
+    j = 14
+    eps = 1e-7
+    plus = {**p, "slope": p["slope"].at[j].add(eps)}
+    minus = {**p, "slope": p["slope"].at[j].add(-eps)}
+    np.testing.assert_allclose(gradient[j], (objective(plus) - objective(minus)) / (2 * eps), rtol=2e-6)
+
+
+@pytest.mark.parametrize("name", ["gd", "adam"])
+def test_one_step_coordinate_identities(name):
+    g = core.geometry(512)
+    c, gamma = core.initial_physical(g, 2, "envelope")
+    cs, gs = core.coordinate_scales(g, "both")
+    params = core.to_params(c, gamma, cs, gs)
+    x = jnp.linspace(-1, 1, g.n + 1)
+    y = core.target(x, "sine")
+    raw = core.to_params(c, gamma, np.ones_like(c), 1.0)
+    grad = jax.grad(core.loss)(raw, x, y, g.centers, np.ones_like(c), 1.0)
+    eta_r, eta_g = 1e-5, 1e-7
+    state, _ = core.make_chunk(g, name, "sine", samples_per_cell=1, steps=1)(
+        core.initial_state(params, core.optimizer(name)), cs, gs, eta_r, eta_g)
+    actual_c, actual_gamma = core.physical(state["params"], cs, gs)
+    if name == "gd":
+        dc = -eta_r * cs**2 * grad["readout"]
+        dg = -eta_g * gs**2 * grad["slope"]
+    else:
+        dc = -eta_r * cs * grad["readout"] / (jnp.abs(grad["readout"]) + 1e-8 / cs)
+        dg = -eta_g * gs * grad["slope"] / (jnp.abs(grad["slope"]) + 1e-8 / gs)
+    np.testing.assert_allclose(actual_c, c + dc, rtol=2e-13, atol=1e-15)
+    np.testing.assert_allclose(actual_gamma, gamma + dg, rtol=2e-13, atol=1e-15)
+    if name == "gd":
+        assert np.all(np.asarray(state["lambda_travel"]) <= np.asarray(state["gd_lambda_budget"]) + 1e-15)
+
+
+def test_halo_metric_ablation_preserves_physical_initialization_and_bias_scale():
+    g = core.geometry(512)
+    c, gamma = core.initial_physical(g, 1, "envelope")
+    full, gs = core.coordinate_scales(g, "both")
+    ordinary, _ = core.coordinate_scales(g, "both", "ordinary")
+    assert full[0] == ordinary[0]
+    assert np.all(ordinary[1:][g.corrected_halo] == math.sqrt(g.ordinary_alpha))
+    p = core.to_params(c, gamma, ordinary, gs)
+    np.testing.assert_allclose(core.physical(p, ordinary, gs)[0], c)
+
+
+def test_fourier_split_reconstructs_energy_and_signed_gradients():
+    rng = np.random.default_rng(18)
+    for size in [32, 33]:
+        r = rng.normal(size=size)
+        a = rng.normal(size=(size, 4))
+        j = rng.normal(size=(size, 6))
+        u, _ = np.linalg.qr(a)
+        pj = u @ (u.T @ j)
+        out = diagnostics.gradient_bands(r, a, j, pj)
+        np.testing.assert_allclose(out["band_energy"].sum(), r @ r, rtol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_lambda"].sum(axis=0), j.T @ r, atol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_parallel"].sum(axis=0), pj.T @ r, atol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_perpendicular"].sum(axis=0), (j - pj).T @ r, atol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_readout"].sum(axis=0), a.T @ r, atol=1e-14)
+        np.testing.assert_allclose(out["band_gradient_lambda"], out["band_gradient_parallel"]
+                                   + out["band_gradient_perpendicular"], atol=1e-14)
+
+
+def test_detached_refit_and_gradient_diagnostics():
+    rng = np.random.default_rng(4)
+    centers = np.linspace(-1.1, 1.1, 9)
+    gamma = np.linspace(1, 5, 9)
+    c = rng.normal(size=10)
+    x = np.linspace(-1, 1, 65)
+    y = core.target(x, "sine", np)
+    d = np.linspace(0.5, 2, 10)
+    dc, dl = rng.normal(size=10) * 1e-5, rng.normal(size=9) * 1e-5
+    before = [v.copy() for v in (c, gamma, d)]
+    out = diagnostics.checkpoint_arrays(x, y, centers, 0.25, d, c, gamma, {},
+                                        delta_c=dc, delta_lambda=dl)
+    for old, current in zip(before, (c, gamma, d)):
+        np.testing.assert_array_equal(old, current)
+    assert np.linalg.norm(out["residual_refit"]) < np.linalg.norm(out["residual_train"])
+    np.testing.assert_allclose(np.sum(out["singular_residual_coefficients"]**2)
+                               + out["singular_unrepresented_residual_mse"],
+                               np.mean(out["residual_train"]**2), rtol=2e-13)
+    np.testing.assert_allclose(np.sum(out["singular_readout_gradient_coefficients"]**2),
+                               np.sum((d*out["gradient_readout"])**2), rtol=2e-13)
+    np.testing.assert_allclose(out["residual_parallel"] + out["residual_perpendicular"],
+                               out["residual_train"], atol=1e-14)
+    np.testing.assert_allclose(out["prediction_change_measured"], out["prediction_change_readout"]
+                               + out["prediction_change_geometry"] + out["prediction_change_interaction"], atol=1e-14)
+    params = core.to_params(c, gamma, d, 4.0)
+    grad = jax.grad(core.loss)(params, jnp.asarray(x), jnp.asarray(y), centers, d, 4.0)
+    np.testing.assert_allclose(out["gradient_lambda"], grad["slope"], rtol=1e-12, atol=1e-13)
+    np.testing.assert_allclose(out["gradient_readout"], grad["readout"] / d, rtol=1e-12, atol=1e-13)
+    direction = np.sign(gamma) / np.sqrt(len(gamma))
+    tangent = c[1:] * (x[:, None] - centers) / .25
+    tangent *= 1 / np.cosh((x[:, None] - centers) * gamma)**2
+    tangent = tangent @ direction / np.sqrt(len(x))
+    phase = 2 * np.pi * 3 * np.arange(len(x)) / len(x)
+    probe = np.sqrt(2 / len(x)) * np.sin(phase)
+    np.testing.assert_allclose(out["probe_raw_all_signed_sin"][3], probe @ tangent, atol=1e-14)
+    np.testing.assert_allclose(out["force_all"][:2].sum(), -out["gradient_lambda"] @ direction, atol=1e-13)
+
+
+def test_scientific_runner_enforces_twenty_thousand_steps(tmp_path):
+    with pytest.raises(ValueError, match="20,000"):
+        run.run_batch([run.Case()], tmp_path, 19999)
+    assert run.convergence_status([{"step": 19999, "finite": True}]) == "continuing"
+
+
+@pytest.mark.parametrize("optimizer", ["gd", "adam"])
+def test_checkpoint_resume_matches_uninterrupted(optimizer, tmp_path):
+    g = core.geometry(128)
+    c, gamma = core.initial_physical(g, 7, "xavier")
+    cs, gs = core.coordinate_scales(g, "both")
+    state = core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer(optimizer))
+    chunk = core.make_chunk(g, optimizer, "sine", samples_per_cell=1, steps=7)
+    after_seven, _ = chunk(state, cs, gs, 1e-5, 1e-6)
+    path = tmp_path / "checkpoint.pkl"
+    run.save_state(path, after_seven, 7)
+    restored, step = run.load_state(path)
+    assert step == 7
+    continued, _ = chunk(restored, cs, gs, 1e-5, 1e-6)
+    uninterrupted, _ = chunk(after_seven, cs, gs, 1e-5, 1e-6)
+    for a, b in zip(jax.tree.leaves(continued), jax.tree.leaves(uninterrupted)):
+        np.testing.assert_array_equal(a, b)
+
+
+def test_batched_runs_are_independent():
+    g = core.geometry(128)
+    cs, gs = core.coordinate_scales(g, "both")
+    states = []
+    for seed in [0, 1]:
+        c, gamma = core.initial_physical(g, seed, "xavier")
+        states.append(core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer("adam")))
+    batch = core.make_chunk(g, "adam", "sine", 1, 5, batched=True)
+    result, _ = batch(run.stack_states(states), jnp.stack([cs, cs]), jnp.array([gs, gs]),
+                      jnp.array([1e-4, 1e-3]), jnp.array([1e-6, 1e-5]))
+    single = core.make_chunk(g, "adam", "sine", 1, 5)
+    for i, (rr, rg) in enumerate([(1e-4, 1e-6), (1e-3, 1e-5)]):
+        expected, _ = single(states[i], cs, gs, rr, rg)
+        for a, b in zip(jax.tree.leaves(run.unstack_state(result, i)), jax.tree.leaves(expected)):
+            np.testing.assert_allclose(a, b, rtol=2e-13, atol=1e-15)
+
+
+def test_rate_manifest_covers_native_and_scale_matched_controls():
+    for optimizer in ["gd", "adam"]:
+        initial = campaign.pilot_manifest(optimizer)
+        expanded = campaign.pilot_manifest(optimizer, expanded=True)
+        assert len(initial) == 84 and len(expanded) == 212
+        assert len({r["key"] for r in expanded}) == len(expanded)
+        assert {r["key"] for r in initial} <= {r["key"] for r in expanded}
+        g = core.geometry(512)
+        raw = next(r for r in initial if r["case"]["arm"] == "raw" and r["grid"] == "ordinary_update_matched")
+        expected = raw["base_lr"] * raw["bandwidth_to_readout_ratio"] * g.h**(-2 if optimizer == "gd" else -1)
+        assert raw["case"]["rate_g"] == expected
+        assert {r["case"]["seed"] for r in expanded} == {0, 1}
+        boundary = campaign.pilot_manifest(optimizer, boundary=True)
+        assert len(boundary) == (292 if optimizer == "gd" else 252)
+        assert len({r["key"] for r in boundary}) == len(boundary)
+        assert {r["key"] for r in expanded} <= {r["key"] for r in boundary}
+
+
+def test_nonfinite_checkpoint_is_recorded_as_failure(tmp_path):
+    case = run.Case()
+    g = core.geometry(case.n)
+    c, gamma = core.initial_physical(g, 0, "xavier")
+    cs, gs = core.coordinate_scales(g, "both")
+    state = core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer("adam"))
+    arrays = {"c": c, "gamma": gamma, "prediction_train": np.full(3, 1e200)}
+    row = run.record_checkpoint(tmp_path, case, state, 2, arrays)
+    assert row == {"step": 2, "finite": False}
+    assert run.convergence_status([row]) == "nonfinite"
+    assert (tmp_path / case.key / "state_000000002.pkl").exists()
+    with np.load(tmp_path / case.key / "checkpoint_000000002.npz") as stored:
+        np.testing.assert_array_equal(stored["c"], c)
+
+
+def test_followup_matrices_keep_rates_fixed_and_seeds_separate():
+    from dataclasses import asdict, replace
+    base = run.Case(arm="both", initialization="envelope", rate_r=.01, rate_g=.001)
+    selected = [asdict(base), asdict(replace(base, arm="raw"))]
+    confirmation = campaign.confirmation_manifest(selected)
+    assert len(confirmation) == 90
+    assert {r["case"]["seed"] for r in confirmation} == set(range(2, 7))
+    assert {r["case"]["n"] for r in confirmation} == {512, 1024, 2048}
+    halo = campaign.control_manifest(selected, "halo")
+    assert len(halo) == 24
+    assert {(r["case"]["halo_init"], r["case"]["halo_metric"]) for r in halo} == {
+        (a, b) for a in ["full", "ordinary"] for b in ["full", "ordinary"]}
+    sampling = campaign.control_manifest(selected, "sampling")
+    assert len(sampling) == 16
+    for row in confirmation + halo + sampling:
+        assert row["case"]["rate_r"] == base.rate_r and row["case"]["rate_g"] == base.rate_g
+
+
+def test_convergence_window_survives_session_boundaries(tmp_path):
+    losses = np.arange(12, dtype=float)**2
+    for left, right in [(0, 3), (3, 8), (8, 12)]:
+        run.save_arrays(tmp_path / f"trace_{left:09d}_{right:09d}.npz", trace=losses[left:right, None])
+    np.testing.assert_array_equal(run.trace_window_losses(tmp_path, 2, 11), losses[2:11])
+    assert run.trace_window_losses(tmp_path, 2, 13) is None
+    window = run.loss_window_summary(run.trace_window_losses(tmp_path, 6, 12), 12)
+    assert window["start_step"] == 6
+    assert window["mean"] == np.mean(losses[6:12])
+
+
+def test_consolidation_preserves_oscillations_and_requires_complete_traces(tmp_path):
+    from experiments.expD06_fixed_center_scales.consolidate import trace_windows
+    rms = np.array([1., .01, 1., .01, 1., .01])
+    trace = np.zeros((6, 5))
+    trace[:, 0] = rms**2 / 2
+    for left, right in [(0, 2), (2, 6)]:
+        run.save_arrays(tmp_path / f"trace_{left:09d}_{right:09d}.npz", trace=trace[left:right])
+    row = trace_windows(tmp_path, [(0, 6)])[0]
+    np.testing.assert_allclose(row["training_rms_over_time"], np.sqrt(np.mean(rms**2)))
+    assert row["training_rms_over_time"] > 50 * rms[-1]
+    with pytest.raises(ValueError, match="Missing"):
+        trace_windows(tmp_path, [(0, 7)])
+
+
+def test_paired_window_choice_can_differ_from_endpoint_choice():
+    from experiments.expD06_fixed_center_scales.consolidate import paired_choices
+    rows = [{"optimizer": "adam", "arm": "both", "initialization": "xavier", "seed": seed,
+             "rate_r": rate, "rate_g": .01, "key": f"{rate}_{seed}",
+             "endpoint": end, "window": window}
+            for rate, end, window in [(.001, .01, .01), (.01, .0001, .1)] for seed in [0, 1]]
+    assert paired_choices(rows, "endpoint")[0]["rate_r"] == .01
+    assert paired_choices(rows, "window")[0]["rate_r"] == .001
+
+
+def test_focused_manifest_crosses_initialization_and_map_without_bias_confound():
+    from collections import Counter
+    from experiments.expD06_fixed_center_scales.focused import manifest
+    records = manifest()
+    assert Counter(r["kind"] for r in records) == {"primary": 48, "epsilon_control": 16, "shared_lr_control": 24}
+    assert len({r["key"] for r in records}) == 88
+    assert {r["case"]["seed"] for r in records} == {2, 3}
+    g = core.geometry(512)
+    for row in records:
+        case = run.Case(**row["case"])
+        cs, gs, rates, er, eg = run.case_settings(case, g)
+        assert cs[0] == 1 and er[0] == 1e-8
+        assert rates[0] == case.bias_rate
+        if case.arm == "raw":
+            assert case.rate_r == case.rate_g == case.bias_rate
+            continue
+        np.testing.assert_allclose((rates * cs)[1:][g.core], row["uniform_readout_lr"] * np.sqrt(g.h))
+        assert case.bias_rate == row["uniform_readout_lr"] * np.sqrt(g.h)
+        assert gs == 1 / g.h
+        if case.epsilon_mode == "native":
+            np.testing.assert_allclose((er / cs)[1:][g.core], 1e-8 / np.sqrt(g.h))
+            assert eg / gs == 1e-8 * g.h
+        else:
+            np.testing.assert_allclose(er / cs, 1e-8)
+            assert eg / gs == 1e-8
+    base_c, base_gamma = core.initial_physical(g, 2, "xavier")
+    for family, scale in [("xavier_a_uniform", np.sqrt(g.h)), ("xavier_a_reference", g.d[1:])]:
+        c, gamma = core.initial_physical(g, 2, family)
+        np.testing.assert_allclose(c[1:], base_c[1:] * scale, rtol=2e-15)
+        np.testing.assert_array_equal(gamma, base_gamma)
+        assert c[0] == 0
+
+
+@pytest.mark.parametrize("arm", ["uniform", "both"])
+def test_adam_multistep_coordinate_equivalence_with_nonzero_moments(arm):
+    g = core.geometry(128)
+    cs, gs = core.coordinate_scales(g, arm, unscaled_bias=True)
+    c, gamma = core.initial_physical(g, 2, "xavier_a_uniform")
+    tx = core.optimizer("adam")
+    mapped = core.initial_state(core.to_params(c, gamma, cs, gs), tx)
+    raw = core.initial_state(core.to_params(c, gamma, np.ones_like(cs), 1.), tx)
+    # Nonzero moment history must transform with the gradient and its square.
+    chunk = core.make_chunk(g, "adam", "sine", samples_per_cell=1, steps=11)
+    er = jnp.linspace(1e-7, 3e-7, cs.size)
+    eg = 1e-7
+    for _ in range(2):
+        mapped, _ = chunk(mapped, cs, gs, 1e-4, 1e-6, er, eg)
+        raw, _ = chunk(raw, np.ones_like(cs), 1., 1e-4 * cs, 1e-6 * gs, er / cs, eg / gs)
+        expected_c, expected_gamma = core.physical(mapped["params"], cs, gs)
+        np.testing.assert_allclose(raw["params"]["readout"], expected_c, rtol=1e-11, atol=2e-15)
+        np.testing.assert_allclose(raw["params"]["slope"], expected_gamma, rtol=1e-11, atol=2e-15)
+        for block, scale in [("readout", cs), ("slope", gs)]:
+            np.testing.assert_allclose(mapped["opt"][0].mu[block], raw["opt"][0].mu[block] * scale, rtol=1e-11, atol=2e-15)
+            np.testing.assert_allclose(mapped["opt"][0].nu[block], raw["opt"][0].nu[block] * scale**2, rtol=1e-11, atol=2e-15)
+
+
+def test_explicit_epsilon_preserves_optax_update_and_checkpoint_resume(tmp_path):
+    g = core.geometry(128)
+    case = run.Case(n=128, arm="uniform", epsilon_mode="physical", bias_rate=1e-5)
+    cs, gs, rr, er, eg = run.case_settings(case, g)
+    c, gamma = core.initial_physical(g, 3, "xavier_a_reference")
+    state = core.initial_state(core.to_params(c, gamma, cs, gs), core.optimizer("adam"))
+    chunk = core.make_chunk(g, "adam", "sine", samples_per_cell=1, steps=9)
+    native, _ = chunk(state, cs, gs, rr, case.rate_g)
+    explicit, _ = chunk(state, cs, gs, rr, case.rate_g, np.full(cs.size, 1e-8), 1e-8)
+    for a, b in zip(jax.tree.leaves(native), jax.tree.leaves(explicit)):
+        np.testing.assert_allclose(a, b, rtol=2e-12, atol=2e-15)
+    advanced, _ = chunk(state, cs, gs, rr, case.rate_g, er, eg)
+    path = tmp_path / "configured.pkl"
+    run.save_state(path, advanced, 9)
+    restored, _ = run.load_state(path)
+    resumed, _ = chunk(restored, cs, gs, rr, case.rate_g, er, eg)
+    expected, _ = chunk(advanced, cs, gs, rr, case.rate_g, er, eg)
+    for a, b in zip(jax.tree.leaves(resumed), jax.tree.leaves(expected)):
+        np.testing.assert_array_equal(a, b)
+        if np.issubdtype(np.asarray(a).dtype, np.floating):
+            assert a.dtype == np.float64
+    batch = core.make_chunk(g, "adam", "sine", samples_per_cell=1, steps=9, batched=True)
+    batched, _ = batch(run.stack_states([restored, state]), jnp.stack([cs, cs]), jnp.array([gs, gs]),
+                       jnp.stack([rr, rr]), jnp.array([case.rate_g, case.rate_g]), jnp.stack([er, er]), jnp.array([eg, eg]))
+    for a, b in zip(jax.tree.leaves(run.unstack_state(batched, 0)), jax.tree.leaves(expected)):
+        np.testing.assert_allclose(a, b, rtol=2e-12, atol=2e-15)
+
+
+def test_case_extensions_preserve_legacy_checkpoint_identity():
+    from dataclasses import asdict
+    import hashlib
+    import json
+    case = run.Case()
+    legacy = asdict(case)
+    for field in ["epsilon_mode", "bias_rate", "dense_validation"]:
+        legacy.pop(field)
+    digest = hashlib.sha256(json.dumps(legacy, sort_keys=True).encode()).hexdigest()[:12]
+    assert case.key.endswith(digest)
+
+
+def test_spectral_export_preserves_rms_and_signed_forces(tmp_path):
+    import json
+    from experiments.expD06_fixed_center_scales.consolidate import spectral_evidence
+    g = core.geometry(128)
+    c, gamma = core.initial_physical(g, 2, "xavier_a_uniform")
+    x = np.linspace(-1, 1, 257)
+    arrays = diagnostics.checkpoint_arrays(x, core.target(x, "sine", np), g.centers, g.h, g.d, c, gamma,
+                                          g.masks, delta_c=np.zeros_like(c), delta_lambda=np.zeros_like(gamma))
+    folder = tmp_path / "case"
+    (folder / "analysis").mkdir(parents=True)
+    (tmp_path / "figures").mkdir()
+    # Synthetic unit-test checkpoint; no scientific trajectory is claimed.
+    run.save_arrays(folder / "checkpoint_000320000.npz", gamma=gamma)
+    run.save_arrays(folder / "analysis" / "diagnostics_000320000_tau1e-12.npz", **arrays)
+    row = {"key":"fixture", "folder":str(folder), "n":128, "optimizer":"adam", "arm":"uniform",
+           "initialization":"xavier_a_uniform", "seed":2, "rate_r":1e-3, "rate_g":1e-3}
+    spectral_evidence([row], [{"score_key":"window_rms_320000", "cases":["fixture"]}], tmp_path)
+    result = json.loads((tmp_path / "spectral_history.json").read_text())[0]
+    np.testing.assert_allclose(np.linalg.norm(result["train_band_rms"]), np.sqrt(np.mean(arrays["residual_train"]**2)))
+    np.testing.assert_allclose(sum(result["all_parallel_signed_force"]), arrays["force_all"][0], atol=1e-13)
+    np.testing.assert_allclose(sum(result["all_perpendicular_signed_force"]), arrays["force_all"][1], atol=1e-13)
+    assert result["update_prediction_reconstruction_max_error"] == 0
+    assert (tmp_path / "figures" / "spectral_fixture.png").exists()
