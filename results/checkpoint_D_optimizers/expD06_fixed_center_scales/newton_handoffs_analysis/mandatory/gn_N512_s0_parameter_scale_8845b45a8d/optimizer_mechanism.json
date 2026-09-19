@@ -1,0 +1,104 @@
+{
+  "key": "gn_N512_s0_parameter_scale_8845b45a8d",
+  "case": {
+    "campaign": "joint_conditioning",
+    "optimizer": "gn",
+    "coordinates": "parameter_scale",
+    "eta": 1.0,
+    "n": 512,
+    "seed": 0,
+    "damping_floor": 1e-30,
+    "followup": "newton_handoffs_v1",
+    "diagnostics": true,
+    "warm_start": {
+      "root": "../joint_conditioning",
+      "source_key": "adam_N512_s0_parameter_scale_7a942c4c2f",
+      "step": 5300000,
+      "sha256": "5f6f39693e68e700f95b6d69f8cf4cff1f542b6de3751dc42ded5ac003142a62"
+    }
+  },
+  "end": 20000,
+  "states": [
+    {
+      "step": 0,
+      "checkpoint_sha256": "8417b0cc0f34ea15e15c5e897f91c060a5075adaf8efa14658f7fb67aba0731c",
+      "state_sha256": "4173a0b8a921573113798c5b5922d09939f48094dcd71c3a66f48bb6c1d7a19b",
+      "gradient_physical_readout_norm": 1.5174277091027616e-05,
+      "gradient_physical_gamma_norm": 1.3328400117909593e-10,
+      "gradient_reference_readout_norm": 1.0916042924894459e-05,
+      "gradient_lambda_norm": 3.412070430184856e-08
+    },
+    {
+      "step": 1,
+      "checkpoint_sha256": "6fe12329a0a2266f90724153d0e2111d14237971331526e2946e72564d646172",
+      "state_sha256": "f7eef9c2ec6365596f0aaf836a0c1f92ef444a4de65e49cb0029804ab3873575",
+      "gradient_physical_readout_norm": 6.920875003560382e-07,
+      "gradient_physical_gamma_norm": 3.552175170832946e-11,
+      "gradient_reference_readout_norm": 1.2051609063760242e-08,
+      "gradient_lambda_norm": 9.093568437332342e-09
+    },
+    {
+      "step": 10,
+      "checkpoint_sha256": "8655b0f296e6f84cc24d77301b22a7f24a1e33eeb23c0f3e36cab8f9b2534b74",
+      "state_sha256": "287e733998f473247a34c0f2ed2fa23b831457795cf90d1f34cb0ecb68cbbafd",
+      "gradient_physical_readout_norm": 7.693054455728314e-08,
+      "gradient_physical_gamma_norm": 1.2936281128778878e-11,
+      "gradient_reference_readout_norm": 4.146948188230644e-09,
+      "gradient_lambda_norm": 3.311687968967393e-09
+    },
+    {
+      "step": 100,
+      "checkpoint_sha256": "8a20893c99800501cea01c8c92ca287b466b5eb8af1470769f2caf1c4e980dd0",
+      "state_sha256": "bd36573dbeec3300548d4738c1e9544a3b9c66fa873f92a95e53743ecb8cb505",
+      "gradient_physical_readout_norm": 5.186198526049635e-06,
+      "gradient_physical_gamma_norm": 4.3398792226068235e-10,
+      "gradient_reference_readout_norm": 2.677516500604742e-06,
+      "gradient_lambda_norm": 1.1110090809873468e-07
+    },
+    {
+      "step": 1000,
+      "checkpoint_sha256": "85f981c68732edf7f379d0b5e206402d8ee6b5e85932c604435418f0e1d1a17c",
+      "state_sha256": "0f0c5ba89b5d353a36fb659437c76eefa9b54dbdce7e2967be826af3c6a6475c",
+      "gradient_physical_readout_norm": 3.5783096354093773e-08,
+      "gradient_physical_gamma_norm": 4.087851198314299e-12,
+      "gradient_reference_readout_norm": 2.42204226000457e-08,
+      "gradient_lambda_norm": 1.0464899067684605e-09
+    },
+    {
+      "step": 2000,
+      "checkpoint_sha256": "62ba2e3fc053f7adb29051bd3e2a515c561f6ebb16ab0fb3de0fbca52efd7869",
+      "state_sha256": "163e0e1c8e3576ed50ac3c5ea3289e296e377b2d90bc4e445d8fd3cf4370c405",
+      "gradient_physical_readout_norm": 9.404070304025307e-08,
+      "gradient_physical_gamma_norm": 2.804620733562652e-11,
+      "gradient_reference_readout_norm": 6.69542955832289e-08,
+      "gradient_lambda_norm": 7.179829077920389e-09
+    },
+    {
+      "step": 5000,
+      "checkpoint_sha256": "17ece0aa9898ba43686f45e59bf81c2884138aff84b2a94e99f1a283ceda5301",
+      "state_sha256": "f6a710ce7e1070bf4775a8811b86204aff7536d48e665e4e2985359beb1d1907",
+      "gradient_physical_readout_norm": 1.0595758343222253e-08,
+      "gradient_physical_gamma_norm": 1.8957329005275035e-11,
+      "gradient_reference_readout_norm": 7.51811555157063e-09,
+      "gradient_lambda_norm": 4.853076225350409e-09
+    },
+    {
+      "step": 10000,
+      "checkpoint_sha256": "85b3c2840f10c30d531cd1353b666bea8327768156211a48b459899706f7acfc",
+      "state_sha256": "44a4b1bec2b03d639d97c90238fd142574d2f3a7de50c44940e857fbfc406083",
+      "gradient_physical_readout_norm": 1.8204157869226928e-09,
+      "gradient_physical_gamma_norm": 2.4288717588663746e-12,
+      "gradient_reference_readout_norm": 9.907714701930898e-10,
+      "gradient_lambda_norm": 6.217911702697919e-10
+    },
+    {
+      "step": 20000,
+      "checkpoint_sha256": "2f634c9e487efc60483c374624c4f8482563289764eb8eff0156b331f4c368d4",
+      "state_sha256": "412963a537273a51a6e3c2f66c4478099a52dfccacef90af7c79387a0bdfdccc",
+      "gradient_physical_readout_norm": 1.857232409230716e-09,
+      "gradient_physical_gamma_norm": 3.578251197499555e-12,
+      "gradient_reference_readout_norm": 8.68331618069254e-11,
+      "gradient_lambda_norm": 9.160323065598861e-10
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "campaign": "joint_conditioning",
+  "optimizer": "newton",
+  "coordinates": "parameter_scale",
+  "eta": 1.0,
+  "n": 512,
+  "seed": 1,
+  "followup": "newton_handoffs_v1",
+  "diagnostics": true,
+  "target": "sine",
+  "initialization": "xavier_a_reference",
+  "samples_per_cell": 16,
+  "validation_points": 32768,
+  "objective": "half-MSE",
+  "reference_lambda": 0.25,
+  "minimum_updates": 20000,
+  "ssbroyden_commit": "4c87785c68f0fec6b09000f474daef76fb181eea",
+  "optimistix_commit": "8cd4931713658f8dfe4423ead6f11b348b675540"
+}

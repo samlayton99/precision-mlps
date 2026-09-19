@@ -1,0 +1,68 @@
+[
+  {
+    "key": "ssbroyden_N512_s0_parameter_scale_4a364f170a",
+    "step": 8201,
+    "points": 8193,
+    "digits": 80,
+    "target": "analytic sqrt(2) sin(2 pi x), not bitwise GPU labels",
+    "stored_gradient_exact_metric_derivative": 1.121600549080339e-19,
+    "rows": [
+      {
+        "interpretation": "stored_physical_parameters",
+        "mse": 2.6520586846328807e-17,
+        "gradient_norm": 1.6110898055486628e-09,
+        "relative_gradient_difference": 1.5743540617512835e-07,
+        "derivative_along_exact_stored_matrix_direction": 1.1216005936170425e-19,
+        "derivative_along_fp64_matrix_direction": 6.212519978325848e-20,
+        "own_exact_metric_derivative": 1.121600638139645e-19
+      },
+      {
+        "interpretation": "exact_native_decode",
+        "mse": 2.6520586882466072e-17,
+        "gradient_norm": 1.6110911286029159e-09,
+        "relative_gradient_difference": 9.74239507198522e-07,
+        "derivative_along_exact_stored_matrix_direction": 1.1216014798775456e-19,
+        "derivative_along_fp64_matrix_direction": 6.212524717736028e-20,
+        "own_exact_metric_derivative": 1.121602410660176e-19
+      }
+    ],
+    "source_sha256": {
+      "checkpoint_000008201.npz": "09f5eaed4cf45101a038d20f841a5db234f0e653b19cfa421662fb6286161e6b",
+      "state_000008201.pkl": "5f45a29973012f917644ef98cd3031d681023f7494ea0a56d7cc8083d6b3eb84",
+      "failure.npz": "3b9ee354235a430da98205554f0d3833b1bc4a3ac104efefa87ba17e307a221b"
+    }
+  },
+  {
+    "key": "ssbroyden_N512_s1_parameter_scale_2597a2268c",
+    "step": 6910,
+    "points": 8193,
+    "digits": 80,
+    "target": "analytic sqrt(2) sin(2 pi x), not bitwise GPU labels",
+    "stored_gradient_exact_metric_derivative": -9.83572848263615e-22,
+    "rows": [
+      {
+        "interpretation": "stored_physical_parameters",
+        "mse": 2.7129024240334128e-18,
+        "gradient_norm": 4.646682982065709e-10,
+        "relative_gradient_difference": 2.179666056854669e-06,
+        "derivative_along_exact_stored_matrix_direction": -9.835706952930449e-22,
+        "derivative_along_fp64_matrix_direction": 6.611966481730045e-21,
+        "own_exact_metric_derivative": -9.835685425202427e-22
+      },
+      {
+        "interpretation": "exact_native_decode",
+        "mse": 2.712902431966206e-18,
+        "gradient_norm": 4.64669327074859e-10,
+        "relative_gradient_difference": 4.3937109780784155e-06,
+        "derivative_along_exact_stored_matrix_direction": -9.835693838979319e-22,
+        "derivative_along_fp64_matrix_direction": 6.611984612562874e-21,
+        "own_exact_metric_derivative": -9.835659197470288e-22
+      }
+    ],
+    "source_sha256": {
+      "checkpoint_000006910.npz": "83040bbffc13f6d3052fab1825614f7416ea24dc19ed8000b9554eaca0ef3062",
+      "state_000006910.pkl": "1296a1c032bcf03c7ca8c65fe6f3e72abb1da57fdad96a772a9f2e972bda3cd4",
+      "failure.npz": "9ca411fadbb7d3d171c5902b08edf02b81510967006572cbfb3979bc028e26e9"
+    }
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "key": "ssbroyden_N512_s0_parameter_scale_09fe1582c6",
+    "step": 7918,
+    "points": 8193,
+    "digits": 80,
+    "target": "analytic sqrt(2) sin(2 pi x), not bitwise GPU labels",
+    "stored_gradient_exact_metric_derivative": 1.0360806705152481e-20,
+    "rows": [
+      {
+        "interpretation": "stored_physical_parameters",
+        "mse": 5.349357439918886e-19,
+        "gradient_norm": 1.0971964943633047e-10,
+        "relative_gradient_difference": 9.018344758846907e-06,
+        "derivative_along_exact_stored_matrix_direction": 1.0360717779583511e-20,
+        "derivative_along_fp64_matrix_direction": -5.1138298082827106e-20,
+        "own_exact_metric_derivative": 1.0360628831729348e-20
+      },
+      {
+        "interpretation": "exact_native_decode",
+        "mse": 5.349357395500664e-19,
+        "gradient_norm": 1.0971717094540956e-10,
+        "relative_gradient_difference": 2.8907407781195614e-05,
+        "derivative_along_exact_stored_matrix_direction": 1.0360459809473213e-20,
+        "derivative_along_fp64_matrix_direction": -5.1137193159927437e-20,
+        "own_exact_metric_derivative": 1.0360112899246129e-20
+      }
+    ],
+    "source_sha256": {
+      "checkpoint_000007918.npz": "55de020b1c18d53a7acd94e23d064594a858f395bc886a4290ffce9c59b6d2a3",
+      "state_000007918.pkl": "04ec2a8a92eede533fad9502d95b1cd0a1ee5a66c2c9b4e12c2c9dc20ab8af92",
+      "failure.npz": "469d61bad3386e7764fea087051aa2516a16d30968daf7411369e507c327171a"
+    }
+  },
+  {
+    "key": "ssbroyden_N512_s1_parameter_scale_a71fab637b",
+    "step": 8028,
+    "points": 8193,
+    "digits": 80,
+    "target": "analytic sqrt(2) sin(2 pi x), not bitwise GPU labels",
+    "stored_gradient_exact_metric_derivative": 5.2543356908103394e-23,
+    "rows": [
+      {
+        "interpretation": "stored_physical_parameters",
+        "mse": 2.476574953421007e-19,
+        "gradient_norm": 1.533389297878538e-10,
+        "relative_gradient_difference": 6.693987001023672e-06,
+        "derivative_along_exact_stored_matrix_direction": 5.2543181070354065e-23,
+        "derivative_along_fp64_matrix_direction": -8.645999814711319e-22,
+        "own_exact_metric_derivative": 5.2543005000230884e-23
+      },
+      {
+        "interpretation": "exact_native_decode",
+        "mse": 2.4765749024628138e-19,
+        "gradient_norm": 1.5333677403742767e-10,
+        "relative_gradient_difference": 1.7643328750306803e-05,
+        "derivative_along_exact_stored_matrix_direction": 5.254113979402423e-23,
+        "derivative_along_fp64_matrix_direction": -8.645892641014179e-22,
+        "own_exact_metric_derivative": 5.2538922369227707e-23
+      }
+    ],
+    "source_sha256": {
+      "checkpoint_000008028.npz": "0f034751024f83e80db1e99d95a7b56373fb5e009eb7d835fab4d42ee78e37d9",
+      "state_000008028.pkl": "2afeae1c68954c709d45b2b8fab7eb461d5029889d25785366354de26e988b23",
+      "failure.npz": "09366d801b2de77e22a84d7b21de0cdcc5b084fe98f5e85f474a2f08bc5076ef"
+    }
+  }
+]

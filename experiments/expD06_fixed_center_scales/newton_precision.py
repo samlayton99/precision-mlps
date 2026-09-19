@@ -33,12 +33,54 @@ def curvature_block(task):
         return sums
 
 
+def loss_block(task):
+    """Evaluate fixed FP64 trial parameters against the analytic target at MP80."""
+    x,centers,c,gamma=task
+    with mp.workdps(80):
+        centers,c,gamma=([mp.mpf(v) for v in a] for a in (centers,c,gamma))
+        total=mp.mpf(0)
+        for xx in x:
+            xx=mp.mpf(xx)
+            residual=c[0]+mp.fsum(w*mp.tanh(s*(xx-t)) for w,s,t in zip(c[1:],gamma,centers))-mp.sqrt(2)*mp.sin(2*mp.pi*xx)
+            total+=residual**2
+        return total
+
+
+def line_profiles(analysis,output,records,pool,workers):
+    rows=[]
+    for record in records:
+        if record['case']['optimizer']!='newton' or not record['case'].get('warm_start'):continue
+        g=core.geometry(record['case']['n']);folder=analysis/record['key']
+        source=folder/f"curvature_direction_{record['end']}.npz"
+        with np.load(source) as a:
+            c,gamma,v,scales=(a[k] for k in ('c','gamma','minimum_direction','scales'))
+        with np.load(folder/'curvature_profile.npz') as a:
+            amplitude=float(a['amplitudes'][np.argmin(a['actual_mse'])])
+        direction=v*scales;dc,dg=direction[:g.width+1],direction[g.width+1:]
+        x=np.linspace(-1,1,16*g.n+1);points=[]
+        with mp.workdps(80):
+            baseline=None
+            for t in (0.,amplitude,-amplitude,2*amplitude,10*amplitude):
+                # Match the detached FP64 trial's physical parameter arithmetic.
+                cc,gg=c+t*dc,gamma+t*dg
+                loss=mp.fsum(pool.map(loss_block,[(block,g.centers,cc,gg) for block in np.array_split(x,workers)]))/len(x)
+                if baseline is None:baseline=loss
+                points.append(dict(amplitude=t,mse=float(loss),relative_change=float((loss-baseline)/baseline)))
+        row=dict(key=record['key'],step=record['end'],points=len(x),digits=80,trials=points,
+                 physical_trial_arithmetic='FP64, matching the detached line profile; evaluation MP80 against analytic sine',
+                 source_sha256=hashlib.sha256(source.read_bytes()).hexdigest())
+        rows.append(row);run.write_json(output/'line_profiles_mp80.json',rows);print(json.dumps(row),flush=True)
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--analysis',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--workers',type=int,default=8)
+    p.add_argument('--line-profiles',action='store_true',help='Verify the tiny warm-Newton profile gains at MP80 instead of curvature')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=True)
     records=json.loads((a.analysis/'optimizer_summary.json').read_text());rows=[]
     with ProcessPoolExecutor(max_workers=a.workers) as pool:
+        if a.line_profiles:
+            line_profiles(a.analysis,a.output,records,pool,a.workers);return
         for record in records:
             if record['case']['optimizer']!='newton':continue
             g=core.geometry(record['case']['n']);path=a.analysis/record['key']/f"curvature_direction_{record['end']}.npz"

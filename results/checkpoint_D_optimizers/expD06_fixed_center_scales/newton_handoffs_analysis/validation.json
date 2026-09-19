@@ -1,0 +1,43 @@
+{
+  "base_commit": "321d7a9",
+  "training_implementation_commit": "621718b",
+  "continuation_commit": "9b695d0",
+  "local_required_suite": {
+    "command": ".venv/bin/python -m pytest -q -m \"not slow\"",
+    "passed": 271,
+    "skipped": 5,
+    "deselected": 1,
+    "seconds": 46.8,
+    "log_sha256": "aaaaed0260671a5b2618d357725bf6b8746ad6af1f189f280c0022d47d0f2a84"
+  },
+  "earlier_full_suite": {
+    "commit": "9ee021d",
+    "passed": 272,
+    "skipped": 5,
+    "seconds": 70.15
+  },
+  "remote_pinned_suite": {
+    "slurm_job": 499,
+    "passed": 38,
+    "seconds": 87.48
+  },
+  "focused_newton_handoffs": {
+    "passed": 15,
+    "skipped": 1,
+    "skip_reason": "Local Equinox dependency absent; pinned SSB metric-equivalence test passed remotely.",
+    "seconds": 8.28
+  },
+  "figure_inspection": "All 12 figure files inspected; early-window time placement, common construction axis limits, Fourier ticks, and physical parameter markers corrected.",
+  "precision_source_hash_checks": {
+    "newton_endpoints": 4,
+    "ssb_failure_endpoints": 4,
+    "all_match": true
+  },
+  "line_profile_verification": {
+    "full_grid_points": 8193,
+    "digits": 80,
+    "warm_endpoints": 2,
+    "trials_per_endpoint": 5,
+    "independent_loss_evaluator_checked": true
+  }
+}
