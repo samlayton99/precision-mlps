@@ -270,3 +270,28 @@ def test_frozen_decay_matches_explicit_gradient_descent():
         for _ in steps:
             measured.append(live@live);live-=eta*b@(b.T@live)
         np.testing.assert_allclose(predicted,measured,rtol=2e-13,atol=2e-14)
+
+
+def test_paired_gn_restart_preserves_origin_and_damping(tmp_path):
+    import json,time
+    from experiments.expD06_fixed_center_scales import joint_conditioning as jc
+    original=jc.case('gn','parameter_scale',n=128)
+    jc.advance_higher(tmp_path,original,2,time.monotonic()+120,None,samples=1)
+    source=tmp_path/dt.case_key(original)
+    origin_leaves,_=run.load_state(source/'state_000000002.pkl')
+    branches=[]
+    for coord in jc.MAPS:
+        config=jc.case('gn',coord,n=128,restart=dict(source_key=source.name,step=2))
+        jc.advance_higher(tmp_path,config,2,time.monotonic()+120,None,samples=1)
+        folder=tmp_path/dt.case_key(config);branches.append(folder)
+        with np.load(folder/'checkpoint_000000000.npz') as branch,np.load(source/'checkpoint_000000002.npz') as start:
+            np.testing.assert_allclose(branch['c'],start['c'],atol=3e-16,rtol=1e-14)
+            np.testing.assert_array_equal(branch['gamma'],start['gamma'])
+        leaves,_=run.load_state(folder/'state_000000000.pkl')
+        # Dictionary leaves are ordered count, damping, evaluation counters, z.
+        np.testing.assert_array_equal(leaves[1],origin_leaves[1])
+        assert json.loads((folder/'latest.json').read_text())['completed_updates']==2
+        assert json.loads((folder/'case.json').read_text())['initialization']=='checkpoint_restart'
+    jc.advance_higher(tmp_path,original,4,time.monotonic()+120,None,samples=1)
+    with np.load(source/'checkpoint_000000004.npz') as uninterrupted,np.load(branches[0]/'checkpoint_000000002.npz') as restarted:
+        np.testing.assert_array_equal(restarted['native_parameters'],uninterrupted['native_parameters'])

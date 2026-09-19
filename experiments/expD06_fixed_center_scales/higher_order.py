@@ -92,7 +92,8 @@ def gn_step(residual,residual_jacobian,physical_fn,damping_floor=1e-24,max_trial
     def step(state):
         z=state["z"];r,jac=residual_jacobian(z);grad=jac.T@r
         scale=jnp.max(jnp.sum(jac*jac,axis=0));floor=damping_floor*scale
-        mu=jnp.maximum(jnp.where(state["count"]==0,1e-3*scale,state["damping"]),floor)
+        cold=(state["count"]==0)&(state["damping"]==0)
+        mu=jnp.maximum(jnp.where(cold,1e-3*scale,state["damping"]),floor)
         c0,gamma0=physical_fn(z)
         start_bad=~(jnp.all(jnp.isfinite(r)) & jnp.all(jnp.isfinite(jac)) & jnp.isfinite(mu))
         start=dict(attempts=jnp.array(0),accepted=jnp.array(False),status=jnp.where(start_bad,1,0),

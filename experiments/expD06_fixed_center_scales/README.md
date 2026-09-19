@@ -399,6 +399,19 @@ the **stored trained readouts**. This tests the gamma-signal hypothesis without
 substituting the detached fitted coefficients into the geometry Jacobian;
 core and halo contributions and all three projection cutoffs are retained.
 
+The damping probe motivates a paired **training restart** from the difficult
+individual-scale GN checkpoint at $N=1024$, seed 0, after 20k updates. Both arms
+start from its same physical coefficients, slopes, and stored damping. One
+keeps individual coordinates; the other converts only the readout coordinates
+to neighbors. Both retain the source damping floor, then use the unchanged GN
+acceptance/damping rule for 20k additional accepted updates. Their new counters
+start at zero; the source checkpoint and full-state hashes identify the origin.
+The individual-coordinate restart is checked against uninterrupted continuation.
+This post-hoc test changes the readout regularization metric while preserving
+the initial geometry penalty. It replaces an unstarted generic continuation
+block, rather than increasing the eight-GPU-hour cap. The same-physical-metric
+QR control above distinguishes this intervention from coordinate-only GN.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)

@@ -61,6 +61,17 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
     metadata=dict(config,target="sine",initialization="xavier_a_reference",samples_per_cell=samples,
                   validation_points=32768,objective="half-MSE",reference_lambda=.25,minimum_updates=20000,
                   ssbroyden_commit=higher.SSB_COMMIT,optimistix_commit=higher.OPTIMISTIX_COMMIT)
+    restart=config.get('restart')
+    if restart:
+        if config['optimizer']!='gn':raise ValueError('This paired restart is defined only for GN')
+        origin=root/restart['source_key'];origin_step=restart['step']
+        origin_case=json.loads((origin/'case.json').read_text())
+        if (origin_case['optimizer'],origin_case['n'],origin_case['samples_per_cell'])!=('gn',config['n'],samples):
+            raise ValueError('Restart must preserve the GN target, width, and training grid')
+        origin_checkpoint=origin/f'checkpoint_{origin_step:09d}.npz';origin_state=origin/f'state_{origin_step:09d}.pkl'
+        metadata.update(initialization='checkpoint_restart',restart_source_sha256={
+            'checkpoint':hashlib.sha256(origin_checkpoint.read_bytes()).hexdigest(),
+            'state':hashlib.sha256(origin_state.read_bytes()).hexdigest()})
     if (path/'case.json').exists() and json.loads((path/'case.json').read_text())!=metadata:
         raise ValueError(f"Configuration changed at {path}")
     run.write_json(path/'case.json',metadata)
@@ -73,6 +84,17 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
     z=higher.initial_parameters(g,config['seed'],config['coordinates'])
     if config['optimizer']=='gn':
         state=higher.gn_initial(z)
+        if restart:
+            old,old_count=higher.load_state(origin_state,state)
+            if old_count!=origin_step or int(old['count'])!=origin_step or int(old['status'])!=0:
+                raise ValueError('Restart source must be the requested accepted GN state')
+            with np.load(origin_checkpoint) as cp:
+                if config['coordinates']==origin_case['coordinates']:z=jnp.asarray(cp['native_parameters'])
+                else:z=jnp.asarray(np.r_[first.encode(cp['c'],g,config['coordinates']),cp['lambda']])
+            state=higher.gn_initial(z)
+            state['damping']=old['damping']
+            if not (np.isfinite(float(state['damping'])) and float(state['damping'])>0):
+                raise ValueError('The warm restart requires a finite positive stored damping')
         advance=higher.gn_step(residual,jacobian,physical,config['damping_floor'])
     else:
         solver=higher.ssb_solver(source,config['curvature_epsilon'],config['search_threshold'],config.get('ssb_integration','pinned'))
