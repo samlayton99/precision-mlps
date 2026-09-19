@@ -158,6 +158,24 @@ def figures(output,reference,construction):
     save(fig,dest/'newton_trust_region.png')
 
     fig,axes=plt.subplots(2,2,figsize=(13,9),layout='constrained')
+    for r in records:
+        c=r['case'];path=output/r['key']/'curvature_profile.npz'
+        if c['optimizer']!='newton' or not path.exists():continue
+        ax=axes[int(bool(c.get('warm_start'))),c['seed']]
+        with np.load(path) as a:
+            amplitude=a['amplitudes'];baseline=float(a['initial_mse'])
+            for sign,color in ((1,'#2166ac'),(-1,'#d6604d')):
+                mask=amplitude*sign>0;order=np.argsort(np.abs(amplitude[mask]));steps=np.abs(amplitude[mask])[order]
+                ax.loglog(steps,(a['actual_mse'][mask]/baseline)[order],color=color,label=f'Actual, sign {sign:+d}')
+                ax.loglog(steps,(a['residual_model_mse'][mask]/baseline)[order],color=color,ls='--',label=f'Residual model, sign {sign:+d}')
+            ax.axvline(float(a['radius']),color='.4',ls=':',label='Stored next trust radius')
+        ax.set(xlabel='Step length along minimum-curvature eigenvector',ylabel='Trial MSE / current MSE',
+               title=f"{'Adam endpoint' if c.get('warm_start') else 'Xavier'} start, seed {c['seed']}")
+        ax.grid(alpha=.2);ax.legend(fontsize=7)
+    fig.suptitle('Detached Newton endpoint profiles; eigenvectors use prescribed parameter units\nDashed curves evaluate r + t Jv + ½t² r″[v,v]; neither curves nor sampled minima are training updates')
+    save(fig,dest/'newton_curvature_profiles.png')
+
+    fig,axes=plt.subplots(2,2,figsize=(13,9),layout='constrained')
     for extra in extras:
         c=extra['case']
         if tag(c)!='ssb_small' or c['coordinates']!='parameter_scale':continue

@@ -68,6 +68,27 @@ def directional_curvature(g,c,gamma,coordinate,direction,samples=16):
                 directional_gradient=float(r@first))
 
 
+def curvature_profile(g,c,gamma,coordinate,direction,radius):
+    """Actual line profile versus a second-order residual model; not a training step."""
+    x,y,a,r,j=analysis.linearize(g,c,gamma);split=g.width+1
+    dc=higher.readout_map(g,coordinate)@direction[:split]
+    dg=direction[split:]*(1. if coordinate=='physical' else 1/g.h)
+    distance=x[:,None]-g.centers;argument=distance*gamma
+    e=np.exp(-2*np.abs(argument));sech=4*e/(1+e)**2;darg=distance*dg
+    first=a@dc+(sech*darg)@c[1:]/np.sqrt(len(x))
+    second=(2*(sech*darg)@dc[1:]+(-2*np.tanh(argument)*sech*darg*darg)@c[1:])/np.sqrt(len(x))
+    magnitudes=np.geomspace(min(1e-9,radius/100),max(.1,10*radius),33)
+    amplitudes=np.r_[-magnitudes[::-1],0.,magnitudes];actual=[];model=[]
+    for amplitude in amplitudes:
+        rr=(diagnostics.prediction(x,g.centers,c+amplitude*dc,gamma+amplitude*dg)-y)/np.sqrt(len(x))
+        predicted=r+amplitude*first+.5*amplitude**2*second
+        actual.append(rr@rr);model.append(predicted@predicted)
+    best=int(np.argmin(actual))
+    return dict(amplitudes=amplitudes,actual_mse=actual,residual_model_mse=model,initial_mse=r@r,radius=radius),dict(
+        minimum_sampled_mse=float(actual[best]),minimum_sampled_amplitude=float(amplitudes[best]),
+        amplitude_over_radius=float(abs(amplitudes[best])/radius),second_derivative_norm=float(np.linalg.norm(second)))
+
+
 def extra_case(task):
     root,output,case,*options=task;key=first.case_key(case);folder=root/key;dest=output/key;dest.mkdir(exist_ok=True)
     latest=json.loads((folder/'latest.json').read_text());end=latest['completed_updates']
@@ -111,6 +132,9 @@ def extra_case(task):
             # reconstructs the optimizer state's static tree structure.
             z=higher.encode_physical(c,gamma,g,coordinate)
             state,_=higher.load_state(state_path,newton.initial(z));radius=float(state['radius'])
+            if step==end:
+                profile,row['curvature_profile']=curvature_profile(g,c,gamma,coordinate,vectors[:,0],radius)
+                run.save_arrays(dest/'curvature_profile.npz',**profile)
             trials=[]
             for label,spectrum,basis in [('full_hessian',values,vectors),('gauss_newton',gn_values,gn_vectors)]:
                 delta,shift,hard=newton.eigen_step(jnp.asarray(spectrum),jnp.asarray(basis),jnp.asarray(gradient),radius)
