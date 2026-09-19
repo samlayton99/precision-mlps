@@ -412,6 +412,16 @@ the initial geometry penalty. It replaces an unstarted generic continuation
 block, rather than increasing the eight-GPU-hour cap. The same-physical-metric
 QR control above distinguishes this intervention from coordinate-only GN.
 
+The selected width-512 higher-order runs continue unchanged to 40k accepted
+updates. GD and Adam continue through 300k and 1.3m, then to 5.3m updates;
+the last block was admitted from measured throughput plus a 50% margin within
+the same cap. These continuations do not alter the fixed 100k/20k comparison
+or retune the selected settings. The figure export separates Adam's window
+mean, median, and maximum, and plots the paired GN restart against both accepted
+updates and residual evaluations. Physical readout plots use a small linear
+region around zero so the construction coefficients remain visible alongside
+larger learned coefficients.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)

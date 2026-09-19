@@ -8,6 +8,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FixedLocator, FuncFormatter, NullFormatter
 import numpy as np
 
 from . import joint_analysis as analysis, joint_conditioning as campaign, run
@@ -15,6 +16,47 @@ from . import joint_analysis as analysis, joint_conditioning as campaign, run
 
 def save(fig,path):
     fig.savefig(path,dpi=160,bbox_inches='tight');plt.close(fig)
+
+
+def restart_comparison(output,records,dest):
+    fig,axes=plt.subplots(2,2,figsize=(13,9),layout='constrained')
+    for record in records:
+        case=record['case'];color=analysis.COLORS[case['coordinates']];label=analysis.LABELS[case['coordinates']]
+        folder=output/record['key']
+        with np.load(folder/'restart_trace.npz') as a:
+            trace=a['trace'];np.testing.assert_array_equal(a['columns'],campaign.HIGHER_COLUMNS)
+        mse=np.r_[2*trace[:,0],record['status']['train_mse']];steps=np.arange(len(mse))
+        calls=np.r_[0,trace[:,campaign.HIGHER_COLUMNS.index('function_evaluations')]]
+        axes[0,0].plot(steps,mse,color=color,label=label)
+        axes[0,1].plot(calls,mse,color=color,label=label)
+        axes[1,0].plot(steps[1:],trace[:,campaign.HIGHER_COLUMNS.index('damping')],color=color,label=label)
+        with np.load(folder/'history.npz') as h:
+            axes[1,1].plot(h['step'],h['lambda_quantiles'][:,1],color=color,label=label)
+            axes[1,1].fill_between(h['step'],h['lambda_quantiles'][:,0],h['lambda_quantiles'][:,2],color=color,alpha=.12)
+    for ax in axes.flat:ax.set_xscale('symlog',linthresh=1);ax.grid(alpha=.2);ax.legend(fontsize=8)
+    for ax in (axes[0,0],axes[0,1],axes[1,0]):ax.set_yscale('log')
+    axes[0,0].set(xlabel='Additional accepted updates',ylabel='Training MSE',title='Same physical origin and initial damping')
+    axes[0,1].set(xlabel='Additional residual evaluations',ylabel='Training MSE',title='Evaluation counts include rejected proposals')
+    axes[1,0].set(xlabel='Additional accepted updates',ylabel='Damping for the next step',title='Unchanged adaptive damping rule')
+    axes[1,1].set(xlabel='Additional accepted updates',ylabel='Core |lambda|',title='Median and 10th–90th percentiles across centers')
+    fig.suptitle('Paired GN restart: N=1024, seed 0, from the same 20k-update checkpoint\nOnly the readout coordinates and their native damping metric differ')
+    save(fig,dest/'restart_comparison.png')
+
+
+def adam_windows(output,records,dest,n):
+    fig,axes=plt.subplots(2,2,figsize=(13,8),layout='constrained')
+    for row,coord in enumerate(campaign.MAPS):
+        for seed in (0,1):
+            matches=[r for r in records if (r['case']['optimizer'],r['case']['coordinates'],r['case']['n'],r['case']['seed'])==('adam',coord,n,seed)]
+            if not matches:continue
+            with np.load(output/matches[0]['key']/'window_mse.npz') as a:
+                for values,label,color in ((a['mean'],'Mean','#2166ac'),(a['quantiles'][2],'Median','#4d9221'),(a['quantiles'][4],'Maximum','#b2182b')):
+                    axes[row,seed].loglog(a['step'],values,label=label,color=color)
+            axes[row,seed].set(title=f'{analysis.LABELS[coord]}, seed {seed}',xlabel='Window end update',ylabel='Training MSE')
+            axes[row,seed].xaxis.set_minor_formatter(NullFormatter())
+            axes[row,seed].grid(alpha=.2);axes[row,seed].legend()
+    fig.suptitle(f'Adam, N={n}: distribution within consecutive training windows\nConstant shared rate; maxima and medians distinguish excursions from sustained accuracy')
+    save(fig,dest/f'adam_windows_N{n}.png')
 
 
 def figures(output):
@@ -33,7 +75,10 @@ def figures(output):
             ax.grid(alpha=.2);ax.legend(fontsize=8)
         fig.suptitle('Matched-rate comparison, N=512 seed 0; divergent trials omitted from finite curves')
         save(fig,dest/'rate_search.png')
-    for n in sorted({r['case']['n'] for r in records}):
+    widths=sorted({r['case']['n'] for r in records})
+    if records and all(r['case'].get('restart') for r in records):
+        restart_comparison(output,records,dest);widths=[]
+    for n in widths:
         fig,axes=plt.subplots(2,4,figsize=(17,8),layout='constrained')
         for col,opt in enumerate(campaign.OPTIMIZERS):
             for record in records:
@@ -49,12 +94,20 @@ def figures(output):
                 if record['status']['status']!='continuing':
                     axes[0,col].plot(record['end'],record['status']['train_mse'],'x',color=color,ms=9)
             axes[0,col].set(title=opt.upper(),ylabel='Window mean training MSE',xlabel='Accepted updates (higher order) / updates')
+            axes[0,col].xaxis.set_minor_formatter(NullFormatter())
+            if opt in ('gn','ssbroyden') and axes[0,col].lines:
+                ticks=sorted(set([min(line.get_xdata()[0] for line in axes[0,col].lines),10000,
+                                  max(r['end'] for r in records if r['case']['n']==n and r['case']['optimizer']==opt)]))
+                axes[0,col].xaxis.set_major_locator(FixedLocator(ticks))
+                axes[0,col].xaxis.set_major_formatter(FuncFormatter(lambda value,pos:f'{value/1000:g}k'))
             axes[1,col].set(ylabel='Median core |lambda|',xlabel='Updates')
             axes[1,col].axhline(.25,color='.4',ls=':',label='Construction reference 0.25')
             for row in (0,1):axes[row,col].grid(alpha=.2)
             if axes[0,col].lines:axes[0,col].legend(fontsize=7)
         fig.suptitle(f'N={n}; constant shared GD/Adam rates; × = numerical/search stop; shading = 10–90% within window')
         save(fig,dest/f'learning_N{n}.png')
+        if any(r['case']['n']==n and r['case']['optimizer']=='adam' for r in records):
+            adam_windows(output,records,dest,n)
     for record in records:
         if not record['end']:continue
         folder=output/record['key'];c=record['case'];end=record['end']
@@ -127,7 +180,8 @@ def figures(output):
             if reference.exists():
                 with np.load(reference) as construction:
                     axes[0,1].plot(construction['centers'],construction['c'][1:],'.',ms=2,label='Construction at lambda=0.25')
-            axes[0,1].set(yscale='symlog',ylabel='Physical readout w',xlabel='Fixed physical center');axes[0,1].legend(fontsize=8)
+            axes[0,1].set_yscale('symlog',linthresh=1e-3)
+            axes[0,1].set(ylabel='Physical readout w',xlabel='Fixed physical center');axes[0,1].legend(fontsize=8)
             axes[1,1].plot(h['centers'],a['gamma'],'.',ms=3);axes[1,1].set(ylabel='Signed physical gamma',xlabel='Fixed physical center')
             fig.suptitle(f'{c["optimizer"].upper()} · {analysis.LABELS[c["coordinates"]]} · N={c["n"]}, seed={c["seed"]}, update={end:,}')
             save(fig,dest/f'{record["key"]}_geometry.png')

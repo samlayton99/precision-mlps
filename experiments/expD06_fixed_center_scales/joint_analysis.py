@@ -218,6 +218,8 @@ def analyze_case(task):
             if 'failed_update' in status:status['failed_update']=None
     if not end:return dict(case=case,key=key,status=status,end=0)
     trace=campaign.read_trace(folder,end,case['optimizer'])
+    if case.get('restart'):
+        run.save_arrays(dest/'restart_trace.npz',trace=trace,columns=campaign.HIGHER_COLUMNS)
     if end<source_status['completed_updates'] and case['optimizer'] in ('gn','ssbroyden'):
         for counter in ('function_evaluations','gradient_evaluations','jacobian_evaluations'):
             status[counter]=int(trace[-1,campaign.HIGHER_COLUMNS.index(counter)])
