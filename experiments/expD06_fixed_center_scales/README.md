@@ -450,6 +450,14 @@ After exporting both horizons, `joint_figures --output <lower-export>
 counts for each map and seed. The lower rate is an initialization-to-endpoint
 control, not a continuation scheduler.
 
+The post-hoc `curvature_history.py --analyses <selected-export> <lower-export>
+--output <directory>` checks the same exact native Hessian at saved checkpoints
+nearest 48 logarithmically spaced requested updates, plus initialization and
+100k/300k/1.3m/final states. Duplicate nearest checkpoints are removed. This
+CPU-only audit records actual sampled times and mode block energies; it does
+not interpolate Hessians or advance the optimizer. Endpoint values must agree
+with the independent three-consecutive-state audit before interpretation.
+
 `ssb_gradient_audit.py` recomputes full-grid gradients at 80 digits for the two
 default corrected SSBroyden failures. It distinguishes fixed stored physical
 coefficients from exact decoding of stored native coordinates, uses the analytic

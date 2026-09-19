@@ -20,6 +20,7 @@ geometry. This is one smooth target, two widths, and two paired seeds.
 | Shared rate | One constant scalar $\eta$ for both native parameter blocks in GD or Adam. There is no scheduling or independent readout/geometry rate tuning. |
 | GN | Damped Gauss–Newton: solve a regularized linearized least-squares problem for the joint parameter step. |
 | SSBroyden | Self-scaling Broyden, maintaining a full approximate inverse Hessian. |
+| $\mathcal H$; $H$ | Exact native half-MSE Hessian $\mathcal H=\nabla_z^2L$; SSBroyden's approximate inverse Hessian $H$. |
 | Detached fit/probe | A diagnostic computation at saved parameters; its coefficients and trial steps never enter the original training runs. |
 | DC | The constant spatial component, Fourier index zero. |
 
@@ -160,7 +161,7 @@ These are alternating updates, not an absence of gradient signal.
 
 An exact native-coordinate Hessian audit includes both $J^TJ$ and the residual
 curvature term. For a positive quadratic mode, GD's local stability boundary is
-$\eta\lambda_{\max}(H)=2$. At the last three consecutive states, the measured
+$\eta\lambda_{\max}(\mathcal H)=2$. At the last three consecutive states, the measured
 values are 1.80, 2.30, 1.80 for individual-scale seed 0 and 2.19, 2.24, 2.19
 for seed 1. Neighboring values lie between 2.000 and 2.005 for seed 0 and
 between 2.017 and 2.061 for seed 1. This places the observed alternation near
@@ -187,15 +188,31 @@ states, while seed 1 repeats the paired physical initialization.
 
 The lower-rate runs still alternate: all four final-window median cosines
 between consecutive bandwidth steps are below $-0.99999$. Their final exact
-Hessian products $\eta\lambda_{\max}(H)$ lie at 2.184–2.222 for individual
+Hessian products $\eta\lambda_{\max}(\mathcal H)$ lie at 2.184–2.222 for individual
 scales and 2.003–2.007 for neighbors across both seeds and the three audited
 states. Reducing the rate by a factor of 3.33 leads to larger learned curvature,
 rather than preserving a factor-of-3.33 distance from the stability boundary.
 This resembles the near-boundary GD behavior documented by
 [Cohen et al.](https://arxiv.org/abs/2103.00065); the resemblance is an
 interpretation of our measured trajectories, not a theorem for this model.
-Correct parameter units and an initially acceptable rate do not keep the
+Correct parameter units and a constant scalar rate do not keep the
 changing joint Hessian uniformly well conditioned or uniformly stable.
+
+The history audit evaluates 32 actual saved states per trajectory, selected
+nearest a logarithmic grid plus the comparison horizons. Neighboring GD starts
+below the local boundary at both rates, crosses it within the first sampled
+1000 updates, and later approaches it again. Individual-scale GD starts above
+it, falls below after the first update, and subsequently returns to large
+curvature. Thus the final observation is not simply inherited unchanged from
+initialization. At the lower-rate endpoints, 94.5–94.7% of the leading Hessian
+eigenvector's squared norm lies in the geometry block for individual scales,
+and 96.6–96.9% for neighbors. The leading sensitivity is mainly in slopes;
+calling this only a readout learning-rate problem would miss that joint effect.
+
+<figure>
+  <img src="joint_conditioning_analysis/curvature_history/curvature_history.png" alt="Shared rate times largest exact Hessian eigenvalue along each of eight GD trajectories" style="max-width:100%;">
+  <figcaption>Exact native half-MSE Hessian on the full training grid at 32 saved states per run, including residual curvature. Both maps and seeds revisit the positive-quadratic stability boundary at the two constant rates. Points are sampled states; connecting lines do not assert behavior at every intervening update. The final values agree with the independently loaded consecutive-state audit.</figcaption>
+</figure>
 
 The weak-mode barrier survives alongside this oscillation. Repeating the
 frozen-readout diagnostic at 5.3 million updates, the seed-0 individual-scale
