@@ -256,6 +256,9 @@ Matplotlib and the local `ffmpeg` executable produce four MP4s, two standalone H
 
 ## Joint conditioning: individual scales and neighboring differences
 
+The [joint-conditioning report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/joint_conditioning_results.md)
+contains the measured comparisons and mechanism diagnostics.
+
 The new `joint_conditioning` campaign compares individual parameter scales with
 and without neighboring differences under GD, Adam, damped Gauss–Newton, and
 SSBroyden. It has a fresh cap of **28,800 allocated GPU-seconds**, at most two
