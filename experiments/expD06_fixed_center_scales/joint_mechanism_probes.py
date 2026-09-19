@@ -19,8 +19,9 @@ from . import core, diagnostics, higher_order, joint_analysis as analysis, joint
 def native_hessians(g,c,gamma,coordinates,samples=16):
     """Exact half-MSE Hessian, GN matrix, and gradient in the trained coordinates."""
     x,y,a,r,j=analysis.linearize(g,c,gamma,samples)
-    jac=np.column_stack((analysis.native_features(a,g,coordinates),j));gn=jac.T@jac
-    distance=(x[:,None]-g.centers)/g.h;argument=distance*(g.h*gamma)
+    jac=np.column_stack((analysis.native_features(a,g,coordinates),j*(g.h if coordinates=='physical' else 1.)));gn=jac.T@jac
+    distance=(x[:,None]-g.centers)/(1. if coordinates=='physical' else g.h)
+    argument=(x[:,None]-g.centers)*gamma
     e=np.exp(-2*np.abs(argument));sech=4*e/(1+e)**2
     derivative=distance*sech/np.sqrt(len(x))
     mixed=derivative.T@r

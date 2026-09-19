@@ -113,5 +113,31 @@ def test_handoff_hash_and_fresh_newton_resume(tmp_path):
     jc.advance_higher(root,config,2,time.monotonic()+120,None,samples=1)
     assert json.loads((folder/'latest.json').read_text())['completed_updates']==2
     assert len(jc.read_trace(folder,2,'newton'))==2
+    from experiments.expD06_fixed_center_scales import handoff_analysis
+    output=tmp_path/'analysis';output.mkdir()
+    # The small smoke run uses one sample per cell; the production diagnostic
+    # uses 16. Only exercise state/trace export here, not cross-grid equality.
+    extra=handoff_analysis.extra_case((root,output,config))
+    assert extra['end']==2 and len(extra['states'])==3
+    assert (output/dt.case_key(config)/'optimizer_trace.npz').exists()
     config['warm_start']['sha256']='wrong'
     with pytest.raises(ValueError,match='hash changed'):jc.warm_parameters(root,config,g,1)
+
+
+def test_physical_analysis_and_metric_attribution():
+    from experiments.expD06_fixed_center_scales import joint_analysis as analysis, joint_mechanism_probes as probes
+    from experiments.expD06_fixed_center_scales.handoff_analysis import metric_blocks
+    g,r,j,loss=ho.problem(64,'physical',1);z=ho.initial_parameters(g,0,'physical')
+    c,gamma=map(np.asarray,ho.physical(z,g,'physical'))
+    h,gn,gradient=probes.native_hessians(g,c,gamma,'physical',1)
+    _,gg,hh,_=nt.derivatives(g,'physical',j,1)(z)
+    np.testing.assert_allclose(h,hh,rtol=2e-10,atol=3e-10)
+    np.testing.assert_allclose(gradient,gg,rtol=2e-10,atol=3e-12)
+    stats,arrays=analysis.probe(g,c,gamma,'physical',1)
+    np.testing.assert_allclose(arrays['band_gradient_c'].sum(axis=0),arrays['gradient_c'],atol=1e-13)
+    rng=np.random.default_rng(44);a=rng.normal(size=(6,6));matrix=a@a.T
+    gradient=rng.normal(size=6);jac=rng.normal(size=(10,6));scales=np.array([.1,.2,.3,2.,3.,4.])
+    result=metric_blocks(matrix,gradient,jac,scales,scales,3)
+    assert result['direction_closure']<1e-13 and result['function_closure']<1e-13
+    np.testing.assert_allclose(sum(result['directional_derivatives']),-gradient@matrix@gradient,atol=1e-13)
+    np.testing.assert_allclose(result['common_metric_eigen_quantiles'],np.quantile(np.linalg.eigvalsh(matrix),[0,.1,.5,.9,1]),atol=1e-13)

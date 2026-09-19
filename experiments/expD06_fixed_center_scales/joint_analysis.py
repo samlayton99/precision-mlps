@@ -31,6 +31,7 @@ def linearize(g,c,gamma,samples=16):
 
 
 def native_features(a,g,coordinate):
+    if coordinate=='physical':return a
     if coordinate=='parameter_scale':return a*g.alpha
     b=np.column_stack((a[:,0]*g.alpha[0],a[:,1:-1]-a[:,2:],a[:,-1]))
     b[:,1:]*=np.cumsum(g.alpha[1:])
@@ -40,7 +41,8 @@ def native_features(a,g,coordinate):
 def probe(g,c,gamma,coordinate,samples=16):
     x,y,a,r,j=linearize(g,c,gamma,samples);root=np.sqrt(len(x))
     spectra={};solutions={};arrays={};stats={}
-    for coord in campaign.MAPS:
+    maps=(*campaign.MAPS,'physical') if coordinate=='physical' else campaign.MAPS
+    for coord in maps:
         b=native_features(a,g,coord)
         u,s,v=svd(b,full_matrices=False,lapack_driver='gesdd')
         arrays[f'singular_readout_{coord}']=s
@@ -63,8 +65,8 @@ def probe(g,c,gamma,coordinate,samples=16):
         if cutoff==1e-12:
             arrays.update(readout_refit=cf,gradient_parallel=gp,gradient_perpendicular=gn,
                           residual_parallel=retained@(retained.T@r),residual_perpendicular=r-retained@(retained.T@r))
-    for coord in campaign.MAPS:
-        jac=np.column_stack((native_features(a,g,coord),j))
+    for coord in maps:
+        jac=np.column_stack((native_features(a,g,coord),j*(g.h if coord=='physical' else 1.)))
         uj,sj,vj=svd(jac,full_matrices=False,lapack_driver='gesdd')
         arrays[f'singular_joint_{coord}']=sj
         arrays[f'joint_residual_modal_{coord}']=uj.T@r
@@ -72,7 +74,7 @@ def probe(g,c,gamma,coordinate,samples=16):
         for cutoff in CUTOFFS:
             keep=sj>cutoff*sj[0]
             dz=-vj[keep].T@((uj[:,keep].T@r)/sj[keep])
-            dc=higher.readout_map(g,coord)@dz[:g.width+1];dl=dz[g.width+1:]
+            dc=higher.readout_map(g,coord)@dz[:g.width+1];dl=dz[g.width+1:]*(g.h if coord=='physical' else 1.)
             motion=jac@dz
             rows.append(dict(cutoff=cutoff,rank=int(keep.sum()),linearized_mse=float(np.sum((r+motion)**2)),
                              delta_c_norm=float(np.linalg.norm(dc)),delta_lambda_norm=float(np.linalg.norm(dl))))
@@ -113,10 +115,11 @@ def dense_window(folder,end,optimizer):
 
 def dense_audit(folder,g,case,end,dest):
     dense=dense_window(folder,end,case['optimizer']);count=len(dense['step'])
+    if case['coordinates']=='physical':dense['gradient_lambda']/=g.h
     if not count:return {}
     x,y,a,r,j=linearize(g,dense['c'][0],dense['gamma'][0])
     b=native_features(a,g,case['coordinates']);u,s,_=svd(b,full_matrices=False)
-    uj,sj,_=svd(np.column_stack((b,j)),full_matrices=False)
+    uj,sj,_=svd(np.column_stack((b,j*(g.h if case['coordinates']=='physical' else 1.))),full_matrices=False)
     up,sp,_=svd(a*g.alpha,full_matrices=False);retained=up[:,sp>1e-12*sp[0]]
     rng=np.random.default_rng(391)
     boundaries=np.linspace(0,count,min(16,count)+1,dtype=int)
@@ -178,13 +181,14 @@ def precision_check(g,cp,coordinate=None):
         native_error=None
         if coordinate is not None:
             z=list(map(mp.mpf,cp['z']));alpha=list(map(mp.mpf,g.alpha))
-            if coordinate=='parameter_scale':native_c=[u*v for u,v in zip(z,alpha)]
+            if coordinate=='physical':native_c=z
+            elif coordinate=='parameter_scale':native_c=[u*v for u,v in zip(z,alpha)]
             else:
                 # The recorded map uses the FP64 reference cumulative allowances.
                 aa=list(map(mp.mpf,np.cumsum(g.alpha[1:])))
                 q=[u*v for u,v in zip(z[1:],aa)]
                 native_c=[z[0]*alpha[0]]+[q[i]-(q[i-1] if i else 0) for i in range(len(q))]
-            native_g=[mp.mpf(v)/mp.mpf(g.h) for v in cp['lambda']]
+            native_g=list(map(mp.mpf,cp['gamma'])) if coordinate=='physical' else [mp.mpf(v)/mp.mpf(g.h) for v in cp['lambda']]
             native_pred=[native_c[0]+mp.fsum(w*mp.tanh(s*(z-t)) for w,s,t in zip(native_c[1:],native_g,tt)) for z in xx]
             native_error=float(max(abs(a-b) for a,b in zip(pred,native_pred)))
     return dict(points=len(x),digits=80,physical_parameters_held_fixed=True,native_decode_max_difference=native_error,
@@ -220,7 +224,7 @@ def analyze_case(task):
     trace=campaign.read_trace(folder,end,case['optimizer'])
     if case.get('restart'):
         run.save_arrays(dest/'restart_trace.npz',trace=trace,columns=campaign.HIGHER_COLUMNS)
-    if end<source_status['completed_updates'] and case['optimizer'] in ('gn','ssbroyden'):
+    if end<source_status['completed_updates'] and case['optimizer'] in ('gn','ssbroyden','newton'):
         for counter in ('function_evaluations','gradient_evaluations','jacobian_evaluations'):
             status[counter]=int(trace[-1,campaign.HIGHER_COLUMNS.index(counter)])
         status['training_seconds']=float(trace[-1,campaign.HIGHER_COLUMNS.index('elapsed_seconds')])
@@ -260,7 +264,7 @@ def analyze_case(task):
     window=2*trace[-last:,0]
     record.update(late_window_updates=last,late_mean_mse=float(window.mean()),late_median_mse=float(np.median(window)),
                   late_max_mse=float(window.max()),minimum_observed_mse=float(2*trace[:,0].min()))
-    if case['optimizer'] in ('gn','ssbroyden'):
+    if case['optimizer'] in ('gn','ssbroyden','newton'):
         columns={name:trace[:,i] for i,name in enumerate(campaign.HIGHER_COLUMNS)}
         record['numerics']=dict(guard_active_updates=int(columns['guard_active'].sum()),
              attempts_quantiles=np.quantile(columns['attempts'],[0,.5,.9,1]).tolist(),
