@@ -445,6 +445,10 @@ physical initialization; seed-0 pilot states may be resumed exactly. No rate
 is changed midway and the readout/geometry scale prescription stays fixed.
 Admit this entire four-case block only after final allocation accounting shows
 that its measured cost plus 50% fits the remaining eight-GPU-hour cap.
+After exporting both horizons, `joint_figures --output <lower-export>
+--compare-rates <selected-export>` plots both constant rates at the same update
+counts for each map and seed. The lower rate is an initialization-to-endpoint
+control, not a continuation scheduler.
 
 `ssb_gradient_audit.py` recomputes full-grid gradients at 80 digits for the two
 default corrected SSBroyden failures. It distinguishes fixed stored physical

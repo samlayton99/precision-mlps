@@ -59,6 +59,23 @@ def adam_windows(output,records,dest,n):
     save(fig,dest/f'adam_windows_N{n}.png')
 
 
+def gd_rate_comparison(reference,output):
+    selected=json.loads((reference/'summary.json').read_text())
+    lower=json.loads((output/'summary.json').read_text());dest=output/'figures';dest.mkdir(exist_ok=True)
+    fig,axes=plt.subplots(2,2,figsize=(13,8),layout='constrained')
+    for row,coord in enumerate(campaign.MAPS):
+        for seed in (0,1):
+            for root,records,style,role in ((reference,selected,'-','100k selection'),(output,lower,'--','Lower-rate check')):
+                record=next(r for r in records if (r['case']['optimizer'],r['case']['coordinates'],r['case']['n'],r['case']['seed'])==('gd',coord,512,seed))
+                with np.load(root/record['key']/'window_mse.npz') as a:
+                    axes[row,seed].loglog(a['step'],a['mean'],style,color=analysis.COLORS[coord],label=f"{role}: eta={record['case']['eta']:g}")
+                    axes[row,seed].fill_between(a['step'],a['quantiles'][1],a['quantiles'][3],color=analysis.COLORS[coord],alpha=.08)
+            axes[row,seed].set(title=f'{analysis.LABELS[coord]}, seed {seed}',xlabel='Updates',ylabel='Window mean training MSE')
+            axes[row,seed].xaxis.set_minor_formatter(NullFormatter());axes[row,seed].grid(alpha=.2);axes[row,seed].legend(fontsize=9)
+    fig.suptitle('GD at two constant shared rates, N=512\nPaired physical initialization; unchanged block scales; shading = within-window 10th–90th percentiles')
+    save(fig,dest/'gd_rate_confirmation.png')
+
+
 def figures(output):
     records=json.loads((output/'summary.json').read_text());dest=output/'figures';dest.mkdir(exist_ok=True)
     if (output/'sweep_summary.json').exists():
@@ -232,7 +249,11 @@ def movies(output):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--movies',action='store_true');args=parser.parse_args()
+    parser.add_argument('--movies',action='store_true')
+    parser.add_argument('--compare-rates',type=Path,help='Selected-horizon export to compare against the lower-rate GD output')
+    args=parser.parse_args()
+    if args.compare_rates:
+        gd_rate_comparison(args.compare_rates,args.output);return
     movies(args.output) if args.movies else figures(args.output)
 
 
