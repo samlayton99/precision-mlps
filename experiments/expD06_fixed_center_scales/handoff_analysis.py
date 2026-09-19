@@ -54,9 +54,24 @@ def finite(value):
     return value
 
 
+def directional_curvature(g,c,gamma,coordinate,direction,samples=16):
+    """Evaluate v.T Hessian v through directional derivatives, without a Gram matrix."""
+    x,y,a,r,j=analysis.linearize(g,c,gamma,samples);split=g.width+1
+    dc=higher.readout_map(g,coordinate)@direction[:split]
+    dg=direction[split:]*(1. if coordinate=='physical' else 1/g.h)
+    distance=x[:,None]-g.centers;argument=distance*gamma
+    e=np.exp(-2*np.abs(argument));sech=4*e/(1+e)**2;darg=distance*dg
+    first=a@dc+(sech*darg)@c[1:]/np.sqrt(len(x))
+    second=(2*(sech*darg)@dc[1:]+(-2*np.tanh(argument)*sech*darg*darg)@c[1:])/np.sqrt(len(x))
+    gn=float(first@first);correction=float(r@second)
+    return dict(gauss_newton=gn,residual_curvature=correction,total=gn+correction,
+                directional_gradient=float(r@first))
+
+
 def extra_case(task):
-    root,output,case=task;key=first.case_key(case);folder=root/key;dest=output/key;dest.mkdir(exist_ok=True)
+    root,output,case,*options=task;key=first.case_key(case);folder=root/key;dest=output/key;dest.mkdir(exist_ok=True)
     latest=json.loads((folder/'latest.json').read_text());end=latest['completed_updates']
+    if options and options[0]:end=min(end,options[0])
     g=core.geometry(case['n']);split=g.width+1;coordinate=case['coordinates']
     scales=np.r_[np.diag(higher.readout_map(g,coordinate)),np.full(g.width,1. if coordinate=='physical' else 1/g.h)]
     reference=np.r_[g.alpha,np.full(g.width,1/g.h)]
@@ -85,6 +100,13 @@ def extra_case(task):
             row['curvature']=dict(minimum=float(values[0]),maximum=float(values[-1]),
                 negative_eigenvalues=int(np.sum(values<0)),residual_curvature_norm=float(np.linalg.norm(h-gn)),
                 gn_norm=float(np.linalg.norm(gn)),eigen_backward_error=float(np.linalg.norm(h@vectors-vectors*values)/max(np.linalg.norm(h),1e-300)))
+            row['directional_curvature']={}
+            for index,label in ((0,'minimum'),(-1,'maximum')):
+                audit=directional_curvature(g,c,gamma,coordinate,vectors[:,index])
+                audit.update(dense_eigenvalue=float(values[index]),geometry_vector_energy=float(np.sum(vectors[split:,index]**2)))
+                row['directional_curvature'][label]=audit
+            run.save_arrays(dest/f'curvature_direction_{step}.npz',minimum_direction=vectors[:,0],maximum_direction=vectors[:,-1],
+                            c=c,gamma=gamma,scales=scales)
             # Use the recorded next radius. The freshly initialized template
             # reconstructs the optimizer state's static tree structure.
             z=higher.encode_physical(c,gamma,g,coordinate)
@@ -113,7 +135,7 @@ def extra_case(task):
     details=[]
     for path in sorted(folder.glob('details_*.npz')):
         with np.load(path) as a:details.append(a['trace'])
-    detail=np.concatenate(details) if details else np.empty((0,len(campaign.DETAIL_COLUMNS)))
+    detail=np.concatenate(details)[:end] if details else np.empty((0,len(campaign.DETAIL_COLUMNS)))
     if len(detail)!=end:raise ValueError(f'Incomplete diagnostic trace at {key}')
     run.save_arrays(dest/'optimizer_trace.npz',trace=trace,columns=campaign.HIGHER_COLUMNS,
                     details=detail,detail_columns=campaign.DETAIL_COLUMNS)
@@ -150,14 +172,20 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--root',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--workers',type=int,default=2)
     p.add_argument('--extra-only',action='store_true')
+    p.add_argument('--horizon',type=int,choices=(20000,),help='Analyze only completed fixed horizons or explicit failures')
     args=p.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     cases=json.loads((args.root/'cases.json').read_text())
     cases=[c for c in cases if (args.root/first.case_key(c)/'latest.json').exists()]
+    if args.horizon:
+        def ready(c):
+            status=json.loads((args.root/first.case_key(c)/'latest.json').read_text())
+            return status['completed_updates']>=args.horizon or status['status']!='continuing'
+        cases=[c for c in cases if ready(c)]
     tasks=[(args.root,args.output,c) for c in cases]
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
         if not args.extra_only:
-            records=list(pool.map(analysis.analyze_case,tasks));run.write_json(args.output/'summary.json',records)
-        extras=list(pool.map(extra_case,tasks));run.write_json(args.output/'optimizer_summary.json',extras)
+            records=list(pool.map(analysis.analyze_case,[(*t,bool(args.horizon)) for t in tasks]));run.write_json(args.output/'summary.json',records)
+        extras=list(pool.map(extra_case,[(*t,args.horizon) for t in tasks]));run.write_json(args.output/'optimizer_summary.json',extras)
     controls=[adam_control(args.root,args.output,s) for s in (0,1)]
     run.write_json(args.output/'adam_controls.json',controls)
 

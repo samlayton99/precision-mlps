@@ -85,10 +85,11 @@ def audit(root,key,pool):
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--root',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--workers',type=int,default=8)
+    parser.add_argument('--keys',nargs='+',default=KEYS,help='Saved failure identities to audit')
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
         records=[]
-        for key in KEYS:
+        for key in args.keys:
             records.append(audit(args.root,key,pool));run.write_json(args.output/'full_gradient.json',records)
             print(json.dumps(records[-1]),flush=True)
     run.write_json(args.output/'provenance.json',dict(source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),training_states_modified=False))

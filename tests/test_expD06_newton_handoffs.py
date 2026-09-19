@@ -126,13 +126,16 @@ def test_handoff_hash_and_fresh_newton_resume(tmp_path):
 
 def test_physical_analysis_and_metric_attribution():
     from experiments.expD06_fixed_center_scales import joint_analysis as analysis, joint_mechanism_probes as probes
-    from experiments.expD06_fixed_center_scales.handoff_analysis import metric_blocks
+    from experiments.expD06_fixed_center_scales.handoff_analysis import metric_blocks,directional_curvature
     g,r,j,loss=ho.problem(64,'physical',1);z=ho.initial_parameters(g,0,'physical')
     c,gamma=map(np.asarray,ho.physical(z,g,'physical'))
     h,gn,gradient=probes.native_hessians(g,c,gamma,'physical',1)
     _,gg,hh,_=nt.derivatives(g,'physical',j,1)(z)
     np.testing.assert_allclose(h,hh,rtol=2e-10,atol=3e-10)
     np.testing.assert_allclose(gradient,gg,rtol=2e-10,atol=3e-12)
+    direction=np.random.default_rng(19).normal(size=len(gradient))
+    direct=directional_curvature(g,c,gamma,'physical',direction,1)
+    np.testing.assert_allclose(direct['total'],direction@h@direction,rtol=2e-12,atol=1e-12)
     stats,arrays=analysis.probe(g,c,gamma,'physical',1)
     np.testing.assert_allclose(arrays['band_gradient_c'].sum(axis=0),arrays['gradient_c'],atol=1e-13)
     rng=np.random.default_rng(44);a=rng.normal(size=(6,6));matrix=a@a.T
@@ -141,3 +144,15 @@ def test_physical_analysis_and_metric_attribution():
     assert result['direction_closure']<1e-13 and result['function_closure']<1e-13
     np.testing.assert_allclose(sum(result['directional_derivatives']),-gradient@matrix@gradient,atol=1e-13)
     np.testing.assert_allclose(result['common_metric_eigen_quantiles'],np.quantile(np.linalg.eigvalsh(matrix),[0,.1,.5,.9,1]),atol=1e-13)
+
+
+def test_mp_directional_curvature():
+    from experiments.expD06_fixed_center_scales.newton_precision import curvature_block
+    centers=np.array([-.3,.2]);c=np.array([.2,.3,-.4]);gamma=np.array([2.,3.])
+    direction=np.array([.1,.2,-.1,.3,-.2]);x=np.linspace(-1,1,9)
+    def loss(p):
+        residual=p[0]+jnp.tanh((x[:,None]-centers)*p[3:])@p[1:3]-core.target(jnp.asarray(x),'sine')
+        return .5*jnp.mean(residual**2)
+    z=jnp.asarray(np.r_[c,gamma]);h=jax.hessian(loss)(z)
+    values=curvature_block((x,centers,c,gamma,direction[:3],direction[3:]))
+    np.testing.assert_allclose(float(values[2]+values[3])/len(x),direction@h@direction,rtol=2e-13,atol=2e-15)
