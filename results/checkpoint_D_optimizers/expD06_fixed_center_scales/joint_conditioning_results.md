@@ -167,6 +167,36 @@ between 2.017 and 2.061 for seed 1. This places the observed alternation near
 or across that local boundary. It is a local diagnostic, not a convergence
 theorem for a changing, nonconvex Hessian.
 
+To test the rate dependence, both maps and seeds were also trained to 5.3
+million updates at the next smaller rate from the original grid. The shared
+rate is lower **from initialization**, with the same prescribed block scales;
+this is not a learning-rate schedule. Seed-0 cases resume their original pilot
+states, while seed 1 repeats the paired physical initialization.
+
+**Constant-rate GD confirmation, width 512.** Final-20k mean MSE at 5.3 million updates; seed 0 / seed 1. Lower rates improve three of four cases but do not remove alternating motion.
+
+| Map | Rate selected at 100k | MSE at that rate | Lower constant rate | MSE at lower rate |
+|---|---:|---:|---:|---:|
+| Individual scales | $0.01$ | $9.08\times10^{-4}\;/\;1.60\times10^{-3}$ | $0.003$ | $7.93\times10^{-4}\;/\;8.65\times10^{-4}$ |
+| Individual scales + neighbors | $0.001$ | $2.59\times10^{-5}\;/\;2.26\times10^{-4}$ | $0.0003$ | $5.54\times10^{-5}\;/\;8.26\times10^{-5}$ |
+
+<figure>
+  <img src="joint_conditioning_analysis/lower/figures/gd_rate_confirmation.png" alt="Paired GD trajectories at the selected and next smaller constant rate, separately for each map and seed" style="max-width:100%;">
+  <figcaption>Same initial physical parameters and 5.3-million-update horizon. Solid lines use the 100k-selected rate; dashed lines use the next smaller rate from the original grid. Shading is the within-window 10th–90th percentile. Rate rankings can change with the horizon, and the neighboring seed-0 trajectory has delayed abrupt improvements at both rates.</figcaption>
+</figure>
+
+The lower-rate runs still alternate: all four final-window median cosines
+between consecutive bandwidth steps are below $-0.99999$. Their final exact
+Hessian products $\eta\lambda_{\max}(H)$ lie at 2.184–2.222 for individual
+scales and 2.003–2.007 for neighbors across both seeds and the three audited
+states. Reducing the rate by a factor of 3.33 leads to larger learned curvature,
+rather than preserving a factor-of-3.33 distance from the stability boundary.
+This resembles the near-boundary GD behavior documented by
+[Cohen et al.](https://arxiv.org/abs/2103.00065); the resemblance is an
+interpretation of our measured trajectories, not a theorem for this model.
+Correct parameter units and an initially acceptable rate do not keep the
+changing joint Hessian uniformly well conditioned or uniformly stable.
+
 The weak-mode barrier survives alongside this oscillation. Repeating the
 frozen-readout diagnostic at 5.3 million updates, the seed-0 individual-scale
 GD geometry needs about $2.93\times10^8$ analytic GD steps to remove 90%
@@ -639,9 +669,23 @@ the troublesome spatial region nor says whether the current target needs that
 direction. Residual occupancy and the recorded core/halo gradient contributions
 are needed alongside the spectrum.
 
-The geometry gradient is $J_\lambda^Tr$. Once the readouts explain the target
-well, the residual force that would drive further geometry improvement can
-become very small. Rescaling parameters cannot create a missing projection or
+The geometry gradient is $J_\lambda^Tr$. To separate its sources, write
+$r=Pr+(I-P)r$, where $P$ projects onto the retained readout singular vectors
+at the stated cutoff. At the final seed-0 GD checkpoints, cutoff $10^{-12}$,
+the geometry-force norms from $Pr$ are 0.262 for individual scales and 0.163
+for neighbors. The corresponding forces from $(I-P)r$ are only
+$7.82\times10^{-13}$ and $1.75\times10^{-13}$. Thus the large live geometry
+updates come almost entirely from residual components that readout changes
+could explain, rather than from components outside the resolved dictionary.
+This does not make those readout corrections cheap: the detached fits here
+have coefficient $\ell_1$ norms 325 and 2135, respectively, and weak modes
+remain slow under GD.
+
+Once readouts explain the target well, the residual force that would drive
+further geometry improvement can become very small. The experiments therefore
+separate a small force for unexplained components from potentially large,
+oscillating motion driven by explainable components. Rescaling parameters
+cannot create a missing projection or
 make $\lambda=0.25$ a unique attractor of the MSE objective. The construction's
 bandwidth is a useful approximation reference; training this single smooth sine
 can use broad, heterogeneous features and cancellation instead. These results

@@ -1,0 +1,1734 @@
+[
+  {
+    "key": "gd_N512_s0_parameter_scale_e1d87872aa",
+    "case": {
+      "campaign": "joint_conditioning",
+      "optimizer": "gd",
+      "coordinates": "parameter_scale",
+      "eta": 0.003,
+      "n": 512,
+      "seed": 0,
+      "native_epsilon": 1e-12
+    },
+    "checkpoint": 5300000,
+    "initial_mse": 0.0007871354957363103,
+    "probes": [
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-10,
+        "rank": 205,
+        "eta": 0.008428532027869006,
+        "complement_mse": 1.1175243217251376e-13,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 1000000000.0,
+          "0.01": 13593563909.0,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-12,
+        "rank": 240,
+        "eta": 0.008428532027869006,
+        "complement_mse": 4.1719701575637346e-17,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 1000000000.0,
+          "0.01": 13593563909.0,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-14,
+        "rank": 266,
+        "eta": 0.008428532027869006,
+        "complement_mse": 2.7314500928306565e-21,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 1000000000.0,
+          "0.01": 13593563909.0,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-10,
+        "rank": 236,
+        "eta": 7.81419169463056e-05,
+        "complement_mse": 3.949142739375806e-17,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 3414549.0,
+          "0.01": 73564226.0,
+          "0.001": 7356422545.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-12,
+        "rank": 262,
+        "eta": 7.81419169463056e-05,
+        "complement_mse": 1.514728590923936e-20,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 3414549.0,
+          "0.01": 73564226.0,
+          "0.001": 7356422545.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-14,
+        "rank": 280,
+        "eta": 7.81419169463056e-05,
+        "complement_mse": 4.3274646420831674e-23,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 3414549.0,
+          "0.01": 73564226.0,
+          "0.001": 7356422545.0
+        }
+      }
+    ],
+    "frequency_fits": [
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-10,
+        "rank": 205,
+        "projected_mse": 1.1191789763445914e-13,
+        "physical_train_mse": 1.1191789477940903e-13,
+        "midpoint_mse": 1.1176871627863553e-13,
+        "physical_coefficient_l1": 479.07145899700845,
+        "live_outside_mse": 1.1175243217236911e-13,
+        "live_geometry_force_norm": 0.5033770223924317,
+        "live_outside_geometry_force_norm": 2.1883580498632818e-11,
+        "live_outside_core_growth_force": 4.793124243816386e-13,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.2992040274310265e-11,
+          "halo": 3.2493102873584356e-15,
+          "corrected_halo": 1.7609598927653787e-11
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-10,
+        "rank": 205,
+        "projected_mse": 8.695754187907907e-12,
+        "physical_train_mse": 8.695754119183215e-12,
+        "midpoint_mse": 8.649458664883015e-12,
+        "physical_coefficient_l1": 1074.7674404752013,
+        "live_outside_mse": 8.695964934156572e-12,
+        "live_geometry_force_norm": 4.974329964516128,
+        "live_outside_geometry_force_norm": 1.9870682818793356e-10,
+        "live_outside_core_growth_force": 4.3573752357861725e-13,
+        "live_outside_geometry_force_by_region": {
+          "core": 3.932042364671485e-11,
+          "halo": 2.585382543962707e-14,
+          "corrected_halo": 1.9477758388565027e-10
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-10,
+        "rank": 205,
+        "projected_mse": 6.11926141126325e-08,
+        "physical_train_mse": 6.119261296101471e-08,
+        "midpoint_mse": 6.084268386426693e-08,
+        "physical_coefficient_l1": 129515.41867010726,
+        "live_outside_mse": 6.119267452032536e-08,
+        "live_geometry_force_norm": 10.139243778451949,
+        "live_outside_geometry_force_norm": 1.786389882250778e-08,
+        "live_outside_core_growth_force": -9.558708144743801e-11,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.3142938382340674e-09,
+          "halo": 2.711609056529589e-12,
+          "corrected_halo": 1.7713354222684163e-08
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-10,
+        "rank": 205,
+        "projected_mse": 0.00018765597886415884,
+        "physical_train_mse": 0.0001876559787929003,
+        "midpoint_mse": 0.00018625927230239215,
+        "physical_coefficient_l1": 6919451.074286815,
+        "live_outside_mse": 0.00018765597473510828,
+        "live_geometry_force_norm": 11.863900585949697,
+        "live_outside_geometry_force_norm": 4.1812681879081373e-07,
+        "live_outside_core_growth_force": 4.097153730952272e-09,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.1260498969873527e-07,
+          "halo": 8.182465910659063e-11,
+          "corrected_halo": 4.0267871335817947e-07
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-10,
+        "rank": 205,
+        "projected_mse": 0.18957340500650866,
+        "physical_train_mse": 0.189573405429251,
+        "midpoint_mse": 0.1894547075981059,
+        "physical_coefficient_l1": 3687661.6672127126,
+        "live_outside_mse": 0.18957340495097758,
+        "live_geometry_force_norm": 12.516768733231121,
+        "live_outside_geometry_force_norm": 7.765026857457201e-06,
+        "live_outside_core_growth_force": 1.1466798533895661e-08,
+        "live_outside_geometry_force_by_region": {
+          "core": 3.6679943498126966e-07,
+          "halo": 6.726129433413794e-10,
+          "corrected_halo": 7.756358670092616e-06
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-10,
+        "rank": 205,
+        "projected_mse": 0.26356660772196666,
+        "physical_train_mse": 0.2635666092640113,
+        "midpoint_mse": 0.2632782057685757,
+        "physical_coefficient_l1": 9507344.680140838,
+        "live_outside_mse": 0.2635666077551129,
+        "live_geometry_force_norm": 12.823152469766194,
+        "live_outside_geometry_force_norm": 3.907315984750313e-06,
+        "live_outside_core_growth_force": 9.373840731779644e-09,
+        "live_outside_geometry_force_by_region": {
+          "core": 3.049170172671132e-06,
+          "halo": 1.6619173504972997e-10,
+          "corrected_halo": 2.443292744465613e-06
+        }
+      },
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-12,
+        "rank": 240,
+        "projected_mse": 4.169817805519188e-17,
+        "physical_train_mse": 4.169822839886832e-17,
+        "midpoint_mse": 4.1403004894682644e-17,
+        "physical_coefficient_l1": 529.4521152415098,
+        "live_outside_mse": 4.171970156680074e-17,
+        "live_geometry_force_norm": 0.5033770223924317,
+        "live_outside_geometry_force_norm": 6.470509311048298e-14,
+        "live_outside_core_growth_force": -3.441548623219216e-15,
+        "live_outside_geometry_force_by_region": {
+          "core": 6.096746166182171e-14,
+          "halo": 3.942014639588414e-18,
+          "corrected_halo": 2.1672971125600037e-14
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-12,
+        "rank": 240,
+        "projected_mse": 1.384774236242148e-14,
+        "physical_train_mse": 1.3847746506668638e-14,
+        "midpoint_mse": 1.363132602641477e-14,
+        "physical_coefficient_l1": 2496.5239176073023,
+        "live_outside_mse": 1.3850021009441624e-14,
+        "live_geometry_force_norm": 4.974329964516128,
+        "live_outside_geometry_force_norm": 7.613770739848235e-13,
+        "live_outside_core_growth_force": -1.4644041399458607e-14,
+        "live_outside_geometry_force_by_region": {
+          "core": 7.364804412273128e-13,
+          "halo": 6.428529433281496e-16,
+          "corrected_halo": 1.931092831000294e-13
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-12,
+        "rank": 240,
+        "projected_mse": 8.401049199953537e-12,
+        "physical_train_mse": 8.401038479521331e-12,
+        "midpoint_mse": 8.325230563841413e-12,
+        "physical_coefficient_l1": 254121.82500020426,
+        "live_outside_mse": 8.401008134468626e-12,
+        "live_geometry_force_norm": 10.139243778451949,
+        "live_outside_geometry_force_norm": 1.549314194802952e-11,
+        "live_outside_core_growth_force": -1.1487413453655948e-16,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.0310254818841883e-11,
+          "halo": 9.63363596913744e-16,
+          "corrected_halo": 1.1564432198092141e-11
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-12,
+        "rank": 240,
+        "projected_mse": 4.042625961257324e-05,
+        "physical_train_mse": 4.042625489004116e-05,
+        "midpoint_mse": 4.0079172077028455e-05,
+        "physical_coefficient_l1": 41312583.54455204,
+        "live_outside_mse": 4.042625963109808e-05,
+        "live_geometry_force_norm": 11.863900585949697,
+        "live_outside_geometry_force_norm": 3.204173870688464e-08,
+        "live_outside_core_growth_force": -6.365873843140636e-10,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.9646126270495654e-08,
+          "halo": 1.7428587559618578e-12,
+          "corrected_halo": 2.531210656753904e-08
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-12,
+        "rank": 240,
+        "projected_mse": 0.09398353278762803,
+        "physical_train_mse": 0.0939833505717832,
+        "midpoint_mse": 0.09369835630092224,
+        "physical_coefficient_l1": 1340241069.6230907,
+        "live_outside_mse": 0.09398353278299937,
+        "live_geometry_force_norm": 12.516768733231121,
+        "live_outside_geometry_force_norm": 8.265858896554867e-07,
+        "live_outside_core_growth_force": -7.0886612198222065e-09,
+        "live_outside_geometry_force_by_region": {
+          "core": 5.760668954007737e-07,
+          "halo": 3.0977405372481065e-11,
+          "corrected_halo": 5.927825605070268e-07
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-12,
+        "rank": 240,
+        "projected_mse": 0.24514237214511025,
+        "physical_train_mse": 0.2451423098840251,
+        "midpoint_mse": 0.24493372575621503,
+        "physical_coefficient_l1": 367721414.7842032,
+        "live_outside_mse": 0.2451423721469651,
+        "live_geometry_force_norm": 12.823152469766194,
+        "live_outside_geometry_force_norm": 8.248679075195321e-07,
+        "live_outside_core_growth_force": -1.7449417549248688e-08,
+        "live_outside_geometry_force_by_region": {
+          "core": 8.218921459486755e-07,
+          "halo": 4.1772868808651044e-12,
+          "corrected_halo": 7.000260899482752e-08
+        }
+      },
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-14,
+        "rank": 266,
+        "projected_mse": 2.7366213402013162e-21,
+        "physical_train_mse": 2.755238728923849e-21,
+        "midpoint_mse": 2.7529737535950198e-21,
+        "physical_coefficient_l1": 495.3610137473829,
+        "live_outside_mse": 2.7314500748889305e-21,
+        "live_geometry_force_norm": 0.5033770223924317,
+        "live_outside_geometry_force_norm": 1.1109383550496171e-15,
+        "live_outside_core_growth_force": -2.19418074552108e-17,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.007176344429587e-15,
+          "halo": 2.5992377973764997e-18,
+          "corrected_halo": 4.687996202053455e-16
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-14,
+        "rank": 266,
+        "projected_mse": 2.031680576583863e-18,
+        "physical_train_mse": 2.0473779569918238e-18,
+        "midpoint_mse": 2.0289247049689105e-18,
+        "physical_coefficient_l1": 9863.356304532166,
+        "live_outside_mse": 2.0318178425451004e-18,
+        "live_geometry_force_norm": 4.974329964516128,
+        "live_outside_geometry_force_norm": 8.685808076856408e-15,
+        "live_outside_core_growth_force": -3.4621098806949785e-16,
+        "live_outside_geometry_force_by_region": {
+          "core": 5.479130384293296e-15,
+          "halo": 6.366249535230358e-16,
+          "corrected_halo": 6.709478433414165e-15
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-14,
+        "rank": 266,
+        "projected_mse": 3.2751651382609655e-14,
+        "physical_train_mse": 3.2845201794054203e-14,
+        "midpoint_mse": 3.2509414355999677e-14,
+        "physical_coefficient_l1": 373609.9164680671,
+        "live_outside_mse": 3.2751673518691956e-14,
+        "live_geometry_force_norm": 10.139243778451949,
+        "live_outside_geometry_force_norm": 2.532366405618402e-13,
+        "live_outside_core_growth_force": -1.6012605717656916e-14,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.526883711370475e-13,
+          "halo": 2.225829648107923e-16,
+          "corrected_halo": 1.665333816314701e-14
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-14,
+        "rank": 266,
+        "projected_mse": 7.987312119444038e-08,
+        "physical_train_mse": 8.004785351866067e-08,
+        "midpoint_mse": 7.922144672679258e-08,
+        "physical_coefficient_l1": 430244629.7815087,
+        "live_outside_mse": 7.987312115902098e-08,
+        "live_geometry_force_norm": 11.863900585949697,
+        "live_outside_geometry_force_norm": 3.3162305745001163e-10,
+        "live_outside_core_growth_force": 2.2136122504464528e-11,
+        "live_outside_geometry_force_by_region": {
+          "core": 3.298609889907394e-10,
+          "halo": 1.9666614128675962e-16,
+          "corrected_halo": 3.4140594231886415e-11
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-14,
+        "rank": 266,
+        "projected_mse": 0.009309181003056628,
+        "physical_train_mse": 0.009314469471652886,
+        "midpoint_mse": 0.009205985801682874,
+        "physical_coefficient_l1": 87186002554.51244,
+        "live_outside_mse": 0.00930918100305846,
+        "live_geometry_force_norm": 12.516768733231121,
+        "live_outside_geometry_force_norm": 6.302701339876612e-08,
+        "live_outside_core_growth_force": 2.092181399787088e-09,
+        "live_outside_geometry_force_by_region": {
+          "core": 6.299872018206021e-08,
+          "halo": 5.340221407795181e-15,
+          "corrected_halo": 1.888299073424611e-09
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-14,
+        "rank": 266,
+        "projected_mse": 0.23131760114549266,
+        "physical_train_mse": 0.2313178358270251,
+        "midpoint_mse": 0.23129331289291544,
+        "physical_coefficient_l1": 26100679399.00106,
+        "live_outside_mse": 0.23131760114550243,
+        "live_geometry_force_norm": 12.823152469766194,
+        "live_outside_geometry_force_norm": 3.0940336221683723e-07,
+        "live_outside_core_growth_force": -1.1755989878450504e-09,
+        "live_outside_geometry_force_by_region": {
+          "core": 3.0915919000577843e-07,
+          "halo": 2.3890018471028332e-14,
+          "corrected_halo": 1.2289661755062082e-08
+        }
+      }
+    ],
+    "source_sha256": "b1a7d368c51c93959e2a5917e6d02e0aada21d81d578bfa1928b3f3e435ea6ce"
+  },
+  {
+    "key": "gd_N512_s1_parameter_scale_3d3e27dbcd",
+    "case": {
+      "campaign": "joint_conditioning",
+      "optimizer": "gd",
+      "coordinates": "parameter_scale",
+      "eta": 0.003,
+      "n": 512,
+      "seed": 1,
+      "native_epsilon": 1e-12
+    },
+    "checkpoint": 5300000,
+    "initial_mse": 0.000855941281593624,
+    "probes": [
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-10,
+        "rank": 196,
+        "eta": 0.008374072729575755,
+        "complement_mse": 3.974842155708895e-14,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 1584893193.0,
+          "0.01": 63095734449.0,
+          "0.001": 341454887384.0
+        }
+      },
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-12,
+        "rank": 225,
+        "eta": 0.008374072729575755,
+        "complement_mse": 4.051837421124532e-18,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 1584893193.0,
+          "0.01": 63095734449.0,
+          "0.001": 341454887384.0
+        }
+      },
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-14,
+        "rank": 250,
+        "eta": 0.008374072729575755,
+        "complement_mse": 1.3319547913658755e-20,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 1584893193.0,
+          "0.01": 63095734449.0,
+          "0.001": 341454887384.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-10,
+        "rank": 221,
+        "eta": 7.972980036830529e-05,
+        "complement_mse": 8.526103868801353e-17,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 3981072.0,
+          "0.01": 184784980.0,
+          "0.001": 4641588834.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-12,
+        "rank": 247,
+        "eta": 7.972980036830529e-05,
+        "complement_mse": 3.8755418821011335e-20,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 3981072.0,
+          "0.01": 184784980.0,
+          "0.001": 4641588834.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-14,
+        "rank": 262,
+        "eta": 7.972980036830529e-05,
+        "complement_mse": 1.4436669304325088e-23,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 3981072.0,
+          "0.01": 184784980.0,
+          "0.001": 4641588834.0
+        }
+      }
+    ],
+    "frequency_fits": [
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-10,
+        "rank": 196,
+        "projected_mse": 3.96415113954667e-14,
+        "physical_train_mse": 3.964151121000318e-14,
+        "midpoint_mse": 3.947026380342885e-14,
+        "physical_coefficient_l1": 127.89920738289237,
+        "live_outside_mse": 3.974842155683842e-14,
+        "live_geometry_force_norm": 0.5198564330210845,
+        "live_outside_geometry_force_norm": 2.4661120664186152e-11,
+        "live_outside_core_growth_force": -8.149269961532826e-13,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.3884712074124745e-11,
+          "halo": 6.4490634888371726e-15,
+          "corrected_halo": 6.139328950242759e-12
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-10,
+        "rank": 196,
+        "projected_mse": 5.724883481703498e-12,
+        "physical_train_mse": 5.724883409759219e-12,
+        "midpoint_mse": 5.69390699525257e-12,
+        "physical_coefficient_l1": 1055.853230450692,
+        "live_outside_mse": 5.727554578180426e-12,
+        "live_geometry_force_norm": 4.836974781757386,
+        "live_outside_geometry_force_norm": 2.249379139528081e-10,
+        "live_outside_core_growth_force": 3.532256486624005e-12,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.1933911980107547e-10,
+          "halo": 3.4257017389970537e-13,
+          "corrected_halo": 4.987282129583537e-11
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-10,
+        "rank": 196,
+        "projected_mse": 2.561727372349337e-08,
+        "physical_train_mse": 2.5617273639842903e-08,
+        "midpoint_mse": 2.5472741779912157e-08,
+        "physical_coefficient_l1": 55515.59999205354,
+        "live_outside_mse": 2.561706298785656e-08,
+        "live_geometry_force_norm": 10.001815709348177,
+        "live_outside_geometry_force_norm": 1.0458695118954941e-08,
+        "live_outside_core_growth_force": 2.7760617549911474e-10,
+        "live_outside_geometry_force_by_region": {
+          "core": 9.52498077698039e-09,
+          "halo": 2.2172608514653782e-11,
+          "corrected_halo": 4.3195547415026055e-09
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-10,
+        "rank": 196,
+        "projected_mse": 0.00033398976022207987,
+        "physical_train_mse": 0.0003339897579173827,
+        "midpoint_mse": 0.00033266202005144565,
+        "physical_coefficient_l1": 3220405.5720705544,
+        "live_outside_mse": 0.0003339897801767118,
+        "live_geometry_force_norm": 11.767337334692408,
+        "live_outside_geometry_force_norm": 6.372734766077027e-07,
+        "live_outside_core_growth_force": -1.0662777251864007e-08,
+        "live_outside_geometry_force_by_region": {
+          "core": 5.142230823581356e-07,
+          "halo": 2.5182141565302905e-09,
+          "corrected_halo": 3.764116950298278e-07
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-10,
+        "rank": 196,
+        "projected_mse": 0.19244053187110516,
+        "physical_train_mse": 0.19244053295689834,
+        "midpoint_mse": 0.19233580273767598,
+        "physical_coefficient_l1": 6305826.988579202,
+        "live_outside_mse": 0.19244053196665392,
+        "live_geometry_force_norm": 12.439464363855626,
+        "live_outside_geometry_force_norm": 8.56838595309237e-06,
+        "live_outside_core_growth_force": 1.493328971766256e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 5.32718834244061e-06,
+          "halo": 1.5059061785736103e-08,
+          "corrected_halo": 6.711041307425671e-06
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-10,
+        "rank": 196,
+        "projected_mse": 0.30195293872223594,
+        "physical_train_mse": 0.3019529413347906,
+        "midpoint_mse": 0.3016983397600387,
+        "physical_coefficient_l1": 9250737.38457368,
+        "live_outside_mse": 0.3019529387850609,
+        "live_geometry_force_norm": 12.755054108817005,
+        "live_outside_geometry_force_norm": 4.362930295487233e-05,
+        "live_outside_core_growth_force": 1.283823818971658e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 4.351792643530357e-05,
+          "halo": 1.208268769467683e-08,
+          "corrected_halo": 3.115446855299588e-06
+        }
+      },
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-12,
+        "rank": 225,
+        "projected_mse": 4.059928537947388e-18,
+        "physical_train_mse": 4.0599502873102704e-18,
+        "midpoint_mse": 4.047489942012078e-18,
+        "physical_coefficient_l1": 264.4583252877882,
+        "live_outside_mse": 4.051837420531782e-18,
+        "live_geometry_force_norm": 0.5198564330210845,
+        "live_outside_geometry_force_norm": 2.5024419620223314e-14,
+        "live_outside_core_growth_force": -3.10641403929115e-16,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.498924328218293e-14,
+          "halo": 8.07335735185159e-18,
+          "corrected_halo": 1.3263605594988116e-15
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-12,
+        "rank": 225,
+        "projected_mse": 2.9893652722330356e-15,
+        "physical_train_mse": 2.9893658471981237e-15,
+        "midpoint_mse": 2.9598523226222085e-15,
+        "physical_coefficient_l1": 2166.1378254583587,
+        "live_outside_mse": 2.9893091478090073e-15,
+        "live_geometry_force_norm": 4.836974781757386,
+        "live_outside_geometry_force_norm": 1.763149783776422e-12,
+        "live_outside_core_growth_force": -3.608730729450905e-15,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.7629773195331243e-12,
+          "halo": 2.80434523355203e-16,
+          "corrected_halo": 2.4658714466127247e-14
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-12,
+        "rank": 225,
+        "projected_mse": 5.106821110379379e-12,
+        "physical_train_mse": 5.106788606915585e-12,
+        "midpoint_mse": 5.072179989545897e-12,
+        "physical_coefficient_l1": 141078.90592674082,
+        "live_outside_mse": 5.106825770848657e-12,
+        "live_geometry_force_norm": 10.001815709348177,
+        "live_outside_geometry_force_norm": 1.4939448952428347e-10,
+        "live_outside_core_growth_force": -1.735284898703975e-12,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.493893294446881e-10,
+          "halo": 4.6349041813833186e-15,
+          "corrected_halo": 1.2416629193748841e-12
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-12,
+        "rank": 225,
+        "projected_mse": 3.760727689571206e-06,
+        "physical_train_mse": 3.7607954740299993e-06,
+        "midpoint_mse": 3.7427222044979053e-06,
+        "physical_coefficient_l1": 116927047.82171962,
+        "live_outside_mse": 3.7607276818796185e-06,
+        "live_geometry_force_norm": 11.767337334692408,
+        "live_outside_geometry_force_norm": 2.652595827691559e-08,
+        "live_outside_core_growth_force": 4.383635595514079e-10,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.649372874198274e-08,
+          "halo": 3.981659080546865e-12,
+          "corrected_halo": 1.3072046516499015e-09
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-12,
+        "rank": 225,
+        "projected_mse": 0.08292721924466309,
+        "physical_train_mse": 0.08292668963905411,
+        "midpoint_mse": 0.08263527766542438,
+        "physical_coefficient_l1": 2674817917.6513515,
+        "live_outside_mse": 0.08292721924387433,
+        "live_geometry_force_norm": 12.439464363855626,
+        "live_outside_geometry_force_norm": 1.2567713104417388e-06,
+        "live_outside_core_growth_force": 2.4115315250823144e-08,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.247226620253997e-06,
+          "halo": 3.186354683798193e-10,
+          "corrected_halo": 1.5459554634812658e-07
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-12,
+        "rank": 225,
+        "projected_mse": 0.26534883208553794,
+        "physical_train_mse": 0.26534900621393714,
+        "midpoint_mse": 0.2652343853038278,
+        "physical_coefficient_l1": 734565949.906283,
+        "live_outside_mse": 0.2653488320864339,
+        "live_geometry_force_norm": 12.755054108817005,
+        "live_outside_geometry_force_norm": 1.3509784938608602e-05,
+        "live_outside_core_growth_force": -1.3804326415330345e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.3509454222744336e-05,
+          "halo": 2.230301717116659e-10,
+          "corrected_halo": 9.452852103281233e-08
+        }
+      },
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-14,
+        "rank": 250,
+        "projected_mse": 1.333697617338012e-20,
+        "physical_train_mse": 1.3343163900952315e-20,
+        "midpoint_mse": 1.3256654204138112e-20,
+        "physical_coefficient_l1": 320.47090706551535,
+        "live_outside_mse": 1.3319547835314329e-20,
+        "live_geometry_force_norm": 0.5198564330210845,
+        "live_outside_geometry_force_norm": 2.5216240851578974e-15,
+        "live_outside_core_growth_force": -1.1878175876764228e-17,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.4274889585286925e-15,
+          "halo": 4.2932890102472116e-18,
+          "corrected_halo": 6.825444679573336e-16
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-14,
+        "rank": 250,
+        "projected_mse": 4.1418861244741875e-18,
+        "physical_train_mse": 4.140361313508519e-18,
+        "midpoint_mse": 4.1221084465968626e-18,
+        "physical_coefficient_l1": 8017.547461622517,
+        "live_outside_mse": 4.1416474725285525e-18,
+        "live_geometry_force_norm": 4.836974781757386,
+        "live_outside_geometry_force_norm": 7.780791724966287e-14,
+        "live_outside_core_growth_force": -9.405383755563217e-17,
+        "live_outside_geometry_force_by_region": {
+          "core": 7.774800877276008e-14,
+          "halo": 2.6615848723984003e-16,
+          "corrected_halo": 3.0410981998084393e-15
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-14,
+        "rank": 250,
+        "projected_mse": 4.592259913429745e-14,
+        "physical_train_mse": 4.5894624979230745e-14,
+        "midpoint_mse": 4.5710011313562604e-14,
+        "physical_coefficient_l1": 268916.8942481581,
+        "live_outside_mse": 4.5922608211693417e-14,
+        "live_geometry_force_norm": 10.001815709348177,
+        "live_outside_geometry_force_norm": 8.731334672126217e-12,
+        "live_outside_core_growth_force": 9.494397669131872e-14,
+        "live_outside_geometry_force_by_region": {
+          "core": 8.731300340907477e-12,
+          "halo": 1.2016342292853842e-16,
+          "corrected_halo": 2.448467077962938e-14
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-14,
+        "rank": 250,
+        "projected_mse": 5.978354080185684e-08,
+        "physical_train_mse": 5.981608301491712e-08,
+        "midpoint_mse": 5.921505211194667e-08,
+        "physical_coefficient_l1": 250559683.77019137,
+        "live_outside_mse": 5.978354081566705e-08,
+        "live_geometry_force_norm": 11.767337334692408,
+        "live_outside_geometry_force_norm": 1.7981248559439434e-09,
+        "live_outside_core_growth_force": -6.1355022415598084e-12,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.7978625190472442e-09,
+          "halo": 2.9313154989978567e-14,
+          "corrected_halo": 3.071415486811066e-11
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-14,
+        "rank": 250,
+        "projected_mse": 0.015561799872124544,
+        "physical_train_mse": 0.015563909585450252,
+        "midpoint_mse": 0.015462628542363386,
+        "physical_coefficient_l1": 50168522775.10762,
+        "live_outside_mse": 0.01556179987213584,
+        "live_geometry_force_norm": 12.439464363855626,
+        "live_outside_geometry_force_norm": 3.7030838401643027e-07,
+        "live_outside_core_growth_force": -2.956590096783827e-09,
+        "live_outside_geometry_force_by_region": {
+          "core": 3.7006777407215117e-07,
+          "halo": 1.492571715813963e-11,
+          "corrected_halo": 1.33469713181011e-08
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-14,
+        "rank": 250,
+        "projected_mse": 0.2376712222844738,
+        "physical_train_mse": 0.237672027236086,
+        "midpoint_mse": 0.23766699920680162,
+        "physical_coefficient_l1": 18730357338.06957,
+        "live_outside_mse": 0.23767122228448534,
+        "live_geometry_force_norm": 12.755054108817005,
+        "live_outside_geometry_force_norm": 5.2898827122634865e-06,
+        "live_outside_core_growth_force": -1.5455426638045825e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 5.289871313460452e-06,
+          "halo": 1.2625319539565595e-11,
+          "corrected_halo": 1.0981637987843725e-08
+        }
+      }
+    ],
+    "source_sha256": "973b7b8a8cdb3189f3d81f8a113ef658cd0cdd36db507f4f42d143da2aa41e67"
+  },
+  {
+    "key": "gd_N512_s0_parameter_differences_249975e2af",
+    "case": {
+      "campaign": "joint_conditioning",
+      "optimizer": "gd",
+      "coordinates": "parameter_differences",
+      "eta": 0.00030000000000000003,
+      "n": 512,
+      "seed": 0,
+      "native_epsilon": 1e-12
+    },
+    "checkpoint": 5300000,
+    "initial_mse": 7.879950720764274e-05,
+    "probes": [
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-10,
+        "rank": 27,
+        "eta": 0.008387818188529194,
+        "complement_mse": 4.057291505653071e-12,
+        "first_sampled_steps_to_fraction": {
+          "0.1": null,
+          "0.01": null,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-12,
+        "rank": 31,
+        "eta": 0.008387818188529194,
+        "complement_mse": 2.2589086542785957e-16,
+        "first_sampled_steps_to_fraction": {
+          "0.1": null,
+          "0.01": null,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-14,
+        "rank": 38,
+        "eta": 0.008387818188529194,
+        "complement_mse": 1.1959109092864072e-20,
+        "first_sampled_steps_to_fraction": {
+          "0.1": null,
+          "0.01": null,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-10,
+        "rank": 32,
+        "eta": 0.0014206419715621472,
+        "complement_mse": 1.8527865770864123e-16,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 857695899.0,
+          "0.01": 5411695266.0,
+          "0.001": 13593563909.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-12,
+        "rank": 39,
+        "eta": 0.0014206419715621472,
+        "complement_mse": 1.638751825415243e-21,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 857695899.0,
+          "0.01": 5411695266.0,
+          "0.001": 13593563909.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-14,
+        "rank": 42,
+        "eta": 0.0014206419715621472,
+        "complement_mse": 3.8384774284841387e-23,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 857695899.0,
+          "0.01": 5411695266.0,
+          "0.001": 13593563909.0
+        }
+      }
+    ],
+    "frequency_fits": [
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-10,
+        "rank": 27,
+        "projected_mse": 3.664613988534785e-12,
+        "physical_train_mse": 3.664614118939136e-12,
+        "midpoint_mse": 3.643129978613835e-12,
+        "physical_coefficient_l1": 1111.9525557007669,
+        "live_outside_mse": 4.057291505653187e-12,
+        "live_geometry_force_norm": 0.588221614497032,
+        "live_outside_geometry_force_norm": 8.24318793886841e-09,
+        "live_outside_core_growth_force": -4.920927028459022e-10,
+        "live_outside_geometry_force_by_region": {
+          "core": 8.243116706296271e-09,
+          "halo": 2.2570527869378516e-12,
+          "corrected_halo": 3.419455508796013e-11
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-10,
+        "rank": 27,
+        "projected_mse": 3.235896890870911e-08,
+        "physical_train_mse": 3.235896906352182e-08,
+        "midpoint_mse": 3.218716354703855e-08,
+        "physical_coefficient_l1": 111878.32041683172,
+        "live_outside_mse": 3.232330352939765e-08,
+        "live_geometry_force_norm": 52.34500481312267,
+        "live_outside_geometry_force_norm": 7.865942759102104e-07,
+        "live_outside_core_growth_force": 4.8239665952636287e-08,
+        "live_outside_geometry_force_by_region": {
+          "core": 7.865883864524432e-07,
+          "halo": 1.860699545289805e-10,
+          "corrected_halo": 3.038185448938159e-09
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-10,
+        "rank": 27,
+        "projected_mse": 0.0008870984730484678,
+        "physical_train_mse": 0.0008870984644862696,
+        "midpoint_mse": 0.0008852096389969659,
+        "physical_coefficient_l1": 18327670.44686383,
+        "live_outside_mse": 0.0008870958888311736,
+        "live_geometry_force_norm": 55.43903055240426,
+        "live_outside_geometry_force_norm": 0.00018143082455421113,
+        "live_outside_core_growth_force": -8.815790085030397e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 0.0001814306419847917,
+          "halo": 3.8341342028871014e-08,
+          "corrected_halo": 2.5451394616167105e-07
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-10,
+        "rank": 27,
+        "projected_mse": 0.8488729060452724,
+        "physical_train_mse": 0.8488729334486852,
+        "midpoint_mse": 0.848864390857339,
+        "physical_coefficient_l1": 40131963.49264703,
+        "live_outside_mse": 0.8488729399706523,
+        "live_geometry_force_norm": 56.64893045798367,
+        "live_outside_geometry_force_norm": 0.0006027126031562363,
+        "live_outside_core_growth_force": -1.1372268664491842e-05,
+        "live_outside_geometry_force_by_region": {
+          "core": 0.0006027066649360405,
+          "halo": 4.851414640564949e-07,
+          "corrected_halo": 2.631099162342793e-06
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-10,
+        "rank": 27,
+        "projected_mse": 0.9754657508796891,
+        "physical_train_mse": 0.9754657382187231,
+        "midpoint_mse": 0.9754536718238462,
+        "physical_coefficient_l1": 15868409.152567148,
+        "live_outside_mse": 0.9754657564519673,
+        "live_geometry_force_norm": 57.273399746076045,
+        "live_outside_geometry_force_norm": 9.481255622137626e-05,
+        "live_outside_core_growth_force": -9.145791677028944e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 9.481118002264373e-05,
+          "halo": 4.004971837106966e-07,
+          "corrected_halo": 3.171150442941637e-07
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-10,
+        "rank": 27,
+        "projected_mse": 0.9929622492427709,
+        "physical_train_mse": 0.9929622498320134,
+        "midpoint_mse": 0.9929106001292822,
+        "physical_coefficient_l1": 2299989.970685741,
+        "live_outside_mse": 0.9929622446846424,
+        "live_geometry_force_norm": 57.59329803110156,
+        "live_outside_geometry_force_norm": 8.834548948519212e-05,
+        "live_outside_core_growth_force": 5.294397082384444e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 8.834459409520691e-05,
+          "halo": 1.9929433036320195e-08,
+          "corrected_halo": 3.9725224860518904e-07
+        }
+      },
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-12,
+        "rank": 31,
+        "projected_mse": 2.3641838397394844e-16,
+        "physical_train_mse": 2.364184834636521e-16,
+        "midpoint_mse": 2.364293829425325e-16,
+        "physical_coefficient_l1": 945.2292747082491,
+        "live_outside_mse": 2.2589086542812497e-16,
+        "live_geometry_force_norm": 0.588221614497032,
+        "live_outside_geometry_force_norm": 7.811755013419715e-11,
+        "live_outside_core_growth_force": 4.0940112414416155e-12,
+        "live_outside_geometry_force_by_region": {
+          "core": 7.811754996114705e-11,
+          "halo": 4.884186171595806e-15,
+          "corrected_halo": 1.7835986500659285e-15
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-12,
+        "rank": 31,
+        "projected_mse": 5.8807467123074076e-12,
+        "physical_train_mse": 5.880749082213191e-12,
+        "midpoint_mse": 5.8792599472803595e-12,
+        "physical_coefficient_l1": 147153.2448031519,
+        "live_outside_mse": 5.879515302930787e-12,
+        "live_geometry_force_norm": 52.34500481312267,
+        "live_outside_geometry_force_norm": 1.215060659623624e-08,
+        "live_outside_core_growth_force": 6.091746869062487e-10,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.2150606594660716e-08,
+          "halo": 4.27547589331174e-14,
+          "corrected_halo": 1.9094286979750856e-13
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-12,
+        "rank": 31,
+        "projected_mse": 0.00032563258380452183,
+        "physical_train_mse": 0.0003256325758165786,
+        "midpoint_mse": 0.0003256094679409317,
+        "physical_coefficient_l1": 65620452.98802383,
+        "live_outside_mse": 0.0003256325965545583,
+        "live_geometry_force_norm": 55.43903055240426,
+        "live_outside_geometry_force_norm": 9.685775144479724e-05,
+        "live_outside_core_growth_force": -5.078566179680091e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 9.685775125173069e-05,
+          "halo": 5.736194712274388e-09,
+          "corrected_halo": 2.1203908862269914e-09
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-12,
+        "rank": 31,
+        "projected_mse": 0.7994047413904798,
+        "physical_train_mse": 0.799404627473671,
+        "midpoint_mse": 0.7994651547587284,
+        "physical_coefficient_l1": 821397671.8663538,
+        "live_outside_mse": 0.7994047413601917,
+        "live_geometry_force_norm": 56.64893045798367,
+        "live_outside_geometry_force_norm": 0.00034498016635847387,
+        "live_outside_core_growth_force": 4.527977501325333e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 0.0003449801436433137,
+          "halo": 1.239442547440401e-07,
+          "corrected_halo": 1.7617621777751156e-08
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-12,
+        "rank": 31,
+        "projected_mse": 0.9653564978311089,
+        "physical_train_mse": 0.9653566610482929,
+        "midpoint_mse": 0.9654280440855642,
+        "physical_coefficient_l1": 278562522.8513707,
+        "live_outside_mse": 0.9653564977729258,
+        "live_geometry_force_norm": 57.273399746076045,
+        "live_outside_geometry_force_norm": 0.00010505994639779317,
+        "live_outside_core_growth_force": 6.216608925370108e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 0.00010505992416588786,
+          "halo": 6.76105649381313e-08,
+          "corrected_halo": 1.0008824922745216e-08
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-12,
+        "rank": 31,
+        "projected_mse": 0.9921716284594924,
+        "physical_train_mse": 0.9921716109326737,
+        "midpoint_mse": 0.9920604552236738,
+        "physical_coefficient_l1": 66225585.352353916,
+        "live_outside_mse": 0.9921716284538187,
+        "live_geometry_force_norm": 57.59329803110156,
+        "live_outside_geometry_force_norm": 4.91437995165128e-06,
+        "live_outside_core_growth_force": -1.8926510735109366e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 4.914359195889059e-06,
+          "halo": 1.3918143000445104e-08,
+          "corrected_halo": 3.207533024237382e-09
+        }
+      },
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 1.2572654641968109e-20,
+        "physical_train_mse": 1.2603741853627873e-20,
+        "midpoint_mse": 1.2508538027417975e-20,
+        "physical_coefficient_l1": 866.5276204920544,
+        "live_outside_mse": 1.1959109085689013e-20,
+        "live_geometry_force_norm": 0.588221614497032,
+        "live_outside_geometry_force_norm": 5.744023030685049e-14,
+        "live_outside_core_growth_force": 2.55892343458907e-15,
+        "live_outside_geometry_force_by_region": {
+          "core": 5.744020008259282e-14,
+          "halo": 3.181613892570404e-17,
+          "corrected_halo": 4.959747002278374e-17
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 3.826811492314861e-16,
+        "physical_train_mse": 3.826584408310172e-16,
+        "midpoint_mse": 3.796728411520998e-16,
+        "physical_coefficient_l1": 147147.397865408,
+        "live_outside_mse": 3.8269739129783323e-16,
+        "live_geometry_force_norm": 52.34500481312267,
+        "live_outside_geometry_force_norm": 2.1901426448768493e-12,
+        "live_outside_core_growth_force": -4.087096104232756e-14,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.1901293245662905e-12,
+          "halo": 3.525037727730805e-15,
+          "corrected_halo": 6.776480796495136e-15
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 7.854647040114766e-08,
+        "physical_train_mse": 7.853878585976565e-08,
+        "midpoint_mse": 7.816261234622213e-08,
+        "physical_coefficient_l1": 2123174594.803208,
+        "live_outside_mse": 7.854646924820972e-08,
+        "live_geometry_force_norm": 55.43903055240426,
+        "live_outside_geometry_force_norm": 9.26928856179699e-08,
+        "live_outside_core_growth_force": 3.18105142643817e-09,
+        "live_outside_geometry_force_by_region": {
+          "core": 9.269288561739618e-08,
+          "halo": 2.1582523767447284e-13,
+          "corrected_halo": 2.444962595788083e-13
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 0.6356033380774859,
+        "physical_train_mse": 0.6355837529609021,
+        "midpoint_mse": 0.6354472483681924,
+        "physical_coefficient_l1": 194169557467.8026,
+        "live_outside_mse": 0.6356033380787387,
+        "live_geometry_force_norm": 56.64893045798367,
+        "live_outside_geometry_force_norm": 0.00016377557669491804,
+        "live_outside_core_growth_force": -6.1537258378291475e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 0.00016377557669432083,
+          "halo": 2.3833415908099874e-10,
+          "corrected_halo": 3.725841386102493e-10
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 0.9319018587248644,
+        "physical_train_mse": 0.9319387595687635,
+        "midpoint_mse": 0.9319717800010132,
+        "physical_coefficient_l1": 134611450975.08136,
+        "live_outside_mse": 0.9319018587250376,
+        "live_geometry_force_norm": 57.273399746076045,
+        "live_outside_geometry_force_norm": 3.642260455602654e-06,
+        "live_outside_core_growth_force": 3.3968864923102677e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 3.642260453413956e-06,
+          "halo": 2.8521082539236527e-11,
+          "corrected_halo": 1.2300471426604283e-10
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 0.9874235713730547,
+        "physical_train_mse": 0.9874170714346107,
+        "midpoint_mse": 0.9874138894715497,
+        "physical_coefficient_l1": 30453865726.909595,
+        "live_outside_mse": 0.987423571372847,
+        "live_geometry_force_norm": 57.59329803110156,
+        "live_outside_geometry_force_norm": 5.133368671900433e-06,
+        "live_outside_core_growth_force": 1.7510750285919735e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 5.133368671635541e-06,
+          "halo": 4.063047300602677e-11,
+          "corrected_halo": 3.2691518783320494e-11
+        }
+      }
+    ],
+    "source_sha256": "577b3cc47c0193f1d0eb832a597b82a03013d3f017c130c4d1a9f3fff6440b55"
+  },
+  {
+    "key": "gd_N512_s1_parameter_differences_694681c7cd",
+    "case": {
+      "campaign": "joint_conditioning",
+      "optimizer": "gd",
+      "coordinates": "parameter_differences",
+      "eta": 0.00030000000000000003,
+      "n": 512,
+      "seed": 1,
+      "native_epsilon": 1e-12
+    },
+    "checkpoint": 5300000,
+    "initial_mse": 7.845488515757876e-05,
+    "probes": [
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-10,
+        "rank": 28,
+        "eta": 0.008449141413871611,
+        "complement_mse": 6.819221278078574e-13,
+        "first_sampled_steps_to_fraction": {
+          "0.1": null,
+          "0.01": null,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-12,
+        "rank": 33,
+        "eta": 0.008449141413871611,
+        "complement_mse": 3.8995130648785277e-16,
+        "first_sampled_steps_to_fraction": {
+          "0.1": null,
+          "0.01": null,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_scale",
+        "cutoff": 1e-14,
+        "rank": 38,
+        "eta": 0.008449141413871611,
+        "complement_mse": 7.126187465276436e-20,
+        "first_sampled_steps_to_fraction": {
+          "0.1": null,
+          "0.01": null,
+          "0.001": null
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-10,
+        "rank": 35,
+        "eta": 0.001700117722225843,
+        "complement_mse": 9.343868018520098e-19,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 630957345.0,
+          "0.01": 2928644565.0,
+          "0.001": 15848931925.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-12,
+        "rank": 38,
+        "eta": 0.001700117722225843,
+        "complement_mse": 1.3348353267496138e-19,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 630957345.0,
+          "0.01": 2928644565.0,
+          "0.001": 15848931925.0
+        }
+      },
+      {
+        "coordinates": "parameter_differences",
+        "cutoff": 1e-14,
+        "rank": 44,
+        "eta": 0.001700117722225843,
+        "complement_mse": 5.27040233122006e-22,
+        "first_sampled_steps_to_fraction": {
+          "0.1": 630957345.0,
+          "0.01": 2928644565.0,
+          "0.001": 15848931925.0
+        }
+      }
+    ],
+    "frequency_fits": [
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-10,
+        "rank": 28,
+        "projected_mse": 6.776858885526606e-13,
+        "physical_train_mse": 6.776858662090912e-13,
+        "midpoint_mse": 6.730965800429052e-13,
+        "physical_coefficient_l1": 2896.4394331284184,
+        "live_outside_mse": 6.819221278078971e-13,
+        "live_geometry_force_norm": 0.5222013493067127,
+        "live_outside_geometry_force_norm": 1.906498653798178e-09,
+        "live_outside_core_growth_force": -4.584136793219295e-11,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.9051868596819306e-09,
+          "halo": 1.2731439228701e-13,
+          "corrected_halo": 7.071160032565603e-11
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-10,
+        "rank": 28,
+        "projected_mse": 9.53370347084686e-10,
+        "physical_train_mse": 9.533703655690244e-10,
+        "midpoint_mse": 9.497488198155007e-10,
+        "physical_coefficient_l1": 40357.27601620255,
+        "live_outside_mse": 9.534908850484954e-10,
+        "live_geometry_force_norm": 53.35621161860201,
+        "live_outside_geometry_force_norm": 9.278038475506538e-08,
+        "live_outside_core_growth_force": -9.76972344177199e-10,
+        "live_outside_geometry_force_by_region": {
+          "core": 9.275258605092831e-08,
+          "halo": 6.18980530831979e-12,
+          "corrected_halo": 2.2710213229786132e-09
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-10,
+        "rank": 28,
+        "projected_mse": 0.00039392129336958024,
+        "physical_train_mse": 0.00039392129273672547,
+        "midpoint_mse": 0.0003934688649507454,
+        "physical_coefficient_l1": 4750015.901046241,
+        "live_outside_mse": 0.0003939213109562102,
+        "live_geometry_force_norm": 55.74040253678827,
+        "live_outside_geometry_force_norm": 7.432809990727005e-05,
+        "live_outside_core_growth_force": -8.056878366186357e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 7.431838986975026e-05,
+          "halo": 2.8502173635968203e-09,
+          "corrected_halo": 1.2013970489308646e-06
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-10,
+        "rank": 28,
+        "projected_mse": 0.8263221102959017,
+        "physical_train_mse": 0.8263220559240898,
+        "midpoint_mse": 0.8263405422293473,
+        "physical_coefficient_l1": 62712219.67482001,
+        "live_outside_mse": 0.8263221112694561,
+        "live_geometry_force_norm": 57.269874629484754,
+        "live_outside_geometry_force_norm": 0.0006275983159153521,
+        "live_outside_core_growth_force": 2.224729870756798e-05,
+        "live_outside_geometry_force_by_region": {
+          "core": 0.0006274854054129896,
+          "halo": 6.793784267698713e-08,
+          "corrected_halo": 1.1904096686919269e-05
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-10,
+        "rank": 28,
+        "projected_mse": 0.9763176188525471,
+        "physical_train_mse": 0.9763176038311351,
+        "midpoint_mse": 0.9763058481378035,
+        "physical_coefficient_l1": 13830470.315611392,
+        "live_outside_mse": 0.9763176195023049,
+        "live_geometry_force_norm": 58.03346698981516,
+        "live_outside_geometry_force_norm": 1.7525143615385716e-05,
+        "live_outside_core_growth_force": 3.709267355533965e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.751351299945049e-05,
+          "halo": 1.0062809067212746e-07,
+          "corrected_halo": 6.303928500079685e-07
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-10,
+        "rank": 28,
+        "projected_mse": 0.9928011772904312,
+        "physical_train_mse": 0.9928011773298581,
+        "midpoint_mse": 0.992742370099781,
+        "physical_coefficient_l1": 1983846.105367676,
+        "live_outside_mse": 0.9928011770840648,
+        "live_geometry_force_norm": 58.418461684626216,
+        "live_outside_geometry_force_norm": 1.7354893888489196e-05,
+        "live_outside_core_growth_force": 2.1825411222805756e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.727200555606438e-05,
+          "halo": 9.5763987675759e-08,
+          "corrected_halo": 1.6914476671376302e-06
+        }
+      },
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-12,
+        "rank": 33,
+        "projected_mse": 3.837757884495055e-16,
+        "physical_train_mse": 3.837750128044262e-16,
+        "midpoint_mse": 3.822249404829467e-16,
+        "physical_coefficient_l1": 2993.5644703861,
+        "live_outside_mse": 3.8995130648734815e-16,
+        "live_geometry_force_norm": 0.5222013493067127,
+        "live_outside_geometry_force_norm": 4.890369652663281e-12,
+        "live_outside_core_growth_force": 9.512070759074212e-14,
+        "live_outside_geometry_force_by_region": {
+          "core": 4.8868544216964624e-12,
+          "halo": 6.677305300250926e-15,
+          "corrected_halo": 1.852690325706132e-13
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-12,
+        "rank": 33,
+        "projected_mse": 2.7970156754960615e-11,
+        "physical_train_mse": 2.7970147243597752e-11,
+        "midpoint_mse": 2.791389812017254e-11,
+        "physical_coefficient_l1": 309758.0432486356,
+        "live_outside_mse": 2.796281773655306e-11,
+        "live_geometry_force_norm": 53.35621161860201,
+        "live_outside_geometry_force_norm": 3.496884689927642e-09,
+        "live_outside_core_growth_force": 2.1422844043591749e-10,
+        "live_outside_geometry_force_by_region": {
+          "core": 3.4967238372380816e-09,
+          "halo": 4.260392698811508e-12,
+          "corrected_halo": 3.32684504505646e-11
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-12,
+        "rank": 33,
+        "projected_mse": 1.25417507450018e-05,
+        "physical_train_mse": 1.254175165974108e-05,
+        "midpoint_mse": 1.2528788796912158e-05,
+        "physical_coefficient_l1": 188761185.0124267,
+        "live_outside_mse": 1.2541745702051463e-05,
+        "live_geometry_force_norm": 55.74040253678827,
+        "live_outside_geometry_force_norm": 1.0638335600369839e-06,
+        "live_outside_core_growth_force": 8.674139368509931e-08,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.0638260016651829e-06,
+          "halo": 3.181765693948212e-09,
+          "corrected_halo": 2.4409033374280966e-09
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-12,
+        "rank": 33,
+        "projected_mse": 0.8018039987383814,
+        "physical_train_mse": 0.8018038839631633,
+        "midpoint_mse": 0.8016907188331106,
+        "physical_coefficient_l1": 998825686.1031089,
+        "live_outside_mse": 0.8018039988066907,
+        "live_geometry_force_norm": 57.269874629484754,
+        "live_outside_geometry_force_norm": 0.0005496293184696626,
+        "live_outside_core_growth_force": 2.1298105335715555e-05,
+        "live_outside_geometry_force_by_region": {
+          "core": 0.0005496131306376159,
+          "halo": 1.651997433175341e-07,
+          "corrected_halo": 4.215099190935563e-06
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-12,
+        "rank": 33,
+        "projected_mse": 0.9640141269766787,
+        "physical_train_mse": 0.9640142714390901,
+        "midpoint_mse": 0.963946051273171,
+        "physical_coefficient_l1": 1075074388.853142,
+        "live_outside_mse": 0.9640141270202283,
+        "live_geometry_force_norm": 58.03346698981516,
+        "live_outside_geometry_force_norm": 1.9753928426197215e-05,
+        "live_outside_core_growth_force": -1.1986642339405858e-06,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.9740020761893944e-05,
+          "halo": 9.22822970977312e-08,
+          "corrected_halo": 7.353588001517877e-07
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-12,
+        "rank": 33,
+        "projected_mse": 0.9916570501781306,
+        "physical_train_mse": 0.9916570711413252,
+        "midpoint_mse": 0.9916069750214249,
+        "physical_coefficient_l1": 187573235.87763917,
+        "live_outside_mse": 0.9916570501520925,
+        "live_geometry_force_norm": 58.418461684626216,
+        "live_outside_geometry_force_norm": 9.716797248691397e-06,
+        "live_outside_core_growth_force": 6.58560585158284e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 9.7162538881196e-06,
+          "halo": 4.719240943454191e-08,
+          "corrected_halo": 9.127995546239664e-08
+        }
+      },
+      {
+        "frequency_multiplier": 1,
+        "cycles_over_domain": 2,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 7.130117641426332e-20,
+        "physical_train_mse": 7.064368654901962e-20,
+        "midpoint_mse": 7.050047984369317e-20,
+        "physical_coefficient_l1": 2796.698840587951,
+        "live_outside_mse": 7.12618746769121e-20,
+        "live_geometry_force_norm": 0.5222013493067127,
+        "live_outside_geometry_force_norm": 1.599979378963889e-13,
+        "live_outside_core_growth_force": -7.235686573781583e-15,
+        "live_outside_geometry_force_by_region": {
+          "core": 1.5999765779767548e-13,
+          "halo": 3.454455165507305e-17,
+          "corrected_halo": 2.973836387673342e-16
+        }
+      },
+      {
+        "frequency_multiplier": 2,
+        "cycles_over_domain": 4,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 2.9630193727206415e-15,
+        "physical_train_mse": 2.96783962136505e-15,
+        "midpoint_mse": 2.9503407033071286e-15,
+        "physical_coefficient_l1": 534242.0563856759,
+        "live_outside_mse": 2.963190511589104e-15,
+        "live_geometry_force_norm": 53.35621161860201,
+        "live_outside_geometry_force_norm": 2.1679305765897417e-12,
+        "live_outside_core_growth_force": -9.410369626635725e-14,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.1678825995344558e-12,
+          "halo": 9.377740752153418e-15,
+          "corrected_halo": 1.0957989178930267e-14
+        }
+      },
+      {
+        "frequency_multiplier": 4,
+        "cycles_over_domain": 8,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 1.2184125093449693e-08,
+        "physical_train_mse": 1.2185013406398454e-08,
+        "midpoint_mse": 1.2181238597462149e-08,
+        "physical_coefficient_l1": 577524949.5101528,
+        "live_outside_mse": 1.2184125166978815e-08,
+        "live_geometry_force_norm": 55.74040253678827,
+        "live_outside_geometry_force_norm": 6.638660602872245e-08,
+        "live_outside_core_growth_force": -2.999694926114177e-09,
+        "live_outside_geometry_force_by_region": {
+          "core": 6.638660396010109e-08,
+          "halo": 5.824657508774342e-12,
+          "corrected_halo": 1.55155039702591e-11
+        }
+      },
+      {
+        "frequency_multiplier": 8,
+        "cycles_over_domain": 16,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 0.5232870082728442,
+        "physical_train_mse": 0.5233540516575721,
+        "midpoint_mse": 0.5232292902833797,
+        "physical_coefficient_l1": 396021371015.57697,
+        "live_outside_mse": 0.523287008271611,
+        "live_geometry_force_norm": 57.269874629484754,
+        "live_outside_geometry_force_norm": 0.0002558974956740231,
+        "live_outside_core_growth_force": 1.1301011948285445e-05,
+        "live_outside_geometry_force_by_region": {
+          "core": 0.00025589747555966906,
+          "halo": 6.550369272360639e-08,
+          "corrected_halo": 7.748349184738251e-08
+        }
+      },
+      {
+        "frequency_multiplier": 16,
+        "cycles_over_domain": 32,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 0.955239344355771,
+        "physical_train_mse": 0.9552244676475794,
+        "midpoint_mse": 0.9552565297259592,
+        "physical_coefficient_l1": 59020898047.2273,
+        "live_outside_mse": 0.9552393443564582,
+        "live_geometry_force_norm": 58.03346698981516,
+        "live_outside_geometry_force_norm": 2.401546061165657e-06,
+        "live_outside_core_growth_force": 1.1927086948495035e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.40085803766221e-06,
+          "halo": 5.33417851293228e-08,
+          "corrected_halo": 2.142010392741662e-08
+        }
+      },
+      {
+        "frequency_multiplier": 32,
+        "cycles_over_domain": 64,
+        "cutoff": 1e-14,
+        "rank": 38,
+        "projected_mse": 0.9907651670944068,
+        "physical_train_mse": 0.9907662800228125,
+        "midpoint_mse": 0.990731335845444,
+        "physical_coefficient_l1": 42226812533.47539,
+        "live_outside_mse": 0.9907651670942733,
+        "live_geometry_force_norm": 58.418461684626216,
+        "live_outside_geometry_force_norm": 2.4878977896303186e-06,
+        "live_outside_core_growth_force": -1.1567249803312738e-07,
+        "live_outside_geometry_force_by_region": {
+          "core": 2.487828731095104e-06,
+          "halo": 1.85355926688743e-08,
+          "corrected_halo": 2.195212195087092e-10
+        }
+      }
+    ],
+    "source_sha256": "fe498955380f99823d1e31b4afa92c3a8d319a32eacbc38bccb60243d69dda5d"
+  }
+]
