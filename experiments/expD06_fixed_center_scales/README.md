@@ -458,6 +458,16 @@ CPU-only audit records actual sampled times and mode block energies; it does
 not interpolate Hessians or advance the optimizer. Endpoint values must agree
 with the independent three-consecutive-state audit before interpretation.
 
+`scale_sensitivity.py` reads the mandatory export's initial states and verified
+`construction_N512.npz` / `construction_N1024.npz` references. Its detached
+comparison measures native readout and geometry Gram maxima, including core
+and halo contributions. A control holds each initial readout fixed and changes
+only the slopes to uniform bandwidth 0.25. It also evaluates the rank-two
+broad-slope approximation. No diagnostic state is used as an initializer or
+inserted into training. The largest-eigenvalue calculations do not estimate
+small singular values or full condition numbers. Independent checks compare
+the zero-slope limit and the localized-column norm with analytic calculations.
+
 `ssb_gradient_audit.py` recomputes full-grid gradients at 80 digits for the two
 default corrected SSBroyden failures. It distinguishes fixed stored physical
 coefficients from exact decoding of stored native coordinates, uses the analytic
