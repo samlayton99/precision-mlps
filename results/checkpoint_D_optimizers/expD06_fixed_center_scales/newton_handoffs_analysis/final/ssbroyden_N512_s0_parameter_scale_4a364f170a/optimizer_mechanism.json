@@ -1,0 +1,513 @@
+{
+  "key": "ssbroyden_N512_s0_parameter_scale_4a364f170a",
+  "case": {
+    "campaign": "joint_conditioning",
+    "optimizer": "ssbroyden",
+    "coordinates": "parameter_scale",
+    "eta": 1.0,
+    "n": 512,
+    "seed": 0,
+    "curvature_epsilon": 1e-30,
+    "search_threshold": 1e-15,
+    "ssb_integration": "accepted_step",
+    "followup": "newton_handoffs_v1",
+    "diagnostics": true,
+    "warm_start": {
+      "root": "../joint_conditioning",
+      "source_key": "adam_N512_s0_parameter_scale_7a942c4c2f",
+      "step": 5300000,
+      "sha256": "5f6f39693e68e700f95b6d69f8cf4cff1f542b6de3751dc42ded5ac003142a62"
+    }
+  },
+  "end": 8201,
+  "states": [
+    {
+      "step": 0,
+      "checkpoint_sha256": "8417b0cc0f34ea15e15c5e897f91c060a5075adaf8efa14658f7fb67aba0731c",
+      "state_sha256": "34211ff2ed0a35a050a81003e8395b3dafe218dd6be9039ef77d042b92a1b6cf",
+      "gradient_physical_readout_norm": 1.5174277091027616e-05,
+      "gradient_physical_gamma_norm": 1.3328400117909593e-10,
+      "gradient_reference_readout_norm": 1.0916042924894459e-05,
+      "gradient_lambda_norm": 3.412070430184856e-08,
+      "metric": {
+        "component_order": [
+          "readout_from_readout",
+          "readout_from_geometry",
+          "geometry_from_readout",
+          "geometry_from_geometry"
+        ],
+        "physical_direction_rms": [
+          3.4495277878755706e-06,
+          0.0,
+          0.0,
+          2.6112166669896503e-07
+        ],
+        "function_direction_norm": [
+          0.00011966272203636312,
+          0.0,
+          0.0,
+          5.245981117836194e-09
+        ],
+        "directional_derivatives": [
+          -1.1915999313813843e-10,
+          0.0,
+          0.0,
+          -1.1642224620541867e-15
+        ],
+        "readout_geometry_function_cosine": 0.1643414616513185,
+        "direction_closure": 0.0,
+        "function_closure": 6.554969294208925e-20,
+        "comparison_order": [
+          "learned",
+          "physical_identity",
+          "prescribed_initial"
+        ],
+        "comparison_function_norm": [
+          0.00011966358428045251,
+          0.0002377913221766924,
+          0.00011966358428045253
+        ],
+        "comparison_directional_derivative": [
+          -1.191611573606003e-10,
+          -2.3025868525304988e-10,
+          -1.1916115736060046e-10
+        ],
+        "common_metric_eigen_quantiles": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "common_metric_asymmetry": 0.0
+      }
+    },
+    {
+      "step": 1,
+      "checkpoint_sha256": "293df598b7c7c160cae1fe54cfb77f4ac0cf752de37c6e77dcd2736b488b1ed3",
+      "state_sha256": "d5e7df108134a5318fcfb3890529e1ca748b5bdfa596eecfa2c5c2744e172b8c",
+      "gradient_physical_readout_norm": 6.817867211445847e-07,
+      "gradient_physical_gamma_norm": 3.9066918037035976e-11,
+      "gradient_reference_readout_norm": 5.913220354790561e-09,
+      "gradient_lambda_norm": 1.000113101748121e-08,
+      "metric": {
+        "component_order": [
+          "readout_from_readout",
+          "readout_from_geometry",
+          "geometry_from_readout",
+          "geometry_from_geometry"
+        ],
+        "physical_direction_rms": [
+          9.802319893945247e-12,
+          5.874305034264648e-12,
+          5.535928522015758e-13,
+          7.653719278667024e-08
+        ],
+        "function_direction_norm": [
+          3.5929255192643726e-10,
+          2.037769233038998e-10,
+          1.1333718861468597e-14,
+          1.2532479472522162e-09
+        ],
+        "directional_derivatives": [
+          -3.496520801390032e-17,
+          -5.807519429354957e-22,
+          -5.807519429354962e-22,
+          -1.0002227397375074e-16
+        ],
+        "readout_geometry_function_cosine": -0.3823640766259357,
+        "direction_closure": 3.653186599381145e-24,
+        "function_closure": 7.319539828321693e-25,
+        "comparison_order": [
+          "learned",
+          "physical_identity",
+          "prescribed_initial"
+        ],
+        "comparison_function_norm": [
+          1.1598426521861712e-09,
+          8.32310019475788e-06,
+          1.1677552892222457e-09
+        ],
+        "comparison_directional_derivative": [
+          -1.3498864349153695e-16,
+          -4.64833134655307e-13,
+          -1.349887965931341e-16
+        ],
+        "common_metric_eigen_quantiles": [
+          0.008321664495053976,
+          1.0000000010132273,
+          1.0000000010132286,
+          1.0000000010132297,
+          1.0000000105193403
+        ],
+        "common_metric_asymmetry": 0.0
+      }
+    },
+    {
+      "step": 10,
+      "checkpoint_sha256": "d09cd1b3b2e0f70974bb9b0a27223a9a395420df24763d6a105eaa72b54071ad",
+      "state_sha256": "a654597ed13faddcf427ef0e511ae235ba50bc4367dccb0cc153dc24c46ecc47",
+      "gradient_physical_readout_norm": 1.0669447496534587e-06,
+      "gradient_physical_gamma_norm": 3.720382890603301e-11,
+      "gradient_reference_readout_norm": 3.1861267536858055e-07,
+      "gradient_lambda_norm": 9.524180199944451e-09,
+      "metric": {
+        "component_order": [
+          "readout_from_readout",
+          "readout_from_geometry",
+          "geometry_from_readout",
+          "geometry_from_geometry"
+        ],
+        "physical_direction_rms": [
+          6.364444085019155e-09,
+          2.8027025816674365e-08,
+          5.859304548381976e-05,
+          0.00019280702594978822
+        ],
+        "function_direction_norm": [
+          2.4648811733010915e-07,
+          1.426642151051011e-07,
+          1.7972429893272854e-07,
+          2.731308866751354e-07
+        ],
+        "directional_derivatives": [
+          -1.7645694824157582e-14,
+          2.4946767021621584e-15,
+          2.494676702162133e-15,
+          -1.0930828626095325e-13
+        ],
+        "readout_geometry_function_cosine": -0.29256404464670294,
+        "direction_closure": 3.5711772069405444e-20,
+        "function_closure": 6.552140281791984e-22,
+        "comparison_order": [
+          "learned",
+          "physical_identity",
+          "prescribed_initial"
+        ],
+        "comparison_function_norm": [
+          2.586969529701089e-07,
+          1.534713110365502e-05,
+          3.4916585053296115e-06
+        ],
+        "comparison_directional_derivative": [
+          -1.2196462768078656e-13,
+          -1.1383711001972054e-12,
+          -1.0160474691400542e-13
+        ],
+        "common_metric_eigen_quantiles": [
+          0.020524229927045064,
+          691.6721151476853,
+          691.6721151476867,
+          691.672115147688,
+          16083.917472618079
+        ],
+        "common_metric_asymmetry": 0.0
+      }
+    },
+    {
+      "step": 100,
+      "checkpoint_sha256": "3ac3fa0580f738fa60b6cc8f76af237749afd0480f6ef588229d1ce2433edd8e",
+      "state_sha256": "08b9350b86fcbbce137d070d96307d7e1a957150223ea78984896caaa6d09dea",
+      "gradient_physical_readout_norm": 3.00145376499524e-06,
+      "gradient_physical_gamma_norm": 3.451453864845135e-10,
+      "gradient_reference_readout_norm": 2.8925384334615885e-07,
+      "gradient_lambda_norm": 8.835721894003546e-08,
+      "metric": {
+        "component_order": [
+          "readout_from_readout",
+          "readout_from_geometry",
+          "geometry_from_readout",
+          "geometry_from_geometry"
+        ],
+        "physical_direction_rms": [
+          5.8700296555714735e-05,
+          7.951578679854738e-05,
+          0.2856560460524507,
+          0.34492637589089215
+        ],
+        "function_direction_norm": [
+          0.00011991292139252128,
+          0.00014523153015881077,
+          0.00012575554681617772,
+          0.00015244170820499775
+        ],
+        "directional_derivatives": [
+          -3.8073601867718106e-11,
+          4.3320470165966253e-11,
+          4.332047016596621e-11,
+          -5.626431813934578e-11
+        ],
+        "readout_geometry_function_cosine": -0.9919436400609344,
+        "direction_closure": 1.6065296686491011e-16,
+        "function_closure": 5.995377202028614e-19,
+        "comparison_order": [
+          "learned",
+          "physical_identity",
+          "prescribed_initial"
+        ],
+        "comparison_function_norm": [
+          3.59033757378787e-06,
+          3.32847234470755e-05,
+          3.1593389917882786e-06
+        ],
+        "comparison_directional_derivative": [
+          -7.696979675131414e-12,
+          -9.008724822529444e-12,
+          -9.147478402934166e-14
+        ],
+        "common_metric_eigen_quantiles": [
+          0.045504900497580825,
+          189020.500525229,
+          189020.50052522973,
+          189020.50052523025,
+          78498907.40919285
+        ],
+        "common_metric_asymmetry": 0.0
+      }
+    },
+    {
+      "step": 1000,
+      "checkpoint_sha256": "e29e34d9c070647275891310d525c2796d05893f658fceba03351318f92d72ca",
+      "state_sha256": "2248ec3df9bf50ebcd3f421c7e4ef9190a3bf02163e35af1170a59a0e8a4e571",
+      "gradient_physical_readout_norm": 7.703210784515659e-08,
+      "gradient_physical_gamma_norm": 5.913275160526754e-12,
+      "gradient_reference_readout_norm": 2.881908887919501e-08,
+      "gradient_lambda_norm": 1.513798441094849e-09,
+      "metric": {
+        "component_order": [
+          "readout_from_readout",
+          "readout_from_geometry",
+          "geometry_from_readout",
+          "geometry_from_geometry"
+        ],
+        "physical_direction_rms": [
+          0.003371322280833672,
+          0.0033565208613312867,
+          12.252137039716448,
+          12.201362405775527
+        ],
+        "function_direction_norm": [
+          0.002989898630718983,
+          0.0029791323550951813,
+          0.002992443024391544,
+          0.002981686504945665
+        ],
+        "directional_derivatives": [
+          -2.38362370896013e-11,
+          2.377440262119326e-11,
+          2.377440262119333e-11,
+          -2.371539713784717e-11
+        ],
+        "readout_geometry_function_cosine": -0.9999735022929188,
+        "direction_closure": 1.8502191667763483e-14,
+        "function_closure": 8.164865586758373e-18,
+        "comparison_order": [
+          "learned",
+          "physical_identity",
+          "prescribed_initial"
+        ],
+        "comparison_function_norm": [
+          7.981452115755203e-08,
+          9.034068427428327e-07,
+          3.1582382984676137e-07
+        ],
+        "comparison_directional_derivative": [
+          -2.8289850618781882e-15,
+          -5.933945674034657e-15,
+          -8.328314695472027e-16
+        ],
+        "common_metric_eigen_quantiles": [
+          0.007879539679425384,
+          616923.3100739833,
+          301378022.1136462,
+          301838382.4002057,
+          175179428632.94995
+        ],
+        "common_metric_asymmetry": 0.0
+      }
+    },
+    {
+      "step": 2000,
+      "checkpoint_sha256": "4c54308c582cee1d3c65dc57e6b09d857f43af2bb1d7310f1ffe4ed9799d6de4",
+      "state_sha256": "5e937e4ec033ba64153538eaba4257be2795ca225e7cfad07c7823dc7397fb72",
+      "gradient_physical_readout_norm": 4.296187178833649e-09,
+      "gradient_physical_gamma_norm": 5.918703386613532e-13,
+      "gradient_reference_readout_norm": 3.6583749463296218e-09,
+      "gradient_lambda_norm": 1.515188066973064e-10,
+      "metric": {
+        "component_order": [
+          "readout_from_readout",
+          "readout_from_geometry",
+          "geometry_from_readout",
+          "geometry_from_geometry"
+        ],
+        "physical_direction_rms": [
+          0.009499232306579787,
+          0.009487002189522444,
+          7.500948712405424,
+          7.49145031141951
+        ],
+        "function_direction_norm": [
+          0.0025224936056099266,
+          0.0025193544648255835,
+          0.0025229620544863474,
+          0.0025198227019398367
+        ],
+        "directional_derivatives": [
+          -6.176604806233365e-13,
+          6.17001848031465e-13,
+          6.170018480313014e-13,
+          -6.163596944645325e-13
+        ],
+        "readout_geometry_function_cosine": -0.9999989618479606,
+        "direction_closure": 1.8154357420167051e-13,
+        "function_closure": 1.0761224871211916e-16,
+        "comparison_order": [
+          "learned",
+          "physical_identity",
+          "prescribed_initial"
+        ],
+        "comparison_function_norm": [
+          4.536636492875655e-09,
+          4.785584195027177e-08,
+          4.011044078175623e-08
+        ],
+        "comparison_directional_derivative": [
+          -1.6479025045735957e-17,
+          -1.8457224625885128e-17,
+          -1.3406665196715235e-17
+        ],
+        "common_metric_eigen_quantiles": [
+          0.0014803512354526413,
+          143048.29710946107,
+          1994438244.5125136,
+          4481228179.916606,
+          6470310339995.874
+        ],
+        "common_metric_asymmetry": 0.0
+      }
+    },
+    {
+      "step": 5000,
+      "checkpoint_sha256": "47437a1f190b08f8554fbb910a7e8e7c7759b2d0cb0734c0fd8a94c3116faa6a",
+      "state_sha256": "57c2681cedad813459be864efb9b77596432faecbbcbb4429995adbf91d81265",
+      "gradient_physical_readout_norm": 1.032712507642995e-09,
+      "gradient_physical_gamma_norm": 1.499427641477088e-13,
+      "gradient_reference_readout_norm": 5.158871730848476e-10,
+      "gradient_lambda_norm": 3.8385347621813456e-11,
+      "metric": {
+        "component_order": [
+          "readout_from_readout",
+          "readout_from_geometry",
+          "geometry_from_readout",
+          "geometry_from_geometry"
+        ],
+        "physical_direction_rms": [
+          0.22479519634467723,
+          0.22465822746398784,
+          54.015897077874804,
+          53.97901576990366
+        ],
+        "function_direction_norm": [
+          0.03017015949793535,
+          0.03015065249515384,
+          0.030170643115240457,
+          0.030151135894108345
+        ],
+        "directional_derivatives": [
+          -1.2448054930306532e-12,
+          1.2441216899392332e-12,
+          1.2441216899390712e-12,
+          -1.2434392093197948e-12
+        ],
+        "readout_geometry_function_cosine": -0.9999999952271797,
+        "direction_closure": 1.0234246288126726e-11,
+        "function_closure": 7.072511185447826e-16,
+        "comparison_order": [
+          "learned",
+          "physical_identity",
+          "prescribed_initial"
+        ],
+        "comparison_function_norm": [
+          1.9214226016526587e-09,
+          1.4547173579755512e-08,
+          5.661472307151724e-09
+        ],
+        "comparison_directional_derivative": [
+          -1.3224722971227747e-18,
+          -1.0664951459251163e-18,
+          -2.676130102655229e-19
+        ],
+        "common_metric_eigen_quantiles": [
+          0.0002180243780849375,
+          70474.44286211327,
+          2222269404.920625,
+          2280326780582.5176,
+          1894400399415901.0
+        ],
+        "common_metric_asymmetry": 0.0
+      }
+    },
+    {
+      "step": 8201,
+      "checkpoint_sha256": "09f5eaed4cf45101a038d20f841a5db234f0e653b19cfa421662fb6286161e6b",
+      "state_sha256": "5f45a29973012f917644ef98cd3031d681023f7494ea0a56d7cc8083d6b3eb84",
+      "gradient_physical_readout_norm": 2.276948334334113e-09,
+      "gradient_physical_gamma_norm": 4.782469550236488e-13,
+      "gradient_reference_readout_norm": 1.6064249510434282e-09,
+      "gradient_lambda_norm": 1.2243122048605408e-10,
+      "metric": {
+        "component_order": [
+          "readout_from_readout",
+          "readout_from_geometry",
+          "geometry_from_readout",
+          "geometry_from_geometry"
+        ],
+        "physical_direction_rms": [
+          2.783723090317213,
+          2.78372574716534,
+          801.1917084917073,
+          801.1915174402203
+        ],
+        "function_direction_norm": [
+          0.5855598228861969,
+          0.5855603583416552,
+          0.5855663372394866,
+          0.5855668716165577
+        ],
+        "directional_derivatives": [
+          -2.4028454768990595e-11,
+          2.4028452207476108e-11,
+          2.4028452207464528e-11,
+          -2.4028449050567576e-11
+        ],
+        "readout_geometry_function_cosine": -0.9999793440486029,
+        "direction_closure": 4.4657535290626764e-10,
+        "function_closure": 3.770353257208757e-14,
+        "comparison_order": [
+          "learned",
+          "physical_identity",
+          "prescribed_initial"
+        ],
+        "comparison_function_norm": [
+          4.659278427341822e-09,
+          3.488135856987671e-08,
+          1.7678707093049575e-08
+        ],
+        "comparison_directional_derivative": [
+          5.953860972115711e-19,
+          -5.1844939459470384e-18,
+          -2.5955905270845892e-18
+        ],
+        "common_metric_eigen_quantiles": [
+          -3484917876.644619,
+          499448.79627712234,
+          31433468703.404617,
+          67644737332126.62,
+          4.717511853804806e+16
+        ],
+        "common_metric_asymmetry": 0.0
+      }
+    }
+  ]
+}

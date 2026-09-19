@@ -105,6 +105,28 @@ def figures(output,reference,construction):
     fig.suptitle('Same Adam physical endpoint, fresh higher-order optimizer states\nHigher-order curves: saved states; Adam: means over 1000 updates. Post-handoff counts have different costs')
     save(fig,dest/'handoffs.png')
 
+    extended=[r for r in records if r['end']>20000 and r['case']['optimizer'] in ('newton','gn')]
+    if extended:
+        fig,axes=plt.subplots(2,2,figsize=(13,8),layout='constrained')
+        for r in extended:
+            c=r['case'];seed=c['seed'];warm=bool(c.get('warm_start'))
+            _,_,h=curves(r,output);baseline=h['train_mse'][h['step']==20000]
+            if len(baseline)!=1:raise ValueError('Continuation plot requires the fixed 20k checkpoint')
+            keep=h['step']>=20000
+            label=f"{'Newton' if c['optimizer']=='newton' else 'GN'}, {'Adam start' if warm else 'Xavier start'}"
+            color=COLORS[c['optimizer']] if warm else '#d6604d'
+            axes[0,seed].plot(h['step'][keep],h['train_mse'][keep]/baseline[0],label=label,color=color)
+            axes[1,seed].plot(h['step'][keep],h['lambda_quantiles'][keep,1],label=label,color=color)
+        for seed in (0,1):
+            axes[0,seed].set_title(f'Seed {seed}');axes[0,seed].set_yscale('log')
+            axes[0,seed].axhline(1,color='.5',ls=':')
+            axes[1,seed].axhline(.25,color='.5',ls=':',label='Construction bandwidth')
+            for row,ylabel in enumerate(('MSE / same run at 20k','Median core |lambda|')):
+                axes[row,seed].set(xlabel='Accepted updates after initialization',ylabel=ylabel,xlim=(20000,None))
+                axes[row,seed].grid(alpha=.2);axes[row,seed].legend(fontsize=8)
+        fig.suptitle('Continuation with optimizer state preserved; linear update axis\nRelative errors use each run\'s own 20k MSE; final endpoints may have unequal update counts')
+        save(fig,dest/'continuation.png')
+
     fig,axes=plt.subplots(1,2,figsize=(13,4.5),layout='constrained')
     for r in records:
         c=r['case']

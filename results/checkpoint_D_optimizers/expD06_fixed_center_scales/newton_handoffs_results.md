@@ -6,6 +6,8 @@ precision. At 20k accepted updates, Newton from Adam reaches MSE
 $2.43\times10^{-15}$ and $1.18\times10^{-16}$; from Xavier it reaches
 $5.64\times10^{-9}$ and $1.35\times10^{-9}$. The same Adam endpoints handed to
 Gauss–Newton reach $2.53\times10^{-16}$ and $1.32\times10^{-19}$.
+Longer training improves the best Adam-to-GN run to MSE
+$1.02\times10^{-21}$, with the exact horizons and initialization controls below.
 
 These are trained endpoint errors, not detached least-squares fits. They remain
 far above the construction's accuracy. The finite training horizons do not
@@ -19,7 +21,7 @@ them. Numerical curvature guards then limit its attainable training accuracy.
 | Term | Meaning in this report |
 |---|---|
 | Physical parameters | $c=(b,w)$ and $\gamma$ in $f(x)=b+\sum_jw_j\tanh(\gamma_j(x-t_j))$. |
-| Bandwidth | $\lambda_j=h\gamma_j$; plotted summaries use core $|\lambda|$. |
+| Bandwidth | $\lambda_j=h\gamma_j$; plotted summaries use core $\lvert\lambda\rvert$. |
 | Individual scales | Optimize $z=(u,\lambda)$ with $c=\operatorname{diag}(\alpha)u$ and $\gamma=\lambda/h$. Code label: `parameter_scale`. |
 | Unscaled physical parameters | Optimize $(c,\gamma)$ directly. Code label: `physical`. |
 | Reference allowances $\alpha$ | Fixed construction-derived individual coefficient scales, including corrected halos, evaluated at $\lambda_{\rm ref}=0.25$. They are normalizations, not constraints. |
@@ -37,7 +39,7 @@ converged or selected as successful 20k runs.
 
 **Endpoint training MSE and median core $|\lambda|$ after 20k accepted updates. Each pair is seed 0 / seed 1. The GN Xavier baseline is the existing matched-setting run.**
 
-| Method and start | MSE, seed 0 / 1 | Median $|\lambda|$, seed 0 / 1 |
+| Method and start | MSE, seed 0 / 1 | Median $\lvert\lambda\rvert$, seed 0 / 1 |
 |---|---:|---:|
 | Full Newton, Xavier | $5.64\times10^{-9}\;/\;1.35\times10^{-9}$ | $0.000524\;/\;0.00741$ |
 | Full Newton, Adam | $2.43\times10^{-15}\;/\;1.18\times10^{-16}$ | $0.155\;/\;0.151$ |
@@ -97,11 +99,58 @@ and 9,237. The scaled geometries' corresponding norms are 171 and 296, with
 MSE $1.86\times10^{-20}$ and $3.10\times10^{-19}$. A low error on this
 one smooth target therefore does not by itself identify a well-localized,
 numerically rich dictionary or the construction's coefficient scale.
+Nor is median bandwidth near 0.24 equivalent to the uniform construction:
+the scaled runs' core 10th–90th percentile ranges are approximately
+$[0.121,0.506]$ and $[0.111,0.512]$.
 
 <figure>
   <img src="newton_handoffs_analysis/mandatory/figures/ssb_scaling.png" alt="Paired scaled and unscaled SSBroyden trajectories showing persistent bandwidth differences" style="max-width:100%;">
   <figcaption>Identical physical Xavier starts, distinct initial physical inverse-Hessian metrics. Individual scaling rapidly changes geometry and finishes near median bandwidth 0.24; unscaled SSBroyden finishes near 0.002. Both continue taking accepted steps after their rapid initial loss reduction has slowed.</figcaption>
 </figure>
+
+## What longer training changes
+
+After the fixed comparison, the four Newton runs and two Adam-to-GN runs
+continued with their optimizer states preserved, advancing in 10k blocks.
+All six complete a common 90k horizon. The allocation ends during the next
+GN block, so the final endpoints have the different counts shown below.
+Every trajectory remains numerically viable; the stop is a budget limit,
+not a convergence declaration. The SSBroyden and continued-Adam controls retain
+their previously reported horizons.
+
+**Final trained endpoints. Improvement factors compare each run with its own 20k endpoint.**
+
+| Method and start | Seed | Accepted updates | Training MSE | Improvement since 20k | Median core $\lvert\lambda\rvert$ |
+|---|---:|---:|---:|---:|---:|
+| Full Newton, Xavier | 0 | 100,000 | $6.26\times10^{-10}$ | $9.0\times$ | 0.000330 |
+| Full Newton, Xavier | 1 | 100,000 | $8.36\times10^{-11}$ | $16.2\times$ | 0.0146 |
+| Full Newton, Adam | 0 | 100,000 | $2.90\times10^{-16}$ | $8.4\times$ | 0.151 |
+| Full Newton, Adam | 1 | 100,000 | $1.74\times10^{-18}$ | $67.5\times$ | 0.142 |
+| GN, Adam | 0 | 90,390 | $8.35\times10^{-18}$ | $30.3\times$ | 0.145 |
+| GN, Adam | 1 | 90,666 | $1.02\times10^{-21}$ | $129.4\times$ | 0.129 |
+
+<figure>
+  <img src="newton_handoffs_analysis/final/figures/continuation.png" alt="MSE improvement relative to 20k and median bandwidth during the continued Newton and GN trajectories" style="max-width:100%;">
+  <figcaption>The linear update axis isolates training after 20k. Each error curve is divided by its own 20k MSE, so relative progress can be compared despite very different absolute errors. Curves stop at the actual saved endpoints. Continued improvement does not systematically move median bandwidth toward the uniform construction's 0.25.</figcaption>
+</figure>
+
+The best GN endpoint has training L2RE $3.20\times10^{-11}$ and midpoint
+MSE $9.94\times10^{-22}$. It remains far from the construction. The
+substantial later reductions show that the 20k errors were not established
+floors. Newton from Xavier still leaves many slopes very small; some grow
+substantially, so its small median should not be read as uniformly frozen
+geometry. The complete quantiles, coefficient norms, and checkpoints are in
+the [continuation comparison](newton_handoffs_analysis/extension_comparison.json).
+
+Adam initialization remains mixed for GN at the longer **matched 40k**
+horizon available in the existing controls. Xavier-started GN reaches
+$1.63\times10^{-18}$ and $4.61\times10^{-18}$, while Adam-started GN reaches
+$7.45\times10^{-17}$ and $1.02\times10^{-20}$. Thus the Adam start is
+45.7 times worse in seed 0 and 451 times better in seed 1. These are matched
+higher-order update counts, with Adam's prior 5.3 million updates additional;
+they do not establish a universal benefit or an equal-total-cost advantage.
+The [paired checkpoint record](newton_handoffs_analysis/gn_matched_40000.json)
+includes hashes of both old and new source files.
 
 ## What was held fixed?
 
@@ -188,8 +237,10 @@ previous campaign, an identity initial inverse Hessian in its optimization
 coordinates, and curvature guards $\epsilon_{\rm curv}=2.22\times10^{-16}$
 or $10^{-30}$. These guards are not learning rates or Adam's denominator
 epsilon. The same line-search rule is used across the paired SSBroyden cases.
-Newton and GN use different acceptance and damping rules, so their trajectory
-comparison does not isolate the residual-curvature term alone. The saved
+Newton and GN use different acceptance and damping rules. Newton also forms
+a dense Hessian in FP64, whereas GN solves the augmented Jacobian system by
+QR; accuracy in very weak directions is another difference. Their trajectory
+comparison therefore does not isolate the residual-curvature term alone. The saved
 same-radius endpoint trials substitute $J^TJ$ for the full Hessian at fixed
 parameters and radius; those are detached diagnostics, not matched training
 trajectories.
@@ -242,7 +293,7 @@ bitwise GPU-generated labels.
 
 **Independent directional curvature at the 20k warm Newton endpoints. The positive GN contribution is much smaller than the negative residual-curvature contribution.**
 
-| Adam-start endpoint | $\|Jv\|^2$ | $r^Tr''[v,v]$ | Total curvature |
+| Adam-start endpoint | $\lVert Jv\rVert^2$ | $r^Tr''[v,v]$ | Total curvature |
 |---|---:|---:|---:|
 | Seed 0, 20k | $4.73\times10^{-18}$ | $-3.76\times10^{-11}$ | $-3.76\times10^{-11}$ |
 | Seed 1, 20k | $7.47\times10^{-16}$ | $-4.91\times10^{-12}$ | $-4.91\times10^{-12}$ |
@@ -311,6 +362,23 @@ along corresponding physical directions. It cannot make an indefinite full
 Hessian positive definite. The scale prescription and the local nonlinear
 conditioning problem are distinct parts of the explanation.
 
+The longer runs retain this difficulty, with an additional numerical caveat.
+Every accepted Newton step through 100k still uses a positive shift. At the
+warm endpoints, independent full-grid 80-digit directional curvatures are
+$-1.34\times10^{-10}$ and $-2.85\times10^{-12}$. Their fixed-geometry
+readout refits at cutoff $10^{-14}$ reach MSE $2.57\times10^{-21}$ and
+$1.09\times10^{-20}$, so substantial optimization gaps remain.
+
+For **cold seed 0 at 100k**, however, the smallest dense FP64 eigenvalue is
+$-6.37\times10^{-10}$ while the largest is $1.74\times10^6$. Direct
+80-digit evaluation along that saved eigenvector gives **positive** curvature
+$4.51\times10^{-12}$. Its reported negative curvature is therefore a
+numerical artifact; this test does not establish that the whole Hessian is
+positive semidefinite. Cold seed 1's tested direction remains negative,
+$-1.52\times10^{-8}$. The [final curvature audit](newton_handoffs_analysis/final_precision/curvature_mp80.json)
+thus supports the warm-start mechanism while exposing a real FP64 limitation
+of the dense Hessian analysis in the cold run.
+
 ## What the SSBroyden guards change
 
 At the Adam starts, the conservative guard blocks curvature updates on
@@ -326,7 +394,7 @@ directions, but eventually loses a numerically reliable descent direction.
 
 **Small-guard SSBroyden failures. Each row is the last accepted model, not a converged solution or a completed 20k comparison. All use individual scales.**
 
-| Start | Seed | Accepted updates | Training MSE | Training L2RE | Median core $|\lambda|$ |
+| Start | Seed | Accepted updates | Training MSE | Training L2RE | Median core $\lvert\lambda\rvert$ |
 |---|---:|---:|---:|---:|---:|
 | Xavier | 0 | 7,918 | $5.35\times10^{-19}$ | $7.31\times10^{-10}$ | 0.185 |
 | Xavier | 1 | 8,028 | $2.48\times10^{-19}$ | $4.98\times10^{-10}$ | 0.176 |
@@ -398,6 +466,15 @@ oscillation. For warm seed 0, adjacent bandwidth-update cosines have medians
 0.9949 for Newton and 0.9999999 for GN. Their net RMS bandwidth changes over
 that window are 0.00176 and 0.00178. Parameters are still moving persistently.
 
+This remains true at the later endpoints. Across the final 2,048 updates,
+Newton's net RMS bandwidth changes are $6.41\times10^{-5}$ and
+$2.75\times10^{-4}$; GN's are $2.43\times10^{-4}$ and
+$3.62\times10^{-4}$. The updated [movement curves](newton_handoffs_analysis/final/figures/motion.png)
+show smaller steps, with continuing net motion. The final physical readouts
+and slopes remain attached to their centers in the
+[seed-0 plot](newton_handoffs_analysis/final/figures/parameters_seed_0.png) and
+[seed-1 plot](newton_handoffs_analysis/final/figures/parameters_seed_1.png).
+
 Let $A(\gamma)$ be the physical feature matrix including bias. The exact
 finite function change is decomposed as
 
@@ -415,6 +492,16 @@ $-2.13\times10^{-19}$ and $-2.96\times10^{-20}$. These means use the sixteen
 deterministically sampled updates described below. The beneficial joint step
 depends on cancellation, so independently accelerating one block need not
 preserve it.
+
+At the best final GN endpoint, seed 1, the same sixteen-sample late-window
+measurement gives approximately $6.99\times10^{-16}$ MSE increase from
+either isolated block change, but a mean joint change of
+$-4.97\times10^{-26}$. The readout–geometry function-change cosine is
+approximately $-1$ in FP64. Despite MSE near $10^{-21}$, the parameters have not
+stopped moving; their beneficial combined change is much smaller than either
+block's individual effect. The [final numerical summary](newton_handoffs_analysis/final/summary.json)
+retains these finite-step budgets, spectral decompositions, gradient projections,
+and off-grid evaluations for every endpoint.
 
 For frequency measurements, use an orthonormal DFT of the normalized residual
 on the 8,193-point training grid. DC means the constant spatial component,
@@ -435,6 +522,13 @@ retained separately in the exact change budget above.
   <img src="newton_handoffs_analysis/mandatory/figures/fourier_seed_0.png" alt="Residual percentages in every Fourier band and signed readout and geometry descent contributions for seed 0" style="max-width:100%;">
   <figcaption>Warm seed 0, sixteen stratified samples from each run's final 2,048 accepted updates. The residual panels show percentages; the two descent rows show signed absolute MSE reductions on symmetric logarithmic axes. Newton has 50.9% of residual MSE in indices 256–511 and 32.3% in 128–255; GN has 49.0% and 27.1%. Opposing readout and geometry descent terms expose the coupling.</figcaption>
 </figure>
+
+The [updated Fourier panel](newton_handoffs_analysis/final/figures/fourier_seed_0.png)
+and [gradient histories](newton_handoffs_analysis/final/figures/gradients.png)
+cover the longer horizons under the same measurement definitions.
+The [frequency-band values](newton_handoffs_analysis/final/fourier_summary.json)
+retain percentages, absolute contributions, and sampled update numbers for
+both seeds.
 
 The corresponding fixed readout SVD basis is taken at the start of each dense
 window. With relative singular value $s=\sigma/\sigma_{\max}$, 99.996% of
@@ -515,3 +609,15 @@ The [validation record](newton_handoffs_analysis/validation.json) includes
 required local suite: 271 passed, 5 skipped, and 1 slow test deselected.
 The earlier full suite also passed that slow test. Figures and independent
 precision-check source hashes were inspected before recording the evidence.
+
+Slurm allocation accounting totals **13,986 GPU-seconds (3.885 GPU-hours)**,
+including setup and checkpoint overhead, within the approved 14,400-second
+cap. Peak concurrent allocation was two GPUs. The final analysis and
+80-digit checks use CPU-only Slurm jobs. The [budget record](newton_handoffs_analysis/budget.json)
+links the allocation accounting. All **1,871 raw files**, totaling 5.13 GiB,
+were copied locally and verified byte-for-byte against the remote SHA-256
+[manifest](newton_handoffs_analysis/raw_manifest.json); the
+[verification record](newton_handoffs_analysis/archive_verification.json)
+contains no missing, mismatched, or unexpected non-temporary files. Raw
+checkpoints, optimizer states, dense windows, and traces remain outside Git;
+curated evidence and the report are versioned.
