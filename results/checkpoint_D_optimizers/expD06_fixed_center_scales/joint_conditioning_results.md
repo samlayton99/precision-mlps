@@ -16,7 +16,7 @@ geometry. This is one smooth target, two widths, and two paired seeds.
 | Bandwidth | $\lambda_j=h\gamma_j$, with $h=2/N$. Signed slopes are allowed. |
 | Individual scales | Train $c_j=\alpha_j u_j$ and $\lambda$; code label `parameter_scale`. |
 | Individual scales + neighbors | Train $q_j=A_jv_j$, $A_j=\sum_{k\le j}\alpha_k$, and recover $w_j=q_j-q_{j-1}$ with $q_0=0$; code label `parameter_differences`. Bias remains $b=\alpha_bu_b$. |
-| Reference allowances | Fixed $\alpha$ evaluated at $\lambda_{\rm ref}=0.25$, including the corrected halos. They are construction bounds, not parameter constraints. |
+| Reference allowances | Fixed construction-derived normalization values $\alpha$ at $\lambda_{\rm ref}=0.25$, including corrected halos. They are not upper limits on trained or target-specific construction coefficients. |
 | Shared rate | One constant scalar $\eta$ for both native parameter blocks in GD or Adam. There is no scheduling or independent readout/geometry rate tuning. |
 | GN | Damped Gauss–Newton: solve a regularized linearized least-squares problem for the joint parameter step. |
 | SSBroyden | Self-scaling Broyden, maintaining a full approximate inverse Hessian. |
@@ -134,6 +134,10 @@ refer to the core resolution; with endpoints and $\lceil\sqrt N\rceil$ halo
 centers on either side, there are 559 and 1089 neurons. Training is full-batch
 FP64 on $16N+1$ equally spaced points. Evaluation also uses 32,768 held-out
 midpoints, a doubled training grid, and 80-digit spot checks.
+The analytic tanh derivative is evaluated as
+$4e^{-2|u|}/(1+e^{-2|u|})^2$, avoiding cancellation in
+$1-\tanh^2u$ when the forward value rounds to saturation. Reference scales
+stay fixed; no target-dependent coefficient norm is fitted into them.
 
 Initialization is the existing reference-scaled Xavier initialization: draw
 $a_j\sim\mathcal N(0,2/(W+1))$ and physical Xavier slopes with standard
@@ -275,8 +279,19 @@ Multiplying those same FP64 values at 80-digit precision gives
 $1.10\times10^{-21}$ for individual scales and $9.42\times10^{-23}$ for
 neighbors. The stored approximation has lost positive definiteness in these
 directions. This is a concrete curvature/search failure, rather than evidence
-that the model cannot represent a better solution. The check does not recompute
-the full loss gradient at 80 digits.
+that the model cannot represent a better solution.
+
+A subsequent full-gradient audit recomputes all 8193 training points at
+80 digits, using the analytic sine target. It checks both fixed stored physical
+coefficients and exact decoding of the stored native coordinates. The native
+gradients differ from their stored FP64 values by only 1.8–5.5 parts per million
+in relative norm. Their directional derivatives along the exact stored-matrix
+direction remain positive, approximately $1.10\times10^{-21}$ and
+$9.42\times10^{-23}$. Their own quadratic forms with that matrix also remain
+negative. Thus the non-descent finding survives recomputing the gradient and
+changing the decode interpretation; it is not merely an inaccurate stored
+gradient at the failed endpoint. This audit uses analytic target values, not
+a claim of bitwise reproduction of GPU labels.
 
 The failed runs' 19-point residual RMS is about $5.6\times10^{-10}$, whereas
 FP64 versus 80-digit prediction discrepancies are only $1.1\times10^{-15}$
@@ -569,6 +584,8 @@ The [pilot and guard sweep](joint_conditioning_analysis/mandatory/sweep_summary.
 retains divergent and failed cases as well as eligible comparisons. The
 [corrected SSBroyden audit](joint_conditioning_analysis/ssb_guards/summary.json)
 includes the 80-digit stored-direction checks.
+The [full-grid gradient audit](joint_conditioning_analysis/mp_gradient/full_gradient.json)
+records the independent MP80 recomputation and both decode interpretations.
 
 The detached [frozen-mode and frequency probes](joint_conditioning_analysis/probes/frozen_summary.json),
 [uniform-bandwidth frequency reference](joint_conditioning_analysis/probes/reference_frequency.json),
