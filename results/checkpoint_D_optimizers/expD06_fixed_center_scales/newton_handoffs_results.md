@@ -86,6 +86,18 @@ lasting trajectory effect in the tested guarded solver; it does not establish
 the same difference after unrestricted inverse-Hessian adaptation. The
 small-guard runs do not include a paired unscaled arm.
 
+This geometry difference also changes the readout dictionary. Evaluated with
+the same individual readout normalization and relative SVD cutoff $10^{-12}$,
+the scaled endpoints retain 484 and 476 directions, versus 24 and 27 for the
+unscaled endpoints. These are cutoff-dependent numerical ranks. Nevertheless,
+the narrow unscaled geometry can fit this single sine: detached readout fits
+at cutoff $10^{-14}$ reach MSE $2.63\times10^{-20}$ and
+$1.85\times10^{-21}$, with physical coefficient $\ell_1$ norms about 8,674
+and 9,237. The scaled geometries' corresponding norms are 171 and 296, with
+MSE $1.86\times10^{-20}$ and $3.10\times10^{-19}$. A low error on this
+one smooth target therefore does not by itself identify a well-localized,
+numerically rich dictionary or the construction's coefficient scale.
+
 <figure>
   <img src="newton_handoffs_analysis/mandatory/figures/ssb_scaling.png" alt="Paired scaled and unscaled SSBroyden trajectories showing persistent bandwidth differences" style="max-width:100%;">
   <figcaption>Identical physical Xavier starts, distinct initial physical inverse-Hessian metrics. Individual scaling rapidly changes geometry and finishes near median bandwidth 0.24; unscaled SSBroyden finishes near 0.002. Both continue taking accepted steps after their rapid initial loss reduction has slowed.</figcaption>
@@ -176,6 +188,11 @@ previous campaign, an identity initial inverse Hessian in its optimization
 coordinates, and curvature guards $\epsilon_{\rm curv}=2.22\times10^{-16}$
 or $10^{-30}$. These guards are not learning rates or Adam's denominator
 epsilon. The same line-search rule is used across the paired SSBroyden cases.
+Newton and GN use different acceptance and damping rules, so their trajectory
+comparison does not isolate the residual-curvature term alone. The saved
+same-radius endpoint trials substitute $J^TJ$ for the full Hessian at fixed
+parameters and radius; those are detached diagnostics, not matched training
+trajectories.
 
 For a constant invertible map $p=Sz$, an exact undamped Newton step is
 coordinate invariant when the Hessian is invertible and solved exactly:
@@ -279,6 +296,20 @@ residual curvature can dominate that direction even at small loss, while
 nonlinear residual changes constrain useful step lengths. This supports a
 conditioning-based explanation; it does not prove a universal exponential
 convergence law or identify $0.25$ as a unique optimum of this sine loss.
+
+Correct parameter scales do not remove this obstruction by themselves. For
+corresponding directions $v_p=Sv_z$, both directional terms are unchanged:
+
+$$
+\|J_zv_z\|^2=\|J_pv_p\|^2,
+\qquad v_z^TR_zv_z=v_p^TR_pv_p.
+$$
+
+An invertible constant normalization can therefore change the spectrum and
+the optimizer's physical step metric, but it preserves the sign of curvature
+along corresponding physical directions. It cannot make an indefinite full
+Hessian positive definite. The scale prescription and the local nonlinear
+conditioning problem are distinct parts of the explanation.
 
 ## What the SSBroyden guards change
 
