@@ -58,6 +58,19 @@ def figures(output):
     for record in records:
         if not record['end']:continue
         folder=output/record['key'];c=record['case'];end=record['end']
+        with np.load(folder/'history.npz') as h:
+            fig,axes=plt.subplots(1,2,figsize=(13,4.5),layout='constrained')
+            bands=h['band_bounds'];total=np.maximum(h['band_mse'].sum(axis=1),1e-300)
+            groups=((0,1,'DC (0)'),(1,8,'1–7'),(8,64,'8–63'),(64,128,'64–127'),(128,256,'128–255'),(256,np.inf,'256+'))
+            for lo,hi,label in groups:
+                mask=(bands[:,0]>=lo)&(bands[:,0]<hi);energy=h['band_mse'][:,mask].sum(axis=1)
+                axes[0].loglog(np.maximum(h['step'],1),energy,label=label)
+                axes[1].semilogx(np.maximum(h['step'],1),100*energy/total,label=label)
+            axes[0].set(ylabel='Residual MSE in frequency group',xlabel='Saved update',title='Absolute energy')
+            axes[1].set(ylabel='Share of residual MSE (%)',xlabel='Saved update',title='Same groups, normalized at each checkpoint')
+            for ax in axes:ax.grid(alpha=.2);ax.legend(title='DFT index magnitude',fontsize=8,ncol=2)
+            fig.suptitle(f'{c["optimizer"].upper()} · {analysis.LABELS[c["coordinates"]]} · N={c["n"]}, seed={c["seed"]}')
+            save(fig,dest/f'{record["key"]}_frequency_evolution.png')
         with np.load(folder/f'dense_{end}.npz') as a:
             fig,axes=plt.subplots(2,2,figsize=(14,9),layout='constrained')
             bands=a['band_bounds'];labels=['DC (0)' if lo==0 else str(lo) if hi==lo+1 else f'{lo}–{hi-1}' for lo,hi in bands]
@@ -95,6 +108,7 @@ def figures(output):
                     s=a[f'singular_{kind}_{coord}']
                     axes[row,0].semilogy(np.arange(1,len(s)+1),s/s[0],label=analysis.LABELS[coord])
                     axes[row,0].set(ylabel=f'Relative {kind} singular value',xlabel='Sorted mode index',title='Both maps at this same physical geometry')
+                    axes[row,0].axhline(1e-14,color='.5',ls=':',lw=1)
                     axes[row,0].legend(fontsize=8)
             axes[0,1].plot(h['centers'],a['c'][1:],'.',ms=3,label='Trained physical w')
             axes[0,1].plot(h['centers'],a['readout_refit'][1:],'.',ms=2,label='Detached LS refit, same slopes')
