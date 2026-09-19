@@ -85,7 +85,8 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
     at=int(state['count']);written=at;trace=[];ring=deque(maxlen=2048)
     if (path/'dense_latest.npz').exists():
         with np.load(path/'dense_latest.npz') as prior:
-            ring.extend({k:prior[k][i] for k in prior.files} for i in range(len(prior['step'])))
+            previous={k:prior[k] for k in prior.files}
+        ring.extend({k:values[i] for k,values in previous.items()} for i in range(len(previous['step'])))
     loss_eval=jax.jit(loss)
     xv=jnp.asarray(diagnostics.midpoint_grid(32768))
     @jax.jit
