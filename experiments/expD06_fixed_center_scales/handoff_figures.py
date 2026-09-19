@@ -51,9 +51,11 @@ def plot_record(axes,record,root,label,color,linestyle='-'):
 
 
 def smooth(values):
-    # Non-overlapping medians summarize consecutive updates; retain exact traces.
-    size=max(1,len(values)//200);starts=np.arange(0,len(values),size)
-    return starts+1,np.array([np.median(values[i:i+size]) for i in starts])
+    # Preserve early transients; place subsequent window medians at window ends.
+    prefix=min(100,len(values));size=max(1,len(values)//200)
+    starts=np.arange(prefix,len(values),size)
+    return (np.r_[np.arange(1,prefix+1),np.minimum(starts+size,len(values))],
+            np.r_[values[:prefix],[np.median(values[i:i+size]) for i in starts]])
 
 
 def figures(output,reference,construction):
@@ -97,6 +99,9 @@ def figures(output,reference,construction):
         if construction_mse:axes[0,seed].axhline(construction_mse,color='.25',ls=':',label='Construction midpoint MSE')
         axes[0,seed].set_title(f'Seed {seed}');axes[1,seed].axhline(.25,color='.5',ls=':')
         style(axes[0,seed],ylabel='Training MSE');style(axes[1,seed],ylabel='Median core |lambda|',log=False)
+    if construction_mse:
+        upper=max(ax.get_ylim()[1] for ax in axes[0])
+        for ax in axes[0]:ax.set_ylim(construction_mse*.3,upper)
     fig.suptitle('Same Adam physical endpoint, fresh higher-order optimizer states\nHigher-order curves: saved states; Adam: means over 1000 updates. Post-handoff counts have different costs')
     save(fig,dest/'handoffs.png')
 
@@ -139,7 +144,7 @@ def figures(output,reference,construction):
                     axes[row,c['seed']].plot(steps,np.maximum(values,1e-300),label=NAMES[kind],color=COLORS[kind])
         for row in (0,1):
             for seed in (0,1):style(axes[row,seed],ylabel=ylabels[row]);axes[row,seed].set_title(f'Seed {seed}')
-        fig.suptitle('Adam handoffs: consecutive-window medians; all methods use individual scales\nGradient norms use the same coordinates; motion is measured from accepted physical changes')
+        fig.suptitle('Adam handoffs: first 100 updates, then consecutive-window medians; all methods use individual scales\nGradient norms use the same coordinates; motion is measured from accepted physical changes')
         save(fig,dest/f'{filename}.png')
 
     fig,axes=plt.subplots(2,2,figsize=(13,8),layout='constrained')
@@ -199,7 +204,11 @@ def figures(output,reference,construction):
             for row,v in enumerate(values):
                 ax=axes[row,col];ax.bar(np.arange(len(v)),v,color=COLORS[kind]);ax.set_xticks(np.arange(len(v)),labels,rotation=60,ha='right',fontsize=8)
                 ax.set_xlabel('DFT index magnitude; both signs combined');ax.grid(axis='y',alpha=.2)
-                if row:ax.set_yscale('symlog',linthresh=max(np.max(np.abs(v))*1e-5,1e-300))
+                if row:
+                    peak=max(np.max(np.abs(v)),1e-300);decade=10.**np.floor(np.log10(peak))
+                    ax.set_yscale('symlog',linthresh=peak*1e-5);ax.set_ylim(-peak*1.15,peak*1.15)
+                    ax.set_yticks([-decade,0,decade],[f'−{decade:.0e}','0',f'{decade:.0e}'])
+                    ax.axhline(0,color='.4',lw=.7)
             axes[0,col].set_title(NAMES[kind])
     for ax in axes[0]:ax.set_ylabel('Share of mean residual MSE (%)')
     for ax in axes[1]:ax.set_ylabel('Readout predicted MSE reduction')
