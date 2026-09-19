@@ -83,6 +83,22 @@ def test_native_hessian_includes_residual_curvature(coordinate):
     assert np.linalg.norm(hessian-gn)>1
 
 
+@pytest.mark.parametrize('coordinate',['parameter_scale','parameter_differences'])
+def test_multiprecision_full_gradient(coordinate):
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    from experiments.expD06_fixed_center_scales.ssb_gradient_audit import gradient_block,pullback
+    g=core.geometry(128);z=ho.initial_parameters(g,0,coordinate);c,gamma=map(np.asarray,ho.physical(z,g,coordinate))
+    x=np.linspace(-1,1,9)
+    gradients,losses=gradient_block((x,g.centers,gamma,[c],g.h))
+    native=np.array(pullback(gradients[0],g.alpha,coordinate),float)/len(x)
+    def loss(p):
+        cc,gg=ho.physical(p,g,coordinate)
+        residual=cc[0]+core.tanh((jnp.asarray(x)[:,None]-g.centers)*gg)@cc[1:]-core.target(jnp.asarray(x),'sine')
+        return .5*jnp.mean(residual**2)
+    np.testing.assert_allclose(native,jax.grad(loss)(z),atol=3e-14,rtol=3e-12)
+    np.testing.assert_allclose(float(losses[0])/len(x),2*loss(z),atol=3e-15)
+
+
 def test_gn_invariance_rank_deficiency_and_damping_metric():
     from experiments.expD06_fixed_center_scales import higher_order as ho
     j=np.array([[1.,2.],[2.,-1.],[.3,.7]]);r=np.array([.2,-.7,.9]);t=np.array([[2.,.7],[0.,.4]])

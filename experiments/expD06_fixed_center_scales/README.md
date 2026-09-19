@@ -446,6 +446,15 @@ is changed midway and the readout/geometry scale prescription stays fixed.
 Admit this entire four-case block only after final allocation accounting shows
 that its measured cost plus 50% fits the remaining eight-GPU-hour cap.
 
+`ssb_gradient_audit.py` recomputes full-grid gradients at 80 digits for the two
+default corrected SSBroyden failures. It distinguishes fixed stored physical
+coefficients from exact decoding of stored native coordinates, uses the analytic
+sine target, and tests both gradients against the stored inverse-Hessian metric.
+The analytic target is not claimed to reproduce the GPU labels bit for bit.
+This detached CPU check separates loss of positive definiteness in the stored
+metric from sensitivity to gradient/evaluation roundoff; it never changes a
+failed state or resumes its training.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)
