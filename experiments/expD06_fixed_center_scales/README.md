@@ -372,6 +372,33 @@ checks include a doubled training grid, held-out midpoint grid, and 80-digit
 spot evaluations of both stored physical parameters and the native-coordinate
 decode. These checks distinguish measured numerical error from convergence.
 
+The overnight follow-up adds two **post-hoc detached diagnostics**, without
+changing the training matrix, selected settings, or eight-GPU-hour cap. First,
+saved SVDs predict frozen-readout GD residual decay at the stable spectral step
+$1/\sigma_{\max}^2$, repeating relative cutoffs $10^{-10},10^{-12},10^{-14}$.
+This is an analytic fixed-dictionary prediction, not additional joint training
+or an Adam prediction. Second, the difficult width-1024, seed-0 GN checkpoint
+receives a damping sweep of trial steps in both coordinate maps, recording
+predicted/actual reduction and separate readout/geometry motion. An augmented-QR
+control transforms the damping penalty to the same physical metric in both
+maps. Agreement of those physical steps verifies damped coordinate invariance
+when the metric itself is held fixed. These probes use CPU-only Slurm jobs;
+neither their trial parameters nor their readout fits enter training. Their
+purpose is to distinguish spectral attenuation, nonlinear step rejection, and
+changes in the optimizer's metric; they do not select new hyperparameters.
+The same saved dictionaries also receive detached readout fits to normalized
+sines with 2, 4, 8, 16, 32, and 64 cycles across the domain. A common
+individual-scale SVD basis, three cutoffs, midpoint errors, and physical
+coefficient norms distinguish target-specific fitting from reusable localization.
+Uniform slopes at reference bandwidth $0.25$ provide a geometry comparison.
+These changed right-hand sides are diagnostic probes, not newly trained targets;
+the construction allowances and all training trajectories remain fixed.
+For learned states, the frequency probes also project each new residual outside
+the retained readout space and measure its instantaneous geometry force with
+the **stored trained readouts**. This tests the gamma-signal hypothesis without
+substituting the detached fitted coefficients into the geometry Jacobian;
+core and halo contributions and all three projection cutoffs are retained.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)

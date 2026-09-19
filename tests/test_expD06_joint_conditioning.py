@@ -256,3 +256,17 @@ def test_fixed_horizon_analysis_preserves_case_identity(tmp_path,monkeypatch):
     assert result['status']['function_evaluations']==40000
     assert result['source_latest']['completed_updates']==20001
     assert result['late_mean_mse']==.5
+
+
+def test_frozen_decay_matches_explicit_gradient_descent():
+    from experiments.expD06_fixed_center_scales.joint_mechanism_probes import frozen_decay
+    rng=np.random.default_rng(14);u,_=np.linalg.qr(rng.normal(size=(7,4)))
+    s=np.array([1.,.2,.01,.0001]);residual=rng.normal(size=7)
+    for retained in (2,4):
+        basis=u[:,:retained];b=basis*s[:retained];modal=basis.T@residual
+        perpendicular=residual-basis@modal;steps=np.arange(501);eta=.7
+        predicted=frozen_decay(s[:retained],modal,perpendicular,steps,eta)
+        live=residual.copy();measured=[]
+        for _ in steps:
+            measured.append(live@live);live-=eta*b@(b.T@live)
+        np.testing.assert_allclose(predicted,measured,rtol=2e-13,atol=2e-14)
