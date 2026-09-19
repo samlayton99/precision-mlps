@@ -133,8 +133,18 @@ def dense_audit(folder,g,case,end,dest):
         norms=np.linalg.norm(delta,axis=1)
         cos=np.sum(delta[:-1]*delta[1:],axis=1)/np.maximum(norms[:-1]*norms[1:],1e-300)
         ratio=np.linalg.norm(delta[:-1]+delta[1:],axis=1)/np.maximum(norms[:-1]+norms[1:],1e-300)
-        motion[label]=dict(adjacent_cosine_median=float(np.median(cos)),two_step_net_ratio_median=float(np.median(ratio)))
+        motion[label]=dict(adjacent_cosine_median=float(np.median(cos)),two_step_net_ratio_median=float(np.median(ratio)),
+                           mean_step_rms=float(np.sqrt(np.mean(delta**2,axis=1)).mean()),
+                           net_change_rms=float(np.sqrt(np.mean(delta.sum(axis=0)**2))))
+    direction=np.sign(dense["gamma"][:,g.core])/np.sqrt(g.core.sum())
+    growth_force=-np.sum(direction*dense["gradient_lambda"][:,g.core],axis=1)
+    growth_step=np.sum(direction*dense["delta_lambda"][:,g.core],axis=1)
+    growth=dict(mean_force=float(growth_force.mean()),mean_actual_step=float(growth_step.mean()),
+                force_quantiles=np.quantile(growth_force,[.1,.5,.9]).tolist(),
+                actual_step_quantiles=np.quantile(growth_step,[.1,.5,.9]).tolist(),
+                fraction_positive_force=float(np.mean(growth_force>0)),fraction_positive_step=float(np.mean(growth_step>0)))
     return dict(end=end,sampled_steps=dense["step"][indices].tolist(),motion=motion,
+                core_growth=growth,
                 mean_readout_linear_by_region=dict(zip(["bias",*g.masks],arrays["readout_linear_by_region"].mean(axis=0).tolist())),
                 mean_mse_change=arrays["mse_change"].mean(axis=0).tolist(),
                 mean_linear_mse_change=arrays["linear_mse_change"].mean(axis=0).tolist(),
