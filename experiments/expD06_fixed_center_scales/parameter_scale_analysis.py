@@ -117,6 +117,7 @@ def dense_audit(folder,g,case,end,dest):
         gc,gl=rb@a,rb@j
         gp,gn,leak,closure=old.projected_forces(j,r/root,kept)
         rows.append(dict(step=dense["step"][index],**budget,band_mse=np.sum(rb**2,axis=1),
+                         readout_geometry_function_cosine=float(pieces[0]@pieces[1]/max(np.linalg.norm(pieces[0])*np.linalg.norm(pieces[1]),1e-300)),
                          band_readout_linear_mse_change=2*gc@dc,band_geometry_linear_mse_change=2*gl@dl,
                          band_bias_linear_mse_change=2*gc[:,0]*dc[0],
                          readout_linear_by_region=np.array([2*gc[:,0].sum()*dc[0]]+
@@ -145,6 +146,7 @@ def dense_audit(folder,g,case,end,dest):
                 fraction_positive_force=float(np.mean(growth_force>0)),fraction_positive_step=float(np.mean(growth_step>0)))
     return dict(end=end,sampled_steps=dense["step"][indices].tolist(),motion=motion,
                 core_growth=growth,
+                mean_readout_geometry_function_cosine=float(arrays["readout_geometry_function_cosine"].mean()),
                 mean_readout_linear_by_region=dict(zip(["bias",*g.masks],arrays["readout_linear_by_region"].mean(axis=0).tolist())),
                 mean_mse_change=arrays["mse_change"].mean(axis=0).tolist(),
                 mean_linear_mse_change=arrays["linear_mse_change"].mean(axis=0).tolist(),
@@ -170,7 +172,13 @@ def analyze_case(task):
         run.save_arrays(dest/f"spectrum_{step}.npz",**arrays)
         run.write_json(dest/"mechanism.json",record)
     for dense_end in (2048,end):
-        record["dense"].append(dense_audit(folder,g,case,dense_end,dest))
+        audit=dense_audit(folder,g,case,dense_end,dest)
+        mse=2*trace[dense_end-2048:dense_end,0]
+        changes=np.diff(mse)
+        audit["consecutive_loss_changes"]=dict(intervals=len(changes),mean=float(changes.mean()),
+            mean_absolute=float(np.abs(changes).mean()),net=float(mse[-1]-mse[0]),
+            quantiles=np.quantile(changes,[.1,.5,.9]).tolist())
+        record["dense"].append(audit)
     with np.load(folder/f"checkpoint_{end:09d}.npz") as cp:
         record["doubled_grid"],arrays,_=probe(g,cp,case,samples=32)
     run.save_arrays(dest/"doubled_grid.npz",**arrays)
@@ -206,6 +214,7 @@ def figures(output):
     fig.savefig(output/"rate_sweep.png",dpi=150);plt.close(fig)
     records=[json.loads(p.read_text()) for p in sorted(output.glob("*_N*/mechanism.json"))]
     if not records:return
+    records.sort(key=lambda r:(r["case"]["optimizer"],r["case"]["n"],r["case"]["seed"],campaign.MAPS.index(r["case"]["coordinates"])))
     fig,axes=plt.subplots(2,2,figsize=(12,8),layout="constrained")
     for record in records:
         c=record["case"];ax=axes[campaign.OPTIMIZERS.index(c["optimizer"]),(512,1024).index(c["n"])]
@@ -227,7 +236,7 @@ def figures(output):
         ax.set(xlabel="Updates",ylabel="Core |lambda|: median and 10–90%",title=f'{c["optimizer"].upper()}, N={c["n"]}')
     for ax in axes.flat:
         ax.axhline(.25,color=".4",lw=1,ls=":",label="Construction reference 0.25")
-        ax.set_yscale("symlog",linthresh=1e-4);ax.grid(alpha=.2);ax.legend(fontsize=7)
+        ax.set_yscale("symlog",linthresh=1e-4);ax.set_ylim(bottom=0);ax.grid(alpha=.2);ax.legend(fontsize=7)
     fig.savefig(output/"geometry_progress.png",dpi=160);plt.close(fig)
     for record in records:
         case,end=record["case"],record["end"];dest=output/training.case_key(case)

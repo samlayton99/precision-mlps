@@ -316,6 +316,11 @@ the adjacent-step motion audit. Adam panels use its actual moment-dependent
 updates, not a GD modal-rate prediction. `--movies` exports one comparison per
 optimizer and seed at width 512, with physical readouts above physical gamma,
 slow first-300k playback, and separate consecutive-update late close-ups.
+Movie rendering requires an `ffmpeg` executable. It can run locally with
+`python -m experiments.expD06_fixed_center_scales.parameter_scale_analysis
+--root <run-root> --output <downloaded-export> --movies` after downloading the
+summary, histories, and dense parameter archives; this mode does not read or
+modify the training root.
 
 ## Historical base-rate and relative-rate search
 
