@@ -346,7 +346,7 @@ def animations(output, optimizer_choice=None, seed_choice=None, workers=4):
                                    (f'Consecutive updates; changes since {histories[0]["step"][0]:,}' if late else 'First 300k: one checkpoint/second; later: six/second'))
                 movie=FuncAnimation(fig,update,frames=len(frames),interval=1000/fps,repeat=False)
                 name=f'{optimizer}_seed_{seed}'+("_late" if late else "")
-                movie.save(output/f'{name}.mp4',writer=FFMpegWriter(fps=fps,codec="libx264",bitrate=1400,extra_args=["-threads","1"]),dpi=100)
+                movie.save(output/f'{name}.mp4',writer=FFMpegWriter(fps=fps,codec="libx264",bitrate=1400,extra_args=["-threads","1","-pix_fmt","yuv420p","-movflags","+faststart"]),dpi=100)
                 update(len(frames)//2);fig.savefig(output/f'{name}_middle.png',dpi=100);plt.close(fig)
                 run.write_json(output/f'{name}_animation.json',dict(cases=[training.case_key(r["case"]) for r in pair],steps=[int(s) for s in frames],fps=fps))
 
