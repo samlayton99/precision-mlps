@@ -88,6 +88,14 @@ The neighboring GN solutions fit extremely well with much broader features
 than the reference construction. This is not evidence that they recovered its
 localization. Conversely, SSBroyden's individual-scale bandwidths near $0.25$
 do not ensure that its remaining least-squares residual is easy to optimize.
+For neighboring GN, the median absolute physical slope is about 0.74 at width 512 and
+0.64 at width 1024 in both seeds, whereas the reference construction uses 64
+and 128. The small learned bandwidths therefore correspond to broad features
+on the scale of the domain, not localization at the center spacing.
+At width 512, seed 0, neighboring GN has physical coefficient $\ell_1$ norm
+52.5, versus 6.75 for the construction, and core RMS $w_j/\alpha_j$ of 25.8,
+versus 1.51 for individual-scale GN. Parameter normalization changes mobility;
+it does not constrain trained coefficients to the construction's magnitudes.
 
 At **every one of the 32 comparison geometries**, a detached common-basis
 readout fit reaches training MSE below $3.30\times10^{-15}$ at relative SVD
@@ -104,6 +112,71 @@ the midpoint grid; the largest discrepancy is width-1024 individual-scale
 SSBroyden, seed 1, whose training MSE is $4.85\times10^{-14}$. Thus the checks
 support small errors, but not identical continuous-domain floors at every
 displayed digit.
+
+## What changes after millions of updates?
+
+The selected width-512 trajectories were continued without changing rates,
+guards, initialization, or optimizer state: GD/Adam to **5.3 million updates**
+and GN/SSBroyden to **40k accepted updates**. These extensions were chosen
+after the mandatory comparison. They test persistence of the observed behavior;
+they do not replace the original selection horizon or establish convergence.
+
+**Late-window mean MSE after continuation, width 512.** Seed 0 / seed 1; windows contain the final 20k GD/Adam states or 4k GN/SSBroyden states.
+
+| Optimizer | Individual scales, seed 0 / 1 | Individual scales + neighbors, seed 0 / 1 |
+|---|---:|---:|
+| GD | $9.08\times10^{-4}\;/\;1.60\times10^{-3}$ | $2.59\times10^{-5}\;/\;2.26\times10^{-4}$ |
+| Adam | $2.30\times10^{-6}\;/\;2.32\times10^{-6}$ | $1.36\times10^{-6}\;/\;2.62\times10^{-6}$ |
+| GN | $1.71\times10^{-18}\;/\;5.04\times10^{-18}$ | $4.86\times10^{-16}\;/\;1.05\times10^{-17}$ |
+| SSBroyden | $6.15\times10^{-14}\;/\;5.10\times10^{-14}$ | $4.09\times10^{-14}\;/\;1.18\times10^{-13}$ |
+
+<figure>
+  <img src="joint_conditioning_analysis/final/figures/learning_N512.png" alt="Extended MSE and bandwidth trajectories through 5.3 million GD and Adam updates or 40 thousand accepted higher-order updates" style="max-width:100%;">
+  <figcaption>Width-512 continuation with all selected settings unchanged. GD continues improving, sometimes through abrupt transitions. Adam's window means change much less than its lower quantiles. GN continues to improve beyond 20k; conservative-guard SSBroyden changes little. The different update horizons are not equal computational budgets.</figcaption>
+</figure>
+
+Adam is not sitting at a single $10^{-6}$ error floor. In individual coordinates,
+the final-window medians are $1.37\times10^{-9}$ and $9.07\times10^{-10}$,
+while maxima remain $1.22\times10^{-4}$ and $1.23\times10^{-4}$.
+With neighbors, medians are $1.55\times10^{-8}$ and $2.46\times10^{-9}$,
+and maxima are $1.04\times10^{-4}$ and $2.04\times10^{-4}$.
+The best observed individual-scale Adam state reaches $3.38\times10^{-10}$
+MSE, but this is neither its endpoint nor its sustained mean performance.
+Thus longer training improves the quieter portions of the trajectory while
+the constant-rate excursions keep the mean much higher.
+
+<figure>
+  <img src="joint_conditioning_analysis/final/figures/adam_windows_N512.png" alt="Mean, median, and maximum Adam MSE in consecutive windows for each readout map and seed" style="max-width:100%;">
+  <figcaption>Adam at width 512 through 5.3 million updates. Mean, median, and maximum come from the same consecutive windows. Persistent excursions separate sustained average accuracy from the much smaller errors reached between excursions. These are deterministic full-batch trajectories.</figcaption>
+</figure>
+
+The late GD trajectories also have substantial motion despite slow net progress.
+For seed 0, the median cosine between consecutive bandwidth steps is
+$-0.99999998$ with individual scales and $-0.99999943$ with neighbors.
+Individual-scale bandwidth step RMS is $1.11\times10^{-4}$, yet the net
+RMS displacement over 2048 updates is only $2.40\times10^{-5}$.
+Neighboring values are $7.62\times10^{-6}$ and $2.04\times10^{-6}$.
+These are alternating updates, not an absence of gradient signal.
+
+An exact native-coordinate Hessian audit includes both $J^TJ$ and the residual
+curvature term. For a positive quadratic mode, GD's local stability boundary is
+$\eta\lambda_{\max}(H)=2$. At the last three consecutive states, the measured
+values are 1.80, 2.30, 1.80 for individual-scale seed 0 and 2.19, 2.24, 2.19
+for seed 1. Neighboring values lie between 2.000 and 2.005 for seed 0 and
+between 2.017 and 2.061 for seed 1. This places the observed alternation near
+or across that local boundary. It is a local diagnostic, not a convergence
+theorem for a changing, nonconvex Hessian.
+
+The weak-mode barrier survives alongside this oscillation. Repeating the
+frozen-readout diagnostic at 5.3 million updates, the seed-0 individual-scale
+GD geometry needs about $2.93\times10^8$ analytic GD steps to remove 90%
+of its residual energy in individual coordinates, versus $3.98\times10^5$
+in neighboring coordinates. At the geometry learned by neighboring GD, its
+own readout coordinates require about $5.41\times10^8$; individual coordinates
+do not cross 90% within the evaluated $10^{12}$ steps. These comparisons
+use each map's spectral step and cutoff $10^{-12}$, exactly as defined below.
+Suppressing oscillation alone therefore need not make the remaining linear
+least-squares directions fast.
 
 ## The controlled question
 
@@ -489,6 +562,8 @@ coefficient $\ell_1$ norm 238. Across all three cutoffs, the neighboring
 geometries' errors remain $0.886$–$0.966$. The original two-cycle sine is much
 easier for those same dictionaries. Thus their excellent training error does
 not establish useful localization for a broader frequency range.
+These retained-SVD fits measure numerical usability at the stated cutoffs;
+they are not lower bounds on the best real-arithmetic approximation.
 
 <figure>
   <img src="joint_conditioning_analysis/probes/frequency_capacity_N512.png" alt="Frequency-dependent detached fit error and coefficient norm for learned GN geometries and uniform reference bandwidth" style="max-width:100%;">
@@ -571,6 +646,27 @@ make $\lambda=0.25$ a unique attractor of the MSE objective. The construction's
 bandwidth is a useful approximation reference; training this single smooth sine
 can use broad, heterogeneous features and cancellation instead. These results
 must distinguish fitting the target from recovering the construction geometry.
+
+## Parameters attached to their centers
+
+Each movie has physical readout $w$ in the top row and signed physical slope
+$\gamma$ in the bottom row, with one seed per movie. The columns compare the
+two maps. Halo regions are shaded; the bias is printed separately. Each panel
+keeps its own fixed symmetric-log vertical range throughout the movie, so
+vertical ranges can differ between maps. Frames show actual saved states,
+without interpolation. Through update 300k each checkpoint is held for one
+second; later 100k-spaced checkpoints advance at five per second. Consequently,
+playback time is not proportional to training time and these movies do not
+resolve the consecutive-update oscillation measured by the dense audits.
+
+**Width-512 parameter movies.** Selected constant-rate trajectories through 5.3 million GD/Adam updates and 40k accepted GN/SSBroyden updates.
+
+| Optimizer | Seed 0 | Seed 1 |
+|---|---|---|
+| GD | [Movie](joint_conditioning_analysis/final/gd_seed_0.mp4) | [Movie](joint_conditioning_analysis/final/gd_seed_1.mp4) |
+| Adam | [Movie](joint_conditioning_analysis/final/adam_seed_0.mp4) | [Movie](joint_conditioning_analysis/final/adam_seed_1.mp4) |
+| GN | [Movie](joint_conditioning_analysis/final/gn_seed_0.mp4) | [Movie](joint_conditioning_analysis/final/gn_seed_1.mp4) |
+| SSBroyden | [Movie](joint_conditioning_analysis/final/ssbroyden_seed_0.mp4) | [Movie](joint_conditioning_analysis/final/ssbroyden_seed_1.mp4) |
 
 ## Evidence and reproduction
 
