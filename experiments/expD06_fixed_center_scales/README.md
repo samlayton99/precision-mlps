@@ -258,6 +258,18 @@ Matplotlib and the local `ffmpeg` executable produce four MP4s, two standalone H
 
 The [joint-conditioning report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/joint_conditioning_results.md)
 contains the measured comparisons and mechanism diagnostics.
+The [Newton and Adam-handoff follow-up](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/newton_handoffs_results.md)
+adds verified full-Hessian trust-region Newton, fresh GN/SSBroyden states at
+the fixed 5.3-million-update Adam endpoints, and a paired physical-coordinate
+SSBroyden control. `newton_handoffs.py` prepares its sixteen-case manifest and
+two 100k-update Adam continuations. All higher-order cases require 20k accepted
+physical updates unless they fail numerically. `--continue-blocks` extends
+viable Newton and Adam-to-GN trajectories in 10k increments with optimizer
+state preserved. Use `newton_handoffs.sbatch`, respect its two-GPU limit, and
+set Slurm wall time and worker seconds from the remaining **14,400 allocated
+GPU-second** follow-up budget. CPU analysis also runs in Slurm, with GPUs
+disabled. `handoff_analysis --horizon 20000` preserves the original comparison;
+omitting that option analyzes the latest saved endpoints.
 
 The new `joint_conditioning` campaign compares individual parameter scales with
 and without neighboring differences under GD, Adam, damped Gauss–Newton, and

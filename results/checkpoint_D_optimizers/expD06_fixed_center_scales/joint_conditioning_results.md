@@ -1,5 +1,10 @@
 # Joint training with individual scales and neighboring readouts
 
+The subsequent [full-Newton and Adam-handoff study](newton_handoffs_results.md)
+tests the exact Hessian, fresh higher-order optimizers at Adam endpoints, and
+paired scaled/unscaled SSBroyden. Its comparisons and precision audits are
+reported separately from this original campaign.
+
 The prescribed parameter scales leave a substantial joint conditioning problem
 and do not make bandwidth $0.25$ a uniquely learned geometry.
 A fixed-readout diagnostic shows that geometry sensitivity changes by many
