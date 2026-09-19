@@ -236,3 +236,23 @@ def test_metric_direction_audit_detects_non_descent():
         result=inverse_hessian_direction(matrix,g)
         assert result['stored_metric_directional_derivative_fp64']==expected
         assert result['stored_metric_directional_derivative_mp80']==expected
+
+
+def test_fixed_horizon_analysis_preserves_case_identity(tmp_path,monkeypatch):
+    from experiments.expD06_fixed_center_scales import joint_analysis as analysis, joint_conditioning as jc
+    config=jc.case('gn','parameter_scale',n=128);key=dt.case_key(config)
+    folder=tmp_path/key;folder.mkdir();g=core.geometry(128)
+    c,gamma=core.initial_physical(g,0,'xavier_a_reference')
+    run.write_json(folder/'latest.json',dict(completed_updates=20001,step=20001,status='continuing',train_mse=1.,validation_mse=1.))
+    run.save_arrays(folder/'checkpoint_000020000.npz',c=c,gamma=gamma,train_mse=.5,validation_mse=.5)
+    trace=np.zeros((20000,len(jc.HIGHER_COLUMNS)));trace[:,0]=.25
+    trace[-1,jc.HIGHER_COLUMNS.index('function_evaluations')]=40000
+    monkeypatch.setattr(jc,'read_trace',lambda *args:trace)
+    monkeypatch.setattr(analysis,'probe',lambda *args:({},{}))
+    monkeypatch.setattr(analysis,'dense_audit',lambda *args:{})
+    monkeypatch.setattr(analysis,'precision_check',lambda *args:{})
+    result=analysis.analyze_case((tmp_path,tmp_path/'analysis',config,True))
+    assert result['key']==key and result['end']==20000
+    assert result['status']['function_evaluations']==40000
+    assert result['source_latest']['completed_updates']==20001
+    assert result['late_mean_mse']==.5

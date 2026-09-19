@@ -219,8 +219,8 @@ def analyze_case(task):
     if not end:return dict(case=case,key=key,status=status,end=0)
     trace=campaign.read_trace(folder,end,case['optimizer'])
     if end<source_status['completed_updates'] and case['optimizer'] in ('gn','ssbroyden'):
-        for key in ('function_evaluations','gradient_evaluations','jacobian_evaluations'):
-            status[key]=int(trace[-1,campaign.HIGHER_COLUMNS.index(key)])
+        for counter in ('function_evaluations','gradient_evaluations','jacobian_evaluations'):
+            status[counter]=int(trace[-1,campaign.HIGHER_COLUMNS.index(counter)])
         status['training_seconds']=float(trace[-1,campaign.HIGHER_COLUMNS.index('elapsed_seconds')])
     steps=[];history=[]
     for path in sorted(folder.glob('checkpoint_*.npz')):
