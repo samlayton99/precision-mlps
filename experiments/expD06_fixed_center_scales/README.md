@@ -256,6 +256,13 @@ Matplotlib and the local `ffmpeg` executable produce four MP4s, two standalone H
 
 ## Parameter-scale normalization: paired GD and Adam
 
+The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)
+contains the completed 64-trial search/transfer study and 16 selected trajectories
+through 2.3 million updates. It reports matched-rate bandwidths, physical update
+scales, loss distributions, Fourier/SVD diagnostics, and separate seed movies.
+Slurm charged 7075 GPU-seconds against this campaign's separate 7200-second cap;
+the endpoint is resource-limited, not a convergence claim.
+
 This campaign tests whether normalizing individual parameters by their construction
 allowances sustains useful geometry learning. Collective normalization trains
 $c=Da$; parameter-scale normalization trains $c=D^2u$, including the bias and

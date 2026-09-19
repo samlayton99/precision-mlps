@@ -1,0 +1,16 @@
+{
+  "campaign": "parameter_scale",
+  "optimizer": "gd",
+  "coordinates": "scaled",
+  "eta": 0.1,
+  "n": 512,
+  "seed": 0,
+  "target": "sine",
+  "initialization": "xavier_a_reference",
+  "samples_per_cell": 16,
+  "validation_points": 32768,
+  "objective": "half-MSE",
+  "reference_lambda": 0.25,
+  "constant_shared_rate": true,
+  "epsilon_mode": "matched_reference"
+}
