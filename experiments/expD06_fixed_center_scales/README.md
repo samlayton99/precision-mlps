@@ -334,6 +334,25 @@ identity. Both methods retain failed proposals and the last accepted state.
 The GPU budget includes all benchmark/compile/allocation overhead; reconcile
 Slurm accounting before admitting further complete comparison blocks.
 
+`joint_analysis.py` reads saved states without advancing them. At each selected
+checkpoint it compares both readout maps and both joint Jacobians at the same
+physical geometry. Detached least-squares refits use a common individual-scale
+readout basis and relative cutoffs $10^{-10},10^{-12},10^{-14}$; they are never
+inserted into training. Undamped joint shadow solves use the same explicit
+cutoffs. Differences between their minimum-norm steps at rank deficiency are
+recorded, not interpreted as a violation of full-rank GN invariance.
+
+The early and final dense windows retain actual finite readout and geometry
+updates. Sixteen reproducibly sampled updates per window receive Fourier,
+singular-direction, gradient-projection, and exact finite-update budget audits.
+Fourier bands include DC (the constant component), both signs of each frequency,
+and every DFT index through Nyquist. Figures show both absolute band MSE and its
+percentage of the same sampled mean MSE. Singular occupancy uses a fixed
+window-start basis, including an explicit outside-basis remainder. Endpoint
+checks include a doubled training grid, held-out midpoint grid, and 80-digit
+spot evaluations of both stored physical parameters and the native-coordinate
+decode. These checks distinguish measured numerical error from convergence.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)

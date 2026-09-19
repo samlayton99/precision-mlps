@@ -182,3 +182,25 @@ def test_ssb_nonfinite_and_unchanged_states_do_not_count():
         assert int(result['status'])==expected and int(result['count'])==0
         np.testing.assert_array_equal(result['z'],z)
         assert not bool(ev['accepted'])
+
+
+def test_detached_joint_decomposition():
+    from experiments.expD06_fixed_center_scales import joint_analysis as analysis
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    from experiments.expD06_fixed_center_scales import diagnostics, ratio_analysis
+    g=core.geometry(128);c,gamma=core.initial_physical(g,0,'xavier_a_reference')
+    x,y,a,r,j=analysis.linearize(g,c,gamma,1)
+    rng=np.random.default_rng(91);dc=rng.normal(size=c.size)*1e-5;dl=rng.normal(size=gamma.size)*1e-7
+    for coord in ('parameter_scale','parameter_differences'):
+        np.testing.assert_allclose(analysis.native_features(a,g,coord),a@ho.readout_map(g,coord),atol=3e-15)
+    bounds,rb,_=diagnostics.band_residuals(r)
+    assert (bounds==[64,65]).all(axis=1).any()
+    np.testing.assert_allclose(np.sum(rb**2),r@r,atol=1e-14)
+    np.testing.assert_allclose((rb@j).sum(axis=0),j.T@r,atol=2e-14)
+    _,pieces,budget=ratio_analysis.update_budget(x,y,g.centers,g.h,c,gamma,dc,dl)
+    np.testing.assert_allclose(budget['mse_change'][-1],budget['measured_mse_change'],atol=1e-14)
+    assert budget['closure_max']<1e-14
+    eps=1e-3
+    predicted=(a@dc+j@dl)*np.sqrt(len(x))
+    f=lambda e:diagnostics.prediction(x,g.centers,c+e*dc,gamma+e*dl/g.h)
+    np.testing.assert_allclose((f(eps)-f(-eps))/(2*eps),predicted,atol=2e-12)
