@@ -226,7 +226,9 @@ def figures(output,reference,construction):
                 for ax,field in ((axes[0,col],'c'),(axes[1,col],'gamma')):
                     initial,final=h[field][0],h[field][-1]
                     if field=='c':initial,final=initial[1:],final[1:]
-                    ax.plot(centers,initial,color='.6',lw=1,label='Adam handoff');ax.plot(centers,final,color=COLORS[kind],lw=1,label='Optimizer endpoint')
+                    ax.scatter(centers,initial,color='.6',s=7,alpha=.6,label='Adam handoff')
+                    ax.scatter(centers,final,color=COLORS[kind],s=6,alpha=.9,label='Optimizer endpoint')
+                    for boundary in (-1,1):ax.axvline(boundary,color='.75',ls=':',lw=.7)
                     ax.set_yscale('symlog',linthresh=1e-3 if field=='c' else 1.)
                     ax.set(xlabel='Physical center',ylabel='Physical readout w' if field=='c' else 'Signed physical gamma')
                     ax.grid(alpha=.2);ax.legend(fontsize=8)
