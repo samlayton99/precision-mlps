@@ -199,6 +199,23 @@ by $655.36$. Neighboring GD's physical slope multiplier is $65.536$ and its
 bias multiplier $0.1159$; its readout update must be understood through the
 full coupled matrix $0.001TT^T$.
 
+For Adam the corresponding exact coordinate conversion is
+
+$$
+\Delta c=-\eta T\frac{\widehat m_z}{\sqrt{\widehat v_z}+\epsilon},
+\qquad
+\Delta\gamma=-\frac{\eta}{h}
+\frac{\widehat m_\lambda}{\sqrt{\widehat v_\lambda}+\epsilon},
+$$
+
+where division is componentwise and the moments are formed in the trained
+coordinates. At width 512, selected individual-scale Adam has prefactors
+$2.60\times10^{-5}$ on an ordinary readout, $0.0323$ on the bias, and
+$0.768$ on a physical slope. Neighboring Adam's slope prefactor is $0.0768$;
+its readouts use the full map $\eta T$. These multiply moment-normalized
+directions, not raw gradients. GD's squared scale factors must therefore not
+be described as Adam's effective raw-gradient rates.
+
 GN solves the augmented system by QR:
 
 $$
@@ -413,6 +430,35 @@ applied after a GN solve.
 <figure>
   <img src="joint_conditioning_analysis/probes/damping_trials.png" alt="Predicted and actual Gauss-Newton trial errors and parameter motion across damping levels from the same physical checkpoint" style="max-width:100%;">
   <figcaption>Detached trials from the difficult width-1024 GN checkpoint. Native identity damping gives different physical penalties in the two maps. Dots mark trials satisfying the unchanged acceptance rule; the dotted vertical line marks stored damping. Tiny computed linearized residuals at low damping do not imply accurate nonlinear steps. The reported same-metric QR control is a separate comparison.</figcaption>
+</figure>
+
+The paired **training restart** confirms that this difference persists. Both
+arms start from that same physical checkpoint and damping, retain the source
+floor $10^{-30}$, and take 20k additional accepted steps under the unchanged
+GN rule. One keeps individual coordinates; the other converts only the readout
+coordinates to neighbors. The individual-coordinate restart is verified against
+uninterrupted continuation.
+
+**Paired GN restart MSE.** Width 1024, seed 0, starting from the individual-scale 20k checkpoint at MSE 0.0266740. Values are checkpoint MSE, not late-window means.
+
+| Additional accepted updates | Individual scales | Individual scales + neighbors |
+|---:|---:|---:|
+| 100 | $0.0262$ | $6.05\times10^{-11}$ |
+| 1,000 | $0.0221$ | $6.11\times10^{-16}$ |
+| 20,000 | $7.10\times10^{-5}$ | $3.67\times10^{-18}$ |
+
+The neighboring arm's median core bandwidth changes only from 0.10134 to
+0.10110; its core RMS bandwidth displacement is 0.00330. The geometry is
+trainable and does change, but successful fitting does not require it to move
+toward 0.25. At the first step, changing the metric increases physical readout
+step norm from 0.000285 to 0.0543, while bandwidth step norm changes from
+0.00129 to 0.00665. It enables a much more effective coordinated step from an
+already expressive geometry. This is one deliberately chosen difficult
+checkpoint, not a new across-seed performance ranking.
+
+<figure>
+  <img src="joint_conditioning_analysis/restart/figures/restart_comparison.png" alt="Matched-origin Gauss-Newton restart MSE against accepted steps and residual evaluations, with damping and bandwidth trajectories" style="max-width:100%;">
+  <figcaption>Paired restart from the same width-1024 physical checkpoint. Changing the native readout metric produces rapid improvement while median core bandwidth remains near 0.10. Residual evaluation counts include rejected proposals: 41,499 for individual scales and 40,176 for neighbors. Damping curves begin after the first accepted step; both arms start from damping 4.9277.</figcaption>
 </figure>
 
 **The broad learned geometry is target-specific.** We replace only the right-hand
