@@ -193,10 +193,22 @@ def precision_check(g,cp,coordinate=None):
 
 
 def analyze_case(task):
-    root,output,case=task;key=first.case_key(case);folder=root/key;dest=output/key;dest.mkdir(parents=True,exist_ok=True)
-    status=json.loads((folder/'latest.json').read_text());end=status['completed_updates'];g=core.geometry(case['n'])
+    root,output,case,*options=task;key=first.case_key(case);folder=root/key;dest=output/key;dest.mkdir(parents=True,exist_ok=True)
+    source_status=json.loads((folder/'latest.json').read_text());status=dict(source_status)
+    end=status['completed_updates'];g=core.geometry(case['n'])
+    if options and options[0]:
+        limit=100000 if case['optimizer'] in ('gd','adam') else 20000
+        end=min(end,limit)
+        if end<status['completed_updates']:
+            with np.load(folder/f'checkpoint_{end:09d}.npz') as cp:
+                status.update(step=end,completed_updates=end,status='continuing',train_mse=float(cp['train_mse']),validation_mse=float(cp['validation_mse']))
+            if 'failed_update' in status:status['failed_update']=None
     if not end:return dict(case=case,key=key,status=status,end=0)
     trace=campaign.read_trace(folder,end,case['optimizer'])
+    if end<source_status['completed_updates'] and case['optimizer'] in ('gn','ssbroyden'):
+        for key in ('function_evaluations','gradient_evaluations','jacobian_evaluations'):
+            status[key]=int(trace[-1,campaign.HIGHER_COLUMNS.index(key)])
+        status['training_seconds']=float(trace[-1,campaign.HIGHER_COLUMNS.index('elapsed_seconds')])
     steps=[];history=[]
     for path in sorted(folder.glob('checkpoint_*.npz')):
         step=int(path.stem.split('_')[-1])
@@ -214,7 +226,7 @@ def analyze_case(task):
     run.save_arrays(dest/'window_mse.npz',step=np.minimum(starts+block,end),
                     mean=[2*trace[i:min(i+block,end),0].mean() for i in starts],
                     quantiles=np.array([np.quantile(2*trace[i:min(i+block,end),0],[0,.1,.5,.9,1]) for i in starts]).T)
-    record=dict(case=case,key=key,end=end,status=status,checkpoints={},source_hashes={},dense=[])
+    record=dict(case=case,key=key,end=end,status=status,source_latest=source_status,checkpoints={},source_hashes={},dense=[])
     probes=sorted({0,*[s for s in (100,1000,20000,100000) if s<=end],end})
     for step in probes:
         path=folder/f'checkpoint_{step:09d}.npz'
@@ -250,7 +262,7 @@ def analyze_case(task):
     elif case['optimizer']=='adam':
         with np.load(folder/f'checkpoint_{end:09d}.npz') as cp:
             record['numerics']={f'{block}_epsilon_dominated_fraction':float(np.mean(cp[f'adam_{block}_sqrt_v_over_epsilon']<1)) for block in ('readout','slope')}
-    if (folder/'failure.npz').exists():
+    if end==source_status['completed_updates'] and (folder/'failure.npz').exists():
         with np.load(folder/'failure.npz') as a:
             record['failure']={k:float(a[k]) if np.isfinite(a[k]) else None for k in ('attempts','trial_mse','actual','predicted','ratio','curvature','step_size')}
     run.write_json(dest/'mechanism.json',record)
@@ -262,10 +274,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--cases',type=Path,required=True);parser.add_argument('--workers',type=int,default=4)
+    parser.add_argument('--minimum-horizon',action='store_true',help='Analyze the fixed 100k/20k comparison even when training has continued')
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     cases=json.loads(args.cases.read_text())
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
-        records=list(pool.map(analyze_case,[(args.root,args.output,c) for c in cases]))
+        records=list(pool.map(analyze_case,[(args.root,args.output,c,args.minimum_horizon) for c in cases]))
     run.write_json(args.output/'summary.json',records)
 
 
