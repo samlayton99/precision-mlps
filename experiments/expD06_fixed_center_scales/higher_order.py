@@ -35,6 +35,8 @@ def load_state(path,template):
 
 
 def readout_map(g, coordinates):
+    if coordinates == "physical":
+        return np.eye(g.width+1)
     if coordinates == "parameter_scale":
         return np.diag(g.alpha)
     if coordinates != "parameter_differences":
@@ -47,10 +49,16 @@ def readout_map(g, coordinates):
 
 def initial_parameters(g, seed, coordinates):
     c,gamma = core.initial_physical(g,seed,"xavier_a_reference")
+    return encode_physical(c,gamma,g,coordinates)
+
+
+def encode_physical(c,gamma,g,coordinates):
+    if coordinates == "physical":return jnp.asarray(np.r_[c,gamma])
     return jnp.asarray(np.r_[training.encode(c,g,coordinates),g.h*gamma])
 
 
 def physical(z,g,coordinates):
+    if coordinates == "physical":return z[:g.width+1],z[g.width+1:]
     return training.decode(z[:g.width+1],g,coordinates),z[g.width+1:]/g.h
 
 
@@ -64,13 +72,15 @@ def problem(n,coordinates,samples=16):
     def residual_jacobian(z):
         c,gamma=physical(z,g,coordinates);arg=distances*gamma;phi=core.tanh(arg)
         r=(c[0]+phi@c[1:]-y)/root
-        if coordinates=="parameter_scale":
+        if coordinates=="physical":
+            readout=phi
+        elif coordinates=="parameter_scale":
             readout=phi*jnp.asarray(g.alpha[1:])
         else:
             readout=jnp.concatenate((phi[:,:-1]-phi[:,1:],phi[:,-1:]),axis=1)
             readout=readout*jnp.asarray(np.cumsum(g.alpha[1:]))
-        geom=c[1:]*distances*core.sech_squared(arg)/g.h
-        jac=jnp.concatenate((jnp.full((x.size,1),g.alpha[0]),readout,geom),axis=1)/root
+        geom=c[1:]*distances*core.sech_squared(arg)/(1. if coordinates=="physical" else g.h)
+        jac=jnp.concatenate((jnp.full((x.size,1),1. if coordinates=="physical" else g.alpha[0]),readout,geom),axis=1)/root
         return r,jac
     def loss(z):
         r=residual(z)
