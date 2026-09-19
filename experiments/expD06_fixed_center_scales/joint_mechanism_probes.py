@@ -154,6 +154,8 @@ def figures(output,records,damping,references):
             for ax,field in zip(axes,('midpoint_mse','physical_coefficient_l1')):
                 ax.loglog([r['cycles_over_domain'] for r in rows],[r[field] for r in rows],'o-',color=color,label=label)
         for ax,ylabel in zip(axes,('Detached fit midpoint MSE','Physical coefficient L1 norm')):
+            ax.set_xscale('log',base=2);ax.set_xticks([2,4,8,16,32,64],['2','4','8','16','32','64'])
+            ax.tick_params(axis='x',which='minor',labelbottom=False)
             ax.set(xlabel='Sine cycles across [-1,1]',ylabel=ylabel);ax.grid(alpha=.2);ax.legend(fontsize=8)
         fig.suptitle(f'N={n}, seed-0 GN geometries after 20k updates; new targets only in detached fits\nCommon individual-scale SVD basis, relative cutoff 1e−12; no new training')
         fig.savefig(output/f'frequency_capacity_N{n}.png',dpi=160,bbox_inches='tight');plt.close(fig)
