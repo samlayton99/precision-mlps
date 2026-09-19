@@ -306,6 +306,17 @@ projection cutoffs and sampling density before interpreting tiny forces. The
 32,768 midpoint points are diagnostic evaluation, not rate selection or an
 independent generalization test. Larger lambda alone is not a success criterion.
 
+`parameter_scale_analysis.sbatch --output <export> --cases <selected-manifest>
+--end <common-horizon>` performs detached CPU analysis. It exports both native
+readout spectra and a common-reference projection/refit using $AD/\sqrt M$ in
+both arms. Three SVD cutoffs and a doubled sampling grid expose numerical
+sensitivity. The early and late dense windows use 16 stratified states for
+Fourier and finite-update budgets; all 2048 consecutive states contribute to
+the adjacent-step motion audit. Adam panels use its actual moment-dependent
+updates, not a GD modal-rate prediction. `--movies` exports one comparison per
+optimizer and seed at width 512, with physical readouts above physical gamma,
+slow first-300k playback, and separate consecutive-update late close-ups.
+
 ## Historical base-rate and relative-rate search
 
 `campaign.py` runs one optimizer per GPU worker. Its initial grid uses base rates $10^{-4},10^{-3},10^{-2}$ and bandwidth/readout ratios $0.1,1,10$. The expanded grid uses five base rates from $10^{-5}$ through $10^{-1}$ and five ratios from $0.01$ through $100$. Two physical initializations and two paired seeds are evaluated in both coordinate arms. Each finite trial receives the full 20,000-step minimum, followed by constant-rate continuation.

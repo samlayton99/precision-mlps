@@ -34,7 +34,7 @@ def table(root, end=100000):
         status = json.loads((folder/"latest.json").read_text())
         row = {k: config[k] for k in ("campaign", "optimizer", "coordinates", "eta", "n", "seed")}
         row.update(key=folder.name, **status, comparison_step=end)
-        row["eligible"] = status["completed_updates"] >= end and not status["failed_update"]
+        row["eligible"] = status["completed_updates"] >= end and (not status["failed_update"] or status["failed_update"] > end)
         if row["eligible"]:
             trace = analysis.read_trace(folder, end)
             assert np.all(np.isfinite(trace))

@@ -91,3 +91,23 @@ def test_saved_campaign_records_early_dense_and_adam_moments(tmp_path):
         assert "adam_readout_sqrt_v_over_epsilon" in cp
     indices=np.concatenate([np.load(p)["step"] for p in sorted(folder.glob("dense_*.npz"))])
     np.testing.assert_array_equal(indices,np.arange(8))
+
+
+@pytest.mark.parametrize("optimizer",campaign.OPTIMIZERS)
+def test_common_projection_and_actual_next_update(optimizer):
+    from experiments.expD06_fixed_center_scales import parameter_scale_analysis as analysis
+    g=core.geometry(128);records=[]
+    for coord in campaign.MAPS:
+        case=campaign.case(optimizer,coord,1e-5,n=128)
+        state=dt.initial(g,0,coord,optimizer)
+        cp={k:np.asarray(v[0]) for k,v in dt.evaluator(128,coord,1,optimizer)(run.stack_states([state])).items()}
+        _,(_,dense)=dt.chunk(128,coord,1,True,1,False,optimizer)(state,case["eta"],0)
+        record,arrays,_=analysis.probe(g,cp,case,samples=1)
+        np.testing.assert_allclose(arrays["next_delta_c"],dense["delta_c"][0],atol=2e-15)
+        np.testing.assert_allclose(arrays["next_delta_lambda"],dense["delta_lambda"][0],atol=2e-15)
+        assert record["fourier_closure"]<1e-12
+        assert record["update_budget"]["closure_max"]<1e-12
+        np.testing.assert_allclose(arrays["band_gradient_lambda"].sum(axis=0),arrays["gradient_lambda"],atol=1e-12)
+        records.append(record)
+    assert records[0]["reference_retained_rank"]==records[1]["reference_retained_rank"]
+    np.testing.assert_allclose([r["mse"] for r in records[0]["refits"]],[r["mse"] for r in records[1]["refits"]],atol=1e-12)
