@@ -11,9 +11,47 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.linalg import block_diag, lstsq, svd
+from scipy.linalg import block_diag, eigh, eigvalsh, lstsq, svd
 
 from . import core, diagnostics, higher_order, joint_analysis as analysis, joint_conditioning as campaign, run
+
+
+def native_hessians(g,c,gamma,coordinates,samples=16):
+    """Exact half-MSE Hessian, GN matrix, and gradient in the trained coordinates."""
+    x,y,a,r,j=analysis.linearize(g,c,gamma,samples)
+    jac=np.column_stack((analysis.native_features(a,g,coordinates),j));gn=jac.T@jac
+    distance=(x[:,None]-g.centers)/g.h;argument=distance*(g.h*gamma)
+    e=np.exp(-2*np.abs(argument));sech=4*e/(1+e)**2
+    derivative=distance*sech/np.sqrt(len(x))
+    mixed=derivative.T@r
+    second=c[1:]*((-2*distance**2*np.tanh(argument)*sech/np.sqrt(len(x))).T@r)
+    transform=higher_order.readout_map(g,coordinates);split=g.width+1
+    correction=transform[1:].T*mixed
+    hessian=gn.copy();hessian[:split,split:]+=correction;hessian[split:,:split]+=correction.T
+    hessian[split:,split:]+=np.diag(second)
+    return hessian,gn,jac.T@r
+
+
+def stability_case(task):
+    source,record=task;case=record['case'];g=core.geometry(case['n']);folder=source/record['key'];end=record['end']
+    with np.load(folder/f'dense_parameters_{end}.npz') as a:
+        states=[(int(a['step'][i]),a['c'][i],a['gamma'][i]) for i in (-2,-1)]
+    path=folder/f'spectrum_{end}.npz'
+    with np.load(path) as a:states.append((end,a['c'],a['gamma']))
+    rows=[]
+    for step,c,gamma in states:
+        hessian,gn,gradient=native_hessians(g,c,gamma,case['coordinates'])
+        maximum,vector=eigh(hessian,subset_by_index=(len(hessian)-1,len(hessian)-1));vector=vector[:,0]
+        gn_max=eigvalsh(gn,subset_by_index=(len(gn)-1,len(gn)-1))[0]
+        minimum=eigvalsh(hessian,subset_by_index=(0,0))[0]
+        rows.append(dict(step=step,hessian_min=float(minimum),hessian_max=float(maximum[0]),gn_max=float(gn_max),
+            eta_hessian_max=float(case['eta']*maximum[0]),eta_gn_max=float(case['eta']*gn_max),
+            gradient_top_curvature_fraction=float((vector@gradient)**2/max(gradient@gradient,1e-300)),
+            top_vector_block_energy=dict(bias=float(vector[0]**2),readouts=float(np.sum(vector[1:g.width+1]**2)),
+                                         geometry=float(np.sum(vector[g.width+1:]**2)))))
+    return dict(key=record['key'],case=case,end=end,rows=rows,source_sha256={
+        path.name:hashlib.sha256(path.read_bytes()).hexdigest(),
+        f'dense_parameters_{end}.npz':hashlib.sha256((folder/f'dense_parameters_{end}.npz').read_bytes()).hexdigest()})
 
 
 def frozen_decay(singular,modal,residual_perpendicular,steps,eta):
@@ -179,8 +217,17 @@ def figures(output,records,damping,references):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--analysis',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--workers',type=int,default=4);args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
+    parser.add_argument('--workers',type=int,default=4)
+    parser.add_argument('--stability-only',action='store_true',help='Audit local GD curvature at three consecutive saved states, N=512')
+    args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     records=json.loads((args.analysis/'summary.json').read_text())
+    if args.stability_only:
+        selected=[r for r in records if r['case']['optimizer']=='gd' and r['case']['n']==512]
+        with ProcessPoolExecutor(max_workers=args.workers) as pool:
+            rows=list(pool.map(stability_case,[(args.analysis,r) for r in selected]))
+        run.write_json(args.output/'stability.json',dict(records=rows,
+            source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),training_states_modified=False))
+        return
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
         frozen=list(pool.map(frozen_case,[(args.analysis,args.output,r) for r in records]))
     run.write_json(args.output/'frozen_summary.json',frozen)

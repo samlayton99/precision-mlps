@@ -422,6 +422,14 @@ updates and residual evaluations. Physical readout plots use a small linear
 region around zero so the construction coefficients remain visible alongside
 larger learned coefficients.
 
+A final CPU-only stability audit checks the exact native-coordinate half-MSE
+Hessian at the last three consecutive states of each selected width-512 GD
+run. It retains residual-curvature terms, separately records the GN matrix,
+and compares $\eta\lambda_{\max}(\nabla^2L)$ with the quadratic GD stability
+boundary 2. This is a local diagnostic of alternating steps, not a convergence
+theorem for the nonlinear trajectory. Both seeds and maps are checked at the
+mandatory and continuation horizons; no optimizer setting is changed.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)

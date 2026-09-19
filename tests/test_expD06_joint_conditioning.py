@@ -69,6 +69,20 @@ def test_analytic_joint_jacobian(coordinate):
     np.testing.assert_allclose(j.T@r,jax.grad(loss)(z),atol=2e-14,rtol=3e-12)
 
 
+@pytest.mark.parametrize('coordinate',['parameter_scale','parameter_differences'])
+def test_native_hessian_includes_residual_curvature(coordinate):
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    from experiments.expD06_fixed_center_scales.joint_mechanism_probes import native_hessians
+    g,residual,jacobian,loss=ho.problem(128,coordinate,1)
+    z=ho.initial_parameters(g,0,coordinate)
+    z=z.at[g.width+1:].multiply(20)
+    c,gamma=map(np.asarray,ho.physical(z,g,coordinate))
+    hessian,gn,gradient=native_hessians(g,c,gamma,coordinate,1)
+    np.testing.assert_allclose(hessian,jax.hessian(loss)(z),atol=3e-10,rtol=2e-10)
+    np.testing.assert_allclose(gradient,jax.grad(loss)(z),atol=3e-12,rtol=2e-10)
+    assert np.linalg.norm(hessian-gn)>1
+
+
 def test_gn_invariance_rank_deficiency_and_damping_metric():
     from experiments.expD06_fixed_center_scales import higher_order as ho
     j=np.array([[1.,2.],[2.,-1.],[.3,.7]]);r=np.array([.2,-.7,.9]);t=np.array([[2.,.7],[0.,.4]])
