@@ -57,3 +57,128 @@ def test_joint_first_order_updates_and_resume(optimizer,coordinate,tmp_path):
 def test_explicit_epsilon_required_for_difference_adam():
     with pytest.raises(ValueError,match="explicit native epsilon"):
         dt.chunk(128,"parameter_differences",1,optimizer="adam")
+
+
+@pytest.mark.parametrize("coordinate", ["parameter_scale", "parameter_differences"])
+def test_analytic_joint_jacobian(coordinate):
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    g,residual,jacobian,loss=ho.problem(128,coordinate,1)
+    z=ho.initial_parameters(g,0,coordinate)
+    r,j=jacobian(z)
+    np.testing.assert_allclose(j,jax.jacfwd(residual)(z),atol=2e-14,rtol=3e-12)
+    np.testing.assert_allclose(j.T@r,jax.grad(loss)(z),atol=2e-14,rtol=3e-12)
+
+
+def test_gn_invariance_rank_deficiency_and_damping_metric():
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    j=np.array([[1.,2.],[2.,-1.],[.3,.7]]);r=np.array([.2,-.7,.9]);t=np.array([[2.,.7],[0.,.4]])
+    dp=np.linalg.lstsq(j,-r,rcond=None)[0]
+    dz=np.linalg.lstsq(j@t,-r,rcond=None)[0]
+    np.testing.assert_allclose(t@dz,dp,atol=2e-15)
+    mu=.03
+    step=ho.augmented_qr(jnp.asarray(j@t),jnp.asarray(r),mu)
+    expected=np.linalg.solve(j.T@j+mu*np.linalg.inv(t).T@np.linalg.inv(t),-j.T@r)
+    np.testing.assert_allclose(t@step,expected,atol=2e-15)
+    deficient=j[:1]
+    d1=np.linalg.lstsq(deficient,-r[:1],rcond=None)[0]
+    d2=t@np.linalg.lstsq(deficient@t,-r[:1],rcond=None)[0]
+    assert np.linalg.norm(d1-d2)>1e-3
+    np.testing.assert_allclose(deficient@d1,deficient@d2,atol=1e-15)
+
+
+def test_gn_progress_resume_and_failure(tmp_path):
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    a=jnp.array([[1.,2.],[2.,-1.],[.3,.7]]);target=jnp.array([.2,-.7,.9])
+    residual=lambda z:a@z-target
+    jacobian=lambda z:(residual(z),a)
+    advance=ho.gn_step(residual,jacobian,lambda p:(p,p))
+    initial=ho.gn_initial(jnp.array([1.,-2.]))
+    middle,evidence=advance(initial)
+    assert int(middle['count'])==1 and int(middle['status'])==0
+    assert evidence['actual']>0 and evidence['linear_residual']<1e-12
+    run.save_state(tmp_path/'gn.pkl',middle,1)
+    loaded,_=run.load_state(tmp_path/'gn.pkl')
+    for left,right in zip(jax.tree.leaves(advance(middle)[0]),jax.tree.leaves(advance(loaded)[0])):
+        np.testing.assert_array_equal(left,right)
+    bad=ho.gn_step(lambda z:jnp.full((3,),jnp.nan),jacobian,lambda p:(p,p))(initial)[0]
+    assert int(bad['status'])==1 and int(bad['count'])==0
+    np.testing.assert_array_equal(bad['z'],initial['z'])
+    uphill=ho.gn_step(lambda z:residual(initial['z'])+1e6,jacobian,lambda p:(p,p),max_trials=2)(initial)[0]
+    assert int(uphill['status'])==2 and int(uphill['count'])==0
+
+
+def ssb_source():
+    import os
+    from pathlib import Path
+    pytest.importorskip('optimistix')
+    path=os.environ.get('SSBROYDEN_SOURCE','/tmp/precision-ssbroyden-4c87785')
+    if not (Path(path)/'ssbrodyen_family.py').exists():pytest.skip('Pinned external SSBroyden source unavailable')
+    return path
+
+
+def test_ssb_guard_and_default_equivalence(tmp_path):
+    import importlib.util,sys
+    from pathlib import Path
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    source=ssb_source()
+    eps=np.finfo(float).eps
+    guarded=ho.ssb_solver(source,eps)
+    spec=importlib.util.spec_from_file_location('precision_ssbroyden_upstream',Path(source)/'ssbrodyen_family.py')
+    upstream=importlib.util.module_from_spec(spec);sys.modules[spec.name]=upstream;spec.loader.exec_module(upstream)
+    original=upstream.SSBroyden(rtol=0.,atol=0.,search=guarded.search)
+    loss=lambda z:.5*jnp.sum(jnp.array([1.,3.])*(z-jnp.array([.1,.3]))**2)
+    z=jnp.array([1.,2.]);states=[]
+    for solver in (guarded,original):
+        state=ho.ssb_initial(solver,loss,z);advance=ho.ssb_step(solver,loss,lambda p:(p,p),eps)
+        state,ev=advance(state)
+        assert int(state['count'])==1 and int(state['status'])==0 and int(ev['attempts'])>=2
+        states.append(state)
+    for a,b in zip(jax.tree.leaves(states[0]),jax.tree.leaves(states[1])):
+        np.testing.assert_allclose(a,b,rtol=1e-13,atol=1e-15)
+    ho.save_state(tmp_path/'ssb.pkl',states[0],1)
+    resumed,_=ho.load_state(tmp_path/'ssb.pkl',ho.ssb_initial(guarded,loss,z))
+    advance=ho.ssb_step(guarded,loss,lambda p:(p,p),eps)
+    for a,b in zip(jax.tree.leaves(advance(states[0])[0]),jax.tree.leaves(advance(resumed)[0])):
+        np.testing.assert_array_equal(a,b)
+    module=ho.ssb_module(source,1e-24)
+    grad=jnp.array([-1e-10,-2e-10]);s=jnp.array([1e-10,1e-10]);new_grad=grad+jnp.array([2.,3.])*s
+    matrices=[]
+    for threshold in (eps,1e-24,1e-30):
+        solver=ho.ssb_solver(source,threshold)
+        info,update=solver.init_hessian(jnp.zeros(2),jnp.array(1.),grad)
+        result,_=solver.update_hessian(jnp.zeros(2),s,info,module.FunctionInfo.EvalGrad(jnp.array(.9),new_grad),update,jnp.array(1.))
+        matrices.append(np.asarray(result.hessian_inv.pytree))
+    np.testing.assert_array_equal(matrices[0],np.eye(2))
+    assert np.linalg.norm(matrices[1]-np.eye(2))>.1
+    np.testing.assert_array_equal(matrices[1],matrices[2])
+    assert np.linalg.eigvalsh(matrices[1]).min()>0
+
+
+@pytest.mark.parametrize('optimizer',['gn','ssbroyden'])
+def test_higher_runner_resume_and_trace(tmp_path,optimizer):
+    import time,json
+    from experiments.expD06_fixed_center_scales import joint_conditioning as jc
+    source=ssb_source() if optimizer=='ssbroyden' else None
+    config=jc.case(optimizer,'parameter_differences',n=128)
+    jc.advance_higher(tmp_path,config,2,time.monotonic()+120,source,samples=1)
+    jc.advance_higher(tmp_path,config,4,time.monotonic()+120,source,samples=1)
+    folder=tmp_path/dt.case_key(config)
+    status=json.loads((folder/'latest.json').read_text())
+    assert status['completed_updates']==4 and status['status']=='continuing'
+    trace=jc.read_trace(folder,4,optimizer)
+    assert trace.shape==(4,len(jc.HIGHER_COLUMNS)) and np.all(np.isfinite(trace))
+    with np.load(folder/'dense_latest.npz') as a:
+        np.testing.assert_array_equal(a['step'],np.arange(4))
+    assert (folder/'state_000000004.pkl').exists()
+
+
+def test_ssb_nonfinite_and_unchanged_states_do_not_count():
+    from experiments.expD06_fixed_center_scales import higher_order as ho
+    solver=ho.ssb_solver(ssb_source())
+    z=jnp.zeros(2)
+    for loss,expected in ((lambda p:jnp.sum(p*jnp.nan),1),(lambda p:jnp.sum(p*p),3)):
+        state=ho.ssb_initial(solver,loss,z)
+        result,ev=ho.ssb_step(solver,loss,lambda p:(p,p))(state)
+        assert int(result['status'])==expected and int(result['count'])==0
+        np.testing.assert_array_equal(result['z'],z)
+        assert not bool(ev['accepted'])

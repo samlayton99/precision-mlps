@@ -284,6 +284,56 @@ Numerical failure, budget interruption, and convergence are distinct outcomes.
 The main matrix uses width 512, seed 0, with seed 1 and width 1024 transferred
 only when complete comparison blocks fit the remaining budget.
 
+`joint_conditioning.py --prepare` writes the 44-case pilot: ten constant rates
+$\{1,3\}10^k$, $k=-5,\ldots,-1$, for each first-order optimizer and map,
+plus one default higher-order run per map. `--select` ranks completed runs by
+mean MSE over the final fifth of their mandatory horizon, retaining median and
+maximum MSE. It writes the guard and transfer manifests. If a higher-order
+default fails before its mandatory horizon, its unchanged configuration remains
+the confirmation candidate; this is not evidence that it was optimal.
+
+Damped Gauss–Newton solves the augmented least-squares system by QR:
+
+$$
+\min_\delta\;\frac12\|r+J_z\delta\|^2+\frac\mu2\|\delta\|^2.
+$$
+
+Initially $\mu=10^{-3}\max_j\|(J_z)_j\|^2$. A trial is accepted when actual
+over predicted reduction exceeds $10^{-4}$; damping decreases by three when
+that ratio exceeds $0.75$, and increases tenfold on rejection. Forty rejected
+trials terminate the run. The relative damping floor is initially $10^{-24}$.
+There is no additional block learning-rate multiplier after this solve.
+Undamped, uniquely solved Gauss–Newton is invariant to these invertible linear
+maps; native-coordinate damping changes the physical regularization metric.
+Rank-deficient minimum-norm solutions need not have identical parameter steps.
+
+SSBroyden uses the [specified library](https://github.com/IvanBioli/ssbroyden_optimistix)
+at commit `4c87785c68f0fec6b09000f474daef76fb181eea`, with its Optimistix
+submodule at `8cd4931713658f8dfe4423ead6f11b348b675540`. The adapter checks
+the source hash and substitutes only the explicit $s^Ty$ threshold, initially
+$10^{-24}$. Zoom starts each search at one, uses $c_1=10^{-4}$, $c_2=0.9$,
+the library's approximate-Wolfe $c_3=10^{-6}$, and at most 64 evaluations.
+Its minimum step and interval thresholds initially equal $10^{-15}$.
+An accepted state with no representable physical change is recorded as a
+terminal numerical stall, not counted toward the horizon. Initial evaluations
+and rejected line-search points likewise do not count.
+
+Guard comparisons change one setting at a time: Adam epsilon outside the square
+root ($10^{-8},10^{-12},10^{-15}$, with `eps_root=0`); SSBroyden curvature
+threshold and GN relative damping floor (machine epsilon, $10^{-24},10^{-30}$);
+and SSBroyden step/interval thresholds ($10^{-6},10^{-12},10^{-15}$).
+The upstream SSBroyden checks on finite inverse-curvature/scaling factors remain
+in place; the adapter does not replace every floating-point guard indiscriminately.
+
+`joint_conditioning.sbatch` launches one map on each of two Slurm array tasks.
+`--benchmark` pauses the actual pilot trajectories after 2k first-order or 100
+higher-order updates for throughput measurement. Resume these checkpoints before
+making scientific comparisons. Higher-order checkpoints reconstruct all dynamic
+solver arrays against the original static structure, preserving Lineax tag
+identity. Both methods retain failed proposals and the last accepted state.
+The GPU budget includes all benchmark/compile/allocation overhead; reconcile
+Slurm accounting before admitting further complete comparison blocks.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)
