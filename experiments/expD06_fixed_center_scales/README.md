@@ -254,6 +254,58 @@ The late view requires the three `dense_001357000_001358000.npz`, `dense_0013580
 
 Matplotlib and the local `ffmpeg` executable produce four MP4s, two standalone HTML pages (`animations/seed_0.html` and `animations/seed_1.html`) with overview and late players, and still frames for inspection. Players provide pause/step/scrub/speed controls and embed their images and controls without network dependencies. `animations/provenance.json` records input hashes, physical centers, row order, playback cadence, exact displayed steps including early holds, and the source hash. This export uses the existing report horizon rather than silently extending the scientific comparison to newer training states.
 
+## Parameter-scale normalization: paired GD and Adam
+
+This campaign tests whether normalizing individual parameters by their construction
+allowances sustains useful geometry learning. Collective normalization trains
+$c=Da$; parameter-scale normalization trains $c=D^2u$, including the bias and
+corrected halos. Both train $\lambda$ with $\gamma=\lambda/h$. The same reference
+$\alpha_j=D_{jj}^2$ at $\lambda_{\rm ref}=0.25$ stays fixed throughout training.
+Ordinary and corrected-halo readouts have $O(h)$ construction bounds at fixed
+lambda, with different constants; the bias is $O(1)$. These are reference
+allowances, not constraints on the training trajectory.
+
+The physical initialization is identical across arms: draw the existing Xavier
+$a$ and physical gamma once, set $c_0=Da_0$, and convert $u_0=D^{-1}a_0$.
+Bias starts at zero, initial slope signs are absorbed into the readouts, and
+subsequent signed slopes are unrestricted. There is no independent redraw of $u$.
+
+Full-batch FP64 minimizes half-MSE on the normalized sine target and $16N+1$
+points. Report MSE. Each trial uses one constant shared scalar $\eta$ for
+readout and geometry. GD has no momentum; Adam uses 0.9/0.999. Native readout
+epsilon is $10^{-8}$ for the collective control and $10^{-8}D_{jj}$ for
+parameter-scale normalization, preserving the physical threshold $10^{-8}/D_{jj}$.
+Native geometry epsilon remains $10^{-8}$ in both. There are no schedules,
+frozen parameter blocks, neighbor differences, or in-training readout solves.
+
+`parameter_scale.py --prepare --root <run-root>` creates the 40-trial pilot:
+both optimizers, both maps, and rates $\{1,3\}10^k$ for $k=-5,-4,-3,-2,-1$
+at $N=512$, seed 0. Every finite pilot receives 100k updates. Select by mean
+training MSE over updates 80k–100k, breaking ties toward smaller rates.
+`--select` writes the selected, boundary-extension, confirmation, and continuation
+manifests. Extend a selected boundary by at most one decade in both maps for
+that optimizer, subject to reserving the mandatory confirmation budget.
+Transfer the union of each optimizer's two selected rates to $(N,\mathrm{seed})$
+equal to $(512,1),(1024,0),(1024,1)$, without retuning. Continue each map's
+selected rate across both widths and seeds to 300k, then common 100k blocks
+within the budget. A budget interruption or oscillation is not convergence.
+
+Submit `parameter_scale.sbatch --manifest <absolute-manifest> --frontier 100000
+--seconds <worker-deadline>` through Slurm. Worker 0 runs GD, worker 1 Adam.
+Use at most two allocated GPUs and preserve the scheduler's device mask.
+The **new, separate cap is 7200 allocated GPU-seconds**, including setup,
+compilation, verification, and failed runs. Reconcile accounting before every
+submission. Detached analysis uses CPU-only Slurm jobs.
+
+The runner saves complete scalar traces, resumable optimizer states, early
+checkpoints, and consecutive dense records over the first 2048 updates and
+late 2048-update windows. Diagnostics compare the actual parameter motion,
+signed scale-growth forces, residual Fourier bands, singular residual/update
+occupancy, and detached fits using a common reference projector rule. Repeat
+projection cutoffs and sampling density before interpreting tiny forces. The
+32,768 midpoint points are diagnostic evaluation, not rate selection or an
+independent generalization test. Larger lambda alone is not a success criterion.
+
 ## Historical base-rate and relative-rate search
 
 `campaign.py` runs one optimizer per GPU worker. Its initial grid uses base rates $10^{-4},10^{-3},10^{-2}$ and bandwidth/readout ratios $0.1,1,10$. The expanded grid uses five base rates from $10^{-5}$ through $10^{-1}$ and five ratios from $0.01$ through $100$. Two physical initializations and two paired seeds are evaluated in both coordinate arms. Each finite trial receives the full 20,000-step minimum, followed by constant-rate continuation.
