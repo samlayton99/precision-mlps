@@ -227,3 +227,12 @@ def test_ssb_accepted_step_matches_secant_scaling_formula():
     original=ho.ssb_solver(source,integration='pinned')
     original_result,_=ho.ssb_step(original,loss,lambda p:(p,p))(ho.ssb_initial(original,loss,z))
     assert np.linalg.norm(np.asarray(original_result['solver'].f_info.hessian_inv.pytree)-expected)>1e-3
+
+
+def test_metric_direction_audit_detects_non_descent():
+    from experiments.expD06_fixed_center_scales.joint_analysis import inverse_hessian_direction
+    g=np.array([1.,.5])
+    for matrix,expected in ((np.diag([2.,3.]),-2.75),(np.diag([-2.,3.]),1.25)):
+        result=inverse_hessian_direction(matrix,g)
+        assert result['stored_metric_directional_derivative_fp64']==expected
+        assert result['stored_metric_directional_derivative_mp80']==expected

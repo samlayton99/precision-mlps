@@ -192,6 +192,19 @@ def precision_check(g,cp,coordinate=None):
                 prediction_max_difference=float(mismatch),target_max_difference=float(target_error))
 
 
+def inverse_hessian_direction(matrix,gradient):
+    """Audit the stored FP64 metric/gradient; this does not recompute the loss gradient."""
+    import mpmath as mp
+    direction=-matrix@gradient
+    with mp.workdps(80):
+        gg=list(map(mp.mpf,gradient))
+        slope=-mp.fsum(gi*mp.fsum(mp.mpf(v)*gj for v,gj in zip(row,gg)) for gi,row in zip(gg,matrix))
+    return dict(stored_metric_directional_derivative_fp64=float(gradient@direction),
+                stored_metric_directional_derivative_mp80=float(slope),
+                direction_norm=float(np.linalg.norm(direction)),gradient_norm=float(np.linalg.norm(gradient)),
+                cosine=float(gradient@direction/max(np.linalg.norm(gradient)*np.linalg.norm(direction),1e-300)))
+
+
 def analyze_case(task):
     root,output,case,*options=task;key=first.case_key(case);folder=root/key;dest=output/key;dest.mkdir(parents=True,exist_ok=True)
     source_status=json.loads((folder/'latest.json').read_text());status=dict(source_status)
@@ -265,6 +278,8 @@ def analyze_case(task):
     if end==source_status['completed_updates'] and (folder/'failure.npz').exists():
         with np.load(folder/'failure.npz') as a:
             record['failure']={k:float(a[k]) if np.isfinite(a[k]) else None for k in ('attempts','trial_mse','actual','predicted','ratio','curvature','step_size')}
+            if case['optimizer']=='ssbroyden' and np.all(np.isfinite(matrix)) and np.all(np.isfinite(a['gradient'])):
+                record['failure'].update(inverse_hessian_direction(matrix,a['gradient']))
     run.write_json(dest/'mechanism.json',record)
     print(json.dumps(dict(analyzed=key,end=end,status=status['status'])),flush=True)
     return record
