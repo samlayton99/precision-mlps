@@ -13,7 +13,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from . import core, diagnostics, difference_analysis, difference_training as first
-from . import higher_order as higher, ratio, run
+from . import higher_order as higher, full_newton, ratio, run
 
 MAPS=("parameter_scale","parameter_differences")
 OPTIMIZERS=("gd","adam","gn","ssbroyden")
@@ -21,6 +21,9 @@ RATES=[factor*10.**power for power in range(-5,0) for factor in (1,3)]
 HIGHER_COLUMNS=("half_mse","gradient_norm","delta_c_rms","delta_lambda_rms","attempts",
                 "step_size","damping","reduction_ratio","curvature","guard_active",
                 "linear_residual","function_evaluations","gradient_evaluations","jacobian_evaluations","elapsed_seconds")
+DETAIL_COLUMNS=("gradient_c_norm","gradient_gamma_norm","gradient_native_readout_norm","gradient_native_slope_norm",
+                "delta_c_over_alpha_rms","delta_lambda_rms","radius","hessian_min","hessian_max",
+                "negative_eigenvalues","residual_curvature_norm","gn_norm","hard_case")
 
 
 def case(optimizer,coordinates,eta=1.,n=512,seed=0,**kwargs):
@@ -53,7 +56,27 @@ def guard_cases(selected):
 
 
 def snapshots(frontier):
-    return set([0,1,10,100,1000,2048,frontier,*range(2000,frontier+1,2000)])
+    return set([0,1,10,100,1000,2048,5000,frontier,*range(2000,frontier+1,2000)])
+
+
+def warm_parameters(root,config,g,samples=16):
+    """Transfer fixed physical parameters, never source optimizer state."""
+    origin=config['warm_start'];folder=(root/ origin['root']/origin['source_key']).resolve()
+    source_case=json.loads((folder/'case.json').read_text())
+    if source_case['n']!=config['n'] or source_case['seed']!=config['seed']:
+        raise ValueError('Handoff width and seed must match the source')
+    if source_case.get('target')!='sine' or source_case.get('samples_per_cell')!=samples:
+        raise ValueError('Handoff target and training grid must match')
+    path=folder/f"checkpoint_{origin['step']:09d}.npz"
+    digest=hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest!=origin['sha256']:raise ValueError('Handoff checkpoint hash changed')
+    with np.load(path) as cp:c,gamma=cp['c'],cp['gamma']
+    z=higher.encode_physical(c,gamma,g,config['coordinates'])
+    c1,g1=map(np.asarray,higher.physical(z,g,config['coordinates']))
+    np.testing.assert_allclose(c1,c,rtol=3e-15,atol=0.)
+    np.testing.assert_allclose(g1,gamma,rtol=3e-15,atol=0.)
+    return z,dict(checkpoint_sha256=digest,source_case=source_case,step=origin['step'],
+                  c_decode_max_error=float(np.max(np.abs(c1-c))),gamma_decode_max_error=float(np.max(np.abs(g1-gamma))))
 
 
 def advance_higher(root,config,frontier,deadline,source,samples=16):
@@ -61,6 +84,7 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
     metadata=dict(config,target="sine",initialization="xavier_a_reference",samples_per_cell=samples,
                   validation_points=32768,objective="half-MSE",reference_lambda=.25,minimum_updates=20000,
                   ssbroyden_commit=higher.SSB_COMMIT,optimistix_commit=higher.OPTIMISTIX_COMMIT)
+    if config.get('warm_start'):metadata['initialization']='checkpoint_handoff'
     restart=config.get('restart')
     if restart:
         if config['optimizer']!='gn':raise ValueError('This paired restart is defined only for GN')
@@ -82,6 +106,10 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
     g,residual,jacobian,loss=higher.problem(config['n'],config['coordinates'],samples)
     physical=lambda p:higher.physical(p,g,config['coordinates'])
     z=higher.initial_parameters(g,config['seed'],config['coordinates'])
+    if config.get('warm_start'):
+        if restart:raise ValueError('Choose a parameter handoff or a GN state restart')
+        z,handoff=warm_parameters(root,config,g,samples)
+        run.write_json(path/'handoff.json',handoff)
     if config['optimizer']=='gn':
         state=higher.gn_initial(z)
         if restart:
@@ -96,6 +124,9 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
             if not (np.isfinite(float(state['damping'])) and float(state['damping'])>0):
                 raise ValueError('The warm restart requires a finite positive stored damping')
         advance=higher.gn_step(residual,jacobian,physical,config['damping_floor'])
+    elif config['optimizer']=='newton':
+        state=full_newton.initial(z)
+        advance=full_newton.step(residual,full_newton.derivatives(g,config['coordinates'],jacobian,samples),physical)
     else:
         solver=higher.ssb_solver(source,config['curvature_epsilon'],config['search_threshold'],config.get('ssb_integration','pinned'))
         state=higher.ssb_initial(solver,loss,z)
@@ -104,7 +135,7 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
         state,saved_step=higher.load_state(path/'state_latest.pkl',state)
         if saved_step!=latest['completed_updates'] or int(state['count'])!=saved_step:
             raise ValueError('Checkpoint and progress record disagree')
-    at=int(state['count']);written=at;trace=[];ring=deque(maxlen=2048)
+    at=int(state['count']);written=at;trace=[];details=[];ring=deque(maxlen=2048)
     if (path/'dense_latest.npz').exists():
         with np.load(path/'dense_latest.npz') as prior:
             previous={k:prior[k] for k in prior.files}
@@ -119,16 +150,19 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
         return jnp.mean((pred-core.target(xv,'sine'))**2)
     run.save_arrays(path/'reference.npz',centers=g.centers,alpha=g.alpha,d=g.d,h=g.h,core=g.core,corrected_halo=g.corrected_halo)
     def save(final=False,failure=None):
-        nonlocal trace,written
+        nonlocal trace,details,written
         count=int(state['count']);c,gamma=map(np.asarray,physical(state['z']))
         mse=float(2*loss_eval(state['z']));vmse=float(validation(state['z']))
         data=dict(c=c,gamma=gamma,**{'lambda':g.h*gamma},z=np.asarray(state['z'])[:g.width+1],
                   native_parameters=np.asarray(state['z']),train_mse=mse,validation_mse=vmse)
         run.save_arrays(path/f'checkpoint_{count:09d}.npz',**data)
         higher.save_state(path/'state_latest.pkl',state,count)
-        if count==0 or final:higher.save_state(path/f'state_{count:09d}.pkl',state,count)
+        if count==0 or final or (config.get('diagnostics') and count in (1,10,100,1000,2000,5000,10000,20000)):
+            higher.save_state(path/f'state_{count:09d}.pkl',state,count)
         if trace:
             run.save_arrays(path/f'trace_{written:09d}_{count:09d}.npz',trace=np.asarray(trace),columns=HIGHER_COLUMNS)
+        if details:
+            run.save_arrays(path/f'details_{written:09d}_{count:09d}.npz',trace=np.asarray(details),columns=DETAIL_COLUMNS)
         if ring:
             dense={k:np.stack([r[k] for r in ring]) for k in ring[0]}
             run.save_arrays(path/'dense_latest.npz',**dense)
@@ -141,7 +175,7 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
                  **{k:int(state[k]) for k in ('function_evaluations','gradient_evaluations','jacobian_evaluations')})
         run.write_json(path/'latest.json',row)
         print(json.dumps(dict(key=path.name,**row)),flush=True)
-        trace=[];written=count
+        trace=[];details=[];written=count
     if not latest:save()
     targets=snapshots(frontier)
     while int(state['count'])<frontier and time.monotonic()<deadline:
@@ -153,6 +187,12 @@ def advance_higher(root,config,frontier,deadline,source,samples=16):
         c1,g1=physical(state['z']);c0,g0,c1,g1=map(np.asarray,(c0,g0,c1,g1))
         row=dict(step=index,c=c0,gamma=g0,gradient_native=np.asarray(ev['gradient']),
                  delta_c=c1-c0,delta_lambda=g.h*(g1-g0))
+        if config.get('diagnostics'):
+            gr=np.asarray(ev['gradient']);gc=np.linalg.solve(higher.readout_map(g,config['coordinates']).T,gr[:g.width+1]) if config['coordinates']=='parameter_differences' else gr[:g.width+1]/(1. if config['coordinates']=='physical' else g.alpha)
+            gg=gr[g.width+1:]*(1. if config['coordinates']=='physical' else g.h)
+            details.append([np.linalg.norm(gc),np.linalg.norm(gg),np.linalg.norm(gr[:g.width+1]),np.linalg.norm(gr[g.width+1:]),
+                            np.sqrt(np.mean(((c1-c0)/g.alpha)**2)),np.sqrt(np.mean((g.h*(g1-g0))**2)),
+                            *[ev.get(k,np.nan) for k in DETAIL_COLUMNS[6:]]])
         ring.append(row)
         values=[ev['loss'],np.linalg.norm(ev['gradient']),np.sqrt(np.mean((c1-c0)**2)),
                 np.sqrt(np.mean((g.h*(g1-g0))**2)),ev['attempts'],ev['step_size'],ev['damping'],ev['ratio'],

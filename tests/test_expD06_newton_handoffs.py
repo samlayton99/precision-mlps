@@ -88,3 +88,30 @@ def test_ssb_transformed_metric_equivalence():
         np.testing.assert_allclose(sp['z'],s*sz['z'],rtol=1e-10,atol=1e-12)
         hp=sp['solver'].f_info.hessian_inv.pytree;hz=sz['solver'].f_info.hessian_inv.pytree
         np.testing.assert_allclose(hp,s[:,None]*hz*s[None,:],rtol=1e-10,atol=1e-12)
+
+
+def test_handoff_hash_and_fresh_newton_resume(tmp_path):
+    import hashlib
+    import json
+    import time
+    from experiments.expD06_fixed_center_scales import joint_conditioning as jc, difference_training as dt, run
+    origin=tmp_path/'old'/'adam';origin.mkdir(parents=True)
+    root=tmp_path/'new';root.mkdir()
+    g=core.geometry(64);c,gamma=core.initial_physical(g,0,'xavier_a_reference')
+    run.save_arrays(origin/'checkpoint_000000123.npz',c=c,gamma=gamma)
+    run.write_json(origin/'case.json',dict(n=64,seed=0,target='sine',samples_per_cell=1,optimizer='adam'))
+    digest=hashlib.sha256((origin/'checkpoint_000000123.npz').read_bytes()).hexdigest()
+    config=jc.case('newton','parameter_scale',n=64,diagnostics=True,
+                   warm_start=dict(root='../old',source_key='adam',step=123,sha256=digest))
+    jc.advance_higher(root,config,1,time.monotonic()+120,None,samples=1)
+    folder=root/dt.case_key(config)
+    assert json.loads((folder/'latest.json').read_text())['completed_updates']==1
+    assert json.loads((folder/'case.json').read_text())['initialization']=='checkpoint_handoff'
+    with np.load(folder/'checkpoint_000000000.npz') as a:
+        np.testing.assert_allclose(a['c'],c,rtol=3e-15,atol=0)
+        np.testing.assert_array_equal(a['gamma'],gamma)
+    jc.advance_higher(root,config,2,time.monotonic()+120,None,samples=1)
+    assert json.loads((folder/'latest.json').read_text())['completed_updates']==2
+    assert len(jc.read_trace(folder,2,'newton'))==2
+    config['warm_start']['sha256']='wrong'
+    with pytest.raises(ValueError,match='hash changed'):jc.warm_parameters(root,config,g,1)
