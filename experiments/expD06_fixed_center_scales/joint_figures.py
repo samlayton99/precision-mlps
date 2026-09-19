@@ -19,6 +19,20 @@ def save(fig,path):
 
 def figures(output):
     records=json.loads((output/'summary.json').read_text());dest=output/'figures';dest.mkdir(exist_ok=True)
+    if (output/'sweep_summary.json').exists():
+        sweep=json.loads((output/'sweep_summary.json').read_text())
+        fig,axes=plt.subplots(1,2,figsize=(12,4.5),layout='constrained')
+        for ax,opt in zip(axes,('gd','adam')):
+            for coord in campaign.MAPS:
+                rows=sorted([r for r in sweep if r['case']['optimizer']==opt and r['case']['coordinates']==coord
+                             and r['case']['n']==512 and r['case']['seed']==0 and r['eligible']
+                             and r['case'].get('native_epsilon')==1e-12],key=lambda r:r['case']['eta'])
+                ax.loglog([r['case']['eta'] for r in rows],[r['window_mean_mse'] for r in rows],
+                          'o-',color=analysis.COLORS[coord],label=analysis.LABELS[coord])
+            ax.set(title=opt.upper(),xlabel='One constant shared native rate eta',ylabel='Mean MSE over updates 80k–100k')
+            ax.grid(alpha=.2);ax.legend(fontsize=8)
+        fig.suptitle('Matched-rate comparison, N=512 seed 0; divergent trials omitted from finite curves')
+        save(fig,dest/'rate_search.png')
     for n in sorted({r['case']['n'] for r in records}):
         fig,axes=plt.subplots(2,4,figsize=(17,8),layout='constrained')
         for col,opt in enumerate(campaign.OPTIMIZERS):
