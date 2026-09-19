@@ -72,7 +72,7 @@ def figures(output):
             fig.suptitle(f'{c["optimizer"].upper()} · {analysis.LABELS[c["coordinates"]]} · N={c["n"]}, seed={c["seed"]}')
             save(fig,dest/f'{record["key"]}_frequency_evolution.png')
         with np.load(folder/f'dense_{end}.npz') as a:
-            fig,axes=plt.subplots(2,2,figsize=(14,9),layout='constrained')
+            fig,axes=plt.subplots(3,2,figsize=(14,13),layout='constrained')
             bands=a['band_bounds'];labels=['DC (0)' if lo==0 else str(lo) if hi==lo+1 else f'{lo}–{hi-1}' for lo,hi in bands]
             energy=a['band_mse'].mean(axis=0);idx=np.arange(len(labels));total=max(energy.sum(),1e-300)
             axes[0,0].bar(idx,energy,color='#2166ac');axes[0,0].set(yscale='log',ylabel='Mean residual MSE in band',title='Absolute Fourier energy')
@@ -84,19 +84,30 @@ def figures(output):
             scale=max(float(np.max(np.abs(np.r_[a['band_readout_linear_mse_change'],a['band_geometry_linear_mse_change']]))),1e-30)
             axes[1,0].set_yscale('symlog',linthresh=scale*1e-4)
             tick_scale=10.**np.floor(np.log10(scale))
-            axes[1,0].set_yticks(np.r_[-tick_scale*np.array([1.,.01,.0001]),0.,tick_scale*np.array([.0001,.01,1.])])
+            axes[1,0].set_yticks(np.r_[-tick_scale*np.array([1.,.01]),0.,tick_scale*np.array([.01,1.])])
             axes[1,0].set_xticks(idx,labels,rotation=60,ha='right');axes[1,0].legend()
-            s=a['singular_readout'];rel=s/s[0];edges=np.array([0,1e-14,1e-10,1e-6,1e-4,1e-3,.1,1.01])
+            edges=np.array([0,1e-14,1e-10,1e-6,1e-4,1e-3,.1,1.01])
             tick=['<1e−14','1e−14–1e−10','1e−10–1e−6','1e−6–1e−4','1e−4–1e−3','1e−3–0.1','≥0.1','Outside basis']
-            for offset,field,denominator,label in ((-.2,'readout_residual_modal',a['residual_mse'].mean(),'Residual'),
-                                                  (.2,'readout_update_modal',a['readout_update_energy'].mean(),'Readout update')):
-                modal=np.mean(a[field]**2,axis=0)
-                fractions=[modal[(rel>=lo)&(rel<hi)].sum()/max(denominator,1e-300) for lo,hi in zip(edges[:-1],edges[1:])]
-                fractions.append(max(0.,1-sum(fractions)))
-                axes[1,1].bar(np.arange(len(tick))+offset,100*np.asarray(fractions),width=.4,label=label)
-            axes[1,1].set_xticks(np.arange(len(tick)),tick,rotation=55,ha='right')
-            axes[1,1].set(ylabel='Share of function-space energy (%)',title='Fixed window-start readout basis',xlabel='Relative singular value sigma / sigma_max')
-            axes[1,1].legend()
+            for basis,ax in (('readout',axes[1,1]),('joint',axes[2,0])):
+                s=a[f'singular_{basis}'];rel=s/s[0]
+                for offset,field,denominator,label in ((-.2,f'{basis}_residual_modal',a['residual_mse'].mean(),'Residual'),
+                                                       (.2,f'{basis}_update_modal',a[f'{basis}_update_energy'].mean(),f'{basis.title()} update')):
+                    modal=np.mean(a[field]**2,axis=0)
+                    fractions=[modal[(rel>=lo)&(rel<hi)].sum()/max(denominator,1e-300) for lo,hi in zip(edges[:-1],edges[1:])]
+                    fractions.append(max(0.,1-sum(fractions)))
+                    ax.bar(np.arange(len(tick))+offset,100*np.asarray(fractions),width=.4,label=label)
+                ax.set_xticks(np.arange(len(tick)),tick,rotation=55,ha='right')
+                ax.set(ylabel='Share of function-space energy (%)',title=f'Fixed window-start {basis} basis',xlabel='Relative singular value sigma / sigma_max')
+                ax.legend()
+            budget=a['mse_change'].mean(axis=0)
+            axes[2,1].bar(np.arange(4),budget,color=['#2166ac','#b2182b','.6','#4d9221'])
+            axes[2,1].set_xticks(np.arange(4),['Readout only','Geometry only','Interaction only','Joint'],rotation=20)
+            axes[2,1].set_yscale('symlog',linthresh=max(float(np.max(np.abs(budget)))*1e-9,1e-35))
+            budget_scale=10.**np.floor(np.log10(max(float(np.max(np.abs(budget))),1e-35)))
+            axes[2,1].set_yticks(np.r_[-budget_scale*np.array([1.,1e-3,1e-6]),0.,budget_scale*np.array([1e-6,1e-3,1.])])
+            axes[2,1].set(ylabel='Mean finite MSE change (negative = improvement)',
+                          title='Isolated parts of the recorded step; bars are not additive')
+            axes[2,1].axhline(0,color='.5',lw=.7)
             for ax in axes.flat:ax.grid(alpha=.15)
             fig.suptitle(f'{c["optimizer"].upper()} · {analysis.LABELS[c["coordinates"]]} · N={c["n"]}, seed={c["seed"]}\n'
                          f'{len(a["step"])} sampled actual updates from the final {min(2048,end):,}; endpoint {end:,}')
