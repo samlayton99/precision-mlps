@@ -430,6 +430,15 @@ boundary 2. This is a local diagnostic of alternating steps, not a convergence
 theorem for the nonlinear trajectory. Both seeds and maps are checked at the
 mandatory and continuation horizons; no optimizer setting is changed.
 
+The observed alternating steps and local curvature motivate one conditional
+post-hoc confirmation block: width-512 GD at the next smaller original-grid
+shared rates, $0.003$ for individual scales and $0.0003$ for neighbors, both
+seeds, to the same 5.3m horizon. These are constant rates from the original
+physical initialization; seed-0 pilot states may be resumed exactly. No rate
+is changed midway and the readout/geometry scale prescription stays fixed.
+Admit this entire four-case block only after final allocation accounting shows
+that its measured cost plus 50% fits the remaining eight-GPU-hour cap.
+
 ## Parameter-scale normalization: paired GD and Adam
 
 The [parameter-scale report](../../results/checkpoint_D_optimizers/expD06_fixed_center_scales/parameter_scale_results.md)
