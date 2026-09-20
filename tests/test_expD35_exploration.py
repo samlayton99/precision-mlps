@@ -69,6 +69,21 @@ def case(**extra):
 
 
 @pytest.mark.parametrize('coordinates', core.COORDINATES)
+def test_reference_bandwidth_initialization_keeps_readouts_and_trains_slopes(coordinates):
+    c = case(slope_initialization='reference_lambda'); c['coordinates'] = coordinates
+    g = old.geometry(c['n']); state = core.initialize(c)
+    readout, gamma = core.physical(state['z'], g, coordinates)
+    expected, _ = old.initial_physical(g, c['seed'], 'xavier_a_reference')
+    np.testing.assert_allclose(readout, expected, atol=2e-15, rtol=2e-14)
+    np.testing.assert_array_equal(g.h*gamma, np.full(g.width, .25))
+    x = jnp.linspace(-1, 1, 129)
+    gradient = core.field(state['z'], x, core.target(x, 'sine'), g, coordinates)[1]
+    assert np.linalg.norm(gradient[g.width+1:]) > 0
+    updated_gamma = core.physical(state['z']-c['eta']*gradient, g, coordinates)[1]
+    assert not np.array_equal(updated_gamma, gamma)
+
+
+@pytest.mark.parametrize('coordinates', core.COORDINATES)
 def test_physical_pairing_and_gradient(coordinates):
     c = case(); c['coordinates'] = coordinates
     g = old.geometry(c['n']); state = core.initialize(c)

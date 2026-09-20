@@ -57,8 +57,13 @@ def initialize(case):
     c, gamma = old.initial_physical(g, case['seed'], 'xavier_a_reference')
     if case.get('initialization', 'reference_xavier') == 'individual_gaussian':
         c[1:] *= np.sqrt(g.alpha[1:]) / np.sqrt(2/(g.width+1))
-    if case.get('slope_initialization', 'physical_xavier') == 'lambda_xavier':
+    slope_initialization = case.get('slope_initialization', 'physical_xavier')
+    if slope_initialization == 'lambda_xavier':
         gamma /= g.h
+    elif slope_initialization == 'reference_lambda':
+        gamma = np.full_like(gamma, .25/g.h)
+    elif slope_initialization != 'physical_xavier':
+        raise ValueError(slope_initialization)
     z = jnp.asarray(encode(c, gamma, g, case['coordinates']))
     if case.get('architecture')=='affine':
         rng=np.random.default_rng(case['seed']+3207)
