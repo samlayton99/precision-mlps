@@ -188,10 +188,13 @@ def advance(folder,config,degree,frontier,deadline):
              start=np.array(start),stop=np.array(stop))
         save(out/f'snapshots_{start:09d}_{stop:09d}.npz',steps=start+stride*np.arange(blocks),**snap)
         save(checkpoint,step=np.array(stop),**host_state)
+        if stop % 20000 == 0:
+            save(out/f'state_{stop:09d}.npz',step=np.array(stop),**host_state)
         failed=host_state['failed']
         write_json(out/'status.json',dict(step=stop,frontier=frontier,failed_steps=failed.tolist(),
             stop_reason='all_failed' if np.all(failed>0) else ('frontier' if stop==frontier else 'continuing'),
-            last_chunk_seconds=time.monotonic()-tick,invocation_seconds=time.monotonic()-begin,
+            last_chunk_seconds=time.monotonic()-tick,last_chunk_updates=length,
+            invocation_seconds=time.monotonic()-begin,
             job=os.environ.get('SLURM_JOB_ID'),jax_version=jax.__version__))
         print(json.dumps(dict(bundle=folder.name,degree=degree,step=stop,failed=int(np.sum(failed>0)),
                               seconds=round(time.monotonic()-tick,3))),flush=True)

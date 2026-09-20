@@ -16,5 +16,5 @@ cd "${experiment_root}/race-code"
 export RACE_SOURCE_COMMIT="$(cat .source_commit)"
 export JAX_PLATFORMS=cuda JAX_ENABLE_X64=true XLA_PYTHON_CLIENT_PREALLOCATE=false
 export OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 MPLCONFIGDIR=/tmp/race-mpl
-srun --ntasks=1 "${experiment_root}/.venv/bin/python" -u \
+srun --ntasks=1 "${experiment_root}/.venv-race/bin/python" -u \
   -m experiments.expD34_readout_race.run --root "${experiment_root}/runs/readout_race" --require-gpu "$@"
