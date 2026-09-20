@@ -17,19 +17,21 @@ def curvature_error(row):
     return abs(c['curvature']-pred)/max(abs(c['curvature']),abs(pred),1e-300)
 
 
-def collect(root):
+def collect(root,horizon=20000):
     records=[]
     for path in sorted(root.glob('*/case.json')):
         folder=path.parent
         if not (folder/'latest.json').exists():continue
         config=read(path);last=read(folder/'latest.json')
+        if last['step']>horizon:last=read(folder/f'evaluation_{horizon:09d}.json')
         rows=[read(p) for p in sorted(folder.glob('diagnostic_*.json'))]
-        rows=[r for r in rows if 'exposure' in r]
+        rows=[r for r in rows if 'exposure' in r and r['step']<=horizon]
         traces=[]
         for p in sorted(folder.glob('ssb_trace_*.npz')):
             a=np.load(p);t=a['trace'];traces.append(t[np.isfinite(t[:,0])])
         trace=np.concatenate(traces) if traces else np.empty((0,18))
-        events=[r for r in rows if r.get('event')]
+        trace=trace[trace[:,1]<=horizon]
+        events=[r for r in rows if r.get('event') and r['step']<horizon]
         summary=dict(id=folder.name,config=config,latest=last,
             event_steps=[r['step'] for r in events],event_betas=[r.get('beta') for r in events],
             candidate_steps=[r['step'] for r in rows if r.get('beta_candidate') is not None],
@@ -92,9 +94,10 @@ def figures(records,out):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--output',type=Path,required=True);args=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--horizon',type=int,default=20000);args=p.parse_args()
     args.output.mkdir(parents=True,exist_ok=True)
-    records=collect(args.root)
+    records=collect(args.root,args.horizon)
     (args.output/'summary.json').write_text(json.dumps(records,indent=2)+'\n')
     figures(records,args.output)
     for r in records:

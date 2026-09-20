@@ -85,6 +85,18 @@ comparisons. The corrected guard checks only primed states, with a regression
 test verifying the direction of the first accepted displacement. Corrected
 primary configurations carry `implementation: primed_guard_v2` and start anew.
 
+After the corrected selection runs, the hypothesis is narrowed to finite useful
+movement. A positive unit-direction exposure need not produce an appreciable
+accepted geometry step. For a native unit direction $d$, let
+$a=-g^Td>0$ and $c=d^T\nabla^2L\,d$. When $c>0$, the unconstrained quadratic
+model gives length $t_*=a/c$, so predicted accessibility change is
+$t_*\nabla_\lambda G_\tau^T d_\lambda$. The follow-up probes compare this
+prediction, Gauss–Newton curvature $\|Jd\|^2$, and the actual line-search step.
+They also test one tenth and one hundredth of each observed mixture strength.
+These are post-selection diagnostic probes, not tuned confirmation settings.
+The mixed-target selection trajectories are extended to 100k updates; the
+primary analysis remains restricted to the common 20k frontier.
+
 Every finite scientific run has at least 20k accepted updates. Numerical failures
 remain in the ledger. Actual loss, complete-window averages, accessibility,
 signed bandwidth movement, physical trajectories, residual frequencies, gradient
