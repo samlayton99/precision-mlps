@@ -49,25 +49,30 @@ def restart(state,solver,loss,matrix):
 
 
 @lru_cache(maxsize=32)
-def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,length):
+def compiled_kernel(n,coordinates,target,source,epsilon,search_threshold,length):
     config=dict(n=n,coordinates=coordinates,target=target)
     g,loss,physical=problem(config)
     solver=higher.ssb_solver(source,epsilon,search_threshold,'accepted_step')
     advance=higher.ssb_step(solver,loss,physical,epsilon)
     @eqx.filter_jit
-    def chunk(state):
+    def chunk(state,mode,interval):
         def step(current,_):
             matrix_before=current['solver'].f_info.hessian_inv.pytree
             stored=current['solver'].f_info.grad
             matrix_slope=stored@(-matrix_before@stored)
             stored_slope=stored@(-current['solver'].descent_state.newton)
-            reset=(current['count']>0)&(current['count']%interval==0)&(mode!='none')&(current['status']==0)
-            if mode=='non_descent':
-                bad=(stored_slope>=0)|(matrix_slope>=0)|~jnp.isfinite(stored_slope)|~jnp.isfinite(matrix_slope)
-                reset=(current['count']>0)&(current['status']==0)&bad
-            if mode!='none':
-                current=jax.lax.cond(reset,lambda st:restart(st,solver,loss,
-                    reset_matrix(st['solver'].f_info.hessian_inv.pytree,mode,g.width+1)),lambda st:st,current)
+            bad=(stored_slope>=0)|(matrix_slope>=0)|~jnp.isfinite(stored_slope)|~jnp.isfinite(matrix_slope)
+            scheduled=(current['count']%interval==0)&(mode>0)&(mode<4)
+            reset=(current['count']>0)&(current['status']==0)&(scheduled|((mode==4)&bad))
+            def replace(st):
+                matrix=st['solver'].f_info.hessian_inv.pytree
+                revised=jax.lax.switch(mode,[lambda h:h,
+                    lambda h:reset_matrix(h,'full',g.width+1),
+                    lambda h:reset_matrix(h,'geometry',g.width+1),
+                    lambda h:reset_matrix(h,'blend',g.width+1),
+                    lambda h:reset_matrix(h,'full',g.width+1)],matrix)
+                return restart(st,solver,loss,revised)
+            current=jax.lax.cond(reset,replace,lambda st:st,current)
             before=current['z']
             proposed,ev=advance(current)
             active=current['status']==0
@@ -86,6 +91,13 @@ def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,le
             return out,jnp.where(active,row,jnp.nan)
         return jax.lax.scan(step,state,None,length=length)
     return chunk
+
+
+def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,length):
+    # All reset arms share one compiled graph, including the no-reset control.
+    code={'none':0,'full':1,'geometry':2,'blend':3,'non_descent':4}[mode]
+    compiled=compiled_kernel(n,coordinates,target,source,epsilon,search_threshold,length)
+    return lambda state:compiled(state,jnp.asarray(code),jnp.asarray(interval))
 
 
 def save_solver(path,state):
@@ -142,12 +154,13 @@ def main():
     p.add_argument('--seconds',type=float,default=1700);p.add_argument('--frontier',type=int,default=20000)
     p.add_argument('--worker',type=int,default=0);p.add_argument('--workers',type=int,default=1)
     p.add_argument('--require-gpu',action='store_true');args=p.parse_args()
+    if not jax.config.x64_enabled:p.error('Set JAX_ENABLE_X64=true for this FP64 experiment')
     if args.frontier<20000: p.error('Use at least 20k accepted steps or record explicit numerical failure')
     args.root.mkdir(parents=True,exist_ok=True)
     if args.require_gpu:run.verify_gpu(args.root)
     run.write_json(args.root/f'ssb_source_{os.environ.get("SLURM_JOB_ID","local")}.json',dict(
         commit=os.environ.get('EXPLORATION_SOURCE_COMMIT'),source_sha=higher.SSB_SOURCE_SHA256,
-        integration='accepted_step',sources={str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in
+        integration='accepted_step',reset_graph='shared',sources={str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in
         [Path(__file__),Path(core.__file__),Path(higher.__file__)]}))
     cases=json.loads(args.manifest.read_text());deadline=time.monotonic()+args.seconds
     for i,c in enumerate(cases):

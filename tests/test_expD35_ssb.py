@@ -66,3 +66,15 @@ def test_non_descent_reset_is_explicit_and_restores_descent():
     out,trace=ssb.kernel(64,'individual','sine',source,1e-30,1e-15,'non_descent',1000,1)(s)
     assert float(trace[0,14])==1. and float(trace[0,15])>0
     assert int(out['status'])==0 and int(out['count'])==2
+
+
+def test_inactive_reset_arms_share_the_exact_control_trajectory():
+    source=os.environ.get('SSB_SOURCE')
+    if not source or not Path(source).exists():pytest.skip('Pinned external source required')
+    import jax
+    c=run.case(n=64,optimizer='ssbroyden');g,loss,phys=ssb.problem(c)
+    solver=higher.ssb_solver(source,1e-30,1e-15,'accepted_step')
+    initial=higher.ssb_initial(solver,loss,core.initialize(c)['z'])
+    a,_=ssb.kernel(64,'individual','sine',source,1e-30,1e-15,'none',10000,25)(initial)
+    b,_=ssb.kernel(64,'individual','sine',source,1e-30,1e-15,'full',10000,25)(initial)
+    for x,y in zip(jax.tree.leaves(a),jax.tree.leaves(b)):np.testing.assert_array_equal(x,y)
