@@ -82,3 +82,63 @@ def test_pointwise_moment_bound_with_nonlinear_bias():
         bound=(1/np.cos(rho)**2/rho**order * np.sqrt(np.mean(np.asarray(data['x'])**(2*order+2)))
                *np.linalg.norm(c*a**order))
         assert np.linalg.norm(np.asarray(g[0])/R-approx)<=bound+2e-15
+
+
+@pytest.mark.parametrize('degree',[0,3,7])
+def test_batched_chunk_resume_and_signed_accounting(degree):
+    from experiments.expD34_readout_race import run
+    z,d,data=example()
+    state=run.initialize(z,float(d),2)
+    kappa=jnp.array([.01,100.])
+    args=[jnp.stack([data[key]]*2) for key in ('y','ym','sy')]
+    moments=core.field(z,d,data,degree)[1]
+    m0=jnp.full(2,jnp.linalg.norm(moments[:2]/jnp.array([1.,data['sigma']])))
+    fn=run.chunk(64,64,degree,blocks=2,stride=20)
+    end,(trace,snap)=fn(state,*args,kappa,m0,.002,0)
+    short=run.chunk(64,64,degree,blocks=1,stride=20)
+    half,_=short(state,*args,kappa,m0,.002,0)
+    # Round-trip all state, including event and failure metadata.
+    restored=jax.tree.map(lambda x:jnp.asarray(np.array(x)),half)
+    resumed,_=short(restored,*args,kappa,m0,.002,20)
+    for key in end:
+        np.testing.assert_array_equal(end[key],resumed[key])
+    for i,k in enumerate(kappa):
+        zz,dd=z,d
+        advance=jax.jit(lambda zz,dd:core.update(zz,dd,data,degree,.002,k))
+        for _ in range(40):
+            zz,dd=advance(zz,dd)
+        np.testing.assert_allclose(end['z'][i],zz,atol=2e-14,rtol=1e-11)
+        np.testing.assert_allclose(end['d'][i],dd,atol=2e-14)
+    flat=np.asarray(trace).reshape(2,40,len(run.TRACE))
+    np.testing.assert_allclose(flat[:,:,18],.002*(flat[:,:,16]+flat[:,:,17])+flat[:,:,19],atol=1e-19)
+    np.testing.assert_allclose(flat[:,:,18].sum(axis=1),np.mean(abs(np.asarray(end['z'])[:,0]),axis=1)-np.mean(abs(np.asarray(z[0]))),atol=1e-16)
+    assert np.any(np.asarray(end['z'])[:,1]!=np.asarray(z)[1])
+
+
+def test_campaign_manifest_and_failed_member_isolation():
+    from pathlib import Path
+    from experiments.expD34_readout_race import run
+    groups=run.bundles('core',Path('/tmp/not-created'))
+    assert len(groups)==15
+    assert sum(len(c['targets'])*len(c['ratios']) for _,c in groups)==525
+    z,d,data=example();state=run.initialize(z,float(d),2)
+    args=[jnp.stack([data[key]]*2) for key in ('y','ym','sy')]
+    end,(trace,_)=run.chunk(64,64,0,blocks=1,stride=20)(state,*args,jnp.array([1.,1e308]),jnp.ones(2),.002,0)
+    assert int(end['failed'][0])==0 and int(end['failed'][1])>0
+    assert np.all(np.isfinite(np.asarray(trace[0])))
+
+
+def test_disk_resume_and_manifest_identity(tmp_path):
+    import time
+    from experiments.expD34_readout_race import run
+    cfg=run.specification(64,12,3,64,.002,('sine',),(1.,))
+    assert run.advance(tmp_path,cfg,0,40,time.monotonic()+60)
+    assert run.advance(tmp_path,cfg,0,80,time.monotonic()+60)
+    with np.load(tmp_path/'p0/state.npz') as saved:
+        assert saved['step']==80
+        z,d,data=example()
+        step=jax.jit(lambda z,d:core.update(z,d,data,0,.002,1.))
+        for _ in range(80): z,d=step(z,d)
+        np.testing.assert_allclose(saved['z'][0],z,atol=1e-14)
+    with pytest.raises(ValueError,match='Incompatible resume'):
+        run.prepare(tmp_path,cfg|dict(eta=.003))
