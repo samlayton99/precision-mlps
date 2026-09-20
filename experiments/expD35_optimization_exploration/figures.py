@@ -34,6 +34,34 @@ def curves(root,entries,out):
     fig.tight_layout();fig.savefig(out);plt.close(fig)
 
 
+def training_comparison(root,entries,out,offset=0):
+    """Compare complete 5k-update loss means, with no validation-cadence aliasing."""
+    targets=list(dict.fromkeys(e['target'] for e in entries))
+    labels=list(dict.fromkeys(e['label'] for e in entries));colors=dict(zip(labels,plt.cm.tab10(range(len(labels)))))
+    fig,axes=plt.subplots(len(targets),2,figsize=(12,3*len(targets)),squeeze=False)
+    saved={}
+    for row,target in enumerate(targets):
+        for entry in entries:
+            if entry['target']!=target:continue
+            folder=root/entry['id'];sums=np.zeros(100);counts=np.zeros(100)
+            for _,data in history.arrays(folder,'trace_*.npz'):
+                start=int(data['start']);loss=data['trace'][:,0];index=(start+np.arange(len(loss)))//5000
+                assert index.max()<len(sums)
+                sums+=np.bincount(index,weights=loss,minlength=len(sums));counts+=np.bincount(index,minlength=len(sums))
+            keep=counts==5000;steps=(np.flatnonzero(keep)+1)*5000+offset;values=sums[keep]/counts[keep]
+            saved[entry['id']+'_step']=steps;saved[entry['id']+'_train_mse']=values
+            style=['-', '--', ':'][entry['seed']%3];color=colors[entry['label']]
+            axes[row,0].semilogy(steps,values,style,color=color,lw=1,label=f"{entry['label']}, seed {entry['seed']}")
+            evaluations=[v for v in history.evaluations(folder) if v['step']%5000==0]
+            axes[row,1].plot([v['step']+offset for v in evaluations],[v['lambda_median'] for v in evaluations],style,color=color,lw=1)
+        axes[row,0].set(title=target,ylabel='Mean training MSE per 5k updates')
+        axes[row,1].set(title='Geometry evolution',ylabel=r'Median $|\lambda|$')
+        axes[row,0].legend(fontsize=8,ncol=2)
+        for ax in axes[row]:ax.set_xlabel('Total updates');ax.grid(alpha=.2)
+    run.save(out.with_suffix('.npz'),**saved)
+    fig.tight_layout();fig.savefig(out);plt.close(fig)
+
+
 def parameters(folder,out):
     config=json.loads((folder/'case.json').read_text());g=core.old.geometry(config['n'])
     saved=list(history.arrays(folder,'snapshot_*.npz'))
