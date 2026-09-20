@@ -44,6 +44,14 @@ def test_archive_sequence_survives_verified_offload(tmp_path):
     assert not (tmp_path/'history_0000.zip').exists()
 
 
+def test_dense_samples_cover_cycle_phases():
+    from experiments.expD35_optimization_exploration import run
+    indices=run.sample_indices(2048,0)
+    np.testing.assert_array_equal(indices//16,np.arange(128))
+    np.testing.assert_array_equal(np.bincount(indices%16),np.full(16,8))
+    assert run.sample_indices(3,0)[-1]<3
+
+
 def case(**extra):
     return dict(n=64, seed=0, coordinates='individual', optimizer='gd', eta=1e-4, **extra)
 

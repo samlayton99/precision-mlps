@@ -99,7 +99,7 @@ def snapshot(path,config,out):
 
 def dense(folder,config,out):
     g=core.old.geometry(config['n']);m=max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
-    y=core.target(x,config['target'],np);rows=[];basis=None;spectrum=None
+    y=core.target(x,config['target'],np);rows=[];basis=None;spectrum=None;residuals=[]
     mapping=transform(g,config['coordinates'])
     tx=jnp.linspace(-1,1,16*config['n']+1);ty=core.target(tx,config['target'])
     training_gradient=jax.jit(lambda z:core.field(z,tx,ty,g,config['coordinates'])[1])
@@ -108,15 +108,15 @@ def dense(folder,config,out):
         with np.load(path) as data:
             zs=np.concatenate((data['initial_z'][None],data['z']));start=int(data['start'])
             recorded=np.asarray(data['gradients']) if 'gradients' in data else None
-            stride=int(data['gradient_stride']) if 'gradient_stride' in data else 16
-            assert stride==16
+            recorded_indices=np.asarray(data['gradient_indices']) if 'gradient_indices' in data else np.arange(0,len(zs)-1,16)
+            lookup={int(at):k for k,at in enumerate(recorded_indices)} if recorded is not None else {}
         if basis is None:
             _,ga=map(np.asarray,core.physical(zs[0],g,config['coordinates']))
             features=np.column_stack((np.ones(m),np.tanh((x[:,None]-g.centers)*ga+np.asarray(core.offsets(zs[0],g)))))
             basis,spectrum,_=np.linalg.svd(features@transform(g,config['coordinates'])/np.sqrt(m),full_matrices=False)
             relative=spectrum/spectrum[0]
             masks=[(relative>=a)&(relative<b) for a,b in zip(edges[:-1],edges[1:])]
-        for i in range(0,len(zs)-1,16):
+        for i in run.sample_indices(len(zs)-1,start):
             c0,ga0=map(np.asarray,core.physical(zs[i],g,config['coordinates']))
             c1,ga1=map(np.asarray,core.physical(zs[i+1],g,config['coordinates']))
             beta0=np.asarray(core.offsets(zs[i],g));beta1=np.asarray(core.offsets(zs[i+1],g))
@@ -124,13 +124,14 @@ def dense(folder,config,out):
             f0=c0[0]+phi@c0[1:];fr=c1[0]+phi@c1[1:]
             f1=c1[0]+np.tanh((x[:,None]-g.centers)*ga1+beta1)@c1[1:]
             r=f0-y;dr=fr-f0;dg=f1-fr
+            residuals.append(r)
             gc=np.r_[np.mean(r),phi.T@r/m];gr=mapping.T@gc
             pre=(x[:,None]-g.centers)*ga0+beta0;exp=np.exp(-2*np.abs(pre));sech=4*exp/(1+exp)**2
             gg=np.mean(r[:,None]*c0[1:]*(x[:,None]-g.centers)*sech,axis=0)
             gg/=1. if config['coordinates']=='physical' else g.h
             if config.get('architecture')=='affine':gg=np.r_[gg,np.mean(r[:,None]*c0[1:]*sech,axis=0)]
             delta=zs[i+1]-zs[i];dzr=delta[:g.width+1];dzg=delta[g.width+1:]
-            actual=recorded[i//16] if recorded is not None else np.asarray(training_gradient(zs[i]))
+            actual=recorded[lookup[i]] if i in lookup else np.asarray(training_gradient(zs[i]))
             actual_r=actual[:g.width+1];actual_g=actual[g.width+1:]
             def alignment(a,b):
                 den=np.linalg.norm(a)*np.linalg.norm(b)
@@ -152,10 +153,12 @@ def dense(folder,config,out):
                 native_readout_motion=np.linalg.norm(dzr),native_geometry_motion=np.linalg.norm(dzg),
                 readout_gradient_alignment=alignment(dzr,-actual_r),geometry_gradient_alignment=alignment(dzg,-actual_g),
                 validation_readout_gradient_alignment=alignment(dzr,-gr),validation_geometry_gradient_alignment=alignment(dzg,-gg),
-                gradient_recorded_on_device=recorded is not None,
+                gradient_recorded_on_device=i in lookup,
                 readout_motion=np.sqrt(np.mean((c1-c0)**2)),gamma_motion=np.sqrt(np.mean((ga1-ga0)**2)),
                 offset_motion=np.sqrt(np.mean((beta1-beta0)**2))))
     if rows:run.save(out,singular_values=spectrum,mode_edges=edges,
+                     mean_residual= np.mean(residuals,axis=0),mean_residual_frequency_energy=band_energy(np.mean(residuals,axis=0)),
+                     temporal_fluctuation_frequency_energy=np.mean([r['residual'] for r in rows],axis=0)-band_energy(np.mean(residuals,axis=0)),
                      **{k:np.stack([r[k] for r in rows]) for k in rows[0]})
 
 

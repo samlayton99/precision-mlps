@@ -57,6 +57,14 @@ def finite(value):
     return value if np.isfinite(value) else None
 
 
+def sample_indices(length,start):
+    """One adjacent update pair per 16-step block, balanced across cycle phases."""
+    blocks=(length+15)//16;rng=np.random.default_rng(20917+start)
+    phases=np.concatenate([rng.permutation(16) for _ in range((blocks+15)//16)])[:blocks]
+    beginnings=16*np.arange(blocks)
+    return beginnings+np.minimum(phases,length-1-beginnings)
+
+
 def group_signature(c):
     return tuple(c[k] for k in ('n', 'coordinates', 'optimizer', 'target', 'sampling', 'batch_size', 'schedule', 'reset'))+(c.get('architecture','fixed'),)
 
@@ -181,8 +189,9 @@ def advance(root, cases, frontier, deadline=float('inf'), capture_last=0):
                     save(folder/f'reset_events_{at:09d}_{end:09d}.npz',updates=at+1+np.flatnonzero(occurred),masks=masks[occurred])
             save(folder/f'snapshot_{end:09d}.npz', z=state['z'], step=end)
             if capture:
+                selected=sample_indices(end-at,at)
                 save(folder/f'dense_{at:09d}_{end:09d}.npz',z=trajectory[i],initial_z=before[i],start=at,end=end,
-                     gradient_stride=16,gradients=gradients[i,::16],filtered_gradients=filtered_gradients[i,::16])
+                     gradient_indices=selected,gradients=gradients[i,selected],filtered_gradients=filtered_gradients[i,selected])
             if agreement_data is not None:
                 save(folder/f'agreement_{end:09d}.npz',statistics=agreement_data[0][i],
                      batch_gradients=agreement_data[1][i],full_gradient=agreement_data[2][i],
