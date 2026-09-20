@@ -174,3 +174,15 @@ def test_direct_sample_probe_gradient(degree):
     probe=analyze.sample_probe(np.asarray(z),float(d),np.asarray(g),float(gd),np.asarray(data['x']),np.asarray(data['y']),100.,degree)
     np.testing.assert_allclose(probe['gradient'],g,atol=5e-16)
     np.testing.assert_allclose(probe['sample_half_mse'],loss,atol=5e-16)
+
+
+def test_offline_hessian_includes_residual_curvature():
+    from experiments.expD34_readout_race.curvature_check import hessian
+    z,d,data=example('moment3');z=z[:,:6];theta=jnp.r_[z.reshape(-1),d]
+    def loss(theta):
+        a,b,c=theta[:-1].reshape(3,6)
+        e=jnp.tanh(data['x'][:,None]*a+b)@c+theta[-1]-data['y']
+        return .5*jnp.mean(e**2)
+    expected=jax.hessian(loss)(theta)
+    actual=hessian(np.asarray(z),float(d),np.asarray(data['x']),np.asarray(data['y']))
+    np.testing.assert_allclose(actual,expected,atol=2e-15,rtol=2e-13)
