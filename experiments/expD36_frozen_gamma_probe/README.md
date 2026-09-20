@@ -54,3 +54,22 @@ does not require tight bounds or a favorable gamma intervention.
 
 The accompanying results report will distinguish trained precision, attainable
 tolerances, theorem slack, arithmetic limitations, and unexecuted horizons.
+
+## Entry points
+
+From a source snapshot, run `python -m experiments.expD36_frozen_gamma_probe.screen
+--root <output>` for the detached screen and `python -m
+experiments.expD36_frozen_gamma_probe.train --root <output> --map raw
+--require-gpu` for a GPU worker. A second worker uses `--map collective`.
+The Slurm scripts take `PROBE_CODE`, `PROBE_OUTPUT`, and, for training,
+`PROBE_MAP`. The existing Runpod Python environment is reused.
+
+Each worker advances all its gamma/target GD cases together to 20k and then
+100k updates. It then runs the two declared 50k Adam recipes on the sine mixture.
+Saved traces measure state $n$ before update $n+1$; saved checkpoints include
+the endpoint. Adam checkpoints retain both moments and the bias-correction
+counter. Failed cells retain their first failure index and are not reset.
+
+CPU work is split into a screen allocation of at most 20 minutes and a later
+precision/analysis allocation of at most 40 minutes, preserving the total
+60-minute CPU walltime allowance while allowing training to start promptly.
