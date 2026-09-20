@@ -77,3 +77,14 @@ def test_runner_resume_preserves_adam_and_ema(tmp_path):
     b,_=run.restore(tmp_path/'whole'/run.key(c)/'state.npz')
     for name in a:
         np.testing.assert_array_equal(a[name],b[name])
+
+
+def test_agreement_uses_one_state_and_separate_batches():
+    st=core.initialize(case())
+    stats,gradients,full=core.agreement(64,'individual','sine',128)(st['z'][None],st['key'][None])
+    assert gradients.shape==(1,8,len(st['z']))
+    assert not np.array_equal(gradients[0,0],gradients[0,1])
+    expected=np.mean([float(core.cosine(gradients[0,i],gradients[0,j])) for i in range(8) for j in range(i)])
+    assert float(stats[0,0,0])==pytest.approx(expected,abs=1e-14)
+    x=jnp.linspace(-1,1,1025)
+    np.testing.assert_allclose(full[0],core.field(st['z'],x,core.target(x,'sine'),old.geometry(64),'individual')[1],rtol=2e-13,atol=2e-14)

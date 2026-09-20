@@ -68,7 +68,8 @@ def prepare(root, config):
     else:
         write_json(folder/'case.json', config)
     if (folder/'state.npz').exists():
-        return folder, *restore(folder/'state.npz')
+        previous, at=restore(folder/'state.npz')
+        return folder, dict(core.initialize(config), **previous), at
     state = core.initialize(config)
     if 'origin' in config:
         origin = Path(config['origin']['checkpoint'])
@@ -102,8 +103,8 @@ def advance(root, cases, frontier, deadline=float('inf')):
     at = loaded[0][2]; config = cases[0]
     if at >= frontier:
         return True
-    if config['reset']!='none' or config['schedule']!='constant':
-        raise ValueError('Intervention hooks are not enabled in this baseline runner')
+    if config['reset']!='none':
+        raise ValueError('Recycling hook is not enabled yet')
     stack = lambda xs: jax.tree.map(lambda *a:jnp.stack(a), *xs)
     states = stack([s for _,s,_ in loaded]); hp = stack([core.hyperparameters(c) for c in cases])
     evaluate = core.evaluate(config['n'], config['coordinates'], config['target'])
@@ -117,17 +118,34 @@ def advance(root, cases, frontier, deadline=float('inf')):
         else:
             stride = 1000 if at < 20000 else 5000
             end = min((at//stride+1)*stride, frontier)
+        if config['schedule']!='constant': end=min(end,(at//3000+1)*3000)
         kernel = core.chunk(config['n'], config['coordinates'], config['optimizer'], config['target'],
                             end-at, config['sampling'], config['batch_size'])
         states, traces = kernel(states, hp, at)
         jax.block_until_ready(states)
         traces = np.asarray(traces)
+        agreement_data=None
+        if config['schedule']!='constant' and end%3000==0:
+            keys=jax.vmap(lambda k:jax.random.fold_in(k,end+9127))(states['key'])
+            agreement_data=core.agreement(config['n'],config['coordinates'],config['target'],config['batch_size'])(states['z'],keys)
+            metric=agreement_data[0][:,0,0]
+            states['agreement_ema']=jnp.where(jnp.isfinite(metric),.9*states['agreement_ema']+.1*metric,states['agreement_ema'])
+            ceiling=jnp.asarray([c.get('eta_ceiling',c['eta']) for c in cases])
+            threshold=jnp.asarray([c.get('agreement_threshold',.9) for c in cases])
+            factor=jnp.where((states['agreement_ema']<threshold)&(end>1000),1/.9,.9)
+            if config['schedule']=='decay': factor=jnp.full_like(factor,.9)
+            states['eta']=jnp.where(jnp.isfinite(metric),jnp.clip(states['eta']*factor,1e-16,ceiling),states['eta'])
+            agreement_data=jax.tree.map(np.asarray,agreement_data)
         # Validation snapshots include all selection-window endpoints.
         evaluations = np.asarray(evaluate(states['z'])) if end>=1000 or end==frontier else None
         for i,(folder,_,_) in enumerate(loaded):
             state = jax.tree.map(lambda a:np.asarray(a[i]), states)
             save(folder/f'trace_{at:09d}_{end:09d}.npz', trace=traces[i], start=at, end=end)
             save(folder/f'snapshot_{end:09d}.npz', z=state['z'], step=end)
+            if agreement_data is not None:
+                save(folder/f'agreement_{end:09d}.npz',statistics=agreement_data[0][i],
+                     batch_gradients=agreement_data[1][i],full_gradient=agreement_data[2][i],
+                     metric_ema=state['agreement_ema'],eta_next=state['eta'])
             # Publish progress only after both trace and state writes succeed.
             save(folder/'state.npz', **state, step=end)
             if end%20000==0 or end==frontier:

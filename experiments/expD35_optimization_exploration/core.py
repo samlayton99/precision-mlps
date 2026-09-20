@@ -59,6 +59,7 @@ def initialize(case):
     return dict(z=z, m=jnp.zeros_like(z), v=jnp.zeros_like(z), ema=jnp.zeros_like(z),
                 post_ema=jnp.zeros_like(z), age=jnp.zeros(z.shape, dtype=jnp.int64),
                 failed=jnp.array(0, dtype=jnp.int64), eta=jnp.array(case['eta']),
+                agreement_ema=jnp.array(1.),
                 key=jax.random.PRNGKey(case['seed']+5701))
 
 
@@ -161,4 +162,30 @@ def evaluate(n, coordinates, name, size=32768):
         mse = jnp.mean((prediction-y)**2)
         return jnp.array([mse, mse/jnp.mean(y*y), *jnp.quantile(jnp.abs(g.h*gamma), jnp.array([.1,.5,.9])),
                           jnp.linalg.norm(c[1:]), jnp.max(jnp.abs(gamma))])
+    return jax.jit(jax.vmap(one))
+
+
+@lru_cache(maxsize=32)
+def agreement(n, coordinates, name, batch_size=1024):
+    """Independent stratified batches evaluated at one unchanged parameter state."""
+    g=old.geometry(n)
+    grid=jnp.linspace(-1,1,16*n+1)
+    def one(z, key):
+        draws=jax.random.split(key,8)
+        def sample(draw):
+            x=-1+2*(jnp.arange(batch_size)+jax.random.uniform(draw,(batch_size,),dtype=jnp.float64))/batch_size
+            return field(z,x,target(x,name),g,coordinates)[1]
+        gradients=jax.vmap(sample)(draws)
+        full=field(z,grid,target(grid,name),g,coordinates)[1]
+        rows=[]
+        for part in (slice(None),slice(None,g.width+1),slice(g.width+1,None)):
+            v=gradients[:,part]; f=full[part]
+            pair=jnp.stack([cosine(v[i],v[j]) for i in range(8) for j in range(i)])
+            mean=jnp.mean(v,axis=0)
+            scale=jnp.maximum(jnp.max(jnp.abs(v)),jnp.max(jnp.abs(f)))
+            scale=jnp.where(scale>0,scale,1.)
+            variance=jnp.mean(jnp.sum(((v-mean)/scale)**2,axis=1))
+            signal=jnp.sum((f/scale)**2)
+            rows.append(jnp.array([jnp.mean(pair),cosine(mean,f),variance/jnp.where(signal>0,signal,jnp.nan)]))
+        return jnp.stack(rows), gradients, full
     return jax.jit(jax.vmap(one))
