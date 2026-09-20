@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from . import core,history,run
+from . import core,history,run,diagnose
 
 plt.rcParams.update({'font.size':10,'axes.spines.top':False,'axes.spines.right':False,
                      'savefig.dpi':160})
@@ -51,6 +51,79 @@ def parameters(folder,out):
     axes[1].set_xlabel('Fixed physical center')
     for ax in axes:ax.grid(alpha=.2);ax.legend(ncol=len(chosen),fontsize=8)
     fig.suptitle(f"{config['optimizer']} / {config['coordinates']} / {config['target']} / N={config['n']} / seed {config['seed']}")
+    fig.tight_layout();fig.savefig(out);plt.close(fig)
+
+
+def motion(folder,out):
+    """Show physical gradient signal and actual motion in consecutive trace blocks."""
+    steps=[];values=[]
+    columns=['mse','physical_readout_gradient','physical_gamma_gradient',
+             'delta_readout_rms','delta_gamma_rms','eta']
+    indices=[core.TRACE.index(k) for k in columns]
+    for _,data in history.arrays(folder,'trace_*.npz'):
+        a=data['trace'];start=int(data['start'])
+        for offset in range(0,len(a),1000):
+            block=a[offset:offset+1000]
+            if not np.all(np.isfinite(block[:,indices])):continue
+            steps.append(start+offset+len(block))
+            values.append(np.mean(block[:,indices],axis=0))
+    if not steps:return
+    a=np.asarray(values);fig,axes=plt.subplots(3,1,figsize=(10,8),sharex=True)
+    axes[0].semilogy(steps,a[:,0]);axes[0].set_ylabel('Training MSE')
+    axes[1].semilogy(steps,a[:,1],label='Readouts and output bias')
+    axes[1].semilogy(steps,a[:,2],label='Slopes gamma')
+    axes[1].set_ylabel('Physical gradient norm')
+    axes[2].semilogy(steps,a[:,3],label='Readouts and output bias')
+    axes[2].semilogy(steps,a[:,4],label='Slopes gamma')
+    axes[2].set(ylabel='RMS physical step',xlabel='Updates')
+    for ax in axes:ax.grid(alpha=.2)
+    axes[1].legend();axes[2].legend()
+    fig.suptitle('Training signal and motion; means over at most 1,000 updates')
+    fig.tight_layout();fig.savefig(out);plt.close(fig)
+
+
+def frequency_evolution(folder,out,grid_size=8192):
+    config=json.loads((folder/'case.json').read_text());g=core.old.geometry(config['n'])
+    x=-1+2*(np.arange(grid_size)+.5)/grid_size;y=core.target(x,config['target'],np)
+    steps=[];energies=[]
+    for _,data in history.arrays(folder,'snapshot_*.npz'):
+        step=int(data['step'])
+        if step>20000 and step%20000:continue
+        residual=diagnose.forward(data['z'],g,config['coordinates'],x)-y
+        steps.append(step);energies.append(diagnose.band_energy(residual))
+    if not steps:return
+    energy=np.asarray(energies)
+    labels=['DC (spatial mean)','1','2–3','4–7','8–15','16–31','32–63','64–127','128–255','256+']
+    fig,axes=plt.subplots(2,1,figsize=(11,7),sharex=True)
+    for i,label in enumerate(labels):
+        color=plt.cm.tab10(i)
+        axes[0].semilogy(steps,energy[:,i],label=label,color=color)
+        axes[1].plot(steps,100*energy[:,i]/energy.sum(axis=1),color=color)
+    axes[0].set_ylabel('Residual MSE in Fourier band')
+    axes[1].set(ylabel='Percent of residual MSE',xlabel='Updates',ylim=(0,100))
+    axes[0].legend(ncol=5,fontsize=8)
+    for ax in axes:ax.grid(alpha=.2)
+    fig.suptitle(f'Spatial frequency indices; {grid_size:,} midpoint samples on [-1, 1]')
+    fig.tight_layout();fig.savefig(out);plt.close(fig)
+
+
+def construction(folder,reference,out):
+    config=json.loads((folder/'case.json').read_text());g=core.old.geometry(config['n'])
+    assert config['target']=='sine' and config.get('architecture','fixed')=='fixed'
+    with np.load(reference) as d:ref={k:d[k] for k in d.files}
+    np.testing.assert_allclose(g.centers,ref['centers'],atol=0,rtol=0)
+    with np.load(sorted(folder.glob('snapshot_*.npz'))[-1]) as d:z=d['z'];step=int(d['step'])
+    c,gamma=map(np.asarray,core.physical(z,g,config['coordinates']))
+    fig,axes=plt.subplots(2,1,figsize=(11,6),sharex=True)
+    axes[0].plot(g.centers,ref['c'][1:],label='Construction at lambda = 0.25',lw=1.5)
+    axes[0].plot(g.centers,c[1:],'.',label=f'Trained, update {step:,}',ms=3)
+    axes[1].plot(g.centers,ref['gamma'],label='Construction',lw=1.5)
+    axes[1].plot(g.centers,gamma,'.',label='Trained',ms=3)
+    axes[0].set_ylabel('Physical readout w');axes[1].set(ylabel='Physical slope gamma',xlabel='Fixed physical center')
+    for ax in axes:
+        ax.axvline(-1,color='grey',ls=':',lw=.8);ax.axvline(1,color='grey',ls=':',lw=.8)
+        ax.grid(alpha=.2);ax.legend()
+    fig.suptitle('Detached construction reference; coefficients need not be unique')
     fig.tight_layout();fig.savefig(out);plt.close(fig)
 
 
