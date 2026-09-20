@@ -45,6 +45,16 @@ def snapshot(path,config,out):
     u,s,vh=np.linalg.svd(native,full_matrices=False)
     physical_s=np.linalg.svd(design/np.sqrt(m),compute_uv=False)
     projected=u.T@(residual/np.sqrt(m));relative=s/s[0]
+    distances=x[:,None]-g.centers
+    exponential=np.exp(-2*np.abs(distances*gamma))
+    gamma_jacobian=c[1:]*distances*(4*exponential/(1+exponential)**2)
+    centered=x-np.mean(x)
+    coarse=np.mean(residual)+centered*np.mean(residual*centered)/np.mean(centered**2)
+    gamma_gradient=gamma_jacobian.T@residual/m
+    coarse_gradient=gamma_jacobian.T@coarse/m
+    keep=relative>1e-12
+    removable=u[:,keep]@(u[:,keep].T@residual)
+    removable_gradient=gamma_jacobian.T@removable/m
     ls=[];coefficients=[]
     xv=-1+2*(np.arange(32768)+.5)/32768;yv=core.target(xv,config['target'],np)
     for cutoff in (np.finfo(float).eps*max(native.shape),1e-12,1e-14,1e-16):
@@ -61,6 +71,9 @@ def snapshot(path,config,out):
     arrays=dict(z=z,c=c,gamma=gamma,centers=g.centers,alpha=g.alpha,h=g.h,x=x,residual=residual,
         native_singular_values=s,physical_singular_values=physical_s,projected_residual=projected,
         mode_edges=mode_edges,mode_residual_energy=mode_energy,band_energy=band_energy(residual),
+        physical_gamma_gradient=gamma_gradient,coarse_gamma_gradient=coarse_gradient,
+        remainder_gamma_gradient=gamma_gradient-coarse_gradient,readout_span_gamma_gradient=removable_gradient,
+        orthogonal_gamma_gradient=gamma_gradient-removable_gradient,
         least_squares_coefficients=np.stack(coefficients))
     run.save(out.with_suffix('.npz'),**arrays)
     result=dict(snapshot=str(path),config=config,mse=float(np.mean(residual**2)),
@@ -69,16 +82,29 @@ def snapshot(path,config,out):
         least_squares=ls,mode_edges=mode_edges,mode_energy=mode_energy.tolist(),
         frequency_bands=[f'{a}–{b-1}' if b else f'{a}+' for a,b in BANDS],
         frequency_mse=arrays['band_energy'].tolist())
+    result['geometry_signal']=dict(coarse_residual_mse=float(np.mean(coarse**2)),
+        remainder_residual_mse=float(np.mean((residual-coarse)**2)),
+        gradient_norm=float(np.linalg.norm(gamma_gradient)),coarse_gradient_norm=float(np.linalg.norm(coarse_gradient)),
+        remainder_gradient_norm=float(np.linalg.norm(gamma_gradient-coarse_gradient)),
+        readout_span_gradient_norm=float(np.linalg.norm(removable_gradient)),
+        orthogonal_gradient_norm=float(np.linalg.norm(gamma_gradient-removable_gradient)),span_relative_cutoff=1e-12)
     run.write_json(out.with_suffix('.json'),result)
     return result
 
 
 def dense(folder,config,out):
     g=core.old.geometry(config['n']);m=max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
-    y=core.target(x,config['target'],np);rows=[]
+    y=core.target(x,config['target'],np);rows=[];basis=None;spectrum=None
+    edges=np.array([0.,1e-8,1e-6,1e-4,1e-2,.1,1.0000001])
     for path in sorted(folder.glob('dense_*.npz')):
         with np.load(path) as data:
             zs=np.concatenate((data['initial_z'][None],data['z']));start=int(data['start'])
+        if basis is None:
+            _,ga=map(np.asarray,core.physical(zs[0],g,config['coordinates']))
+            features=np.column_stack((np.ones(m),np.tanh((x[:,None]-g.centers)*ga)))
+            basis,spectrum,_=np.linalg.svd(features@transform(g,config['coordinates'])/np.sqrt(m),full_matrices=False)
+            relative=spectrum/spectrum[0]
+            masks=[(relative>=a)&(relative<b) for a,b in zip(edges[:-1],edges[1:])]
         for i in range(0,len(zs)-1,16):
             c0,ga0=map(np.asarray,core.physical(zs[i],g,config['coordinates']))
             c1,ga1=map(np.asarray,core.physical(zs[i+1],g,config['coordinates']))
@@ -89,11 +115,19 @@ def dense(folder,config,out):
             # Exact sequential attribution: readout first, then geometry.
             linear_r=2*band_product(r,dr)
             linear_g=2*band_product(r,dg)
+            ur=basis.T@r/np.sqrt(m);uw=basis.T@dr/np.sqrt(m);ug=basis.T@dg/np.sqrt(m)
+            aggregate=lambda vector:np.array([np.sum(vector[mask]) for mask in masks])
             rows.append(dict(update=start+i+1,residual=band_energy(r),readout_update=band_energy(dr),
                 geometry_update=band_energy(dg),readout_descent=-linear_r,geometry_descent=-linear_g,
                 update_cross=2*band_product(dr,dg),
+                mode_residual=aggregate(ur**2),mode_readout_update=aggregate(uw**2),
+                mode_geometry_update=aggregate(ug**2),mode_readout_descent=aggregate(-2*ur*uw),
+                mode_geometry_descent=aggregate(-2*ur*ug),outside_fixed_span=max(0.,np.mean(r*r)-np.sum(ur**2)),
+                readout_update_outside_span=max(0.,np.mean(dr*dr)-np.sum(uw**2)),
+                geometry_update_outside_span=max(0.,np.mean(dg*dg)-np.sum(ug**2)),
                 readout_motion=np.sqrt(np.mean((c1-c0)**2)),gamma_motion=np.sqrt(np.mean((ga1-ga0)**2))))
-    if rows:run.save(out,**{k:np.stack([r[k] for r in rows]) for k in rows[0]})
+    if rows:run.save(out,singular_values=spectrum,mode_edges=edges,
+                     **{k:np.stack([r[k] for r in rows]) for k in rows[0]})
 
 
 def main():
