@@ -50,4 +50,6 @@ Submit `run.sbatch` only after deploying a committed source snapshot into the is
 
 Sample-space checks use updates 0–20 and the saved states nearest 61 logarithmically spaced times. They record direct versus moment-computed loss, exact readout and geometry contributions to coarse-residual velocity, and state-conditioned slope-gradient remainder intervals. Reference trajectory errors and matched-target differences use every saved state. The interval is a pointwise statement at the observed state, not a guarantee that an independently evolving reference remains nearby.
 
+For long continuations, `--sparse-snapshots` restricts the analyzed full states to updates 0–20 and 61 logarithmic times; the analysis manifest records this restriction. Every-update scalar traces still supply exact event times, integrated signed forces, loss-increase counts, and endpoint windows. The raw full-state archive retains every 20th update regardless of this analysis option.
+
 `python -m experiments.expD34_readout_race.plot --root <evidence-directory>` renders line plots from the exported evidence. Full rate and seed coverage appears in scale and endpoint-contrast plots; detailed signal and reference-error panels use the predefined ratios $10^{-4},1,100$. Every plot labels geometry time $\tau=\eta n$ or the readout/geometry rate ratio. No script authors the scientific report.

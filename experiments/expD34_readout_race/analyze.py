@@ -41,11 +41,13 @@ def load_trace(folder,end):
     return np.concatenate(arrays,axis=1) if arrays else None
 
 
-def load_snapshots(folder,end):
+def load_snapshots(folder,end,sparse=False):
     blocks={};steps=[]
+    selected=np.unique(np.r_[np.arange(21),20*np.rint(np.geomspace(20,max(20,end-20),61)/20).astype(int)])
     for path in sorted(folder.glob('snapshots_*.npz')):
         with np.load(path) as data:
             mask=data['steps']<end
+            if sparse: mask &= np.isin(data['steps'],selected)
             if not np.any(mask): continue
             steps.extend(data['steps'][mask].tolist())
             for key in data.files:
@@ -85,14 +87,14 @@ def sample_probe(z,d,g,gd,x,y,kappa,degree):
                 above_radius=np.mean(abs(pre)>np.pi/2))
 
 
-def analyze_bundle(folder,out,end,probes=True):
+def analyze_bundle(folder,out,end,probes=True,sparse=False):
     manifest=json.loads((folder/'manifest.json').read_text());cfg=manifest['configuration']
     with np.load(folder/'initial.npz') as data:
         initial={k:data[k] for k in data.files}
     rows=[];errors=[];probe_rows=[];matched=[];curve_arrays={}
     actual=load_trace(folder/'p0',end)
     if actual is None: return [],[],[],[]
-    actual_steps,actual_snap=load_snapshots(folder/'p0',end)
+    actual_steps,actual_snap=load_snapshots(folder/'p0',end,sparse)
     sigma=np.sqrt(np.mean(initial['x']**2));mean0=np.mean(abs(initial['z'][0]))
     selected=np.unique(np.r_[np.arange(min(21,actual.shape[1])),np.rint(np.geomspace(21,actual.shape[1],120)).astype(int)-1])
     curve_arrays['steps']=selected
@@ -103,7 +105,7 @@ def analyze_bundle(folder,out,end,probes=True):
     for degree in DEGREES:
         branch=folder/f'p{degree}';trace=actual if degree==0 else load_trace(branch,end)
         if trace is None: continue
-        steps,snap=(actual_steps,actual_snap) if degree==0 else load_snapshots(branch,end)
+        steps,snap=(actual_steps,actual_snap) if degree==0 else load_snapshots(branch,end,sparse)
         if not len(steps): continue
         valid_selected=selected[selected<trace.shape[1]]
         curve_arrays[f'p{degree}_trace']=trace[:,valid_selected]
@@ -278,13 +280,15 @@ def main():
     parser.add_argument('--end',type=int,default=20000)
     parser.add_argument('--bundles',nargs='*')
     parser.add_argument('--skip-probes',action='store_true')
+    parser.add_argument('--sparse-snapshots',action='store_true',help='For long continuations, inspect early states and 61 logarithmic snapshot times; retain all scalar traces')
     args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     rows=[];errors=[];probes=[];matched=[]
     folders=[p.parent for p in sorted(args.root.glob('*/manifest.json'))]
     if args.bundles: folders=[p for p in folders if p.name in args.bundles]
     for folder in folders:
-        a,b,c,d=analyze_bundle(folder,args.output,args.end,not args.skip_probes)
+        a,b,c,d=analyze_bundle(folder,args.output,args.end,not args.skip_probes,args.sparse_snapshots)
         rows.extend(a);errors.extend(b);probes.extend(c);matched.extend(d)
+        write_json(args.output/'progress_summary.json',clean(rows))
         print(json.dumps(dict(bundle=folder.name,rows=len(a),errors=len(b),probes=len(c))),flush=True)
     table(args.output/'summary.csv',rows)
     table(args.output/'reference_metrics.csv',errors)
@@ -295,6 +299,7 @@ def main():
     write_json(args.output/'analysis_manifest.json',dict(end=args.end,bundles=[p.name for p in folders],
         rows=len(rows),reference_rows=len(errors),probe_rows=len(probes),
         source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        reference_snapshot_schedule='early plus logarithmic' if args.sparse_snapshots else 'every stored state',
         probe_schedule='steps 0 through 20 and nearest saved states to 61 logarithmic times',
         evidence_role='descriptive optimization diagnostics; no checkpoint selection'))
 

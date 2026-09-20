@@ -148,6 +148,8 @@ def test_disk_resume_and_manifest_identity(tmp_path):
     assert len(rows)==1 and rows[0]['complete'] and rows[0]['completed_updates']==80
     assert rows[0]['heldout_mse']>0
     assert len(probes)>20
+    sparse_steps,sparse=analyze.load_snapshots(tmp_path/'p0',80,sparse=True)
+    assert np.all(sparse_steps<80) and sparse['z'].shape[1]==len(sparse_steps)
     for row in probes:
         for order in (2,4,6,8):
             assert row[f'pointwise_p{order}_error']<=row[f'pointwise_p{order}_bound']+1e-14
