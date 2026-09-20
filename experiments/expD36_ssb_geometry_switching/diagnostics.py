@@ -63,7 +63,7 @@ def diagnostic(z, metric, config, taus, audit=False):
             rounding=128*np.finfo(float).eps*np.maximum(reference,1e-15)/(.5*epsilon)
             uncertainty=np.maximum(uncertainty,np.maximum(discrepancy,rounding))
     reliability=[]
-    for direction in directions:
+    for k,direction in enumerate(directions):
         action=hvp(z,direction)
         # H C p - p compares the inverse metric with current *true* curvature.
         error=float(jnp.linalg.norm(metric@action-direction))
@@ -71,8 +71,12 @@ def diagnostic(z, metric, config, taus, audit=False):
         epsilon=1e-5/max(1.,float(jnp.linalg.norm(direction[split:]))/max(float(jnp.linalg.norm(lam)),1e-3))
         difference=(grad_fn(z+epsilon*direction)-grad_fn(z-epsilon*direction))/(2*epsilon)
         numerical=float(jnp.linalg.norm(difference-action)/jnp.maximum(jnp.linalg.norm(action),1e-300))
+        # Along -H g this prediction avoids an ill-conditioned solve of H.
+        predicted=float(-(direction@gradient)/norm_hg) if k==0 else float(direction@jnp.linalg.solve(metric,direction))
+        discrepancy=abs(curvature-predicted)/max(abs(curvature),abs(predicted),1e-300)
         reliability.append(dict(inverse_action_error=error,curvature=curvature,hvp_fd_relative=numerical,
-                                reliable=bool(error<=.25 and curvature>0 and numerical<=.1)))
+                                predicted_curvature=predicted,local_model_discrepancy=discrepancy,
+                                reliable=bool(discrepancy<=.25 and curvature>0 and numerical<=.1)))
     c,gamma=core.physical(z,g,config['coordinates'])
     r_np=np.asarray(r)
     # Endpoint-grid DFT is a discrete diagnostic; Parseval normalization is exact.

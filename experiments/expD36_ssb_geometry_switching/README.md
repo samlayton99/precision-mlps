@@ -56,6 +56,13 @@ and negative-curvature flags distinguish them. A 25% local-model discrepancy is
 an operational classification setting, with 10% and 50% sensitivity checks; it
 is not a performance criterion or a universal theoretical constant.
 
+The local-model discrepancy compares $d^T\nabla^2L\,d$ with $d^TH^{-1}d$.
+For the normalized SSB direction this predicted curvature is computed as
+$-d^Tg/\|Hg\|$, avoiding a solve with an ill-conditioned inverse metric. The
+separate vector error $\|H\nabla^2L\,d-d\|$ is retained but is not substituted
+for the scalar local-model test. The initial baseline records permit the same
+scalar prediction to be reconstructed as direction cosine divided by metric scale.
+
 The separate neuron-reset assay changes parameters and therefore tests a different
 mechanism. It must include a matched optimizer-state restart, disclose the reset
 function jump, and label broader initial bandwidth as injected geometry.
