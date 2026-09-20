@@ -44,6 +44,7 @@ def finish(fig,path,title):
     fig.tight_layout(rect=(0,0,1,.95))
     for ax in fig.axes:
         ax.grid(alpha=.18);ax.spines[['top','right']].set_visible(False)
+        if ax.get_xscale()=='symlog': ax.set_xlim(left=0)
     fig.savefig(path,dpi=150);plt.close(fig)
 
 
@@ -198,12 +199,32 @@ def coarse_velocities(root):
     finish(fig,root/'coarse_velocities.png','Instantaneous coarse-energy removal · positive removes, negative adds · W=177, seed 0')
 
 
+def allocation_curves(bundles,root):
+    fig,axes=plt.subplots(2,5,figsize=(19,7),squeeze=False)
+    for col,target in enumerate(targets.TARGETS):
+        for bundle in bundles:
+            if bundle['config']['n']!=128: continue
+            for ki in (0,4,6):
+                kappa=targets.RATIOS[ki];tau,tr=trace(bundle,target,kappa)
+                label=f'κ={kappa:g}' if bundle['config']['seed']==0 else None
+                axes[0,col].plot(tau,tr[:,9],color=COLORS[ki],alpha=.65,label=label)
+                axes[1,col].plot(tau,tr[:,1]-bundle['mean_gamma0'],color=COLORS[ki],alpha=.65)
+        axes[0,col].set_title(LABELS[target]);axes[1,col].set_xlabel('Geometry time τ')
+        axes[1,col].axhline(0,color='.6',lw=.6)
+    axes[0,0].set_ylabel('Readout coefficient norm ‖c‖₂')
+    axes[1,0].set_ylabel('Signed change in mean |a|')
+    for ax in axes.flat: ax.set_xscale('symlog',linthresh=.02)
+    axes[0,-1].legend(fontsize=9)
+    finish(fig,root/'readout_and_slopes.png','Coupled readout growth and slope allocation · W=177 · one line per seed')
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--root',type=Path,required=True);args=p.parse_args()
     bundles=load(args.root);rows=json.loads((args.root/'summary.json').read_text())
     scale_curves(bundles,args.root);signal_curves(bundles,args.root)
     rate_contrasts(rows,args.root);matched_curves(bundles,args.root);reference_errors(bundles,args.root)
     distribution_curves(bundles,args.root);coarse_velocities(args.root)
+    allocation_curves(bundles,args.root)
 
 
 if __name__=='__main__':main()
