@@ -34,18 +34,26 @@ def baseline_rows(rows):
         ('n','seed','target','optimizer','coordinates','eta')})]
 
 
-def paired_recipes(rows):
+def paired_recipes(rows,root=None):
     """Rank recipes only when both selection seeds completed the same horizon."""
     groups=defaultdict(list)
+    def recipe(config):
+        c=dict(config);c.pop('seed')
+        if 'origin' in c and root is not None:
+            origin=dict(c['origin']);checkpoint=Path(origin.pop('checkpoint'));origin.pop('sha256')
+            parent=json.loads((root/checkpoint.parent.name/'case.json').read_text())
+            c['origin']=dict(origin,checkpoint=checkpoint.name,parent_recipe=recipe(parent))
+        return c
     for row in rows:
-        c=dict(row['config']);c.pop('seed')
+        c=recipe(row['config'])
         groups[json.dumps(c,sort_keys=True)].append(row)
     paired=[]
     for config,group in groups.items():
         selected=[r for r in group if r['config']['seed'] in (0,1)]
         if {r['config']['seed'] for r in selected}!={0,1}:continue
         if len({r['step'] for r in selected})!=1:continue
-        paired.append(dict(config=json.loads(config),score=float(np.mean([r['score'] for r in selected])),
+        original=dict(next(r['config'] for r in selected if r['config']['seed']==0));original.pop('seed')
+        paired.append(dict(config=original,score=float(np.mean([r['score'] for r in selected])),
                            members=selected,step=selected[0]['step']))
     return sorted(paired,key=lambda r:r['score'])
 

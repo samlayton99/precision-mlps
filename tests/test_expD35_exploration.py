@@ -21,6 +21,20 @@ def test_stable_neighbor_evaluation_and_saturated_derivative():
     assert float(jax.grad(lambda a:stable.tanh_difference(a,jnp.array(0.)))(0.))==1.
 
 
+def test_paired_warm_recipes_resolve_parent_hyperparameters(tmp_path):
+    from experiments.expD35_optimization_exploration import design,run
+    rows=[]
+    for seed in (0,1):
+        parent=run.case(seed=seed);folder=tmp_path/run.key(parent);folder.mkdir()
+        run.write_json(folder/'case.json',parent)
+        child=run.case(seed=seed,origin=dict(checkpoint=str(folder/'checkpoint_000100000.npz'),sha256=str(seed),carry_optimizer=True))
+        rows.append(dict(config=child,score=1.+seed,step=20000))
+    paired=design.paired_recipes(rows,root=tmp_path)
+    assert len(paired)==1 and paired[0]['score']==1.5
+    parent['eta']*=3;run.write_json(folder/'case.json',parent)
+    assert design.paired_recipes(rows,root=tmp_path)==[]
+
+
 def case(**extra):
     return dict(n=64, seed=0, coordinates='individual', optimizer='gd', eta=1e-4, **extra)
 
