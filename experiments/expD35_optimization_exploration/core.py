@@ -15,7 +15,7 @@ TRACE = ('mse', 'eta', 'mean_abs_lambda', 'readout_l2', 'native_readout_gradient
          'native_geometry_gradient', 'physical_readout_gradient', 'physical_gamma_gradient',
          'delta_readout_rms', 'delta_gamma_rms', 'delta_mean_abs_gamma', 'coarse_residual_norm',
          'filtered_gradient_norm', 'raw_filtered_cosine', 'direction_norm', 'zero_physical_step',
-         'adam_guard_fraction', 'active')
+         'adam_guard_fraction', 'active', 'neuron_replacements', 'reset_function_rms')
 
 
 @lru_cache(maxsize=1)
@@ -60,6 +60,8 @@ def initialize(case):
                 post_ema=jnp.zeros_like(z), age=jnp.zeros(z.shape, dtype=jnp.int64),
                 failed=jnp.array(0, dtype=jnp.int64), eta=jnp.array(case['eta']),
                 agreement_ema=jnp.array(1.),
+                utility=jnp.zeros(g.width),neuron_age=jnp.zeros(g.width,dtype=jnp.int64),
+                replacement_accumulator=jnp.array(0.),
                 key=jax.random.PRNGKey(case['seed']+5701))
 
 
@@ -111,23 +113,26 @@ def optimizer_direction(state, grad, hp, optimizer):
 
 def hyperparameters(case):
     defaults = dict(ema_alpha=.98, ema_strength=0., ema_location=1, ema_normalized=False,
-                    beta1=.9, beta2=.999, epsilon=1e-15)
+                    beta1=.9, beta2=.999, epsilon=1e-15,
+                    maturity=5000,replacement_rate=1e-5,reset_until=10**12,slope_redraw_factor=1.)
+    if case.get('slope_initialization')=='lambda_xavier': defaults['slope_redraw_factor']=case['n']/2
     return {k:jnp.asarray(case.get(k, v)) for k,v in defaults.items()}
 
 
 @lru_cache(maxsize=64)
-def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1024):
+def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1024, reset='none'):
     g = old.geometry(n)
     grid = jnp.linspace(-1, 1, 16*n+1)
-    def one(state, hp, start):
-        def step(current, index):
+    def one(state, hp, start, replay):
+        def step(current, inputs):
+            index,replay_mask=inputs
             key, draw = jax.random.split(current['key'])
             if sampling == 'stratified':
                 x = -1+2*(jnp.arange(batch_size)+jax.random.uniform(draw, (batch_size,), dtype=jnp.float64))/batch_size
             else:
                 x = grid
             y = target(x, name)
-            loss, grad, gc, gg, coarse, _ = field(current['z'], x, y, g, coordinates)
+            loss, grad, gc, gg, coarse, utility = field(current['z'], x, y, g, coordinates)
             direction, history, filtered, sqrt_v = optimizer_direction(current, grad, hp, optimizer)
             z1 = current['z']+current['eta']*direction
             c0, ga0 = physical(current['z'], g, coordinates)
@@ -136,6 +141,12 @@ def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1
             finite &= jnp.all(jnp.isfinite(history['v'])) & jnp.all(jnp.isfinite(c1))
             active = (current['failed']==0)&finite
             next_state = dict(current, z=z1, key=key, **history)
+            mask=jnp.zeros(g.width,dtype=bool); jump=jnp.array(0.)
+            if reset!='none':
+                from . import recycling
+                next_state,mask,jump=recycling.apply(next_state,utility,g,coordinates,hp,reset,replay_mask,index,x)
+            else:
+                next_state['neuron_age']=current['neuron_age']+1
             next_state = jax.tree.map(lambda new, old: jnp.where(active, new, old), next_state, current)
             next_state['failed'] = jnp.where((current['failed']==0)&~finite, index+1, current['failed'])
             trace = jnp.array([2*loss, current['eta'], jnp.mean(jnp.abs(g.h*ga0)), jnp.linalg.norm(c0[1:]),
@@ -143,10 +154,17 @@ def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1
                 jnp.linalg.norm(gc), jnp.linalg.norm(gg), jnp.sqrt(jnp.mean((c1-c0)**2)),
                 jnp.sqrt(jnp.mean((ga1-ga0)**2)), jnp.mean(jnp.abs(ga1)-jnp.abs(ga0)), coarse,
                 jnp.linalg.norm(filtered), cosine(grad, filtered), jnp.linalg.norm(direction),
-                jnp.all(c1==c0)&jnp.all(ga1==ga0), jnp.mean(sqrt_v<=hp['epsilon']), active])
-            return next_state, jnp.where(active, trace, jnp.nan)
-        return jax.lax.scan(step, state, start+jnp.arange(length))
-    return jax.jit(jax.vmap(one, in_axes=(0, 0, None)))
+                jnp.all(c1==c0)&jnp.all(ga1==ga0), jnp.mean(sqrt_v<=hp['epsilon']), active,
+                jnp.sum(mask),jump])
+            trace=jnp.where(active, trace, jnp.nan)
+            if reset!='none': trace=jnp.r_[trace,mask&active]
+            return next_state, trace
+        return jax.lax.scan(step, state, (start+jnp.arange(length),replay))
+    compiled=jax.jit(jax.vmap(one, in_axes=(0, 0, None, 0)))
+    def run(states,hp,start,replay=None):
+        if replay is None: replay=jnp.zeros((len(states['z']),length,g.width),dtype=bool)
+        return compiled(states,hp,start,replay)
+    return run
 
 
 @lru_cache(maxsize=32)

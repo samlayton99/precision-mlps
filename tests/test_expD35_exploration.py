@@ -88,3 +88,34 @@ def test_agreement_uses_one_state_and_separate_batches():
     assert float(stats[0,0,0])==pytest.approx(expected,abs=1e-14)
     x=jnp.linspace(-1,1,1025)
     np.testing.assert_allclose(full[0],core.field(st['z'],x,core.target(x,'sine'),old.geometry(64),'individual')[1],rtol=2e-13,atol=2e-14)
+
+
+def test_neighbor_reset_clears_suffix_and_preserves_other_physical_neurons():
+    from experiments.expD35_optimization_exploration import recycling
+    c=case();c['coordinates']='neighbor'
+    st=core.initialize(c);g=old.geometry(64);hp=core.hyperparameters(c)
+    for name in ('m','v','ema','post_ema','age'): st[name]=jnp.ones_like(st[name])
+    mask=jnp.arange(g.width)==7
+    out,actual,jump=recycling.apply(st,jnp.ones(g.width),g,'neighbor',hp,'replay_state',mask,1,jnp.linspace(-1,1,129))
+    np.testing.assert_array_equal(out['z'],st['z'])
+    expected=np.r_[False,np.arange(g.width)>=7,np.arange(g.width)==7]
+    np.testing.assert_array_equal(out['age'],~expected)
+    assert float(jump)==0
+    hp['maturity']=jnp.array(0);hp['replacement_rate']=jnp.array(1/g.width)
+    u=jnp.ones(g.width).at[7].set(0.)
+    out,mask,jump=recycling.apply(st,u,g,'neighbor',hp,'utility',mask,1,jnp.linspace(-1,1,129))
+    before,ga0=core.physical(st['z'],g,'neighbor');after,ga1=core.physical(out['z'],g,'neighbor')
+    expected=np.array(before);expected[8]=0
+    np.testing.assert_allclose(after,expected,atol=2e-15)
+    np.testing.assert_allclose(np.asarray(ga1)[~np.asarray(mask)],np.asarray(ga0)[~np.asarray(mask)])
+    assert int(jnp.sum(mask))==1 and float(jump)>0
+
+
+def test_no_replacement_does_not_roundtrip_neighbor_coordinates():
+    from experiments.expD35_optimization_exploration import recycling
+    c=case();c['coordinates']='neighbor'
+    st=core.initialize(c);g=old.geometry(64)
+    out,mask,jump=recycling.apply(st,jnp.ones(g.width),g,'neighbor',core.hyperparameters(c),
+                                'utility',jnp.zeros(g.width,dtype=bool),0,jnp.linspace(-1,1,129))
+    np.testing.assert_array_equal(st['z'],out['z'])
+    assert not np.any(mask)

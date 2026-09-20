@@ -85,7 +85,8 @@ def prepare(root, config):
         if config['origin'].get('carry_optimizer', True):
             if (parent['coordinates'], parent['optimizer']) != (config['coordinates'], config['optimizer']):
                 raise ValueError('Optimizer state cannot be copied across maps/algorithms')
-            state = dict(previous, eta=jnp.array(config['eta']))
+            state.update(previous)
+            state['eta']=jnp.array(config['eta'])
         # EMA interventions start from the current gradient, not a hidden warm history.
         x = jnp.linspace(-1, 1, 16*config['n']+1)
         grad = core.field(state['z'], x, core.target(x, config['target']), g, config['coordinates'])[1]
@@ -103,8 +104,6 @@ def advance(root, cases, frontier, deadline=float('inf')):
     at = loaded[0][2]; config = cases[0]
     if at >= frontier:
         return True
-    if config['reset']!='none':
-        raise ValueError('Recycling hook is not enabled yet')
     stack = lambda xs: jax.tree.map(lambda *a:jnp.stack(a), *xs)
     states = stack([s for _,s,_ in loaded]); hp = stack([core.hyperparameters(c) for c in cases])
     evaluate = core.evaluate(config['n'], config['coordinates'], config['target'])
@@ -120,8 +119,16 @@ def advance(root, cases, frontier, deadline=float('inf')):
             end = min((at//stride+1)*stride, frontier)
         if config['schedule']!='constant': end=min(end,(at//3000+1)*3000)
         kernel = core.chunk(config['n'], config['coordinates'], config['optimizer'], config['target'],
-                            end-at, config['sampling'], config['batch_size'])
-        states, traces = kernel(states, hp, at)
+                            end-at, config['sampling'], config['batch_size'],config['reset'])
+        replay=None
+        if config['reset'].startswith('replay_'):
+            replay=np.zeros((len(cases),end-at,core.old.geometry(config['n']).width),dtype=bool)
+            for i,c in enumerate(cases):
+                for path in Path(c['replay_directory']).glob('reset_events_*.npz'):
+                    with np.load(path) as data:
+                        selected=(data['updates']>at)&(data['updates']<=end)
+                        replay[i,data['updates'][selected]-at-1]=data['masks'][selected]
+        states, traces = kernel(states, hp, at, replay)
         jax.block_until_ready(states)
         traces = np.asarray(traces)
         agreement_data=None
@@ -140,7 +147,12 @@ def advance(root, cases, frontier, deadline=float('inf')):
         evaluations = np.asarray(evaluate(states['z'])) if end>=1000 or end==frontier else None
         for i,(folder,_,_) in enumerate(loaded):
             state = jax.tree.map(lambda a:np.asarray(a[i]), states)
-            save(folder/f'trace_{at:09d}_{end:09d}.npz', trace=traces[i], start=at, end=end)
+            save(folder/f'trace_{at:09d}_{end:09d}.npz', trace=traces[i,:,:len(core.TRACE)], start=at, end=end)
+            if config['reset']!='none':
+                masks=traces[i,:,len(core.TRACE):].astype(bool)
+                occurred=np.any(masks,axis=1)
+                if np.any(occurred):
+                    save(folder/f'reset_events_{at:09d}_{end:09d}.npz',updates=at+1+np.flatnonzero(occurred),masks=masks[occurred])
             save(folder/f'snapshot_{end:09d}.npz', z=state['z'], step=end)
             if agreement_data is not None:
                 save(folder/f'agreement_{end:09d}.npz',statistics=agreement_data[0][i],
