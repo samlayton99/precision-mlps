@@ -136,8 +136,12 @@ def geometry_signal(path,out):
               ('orthogonal_gamma_gradient','From orthogonal residual')] ]
     for ax,group in zip(axes,groups):
         scale=max(np.max(abs(a[k])) for k,_ in group)
-        for k,label in group:ax.plot(a['centers'],a[k],'.-',ms=2,lw=.6,label=label)
+        for k,label in group:
+            ax.plot(a['centers'],a[k],'.',ms=3,label=f'{label} (norm {np.linalg.norm(a[k]):.2g})')
         ax.set_yscale('symlog',linthresh=max(scale*1e-5,1e-30));ax.grid(alpha=.2)
+        exponent=int(np.ceil(np.log10(max(scale,1e-30))))
+        positive=10.**np.arange(exponent-4,exponent+1,2)
+        ax.set_yticks(np.r_[-positive[::-1],0.,positive])
         ax.set_ylabel('Physical slope gradient');ax.legend(fontsize=8)
     axes[1].set_xlabel('Fixed physical center')
     fig.suptitle('Residual contributions to gamma gradients; readout-span cutoff = 1e-12')
