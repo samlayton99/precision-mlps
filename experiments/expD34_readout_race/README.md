@@ -2,6 +2,8 @@
 
 This experiment tests whether readout adaptation depletes residual moments before a substantial population of hidden slopes can grow. The evidence sought is an initialization-only prediction of signed scale trajectories and their changes across readout rates. Successful execution does not require the hypothesis to hold.
 
+Measured findings and limitations are in the [results report](../../results/checkpoint_D_optimizers/expD34_readout_race/REPORT.md), with [curated evidence](../../results/checkpoint_D_optimizers/expD34_readout_race/README.md) that regenerates the figures without training.
+
 **Notation.** These symbols refer to physical raw coordinates throughout.
 
 | Symbol | Meaning |

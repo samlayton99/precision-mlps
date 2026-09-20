@@ -1,0 +1,25 @@
+# Readout-race evidence
+
+The scientific interpretation is in [REPORT.md](REPORT.md). The [experiment README](../../../experiments/expD34_readout_race/README.md) defines the model and executable protocol. All hidden affine parameters and all readouts train independently with ordinary simultaneous GD.
+
+**Evidence packages. Each package compares a single update horizon; continuations reuse the original trajectories.**
+
+| Directory | Comparison |
+|---|---|
+| `core20k` | Three widths, seeds 0–4, five targets, seven ratios, 20k updates. |
+| `replicate20k` | Width 177, seeds 5–9, otherwise the core protocol. |
+| `refine40k` | Width 177, seed 0, both steps halved and updates doubled; same geometry time as core. |
+| `continue100k` | Width 177, original seeds 0–4, continued unchanged to 100k. |
+| `provenance` | Original bundle manifests, initialization/data hashes, and Slurm allocation checks. |
+| `verification` | Full-horizon PyTorch comparison and repository validation logs. |
+
+`summary.json` and `summary.csv` contain all model endpoints, failures, window errors, scale counts, and event times. `rate_contrasts.csv` contains paired actual and reference contrasts against ratio one. The three audit tables summarize every analyzed reference, matched-target, and sample-probe row; they do not average away failing cases. The `last_` and `max_abs_` prefixes distinguish the final observed value from a descriptive maximum over analyzed states. Detailed sample-probe curves are retained for width 177, seed 0.
+
+The compact NPZ files contain the exact floating-point columns needed by the plots, identified by `plot_trace_columns`; unretained columns are not zero-valued observations. The source archive retains the full every-update traces and full parameter/gradient snapshots. `evidence_manifest.json` records source analysis directories, analysis schedules, and hashes of the curated numerical files. Figures are generated separately from those files:
+
+```bash
+MPLCONFIGDIR=/tmp/race-mpl python -m experiments.expD34_readout_race.plot \
+  --root results/checkpoint_D_optimizers/expD34_readout_race/core20k
+```
+
+Use the same command with `continue100k` for the longer original-seed comparison. The raw remote archive is `/workspace/junmiaoh/experiments/precision-mlps/runs/readout_race`; full source tables are under `/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race`. Bundle names identify reference budget and seed. Each `p0/p1/p3/p5/p7` directory has every-update traces, snapshots at updates 0–20 and every 20 thereafter, resumable states, and fixed 20k-boundary checkpoints. `p0` denotes tanh; the other numbers are independently trained activation degrees. No raw high-volume training archive is required to redraw the committed figures.

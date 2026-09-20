@@ -1,0 +1,22 @@
+{
+  "job": "JobId=528 JobName=readout-race\n   UserId=junmiaoh(1003) GroupId=junmiaoh(1006) MCS_label=N/A\n   Priority=4294901380 Nice=0 Account=lab QOS=lab-gpu2\n   JobState=RUNNING Reason=None Dependency=(null)\n   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0\n   RunTime=00:00:01 TimeLimit=00:20:00 TimeMin=N/A\n   SubmitTime=2026-09-20T05:22:56 EligibleTime=2026-09-20T05:22:56\n   AccrueTime=2026-09-20T05:22:56\n   StartTime=2026-09-20T05:22:57 EndTime=2026-09-20T05:42:57 Deadline=N/A\n   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-20T05:22:57 Scheduler=Backfill\n   Partition=gpu AllocNode:Sid=1212ac4ba094:1404754\n   ReqNodeList=(null) ExcNodeList=(null)\n   NodeList=1212ac4ba094\n   BatchHost=1212ac4ba094\n   NumNodes=1 NumCPUs=4 NumTasks=1 CPUs/Task=4 ReqB:S:C:T=0:0:*:*\n   TRES=cpu=4,mem=48G,node=1,billing=4,gres/gpu=1\n   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*\n   MinCPUsNode=4 MinMemoryNode=48G MinTmpDiskNode=0\n   Features=(null) DelayBoot=00:00:00\n   OverSubscribe=OK Contiguous=0 Licenses=(null) Network=(null)\n   Command=/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/run.sbatch --stage continue --frontier 100000 --worker 0 --workers 2 --seconds 1140\n   WorkDir=/workspace/junmiaoh/experiments/precision-mlps/race-code\n   StdErr=/workspace/junmiaoh/experiments/precision-mlps/logs/race-528.log\n   StdIn=/dev/null\n   StdOut=/workspace/junmiaoh/experiments/precision-mlps/logs/race-528.log\n   Power=\n   TresPerNode=gres:gpu:1\n   \n\n",
+  "step": "StepId=528.0 UserId=1003 StartTime=2026-09-20T05:22:57 TimeLimit=UNLIMITED\n   State=RUNNING Partition=gpu NodeList=1212ac4ba094\n   Nodes=1 CPUs=4 Tasks=1 Name=python Network=(null)\n   TRES=cpu=4,gres/gpu=1,mem=48G,node=1\n   ResvPorts=(null)\n   CPUFreqReq=Default Dist=Cyclic\n   SrunHost:Pid=1212ac4ba094:1404786\n   TresPerNode=gres:gpu:1\n\n",
+  "mask": "3",
+  "devices": [
+    "cuda:0"
+  ],
+  "jax": "0.10.2",
+  "numpy": "2.4.6",
+  "sources": {
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/run.py": "94cbf7ab72cf3570fb6135bbe73a4470c3eea69a8dc2efd6c596536bdc423068",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/references.py": "e92301521aae05009217dce44443ad6c67da1c3319f5feee76dd4e52d3956c09",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/plot.py": "2fffd1bf7740d9c792d052fdc23f72943020d1758a0120c11a412d376faf579e",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/core.py": "97be4105d949619ebe56f0c55bc0ec79df17a0e9ede63df181f467f06e7269f5",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/analyze.py": "07b6f5f6d4f9c6ff2f78efafff149fbef1ad7523f2e6e732f26be62f77608f07",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/__init__.py": "8f74ffdc3dbbedd6611a0b3928990eb73299977cf5759d9b51fe7bcc592cf17f",
+    "experiments/expD28_loss_gradient_decomposition/run.py": "fa17978843139cf0223549390c98d456ccfb44c9f1e70418c2723a5cb541276e",
+    "experiments/expD24_gd_residual_spectrum/run.py": "05a84d72d5b1a02c4ef3e69eefa5ba81395b349a86cb7b8a751493bb6266453a",
+    "experiments/expC05_geometry_interpolation/common.py": "e6982f4f8f3139ec681162ebfd5cbc26292360328a493b429bc207014b427d3c"
+  }
+}

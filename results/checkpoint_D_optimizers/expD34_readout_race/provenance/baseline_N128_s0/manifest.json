@@ -1,0 +1,124 @@
+{
+  "configuration": {
+    "n": 128,
+    "halo": 24,
+    "width": 177,
+    "seed": 0,
+    "m": 1024,
+    "eta": 0.002,
+    "targets": [
+      "sine",
+      "runge"
+    ],
+    "ratios": [
+      1.0
+    ],
+    "evaluation_m": 8192,
+    "coordinates": "raw a,b,c,d",
+    "loss": "half mean squared error",
+    "initialization": "unchanged D28 xavier",
+    "dtype": "float64",
+    "simultaneous": true,
+    "trace_columns": [
+      "half_mse",
+      "mean_gamma",
+      "q10",
+      "q25",
+      "median_gamma",
+      "q75",
+      "q90",
+      "max_gamma",
+      "readout_l1",
+      "readout_l2",
+      "bias",
+      "max_preactivation",
+      "grad_a_norm",
+      "grad_b_norm",
+      "grad_c_norm",
+      "grad_d",
+      "signed_coarse_force",
+      "signed_remainder_force",
+      "delta_mean_gamma",
+      "crossing_remainder",
+      "sign_crossings",
+      "delta_a_rms",
+      "delta_b_rms",
+      "delta_c_rms",
+      "delta_d",
+      "fraction_gamma_1",
+      "fraction_gamma_4",
+      "fraction_gamma_16",
+      "fraction_lambda_005",
+      "fraction_lambda_01",
+      "fraction_lambda_025",
+      "residual_moment_0",
+      "residual_moment_1",
+      "residual_moment_2",
+      "residual_moment_3",
+      "residual_moment_4",
+      "residual_moment_5",
+      "residual_moment_6",
+      "residual_moment_7",
+      "residual_moment_8",
+      "residual_moment_9",
+      "residual_moment_10"
+    ]
+  },
+  "cases": [
+    {
+      "target": "sine",
+      "kappa": 1.0,
+      "seed": 0,
+      "n": 128,
+      "m": 1024,
+      "eta_geometry": 0.002,
+      "eta_readout": 0.002,
+      "run_id_p0": "bdb40f2f3508982d",
+      "run_id_p1": "948f9ba9a250214a",
+      "run_id_p3": "0fe0da635df175dc",
+      "run_id_p5": "c2c9624598321d9d",
+      "run_id_p7": "9809f183ea841055"
+    },
+    {
+      "target": "runge",
+      "kappa": 1.0,
+      "seed": 0,
+      "n": 128,
+      "m": 1024,
+      "eta_geometry": 0.002,
+      "eta_readout": 0.002,
+      "run_id_p0": "990dc1d19a587331",
+      "run_id_p1": "2c3f8ef84c620d7c",
+      "run_id_p3": "309bf156b931fbc0",
+      "run_id_p5": "2f6e77a3820e4664",
+      "run_id_p7": "e19fec3e43990a4a"
+    }
+  ],
+  "initial_hash": "598eeefb13644a377a76b5939a96a7252bcb65e0f4bc4e73f06acd70f34fde0b",
+  "data_hash": "007d384418b0e42f013b651a1c19adeab0b2ec116a77d08b65c39bce1639f9c5",
+  "source_hashes": {
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/run.py": "94cbf7ab72cf3570fb6135bbe73a4470c3eea69a8dc2efd6c596536bdc423068",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/references.py": "e92301521aae05009217dce44443ad6c67da1c3319f5feee76dd4e52d3956c09",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/core.py": "97be4105d949619ebe56f0c55bc0ec79df17a0e9ede63df181f467f06e7269f5",
+    "/workspace/junmiaoh/experiments/precision-mlps/race-code/experiments/expD34_readout_race/__init__.py": "8f74ffdc3dbbedd6611a0b3928990eb73299977cf5759d9b51fe7bcc592cf17f",
+    "experiments/expD28_loss_gradient_decomposition/run.py": "fa17978843139cf0223549390c98d456ccfb44c9f1e70418c2723a5cb541276e",
+    "experiments/expD24_gd_residual_spectrum/run.py": "05a84d72d5b1a02c4ef3e69eefa5ba81395b349a86cb7b8a751493bb6266453a",
+    "experiments/expC05_geometry_interpolation/common.py": "e6982f4f8f3139ec681162ebfd5cbc26292360328a493b429bc207014b427d3c"
+  },
+  "commit": "be17542",
+  "initial_distribution": {
+    "bound": 0.18359701840863138,
+    "hidden_rng": [
+      0,
+      128
+    ],
+    "readout_rng": [
+      0,
+      128,
+      24
+    ],
+    "bias_zero": true
+  },
+  "scalar_convention": "trace step n is before update n to n+1; snapshots store that old state"
+}

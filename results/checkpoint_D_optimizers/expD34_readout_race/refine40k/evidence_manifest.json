@@ -1,0 +1,33 @@
+{
+  "inputs": [
+    "/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race/refine40k"
+  ],
+  "analyses": [
+    {
+      "end": 40000,
+      "bundles": [
+        "refine_N128_s0"
+      ],
+      "rows": 175,
+      "reference_rows": 282660,
+      "probe_rows": 12600,
+      "source_sha256": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+      "probe_schedule": "steps 0 through 20 and nearest saved states to 61 logarithmic times",
+      "evidence_role": "descriptive optimization diagnostics; no checkpoint selection"
+    }
+  ],
+  "source_sha256": "983e276011649ce01d6224400ff0ca154251c4f21aaa9db21aef96f58e298084",
+  "files": {
+    "summary.json": "7aef5f64cac72f79513c41f6f8c670babf42cfd9f32391d1b20444cf8c2ba659",
+    "rate_contrasts.csv": "c4b3cb699ad578d0f1e0a73aeba81dd0d54a6452f3b8131fb49713429a0692c5",
+    "sample_probes.csv": "dd121ac4ded32abd303eb9a4dc0218f197c208ea55fe91842b2c8d9f36a585fd",
+    "probe_audit.csv": "89b4f93b4e480d4038eff575a7b63dabd0ebe7e9be1316016e2e69b4b667669b",
+    "matched_target_audit.csv": "f08c48650ef3006be49f8a52c1a903e65404da0b71160273a32175d6ead8e90b",
+    "reference_audit.csv": "6f2af2371846421418800da2fca32a0d2ecc3ac6f06a444176edf81aee272865",
+    "summary.csv": "1974a21bdfb64fbb3389cd5ac58afa985288eefd0a8b002c09beb9385f7b7e4e",
+    "refine_N128_s0_curves.npz": "674a7fc22069fcb94dc07e7203edd0319462832e0d892a18be5ebd40b943d771"
+  },
+  "audit_scope": "All analyzed rows; max_abs fields are descriptive maxima; 5% is a post-observation summary threshold",
+  "curve_scope": "Only columns identified by plot_trace_columns are included; all full traces remain at source",
+  "probe_scope": "Full sample probe curves retained for width 177 seed 0; other probes summarized and retained at source"
+}
