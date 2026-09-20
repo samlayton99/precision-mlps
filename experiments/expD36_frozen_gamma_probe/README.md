@@ -137,6 +137,9 @@ effective-generator estimate separately from slope and directional bounds.
 It measures native and physical norm requirements and the selected ridge paths.
 Its damping ladder always starts from the same normalized probe; direct residuals
 are checked against stable spectral filtering, with disagreement marked unresolved.
+The same offline job audits every saved update for first and sustained hits,
+joins selected pilot histories to their continuations, and compares the resulting
+first hits with the counters saved by the optimizer kernels.
 
 `full_precision.py` independently reconstructs the twelve declared witnesses
 at 80 and 120 digits, including exact-grid polynomials and nominal reference

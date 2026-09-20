@@ -135,6 +135,9 @@ def test_full_screen_selection_resume_and_controls(tmp_path):
     assert len(rows)==len(cfg['targets'])*len(cfg['tolerances'])*5
     np.testing.assert_allclose([row['epsilon_residual'] for row in rows],
                                [row['epsilon_target'] for row in rows],rtol=1e-14)
+    diagnostics.hitting_audit(tmp_path,cfg,deadline)
+    audit=np.load(tmp_path/'training/N64_raw_adam_continue/hitting_audit.npz')
+    assert audit['first'].shape==np.load(tmp_path/'training/N64_raw_adam_continue/state.npz')['hits'].shape
 
 
 def test_residual_access_and_effective_generator():

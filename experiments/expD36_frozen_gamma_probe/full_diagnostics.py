@@ -151,6 +151,40 @@ def damping(root,cfg,deadline):
             core.write_json(root/'diagnostics/ridge.json',ridges)
 
 
+def hitting_audit(root,cfg,deadline):
+    paths=sorted((root/'training').glob('*/case.json'),key=lambda p:('continue' in p.parent.name,p.parent.name))
+    for path in paths:
+        folder=path.parent; case=json.loads(path.read_text()); state=dict(np.load(folder/'state.npz'))
+        first=np.full_like(state['hits'],-1); last_above=np.full_like(first,-1)
+        if folder.name.endswith('_adam_continue'):
+            prefix=folder.name.removesuffix('_adam_continue')
+            previous=np.load(root/'training'/f'{prefix}_adam_pilot/hitting_audit.npz')
+            indices=np.array(json.loads((root/'training'/f'{prefix}_selection.json').read_text())['indices'])
+            first=np.take_along_axis(previous['first'],indices[:,:,None],axis=1)
+            last_above=np.take_along_axis(previous['last_above'],indices[:,:,None],axis=1)
+        for trace_path in sorted(folder.glob('trace_*.npz')):
+            if time.monotonic()>deadline:
+                raise TimeoutError('Per-update hitting audit deadline')
+            start=int(trace_path.stem.split('_')[1]); values=np.load(trace_path)['trace'][:,:,:,0]
+            steps=np.arange(start,start+len(values))[:,None,None]
+            for ei,epsilon in enumerate(cfg['tolerances']):
+                hit=values<=epsilon
+                first_seen=np.min(np.where(hit,steps,np.iinfo(np.int64).max),axis=0)
+                first[:,:,ei]=np.where((first[:,:,ei]<0)&hit.any(axis=0),first_seen,first[:,:,ei])
+                last_above[:,:,ei]=np.maximum(last_above[:,:,ei],np.max(np.where(~hit,steps,-1),axis=0))
+        final=json.loads((folder/'evaluations.json').read_text())[-1]
+        final_error=np.array(final['train'],dtype=float); count=int(state['count'])
+        for ei,epsilon in enumerate(cfg['tolerances']):
+            hit=final_error<=epsilon
+            first[:,:,ei]=np.where((first[:,:,ei]<0)&hit,count,first[:,:,ei])
+            last_above[:,:,ei]=np.where(hit,last_above[:,:,ei],count)
+        valid=state['failed']==0
+        np.testing.assert_array_equal(first[valid],state['hits'][valid],err_msg=folder.name)
+        sustained=np.where((last_above<count)&valid[:,:,None],last_above+1,-1)
+        core.save_arrays(folder/'hitting_audit.npz',first=first,last_above=last_above,sustained=sustained)
+        print(f'HITS {folder.name}',flush=True)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True)
@@ -161,6 +195,7 @@ def main():
         case_certificates(args.root,path.parent,cfg,deadline)
         print(f'DIAGNOSTICS {path.parent.name}',flush=True)
     damping(args.root,cfg,deadline)
+    hitting_audit(args.root,cfg,deadline)
     core.write_json(args.root/'validation/diagnostics_complete.json',dict(complete=True))
 
 
