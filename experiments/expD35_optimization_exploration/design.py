@@ -34,6 +34,22 @@ def baseline_rows(rows):
         ('n','seed','target','optimizer','coordinates','eta')})]
 
 
+def paired_recipes(rows):
+    """Rank recipes only when both selection seeds completed the same horizon."""
+    groups=defaultdict(list)
+    for row in rows:
+        c=dict(row['config']);c.pop('seed')
+        groups[json.dumps(c,sort_keys=True)].append(row)
+    paired=[]
+    for config,group in groups.items():
+        selected=[r for r in group if r['config']['seed'] in (0,1)]
+        if {r['config']['seed'] for r in selected}!={0,1}:continue
+        if len({r['step'] for r in selected})!=1:continue
+        paired.append(dict(config=json.loads(config),score=float(np.mean([r['score'] for r in selected])),
+                           members=selected,step=selected[0]['step']))
+    return sorted(paired,key=lambda r:r['score'])
+
+
 def winners(rows, count=1, coordinates=None):
     groups=defaultdict(list)
     for r in rows:
