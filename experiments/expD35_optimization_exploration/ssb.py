@@ -25,7 +25,12 @@ def problem(c):
     def physical(z): return core.physical(z,g,c['coordinates'])
     def loss(z):
         w,gamma=physical(z)
-        r=w[0]+core.old.tanh((x[:,None]-jnp.asarray(g.centers))*gamma)@w[1:]-y
+        if c.get('evaluation')=='neighbor_stable':
+            if c['coordinates']!='neighbor':raise ValueError('Stable neighboring evaluation requires neighbor coordinates')
+            from .stable import predict
+            prediction=predict(z,g,x)
+        else:prediction=w[0]+core.old.tanh((x[:,None]-jnp.asarray(g.centers))*gamma)@w[1:]
+        r=prediction-y
         return .5*jnp.mean(r*r)
     return g,loss,physical
 
@@ -49,8 +54,8 @@ def restart(state,solver,loss,matrix):
 
 
 @lru_cache(maxsize=32)
-def compiled_kernel(n,coordinates,target,source,epsilon,search_threshold,length):
-    config=dict(n=n,coordinates=coordinates,target=target)
+def compiled_kernel(n,coordinates,target,source,epsilon,search_threshold,length,evaluation):
+    config=dict(n=n,coordinates=coordinates,target=target,evaluation=evaluation)
     g,loss,physical=problem(config)
     solver=higher.ssb_solver(source,epsilon,search_threshold,'accepted_step')
     advance=higher.ssb_step(solver,loss,physical,epsilon)
@@ -93,10 +98,10 @@ def compiled_kernel(n,coordinates,target,source,epsilon,search_threshold,length)
     return chunk
 
 
-def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,length):
+def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,length,evaluation='physical_sum'):
     # All reset arms share one compiled graph, including the no-reset control.
     code={'none':0,'full':1,'geometry':2,'blend':3,'non_descent':4}[mode]
-    compiled=compiled_kernel(n,coordinates,target,source,epsilon,search_threshold,length)
+    compiled=compiled_kernel(n,coordinates,target,source,epsilon,search_threshold,length,evaluation)
     return lambda state:compiled(state,jnp.asarray(code),jnp.asarray(interval))
 
 
@@ -126,7 +131,7 @@ def advance(root,c,source,frontier,deadline):
     while int(state['count'])<frontier and int(state['status'])==0 and time.monotonic()<deadline:
         at=int(state['count']);length=min(100,frontier-at)
         state,trace=kernel(c['n'],c['coordinates'],c['target'],source,epsilon,threshold,
-            c.get('metric_reset','none'),c.get('reset_interval',1000),length)(state)
+            c.get('metric_reset','none'),c.get('reset_interval',1000),length,c.get('evaluation','physical_sum'))(state)
         jax.block_until_ready(state);end=int(state['count'])
         run.save(folder/f'ssb_trace_{at:09d}_{end:09d}.npz',trace=np.asarray(trace),columns=np.asarray(TRACE))
         save_solver(folder/'solver.npz',state)

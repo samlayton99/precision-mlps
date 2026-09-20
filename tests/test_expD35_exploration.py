@@ -6,6 +6,21 @@ from experiments.expD35_optimization_exploration import core
 from experiments.expD06_fixed_center_scales import core as old, difference_training as previous
 
 
+def test_stable_neighbor_evaluation_and_saturated_derivative():
+    from experiments.expD35_optimization_exploration import stable,run
+    c=run.case(n=64,coordinates='neighbor',slope_initialization='lambda_xavier')
+    state=core.initialize(c);g=old.geometry(64);x=jnp.linspace(-1,1,257)
+    w,gamma=core.physical(state['z'],g,'neighbor')
+    expected=w[0]+old.tanh((x[:,None]-g.centers)*gamma)@w[1:]
+    np.testing.assert_allclose(stable.predict(state['z'],g,x),expected,atol=3e-15,rtol=3e-14)
+    y=core.target(x,'mixed')
+    derivative=jax.grad(lambda z:.5*jnp.mean((stable.predict(z,g,x)-y)**2))(state['z'])
+    np.testing.assert_allclose(derivative,core.field(state['z'],x,y,g,'neighbor')[1],atol=3e-14,rtol=3e-12)
+    assert float(stable.tanh_difference(jnp.array(25.),jnp.array(24.)))>0
+    assert float(jnp.tanh(25.)-jnp.tanh(24.))==0
+    assert float(jax.grad(lambda a:stable.tanh_difference(a,jnp.array(0.)))(0.))==1.
+
+
 def case(**extra):
     return dict(n=64, seed=0, coordinates='individual', optimizer='gd', eta=1e-4, **extra)
 
