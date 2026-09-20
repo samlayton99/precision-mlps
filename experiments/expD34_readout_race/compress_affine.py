@@ -12,9 +12,13 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root',type=Path,required=True)
     p.add_argument('--ledger',type=Path,required=True)
+    p.add_argument('--worker',type=int,default=0)
+    p.add_argument('--workers',type=int,default=1)
     args=p.parse_args();records=[]
-    for path in sorted(args.root.glob('core_N128_s*/p1/*.npz')):
-        if '.compressed.' in path.name: continue
+    paths=[path for path in sorted(args.root.glob('core_N128_s*/p1/*.npz'))
+           if '.compressed.' not in path.name and path.name!='state.npz']
+    for index,path in enumerate(paths):
+        if index%args.workers!=args.worker: continue
         with zipfile.ZipFile(path) as archive:
             if all(v.compress_type==zipfile.ZIP_DEFLATED for v in archive.infolist()): continue
         with np.load(path) as data: arrays={k:data[k] for k in data.files}
