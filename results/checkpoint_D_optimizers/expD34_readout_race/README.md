@@ -10,8 +10,10 @@ The scientific interpretation is in [REPORT.md](REPORT.md). The [experiment READ
 | `replicate20k` | Width 177, seeds 5–9, otherwise the core protocol. |
 | `refine40k` | Width 177, seed 0, both steps halved and updates doubled; same geometry time as core. |
 | `continue100k` | Width 177, original seeds 0–4, continued unchanged to 100k. |
+| `continue600k` | The same original width-177 trajectories at 600k, with sparse full-state analysis and complete scalar histories. |
+| `refine200k` | Seed-0 half-step runs at the same geometry time as the original 100k comparison. |
 | `provenance` | Original bundle manifests, initialization/data hashes, and Slurm allocation checks. |
-| `verification` | Full-horizon PyTorch comparison and repository validation logs. |
+| `verification` | Full-horizon PyTorch comparison, saved-state Hessian spectra, lossless-compression ledgers, and repository validation logs. |
 
 `summary.json` and `summary.csv` contain all model endpoints, failures, window errors, scale counts, and event times. `rate_contrasts.csv` contains paired actual and reference contrasts against ratio one. The three audit tables summarize every analyzed reference, matched-target, and sample-probe row; they do not average away failing cases. The `last_` and `max_abs_` prefixes distinguish the final observed value from a descriptive maximum over analyzed states. Detailed sample-probe curves are retained for width 177, seed 0.
 
@@ -22,4 +24,6 @@ MPLCONFIGDIR=/tmp/race-mpl python -m experiments.expD34_readout_race.plot \
   --root results/checkpoint_D_optimizers/expD34_readout_race/core20k
 ```
 
-Use the same command with `continue100k` for the longer original-seed comparison. The raw remote archive is `/workspace/junmiaoh/experiments/precision-mlps/runs/readout_race`; full source tables are under `/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race`. Bundle names identify reference budget and seed. Each `p0/p1/p3/p5/p7` directory has every-update traces, snapshots at updates 0–20 and every 20 thereafter, resumable states, and fixed 20k-boundary checkpoints. `p0` denotes tanh; the other numbers are independently trained activation degrees. No raw high-volume training archive is required to redraw the committed figures.
+Use the same command with `continue100k` or `continue600k` for the longer original-seed comparisons. The raw remote archive is `/workspace/junmiaoh/experiments/precision-mlps/runs/readout_race`; full source tables are under `/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race`. Bundle names identify reference budget and seed. Each `p0/p1/p3/p5/p7` directory has every-update traces, snapshots at updates 0–20 and every 20 thereafter, resumable states, and fixed 20k-boundary checkpoints. `p0` denotes tanh; the other numbers are independently trained activation degrees. No raw high-volume training archive is required to redraw the committed figures.
+
+The full width-89 reference table is stored remotely as `reference_metrics.csv.gz`; curation reads this lossless form automatically. Completed affine-reference NPZ archives also use lossless compression, with byte-for-byte array checks recorded in `verification/race-compression*.json`. Neither representation changes the stored numerical values.
