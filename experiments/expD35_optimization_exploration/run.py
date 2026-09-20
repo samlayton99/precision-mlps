@@ -187,6 +187,8 @@ def advance(root, cases, frontier, deadline=float('inf'), capture_last=0):
             print(json.dumps(dict(group=list(group_signature(config)), step=at, cases=len(cases),
                 elapsed=time.monotonic()-begin, failed=int(np.count_nonzero(np.asarray(states['failed']))),
                 validation_mse=[finite(v[0]) for v in evaluations])), flush=True)
+            from .history import consolidate
+            for folder,_,_ in loaded:consolidate(folder)
         if np.all(np.asarray(states['failed'])>0):
             return True
     return True

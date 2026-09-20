@@ -129,6 +129,9 @@ def advance(root,c,source,frontier,deadline):
         run.write_json(folder/'latest.json',latest)
         if end%1000==0 or int(state['status']):
             print(json.dumps(dict(id=folder.name,elapsed=time.monotonic()-started,**latest)),flush=True)
+        if end%2000==0 or int(state['status']):
+            from .history import consolidate
+            consolidate(folder)
     return int(state['count'])>=frontier or int(state['status'])!=0
 
 

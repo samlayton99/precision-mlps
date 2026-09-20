@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import numpy as np
 from . import run
+from . import history
 
 
 def rank(root, minimum=20000, horizon=None):
@@ -17,8 +18,7 @@ def rank(root, minimum=20000, horizon=None):
         if latest['step']<max(minimum,endpoint): continue
         if latest['failed_update'] and latest['failed_update']<=endpoint:continue
         values=[]
-        for evaluation in folder.glob('evaluation_*.json'):
-            e=json.loads(evaluation.read_text())
+        for e in history.evaluations(folder):
             if .8*endpoint<=e['step']<=endpoint and e['validation_relative_mse'] is not None:
                 values.append(e['validation_relative_mse'])
         if not values or not np.all(np.isfinite(values)): continue

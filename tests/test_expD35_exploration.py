@@ -169,3 +169,25 @@ def test_replay_cannot_silently_run_without_source_events(tmp_path):
     c=run.case(n=64,reset='replay_state',replay_directory=str(tmp_path/'missing'))
     with pytest.raises(ValueError,match='recycling run must reach'):
         run.advance(tmp_path/'out',[c],20000)
+
+
+def test_history_consolidation_preserves_bytes_and_selection(tmp_path):
+    import zipfile,json,hashlib
+    from experiments.expD35_optimization_exploration import run,design,history
+    folder=tmp_path/'trial';folder.mkdir()
+    run.write_json(folder/'case.json',run.case())
+    run.write_json(folder/'latest.json',dict(step=20000,failed_update=0))
+    for step,value in ((16000,.2),(20000,.1)):
+        run.write_json(folder/f'evaluation_{step:09d}.json',dict(step=step,validation_relative_mse=value))
+        run.save(folder/f'snapshot_{step:09d}.npz',z=np.arange(4.)+step,step=step)
+    expected={p.name:p.read_bytes() for p in folder.glob('snapshot_*.npz')}
+    before=design.rank(tmp_path)[0]['score']
+    assert history.consolidate(folder)==3
+    assert design.rank(tmp_path)[0]['score']==before
+    with zipfile.ZipFile(next(folder.glob('history_*.zip'))) as archive:
+        hashes=json.loads(archive.read('sha256.json'))
+        for name,data in expected.items():
+            assert archive.read(name)==data
+            assert hashlib.sha256(data).hexdigest()==hashes[name]
+    assert (folder/'snapshot_000020000.npz').exists()
+    assert not (folder/'snapshot_000016000.npz').exists()
