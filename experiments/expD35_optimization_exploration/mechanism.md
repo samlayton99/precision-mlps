@@ -74,3 +74,30 @@ $$
 Differencing removes the broad antiderivative component and produces localized features. It retains the exponential high-frequency factor $\exp[-\pi|\omega|/(2\gamma)]$. With $\lambda=\gamma h$ and $\theta=\omega h$, this factor is $\exp[-\pi|\theta|/(2\lambda)]$. Differencing therefore has a principled conditioning benefit, but cannot make arbitrarily weak high-frequency directions accessible at a fixed small bandwidth. Differentiating this factor with respect to the slope introduces polynomial factors while retaining the exponential suppression.
 
 Finite intervals, the bias and final anchor, halos, unequal learned slopes, and nonuniform affine centers all change the actual singular spectrum. The experiment measures that spectrum and the residual's projection onto it. A large global condition number alone is insufficient evidence of an optimization barrier: the remaining target error must also occupy weak directions. Conversely, a favorable median bandwidth alone is insufficient evidence of useful geometry. The detached fits, coefficient norms, and function-space update measurements address these distinctions.
+
+For the fixed-center model, the exact physical slope gradient is
+
+$$
+\frac{\partial L}{\partial\gamma_j}
+=w_j\left\langle r,(x-t_j)\operatorname{sech}^2(\gamma_j(x-t_j))\right\rangle,
+\qquad L=\tfrac12\langle r,r\rangle.
+$$
+
+Training $\lambda_j=h\gamma_j$ with native GD gives $\Delta\gamma_j=-(\eta/h^2)\partial L/\partial\gamma_j$. This removes the explicit coordinate scale; it cannot restore a residual projection that readout training has already removed, or an exponentially attenuated projection onto the remaining residual. Readout magnitude is another multiplicative factor. This is the local signal mechanism behind the proposed race. A proof of a lasting barrier additionally needs control of the trajectory, the readout magnitudes, and the residual projections; choosing the coordinate scales alone does not provide those bounds.
+
+There is also a distinct explanation for large opposing parameter-block motions late in training. Let $J_r$ and $J_g$ be the readout and geometry Jacobians in the trained coordinates, with the training quadrature included. For an infinitesimal plain GD step,
+
+$$
+\Delta f_r=-\eta J_rJ_r^T r,\qquad
+\Delta f_g=-\eta J_gJ_g^T r,
+$$
+
+and therefore
+
+$$
+\langle r,\Delta f_r\rangle=-\eta\|J_r^Tr\|^2\leq0,
+\qquad
+\langle r,\Delta f_g\rangle=-\eta\|J_g^Tr\|^2\leq0.
+$$
+
+The two function increments can nevertheless have a strongly negative mutual inner product: their components perpendicular to the residual can cancel. Such cancellation indicates redundant or nearly redundant directions in the joint parameterization. It does not by itself show that geometry training harms descent or that freezing geometry would improve the result. The measured increments use exact finite changes with readouts changed first, so nonlinear cross effects and a different validation quadrature are disclosed separately. The infinitesimal identities above apply to the training quadrature and plain GD, not automatically to filtered GD or Adam.
