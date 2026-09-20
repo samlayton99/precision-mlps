@@ -73,3 +73,16 @@ counter. Failed cells retain their first failure index and are not reset.
 CPU work is split into a screen allocation of at most 20 minutes and a later
 precision/analysis allocation of at most 40 minutes, preserving the total
 60-minute CPU walltime allowance while allowing training to start promptly.
+
+Run `python -m experiments.expD36_frozen_gamma_probe.precision --root <output>`
+in the CPU allocation to reconstruct the selected witnesses at 80 and 120
+decimal digits and compare two SVD implementations. This also exports compact
+diagnostic arrays for plotting.
+
+After downloading the artifacts, run `python -m
+experiments.expD36_frozen_gamma_probe.analyze --root <output>`. It writes
+`summary.json` and PNG, SVG, and PDF figures for access, executed GD curves,
+hitting-time comparisons, and equal-budget trained precision. It requires the
+saved training traces; it does not launch or extend training. The summary keeps
+executed hits, budget-censored cases, and spectral extrapolations separate.
+Scientific prose and result tables are authored directly in the results report.
