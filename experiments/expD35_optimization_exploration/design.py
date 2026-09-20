@@ -44,6 +44,7 @@ def winners(rows, count=1, coordinates=None):
 
 
 def build(root,stage):
+    if stage=='intervention_promote': return promote(root)
     rows=rank(root,100000 if stage in ('ema','initialization','agreement') else 20000)
     controls=winners(baseline_rows(rows),2 if stage=='baseline_promote' else 1,
                      None if stage=='baseline_promote' else ('individual','neighbor'))
@@ -79,6 +80,45 @@ def build(root,stage):
                 cases.append(dict(c,sampling=sampling))
     else: raise ValueError(stage)
     return list({run.key(c):c for c in cases}.values()),controls
+
+
+def promote(root):
+    """Promote separate mechanisms and their paired controls before widening."""
+    rows=rank(root,horizon=20000);selected=[];cases=[]
+    directory=Path(__file__).parent/'manifests'
+    def members(name):
+        identities={run.key(c) for c in json.loads((directory/(name+'.json')).read_text())}
+        return [r for r in rows if r['id'] in identities]
+    ema=winners([r for r in members('ema_screen') if r['config']['ema_strength']>0
+                 and not r['config']['ema_normalized'] and r['config']['ema_location']==1],2)
+    selected.extend(ema)
+    for r in ema:
+        c=r['config'];cases.extend([c,dict(c,ema_strength=0.)])
+        if c['optimizer']=='gd':
+            cases.extend([dict(c,eta=c['eta']/(1+c['ema_strength'])),
+                          dict(c,ema_strength=0.,eta=c['eta']*(1+c['ema_strength']))])
+        else:
+            cases.extend([dict(c,ema_normalized=True,epsilon=c['epsilon']/(1+c['ema_strength'])),
+                          dict(c,ema_location=2)])
+    initial=members('initialization_screen')
+    for initialization in ('reference_xavier','individual_gaussian'):
+        for slope in ('physical_xavier','lambda_xavier'):
+            best=winners([r for r in initial if r['config']['initialization']==initialization
+                          and r['config']['slope_initialization']==slope])
+            selected.extend(best);cases.extend(r['config'] for r in best)
+    for r in members('agreement_screen'):
+        c=r['config']
+        useful=c['optimizer']=='adam' or (c['coordinates']=='neighbor' and c['target']=='sine')
+        if useful and c.get('agreement_threshold',.9)==.9:cases.append(c)
+    # Combine the best screened initialization with the best gradient-memory recipe.
+    by_group=lambda c:(c['optimizer'],c['coordinates'],c['target'])
+    best_ema={by_group(r['config']):r['config'] for r in reversed(ema)}
+    for r in winners(initial):
+        c=r['config'];e=best_ema[by_group(c)]
+        for factor in (.3,1.,3.):
+            cases.append(dict(c,ema_alpha=e['ema_alpha'],ema_strength=e['ema_strength'],eta=c['eta']*factor))
+    cases=[dict(c,seed=seed) for c in cases for seed in (0,1)]
+    return list({run.key(c):c for c in cases}.values()),selected
 
 
 def main():

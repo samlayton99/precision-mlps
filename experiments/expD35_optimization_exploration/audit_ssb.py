@@ -22,7 +22,8 @@ def audit(folder,source):
         exact_slope=-mp.fdot(gg,mm*gg)
     search=state['solver'].search_state
     return dict(id=folder.name,stored_directional_derivative_fp64=float(-stored@matrix@stored),
-        stored_directional_derivative_mp80=str(exact_slope),search_slope=float(search.slope_init),
+        stored_directional_derivative_mp80=mp.nstr(exact_slope,80),search_slope=float(search.slope_init),
+        actual_stored_direction_slope=float(stored@(-np.asarray(state['solver'].descent_state.newton))),
         recomputed_directional_derivative_fp64=float(-recomputed@matrix@recomputed),
         stored_gradient_norm=float(np.linalg.norm(stored)),
         cpu_gpu_gradient_difference_relative=float(np.linalg.norm(stored-recomputed)/np.linalg.norm(stored)),

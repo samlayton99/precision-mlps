@@ -230,7 +230,9 @@ def main():
         if group_signature(c) not in assigned: continue
         path=args.root/key(c)/'state.npz'
         if path.exists():
-            with np.load(path) as checkpoint: at=int(checkpoint['step'])
+            with np.load(path) as checkpoint:
+                at=int(checkpoint['step'])
+                if int(checkpoint['failed']):continue
         else: at=0
         if at<args.frontier: groups[(group_signature(c),at)].append(c)
     deadline=time.monotonic()+args.seconds

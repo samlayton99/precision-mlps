@@ -16,7 +16,7 @@ from . import core, run
 TRACE=('mse','accepted_count','accepted','status','search_calls','step_size','curvature',
        'guard_active','gradient_readout','gradient_geometry','delta_readout_rms',
        'delta_gamma_rms','secant_relative_error','native_identity_direction_cosine','metric_reset',
-       'stored_directional_derivative','metric_max_abs')
+       'stored_directional_derivative','metric_max_abs','matrix_directional_derivative')
 
 
 def problem(c):
@@ -58,10 +58,12 @@ def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,le
         def step(current,_):
             matrix_before=current['solver'].f_info.hessian_inv.pytree
             stored=current['solver'].f_info.grad
-            stored_slope=stored@(-matrix_before@stored)
+            matrix_slope=stored@(-matrix_before@stored)
+            stored_slope=stored@(-current['solver'].descent_state.newton)
             reset=(current['count']>0)&(current['count']%interval==0)&(mode!='none')&(current['status']==0)
             if mode=='non_descent':
-                reset=(current['count']>0)&(current['status']==0)&((stored_slope>=0)|~jnp.isfinite(stored_slope))
+                bad=(stored_slope>=0)|(matrix_slope>=0)|~jnp.isfinite(stored_slope)|~jnp.isfinite(matrix_slope)
+                reset=(current['count']>0)&(current['status']==0)&bad
             if mode!='none':
                 current=jax.lax.cond(reset,lambda st:restart(st,solver,loss,
                     reset_matrix(st['solver'].f_info.hessian_inv.pytree,mode,g.width+1)),lambda st:st,current)
@@ -79,7 +81,7 @@ def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,le
                 ev['step_size'],ev['curvature'],ev['guard_active'],jnp.linalg.norm(ev['gradient'][:g.width+1]),
                 jnp.linalg.norm(ev['gradient'][g.width+1:]),jnp.sqrt(jnp.mean((c1-c0)**2)),
                 jnp.sqrt(jnp.mean((ga1-ga0)**2)),secant,core.cosine(direction,-ev['gradient']),reset,
-                stored_slope,jnp.max(jnp.abs(matrix_before))])
+                stored_slope,jnp.max(jnp.abs(matrix_before)),matrix_slope])
             return out,jnp.where(active,row,jnp.nan)
         return jax.lax.scan(step,state,None,length=length)
     return chunk

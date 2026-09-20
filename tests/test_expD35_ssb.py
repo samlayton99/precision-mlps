@@ -62,6 +62,7 @@ def test_non_descent_reset_is_explicit_and_restores_descent():
     s=higher.ssb_initial(solver,loss,core.initialize(c)['z'])
     s,_=higher.ssb_step(solver,loss,phys,1e-30)(s)
     s['solver']=eqx.tree_at(lambda st:st.f_info.hessian_inv.pytree,s['solver'],-jnp.eye(len(s['z'])))
+    s['solver']=eqx.tree_at(lambda st:st.descent_state.newton,s['solver'],-s['solver'].f_info.grad)
     out,trace=ssb.kernel(64,'individual','sine',source,1e-30,1e-15,'non_descent',1000,1)(s)
     assert float(trace[0,14])==1. and float(trace[0,15])>0
     assert int(out['status'])==0 and int(out['count'])==2
