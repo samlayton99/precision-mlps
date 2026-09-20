@@ -9,7 +9,6 @@ import time
 
 import numpy as np
 from scipy.linalg import svdvals
-from threadpoolctl import threadpool_limits
 
 from . import core
 
@@ -115,8 +114,7 @@ def main():
     parser.add_argument('--root', type=Path, required=True)
     parser.add_argument('--config', type=Path, default=core.HERE/'config.yaml')
     args = parser.parse_args()
-    with threadpool_limits(limits=8):
-        run(args.root, core.config(args.config))
+    run(args.root, core.config(args.config))
 
 
 if __name__ == '__main__':
