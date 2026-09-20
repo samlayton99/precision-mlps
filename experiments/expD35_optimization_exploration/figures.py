@@ -127,6 +127,23 @@ def construction(folder,reference,out):
     fig.tight_layout();fig.savefig(out);plt.close(fig)
 
 
+def geometry_signal(path,out):
+    with np.load(path) as d:a={k:d[k] for k in d.files}
+    fig,axes=plt.subplots(2,1,figsize=(11,7),sharex=True)
+    groups=[ [('physical_gamma_gradient','Total'),('coarse_gamma_gradient','From constant + linear residual'),
+              ('remainder_gamma_gradient','From remaining residual')],
+             [('physical_gamma_gradient','Total'),('readout_span_gamma_gradient','From retained readout span'),
+              ('orthogonal_gamma_gradient','From orthogonal residual')] ]
+    for ax,group in zip(axes,groups):
+        scale=max(np.max(abs(a[k])) for k,_ in group)
+        for k,label in group:ax.plot(a['centers'],a[k],'.-',ms=2,lw=.6,label=label)
+        ax.set_yscale('symlog',linthresh=max(scale*1e-5,1e-30));ax.grid(alpha=.2)
+        ax.set_ylabel('Physical slope gradient');ax.legend(fontsize=8)
+    axes[1].set_xlabel('Fixed physical center')
+    fig.suptitle('Residual contributions to gamma gradients; readout-span cutoff = 1e-12')
+    fig.tight_layout();fig.savefig(out);plt.close(fig)
+
+
 def mechanism(path,dense_path,out):
     with np.load(path) as d: data={k:d[k] for k in d.files}
     with np.load(dense_path) as d: dense={k:d[k] for k in d.files}
