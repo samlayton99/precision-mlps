@@ -65,3 +65,15 @@ def test_polynomial_target_does_not_change_with_grid():
     for name in ('moment3','moment5','moment9'):
         expected=core.moments.values(name,x,core.polynomial_mapping())
         np.testing.assert_allclose(core.target(x,name),expected,atol=5e-13,rtol=2e-12)
+
+
+def test_runner_resume_preserves_adam_and_ema(tmp_path):
+    from experiments.expD35_optimization_exploration import run
+    c=run.case(n=64, ema_strength=2., eta=1e-5)
+    run.advance(tmp_path/'split',[c],10)
+    run.advance(tmp_path/'split',[c],20)
+    run.advance(tmp_path/'whole',[c],20)
+    a,_=run.restore(tmp_path/'split'/run.key(c)/'state.npz')
+    b,_=run.restore(tmp_path/'whole'/run.key(c)/'state.npz')
+    for name in a:
+        np.testing.assert_array_equal(a[name],b[name])
