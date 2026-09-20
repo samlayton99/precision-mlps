@@ -1,6 +1,6 @@
-# Session catalogue — expD24 through expD33
+# Session catalogue — expD24 through expD34
 
-This follows the session from the initial paper discussion through the matched four-way comparison, the scale-barrier investigation, an explanatory figure collection, the fixed-geometry spectrum sweep, the readout-information/freezing experiments, the loss-gradient decomposition, the approximation-gradient weighting test, extreme-gamma center sampling, the six-weight mu sweep, and separate Adam streams with outside weighting. There are **148 available plots: 138 PNGs and 10 GIFs**, all linked below. Deleted and superseded versions are recorded in their original place in the progression. This is an inventory, not a results writeup.
+This follows the session from the initial paper discussion through the matched four-way comparison, the scale-barrier investigation, an explanatory figure collection, the fixed-geometry spectrum sweep, the readout-information/freezing experiments, the loss-gradient decomposition, the approximation-gradient weighting test, extreme-gamma center sampling, the six-weight mu sweep, separate Adam streams with outside weighting, and a differentiable Newton–Schulz residual penalty. There are **158 available plots: 148 PNGs and 10 GIFs**, all linked below. Deleted and superseded versions are recorded in their original place in the progression. This is an inventory, not a results writeup.
 
 **Training-domain correction:** Earlier comparisons containing the Gaussian-envelope row used a whole-line objective and a tail-cancelling model for that row, while the other targets used finite-interval training. Those comparisons did not hold the training samples or model constraints fixed across functions. Movement 12 corrects the steps 0–5 comparison; movement 14 extends matched training to four functions and four initializations for 2,000 steps. The earlier whole-line results remain records of their different objective.
 
@@ -432,6 +432,34 @@ The companion subtracts curve 1 from curve 2 and curve 3 from curve 4. Both redu
 
 - [Dynamic ratio — constant learning rate](../results/checkpoint_D_optimizers/expD31_split_adam/dynamic_ratio/figures/constant.png)
 - [Dynamic ratio — cosine learning-rate decay](../results/checkpoint_D_optimizers/expD31_split_adam/dynamic_ratio/figures/cosine.png)
+
+**31. Match J and J* directly at four multipliers**
+
+**Asked and ran:** Four function figures, columns $\mu=100,250,500,1000$, with exactly two curves per panel. Both methods use identical Xavier initialization and a cosine schedule across 10,000 steps. Reuse twelve existing $J_*$ trajectories and fill twenty missing trajectories. Rows are trained relative $L_2$, refitted relative $L_2$, and mean gamma; both error rows use the same training grid. No new interpretation added.
+
+- [Matched J versus J* — sine](../results/checkpoint_D_optimizers/expD33_current_readout_split/j_vs_jstar/figures/sine.png)
+- [Matched J versus J* — mixed sine](../results/checkpoint_D_optimizers/expD33_current_readout_split/j_vs_jstar/figures/sine_mixture.png)
+- [Matched J versus J* — Runge](../results/checkpoint_D_optimizers/expD33_current_readout_split/j_vs_jstar/figures/runge.png)
+- [Matched J versus J* — Gaussian envelope](../results/checkpoint_D_optimizers/expD33_current_readout_split/j_vs_jstar/figures/gaussian_envelope.png)
+
+**32. Differentiate an approximate floor without a coefficient solve during training**
+
+**Asked and ran:** Implement a scalar loss L+mu Fhat using a differentiable Muon-style polar approximation. Compare five original iterations with four added Newton–Schulz refinement steps in a seven-run mixed-sine pilot. Then add the refined version to the saved J/J* comparison: sixteen new 10,000-step cosine runs, four functions, columns mu=100,250,500,1000. Reuse the 32 J/J* trajectories. Rows remain trained relative L2, explicit least-squares relative L2, and mean gamma. The legend/footer distinguishes mu inside one Adam for the new loss from mu outside the two-stream normalization for J/J*. Fourteen implementation checks pass. No new interpretation is added to the matched figures.
+
+- [Five-iteration spectral response and added refinement](../results/checkpoint_D_optimizers/expD34_ns_residual_penalty/figures/spectral_response.png)
+- [Mixed-sine pilot — original and refined penalties versus ordinary Adam](../results/checkpoint_D_optimizers/expD34_ns_residual_penalty/figures/mixed_sine.png)
+- [J, J*, and Newton–Schulz — sine](../results/checkpoint_D_optimizers/expD34_ns_residual_penalty/j_comparison/figures/sine.png)
+- [J, J*, and Newton–Schulz — mixed sine](../results/checkpoint_D_optimizers/expD34_ns_residual_penalty/j_comparison/figures/sine_mixture.png)
+- [J, J*, and Newton–Schulz — Runge](../results/checkpoint_D_optimizers/expD34_ns_residual_penalty/j_comparison/figures/runge.png)
+- [J, J*, and Newton–Schulz — Gaussian envelope](../results/checkpoint_D_optimizers/expD34_ns_residual_penalty/j_comparison/figures/gaussian_envelope.png)
+
+**33. Measure the note's current-readout projection split for gamma alone**
+
+**Asked and ran:** expD35 trains the four matched functions for 10,000 ordinary-GD steps from Xavier and uniform gamma 16 with zero readout, using N=128 and the existing halo/sample/rate conventions. Sam selected the actual slope component of raw GD, with bias held fixed in the diagnostic derivative. All parameters still train jointly. The requested 4×4 figure uses function columns, Xavier norm/cosine rows above gamma-16 norm/cosine rows. Norms include all trainable slopes, including halo; they exclude bias-gradient components.
+
+**Checks:** Three implementation tests pass. Offline SVD projection at 200 unique snapshots reconstructs the autodiff gamma gradient to floating-point accuracy. Cosines passing SVD/backend sensitivity checks are purple; unresolved estimates are gray dotted. Zero-readout initial cosines are undefined. No projection or readout refit affects training. The [expD35 writeup](/Users/sam/my-repos/research/collaborations/precisionMLPs/results/checkpoint_D_optimizers/expD35_projected_scale_gradient/expD35_results.md) defines the coordinates, numerical projector, and reliability checks.
+
+- [Current-readout gamma-gradient decomposition — four targets, Xavier and gamma 16, 10,000 GD steps](/Users/sam/my-repos/research/collaborations/precisionMLPs/results/checkpoint_D_optimizers/expD35_projected_scale_gradient/figures/projected_gamma_gradient.png)
 
 **Catalogue preservation notes**
 
