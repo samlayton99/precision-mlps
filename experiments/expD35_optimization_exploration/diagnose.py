@@ -3,6 +3,8 @@ import argparse
 import json
 from pathlib import Path
 import numpy as np
+import jax
+import jax.numpy as jnp
 from . import core,run
 
 BANDS=((0,1),(1,2),(2,4),(4,8),(8,16),(16,32),(32,64),(64,128),(128,256),(256,None))
@@ -99,10 +101,15 @@ def dense(folder,config,out):
     g=core.old.geometry(config['n']);m=max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
     y=core.target(x,config['target'],np);rows=[];basis=None;spectrum=None
     mapping=transform(g,config['coordinates'])
+    tx=jnp.linspace(-1,1,16*config['n']+1);ty=core.target(tx,config['target'])
+    training_gradient=jax.jit(lambda z:core.field(z,tx,ty,g,config['coordinates'])[1])
     edges=np.array([0.,1e-8,1e-6,1e-4,1e-2,.1,1.0000001])
     for path in sorted(folder.glob('dense_*.npz')):
         with np.load(path) as data:
             zs=np.concatenate((data['initial_z'][None],data['z']));start=int(data['start'])
+            recorded=np.asarray(data['gradients']) if 'gradients' in data else None
+            stride=int(data['gradient_stride']) if 'gradient_stride' in data else 16
+            assert stride==16
         if basis is None:
             _,ga=map(np.asarray,core.physical(zs[0],g,config['coordinates']))
             features=np.column_stack((np.ones(m),np.tanh((x[:,None]-g.centers)*ga+np.asarray(core.offsets(zs[0],g)))))
@@ -123,6 +130,8 @@ def dense(folder,config,out):
             gg/=1. if config['coordinates']=='physical' else g.h
             if config.get('architecture')=='affine':gg=np.r_[gg,np.mean(r[:,None]*c0[1:]*sech,axis=0)]
             delta=zs[i+1]-zs[i];dzr=delta[:g.width+1];dzg=delta[g.width+1:]
+            actual=recorded[i//16] if recorded is not None else np.asarray(training_gradient(zs[i]))
+            actual_r=actual[:g.width+1];actual_g=actual[g.width+1:]
             def alignment(a,b):
                 den=np.linalg.norm(a)*np.linalg.norm(b)
                 return float(a@b/den) if den else np.nan
@@ -139,9 +148,11 @@ def dense(folder,config,out):
                 mode_geometry_descent=aggregate(-2*ur*ug),outside_fixed_span=max(0.,np.mean(r*r)-np.sum(ur**2)),
                 readout_update_outside_span=max(0.,np.mean(dr*dr)-np.sum(uw**2)),
                 geometry_update_outside_span=max(0.,np.mean(dg*dg)-np.sum(ug**2)),
-                native_readout_gradient=np.linalg.norm(gr),native_geometry_gradient=np.linalg.norm(gg),
+                native_readout_gradient=np.linalg.norm(actual_r),native_geometry_gradient=np.linalg.norm(actual_g),
                 native_readout_motion=np.linalg.norm(dzr),native_geometry_motion=np.linalg.norm(dzg),
-                readout_gradient_alignment=alignment(dzr,-gr),geometry_gradient_alignment=alignment(dzg,-gg),
+                readout_gradient_alignment=alignment(dzr,-actual_r),geometry_gradient_alignment=alignment(dzg,-actual_g),
+                validation_readout_gradient_alignment=alignment(dzr,-gr),validation_geometry_gradient_alignment=alignment(dzg,-gg),
+                gradient_recorded_on_device=recorded is not None,
                 readout_motion=np.sqrt(np.mean((c1-c0)**2)),gamma_motion=np.sqrt(np.mean((ga1-ga0)**2)),
                 offset_motion=np.sqrt(np.mean((beta1-beta0)**2))))
     if rows:run.save(out,singular_values=spectrum,mode_edges=edges,

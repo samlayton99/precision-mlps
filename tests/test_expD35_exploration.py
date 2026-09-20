@@ -174,7 +174,10 @@ def test_dense_capture_does_not_change_updates():
     st=core.initialize(case());hp=core.hyperparameters(case())
     batch=lambda v:jax.tree.map(lambda a:a[None],v)
     a,_=core.chunk(64,'individual','gd','sine',3)(batch(st),batch(hp),0)
-    b,(trace,z)=core.chunk(64,'individual','gd','sine',3,capture=True)(batch(st),batch(hp),0)
+    b,(trace,z,gradient,filtered)=core.chunk(64,'individual','gd','sine',3,capture=True)(batch(st),batch(hp),0)
+    x=jnp.linspace(-1,1,1025)
+    expected=core.field(st['z'],x,core.target(x,'sine'),old.geometry(64),'individual')[1]
+    np.testing.assert_allclose(gradient[0,0],expected,rtol=2e-13,atol=2e-14)
     np.testing.assert_array_equal(a['z'],b['z'])
     np.testing.assert_array_equal(z[:,-1],b['z'])
 

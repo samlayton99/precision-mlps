@@ -151,7 +151,10 @@ def advance(root, cases, frontier, deadline=float('inf'), capture_last=0):
         before=np.asarray(states['z']) if capture else None
         states, output = kernel(states, hp, at, replay)
         jax.block_until_ready(states)
-        if capture: traces,trajectory=output;trajectory=np.asarray(trajectory)
+        if capture:
+            traces,trajectory,gradients,filtered_gradients=output
+            trajectory=np.asarray(trajectory);gradients=np.asarray(gradients)
+            filtered_gradients=np.asarray(filtered_gradients)
         else: traces=output
         traces = np.asarray(traces)
         agreement_data=None
@@ -178,7 +181,8 @@ def advance(root, cases, frontier, deadline=float('inf'), capture_last=0):
                     save(folder/f'reset_events_{at:09d}_{end:09d}.npz',updates=at+1+np.flatnonzero(occurred),masks=masks[occurred])
             save(folder/f'snapshot_{end:09d}.npz', z=state['z'], step=end)
             if capture:
-                save(folder/f'dense_{at:09d}_{end:09d}.npz',z=trajectory[i],initial_z=before[i],start=at,end=end)
+                save(folder/f'dense_{at:09d}_{end:09d}.npz',z=trajectory[i],initial_z=before[i],start=at,end=end,
+                     gradient_stride=16,gradients=gradients[i,::16],filtered_gradients=filtered_gradients[i,::16])
             if agreement_data is not None:
                 save(folder/f'agreement_{end:09d}.npz',statistics=agreement_data[0][i],
                      batch_gradients=agreement_data[1][i],full_gradient=agreement_data[2][i],

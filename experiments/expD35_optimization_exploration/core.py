@@ -171,7 +171,7 @@ def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1
                 jnp.sum(mask),jump,jnp.sqrt(jnp.mean((offsets(z1,g)-offsets(current['z'],g))**2))])
             trace=jnp.where(active, trace, jnp.nan)
             if reset!='none': trace=jnp.r_[trace,mask&active]
-            return next_state, (trace,next_state['z']) if capture else trace
+            return next_state, (trace,next_state['z'],grad,filtered) if capture else trace
         return jax.lax.scan(step, state, (start+jnp.arange(length),replay))
     compiled=jax.jit(jax.vmap(one, in_axes=(0, 0, None, 0)))
     def run(states,hp,start,replay=None):
