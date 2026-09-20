@@ -17,8 +17,9 @@ def rank(root, minimum=20000, horizon=None):
         endpoint=horizon if horizon is not None else latest['step']
         if latest['step']<max(minimum,endpoint): continue
         if latest['failed_update'] and latest['failed_update']<=endpoint:continue
-        values=[]
-        for e in history.evaluations(folder):
+        values=[];evaluations=history.evaluations(folder)
+        if not any(e['step']==endpoint for e in evaluations):continue
+        for e in evaluations:
             if .8*endpoint<=e['step']<=endpoint and e['validation_relative_mse'] is not None:
                 values.append(e['validation_relative_mse'])
         if not values or not np.all(np.isfinite(values)): continue

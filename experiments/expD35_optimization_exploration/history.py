@@ -1,10 +1,28 @@
 """Losslessly consolidate this campaign's immutable history files after quota errors."""
 import argparse
+import fnmatch
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
 import zipfile
+
+
+def arrays(folder,pattern):
+    """Read current or archived NPZ evidence; current files take precedence."""
+    import numpy as np
+    locations={}
+    for path in sorted(folder.glob('history_*.zip')):
+        with zipfile.ZipFile(path) as archive:
+            for name in archive.namelist():
+                if fnmatch.fnmatch(name,pattern):locations[name]=path
+    for path in folder.glob(pattern):locations[path.name]=None
+    for name,path in sorted(locations.items()):
+        if path is None:raw=(folder/name).read_bytes()
+        else:
+            with zipfile.ZipFile(path) as archive:raw=archive.read(name)
+        with np.load(io.BytesIO(raw)) as data:yield name,{k:data[k] for k in data.files}
 
 
 def evaluations(folder):

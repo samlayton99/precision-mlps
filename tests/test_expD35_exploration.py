@@ -191,6 +191,8 @@ def test_history_consolidation_preserves_bytes_and_selection(tmp_path):
             assert hashlib.sha256(data).hexdigest()==hashes[name]
     assert (folder/'snapshot_000020000.npz').exists()
     assert not (folder/'snapshot_000016000.npz').exists()
+    recovered=list(history.arrays(folder,'snapshot_*.npz'))
+    assert [int(data['step']) for _,data in recovered]==[16000,20000]
 
 
 @pytest.mark.parametrize('kind',['grid','jitter','random'])

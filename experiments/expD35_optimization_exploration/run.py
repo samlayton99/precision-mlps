@@ -227,6 +227,7 @@ def main():
     p.add_argument('--coordinates', choices=core.COORDINATES);p.add_argument('--optimizer', choices=('gd','adam'))
     p.add_argument('--target');p.add_argument('--require-gpu', action='store_true')
     args=p.parse_args()
+    if not jax.config.x64_enabled:p.error('Set JAX_ENABLE_X64=true for this FP64 experiment')
     if args.frontier<20000 or args.frontier%20000:
         p.error('Scientific horizons must be multiples of 20k')
     args.root.mkdir(parents=True, exist_ok=True)
