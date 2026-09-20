@@ -35,11 +35,11 @@ def band_product(a,b):
     return np.array([np.sum(energy[lo:hi]) for lo,hi in BANDS])
 
 
-def snapshot(path,config,out):
+def snapshot(path,config,out,grid_size=None):
     g=core.old.geometry(config['n'])
     with np.load(path) as data:z=np.asarray(data['z'])
     c,gamma=map(np.asarray,core.physical(z,g,config['coordinates']))
-    m=max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
+    m=grid_size or max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
     beta=np.asarray(core.offsets(z,g))
     y=core.target(x,config['target'],np);pre=(x[:,None]-g.centers)*gamma+beta;phi=np.tanh(pre)
     design=np.column_stack((np.ones(m),phi));residual=design@c-y
@@ -81,7 +81,7 @@ def snapshot(path,config,out):
         orthogonal_gamma_gradient=gamma_gradient-removable_gradient,
         least_squares_coefficients=np.stack(coefficients))
     run.save(out.with_suffix('.npz'),**arrays)
-    result=dict(snapshot=str(path),config=config,mse=float(np.mean(residual**2)),
+    result=dict(snapshot=str(path),config=config,grid_size=m,mse=float(np.mean(residual**2)),
         lambda_quantiles=np.quantile(np.abs(g.h*gamma),[0,.1,.5,.9,1]).tolist(),
         resolved_mode_energy=float(np.sum(projected**2)),residual_energy=float(np.mean(residual**2)),
         least_squares=ls,mode_edges=mode_edges,mode_energy=mode_energy.tolist(),
@@ -97,8 +97,8 @@ def snapshot(path,config,out):
     return result
 
 
-def dense(folder,config,out):
-    g=core.old.geometry(config['n']);m=max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
+def dense(folder,config,out,grid_size=None):
+    g=core.old.geometry(config['n']);m=grid_size or max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
     y=core.target(x,config['target'],np);rows=[];basis=None;spectrum=None;residuals=[]
     mapping=transform(g,config['coordinates'])
     tx=jnp.linspace(-1,1,16*config['n']+1);ty=core.target(tx,config['target'])
@@ -156,7 +156,7 @@ def dense(folder,config,out):
                 gradient_recorded_on_device=i in lookup,
                 readout_motion=np.sqrt(np.mean((c1-c0)**2)),gamma_motion=np.sqrt(np.mean((ga1-ga0)**2)),
                 offset_motion=np.sqrt(np.mean((beta1-beta0)**2))))
-    if rows:run.save(out,singular_values=spectrum,mode_edges=edges,
+    if rows:run.save(out,grid_size=m,singular_values=spectrum,mode_edges=edges,
                      mean_residual= np.mean(residuals,axis=0),mean_residual_frequency_energy=band_energy(np.mean(residuals,axis=0)),
                      temporal_fluctuation_frequency_energy=np.mean([r['residual'] for r in rows],axis=0)-band_energy(np.mean(residuals,axis=0)),
                      **{k:np.stack([r[k] for r in rows]) for k in rows[0]})
@@ -165,12 +165,13 @@ def dense(folder,config,out):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True);p.add_argument('--ids',nargs='+',required=True)
+    p.add_argument('--grid-size',type=int)
     args=p.parse_args();args.out.mkdir(parents=True,exist_ok=True)
     for identity in args.ids:
         folder=args.root/identity;c=json.loads((folder/'case.json').read_text())
         snapshots=sorted(folder.glob('snapshot_*.npz'))
-        result=snapshot(snapshots[-1],c,args.out/identity)
-        dense(folder,c,args.out/(identity+'_dense.npz'))
+        result=snapshot(snapshots[-1],c,args.out/identity,args.grid_size)
+        dense(folder,c,args.out/(identity+'_dense.npz'),args.grid_size)
         print(json.dumps(dict(id=identity,mse=result['mse'],least_squares=result['least_squares'])),flush=True)
 
 

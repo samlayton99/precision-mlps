@@ -3,7 +3,8 @@ import argparse
 import csv
 import json
 from pathlib import Path
-from . import design
+import numpy as np
+from . import design, history
 
 
 def write_csv(path, rows):
@@ -43,7 +44,11 @@ def export(root, out):
     scores = []
     for horizon in (20000, 100000, 200000, 300000, 500000):
         for row in design.rank(root, horizon=horizon):
+            mse = [e['validation_mse'] for e in history.evaluations(root / row['id'])
+                   if .8 * horizon <= e['step'] <= horizon]
             scores.append(dict(id=row['id'], horizon=horizon, mean_relative_mse=row['score'],
+                               mean_mse=float(np.mean(mse)), median_mse=float(np.median(mse)),
+                               q90_mse=float(np.quantile(mse, .9)),
                                median_relative_mse=row['median'], q90_relative_mse=row['upper'],
                                best_relative_mse=row['best']))
     write_csv(out / 'horizon_scores.csv', scores)
