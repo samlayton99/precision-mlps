@@ -176,6 +176,22 @@ def geometry_signal(path,out):
     fig.tight_layout();fig.savefig(out);plt.close(fig)
 
 
+def frequency_signal(path,out):
+    with np.load(path) as d:a={k:d[k] for k in d.files}
+    labels=['DC','1','2–3','4–7','8–15','16–31','32–63','64–127','128–255','256+']
+    fig,axes=plt.subplots(1,3,figsize=(15,4.5))
+    axes[0].bar(labels,a['band_energy']);axes[0].set(ylabel='Residual MSE in band',title='Residual spectrum',yscale='log')
+    for ax,parts,total,title in zip(axes[1:],
+        ['frequency_readout_gradient','frequency_gamma_gradient'],
+        ['physical_readout_gradient','physical_gamma_gradient'],['Physical readout gradient','Physical slope gradient']):
+        ax.bar(labels,np.linalg.norm(a[parts],axis=1))
+        ax.axhline(np.linalg.norm(a[total]),color='black',ls='--',label='Norm after summing vectors')
+        ax.set(ylabel='Norm contributed by residual band',title=title,yscale='log');ax.legend(fontsize=8)
+    for ax in axes:ax.tick_params(axis='x',rotation=45);ax.grid(axis='y',alpha=.2)
+    fig.suptitle('Residual Fourier bands passed through the same Jacobian transpose; gradient norms do not add')
+    fig.tight_layout();fig.savefig(out);plt.close(fig)
+
+
 def mechanism(path,dense_path,out):
     with np.load(path) as d: data={k:d[k] for k in d.files}
     with np.load(dense_path) as d: dense={k:d[k] for k in d.files}

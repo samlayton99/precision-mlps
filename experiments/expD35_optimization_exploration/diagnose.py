@@ -26,6 +26,15 @@ def band_energy(values):
     return band_product(values,values)
 
 
+def band_components(values):
+    spectrum=np.fft.rfft(values)
+    parts=[]
+    for lo,hi in BANDS:
+        selected=np.zeros_like(spectrum);selected[lo:hi]=spectrum[lo:hi]
+        parts.append(np.fft.irfft(selected,n=len(values)))
+    return np.stack(parts)
+
+
 def band_product(a,b):
     fa=np.fft.rfft(a)/len(a);fb=np.fft.rfft(b)/len(b)
     energy=np.real(np.conj(fa)*fb)
@@ -62,6 +71,9 @@ def snapshot(path,config,out,grid_size=None,training_grid=False):
     keep=relative>1e-12
     removable=u[:,keep]@(u[:,keep].T@residual)
     removable_gradient=gamma_jacobian.T@removable/m
+    fourier_residual=band_components(residual)
+    fourier_readout=fourier_residual@design/m
+    fourier_gamma=fourier_residual@gamma_jacobian/m
     ls=[];coefficients=[]
     xv=-1+2*(np.arange(32768)+.5)/32768;yv=core.target(xv,config['target'],np)
     for cutoff in (np.finfo(float).eps*max(native.shape),1e-12,1e-14,1e-16):
@@ -82,6 +94,9 @@ def snapshot(path,config,out,grid_size=None,training_grid=False):
         physical_readout_gradient=readout_gradient,native_readout_gradient=mapping.T@readout_gradient,
         remainder_gamma_gradient=gamma_gradient-coarse_gradient,readout_span_gamma_gradient=removable_gradient,
         orthogonal_gamma_gradient=gamma_gradient-removable_gradient,
+        frequency_readout_gradient=fourier_readout,frequency_gamma_gradient=fourier_gamma,
+        frequency_native_readout_gradient=fourier_readout@mapping,
+        frequency_native_slope_gradient=fourier_gamma/(1. if config['coordinates']=='physical' else g.h),
         least_squares_coefficients=np.stack(coefficients))
     run.save(out.with_suffix('.npz'),**arrays)
     result=dict(snapshot=str(path),config=config,grid_size=m,
@@ -97,6 +112,10 @@ def snapshot(path,config,out,grid_size=None,training_grid=False):
         remainder_gradient_norm=float(np.linalg.norm(gamma_gradient-coarse_gradient)),
         readout_span_gradient_norm=float(np.linalg.norm(removable_gradient)),
         orthogonal_gradient_norm=float(np.linalg.norm(gamma_gradient-removable_gradient)),span_relative_cutoff=1e-12)
+    result['fourier_gradient']=dict(readout_norms=np.linalg.norm(fourier_readout,axis=1).tolist(),
+        gamma_norms=np.linalg.norm(fourier_gamma,axis=1).tolist(),
+        readout_sum_error=float(np.linalg.norm(fourier_readout.sum(axis=0)-readout_gradient)),
+        gamma_sum_error=float(np.linalg.norm(fourier_gamma.sum(axis=0)-gamma_gradient)))
     run.write_json(out.with_suffix('.json'),result)
     return result
 

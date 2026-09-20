@@ -180,13 +180,19 @@ def test_no_replacement_does_not_roundtrip_neighbor_coordinates():
 
 
 def test_fourier_accounting_resolves_dc_and_high_frequency_bands():
-    from experiments.expD35_optimization_exploration.diagnose import band_energy,band_product
+    from experiments.expD35_optimization_exploration.diagnose import band_energy,band_product,band_components
     x=np.arange(2048)/2048
     r=2+np.cos(2*np.pi*90*x);update=-.1+1e-3*np.sin(2*np.pi*7*x)
     bands=band_energy(r)
     assert bands[0]==pytest.approx(4.)
     assert bands[7]==pytest.approx(.5)
     assert np.sum(bands)==pytest.approx(np.mean(r*r))
+    parts=band_components(r)
+    np.testing.assert_allclose(parts.sum(axis=0),r,atol=2e-15)
+    np.testing.assert_allclose(parts[0],2.,atol=1e-14)
+    np.testing.assert_allclose(parts[7],np.cos(2*np.pi*90*x),atol=1e-13)
+    features=np.column_stack((np.ones(len(x)),np.cos(2*np.pi*7*x),np.sin(2*np.pi*90*x)))
+    np.testing.assert_allclose((parts@features).sum(axis=0),r@features,atol=5e-12)
     np.testing.assert_allclose(band_energy(r+update),bands+2*band_product(r,update)+band_energy(update),atol=1e-15)
 
 
