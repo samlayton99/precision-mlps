@@ -15,7 +15,8 @@ from . import core, run
 
 TRACE=('mse','accepted_count','accepted','status','search_calls','step_size','curvature',
        'guard_active','gradient_readout','gradient_geometry','delta_readout_rms',
-       'delta_gamma_rms','secant_relative_error','native_identity_direction_cosine','metric_reset')
+       'delta_gamma_rms','secant_relative_error','native_identity_direction_cosine','metric_reset',
+       'stored_directional_derivative','metric_max_abs')
 
 
 def problem(c):
@@ -30,7 +31,7 @@ def problem(c):
 
 def reset_matrix(matrix,mode,split):
     identity=jnp.eye(len(matrix),dtype=matrix.dtype)
-    if mode=='full': return identity
+    if mode in ('full','non_descent'): return identity
     if mode=='blend': return .9*matrix+.1*identity
     if mode=='geometry':
         keep=(jnp.arange(len(matrix))<split)
@@ -55,7 +56,12 @@ def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,le
     @eqx.filter_jit
     def chunk(state):
         def step(current,_):
+            matrix_before=current['solver'].f_info.hessian_inv.pytree
+            stored=current['solver'].f_info.grad
+            stored_slope=stored@(-matrix_before@stored)
             reset=(current['count']>0)&(current['count']%interval==0)&(mode!='none')&(current['status']==0)
+            if mode=='non_descent':
+                reset=(current['count']>0)&(current['status']==0)&((stored_slope>=0)|~jnp.isfinite(stored_slope))
             if mode!='none':
                 current=jax.lax.cond(reset,lambda st:restart(st,solver,loss,
                     reset_matrix(st['solver'].f_info.hessian_inv.pytree,mode,g.width+1)),lambda st:st,current)
@@ -72,7 +78,8 @@ def kernel(n,coordinates,target,source,epsilon,search_threshold,mode,interval,le
             row=jnp.array([2*ev['loss'],out['count'],ev['accepted'],out['status'],ev['attempts'],
                 ev['step_size'],ev['curvature'],ev['guard_active'],jnp.linalg.norm(ev['gradient'][:g.width+1]),
                 jnp.linalg.norm(ev['gradient'][g.width+1:]),jnp.sqrt(jnp.mean((c1-c0)**2)),
-                jnp.sqrt(jnp.mean((ga1-ga0)**2)),secant,core.cosine(direction,-ev['gradient']),reset])
+                jnp.sqrt(jnp.mean((ga1-ga0)**2)),secant,core.cosine(direction,-ev['gradient']),reset,
+                stored_slope,jnp.max(jnp.abs(matrix_before))])
             return out,jnp.where(active,row,jnp.nan)
         return jax.lax.scan(step,state,None,length=length)
     return chunk

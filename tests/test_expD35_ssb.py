@@ -51,3 +51,17 @@ def test_covariant_initial_metric_matches_first_physical_step():
     a,_=higher.ssb_step(solver,loss,phys,1e-30)(a)
     b,_=higher.ssb_step(solver,loss_p,phys_p,1e-30)(b)
     np.testing.assert_allclose(np.r_[*phys(a['z'])],b['z'],rtol=2e-12,atol=2e-13)
+
+
+def test_non_descent_reset_is_explicit_and_restores_descent():
+    source=os.environ.get('SSB_SOURCE')
+    if not source or not Path(source).exists():pytest.skip('Pinned external source required')
+    import equinox as eqx
+    c=run.case(n=64,optimizer='ssbroyden');g,loss,phys=ssb.problem(c)
+    solver=higher.ssb_solver(source,1e-30,1e-15,'accepted_step')
+    s=higher.ssb_initial(solver,loss,core.initialize(c)['z'])
+    s,_=higher.ssb_step(solver,loss,phys,1e-30)(s)
+    s['solver']=eqx.tree_at(lambda st:st.f_info.hessian_inv.pytree,s['solver'],-jnp.eye(len(s['z'])))
+    out,trace=ssb.kernel(64,'individual','sine',source,1e-30,1e-15,'non_descent',1000,1)(s)
+    assert float(trace[0,14])==1. and float(trace[0,15])>0
+    assert int(out['status'])==0 and int(out['count'])==2
