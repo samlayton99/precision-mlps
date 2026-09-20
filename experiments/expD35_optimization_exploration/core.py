@@ -15,7 +15,7 @@ TRACE = ('mse', 'eta', 'mean_abs_lambda', 'readout_l2', 'native_readout_gradient
          'native_geometry_gradient', 'physical_readout_gradient', 'physical_gamma_gradient',
          'delta_readout_rms', 'delta_gamma_rms', 'delta_mean_abs_gamma', 'coarse_residual_norm',
          'filtered_gradient_norm', 'raw_filtered_cosine', 'direction_norm', 'zero_physical_step',
-         'adam_guard_fraction', 'active', 'neuron_replacements', 'reset_function_rms')
+         'adam_guard_fraction', 'active', 'neuron_replacements', 'reset_function_rms','delta_offset_rms')
 
 
 @lru_cache(maxsize=1)
@@ -38,8 +38,12 @@ def physical(z, g, coordinates):
     c = z[:g.width+1]
     if coordinates != 'physical':
         c = maps.decode(c, g, ALIASES[coordinates])
-    gamma = z[g.width+1:] / (1. if coordinates == 'physical' else g.h)
+    gamma = z[g.width+1:2*g.width+1] / (1. if coordinates == 'physical' else g.h)
     return c, gamma
+
+
+def offsets(z,g):
+    return z[2*g.width+1:] if len(z)>2*g.width+1 else jnp.zeros(g.width)
 
 
 def encode(c, gamma, g, coordinates):
@@ -56,6 +60,13 @@ def initialize(case):
     if case.get('slope_initialization', 'physical_xavier') == 'lambda_xavier':
         gamma /= g.h
     z = jnp.asarray(encode(c, gamma, g, case['coordinates']))
+    if case.get('architecture')=='affine':
+        rng=np.random.default_rng(case['seed']+3207)
+        centers=g.centers.copy();kind=case.get('center_initialization','grid')
+        if kind=='jitter':centers+=rng.uniform(-g.h/2,g.h/2,g.width)
+        elif kind=='random':centers=np.sort(rng.uniform(g.centers[0],g.centers[-1],g.width))
+        elif kind!='grid':raise ValueError(kind)
+        z=jnp.r_[z,gamma*(g.centers-centers)]
     return dict(z=z, m=jnp.zeros_like(z), v=jnp.zeros_like(z), ema=jnp.zeros_like(z),
                 post_ema=jnp.zeros_like(z), age=jnp.zeros(z.shape, dtype=jnp.int64),
                 failed=jnp.array(0, dtype=jnp.int64), eta=jnp.array(case['eta']),
@@ -68,7 +79,7 @@ def initialize(case):
 def field(z, x, y, g, coordinates):
     c, gamma = physical(z, g, coordinates)
     distance = x[:, None]-jnp.asarray(g.centers)
-    pre = distance*gamma
+    pre = distance*gamma+offsets(z,g)
     phi = jnp.tanh(pre)
     e = c[0]+phi @ c[1:]-y
     gc = jnp.concatenate((jnp.mean(e)[None], phi.T @ e / len(x)))
@@ -77,6 +88,8 @@ def field(z, x, y, g, coordinates):
         grad = jnp.concatenate((gc, gg))
     else:
         grad = jnp.concatenate((maps.pullback(gc, g, ALIASES[coordinates]), gg/g.h))
+    if len(z)>2*g.width+1:
+        grad=jnp.r_[grad,c[1:]*jnp.mean(e[:,None]*old.sech_squared(pre),axis=0)]
     # Center x explicitly so this diagnostic also applies to stratified samples.
     xc = x-jnp.mean(x)
     coarse = jnp.sqrt(jnp.mean(e)**2+jnp.mean(e*xc)**2/jnp.mean(xc*xc))
@@ -155,7 +168,7 @@ def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1
                 jnp.sqrt(jnp.mean((ga1-ga0)**2)), jnp.mean(jnp.abs(ga1)-jnp.abs(ga0)), coarse,
                 jnp.linalg.norm(filtered), cosine(grad, filtered), jnp.linalg.norm(direction),
                 jnp.all(c1==c0)&jnp.all(ga1==ga0), jnp.mean(sqrt_v<=hp['epsilon']), active,
-                jnp.sum(mask),jump])
+                jnp.sum(mask),jump,jnp.sqrt(jnp.mean((offsets(z1,g)-offsets(current['z'],g))**2))])
             trace=jnp.where(active, trace, jnp.nan)
             if reset!='none': trace=jnp.r_[trace,mask&active]
             return next_state, (trace,next_state['z']) if capture else trace
@@ -175,7 +188,7 @@ def evaluate(n, coordinates, name, size=32768):
     def one(z):
         c, gamma = physical(z, g, coordinates)
         def block(xx):
-            return c[0]+jnp.tanh((xx[:, None]-jnp.asarray(g.centers))*gamma) @ c[1:]
+            return c[0]+jnp.tanh((xx[:, None]-jnp.asarray(g.centers))*gamma+offsets(z,g)) @ c[1:]
         prediction = jax.lax.map(block, x.reshape(-1, 512)).reshape(-1)
         mse = jnp.mean((prediction-y)**2)
         return jnp.array([mse, mse/jnp.mean(y*y), *jnp.quantile(jnp.abs(g.h*gamma), jnp.array([.1,.5,.9])),

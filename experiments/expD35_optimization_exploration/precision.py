@@ -40,9 +40,10 @@ def evaluate(folder,samples=257):
         coefficients=[mp.mpf(float(v)) for v in c]
         exact_coefficients=exact_native_coefficients(z,g,config['coordinates'])
         slopes=[mp.mpf(float(v)) for v in gamma];centers=[mp.mpf(float(v)) for v in g.centers]
+        offsets=[mp.mpf(float(v)) for v in np.asarray(core.offsets(z,g))]
         for index in subset:
             xx=mp.mpf(float(x[index]));truth=mp_target(xx,config['target'])
-            features=[mp.tanh(ga*(xx-t)) for ga,t in zip(slopes,centers)]
+            features=[mp.tanh(ga*(xx-t)+beta) for ga,t,beta in zip(slopes,centers,offsets)]
             pred=coefficients[0]+mp.fdot(coefficients[1:],features)
             exact=exact_coefficients[0]+mp.fdot(exact_coefficients[1:],features)
             errors.append(float((pred-truth)**2));native_errors.append(float((exact-truth)**2))

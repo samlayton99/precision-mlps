@@ -20,6 +20,7 @@ TRACE=('mse','accepted_count','accepted','status','search_calls','step_size','cu
 
 
 def problem(c):
+    if c.get('architecture')=='affine':raise ValueError('SSB screen is fixed-center only')
     g=core.old.geometry(c['n']);x=jnp.linspace(-1,1,16*c['n']+1);y=core.target(x,c['target'])
     def physical(z): return core.physical(z,g,c['coordinates'])
     def loss(z):

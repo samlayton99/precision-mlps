@@ -37,3 +37,13 @@ The dense-window analysis also fixes the readout SVD basis at the first saved st
 Final frozen recipes are evaluated with `precision.py` on the reserved 65,536-point midpoint grid. A fixed 257-point subset is reevaluated at 80 decimal digits. The audit separately measures the error of the rounded physical coefficients, the exact native coordinate map using the stored constants, FP64 forward-evaluation error, and target-evaluation error. These distinguish optimization error from numerical evaluation error; the subset is a numerical audit, not a replacement for the full-grid error measurement. No final-grid score is used to choose hyperparameters.
 
 A cluster quota error interrupted the first metric-reset launch. Immutable history files are now consolidated into per-case ZIP archives after checkpoint boundaries. Every member is checked against its SHA-256 digest before the original file is removed. Live states, handoff checkpoints, latest snapshots, and replay masks remain directly accessible; validation histories also have a compact JSON index. This changes storage layout only. `history.py` performs the same verified consolidation on earlier completed histories, and the ranking code reads both layouts.
+
+The conditional affine promotion adds independent offsets $\beta_j$:
+
+$$
+f(x)=b_0+\sum_jw_j\tanh\!\left[\frac{\lambda_j}{h}(x-t_j^{\rm ref})+\beta_j\right],
+\qquad
+a_j=\frac{\lambda_j}{h},\quad b_j=\beta_j-\frac{\lambda_jt_j^{\rm ref}}h.
+$$
+
+Thus every affine slope and hidden bias can change. The same native scalar rate updates readouts, $\lambda$, and $\beta$. The fixed reference centers define coordinates; they do not constrain the learned centers. A checkpoint release appends zero offsets and retains the previous parameters and optimizer moments, with fresh state only for the new offsets. Cold comparisons use grid centers, jitter within half a spacing, or sorted random centers over the original halo extent. The readout map stays tied to the original ordering throughout training. This promotion is separate from the primary fixed-center comparisons and excludes neuron recycling and SSBroyden in its initial assay.

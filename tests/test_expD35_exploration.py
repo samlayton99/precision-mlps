@@ -191,3 +191,32 @@ def test_history_consolidation_preserves_bytes_and_selection(tmp_path):
             assert hashlib.sha256(data).hexdigest()==hashes[name]
     assert (folder/'snapshot_000020000.npz').exists()
     assert not (folder/'snapshot_000016000.npz').exists()
+
+
+@pytest.mark.parametrize('kind',['grid','jitter','random'])
+def test_affine_all_hidden_gradients_match_autodiff(kind):
+    from experiments.expD35_optimization_exploration import run
+    c=run.case(n=64,architecture='affine',center_initialization=kind)
+    st=core.initialize(c);g=old.geometry(64);x=jnp.linspace(-1,1,257);y=core.target(x,'mixed')
+    def loss(z):
+        w,ga=core.physical(z,g,'individual')
+        f=w[0]+old.tanh((x[:,None]-g.centers)*ga+core.offsets(z,g))@w[1:]
+        return .5*jnp.mean((f-y)**2)
+    actual=core.field(st['z'],x,y,g,'individual')[1]
+    np.testing.assert_allclose(actual,jax.grad(loss)(st['z']),rtol=3e-13,atol=2e-14)
+    assert len(actual)==3*g.width+1 and np.any(np.asarray(actual[-g.width:])!=0)
+
+
+def test_affine_release_keeps_function_and_existing_optimizer_state(tmp_path):
+    import hashlib
+    from experiments.expD35_optimization_exploration import run
+    c=run.case(n=64,eta=1e-4);folder,st,_=run.prepare(tmp_path,c)
+    batch=lambda v:jax.tree.map(lambda a:a[None],v)
+    st,_=core.chunk(64,'individual','adam','sine',3)(batch(st),batch(core.hyperparameters(c)),0)
+    st=jax.tree.map(lambda a:a[0],st);checkpoint=folder/'checkpoint_000000003.npz'
+    run.save(checkpoint,**st,step=3)
+    child=dict(c,architecture='affine',origin=dict(checkpoint=str(checkpoint),sha256=hashlib.sha256(checkpoint.read_bytes()).hexdigest(),carry_optimizer=True))
+    _,released,_=run.prepare(tmp_path,child)
+    np.testing.assert_array_equal(released['z'][:len(st['z'])],st['z'])
+    for name in ('m','v','age'):np.testing.assert_array_equal(released[name][:len(st['z'])],st[name])
+    assert np.all(np.asarray(core.offsets(released['z'],old.geometry(64)))==0)

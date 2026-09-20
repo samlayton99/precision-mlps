@@ -58,10 +58,12 @@ def finite(value):
 
 
 def group_signature(c):
-    return tuple(c[k] for k in ('n', 'coordinates', 'optimizer', 'target', 'sampling', 'batch_size', 'schedule', 'reset'))
+    return tuple(c[k] for k in ('n', 'coordinates', 'optimizer', 'target', 'sampling', 'batch_size', 'schedule', 'reset'))+(c.get('architecture','fixed'),)
 
 
 def prepare(root, config):
+    if config.get('architecture')=='affine' and config['reset']!='none':
+        raise ValueError('Affine promotion currently compares optimization without neuron recycling')
     folder = root/key(config); folder.mkdir(parents=True, exist_ok=True)
     if (folder/'case.json').exists():
         assert json.loads((folder/'case.json').read_text()) == config, folder
@@ -82,10 +84,21 @@ def prepare(root, config):
         g = core.old.geometry(config['n'])
         c, gamma = core.physical(previous['z'], g, parent['coordinates'])
         state['z'] = jnp.asarray(core.encode(np.asarray(c), np.asarray(gamma), g, config['coordinates']))
+        if parent['coordinates']==config['coordinates']:state['z']=previous['z'][:2*g.width+1]
+        if config.get('architecture')=='affine':
+            state['z']=jnp.r_[state['z'],core.offsets(previous['z'],g)]
+        elif parent.get('architecture')=='affine':raise ValueError('Cannot remove trained affine offsets in a fixed-center handoff')
         if config['origin'].get('carry_optimizer', True):
             if (parent['coordinates'], parent['optimizer']) != (config['coordinates'], config['optimizer']):
                 raise ValueError('Optimizer state cannot be copied across maps/algorithms')
-            state.update(previous)
+            desired_z=state['z']
+            for name,value in previous.items():
+                if name=='z':continue
+                if value.shape==state[name].shape:state[name]=value
+                elif value.ndim==1 and value.size==2*g.width+1 and state[name].size==3*g.width+1:
+                    state[name]=jnp.r_[value,state[name][2*g.width+1:]]
+                else:raise ValueError('Incompatible optimizer array in affine handoff')
+            state['z']=desired_z
             state['eta']=jnp.array(config['eta'])
         # EMA interventions start from the current gradient, not a hidden warm history.
         x = jnp.linspace(-1, 1, 16*config['n']+1)

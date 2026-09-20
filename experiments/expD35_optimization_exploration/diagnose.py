@@ -10,7 +10,7 @@ BANDS=((0,1),(1,2),(2,4),(4,8),(8,16),(16,32),(32,64),(64,128),(128,256),(256,No
 
 def forward(z,g,coordinates,x):
     c,gamma=map(np.asarray,core.physical(z,g,coordinates))
-    return c[0]+np.tanh((x[:,None]-g.centers)*gamma)@c[1:]
+    return c[0]+np.tanh((x[:,None]-g.centers)*gamma+np.asarray(core.offsets(z,g)))@c[1:]
 
 
 def transform(g,coordinates):
@@ -38,7 +38,8 @@ def snapshot(path,config,out):
     with np.load(path) as data:z=np.asarray(data['z'])
     c,gamma=map(np.asarray,core.physical(z,g,config['coordinates']))
     m=max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
-    y=core.target(x,config['target'],np);phi=np.tanh((x[:,None]-g.centers)*gamma)
+    beta=np.asarray(core.offsets(z,g))
+    y=core.target(x,config['target'],np);pre=(x[:,None]-g.centers)*gamma+beta;phi=np.tanh(pre)
     design=np.column_stack((np.ones(m),phi));residual=design@c-y
     mapping=transform(g,config['coordinates'])
     native=design@mapping/np.sqrt(m)
@@ -46,7 +47,7 @@ def snapshot(path,config,out):
     physical_s=np.linalg.svd(design/np.sqrt(m),compute_uv=False)
     projected=u.T@(residual/np.sqrt(m));relative=s/s[0]
     distances=x[:,None]-g.centers
-    exponential=np.exp(-2*np.abs(distances*gamma))
+    exponential=np.exp(-2*np.abs(pre))
     gamma_jacobian=c[1:]*distances*(4*exponential/(1+exponential)**2)
     centered=x-np.mean(x)
     coarse=np.mean(residual)+centered*np.mean(residual*centered)/np.mean(centered**2)
@@ -61,14 +62,14 @@ def snapshot(path,config,out):
         keep=relative>cutoff
         solution=vh[keep].T@((u[:,keep].T@(y/np.sqrt(m)))/s[keep])
         physical_c=mapping@solution
-        pred=physical_c[0]+np.tanh((xv[:,None]-g.centers)*gamma)@physical_c[1:]
+        pred=physical_c[0]+np.tanh((xv[:,None]-g.centers)*gamma+beta)@physical_c[1:]
         ls.append(dict(relative_cutoff=cutoff,rank=int(np.sum(keep)),
             fit_mse=float(np.mean((design@physical_c-y)**2)),validation_mse=float(np.mean((pred-yv)**2)),
             coefficient_l2=float(np.linalg.norm(physical_c))))
         coefficients.append(physical_c)
     mode_edges=(0.,1e-8,1e-6,1e-4,1e-2,.1,1.0000001)
     mode_energy=np.array([np.sum(projected[(relative>=a)&(relative<b)]**2) for a,b in zip(mode_edges[:-1],mode_edges[1:])])
-    arrays=dict(z=z,c=c,gamma=gamma,centers=g.centers,alpha=g.alpha,h=g.h,x=x,residual=residual,
+    arrays=dict(z=z,c=c,gamma=gamma,offsets=beta,centers=g.centers,alpha=g.alpha,h=g.h,x=x,residual=residual,
         native_singular_values=s,physical_singular_values=physical_s,projected_residual=projected,
         mode_edges=mode_edges,mode_residual_energy=mode_energy,band_energy=band_energy(residual),
         physical_gamma_gradient=gamma_gradient,coarse_gamma_gradient=coarse_gradient,
@@ -101,16 +102,17 @@ def dense(folder,config,out):
             zs=np.concatenate((data['initial_z'][None],data['z']));start=int(data['start'])
         if basis is None:
             _,ga=map(np.asarray,core.physical(zs[0],g,config['coordinates']))
-            features=np.column_stack((np.ones(m),np.tanh((x[:,None]-g.centers)*ga)))
+            features=np.column_stack((np.ones(m),np.tanh((x[:,None]-g.centers)*ga+np.asarray(core.offsets(zs[0],g)))))
             basis,spectrum,_=np.linalg.svd(features@transform(g,config['coordinates'])/np.sqrt(m),full_matrices=False)
             relative=spectrum/spectrum[0]
             masks=[(relative>=a)&(relative<b) for a,b in zip(edges[:-1],edges[1:])]
         for i in range(0,len(zs)-1,16):
             c0,ga0=map(np.asarray,core.physical(zs[i],g,config['coordinates']))
             c1,ga1=map(np.asarray,core.physical(zs[i+1],g,config['coordinates']))
-            phi=np.tanh((x[:,None]-g.centers)*ga0)
+            beta0=np.asarray(core.offsets(zs[i],g));beta1=np.asarray(core.offsets(zs[i+1],g))
+            phi=np.tanh((x[:,None]-g.centers)*ga0+beta0)
             f0=c0[0]+phi@c0[1:];fr=c1[0]+phi@c1[1:]
-            f1=c1[0]+np.tanh((x[:,None]-g.centers)*ga1)@c1[1:]
+            f1=c1[0]+np.tanh((x[:,None]-g.centers)*ga1+beta1)@c1[1:]
             r=f0-y;dr=fr-f0;dg=f1-fr
             # Exact sequential attribution: readout first, then geometry.
             linear_r=2*band_product(r,dr)
@@ -125,7 +127,8 @@ def dense(folder,config,out):
                 mode_geometry_descent=aggregate(-2*ur*ug),outside_fixed_span=max(0.,np.mean(r*r)-np.sum(ur**2)),
                 readout_update_outside_span=max(0.,np.mean(dr*dr)-np.sum(uw**2)),
                 geometry_update_outside_span=max(0.,np.mean(dg*dg)-np.sum(ug**2)),
-                readout_motion=np.sqrt(np.mean((c1-c0)**2)),gamma_motion=np.sqrt(np.mean((ga1-ga0)**2))))
+                readout_motion=np.sqrt(np.mean((c1-c0)**2)),gamma_motion=np.sqrt(np.mean((ga1-ga0)**2)),
+                offset_motion=np.sqrt(np.mean((beta1-beta0)**2))))
     if rows:run.save(out,singular_values=spectrum,mode_edges=edges,
                      **{k:np.stack([r[k] for r in rows]) for k in rows[0]})
 
