@@ -137,3 +137,12 @@ effective-generator estimate separately from slope and directional bounds.
 It measures native and physical norm requirements and the selected ridge paths.
 Its damping ladder always starts from the same normalized probe; direct residuals
 are checked against stable spectral filtering, with disagreement marked unresolved.
+
+`full_precision.py` independently reconstructs the twelve declared witnesses
+at 80 and 120 digits, including exact-grid polynomials and nominal reference
+allowances for the neighboring map. `full_reference.py` calls the existing
+`construct_qi` at every declared width with the same halo, $\lambda=0.25$, and
+$K_c=160$. It compares 40- and 80-digit construction, ordinary and extended
+evaluation, and an independent 80-digit evaluation check. The constructor still
+samples target derivatives and returns coefficients in FP64; its measured
+recovery accuracy is not asserted to be an exact approximation floor.
