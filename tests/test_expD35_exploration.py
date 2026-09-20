@@ -283,3 +283,23 @@ def test_affine_release_keeps_function_and_existing_optimizer_state(tmp_path):
     np.testing.assert_array_equal(released['z'][:len(st['z'])],st['z'])
     for name in ('m','v','age'):np.testing.assert_array_equal(released[name][:len(st['z'])],st[name])
     assert np.all(np.asarray(core.offsets(released['z'],old.geometry(64)))==0)
+
+
+def test_adam_to_gd_handoff_keeps_parameters_and_takes_plain_gd_step(tmp_path):
+    import hashlib
+    from experiments.expD35_optimization_exploration import run
+    c=run.case(n=64,coordinates='neighbor',eta=1e-5,ema_strength=2.)
+    folder,st,_=run.prepare(tmp_path,c)
+    batch=lambda v:jax.tree.map(lambda a:a[None],v)
+    st,_=core.chunk(64,'neighbor','adam','sine',3)(batch(st),batch(core.hyperparameters(c)),0)
+    st=jax.tree.map(lambda a:a[0],st);checkpoint=folder/'checkpoint_000000003.npz'
+    run.save(checkpoint,**st,step=3)
+    child=dict(c,optimizer='gd',eta=1e-4,ema_strength=0.,origin=dict(
+        checkpoint=str(checkpoint),sha256=hashlib.sha256(checkpoint.read_bytes()).hexdigest(),carry_optimizer=False))
+    _,released,_=run.prepare(tmp_path,child)
+    np.testing.assert_array_equal(released['z'],st['z'])
+    for name in ('m','v','age'):assert np.all(np.asarray(released[name])==0)
+    x=jnp.linspace(-1,1,1025);g=old.geometry(64)
+    grad=core.field(st['z'],x,core.target(x,'sine'),g,'neighbor')[1]
+    after,_=core.chunk(64,'neighbor','gd','sine',1)(batch(released),batch(core.hyperparameters(child)),0)
+    np.testing.assert_allclose(after['z'][0],st['z']-child['eta']*grad,rtol=2e-14,atol=2e-14)
