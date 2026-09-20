@@ -49,8 +49,9 @@ def finish(fig,path,title):
 
 
 def scale_curves(bundles,root):
-    fig,axes=plt.subplots(3,5,figsize=(19,10),squeeze=False)
-    for row,n in enumerate((64,128,256)):
+    widths=sorted({b['config']['n'] for b in bundles})
+    fig,axes=plt.subplots(len(widths),5,figsize=(19,3.5*len(widths)),squeeze=False)
+    for row,n in enumerate(widths):
         for col,target in enumerate(targets.TARGETS):
             ax=axes[row,col]
             for ki,kappa in enumerate(targets.RATIOS):
@@ -63,7 +64,7 @@ def scale_curves(bundles,root):
             ax.axhline(0,color='.6',lw=.6)
             ax.set_title(f"{LABELS[target]} · W={n+2*(3*n//16)+1}")
             if col==0: ax.set_ylabel('Signed change in mean |a|')
-            if row==2: ax.set_xlabel('Geometry time τ = updates × η')
+            if row==len(widths)-1: ax.set_xlabel('Geometry time τ = updates × η')
     axes[0,-1].legend(fontsize=8,ncol=2)
     finish(fig,root/'scale_acquisition.png','Scale acquisition: each line is one paired seed; all readout rates shown')
 
@@ -95,8 +96,9 @@ def signal_curves(bundles,root):
 
 
 def rate_contrasts(rows,root):
-    fig,axes=plt.subplots(3,5,figsize=(19,10),squeeze=False)
-    for ni,n in enumerate((64,128,256)):
+    widths=sorted({r['n'] for r in rows if r['bundle'].startswith('core_')})
+    fig,axes=plt.subplots(len(widths),5,figsize=(19,3.5*len(widths)),squeeze=False)
+    for ni,n in enumerate(widths):
         for ti,target in enumerate(targets.TARGETS):
             ax=axes[ni,ti]
             for degree in (0,1,3,5,7):
@@ -111,7 +113,7 @@ def rate_contrasts(rows,root):
                         label=('tanh' if degree==0 else f'degree {degree}') if seed==0 else None)
             ax.set_xscale('log');ax.axhline(0,color='.6',lw=.6);ax.set_title(f'{LABELS[target]} · N={n}')
             if ti==0: ax.set_ylabel('Mean-|a| change relative to κ=1')
-            if ni==2: ax.set_xlabel('Readout / geometry learning rate κ')
+            if ni==len(widths)-1: ax.set_xlabel('Readout / geometry learning rate κ')
     axes[0,-1].legend(fontsize=8)
     finish(fig,root/'predicted_rate_contrasts.png','Does the independent moment model predict the effect of changing readout speed?')
 
