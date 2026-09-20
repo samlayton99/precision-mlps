@@ -130,3 +130,21 @@ def test_full_screen_selection_resume_and_controls(tmp_path):
     probe=f.polynomial_probe(arrays['x_train'],4,len(arrays['x_train']))
     np.testing.assert_allclose(probe,core.discrete_polynomials(arrays['x_train'],4)[:,4],atol=1e-15)
     np.testing.assert_allclose(np.linalg.norm(probe),1,atol=1e-14)
+    from experiments.expD36_frozen_gamma_probe import full_diagnostics as diagnostics
+    rows=diagnostics.case_certificates(tmp_path,tmp_path/'training/N64_raw_gd',cfg,deadline)
+    assert len(rows)==len(cfg['targets'])*len(cfg['tolerances'])*5
+    np.testing.assert_allclose([row['epsilon_residual'] for row in rows],
+                               [row['epsilon_target'] for row in rows],rtol=1e-14)
+
+
+def test_residual_access_and_effective_generator():
+    from experiments.expD36_frozen_gamma_probe.full_diagnostics import tail_measurements
+    rng=np.random.default_rng(8); j=rng.normal(size=(31,7)); residual=rng.normal(size=31)
+    u,s,_=svd(j,full_matrices=False); eta=.5/s[0]**2
+    delta,mu,effective,gradient=tail_measurements(j,residual,u,s,eta,8)
+    for degree in range(9):
+        q=residual.copy(); q[:degree+1]=0; q/=np.linalg.norm(q)
+        np.testing.assert_allclose(gradient[degree],j.T@q,rtol=1e-13,atol=1e-13)
+        np.testing.assert_allclose(mu[degree],np.linalg.norm(j.T@q)**2,rtol=1e-13)
+        np.testing.assert_allclose(effective[degree],np.sum((u.T@q)**2*(-np.log1p(-eta*s*s))),rtol=1e-13)
+        assert effective[degree]<=np.log(2)*mu[degree]/s[0]**2+1e-14

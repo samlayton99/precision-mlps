@@ -130,3 +130,10 @@ The two GPU allocations are capped at 55 minutes each; the worker checkpoint
 deadline is 100 seconds earlier. Check completed Slurm accounting before any
 retry so the cumulative allocation caps remain binding. Full results are only
 complete when every worker, diagnostic, precision check, and report is complete.
+
+After training, `full_diagnostics.py` recomputes certificates from each actual
+initial residual, converts target-relative tolerances, and records the
+effective-generator estimate separately from slope and directional bounds.
+It measures native and physical norm requirements and the selected ridge paths.
+Its damping ladder always starts from the same normalized probe; direct residuals
+are checked against stable spectral filtering, with disagreement marked unresolved.
