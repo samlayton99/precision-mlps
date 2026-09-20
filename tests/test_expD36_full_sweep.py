@@ -132,7 +132,7 @@ def test_full_screen_selection_resume_and_controls(tmp_path):
     np.testing.assert_allclose(np.linalg.norm(probe),1,atol=1e-14)
     from experiments.expD36_frozen_gamma_probe import full_diagnostics as diagnostics
     rows=diagnostics.case_certificates(tmp_path,tmp_path/'training/N64_raw_gd',cfg,deadline)
-    assert len(rows)==len(cfg['targets'])*len(cfg['tolerances'])*5
+    assert len(rows)==len(cfg['targets'])*len(cfg['tolerances'])*8
     np.testing.assert_allclose([row['epsilon_residual'] for row in rows],
                                [row['epsilon_target'] for row in rows],rtol=1e-14)
     diagnostics.hitting_audit(tmp_path,cfg,deadline)

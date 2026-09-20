@@ -40,6 +40,7 @@ def case_certificates(root,folder,cfg,deadline):
         residual=bank['J']@initial[bi]-y; rh=core.transform(qr,residual)
         rnorm=np.linalg.norm(residual,axis=0)
         envelopes=f.envelopes(gamma,np.arange(kmax+1),f.map_matrix(core.geometry(case['n']),case['map']))
+        subspace=np.load(root/'dictionaries'/meta['dictionary_id']/'access.npz')['b']
         deltas=[]; mus=[]; effective_values=[]
         for ci,column in enumerate(case['columns']):
             eta=case['rates'][bi][ci]; chi=eta*meta['L']
@@ -62,7 +63,9 @@ def case_certificates(root,folder,cfg,deadline):
                     hit_status='nonfinite_failure' if failed else ('reached_exact_step' if hit>=0 else 'budget_censored'))
                 with np.errstate(divide='ignore',invalid='ignore'):
                     denominators=dict(analytic=envelopes['used'],cap=envelopes['cap'],
-                                      directional=np.log(mu),effective_generator=np.log(effective))
+                        columnwise=envelopes['columns'],abbreviated=envelopes['abbreviated'],
+                        subspace_sampled=np.where(np.isfinite(subspace),np.log(subspace),np.inf),
+                        directional=np.log(mu),effective_generator=np.log(effective))
                 for kind,logden in denominators.items():
                     # C3 is the unit-time auxiliary gradient flow, so L/log(2)=1.
                     value=(f.bound(delta,logden,epsilon_res,np.log(2.)) if kind=='effective_generator'
@@ -76,9 +79,11 @@ def case_certificates(root,folder,cfg,deadline):
                         spectral_model='cutoff_1e-14' if kind=='effective_generator' else None))
                 if 'degree' in column:
                     mu0=float(np.linalg.norm(bank['J'].T@residual[:,ci])**2/rnorm[ci]**2)
-                    pure=0. if epsilon_res>=1 else float(np.ceil(np.log(1/epsilon_res)/(-np.log1p(-eta*mu0))))
+                    with np.errstate(divide='ignore'):
+                        pure=0. if epsilon_res>=1 else float(np.ceil(np.log(1/epsilon_res)/(-np.log1p(-eta*mu0))))
+                    resolved=mu0>(64*np.finfo(float).eps*np.linalg.norm(bank['J']))**2
                     out.append(dict(common,kind='polynomial_mean_access',bound=pure,k=column['degree']-1,
-                                    mu=mu0,status='fp64_estimate'))
+                        mu=mu0,access_resolved=resolved,status='fp64_estimate' if resolved else 'numerically_unresolved'))
                 if column['initialization']=='zero' and epsilon_res<1:
                     numerator=np.maximum(delta-epsilon_res,0)*rnorm[ci]
                     requirements={}
@@ -185,6 +190,23 @@ def hitting_audit(root,cfg,deadline):
         print(f'HITS {folder.name}',flush=True)
 
 
+def factorization_checks(root,cfg):
+    arrays=np.load(root/f'common/N{cfg["n"]}/arrays.npz'); y=arrays['y_train']; norm=np.linalg.norm(y,axis=0)
+    rows=[]
+    for gamma in [4,16]:
+        folder=root/'dictionaries'/screen.dictionary_id(cfg['n'],'raw',gamma)
+        reference=np.load(folder/'spectrum.npz'); j=np.load(folder/'J.npy')
+        u,s,_=svd(j,full_matrices=False,lapack_driver='gesvd'); keep=s>1e-14*s[0]
+        loading=u[:,keep].T@y; floor=np.sum((y-u[:,keep]@loading)**2,axis=0)
+        errors=[]
+        for step in [0,20000,cfg['training_steps']]:
+            original=core.spectral_error(step,reference['singular'],reference['loadings'],reference['floor_sq'],norm,.5/float(reference['L']))
+            alternate=core.spectral_error(step,s[keep],loading,floor,norm,.5/float(reference['L']))
+            errors.append(dict(step=step,max_abs_difference=float(np.max(np.abs(original-alternate)))))
+        rows.append(dict(gamma=gamma,relative_L_difference=float(abs(s[0]**2/float(reference['L'])-1)),errors=errors))
+    core.write_json(root/'validation/factorization_checks.json',rows)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True)
@@ -196,6 +218,7 @@ def main():
         print(f'DIAGNOSTICS {path.parent.name}',flush=True)
     damping(args.root,cfg,deadline)
     hitting_audit(args.root,cfg,deadline)
+    factorization_checks(args.root,cfg)
     core.write_json(args.root/'validation/diagnostics_complete.json',dict(complete=True))
 
 
