@@ -64,8 +64,13 @@ def sample_probe(z,d,g,gd,x,y,kappa,degree):
     if degree==0:
         h=np.tanh(pre);ee=np.exp(-2*abs(pre));derivative=4*ee/(1+ee)**2
     else:
-        h=sum(references.COEFFICIENTS[k]*pre**k for k in range(1,degree+1,2))
-        derivative=sum(k*references.COEFFICIENTS[k]*pre**(k-1) for k in range(1,degree+1,2))
+        squared=pre*pre
+        h=np.full_like(pre,references.COEFFICIENTS[degree])
+        derivative=np.full_like(pre,degree*references.COEFFICIENTS[degree])
+        for k in range(degree-2,0,-2):
+            h=references.COEFFICIENTS[k]+squared*h
+            derivative=k*references.COEFFICIENTS[k]+squared*derivative
+        h=pre*h
     e=h@c+d-y;sigma=np.sqrt(np.mean(x*x));m=len(x)
     rc=h@g[2]+gd
     geometry=derivative@(c*g[1])+x*(derivative@(c*g[0]))

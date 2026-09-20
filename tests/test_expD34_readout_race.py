@@ -163,3 +163,12 @@ def test_coarse_velocity_matches_finite_difference():
     next_mom=core.field(zn,dn,data,0)[1]
     change=np.asarray((next_mom[:2]-mom[:2])/jnp.array([1.,data['sigma']])/eta)
     np.testing.assert_allclose(change,probe['Vv']+probe['Vq'],rtol=2e-6,atol=1e-8)
+
+
+@pytest.mark.parametrize('degree',[0,1,3,5,7])
+def test_direct_sample_probe_gradient(degree):
+    from experiments.expD34_readout_race import analyze
+    z,d,data=example('moment3');loss,mom,g,gd,_=core.field(z,d,data,degree)
+    probe=analyze.sample_probe(np.asarray(z),float(d),np.asarray(g),float(gd),np.asarray(data['x']),np.asarray(data['y']),100.,degree)
+    np.testing.assert_allclose(probe['gradient'],g,atol=5e-16)
+    np.testing.assert_allclose(probe['sample_half_mse'],loss,atol=5e-16)
