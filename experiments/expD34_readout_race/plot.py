@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 from pathlib import Path
 import matplotlib
@@ -146,11 +147,54 @@ def reference_errors(bundles,root):
     finish(fig,root/'reference_errors.png','Independent reference validity · W=177 · each line is one seed')
 
 
+def distribution_curves(bundles,root):
+    fig,axes=plt.subplots(3,5,figsize=(19,10),squeeze=False)
+    selected=[b for b in bundles if b['config']['n']==128 and b['config']['seed']==0]
+    if not selected: plt.close(fig);return
+    bundle=selected[0]
+    for col,target in enumerate(targets.TARGETS):
+        for ki,kappa in enumerate(targets.RATIOS):
+            tau,tr=trace(bundle,target,kappa)
+            axes[0,col].plot(tau,tr[:,4],color=COLORS[ki],label=f'κ={kappa:g}')
+            axes[0,col].fill_between(tau,tr[:,3],tr[:,5],color=COLORS[ki],alpha=.08)
+            axes[1,col].plot(tau,tr[:,25],color=COLORS[ki])
+            axes[2,col].plot(tau,tr[:,28],color=COLORS[ki])
+        axes[0,col].set_title(LABELS[target]);axes[2,col].set_xlabel('Geometry time τ')
+    axes[0,0].set_ylabel('Median |a|; shading: quartiles')
+    axes[1,0].set_ylabel('Fraction with |a| ≥ 1')
+    axes[2,0].set_ylabel('Fraction with λ ≥ 0.05')
+    axes[0,-1].legend(fontsize=8,ncol=2)
+    finish(fig,root/'scale_distribution.png','Population-scale acquisition · W=177, seed 0 · all rates')
+
+
+def coarse_velocities(root):
+    path=root/'sample_probes.csv'
+    if not path.exists(): return
+    with path.open() as stream:
+        rows=[r for r in csv.DictReader(stream) if r['bundle']=='core_N128_s0' and r['degree']=='0']
+    if not rows or 'Vbias_0' not in rows[0]: return
+    fig,axes=plt.subplots(3,5,figsize=(19,10),squeeze=False)
+    for col,target in enumerate(targets.TARGETS):
+        for ki in (0,4,6):
+            kappa=targets.RATIOS[ki]
+            chosen=sorted([r for r in rows if r['target']==target and float(r['kappa'])==kappa],key=lambda r:int(r['step']))
+            tau=[int(r['step'])*.002 for r in chosen]
+            for j,name in enumerate(('Vv','Vq','Vbias')):
+                axes[j,col].plot(tau,[float(r[name+'_coarse_energy_removal']) for r in chosen],color=COLORS[ki],label=f'κ={kappa:g}')
+                axes[j,col].set_yscale('symlog',linthresh=1e-8)
+        axes[0,col].set_title(LABELS[target]);axes[2,col].set_xlabel('Geometry time τ')
+    for j,label in enumerate(('Readout block: −mᵀVᵥ','Hidden block: −mᵀVq','Output bias within readout: −mᵀVbias')):
+        axes[j,0].set_ylabel(label)
+    axes[0,-1].legend(fontsize=8)
+    finish(fig,root/'coarse_velocities.png','Instantaneous coarse-energy removal · positive removes, negative adds · W=177, seed 0')
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--root',type=Path,required=True);args=p.parse_args()
     bundles=load(args.root);rows=json.loads((args.root/'summary.json').read_text())
     scale_curves(bundles,args.root);signal_curves(bundles,args.root)
     rate_contrasts(rows,args.root);matched_curves(bundles,args.root);reference_errors(bundles,args.root)
+    distribution_curves(bundles,args.root);coarse_velocities(args.root)
 
 
 if __name__=='__main__':main()

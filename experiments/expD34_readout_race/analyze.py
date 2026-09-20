@@ -71,7 +71,11 @@ def sample_probe(z,d,g,gd,x,y,kappa,degree):
     geometry=derivative@(c*g[1])+x*(derivative@(c*g[0]))
     Vv=-kappa*np.array([np.mean(rc),x@rc/(m*sigma)])
     Vq=-np.array([np.mean(geometry),x@geometry/(m*sigma)])
+    weighted=e[:,None]*derivative
+    gradient=np.stack((c*(x@weighted)/m,c*np.mean(weighted,axis=0),h.T@e/m))
     return dict(sample_half_mse=.5*np.mean(e*e),Vv=Vv,Vq=Vq,
+                gradient=gradient,gradient_d=np.mean(e),
+                Vbias=np.array([-kappa*gd,0.]),
                 above_half=np.mean(abs(pre)>.5),above_one=np.mean(abs(pre)>1),
                 above_radius=np.mean(abs(pre)>np.pi/2))
 
@@ -135,6 +139,14 @@ def analyze_bundle(folder,out,end,probes=True):
                 loss_increases=int(np.sum(np.diff(trace[i,valid,0])>0)),
                 max_preactivation=np.max(trace[i,valid,11]),
                 first_radius_exceedance=next((int(j) for j in valid if trace[i,j,11]>=np.pi/2),None))
+            denominator=cfg['eta']*(trace[i,:-1,12]**2+trace[i,:-1,13]**2+
+                case['kappa']*(trace[i,:-1,14]**2+trace[i,:-1,15]**2))
+            stability_floor=1e-24*max(1.,float(denominator[0]))
+            mask=np.isfinite(denominator)&(denominator>stability_floor)&np.isfinite(trace[i,1:,0])
+            descent=(trace[i,:-1,0]-trace[i,1:,0])[mask]/denominator[mask]
+            info.update(descent_ratio_floor=stability_floor,descent_ratio_count=len(descent),
+                descent_ratio_min=float(np.min(descent)) if len(descent) else None,
+                descent_ratio_median=float(np.median(descent)) if len(descent) else None)
             for threshold in (.1,.01):
                 events=np.flatnonzero(coarse<=threshold*coarse[0]);event=int(events[0]) if len(events) else None
                 label='coarse_10pct' if threshold==.1 else 'coarse_1pct'
@@ -165,6 +177,12 @@ def analyze_bundle(folder,out,end,probes=True):
                         gradient_floor_active=bool(np.linalg.norm(gt[i,j])<=floor[i]),
                         signed_change_actual=dactual[i,j],signed_change_reference=dp[i,j],
                         signed_change_absolute_error=abs(dp[i,j]-dactual[i,j]),
+                        signed_change_relative_error=abs(dp[i,j]-dactual[i,j])/max(abs(dactual[i,j]),1e-12*max(1.,mean0)),
+                        signed_change_floor_active=bool(abs(dactual[i,j])<=1e-12*max(1.,mean0)),
+                        signed_force_actual=-np.mean(np.sign(actual_snap['z'][i,ai[j],0])*gt[i,j]),
+                        signed_force_reference=-np.mean(np.sign(snap['z'][i,ri[j],0])*gp[i,j]),
+                        residual_moment_l2_error=np.linalg.norm(snap['moments'][i,ri[j]]-actual_snap['moments'][i,ai[j]]),
+                        median_gamma_error=np.median(abs(snap['z'][i,ri[j],0]))-np.median(abs(actual_snap['z'][i,ai[j],0])),
                         slope_parameter_l2_error=np.linalg.norm(snap['z'][i,ri[j],0]-actual_snap['z'][i,ai[j],0])))
             picked=probe_indices(common)
             valid=(actual_snap['failed'][:,ai]==0)&(snap['failed'][:,ri]==0)
@@ -204,8 +222,17 @@ def analyze_bundle(folder,out,end,probes=True):
                         row[f'gram_{label}']=G[a,b]
                     row.update(Kq_00=G[2,2],Kq_11=sigma**2*G[2,2],
                                Kv_00=1+G[1,1],Kv_01=sigma*G[0,1],Kv_11=sigma**2*G[0,0])
-                    for name in ('Vv','Vq'):
+                    for name in ('Vv','Vq','Vbias'):
                         row[name+'_0'],row[name+'_1']=probe[name]
+                    mcoarse=snap['moments'][i,j,:2]/[1.,sigma]
+                    for name in ('Vv','Vq','Vbias'):
+                        row[name+'_coarse_energy_removal']=-mcoarse@probe[name]
+                    row['sample_gradient_error']=np.linalg.norm(probe['gradient']-g)
+                    if degree:
+                        with np.errstate(over='ignore',invalid='ignore'):
+                            true=sample_probe(z,d,g,gd,initial['x'],initial['y'][i],case['kappa'],0)
+                        row['tanh_at_reference_slope_gradient_defect']=np.linalg.norm(true['gradient'][0]-g[0])
+                        row['tanh_at_reference_half_mse']=true['sample_half_mse']
                     if step+1<trace.shape[1] and np.isfinite(trace[i,step+1,0]):
                         fd=(trace[i,step+1,31:33]-trace[i,step,31:33])/np.array([1.,sigma])/cfg['eta']
                         row['coarse_discrete_derivative_error']=np.linalg.norm(fd-probe['Vv']-probe['Vq'])
