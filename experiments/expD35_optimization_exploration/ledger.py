@@ -4,7 +4,28 @@ import csv
 import json
 from pathlib import Path
 import numpy as np
-from . import design, history
+from . import design, history, core
+
+
+def training_window(folder,horizon):
+    """All update-start losses in the final fifth; disclose missing trace coverage."""
+    lower=int(.8*horizon);blocks=[]
+    for _,data in history.arrays(folder,'trace_*.npz'):
+        start=int(data['start']);end=int(data['end'])
+        if end<=lower or start>=horizon:continue
+        block=data['trace'][max(0,lower-start):min(end,horizon)-start]
+        blocks.append(block[:,:18])  # Stable prefix shared by every campaign trace.
+    result=dict(id=folder.name,horizon=horizon,expected_samples=horizon-lower)
+    if not blocks:return dict(result,samples=0)
+    a=np.concatenate(blocks);finite=np.isfinite(a[:,0]);values=a[finite,0]
+    result.update(samples=len(a),finite_samples=len(values),coverage=len(a)/(horizon-lower))
+    if not len(values):return result
+    result.update(mean_train_mse=float(np.mean(values)),median_train_mse=float(np.median(values)),
+                  q90_train_mse=float(np.quantile(values,.9)),max_train_mse=float(np.max(values)))
+    for name in ('eta','physical_readout_gradient','physical_gamma_gradient','delta_readout_rms',
+                 'delta_gamma_rms','coarse_residual_norm','adam_guard_fraction','zero_physical_step'):
+        result['mean_'+name]=float(np.mean(a[finite,core.TRACE.index(name)]))
+    return result
 
 
 def write_csv(path, rows):
