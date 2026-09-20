@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse
 import csv
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -20,7 +21,9 @@ def number(row,key):
 def reduce_table(paths,name,keys,metrics):
     groups={}
     for path in paths:
-        with (path/name).open() as stream:
+        source=path/name
+        stream=source.open() if source.exists() else gzip.open(str(source)+'.gz','rt')
+        with stream:
             for row in csv.DictReader(stream):
                 key=tuple(row[k] for k in keys)
                 group=groups.setdefault(key,dict(**{k:row[k] for k in keys},count=0))

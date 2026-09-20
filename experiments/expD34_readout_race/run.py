@@ -38,7 +38,12 @@ def save(path, **arrays):
     path = Path(path)
     temporary = path.with_suffix('.tmp')
     with temporary.open('wb') as f:
-        np.savez(f, **arrays)
+        writer=np.savez_compressed if path.parent.name=='p1' else np.savez
+        writer(f, **arrays)
+        f.flush();os.fsync(f.fileno())
+        expected=f.tell()
+    if not expected or temporary.stat().st_size!=expected:
+        raise OSError(f'Incomplete archive write: {temporary}')
     temporary.replace(path)
 
 
