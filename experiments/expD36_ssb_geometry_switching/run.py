@@ -10,7 +10,7 @@ import jax.numpy as jnp
 import numpy as np
 from experiments.expD35_optimization_exploration import core, run as old, ssb
 from experiments.expD06_fixed_center_scales import higher_order as higher
-from . import accessibility as access, diagnostics
+from . import accessibility as access, diagnostics, reinitialization
 
 EARLY=(0,1,2,5,10,20,50,100,200,500)
 
@@ -56,9 +56,21 @@ def advance(root,config,source,frontier,deadline):
         control=json.loads((folder/'controller.json').read_text())
     elif 'parent' in config:
         parent=Path(config['parent'])
+        if hashlib.sha256(parent.read_bytes()).hexdigest()!=config['parent_sha256']:
+            raise ValueError('Parent solver checkpoint changed')
         state=ssb.load_solver(parent, state)
         control['origin_count']=int(state['count'])
         state=dict(state,count=jnp.array(0),status=jnp.array(0))
+        if config.get('reinitialization','none')!='none':
+            before=state['z']
+            after=jnp.asarray(reinitialization.replace(before,config))
+            _,_,residual,_,_=access.problem(n,coord,target)
+            delta=residual(after)-residual(before)
+            old.write_json(folder/'replacement.json',dict(mode=config['reinitialization'],
+                mask=config['reset_mask'],before_mse=float(2*loss(before)),after_mse=float(2*loss(after)),
+                function_jump_rms=float(jnp.linalg.norm(delta)),origin_count=control['origin_count']))
+            state=dict(state,z=after)
+            state=ssb.restart(state,solver,loss,jnp.eye(len(after)))
     g,matrix,_,_,_=access.problem(n,coord,target)
     if 'taus' not in control:
         largest=float(jnp.linalg.svd(matrix(initial_z[g.width+1:]),compute_uv=False)[0])**2
