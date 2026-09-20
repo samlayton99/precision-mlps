@@ -42,7 +42,10 @@ def consolidate(folder):
     latest_snapshot=max(folder.glob('snapshot_*.npz'),default=None)
     if paths==[latest_snapshot] and (folder/'evaluation_history.json').exists():return 0
     index=evaluations(folder)
-    sequence=len(list(folder.glob('history_*.zip')))
+    previous=[p.name for p in folder.glob('history_*.zip')]
+    offloaded=folder/'offloaded_archives.json'
+    if offloaded.exists():previous.extend(json.loads(offloaded.read_text()))
+    sequence=1+max((int(Path(name).stem.split('_')[1]) for name in previous),default=-1)
     archive=folder/f'history_{sequence:04d}.zip';temporary=archive.with_suffix('.tmpzip')
     hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
     with zipfile.ZipFile(temporary,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=1) as stream:

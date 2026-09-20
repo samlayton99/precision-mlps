@@ -35,6 +35,15 @@ def test_paired_warm_recipes_resolve_parent_hyperparameters(tmp_path):
     assert design.paired_recipes(rows,root=tmp_path)==[]
 
 
+def test_archive_sequence_survives_verified_offload(tmp_path):
+    from experiments.expD35_optimization_exploration import history,run
+    run.write_json(tmp_path/'offloaded_archives.json',{'history_0007.zip':'retained elsewhere'})
+    run.save(tmp_path/'snapshot_000020000.npz',step=20000,z=np.zeros(2))
+    history.consolidate(tmp_path)
+    assert (tmp_path/'history_0008.zip').exists()
+    assert not (tmp_path/'history_0000.zip').exists()
+
+
 def case(**extra):
     return dict(n=64, seed=0, coordinates='individual', optimizer='gd', eta=1e-4, **extra)
 
