@@ -225,6 +225,14 @@ def test_selection_can_compare_same_horizon_after_promotion(tmp_path):
     assert design.rank(tmp_path)[0]['score']==pytest.approx(1e-8)
 
 
+def test_transition_quadrature_resolves_a_sharp_tanh_exact_integral():
+    from experiments.expD35_optimization_exploration.precision import resolved_quadrature
+    slope=40000.
+    x,w=resolved_quadrature(np.array([0.]),np.array([slope]),32)
+    np.testing.assert_allclose(w.sum(),1.,rtol=0,atol=5e-16)
+    np.testing.assert_allclose(w@(np.tanh(slope*x)**2),1-np.tanh(slope)/slope,rtol=0,atol=1e-14)
+
+
 def test_selection_does_not_reweight_policies_that_save_extra_evaluations(tmp_path):
     from experiments.expD35_optimization_exploration import run,design
     for policy in ('constant','decay'):

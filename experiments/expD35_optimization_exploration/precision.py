@@ -8,6 +8,40 @@ import numpy as np
 from . import core,run,diagnose,stable
 
 
+def resolved_quadrature(centers, gamma, order):
+    """Gauss nodes split around learned transition widths; weights average [-1,1]."""
+    edges=[-1.,1.]
+    for center,slope in zip(centers,gamma):
+        edges.append(center)
+        if abs(slope)>1000:
+            edges.extend(center+np.array([-.25,.25,-1.,1.,-4.,4.,-16.,16.])/abs(slope))
+    edges=np.unique(np.clip(edges,-1,1));lo=edges[:-1];hi=edges[1:]
+    nodes,weights=np.polynomial.legendre.leggauss(order)
+    return ((lo[:,None]+hi[:,None])/2+(hi-lo)[:,None]*nodes/2).ravel(), \
+        ((hi-lo)[:,None]*weights/4).ravel()
+
+
+def spatial_audit(folder):
+    """Check integration sensitivity without changing or selecting the model."""
+    config=json.loads((folder/'case.json').read_text());g=core.old.geometry(config['n'])
+    with np.load(sorted(folder.glob('snapshot_*.npz'))[-1]) as data:z=data['z'];step=int(data['step'])
+    _,gamma=map(np.asarray,core.physical(z,g,config['coordinates']))
+    beta=np.asarray(core.offsets(z,g))
+    centers=g.centers-np.divide(beta,gamma,out=np.zeros_like(gamma),where=gamma!=0)
+    def residual(x):
+        return np.concatenate([diagnose.forward(z,g,config['coordinates'],b)-core.target(b,config['target'],np)
+                               for b in np.array_split(x,max(1,int(np.ceil(len(x)/2048))))])
+    uniform={}
+    for size in (32768,65536,131072):
+        x=-1+2*(np.arange(size)+.5)/size;uniform[str(size)]=float(np.mean(residual(x)**2))
+    adaptive={}
+    for order in (16,32,64):
+        x,w=resolved_quadrature(centers,gamma,order)
+        adaptive[str(order)]=dict(points=len(x),mse=float(w@(residual(x)**2)))
+    return dict(id=folder.name,step=step,max_abs_gamma=float(np.max(abs(gamma))),
+                midpoint_mse=uniform,transition_resolved_gauss=adaptive)
+
+
 def mp_target(x,name):
     if name=='sine':return mp.sqrt(2)*mp.sin(2*mp.pi*x)
     if name=='mixed':return (mp.sin(2*mp.pi*x)+mp.mpf('.1')*mp.sin(20*mp.pi*x))/mp.sqrt(mp.mpf('.505'))
