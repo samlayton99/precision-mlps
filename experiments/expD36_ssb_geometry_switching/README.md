@@ -97,6 +97,23 @@ These are post-selection diagnostic probes, not tuned confirmation settings.
 The mixed-target selection trajectories are extended to 100k updates; the
 primary analysis remains restricted to the common 20k frontier.
 
+A second, explicitly exploratory timing test uses the earliest resolved single
+candidate within the first 100 updates of each N=128 baseline (seeds 0–4).
+It does not require persistence across two diagnostics. Each qualifying saved
+state has three 20k continuations: unchanged solver state, search-history restart
+with the same metric, and the recorded metric mixture. Parameters are identical
+at the branch point. This isolates initial acquisition from the much later
+switching events of the primary controller. No new target or mixture strength is
+selected from the continuation outcomes.
+
+The metric-memory interpretation also has a restricted exact statement. If an
+observed secant subspace $U$ is invariant under $H$ and every $s_k,y_k$ lies in
+$U$, the SSBroyden rank corrections act only in $U$. Its complementary block
+therefore changes as $H_{U^\perp,k+1}=H_{U^\perp,k}/\tau_k$. Its relative prior
+anisotropy remains unchanged, even though its overall scalar changes. A focused
+test checks this property. The nonlinear network replay measures memory without
+assuming that its observed directions form such an invariant subspace.
+
 Every finite scientific run has at least 20k accepted updates. Numerical failures
 remain in the ledger. Actual loss, complete-window averages, accessibility,
 signed bandwidth movement, physical trajectories, residual frequencies, gradient

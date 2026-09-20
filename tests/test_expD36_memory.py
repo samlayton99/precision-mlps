@@ -21,3 +21,17 @@ def test_common_secant_update_is_covariant_and_satisfies_secant():
         np.testing.assert_allclose(np.asarray(h)@y,s,rtol=2e-10,atol=2e-10)
         np.testing.assert_allclose(transformed,np.asarray(h)/diagonal[:,None]/diagonal,rtol=2e-8,atol=2e-9)
         assert np.linalg.eigvalsh(h).min()>0
+
+
+def test_unobserved_invariant_block_keeps_relative_prior_scales():
+    source=os.environ.get('SSB_SOURCE')
+    if not source:pytest.skip('Pinned SSBroyden required')
+    solver=higher.ssb_solver(source,1e-30,1e-15,'accepted_step')
+    rng=np.random.default_rng(105);h=jnp.diag(jnp.array([1.,2.,3.,.01,.1,10.,100.]))
+    reference=np.asarray(h)[3:,3:]/float(h[3,3])
+    c=np.array([[3.,.2,.1],[.2,4.,.3],[.1,.3,2.]])
+    for k in range(8):
+        observed=rng.normal(size=3);s=jnp.r_[observed,jnp.zeros(4)];y=jnp.r_[c@observed,jnp.zeros(4)]
+        h,ok=update(solver,h,s,y,jnp.array(k==0));assert bool(ok)
+        np.testing.assert_allclose(np.asarray(h)[3:,3:]/float(h[3,3]),reference,rtol=2e-12,atol=0.)
+        np.testing.assert_array_equal(np.asarray(h)[:3,3:],np.zeros((3,4)))

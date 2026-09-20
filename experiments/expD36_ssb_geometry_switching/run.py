@@ -61,6 +61,15 @@ def advance(root,config,source,frontier,deadline):
         state=ssb.load_solver(parent, state)
         control['origin_count']=int(state['count'])
         state=dict(state,count=jnp.array(0),status=jnp.array(0))
+        if config.get('fork_policy','continue')!='continue':
+            if config.get('reinitialization','none')!='none':raise ValueError('Keep metric and parameter interventions separate')
+            metric=state['solver'].f_info.hessian_inv.pytree
+            if config['fork_policy']=='metric_mix':
+                metric,_=access.mix_metric(metric,jax.grad(loss)(state['z']),config['fork_beta'])
+            elif config['fork_policy']!='history_only':raise ValueError(config['fork_policy'])
+            state=ssb.restart(state,solver,loss,metric)
+            old.write_json(folder/'fork_intervention.json',dict(policy=config['fork_policy'],
+                beta=config['fork_beta'],origin_count=control['origin_count'],parameter_change=0.))
         if config.get('reinitialization','none')!='none':
             before=state['z']
             after=jnp.asarray(reinitialization.replace(before,config))
