@@ -2,6 +2,8 @@
 
 This campaign tests whether coordinate scaling, neighboring readouts, gradient EMA, sampling-based learning-rate control, and selective resets improve GD or Adam on the existing fixed-center tanh problem. SSBroyden metric resets and conditional promotion to independently trainable affine hidden parameters are separate comparisons. The campaign budget is ten allocated H200 GPU-hours, at most two GPUs concurrently, through Slurm.
 
+The [results and walkthrough](../../results/checkpoint_D_optimizers/expD35_optimization_exploration/README.md) contain the selected recipes, complete-loss comparisons, initialization controls, residual and gradient decompositions, and precision audits.
+
 [Local mechanism calculations](mechanism.md) explain what the gradient filter can change in a fixed quadratic mode, and why neighboring tanh features retain exponential high-frequency attenuation. These calculations guide interpretation; the measured finite-network spectra determine whether the remaining residual occupies weak directions.
 
 The model and corrected-halo geometry reuse D06. All fixed-center readouts, output bias, and slopes train jointly. Training minimizes half-MSE in FP64. The same scalar rate applies to every native coordinate. For $c=Tz$ and $\lambda=h\gamma$, physical GD mobility is $\eta TT^T$ for readouts and $\eta/h^2$ for slopes. Physical-coordinate controls instead train $c,\gamma$ directly. `collective`, `individual`, and `neighbor` mean the existing square-root allowance, individual allowance, and anchored cumulative-difference maps, respectively.
