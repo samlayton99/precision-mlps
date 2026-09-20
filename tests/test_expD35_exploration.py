@@ -162,3 +162,10 @@ def test_selection_can_compare_same_horizon_after_promotion(tmp_path):
         run.write_json(folder/f'evaluation_{step:09d}.json',dict(step=step,validation_relative_mse=value))
     assert design.rank(tmp_path,horizon=20000)[0]['score']==pytest.approx(.15)
     assert design.rank(tmp_path)[0]['score']==pytest.approx(1e-8)
+
+
+def test_replay_cannot_silently_run_without_source_events(tmp_path):
+    from experiments.expD35_optimization_exploration import run
+    c=run.case(n=64,reset='replay_state',replay_directory=str(tmp_path/'missing'))
+    with pytest.raises(ValueError,match='recycling run must reach'):
+        run.advance(tmp_path/'out',[c],20000)

@@ -99,6 +99,11 @@ def prepare(root, config):
 
 
 def advance(root, cases, frontier, deadline=float('inf'), capture_last=0):
+    for c in cases:
+        if c['reset'].startswith('replay_'):
+            path=Path(c['replay_directory'])/'latest.json'
+            if not path.exists() or json.loads(path.read_text())['step']<frontier:
+                raise ValueError('The source recycling run must reach the replay horizon first')
     loaded = [prepare(root, c) for c in cases]
     assert len({s for _,_,s in loaded}) == 1, 'Group by current horizon before advancing'
     at = loaded[0][2]; config = cases[0]
