@@ -40,11 +40,15 @@ def collect(root,horizon=20000):
                 r['curvature'][0]['hvp_fd_relative']<=.1 for r in rows if r.get('beta_candidate') is not None) for t in (.1,.25,.5)},
             last_2048_mean_mse=float(np.mean(trace[-2048:,0])) if len(trace) else None,
             accepted_trace_rows=len(trace),emergency_resets=int(np.nansum(trace[:,14])) if len(trace) else None,
+            curvature_guard_fraction=float(np.mean(trace[:,7])) if len(trace) else None,
+            final_window_curvature_guard_fraction=float(np.mean(trace[-2048:,7])) if len(trace) else None,
+            final_window_secant_error_median=float(np.nanmedian(trace[-2048:,12])) if len(trace) else None,
             gamma_rms_path_length=float(np.sum(trace[:,11])) if len(trace) else None,
             readout_rms_path_length=float(np.sum(trace[:,10])) if len(trace) else None,
             initial_lambda=rows[0]['lambda_quantiles'] if rows else None,
             final_lambda=rows[-1]['lambda_quantiles'] if rows else None)
         if (folder/'replacement.json').exists():summary['replacement']=read(folder/'replacement.json')
+        if (folder/'fork_intervention.json').exists():summary['fork_intervention']=read(folder/'fork_intervention.json')
         summary['curve']=[dict(step=r['step'],mse=r['mse'],lambda_median=r['lambda_quantiles'][2],
             gain=r['gain_svd'],geometry_gradient=r['geometry_gradient'],readout_gradient=r['readout_gradient'],
             readout_norm=r['readout_norm'],exposure=r['exposure'],uncertainty=r['uncertainty'],
@@ -54,7 +58,7 @@ def collect(root,horizon=20000):
 
 
 COLORS=dict(baseline='#222222',adaptive='#0072b2',periodic='#d55e00',sham='#009e73')
-LABELS=dict(baseline='SSBroyden',adaptive='Adaptive metric mixture',periodic='Periodic metric mixture',sham='Search-history restart')
+LABELS=dict(baseline='SSBroyden',adaptive='Adaptive metric mixture',periodic='Periodic metric mixture',sham='History restart, same metric')
 
 
 def figures(records,out):
@@ -103,7 +107,7 @@ def main():
     for r in records:
         c=r['config']
         if c.get('implementation')!='primed_guard_v2' and 'parent' not in c:continue
-        print(c['n'],c['coordinates'],c['target'],c['seed'],c.get('reinitialization',c['policy']),
+        print(c['n'],c['coordinates'],c['target'],c['seed'],c.get('fork_policy',c.get('reinitialization',c['policy'])),
               r['latest']['step'],f"{r['latest']['train_mse']:.3e}",r['latest']['status'],len(r['event_steps']))
 
 

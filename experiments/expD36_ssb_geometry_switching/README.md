@@ -47,7 +47,9 @@ The adaptive rule uses the smallest mixture giving three times the measured
 numerical uncertainty at the 100k horizon, without resolved deterioration at
 20k. It requires two consecutive qualifying diagnostics and a 100-update
 cooldown. Ordinary SSBroyden resumes between interventions. Periodic mixing and
-search-history-only replays are separate controls. Emergency non-descent resets
+history-only replays are separate controls. History includes line search, descent
+state, and the first-self-scaling flag; the replay retains the inverse metric.
+Emergency non-descent resets
 are shared across arms and are not counted as evidence for the allocation claim.
 
 The validity of the curvature approximation and the usefulness of its allocation
@@ -100,7 +102,7 @@ primary analysis remains restricted to the common 20k frontier.
 A second, explicitly exploratory timing test uses the earliest resolved single
 candidate within the first 100 updates of each N=128 baseline (seeds 0–4).
 It does not require persistence across two diagnostics. Each qualifying saved
-state has three 20k continuations: unchanged solver state, search-history restart
+state has three 20k continuations: unchanged solver state, optimizer-history restart
 with the same metric, and the recorded metric mixture. Parameters are identical
 at the branch point. This isolates initial acquisition from the much later
 switching events of the primary controller. No new target or mixture strength is

@@ -67,6 +67,12 @@ def main():
         record=dict(id=d.name,config=c,window=[19500,20000],window_decomposition=summarize(r0,readout,geometry),
             direction_decompositions=direction_rows,closure_rms=float(np.linalg.norm(readout+geometry-actual)),
             function_change_rms=float(np.linalg.norm(actual)),final_mse=float(r@r))
+        initial_w,_=physical(np.load(d/'snapshot_000000000.npz')['z'],g,c['coordinates'])
+        record['weight_to_envelope_quantiles']=np.quantile(np.abs(w1[1:]/g.alpha[1:]),[.5,.9,1]).tolist()
+        record['native_weight_norm_growth']=float(np.linalg.norm(w1[1:]/g.alpha[1:])/np.linalg.norm(initial_w[1:]/g.alpha[1:]))
+        exact=-2*data['directions']@data['gradient']
+        spectral=np.array([sum(q['readout_descent']+q['geometry_descent'] for q in rr) for rr in direction_rows])
+        record['descent_accounting_relative_error']=(np.abs(spectral-exact)/np.maximum(np.abs(exact),1e-300)).tolist()
         records.append(record)
         labels=['DC' if q['indices']==[0,0] else str(q['indices'][0]) if q['indices'][0]==q['indices'][1] else f"{q['indices'][0]}–{q['indices'][1]}" for q in direction_rows[0]]
         fig,axes=plt.subplots(1,2,figsize=(12,4));xx=np.arange(len(labels))

@@ -76,3 +76,24 @@ def test_parameter_reset_keeps_centers_and_separates_zero_weight_signal():
     np.testing.assert_array_equal(reinitialization.replace(initial,dict(c,reinitialization='state_only')),initial)
     unchanged=np.ones(len(initial),dtype=bool);unchanged[[11,g.width+1+10]]=False
     np.testing.assert_array_equal(nonzero[unchanged],initial[unchanged])
+
+
+def test_parent_forks_preserve_parameters_and_apply_requested_metric(tmp_path):
+    import hashlib
+    import time
+    source=os.environ.get('SSB_SOURCE')
+    if not source:pytest.skip('Pinned source required')
+    c=old.case(n=64,optimizer='ssbroyden',coordinates='individual',policy='baseline')
+    g,loss,physical=ssb.problem(c);solver=higher.ssb_solver(source,1e-30,1e-15,'accepted_step')
+    initial=higher.ssb_initial(solver,loss,core.initialize(c)['z'])
+    state,_=ssb.kernel(64,'individual','sine',source,1e-30,1e-15,'non_descent',1000,5)(initial)
+    parent=tmp_path/'parent.npz';ssb.save_solver(parent,state)
+    h=state['solver'].f_info.hessian_inv.pytree
+    mixed,_=access.mix_metric(h,jax.grad(loss)(state['z']),.2)
+    for policy,expected in [('continue',h),('history_only',h),('metric_mix',mixed)]:
+        config=dict(c,parent=str(parent),parent_sha256=hashlib.sha256(parent.read_bytes()).hexdigest(),fork_policy=policy,fork_beta=.2)
+        assert run.advance(tmp_path/'runs',config,source,1,time.monotonic()+60)
+        folder=run.paths(tmp_path/'runs',config)
+        np.testing.assert_array_equal(np.load(folder/'snapshot_000000000.npz')['z'],state['z'])
+        np.testing.assert_allclose(np.load(folder/'metric_000000000.npz')['inverse_metric'],expected,rtol=1e-13,atol=1e-13)
+        assert np.load(folder/'ssb_trace_000000000_000000001.npz')['trace'][0,14]==0.
