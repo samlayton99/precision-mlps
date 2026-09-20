@@ -52,8 +52,12 @@ access bounds, the single-mode discrete certificate, mixed-mode slack, gradients
 coordinate maps, and actual GD versus spectral evolution. Scientific success
 does not require tight bounds or a favorable gamma intervention.
 
-The accompanying results report will distinguish trained precision, attainable
-tolerances, theorem slack, arithmetic limitations, and unexecuted horizons.
+The [completed results report](../../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/REPORT.md)
+distinguishes trained precision, attainable tolerances, theorem slack,
+arithmetic limitations, and unexecuted horizons. All 16 GD cases and 16 Adam
+trials completed using 0.0575 allocated GPU-hours. The principal signal is
+capacity-sufficient but very slow GD at gamma 4; directional lower bounds still
+understate the two observed sine-mixture hitting times by about 44–52 times.
 
 ## Entry points
 
