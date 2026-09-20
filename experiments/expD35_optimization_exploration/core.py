@@ -120,7 +120,7 @@ def hyperparameters(case):
 
 
 @lru_cache(maxsize=64)
-def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1024, reset='none'):
+def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1024, reset='none', capture=False):
     g = old.geometry(n)
     grid = jnp.linspace(-1, 1, 16*n+1)
     def one(state, hp, start, replay):
@@ -158,7 +158,7 @@ def chunk(n, coordinates, optimizer, name, length, sampling='full', batch_size=1
                 jnp.sum(mask),jump])
             trace=jnp.where(active, trace, jnp.nan)
             if reset!='none': trace=jnp.r_[trace,mask&active]
-            return next_state, trace
+            return next_state, (trace,next_state['z']) if capture else trace
         return jax.lax.scan(step, state, (start+jnp.arange(length),replay))
     compiled=jax.jit(jax.vmap(one, in_axes=(0, 0, None, 0)))
     def run(states,hp,start,replay=None):

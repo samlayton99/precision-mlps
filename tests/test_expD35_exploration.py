@@ -119,3 +119,35 @@ def test_no_replacement_does_not_roundtrip_neighbor_coordinates():
                                 'utility',jnp.zeros(g.width,dtype=bool),0,jnp.linspace(-1,1,129))
     np.testing.assert_array_equal(st['z'],out['z'])
     assert not np.any(mask)
+
+
+def test_fourier_accounting_resolves_dc_and_high_frequency_bands():
+    from experiments.expD35_optimization_exploration.diagnose import band_energy,band_product
+    x=np.arange(2048)/2048
+    r=2+np.cos(2*np.pi*90*x);update=-.1+1e-3*np.sin(2*np.pi*7*x)
+    bands=band_energy(r)
+    assert bands[0]==pytest.approx(4.)
+    assert bands[7]==pytest.approx(.5)
+    assert np.sum(bands)==pytest.approx(np.mean(r*r))
+    np.testing.assert_allclose(band_energy(r+update),bands+2*band_product(r,update)+band_energy(update),atol=1e-15)
+
+
+def test_dense_capture_does_not_change_updates():
+    st=core.initialize(case());hp=core.hyperparameters(case())
+    batch=lambda v:jax.tree.map(lambda a:a[None],v)
+    a,_=core.chunk(64,'individual','gd','sine',3)(batch(st),batch(hp),0)
+    b,(trace,z)=core.chunk(64,'individual','gd','sine',3,capture=True)(batch(st),batch(hp),0)
+    np.testing.assert_array_equal(a['z'],b['z'])
+    np.testing.assert_array_equal(z[:,-1],b['z'])
+
+
+def test_adam_normalized_ema_requires_scaled_epsilon():
+    c=case(ema_strength=2.,epsilon=1e-3)
+    a=core.initialize(c);b=core.initialize(c)
+    ha=core.hyperparameters(c);hb=core.hyperparameters(dict(c,ema_normalized=True,epsilon=c['epsilon']/3))
+    for i in range(4):
+        grad=jnp.sin(jnp.arange(len(a['z']))+i)*1e-3
+        da,ua,_,_=core.optimizer_direction(a,grad,ha,'adam')
+        db,ub,_,_=core.optimizer_direction(b,grad,hb,'adam')
+        np.testing.assert_allclose(da,db,rtol=1e-13,atol=1e-15)
+        a.update(ua);b.update(ub)

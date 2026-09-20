@@ -98,7 +98,7 @@ def prepare(root, config):
     return folder, state, 0
 
 
-def advance(root, cases, frontier, deadline=float('inf')):
+def advance(root, cases, frontier, deadline=float('inf'), capture_last=0):
     loaded = [prepare(root, c) for c in cases]
     assert len({s for _,_,s in loaded}) == 1, 'Group by current horizon before advancing'
     at = loaded[0][2]; config = cases[0]
@@ -118,8 +118,10 @@ def advance(root, cases, frontier, deadline=float('inf')):
             stride = 1000 if at < 20000 else 5000
             end = min((at//stride+1)*stride, frontier)
         if config['schedule']!='constant': end=min(end,(at//3000+1)*3000)
+        capture=capture_last>0 and at>=frontier-capture_last
+        if capture_last and at<frontier-capture_last: end=min(end,frontier-capture_last)
         kernel = core.chunk(config['n'], config['coordinates'], config['optimizer'], config['target'],
-                            end-at, config['sampling'], config['batch_size'],config['reset'])
+                            end-at, config['sampling'], config['batch_size'],config['reset'],capture)
         replay=None
         if config['reset'].startswith('replay_'):
             replay=np.zeros((len(cases),end-at,core.old.geometry(config['n']).width),dtype=bool)
@@ -128,8 +130,11 @@ def advance(root, cases, frontier, deadline=float('inf')):
                     with np.load(path) as data:
                         selected=(data['updates']>at)&(data['updates']<=end)
                         replay[i,data['updates'][selected]-at-1]=data['masks'][selected]
-        states, traces = kernel(states, hp, at, replay)
+        before=np.asarray(states['z']) if capture else None
+        states, output = kernel(states, hp, at, replay)
         jax.block_until_ready(states)
+        if capture: traces,trajectory=output;trajectory=np.asarray(trajectory)
+        else: traces=output
         traces = np.asarray(traces)
         agreement_data=None
         if config['schedule']!='constant' and end%3000==0:
@@ -154,6 +159,8 @@ def advance(root, cases, frontier, deadline=float('inf')):
                 if np.any(occurred):
                     save(folder/f'reset_events_{at:09d}_{end:09d}.npz',updates=at+1+np.flatnonzero(occurred),masks=masks[occurred])
             save(folder/f'snapshot_{end:09d}.npz', z=state['z'], step=end)
+            if capture:
+                save(folder/f'dense_{at:09d}_{end:09d}.npz',z=trajectory[i],initial_z=before[i],start=at,end=end)
             if agreement_data is not None:
                 save(folder/f'agreement_{end:09d}.npz',statistics=agreement_data[0][i],
                      batch_gradients=agreement_data[1][i],full_gradient=agreement_data[2][i],
@@ -196,6 +203,7 @@ def main():
     p.add_argument('--frontier', type=int, default=20000)
     p.add_argument('--worker', type=int, default=0);p.add_argument('--workers', type=int, default=1)
     p.add_argument('--seconds', type=float, default=1100)
+    p.add_argument('--capture-last',type=int,default=0)
     p.add_argument('--coordinates', choices=core.COORDINATES);p.add_argument('--optimizer', choices=('gd','adam'))
     p.add_argument('--target');p.add_argument('--require-gpu', action='store_true')
     args=p.parse_args()
@@ -227,7 +235,7 @@ def main():
         if at<args.frontier: groups[(group_signature(c),at)].append(c)
     deadline=time.monotonic()+args.seconds
     for _, group in sorted(groups.items()):
-        if not advance(args.root, group, args.frontier, deadline): break
+        if not advance(args.root, group, args.frontier, deadline,args.capture_last): break
     write_json(args.root/f'progress_{job}_{args.worker}.json', summary(args.root))
 
 
