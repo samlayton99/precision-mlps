@@ -135,9 +135,14 @@ def test_full_screen_selection_resume_and_controls(tmp_path):
     assert len(rows)==len(cfg['targets'])*len(cfg['tolerances'])*8
     np.testing.assert_allclose([row['epsilon_residual'] for row in rows],
                                [row['epsilon_target'] for row in rows],rtol=1e-14)
+    core.write_json(tmp_path/'reference/measurements.json',[
+        dict(n=64,target='sine_mix_2_6_10',digits=80,relative_error_extended=.9)])
     diagnostics.hitting_audit(tmp_path,cfg,deadline)
     audit=np.load(tmp_path/'training/N64_raw_adam_continue/hitting_audit.npz')
     assert audit['first'].shape==np.load(tmp_path/'training/N64_raw_adam_continue/state.npz')['hits'].shape
+    gd_folder=tmp_path/'training/N64_raw_gd'
+    error=np.concatenate([np.load(p)['trace'][:,0,0,0] for p in sorted(gd_folder.glob('trace_*.npz'))])
+    assert np.load(gd_folder/'hitting_audit.npz')['reference_first'][0,0]==np.flatnonzero(error<=.9)[0]
 
 
 def test_residual_access_and_effective_generator():

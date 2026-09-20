@@ -158,9 +158,18 @@ def damping(root,cfg,deadline):
 
 def hitting_audit(root,cfg,deadline):
     paths=sorted((root/'training').glob('*/case.json'),key=lambda p:('continue' in p.parent.name,p.parent.name))
+    reference_path=root/'reference/measurements.json'
+    references=json.loads(reference_path.read_text()) if reference_path.exists() else []
     for path in paths:
         folder=path.parent; case=json.loads(path.read_text()); state=dict(np.load(folder/'state.npz'))
         first=np.full_like(state['hits'],-1); last_above=np.full_like(first,-1)
+        reference_epsilon=np.full(len(case['columns']),np.nan)
+        if case['optimizer']=='gd' and case['map'] in cfg['width_maps'] and case['tag']==f'N{case["n"]}_{case["map"]}_gd':
+            for ci,column in enumerate(case['columns']):
+                match=[r for r in references if r['n']==case['n'] and r['target']==column['target'] and r['digits']==80]
+                if match:
+                    reference_epsilon[ci]=match[0]['relative_error_extended']
+        reference_first=np.full(first.shape[:2],-1,dtype=np.int64)
         if folder.name.endswith('_adam_continue'):
             prefix=folder.name.removesuffix('_adam_continue')
             previous=np.load(root/'training'/f'{prefix}_adam_pilot/hitting_audit.npz')
@@ -172,6 +181,9 @@ def hitting_audit(root,cfg,deadline):
                 raise TimeoutError('Per-update hitting audit deadline')
             start=int(trace_path.stem.split('_')[1]); values=np.load(trace_path)['trace'][:,:,:,0]
             steps=np.arange(start,start+len(values))[:,None,None]
+            reference_hit=values<=reference_epsilon
+            reference_seen=np.min(np.where(reference_hit,steps,np.iinfo(np.int64).max),axis=0)
+            reference_first=np.where((reference_first<0)&reference_hit.any(axis=0),reference_seen,reference_first)
             for ei,epsilon in enumerate(cfg['tolerances']):
                 hit=values<=epsilon
                 first_seen=np.min(np.where(hit,steps,np.iinfo(np.int64).max),axis=0)
@@ -184,9 +196,11 @@ def hitting_audit(root,cfg,deadline):
             first[:,:,ei]=np.where((first[:,:,ei]<0)&hit,count,first[:,:,ei])
             last_above[:,:,ei]=np.where(hit,last_above[:,:,ei],count)
         valid=state['failed']==0
+        reference_first=np.where((reference_first<0)&(final_error<=reference_epsilon),count,reference_first)
         np.testing.assert_array_equal(first[valid],state['hits'][valid],err_msg=folder.name)
         sustained=np.where((last_above<count)&valid[:,:,None],last_above+1,-1)
-        core.save_arrays(folder/'hitting_audit.npz',first=first,last_above=last_above,sustained=sustained)
+        core.save_arrays(folder/'hitting_audit.npz',first=first,last_above=last_above,sustained=sustained,
+            reference_first=reference_first,reference_epsilon=reference_epsilon)
         print(f'HITS {folder.name}',flush=True)
 
 
@@ -207,11 +221,41 @@ def factorization_checks(root,cfg):
     core.write_json(root/'validation/factorization_checks.json',rows)
 
 
+def width_schedule(root,cfg):
+    references=json.loads((root/'reference/measurements.json').read_text()); rows=[]
+    for n in cfg['widths']:
+        for name in cfg['width_maps']:
+            tag=f'N{n}_{name}_gd'; case=json.loads((root/'training'/tag/'case.json').read_text())
+            hits=np.load(root/'training'/tag/'hitting_audit.npz')
+            for gamma in [1,4,n/8]:
+                bi=case['gammas'].index(gamma)
+                folder=root/'dictionaries'/screen.dictionary_id(n,name,gamma)
+                access=np.load(folder/'access.npz'); spectrum=np.load(folder/'spectrum.npz'); L=float(spectrum['L'])
+                for target in cfg['robust_targets']:
+                    ti=cfg['targets'].index(target); ci=next(i for i,c in enumerate(case['columns']) if c['target']==target)
+                    reference=next(r for r in references if r['n']==n and r['target']==target and r['digits']==80)
+                    epsilon=float(hits['reference_epsilon'][ci]); first=int(hits['reference_first'][bi,ci])
+                    with np.errstate(divide='ignore'):
+                        analytic=f.bound(access['E'][:,ti],access['log_B_used'],epsilon,L)
+                        directional=f.bound(access['E'][:,ti],np.log(access['mu'][:,ti]),epsilon,L)
+                    k=directional['k']
+                    rows.append(dict(n=n,map=name,gamma=gamma,target=target,epsilon_reference=epsilon,
+                        reference_evaluation_precision_difference=reference['evaluation_precision_difference'],
+                        reference_construction_precision_difference=reference['construction_precision_difference'],
+                        first_hit=first if first>=0 else None,executed_steps=cfg['training_steps'],
+                        analytic=analytic,directional=directional,
+                        directional_access_resolved=bool(access['mu'][k,ti]>access['noise'][k,ti]) if k is not None else None,
+                        spectral_forecast=core.spectral_hit(spectrum['singular'],spectrum['loadings'][:,ti],
+                            spectrum['floor_sq'][ti],spectrum['norm_y'][ti],.5/L,epsilon)))
+    core.write_json(root/'diagnostics/width_reference_schedule.json',rows)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True)
     parser.add_argument('--seconds',type=float,default=800)
     args=parser.parse_args(); cfg=json.loads((args.root/'manifest.json').read_text())['config']
+    assert (args.root/'validation/reference_complete.json').exists()
     deadline=time.monotonic()+args.seconds
     for path in sorted((args.root/'training').glob('*/case.json')):
         case_certificates(args.root,path.parent,cfg,deadline)
@@ -219,6 +263,7 @@ def main():
     damping(args.root,cfg,deadline)
     hitting_audit(args.root,cfg,deadline)
     factorization_checks(args.root,cfg)
+    width_schedule(args.root,cfg)
     core.write_json(args.root/'validation/diagnostics_complete.json',dict(complete=True))
 
 
