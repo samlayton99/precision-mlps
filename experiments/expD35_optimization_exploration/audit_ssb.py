@@ -12,7 +12,7 @@ from experiments.expD06_fixed_center_scales import higher_order as higher
 def audit(folder,source):
     c=json.loads((folder/'case.json').read_text())
     initial,_=run.restore(folder/'initial.npz');g,loss,physical=ssb.problem(c)
-    solver=higher.ssb_solver(source,c['curvature_epsilon'],c['search_threshold'],'accepted_step')
+    solver=higher.ssb_solver(source,c.get('curvature_epsilon',1e-30),c.get('search_threshold',1e-15),'accepted_step')
     state=ssb.load_solver(folder/'solver.npz',higher.ssb_initial(solver,loss,initial['z']))
     matrix=np.asarray(state['solver'].f_info.hessian_inv.pytree)
     stored=np.asarray(state['solver'].f_info.grad);recomputed=np.asarray(jax.grad(loss)(state['z']))
