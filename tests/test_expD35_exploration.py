@@ -151,3 +151,14 @@ def test_adam_normalized_ema_requires_scaled_epsilon():
         db,ub,_,_=core.optimizer_direction(b,grad,hb,'adam')
         np.testing.assert_allclose(da,db,rtol=1e-13,atol=1e-15)
         a.update(ua);b.update(ub)
+
+
+def test_selection_can_compare_same_horizon_after_promotion(tmp_path):
+    from experiments.expD35_optimization_exploration import run,design
+    folder=tmp_path/'trial';folder.mkdir()
+    run.write_json(folder/'case.json',run.case())
+    run.write_json(folder/'latest.json',dict(step=100000,failed_update=0))
+    for step,value in ((16000,.2),(20000,.1),(100000,1e-8)):
+        run.write_json(folder/f'evaluation_{step:09d}.json',dict(step=step,validation_relative_mse=value))
+    assert design.rank(tmp_path,horizon=20000)[0]['score']==pytest.approx(.15)
+    assert design.rank(tmp_path)[0]['score']==pytest.approx(1e-8)

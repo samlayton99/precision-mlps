@@ -7,20 +7,22 @@ import numpy as np
 from . import run
 
 
-def rank(root, minimum=20000):
+def rank(root, minimum=20000, horizon=None):
     rows=[]
     for path in sorted(root.glob('*/case.json')):
         folder=path.parent
         if not (folder/'latest.json').exists(): continue
         latest=json.loads((folder/'latest.json').read_text())
-        if latest['step']<minimum or latest['failed_update']: continue
+        endpoint=horizon if horizon is not None else latest['step']
+        if latest['step']<max(minimum,endpoint): continue
+        if latest['failed_update'] and latest['failed_update']<=endpoint:continue
         values=[]
         for evaluation in folder.glob('evaluation_*.json'):
             e=json.loads(evaluation.read_text())
-            if .8*latest['step']<=e['step']<=latest['step'] and e['validation_relative_mse'] is not None:
+            if .8*endpoint<=e['step']<=endpoint and e['validation_relative_mse'] is not None:
                 values.append(e['validation_relative_mse'])
         if not values or not np.all(np.isfinite(values)): continue
-        rows.append(dict(id=folder.name,config=json.loads(path.read_text()),step=latest['step'],
+        rows.append(dict(id=folder.name,config=json.loads(path.read_text()),step=endpoint,
                          score=float(np.mean(values)),median=float(np.median(values)),
                          upper=float(np.quantile(values,.9)),best=float(min(values))))
     return sorted(rows,key=lambda r:r['score'])
