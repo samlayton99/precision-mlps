@@ -86,10 +86,7 @@ def advance(root,config,source,frontier,deadline):
             beta,control=controller(row,control,at,config['policy'])
             event=None
             if config['policy']=='sham':
-                parent=Path(config['replay'])/f'diagnostic_{at:09d}.json'
-                if not parent.exists():raise ValueError('Adaptive source must reach replay checkpoint first')
-                original=json.loads(parent.read_text())
-                if original.get('event')=='metric_mix':event='history_only'
+                if at in config['replay_events']:event='history_only'
             elif beta is not None:event='metric_mix'
             row.update(step=at,beta=beta,event=event,policy=config['policy'])
             old.save(folder/f'diagnostic_{at:09d}.npz',**data)

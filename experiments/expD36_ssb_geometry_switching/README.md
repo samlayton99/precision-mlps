@@ -67,6 +67,16 @@ The separate neuron-reset assay changes parameters and therefore tests a differe
 mechanism. It must include a matched optimizer-state restart, disclose the reset
 function jump, and label broader initial bandwidth as injected geometry.
 
+The one-event reset assay branches at update 5000. It selects the lowest 5% of
+ordinary neurons by the mean residual-normalized joint readout/bandwidth gradient
+at saved updates 4000, 4500, and 5000. This is a three-snapshot selector, not a
+continuous utility average. Its five matched branches continue unchanged, restart
+optimizer state only, or also replace the selected neurons with zero readouts,
+nonzero envelope-scale readouts and small physical-Xavier slopes, or those same
+readouts and broader Xavier bandwidths. Every branch gets 20k additional updates.
+Sham histories replay the complete, frozen event list from the adaptive run;
+they can continue after that source run fails.
+
 Every finite scientific run has at least 20k accepted updates. Numerical failures
 remain in the ledger. Actual loss, complete-window averages, accessibility,
 signed bandwidth movement, physical trajectories, residual frequencies, gradient
