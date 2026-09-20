@@ -130,3 +130,30 @@ remain in the ledger. Actual loss, complete-window averages, accessibility,
 signed bandwidth movement, physical trajectories, residual frequencies, gradient
 decompositions, and cost are evaluated together. More movement alone is not
 success; initialization dependence alone is not evidence of bad curvature.
+
+## Reproducing the analysis
+
+The curated report is in
+[the D36 results directory](../../results/checkpoint_D_optimizers/expD36_ssb_geometry_switching/README.md).
+Raw evidence stays outside Git: solver checkpoints, accepted-step traces,
+diagnostic arrays, parameter snapshots, and source hashes are retained together.
+The report's artifact inventory identifies their sizes and hashes. Given that
+directory as `EVIDENCE`, regenerate numerical tables and figures with:
+
+```bash
+python -m experiments.expD36_ssb_geometry_switching.analyze --root "$EVIDENCE" --output "$ANALYSIS"
+python -m experiments.expD36_ssb_geometry_switching.spectra --root "$EVIDENCE" --output "$ANALYSIS"
+python -m experiments.expD36_ssb_geometry_switching.findings --root "$EVIDENCE" --analysis "$ANALYSIS"
+```
+
+`analyze` defaults to the common 20k frontier even when a run continued to 100k.
+`findings` separately collects the twelve long mixed-target continuations and
+the early three-way checkpoint forks. Numerical failures remain labeled and
+are excluded from equal-horizon aggregates. These scripts produce evidence
+artifacts only; the report is authored and reviewed separately.
+
+The manifests and `run.sbatch` specify the training jobs. `memory.sbatch` runs
+the common-secant replay or same-state probes. Run these through Slurm, with no
+more than two concurrent one-GPU allocations. Source provenance is recorded per
+job; the corrected experiment uses the guarded restart implementation and the
+pinned SSBroyden dependency, not an unversioned package install.

@@ -6,6 +6,71 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from .analyze import COLORS, LABELS
+
+
+def early_forks(records, root, out):
+    forks=[r for r in records if 'fork_policy' in r['config']]
+    comparisons=[]
+    for parent in sorted({r['config']['parent'] for r in forks}):
+        arms={r['config']['fork_policy']:r for r in forks if r['config']['parent']==parent}
+        if set(arms)!={'continue','history_only','metric_mix'}:continue
+        config=arms['continue']['config'];starts=[];rows={}
+        for arm,r in arms.items():
+            folder=root/r['id'];z0=np.load(folder/'snapshot_000000000.npz')['z']
+            starts.append(z0)
+            z1=np.load(folder/'snapshot_000000001.npz')['z'];width=(len(z0)-1)//2
+            rows[arm]=dict(id=r['id'],step=r['latest']['step'],status=r['latest']['status'],
+                mse=r['latest']['train_mse'],validation_mse=r['latest']['validation_mse'],
+                lambda_median=r['latest']['lambda_median'],
+                first_native_step=float(np.linalg.norm(z1-z0)),
+                first_bandwidth_step=float(np.linalg.norm(z1[width+1:]-z0[width+1:])))
+        comparisons.append(dict(parent=parent,seed=config['seed'],target=config['target'],
+            coordinates=config['coordinates'],origin_step=config['fork_origin_step'],beta=config['fork_beta'],
+            identical_initial_parameters=all(np.array_equal(starts[0],z) for z in starts[1:]),
+            equal_20k=all(r['step']==20000 for r in rows.values()),arms=rows))
+    if comparisons:
+        fig,axes=plt.subplots(1,2,figsize=(12,5),sharey=True)
+        labels=[]
+        for i,row in enumerate(comparisons):
+            a=row['arms'];mix=a['metric_mix'];history=a['history_only']
+            labels.append(f"{row['coordinates']}, {row['target']}, s{row['seed']}, t={row['origin_step']}")
+            for control,color,marker in [('continue','#0072b2','o'),('history_only','#d55e00','s')]:
+                axes[0].scatter(mix['mse']/a[control]['mse'],i,color=color,marker=marker,
+                    facecolors=color if row['equal_20k'] else 'none')
+            axes[1].scatter(mix['first_bandwidth_step']/history['first_bandwidth_step'],i,color='#555555')
+        for ax in axes:ax.set_xscale('log');ax.axvline(1,color='gray',ls='--');ax.grid(axis='x',alpha=.2)
+        axes[0].set_yticks(range(len(labels)),labels,fontsize=8)
+        axes[0].set_xlabel('Final MSE: metric mixture / control')
+        axes[1].set_xlabel('First bandwidth step: mixture / same-metric restart')
+        axes[0].scatter([],[],color='#0072b2',label='Unchanged continuation')
+        axes[0].scatter([],[],color='#d55e00',marker='s',label='Same-metric history restart')
+        axes[0].legend(fontsize=8)
+        fig.suptitle('Early checkpoint forks; open symbols denote unequal completed horizons')
+        fig.tight_layout();fig.savefig(out/'early_forks.png',dpi=180);plt.close(fig)
+    return comparisons
+
+
+def long_runs(records,root,out):
+    chosen=[r for r in records if r['config'].get('implementation')=='primed_guard_v2'
+        and 'parent' not in r['config'] and r['config']['n']==128
+        and r['config']['target']=='mixed' and r['config']['seed'] in (0,1)
+        and r['config']['policy'] in ('baseline','adaptive','periodic')]
+    rows=[];fig,axes=plt.subplots(1,2,figsize=(11,4),sharey=True)
+    for r in chosen:
+        c=r['config'];folder=root/r['id'];last=json.loads((folder/'latest.json').read_text())
+        if last['step']!=100000:continue
+        rows.append(dict(id=r['id'],config=c,latest=last))
+        curve=[json.loads(p.read_text()) for p in sorted(folder.glob('diagnostic_*.json'))]
+        curve=[q for q in curve if 'mse' in q and q['step']<=100000]
+        ax=axes[('individual','neighbor').index(c['coordinates'])]
+        ax.semilogy([q['step'] for q in curve],[q['mse'] for q in curve],color=COLORS[c['policy']],
+            ls='-' if c['seed']==0 else '--',label=f"{LABELS[c['policy']]}, seed {c['seed']}")
+    for ax,title in zip(axes,('Individual scales','Neighbor differences')):
+        ax.set_title(title);ax.set_xlabel('Accepted updates');ax.set_ylabel('Training MSE');ax.grid(alpha=.2)
+    axes[1].legend(fontsize=7);fig.suptitle('Mixed target, N=128: continued training through 100k updates')
+    fig.tight_layout();fig.savefig(out/'mixed_100k.png',dpi=180);plt.close(fig)
+    return rows
 
 
 def main():
@@ -45,7 +110,8 @@ def main():
         samples=row.pop('cosine_at_1_10_100_512')
         row['valid_cosine_at_1_10_100_512']=[float(v) if position<=valid else None for position,v in zip((1,10,100,512),samples)]
         memory.append(dict(case=path.parent.name,**row))
-    out=dict(horizon=20000,cases=compact,confirmation=comparisons,curvature_probes=probes,memory=memory)
+    out=dict(horizon=20000,cases=compact,confirmation=comparisons,curvature_probes=probes,memory=memory,
+        early_forks=early_forks(records,args.root,args.analysis),long_runs=long_runs(records,args.root,args.analysis))
     (args.analysis/'findings.json').write_text(json.dumps(out,indent=2)+'\n')
     if probes:
         fig,axes=plt.subplots(1,2,figsize=(11,5),sharey=True)
