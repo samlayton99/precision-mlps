@@ -112,3 +112,21 @@ existing total limits of 7,200 GPU-seconds and 3,600 CPU-only allocation seconds
 The first probe consumed 207 and 193 seconds respectively. Forecast the complete
 matrix with a 20% reserve before committing the remaining compute; an over-budget
 forecast requires a revised resource decision, not silent removal of cases.
+
+`full_screen.py` preserves 82 dictionaries and their endpoint-grid transforms,
+capacity diagnostics, all tolerance certificates, and independent evaluation
+grids. It extends a resolved boundary maximizer from degree 256 to 512.
+`full_train.py` executes ordinary GD, the complete Adam pilot and selected/common
+continuations, paired nonzero initializations, width controls, coordinate and
+learning-rate controls, and unit discrete-polynomial probes. Selection uses only
+the five declared validation checkpoints; the continuation retains moments,
+counter, first hits, and failure state. Chunked traces record every update.
+
+`full_worker.py` partitions the frozen matrix across two workers and includes
+the new all-parameter affine-Xavier baseline at all four widths. Submit
+`full_run.sbatch` first with `PROBE_STAGE=screen`, `--gres=none`, and a 15-minute
+limit, then twice with `PROBE_STAGE=train` and `PROBE_WORKER=0` or `1`.
+The two GPU allocations are capped at 55 minutes each; the worker checkpoint
+deadline is 100 seconds earlier. Check completed Slurm accounting before any
+retry so the cumulative allocation caps remain binding. Full results are only
+complete when every worker, diagnostic, precision check, and report is complete.

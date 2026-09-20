@@ -84,6 +84,16 @@ def initial_physical(g, family, seed):
     return np.r_[0., multiplier*np.sqrt(2/(g.width+1))*xi]
 
 
+def polynomial_probe(x, degree, training_count):
+    """Continue a unit discrete training polynomial onto an independent grid."""
+    m=training_count; previous=np.zeros_like(x); p=np.ones_like(x); previous_a=0.
+    for d in range(1,degree+1):
+        a=np.sqrt(d*d*(m*m-d*d)/((4*d*d-1)*(m-1)**2))
+        previous,p=p,(x*p-previous_a*previous)/a
+        previous_a=a
+    return p/np.sqrt(len(x))
+
+
 def envelopes(gamma, degrees, r):
     e = core.log_feature_envelope(gamma, degrees)
     cap_scale = (r.shape[0]-1)*np.linalg.norm(r, 2)**2

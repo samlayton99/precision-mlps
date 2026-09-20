@@ -1,0 +1,44 @@
+{
+  "gpu_seconds_by_group": {
+    "primary_five_maps": 1625.8794601401314,
+    "initialization_five_maps": 768.0075839720666,
+    "width_six_groups_upper_estimate_N1024": 1595.0904670301825,
+    "polynomial_two_maps_and_rate_control": 159.66376843024045,
+    "coordinate_three_maps": 231.09818616416305,
+    "joint_four_widths": 20.359616266563535,
+    "unmeasured_checkpoint_evaluation_load_and_startup_allowance": 900
+  },
+  "gpu_forecast_with_20_percent_reserve": 6360.118898404017,
+  "gpu_remaining_seconds": 6953,
+  "cpu_seconds_by_group": {
+    "dictionary_screen_allowance": 800,
+    "residual_spectrum_damping_and_reference_allowance": 600,
+    "precision_allowance": 800
+  },
+  "cpu_forecast_with_20_percent_reserve": 2640.0,
+  "cpu_remaining_seconds": 3381,
+  "storage_allowance_GiB": 48,
+  "scratch": "/dev/shm/junmiaoh-gamma-full-v1",
+  "preflight_jobs": [
+    {
+      "id": 681,
+      "elapsed": 40,
+      "gpus": 1,
+      "state": "COMPLETED"
+    },
+    {
+      "id": 682,
+      "elapsed": 26,
+      "gpus": 0,
+      "state": "COMPLETED"
+    }
+  ],
+  "assumptions": [
+    "Width forecasts charge all three added widths at the measured N1024 cost.",
+    "Compression timing measured for 500 update chunks is charged to every chunk.",
+    "900 GPU-seconds separately allow host checkpoint evaluation, input loading and startup.",
+    "20 percent reserve is applied after all allowances.",
+    "CPU allowances cover unbenchmarked precision and postprocessing; Slurm allocation accounting enforces the cap.",
+    "RAM scratch is transient; archive completed evidence locally."
+  ]
+}

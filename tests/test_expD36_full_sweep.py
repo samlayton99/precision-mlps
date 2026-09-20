@@ -2,6 +2,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
+import json
+import time
 from scipy.linalg import svd, lstsq
 
 from experiments.expD36_frozen_gamma_probe import core, full_core as f, full_kernels as k
@@ -98,3 +100,33 @@ def test_joint_matches_optax_and_finite_difference():
     for actual,expected in zip(jax.tree.leaves(state['params']),jax.tree.leaves(p)):
         np.testing.assert_allclose(actual,expected,rtol=1e-11,atol=1e-13)
     assert np.isfinite(values).all()
+
+
+def test_full_screen_selection_resume_and_controls(tmp_path):
+    from experiments.expD36_frozen_gamma_probe import full_screen as screen, full_train as train
+    cfg=dict(f.config(),n=64,gammas=[4],robust_gammas=[4],widths=[64],maps=['raw'],
+        coordinate_controls=[],k_max=8,k_max_extension=8,n_eval=128,n_validation=65,
+        chunk_size=5,training_steps=20,adam_pilot_steps=10,checkpoints=[0,5,10,20],
+        validation_steps=[5,10],adam_rates=[.001,.01],seeds=[0],polynomial_degrees=[2,4])
+    screen.run(tmp_path,cfg,60)
+    deadline=time.monotonic()+60
+    train.primary(tmp_path,cfg,64,'raw',[4],cfg['targets'],deadline)
+    selection=json.loads((tmp_path/'training/N64_raw_selection.json').read_text())
+    pilot=dict(np.load(tmp_path/'training/N64_raw_adam_pilot/state.npz'))
+    continued=dict(np.load(tmp_path/'training/N64_raw_adam_continue/checkpoint_000010.npz'))
+    indices=np.array(selection['indices'])
+    for key in ['theta','mu','nu']:
+        np.testing.assert_array_equal(continued[key],np.take_along_axis(pilot[key],indices[:,None,:],axis=2))
+    assert continued['count']==10
+    arrays,banks=train.load_banks(tmp_path,64,'raw',[4]); columns=train.plain_columns(cfg,cfg['targets'])
+    initial=np.random.default_rng(77).normal(size=(1,banks[0]['J'].shape[1],5))*.01
+    rates=np.full((1,5),.5/banks[0]['meta']['L']); eps=np.zeros_like(rates)
+    train.run_batch(tmp_path,cfg,64,'raw',[4],'resumed','gd',columns,rates,eps,10,deadline,initial=initial)
+    resumed,_=train.run_batch(tmp_path,cfg,64,'raw',[4],'resumed','gd',columns,rates,eps,20,deadline,initial=initial)
+    whole,_=train.run_batch(tmp_path,cfg,64,'raw',[4],'whole','gd',columns,rates,eps,20,deadline,initial=initial)
+    np.testing.assert_array_equal(resumed['theta'],whole['theta'])
+    for stage in ['rate','polynomial']:
+        train.controls(tmp_path,cfg,'raw',stage,deadline)
+    probe=f.polynomial_probe(arrays['x_train'],4,len(arrays['x_train']))
+    np.testing.assert_allclose(probe,core.discrete_polynomials(arrays['x_train'],4)[:,4],atol=1e-15)
+    np.testing.assert_allclose(np.linalg.norm(probe),1,atol=1e-14)
