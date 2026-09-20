@@ -1,0 +1,44 @@
+
+=== qi1d128 d=270 n=2160 r=144 floor=1.46e-14
+-- req5 batching (full reorth, fresh batch per matvec)
+   b= 2160 (d/1) grow=0: best=4.97e-16 @170   [1-batch floor 1.5e-14]
+   b=  135 (d/2) grow=0: best=7.90e-01 @30   [1-batch floor 1.8e-05]
+   b=  135 (d/2) grow=1: best=9.82e-01 @10   [1-batch floor 1.8e-05]
+   b=   67 (d/4) grow=0: best=8.14e-01 @10   [1-batch floor 1.5e-02]
+   b=   67 (d/4) grow=1: best=9.90e-01 @10   [1-batch floor 1.5e-02]
+   b=   33 (d/8) grow=0: best=7.99e-01 @10   [1-batch floor 1.0e-01]
+   b=   33 (d/8) grow=1: best=9.94e-01 @10   [1-batch floor 1.0e-01]
+   b=   16 (d/16) grow=0: best=8.06e-01 @10   [1-batch floor 1.6e-01]
+   b=   16 (d/16) grow=1: best=9.98e-01 @10   [1-batch floor 1.6e-01]
+   b=    8 (d/64) grow=0: best=9.20e-01 @20   [1-batch floor 3.8e-01]
+   b=    8 (d/64) grow=1: best=1.02e+00 @30   [1-batch floor 3.8e-01]
+-- req7 drift (full reorth, fresh eta per matvec, all rows)
+   eta=0e+00: best=4.97e-16 @170
+   eta=1e-14: best=3.28e-15 @180
+   eta=1e-12: best=4.02e-13 @140
+   eta=1e-10: best=4.36e-11 @250
+   eta=1e-08: best=3.49e-09 @110
+   eta=1e-06: best=3.33e-07 @90
+   eta=1e-03: best=3.04e-04 @60
+
+=== twinU512 d=512 n=2048 r=307 floor=3.13e-15
+-- req5 batching (full reorth, fresh batch per matvec)
+   b= 2048 (d/1) grow=0: best=1.54e-15 @310   [1-batch floor 3.1e-15]
+   b=  256 (d/2) grow=0: best=6.98e-01 @10   [1-batch floor 1.8e-11]
+   b=  256 (d/2) grow=1: best=7.39e-01 @310   [1-batch floor 1.8e-11]
+   b=  128 (d/4) grow=0: best=7.30e-01 @30   [1-batch floor 1.5e-05]
+   b=  128 (d/4) grow=1: best=7.54e-01 @300   [1-batch floor 1.5e-05]
+   b=   64 (d/8) grow=0: best=8.03e-01 @10   [1-batch floor 8.6e-03]
+   b=   64 (d/8) grow=1: best=7.48e-01 @300   [1-batch floor 8.6e-03]
+   b=   32 (d/16) grow=0: best=7.83e-01 @40   [1-batch floor 1.2e-01]
+   b=   32 (d/16) grow=1: best=7.70e-01 @20   [1-batch floor 1.2e-01]
+   b=    8 (d/64) grow=0: best=9.80e-01 @10   [1-batch floor 7.1e-01]
+   b=    8 (d/64) grow=1: best=9.93e-01 @20   [1-batch floor 7.1e-01]
+-- req7 drift (full reorth, fresh eta per matvec, all rows)
+   eta=0e+00: best=1.54e-15 @310
+   eta=1e-14: best=1.02e-14 @300
+   eta=1e-12: best=9.63e-13 @270
+   eta=1e-10: best=7.65e-11 @230
+   eta=1e-08: best=6.82e-09 @170
+   eta=1e-06: best=5.93e-07 @130
+   eta=1e-03: best=6.37e-04 @70

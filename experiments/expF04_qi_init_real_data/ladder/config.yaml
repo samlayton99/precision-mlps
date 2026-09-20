@@ -1,0 +1,15 @@
+# expF04/ladder -- dimension ladder for the ridge-bundle QI init
+targets: [ridge_mix, gauss_bump, tensor4]
+dims: [1, 2, 4, 8, 16]
+width: 256
+seeds: [0, 1, 2]
+n_train: 8192
+n_eval: 4096
+epochs: 200
+batch_size: 512
+lr: 0.001            # Adam + cosine decay to 0 (floors need the decay; D02 used cosine)
+lambda_star: 0.25
+# arms: baseline | flat | ridge_p4 | ridge_psqrt | ridge_pn4 | scaled_psqrt
+#       (+ ridge_full, added automatically at d=1 only: M=1, P=N = the exact construction)
+arms: [baseline, flat, ridge_p4, ridge_psqrt, ridge_pn4, scaled_psqrt]
+wandb_project: precisionMLPs-expF04

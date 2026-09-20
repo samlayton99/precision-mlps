@@ -1150,6 +1150,8 @@ def summarize_for_report(summary: list[dict[str, str]]) -> dict[str, object]:
 
 def write_report(summary_path: Path = SUMMARY_CSV) -> None:
     summary = read_csv(summary_path)
+    if not summary:
+        return
     stats = summarize_for_report(summary)
     best = stats["best_row"]
     best_deployable = stats["best_deployable_row"]
@@ -1355,7 +1357,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     cases = select_shard(all_cases, args.shard_index, args.num_shards)
     if args.max_cases is not None:
         cases = cases[: args.max_cases]
-    paths = artifact_paths(shard_suffix(args.shard_index, args.num_shards, args.output_suffix))
+    suffix = shard_suffix(args.shard_index, args.num_shards, args.output_suffix)
+    # Smoke runs must not touch the unsuffixed full-matrix artifacts (or the
+    # committed report/figures regenerated from them).
+    if config.mode == "smoke" and not suffix:
+        suffix = "smoke"
+    paths = artifact_paths(suffix)
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     write_csv(paths.run_matrix, run_matrix_rows(cases, config))
@@ -1390,7 +1397,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"[summary] available at {paths.summary}", flush=True)
     print(f"[traces] available at {paths.traces}", flush=True)
     print(f"[atoms] available at {paths.atoms}", flush=True)
-    if not shard_suffix(args.shard_index, args.num_shards, args.output_suffix):
+    if not suffix:
         plot_outputs(paths.summary, paths.traces, paths.atoms)
         write_report(paths.summary)
     return 0

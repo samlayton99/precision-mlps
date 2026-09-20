@@ -1,0 +1,17 @@
+resolution: 128
+halo: 24
+gamma: 128.0
+domain: [-1.0, 1.0]
+targets: [sine, sine_mixture, runge, gaussian_envelope]
+target_modes: [2.0, 6.0, 14.0]
+target_amplitudes: [1.0, 0.5, 0.25]
+envelope_sigma: 0.4
+steps: 200000
+base_rate: 0.002
+spectral_factor: 1.9
+warmup_steps: 1000
+final_rate_fraction: 0.01
+n_eval: 8192
+snapshot_count: 180
+readout_rcond: 1.0e-13
+threads: 1

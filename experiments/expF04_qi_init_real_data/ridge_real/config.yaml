@@ -1,0 +1,14 @@
+# expF04/ridge_real -- ridge-bundle init arms on the 4 real tasks
+tasks: [fashion_mnist, uci_har, superconductivity, sarcos]
+widths: {large: 256, medium: 64}
+seeds: [0, 1, 2]
+epochs: 50
+batch_size: 128
+lr: 0.001
+lambda_star: 0.25
+# arms resolved per width: psqrt -> sqrt(N), pn4 -> N/4
+arms: [baseline, flat, ridge_p4, ridge_psqrt, ridge_pn4, scaled_psqrt]
+# activation axis: gelu (modern default) vs tanh (the construction's activation;
+# the d=1 control showed the QI-init advantage flips sign between them)
+activations: [gelu, tanh]
+wandb_project: precisionMLPs-expF04

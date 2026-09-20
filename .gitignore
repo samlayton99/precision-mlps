@@ -1,10 +1,24 @@
 results/**
-# but keep the per-experiment writeups (results/<exp>/<exp>_results.md) tracked
+# but keep ALL markdown under results/ tracked -- writeups, method docs, specs.
+# (The old *_results.md-only rule is how four load-bearing docs nearly got
+# lost in July 2026; docs now live in results/ next to their writeups.)
 !results/**/
-!results/**/*_results.md
-!results/results.md
-!results/checkpoint_D_optimizers/expD05_scale_init_story/figures/*.png
+!results/**/*.md
+# track long-form HTML explainers alongside the writeups
+!results/**/*.html
+# track figures/images everywhere under results/ (but never gifs, data, caches)
+!results/**/*.png
+!results/**/*.jpg
+!results/**/*.jpeg
+!results/**/*.svg
+!results/**/*.webp
+# track the expD02 cube data (source of the init_slice / training_slice figures)
+!results/checkpoint_D_optimizers/expD02_adam_geometry/cube.json
+# ...but never the bulky coefficient-evolution gif dirs (expD06 etc.)
+results/**/gifs/
 checkpoints/
+data/
+wandb/
 __pycache__/
 *.egg-info/
 .venv/
@@ -15,3 +29,12 @@ __pycache__/
 *.ipynb
 # but track the 2D geometry visualizer notebook (only this one)
 !results/checkpoint_E_2d/expE01_geometry_zoo_2d/geometry_viz.ipynb
+# and the self-contained Colab notebook of checkpoint I
+!experiments/expI01_compositional_qi/compositional_qi_colab.ipynb
+
+# scratch output of the expI01 Colab notebook when run locally
+expI01_out/
+# pinned Navier-Stokes results: animations + per-cell tables (expF12, expF18)
+!results/checkpoint_F_applications/expF12_tensor_ns3d/ns3d_slice.gif
+!results/checkpoint_F_applications/expF18_ns_spacetime/figures/ns2d.gif
+!results/checkpoint_F_applications/expF18_ns_spacetime/cells*.json

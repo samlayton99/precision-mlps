@@ -1,0 +1,19 @@
+# A separate diagnostic problem, not a rerun of the original four targets.
+resolution: 128
+halo: 24
+initial_gammas: [1.0, 4.0, 16.0, 64.0]
+steps: 2000
+learning_rate: 0.002
+envelope_sigma: 0.4
+target_modes: [2.0, 6.0, 14.0]
+target_amplitudes: [1.0, 0.5, 0.25]
+# Approximate 0.5 * integral_R e(x)^2 dx by composite Gauss-Legendre quadrature.
+# Validate with doubled quadrature, analytic whole-line spectra, and tail bounds.
+quadrature_core: 2.0
+quadrature_extent: 24.0
+quadrature_central_nodes: 1024
+quadrature_tail_nodes: 128
+max_mode: 32
+frequency_points: 2049
+animation_seconds: 16.0
+threads: 2

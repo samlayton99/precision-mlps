@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Five figures: gamma, Fourier response, and readout fitting</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #222b35; background: #f5f6f8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; line-height: 1.6; }
+    main { max-width: 1480px; margin: auto; padding: 40px 24px 64px; }
+    header, .caption, footer { max-width: 960px; margin: auto; }
+    h1 { font-size: clamp(26px, 3vw, 40px); line-height: 1.2; margin: 0 0 20px; }
+    h2 { font-size: 25px; line-height: 1.3; margin-top: 0; }
+    p { margin: 12px 0; }
+    a { color: #245b87; text-underline-offset: 3px; }
+    nav { background: white; border: 1px solid #d9dfe6; padding: 16px 24px; margin: 25px 0; border-radius: 8px; }
+    nav ol { margin: 0; padding-left: 24px; }
+    nav li { padding: 3px 0; }
+    section { background: white; border: 1px solid #d9dfe6; border-radius: 8px; margin: 36px 0; padding: 26px 20px; scroll-margin-top: 20px; }
+    figure { margin: 24px 0 0; }
+    img { display: block; width: 100%; height: auto; }
+    figcaption { text-align: center; font-size: 14px; margin-top: 12px; }
+    .meta { color: #536171; font-size: 15px; }
+    .scope { border-left: 3px solid #9baab9; padding-left: 18px; }
+    footer { border-top: 1px solid #d9dfe6; padding-top: 24px; }
+    @media (max-width: 700px) { main { padding: 24px 12px; } section { padding: 20px 10px; } }
+    @media print { body { background: white; } section { border: 0; page-break-before: always; } nav { display: none; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Gamma, Fourier response, and readout fitting</h1>
+    <p>Five complementary views of the original GD experiments. Increasing gamma broadens frequency sensitivity, but does not make the scale gradient uniformly stronger. Large initial gamma can substantially improve readout GD even when a solved readout reveals worse approximation. The small geometry changes under baseline GD affect these two kinds of error differently.</p>
+    <p class="meta">One 32-second animation and four PNGs. Rebuilt from saved data; no training or readout solves were repeated. Training figures use 2,000 steps at learning rate 0.002; Figure 2 is a fixed-residual probe.</p>
+    <nav aria-label="Figures">
+      <ol>
+        <li><a href="#figure-1">Which frequencies does GD fit first?</a></li>
+        <li><a href="#figure-2">What does increasing gamma do to sensitivity?</a></li>
+        <li><a href="#figure-3">Does larger gamma help the readout or the approximation?</a></li>
+        <li><a href="#figure-4">What does the geometry movement actually improve?</a></li>
+        <li><a href="#figure-5">Which residual frequencies supply the scale gradient?</a></li>
+      </ol>
+    </nav>
+    <p class="scope"><strong>Keep the objectives separate.</strong> Figures 1 and 5 follow the same whole-line Gaussian-envelope trajectories, with cancelling model tails. Figure 2 also uses whole-line residuals. Figures 3 and 4 use finite-interval training on [−1,1]; all four functions in Figure 4 use matched samples and model constraints.</p>
+  </header>
+
+  <section id="figure-1">
+    <div class="caption">
+      <h2>1. Which frequencies does GD fit first?</h2>
+      <p>The four rows start at gamma 1, 4, 16, and 64. The left column animates the analytic whole-line residual spectrum. The right column tracks the <strong>absolute error energy</strong> in three frequency bands, divided by the fixed target energy. The colored curves sum to the squared relative L₂ error.</p>
+      <p>Watch how quickly the low band falls and which bands remain. Large gamma enables much faster removal of low-band error in these runs; at small gamma, appreciable low-band error persists. That matters to Section 2: the assumption of an already depleted low-frequency residual does not hold equally well across initializations.</p>
+      <p class="meta">The spectrum displays ω/π from 0 to 32. The high-band energy includes frequencies beyond 32. There is no imposed Fourier window or taper. Faint curves show the complete trajectory; the darker curves advance with the current frame.</p>
+    </div>
+    <figure>
+      <a href="01_frequency_learning.gif"><img src="01_frequency_learning.gif" alt="Four gamma initializations: animated whole-line residual spectra beside low-, middle-, and high-band error-energy curves."></a>
+      <figcaption><a href="01_frequency_learning.gif">Open animation at full size</a> · 77 frames · 32 seconds · extra time near initialization</figcaption>
+    </figure>
+  </section>
+
+  <section id="figure-2">
+    <div class="caption">
+      <h2>2. What does increasing gamma do to sensitivity?</h2>
+      <p>The left panel changes only the scale of one tangent, ψ<sub>γ</sub>(x) = x sech²(γx). Its spectrum becomes broader, while its overall magnitude falls. The other panels hold each of three Gaussian-sine residuals fixed and measure the actual pairing |∫ e<sub>k</sub>ψ<sub>γ</sub> dx| as gamma varies. The center stays at zero and the readout coefficient stays at one.</p>
+      <p>Each residual has a range of gamma where its gradient is strongest. Increasing gamma first helps and eventually hurts, even without residual depletion or changing readout coefficients. The right panel divides each curve by its own maximum to show the preferred range; those equal heights do not imply equal gradient strength.</p>
+      <p class="meta">Connection to the note: the frequency ratio matters, but it is not the only gamma dependence. The Ωγ⁻³ exp[−πΩ/(2γ)] bound in equation (2.5) already contains the algebraic prefactor and assumes Ω ≥ γ. These curves do not establish a universal γ⁻³ law for evolving training gradients.</p>
+    </div>
+    <figure>
+      <a href="02_scale_sensitivity.png"><img src="02_scale_sensitivity.png" loading="lazy" alt="Tangent spectra broaden and decrease in magnitude; fixed-residual gradient curves rise and fall with gamma, with a separate normalized view."></a>
+      <figcaption><a href="02_scale_sensitivity.png">Open Figure 2 at full size</a></figcaption>
+    </figure>
+  </section>
+
+  <section id="figure-3">
+    <div class="caption">
+      <h2>3. Does larger gamma help the readout or the approximation?</h2>
+      <p>Geometry is frozen throughout every run in the left column. Only readout coefficients train. The right column compares the resulting GD error after 2,000 steps with the error obtained by solving the readout at initialization.</p>
+      <p>Moving from gamma 16 to 64 improves readout GD, while worsening the numerical least-squares approximation for each displayed target. This isolates a readout-fitting benefit of larger initial gamma: no geometry learning is required for that benefit. It does not mean larger gamma always worsens approximation; the lower-gamma points show why that distinction matters.</p>
+      <p class="meta">Gamma 16 is the λ = 0.25 QI reference; gamma 64 gives λ = 1. Only the three finite-interval targets are combined here. GD errors use training quadrature; least-squares errors use 32,768 independent evaluation nodes, with SVD cutoff 10⁻¹³. Values near numerical precision should not be ranked as meaningful accuracy differences.</p>
+    </div>
+    <figure>
+      <a href="03_readout_vs_approximation.png"><img src="03_readout_vs_approximation.png" loading="lazy" alt="Frozen-geometry readout-GD curves and final-GD versus initial least-squares error across gamma 1, 4, 16, and 64 for sine, mixed sine, and Runge."></a>
+      <figcaption><a href="03_readout_vs_approximation.png">Open Figure 3 at full size</a></figcaption>
+    </figure>
+  </section>
+
+  <section id="figure-4">
+    <div class="caption">
+      <h2>4. What does the geometry movement actually improve?</h2>
+      <p>The left column measures mean absolute gamma displacement from initialization. The middle subtracts free-geometry GD error from frozen-geometry GD error. The right subtracts the current geometry’s separately refitted error from the initial geometry’s refitted error. <strong>Positive means improvement; negative means deterioration.</strong> The two error-reduction columns use identical units and signed-log axes.</p>
+      <p>Geometry motion helps the actual GD fit, but yields much smaller changes in refitted accuracy. The expanded axes preserve two qualifications: Xavier’s benefit to the current GD fit can be substantial early and shrink later; refitted errors do change slightly, with both improvements and deterioration. The evidence supports a large difference in these benefits, rather than an exact claim of zero approximation change.</p>
+      <p class="meta">All four targets use matched finite-interval samples and the same model. Every readout refit, including step zero, occurs after training and cannot affect its updates. Motion averages all 177 neurons. Both slopes and biases move in the free-geometry runs, so the benefit is not isolated to gamma alone.</p>
+    </div>
+    <figure>
+      <a href="04_geometry_motion_and_benefit.png"><img src="04_geometry_motion_and_benefit.png" loading="lazy" alt="Four matched targets: gamma displacement, ordinary-GD error reduction from geometry motion, and separately refitted error reduction, with shared signed-log benefit axes."></a>
+      <figcaption><a href="04_geometry_motion_and_benefit.png">Open Figure 4 at full size</a></figcaption>
+    </figure>
+  </section>
+
+  <section id="figure-5">
+    <div class="caption">
+      <h2>5. Which residual frequencies supply the scale gradient?</h2>
+      <p>The top row shows each band’s <strong>fraction of the remaining error energy</strong>. The bottom integrates the complex Fourier residual–tangent product within each band, including the current readout coefficient. Only after integration do we take the magnitude and average across neurons. These are actual signed band contributions before the final absolute value.</p>
+      <p>A band can hold most of the error without supplying most of the scale gradient. Higher gamma shifts the gradient’s contributions toward higher frequencies, while the total gradient can be smaller. Black is the total after adding signed band contributions; gray is the magnitude-only upper bound. Colored magnitudes need not sum to black because contributions can cancel.</p>
+      <p class="meta">These are the same whole-line trajectories as Figure 1. Unlike Figure 1, a rising top-row fraction need not mean increasing absolute error. The gradient is the note’s derivative holding center fixed, not the raw-slope derivative used by ordinary GD. The displayed actual/bound ratio compares the two neuron-averaged magnitudes.</p>
+    </div>
+    <figure>
+      <a href="05_frequency_gradient_pairing.png"><img src="05_frequency_gradient_pairing.png" loading="lazy" alt="For four initial gammas, residual-band energy fractions above phase-sensitive scale-gradient contributions and their magnitude-only upper bound."></a>
+      <figcaption><a href="05_frequency_gradient_pairing.png">Open Figure 5 at full size</a></figcaption>
+    </figure>
+  </section>
+
+  <footer>
+    <h2>What these five figures establish—and what remains open</h2>
+    <p>They separate frequency sensitivity, readout fitting, geometry movement, and phase-sensitive gradient contributions. They support weak out-of-band response and show why increasing gamma need not strengthen the scale gradient. They do not demonstrate the persistent spectral gap needed for the note’s exponential escape-time conclusion, or identify one dominant cause of baseline stalling.</p>
+    <p>The baseline comparison also does not establish that geometry learning cannot improve approximation: the later <a href="../../expD25_scale_barrier/expD25_results.md">expD25 intervention study</a> changes that behavior under different update settings. This collection focuses on explaining the original baseline.</p>
+    <p class="meta">Validation: animation and gradient-pairing snapshots use identical parameter states. Independent whole-line frequency quadrature checks agree with the animation’s normalized band energies to within 4.7 × 10⁻¹¹ at the checked states. All 77 GIF frames decode and total 32 seconds. <a href="data/provenance.json">Source hashes and calculation checks</a>.</p>
+  </footer>
+</main>
+</body>
+</html>

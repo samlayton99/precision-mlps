@@ -1,0 +1,19 @@
+# expD28 — Loss and geometry-gradient decomposition
+
+Status: complete; figures and writeup ready for Sam. Coordinator: main task; no delegated workers.
+
+Sam requested three 3×4 PNGs: initialization per figure; sine, mixed sine, Runge, and Gaussian-envelope columns; rows for loss, norms of DL/DF/DG, and cosine(DF,DG). Ordinary GD trains throughout. Initializations are Xavier, center-preserving scaled Xavier at mean lambda 0.25 with the same random readout, and uniform QI gamma 16 with zero readout. Use the matched finite-domain setup and 2,000 updates at rate 0.002. Geometry derivatives use all raw slopes and biases, not readout coordinates.
+
+The numerical reference preserves the prior SVD cutoff 1e-13. A pilot identified a material distinction: differentiating its retained-space loss requires differentiating the selected singular subspace, rather than blindly applying the exact untruncated VarPro envelope formula. Implement that derivative explicitly and test it independently. Labels must identify the numerical loss F_tau and gap G_tau=L-F_tau. Near rank crossings, the derivative can be undefined; near numerical precision, its direction can be unresolved. Do not draw a fabricated cosine in either case.
+
+Verification: analytical gradient against direct autograd for ordinary L; spectral-projector derivative against finite differences and autograd on resolved rank-truncated problems; G derivative independently checked; loss/gradient reconstruction; exact zero-readout initial geometry gradient; center-preserving scaling and matched random readout; comparisons of SVD drivers and activation rounding; training independence from offline solves. Saved trajectories permit reproduction. Rank and cutoff sensitivity are diagnostic limitations, not claims of exact mathematical rank.
+
+Practicality check: training remains one forward/backward per update with ordinary SGD and O(parameters) state. All SVDs, alternative evaluations, and derivative checks are offline small-problem diagnostics, not an optimizer proposal. No dataset-sized optimizer state, dense training Jacobian, solve cadence, Krylov memory, or new control rule is introduced. Failure criterion: if the numerical gradient direction cannot be resolved, visibly mark it rather than interpret cancellation. Outputs: one writeup, figures/, data/.
+
+Completion: 12 uninterrupted 2,000-step GD runs, 150 offline diagnostic snapshots each, three PNGs with axes shared within each initialization, and one expD28_results.md writeup. Five focused tests pass. Ordinary geometry gradients match training autograd within 4.1e-16 maximum absolute discrepancy. Saved-state directional checks support resolved derivatives while exposing perturbation-size sensitivity and cutoff crossings. Some Xavier directions and every QI cosine are numerically unresolved and visibly omitted. Scaled Xavier shows DF_tau orders of magnitude smaller than DG_tau; Xavier mixed sine opposes while Runge aligns. This does not establish universal cancellation or unrestricted exact-arithmetic VarPro behavior.
+
+Assigned expD28 because expD27_readout_information already occupies the preceding experiment number. Its work and catalogue entries were preserved.
+
+Plot readability revision: keep L/F/G as half squared-residual losses and keep gradient norms unsquared. Fit vertical limits to each initialization rather than using global 32-decade limits. QI numerical-floor values are labeled outside the shown range; retain shared limits across function columns and unchanged cosine axes. Regenerated only the PNGs from saved data.
+
+Legend revision: separate the loss and gradient legends. Explicitly label ‖DL‖, ‖DF_tau‖, ‖DG_tau‖ above the middle row, together with the gray numerical-resolution threshold (ten times the observed vector variation in DF_tau). Rendered from saved data only.

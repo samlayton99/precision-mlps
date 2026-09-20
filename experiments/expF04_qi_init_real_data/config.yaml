@@ -1,0 +1,10 @@
+# expF04 -- QI-init moonshot on real data
+tasks: [fashion_mnist, uci_har, superconductivity, sarcos]
+widths: {large: 256, medium: 64}
+seeds: [0, 1, 2]
+epochs: 50
+batch_size: 128
+lr: 0.001
+lambda_star: 0.25
+wandb_project: precisionMLPs-expF04
+device: cpu          # cpu | mps ; these are small fp32 MLPs, cpu is fine

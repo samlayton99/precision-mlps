@@ -1,0 +1,15 @@
+# expD16 -- optimizer zoo on the correctly initialized QI geometry.
+# run.py hardcodes this grid (like expD02); this file documents it.
+name: expD16_optimizer_zoo
+lambda_star: 0.25
+targets: [sine, exp, runge, sine_8pi]      # two easy, two difficult
+widths_n: [64, 128, 256]                   # model width W = N + 2*halo + 1
+inits: [qi, xavier]
+n_train: 2003                              # prime, equispaced, > max W -> overdetermined
+n_eval: 4001                               # prime, misaligned with train grid
+iterations_total: 3000
+adam_warm_steps: 2000                      # shared warm segment for the finishers
+adam_lr: 3.0e-3
+optimizers: [adam, adam_ssbroyden, adam_nncg, adam_lbfgs, spsa]
+seeds: 1                                   # one seed per target (trajectory study)
+device: cpu                                # fp64 required; MPS is fp32-only

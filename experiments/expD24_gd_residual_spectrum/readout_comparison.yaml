@@ -1,0 +1,16 @@
+targets: [sine, sine_mixture, runge, gaussian_envelope]
+arms: [xavier, qi_zero]
+resolution: 128
+halo: 24
+seed: 0
+steps: 2000
+learning_rate: 0.002
+n_train: 1024
+n_eval: 32768
+max_mode: 32
+frequency_points: 2049
+frequency_quadrature_order: 32
+envelope_sigma: 0.4
+target_modes: [2.0, 6.0, 14.0]
+target_amplitudes: [1.0, 0.5, 0.25]
+threads: 2

@@ -1,0 +1,22 @@
+targets: [sine, sine_mixture, runge, gaussian_envelope]
+initial_gammas: [1.0, 4.0, 16.0, 64.0]
+gamma_sweep_min: 1.0
+gamma_sweep_max: 64.0
+gamma_sweep_count: 13
+resolution: 128
+halo: 24
+seed: 0
+steps: 2000
+learning_rate: 0.002
+n_train: 1024
+n_eval: 32768
+max_mode: 32
+frequency_points: 2049
+# VarPro at gamma=1 can immediately create very sharp, cancelling features.
+# The older order-32 whole-line rule underresolves that geometry.
+frequency_quadrature_order: 128
+envelope_sigma: 0.4
+target_modes: [2.0, 6.0, 14.0]
+target_amplitudes: [1.0, 0.5, 0.25]
+threads: 2
+

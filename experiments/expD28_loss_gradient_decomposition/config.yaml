@@ -1,0 +1,18 @@
+targets: [sine, sine_mixture, runge, gaussian_envelope]
+arms: [xavier, scaled_xavier, qi_zero]
+resolution: 128
+halo: 24
+seed: 0
+lambda_star: 0.25
+steps: 2000
+learning_rate: 0.002
+n_train: 1024
+n_eval: 8192
+domain: [-1, 1]
+envelope_sigma: 0.4
+target_modes: [2.0, 6.0, 14.0]
+target_amplitudes: [1.0, 0.5, 0.25]
+readout_rcond: 1.0e-13
+diagnostic_snapshots: 151
+resolution_factor: 10.0
+threads: 2

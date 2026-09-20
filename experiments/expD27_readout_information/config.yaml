@@ -1,0 +1,20 @@
+resolution: 128
+halo: 24
+seed: 0
+learning_rate: 0.002
+n_train: 1024
+n_eval: 8192
+threads: 2
+domain: [-1, 1]
+envelope_sigma: 0.4
+target_modes: [2.0, 6.0, 14.0]
+target_amplitudes: [1.0, 0.5, 0.25]
+readout_rcond: 1.0e-13
+targets: [sine, sine_mixture, runge, gaussian_envelope]
+qi_gamma: 16.0
+freeze_steps: [2, 10, 50, 150]
+frozen_steps: 500
+design_basis: Sam confirmed schedule, gamma-1 reset at QI centers, and 10% center-preserving scale noise
+transfer_reset: gamma_1
+noise_kind: multiplicative_scale
+noise_level: 0.1

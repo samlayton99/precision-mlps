@@ -239,7 +239,7 @@ def build_radon_tensor(N, radius, seed=0):
     J, M = _jm(N, radius)
     T = radius
     h_step = 2.0 * T / M
-    thetas = 0.5 * np.pi / J + np.arange(J) * np.pi / J       # offset to avoid axes
+    thetas = np.arange(J) * np.pi / J       # endpoint rule: theta=0 included (x-axis)
     t1d = -T + (np.arange(M) + 0.5) * h_step                  # symmetric, cell-centered
     dirs, offs = [], []
     for th in thetas:
@@ -253,7 +253,7 @@ def build_radon_interlaced(N, radius, seed=0):
     J, M = _jm(N, radius)
     T = radius
     h_step = 2.0 * T / M
-    thetas = 0.5 * np.pi / J + np.arange(J) * np.pi / J
+    thetas = np.arange(J) * np.pi / J
     dirs, offs = [], []
     for j, th in enumerate(thetas):
         w = np.array([np.cos(th), np.sin(th)])
