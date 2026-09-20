@@ -1,0 +1,297 @@
+{
+  "key": "newton_N512_s0_parameter_scale_ff140666ec",
+  "case": {
+    "campaign": "joint_conditioning",
+    "optimizer": "newton",
+    "coordinates": "parameter_scale",
+    "eta": 1.0,
+    "n": 512,
+    "seed": 0,
+    "followup": "newton_handoffs_v1",
+    "diagnostics": true
+  },
+  "end": 100000,
+  "states": [
+    {
+      "step": 0,
+      "checkpoint_sha256": "28ff3e4f972cf29ead6919ecd9d9ab54c0b1edddffdc1085c51696057335a96b",
+      "state_sha256": "72adb9a568c57cac8aad9de33ed8af11cc9fdb394ced178a84374871f9615454",
+      "gradient_physical_readout_norm": 0.5278031972374806,
+      "gradient_physical_gamma_norm": 0.0361019450396849,
+      "gradient_reference_readout_norm": 0.26297720561485594,
+      "gradient_lambda_norm": 9.242097930159334,
+      "curvature": {
+        "minimum": -1184.3613044107062,
+        "maximum": 1115.991818384897,
+        "negative_eigenvalues": 559,
+        "residual_curvature_norm": 1659.3415399033418,
+        "gn_norm": 1426.247231515864,
+        "eigen_backward_error": 2.045549437640618e-14
+      },
+      "directional_curvature": {
+        "minimum": {
+          "gauss_newton": 87.06697112236674,
+          "residual_curvature": -1271.4282755330744,
+          "total": -1184.3613044107076,
+          "directional_gradient": -2.1886300098301126,
+          "dense_eigenvalue": -1184.3613044107062,
+          "geometry_vector_energy": 0.9925593396506799
+        },
+        "maximum": {
+          "gauss_newton": 1232.9123005850252,
+          "residual_curvature": -116.9204822001283,
+          "total": 1115.9918183848968,
+          "directional_gradient": 1.792671651232753,
+          "dense_eigenvalue": 1115.991818384897,
+          "geometry_vector_energy": 0.8847467559846756
+        }
+      },
+      "same_radius_trials": [
+        {
+          "model": "full_hessian",
+          "radius": 1.0,
+          "shift": 1186.549968711437,
+          "hard_case": false,
+          "predicted_reduction": 594.3940545178905,
+          "actual_mse": 4.490658628044989,
+          "readout_step_norm": 0.7599070416960412,
+          "lambda_step_norm": 0.9962807829687784
+        },
+        {
+          "model": "gauss_newton",
+          "radius": 1.0,
+          "shift": 0.019563393095700442,
+          "hard_case": false,
+          "predicted_reduction": 0.09859460620316947,
+          "actual_mse": 0.8757696944326635,
+          "readout_step_norm": 0.007398815190244624,
+          "lambda_step_norm": 0.9999981243426974
+        }
+      ],
+      "undamped": {
+        "warnings": [],
+        "directional_derivative": -0.0016828253263410935,
+        "actual_mse": 1.0005218564142262,
+        "step_norm": 15.055844166652623,
+        "backward_error": 3.872552517211469e-19
+      }
+    },
+    {
+      "step": 1,
+      "checkpoint_sha256": "0f740880c03394a285efcb6471b5d352243afe5e9f73b28e9f033cef17385436",
+      "state_sha256": "c76fafca49a68fc65620bb7dadb9d03f2f959afa31b82638bdc3cc41038d2d19",
+      "gradient_physical_readout_norm": 0.46376301962166844,
+      "gradient_physical_gamma_norm": 0.02595434236460073,
+      "gradient_reference_readout_norm": 0.4416816416835562,
+      "gradient_lambda_norm": 6.644311645337787
+    },
+    {
+      "step": 10,
+      "checkpoint_sha256": "9240c9b107aa3f73c045c818f166836fbd2f1ca3d73695531f1dd766f40215f7",
+      "state_sha256": "884e4630d96aa425f6163426f0998e772c7dfbc55627c22f7ef249be85463b53",
+      "gradient_physical_readout_norm": 0.05607227364664009,
+      "gradient_physical_gamma_norm": 0.00048756702783156437,
+      "gradient_reference_readout_norm": 0.07062739046804956,
+      "gradient_lambda_norm": 0.12481715912488048
+    },
+    {
+      "step": 100,
+      "checkpoint_sha256": "7b44a9a6be21e1b677fb14ed846794cf5b90046e8d71e2adb8374d219c751cc0",
+      "state_sha256": "d053f1ce3273f05e44969429c67dde6a5e754fd965cba8890c09240bafbbc922",
+      "gradient_physical_readout_norm": 0.09458411656455594,
+      "gradient_physical_gamma_norm": 3.060775678629176e-05,
+      "gradient_reference_readout_norm": 0.020940824780092824,
+      "gradient_lambda_norm": 0.007835585737290691
+    },
+    {
+      "step": 1000,
+      "checkpoint_sha256": "e26e1bcf7cfc5550cbe14b5ef35fc793fc3372593b55cde681c6669b32f53085",
+      "state_sha256": "88220bdf191849908aa87c61389ff959a17e86b81ad363bd2cfbc2d8c736892b",
+      "gradient_physical_readout_norm": 0.0964650976162044,
+      "gradient_physical_gamma_norm": 0.00014761629965713555,
+      "gradient_reference_readout_norm": 0.0030033200487412553,
+      "gradient_lambda_norm": 0.0377897727122267,
+      "curvature": {
+        "minimum": -0.8579823237495086,
+        "maximum": 352268.5949701922,
+        "negative_eigenvalues": 536,
+        "residual_curvature_norm": 578.4307517095209,
+        "gn_norm": 352921.859151118,
+        "eigen_backward_error": 1.7030582690603162e-15
+      },
+      "directional_curvature": {
+        "minimum": {
+          "gauss_newton": 0.022743255732590853,
+          "residual_curvature": -0.8807255794820483,
+          "total": -0.8579823237494575,
+          "directional_gradient": -0.0011860293430460119,
+          "dense_eigenvalue": -0.8579823237495086,
+          "geometry_vector_energy": 0.9757835526375477
+        },
+        "maximum": {
+          "gauss_newton": 351925.598992668,
+          "residual_curvature": 342.9959775241528,
+          "total": 352268.5949701921,
+          "directional_gradient": -0.03590159019516847,
+          "dense_eigenvalue": 352268.5949701922,
+          "geometry_vector_energy": 0.9996875188121435
+        }
+      },
+      "same_radius_trials": [
+        {
+          "model": "full_hessian",
+          "radius": 0.000244140625,
+          "shift": 11.348998634641838,
+          "hard_case": false,
+          "predicted_reduction": 9.098540677070941e-07,
+          "actual_mse": 0.03677577909814433,
+          "readout_step_norm": 0.0015623736147423884,
+          "lambda_step_norm": 0.00018185133684704135
+        },
+        {
+          "model": "gauss_newton",
+          "radius": 0.000244140625,
+          "shift": 38.169538871040416,
+          "hard_case": false,
+          "predicted_reduction": 2.338256553565596e-06,
+          "actual_mse": 0.03681045782621925,
+          "readout_step_norm": 0.0005197085886858389,
+          "lambda_step_norm": 0.0002383039963718215
+        }
+      ],
+      "undamped": {
+        "warnings": [
+          "An ill-conditioned matrix detected: slice 0 has rcond = 6.253269661047908e-19."
+        ],
+        "directional_derivative": -0.044464541095889036,
+        "actual_mse": 691030.2291032852,
+        "step_norm": 99378.33257491428,
+        "backward_error": 8.121331460100408e-21
+      }
+    },
+    {
+      "step": 2000,
+      "checkpoint_sha256": "5d4d364f3b2579bd41aac6d6281d1d701d779494c62d7443cbd34dc7b4cec47c",
+      "state_sha256": "70f5d661079e6b61b0e79a2d8fc1fa9d281c1bc7b24897cedbbac3d7718e3685",
+      "gradient_physical_readout_norm": 7.769693785140585e-05,
+      "gradient_physical_gamma_norm": 1.134233177415334e-05,
+      "gradient_reference_readout_norm": 4.451562289043443e-05,
+      "gradient_lambda_norm": 0.002903636934183255
+    },
+    {
+      "step": 5000,
+      "checkpoint_sha256": "d639f4c9080905fdd5f3361017c187f8772dcf7a98f108fb6aed40f24eca655b",
+      "state_sha256": "28b35752e9361de2743ee5b7e02d33faf2b11d33d26d6c101e137b1c283c9f02",
+      "gradient_physical_readout_norm": 1.4231677221327976e-06,
+      "gradient_physical_gamma_norm": 5.366815019543831e-10,
+      "gradient_reference_readout_norm": 1.509489716523791e-08,
+      "gradient_lambda_norm": 1.3739046450032206e-07
+    },
+    {
+      "step": 10000,
+      "checkpoint_sha256": "df6be2a76443f023aeabe6cba784cccd86666d9458ef91723455421146ed5224",
+      "state_sha256": "03f1d1a1a5189e9e8df707b9fcc31bb9508b96849ece2c5297bc11bab97ebfbe",
+      "gradient_physical_readout_norm": 2.2713673080317899e-07,
+      "gradient_physical_gamma_norm": 3.286702779418315e-08,
+      "gradient_reference_readout_norm": 8.756519237789254e-08,
+      "gradient_lambda_norm": 8.413959115310887e-06
+    },
+    {
+      "step": 20000,
+      "checkpoint_sha256": "c2930e0f58a09c66770002b3dd857342d48e18cb1afbc7181902a1dd5253fe6b",
+      "state_sha256": "8ea090d87ac42b70850ae41a9daa1715328479b5ebdfb364d97fbe5e1022817f",
+      "gradient_physical_readout_norm": 3.897830559339524e-08,
+      "gradient_physical_gamma_norm": 1.9674160392626587e-12,
+      "gradient_reference_readout_norm": 4.079888328373995e-10,
+      "gradient_lambda_norm": 5.036585060512406e-10
+    },
+    {
+      "step": 100000,
+      "checkpoint_sha256": "b2fcdee3fec8002ce65d63747d4e8a7416fe27ff4e2f13ef8bf3d39258934abb",
+      "state_sha256": "710d4f6c2b4c843cb3d1526ac171e4791009760dd9d6c42dd99bc9b53f82b781",
+      "gradient_physical_readout_norm": 3.965373044870707e-09,
+      "gradient_physical_gamma_norm": 1.2130976842311256e-12,
+      "gradient_reference_readout_norm": 3.914385931402445e-11,
+      "gradient_lambda_norm": 3.1055300716316816e-10,
+      "curvature": {
+        "minimum": -6.37337279853867e-10,
+        "maximum": 1742918.9179078666,
+        "negative_eigenvalues": 495,
+        "residual_curvature_norm": 0.00015017804851920008,
+        "gn_norm": 1747592.1629219884,
+        "eigen_backward_error": 3.0597464913600927e-15
+      },
+      "directional_curvature": {
+        "minimum": {
+          "gauss_newton": 3.997739602037191e-14,
+          "residual_curvature": 4.471926068019808e-12,
+          "total": 4.511903464040179e-12,
+          "directional_gradient": -4.0455367706967e-12,
+          "dense_eigenvalue": -6.37337279853867e-10,
+          "geometry_vector_energy": 0.0002893612283556098
+        },
+        "maximum": {
+          "gauss_newton": 1742918.9178939327,
+          "residual_curvature": 1.3929594325107804e-05,
+          "total": 1742918.9179078622,
+          "directional_gradient": 2.4882641917736835e-10,
+          "dense_eigenvalue": 1742918.9179078666,
+          "geometry_vector_energy": 0.9999376839297545
+        }
+      },
+      "curvature_profile": {
+        "minimum_sampled_mse": 6.261407768501478e-10,
+        "minimum_sampled_amplitude": 0.0005623413251903491,
+        "amplitude_over_radius": 4.60670013595934,
+        "second_derivative_norm": 0.1570910943294479
+      },
+      "same_radius_trials": [
+        {
+          "model": "full_hessian",
+          "radius": 0.0001220703125,
+          "shift": 3.205377000868163e-07,
+          "hard_case": false,
+          "predicted_reduction": 4.776355529837078e-15,
+          "actual_mse": 6.261351557099634e-10,
+          "readout_step_norm": 1.0200510268781963e-05,
+          "lambda_step_norm": 8.209571714721413e-07
+        },
+        {
+          "model": "gauss_newton",
+          "radius": 0.0001220703125,
+          "shift": 3.205272875704888e-07,
+          "hard_case": false,
+          "predicted_reduction": 4.776373557301824e-15,
+          "actual_mse": 6.261351557190464e-10,
+          "readout_step_norm": 1.0208005770717837e-05,
+          "lambda_step_norm": 8.277938306311682e-07
+        }
+      ],
+      "undamped": {
+        "warnings": [
+          "An ill-conditioned matrix detected: slice 0 has rcond = 6.093123451338135e-29."
+        ],
+        "directional_derivative": -5.061349357451809e-10,
+        "actual_mse": 159672561.26664802,
+        "step_norm": 538992.1081681107,
+        "backward_error": 2.748413257408655e-21
+      }
+    }
+  ],
+  "unshifted_fraction": 0.0,
+  "maximum_solve_backward_error": 2.8977462593583446e-15,
+  "shift_quantiles": [
+    1.1839653213614775e-08,
+    1.699745100600605e-07,
+    4.550397671099338e-06,
+    0.00020991281408815076,
+    5316.7290766060905
+  ],
+  "radius_quantiles": [
+    5.960464477539063e-08,
+    9.5367431640625e-07,
+    6.103515625e-05,
+    0.0009765625,
+    4.0
+  ]
+}

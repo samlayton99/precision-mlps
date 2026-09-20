@@ -1,0 +1,31 @@
+{
+  "note": "Same higher-order update count; Adam start has an additional 5.3 million preceding Adam updates. Settings match except physical initialization.",
+  "pairs": [
+    {
+      "seed": 0,
+      "accepted_updates": 40000,
+      "xavier_key": "gn_N512_s0_parameter_scale_56980af99c",
+      "adam_key": "gn_N512_s0_parameter_scale_8845b45a8d",
+      "xavier_mse": 1.6283358791533976e-18,
+      "adam_mse": 7.44802258000336e-17,
+      "adam_over_xavier_mse": 45.74008762784081,
+      "source_sha256": {
+        "xavier": "5ea20d8f4103b783f604af091cfc1132b059f6f534d4d3121936fae47ed83d0b",
+        "adam": "553ec82d8b11e32ebce0a1b43adcc6b59ad754eaa033954170cda9fb5bc8fbe1"
+      }
+    },
+    {
+      "seed": 1,
+      "accepted_updates": 40000,
+      "xavier_key": "gn_N512_s1_parameter_scale_4579d01f12",
+      "adam_key": "gn_N512_s1_parameter_scale_dcd1258ff2",
+      "xavier_mse": 4.606109356292519e-18,
+      "adam_mse": 1.0216155784063336e-20,
+      "adam_over_xavier_mse": 0.0022179577152476406,
+      "source_sha256": {
+        "xavier": "017f0637fb971c3f5118f656a0f78f632015cb10ea36bda247d1022be668cc6f",
+        "adam": "ba8f96bb33137a60705664ecf1334c5c9f44d9b05dc003d2209fffd46d9e284e"
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+[
+  {
+    "campaign": "joint_conditioning",
+    "optimizer": "gn",
+    "coordinates": "parameter_scale",
+    "eta": 1.0,
+    "n": 1024,
+    "seed": 0,
+    "damping_floor": 1e-30,
+    "restart": {
+      "source_key": "gn_N1024_s0_parameter_scale_76ee4501b2",
+      "step": 20000
+    }
+  },
+  {
+    "campaign": "joint_conditioning",
+    "optimizer": "gn",
+    "coordinates": "parameter_differences",
+    "eta": 1.0,
+    "n": 1024,
+    "seed": 0,
+    "damping_floor": 1e-30,
+    "restart": {
+      "source_key": "gn_N1024_s0_parameter_scale_76ee4501b2",
+      "step": 20000
+    }
+  }
+]

@@ -1,0 +1,296 @@
+{
+  "key": "newton_N512_s1_parameter_scale_c1737ef0a0",
+  "case": {
+    "campaign": "joint_conditioning",
+    "optimizer": "newton",
+    "coordinates": "parameter_scale",
+    "eta": 1.0,
+    "n": 512,
+    "seed": 1,
+    "followup": "newton_handoffs_v1",
+    "diagnostics": true,
+    "warm_start": {
+      "root": "../joint_conditioning",
+      "source_key": "adam_N512_s1_parameter_scale_4b0f8f8c10",
+      "step": 5300000,
+      "sha256": "198c86b1792feaf67794ef49b24811707680b10a8bde1a988e296c4344f0e24f"
+    }
+  },
+  "end": 20000,
+  "states": [
+    {
+      "step": 0,
+      "checkpoint_sha256": "484508486a9dcced550b3df8c4187a6716e0bad179334584e82bcae10aa06f11",
+      "state_sha256": "30a8760c4513b42f78fe37d7afb413d3717a963ff9a7007ae30e5213aa6059df",
+      "gradient_physical_readout_norm": 5.7422122612555986e-05,
+      "gradient_physical_gamma_norm": 3.59410634741328e-11,
+      "gradient_reference_readout_norm": 4.15275172607338e-05,
+      "gradient_lambda_norm": 9.200912249377997e-09,
+      "curvature": {
+        "minimum": -3.2157442667702385e-07,
+        "maximum": 120.1687208192235,
+        "negative_eigenvalues": 403,
+        "residual_curvature_norm": 5.3384434736308e-07,
+        "gn_norm": 120.1687220689783,
+        "eigen_backward_error": 9.792679240302673e-16
+      },
+      "directional_curvature": {
+        "minimum": {
+          "gauss_newton": 5.744919583992568e-13,
+          "residual_curvature": -3.215750011690336e-07,
+          "total": -3.215744266770752e-07,
+          "directional_gradient": 2.923353060893082e-12,
+          "dense_eigenvalue": -3.2157442667702385e-07,
+          "geometry_vector_energy": 0.7018985805062188
+        },
+        "maximum": {
+          "gauss_newton": 120.16872081922288,
+          "residual_curvature": 9.732035091841838e-15,
+          "total": 120.1687208192229,
+          "directional_gradient": 4.15275145910312e-05,
+          "dense_eigenvalue": 120.1687208192235,
+          "geometry_vector_energy": 2.3616381587439494e-08
+        }
+      },
+      "same_radius_trials": [
+        {
+          "model": "full_hessian",
+          "radius": 1.0,
+          "shift": 3.2157735010719654e-07,
+          "hard_case": false,
+          "predicted_reduction": 1.6080711950350902e-07,
+          "actual_mse": 2.444383048687602e-06,
+          "readout_step_norm": 0.005288485892117508,
+          "lambda_step_norm": 0.8377856031271876
+        },
+        {
+          "model": "gauss_newton",
+          "radius": 1.0,
+          "shift": 1.3530121764390519e-12,
+          "hard_case": false,
+          "predicted_reduction": 1.836279607544704e-10,
+          "actual_mse": 0.0019298377840686806,
+          "readout_step_norm": 0.0070029411036575786,
+          "lambda_step_norm": 0.9315844041959445
+        }
+      ],
+      "undamped": {
+        "warnings": [
+          "An ill-conditioned matrix detected: slice 0 has rcond = 5.561790524445801e-24."
+        ],
+        "directional_derivative": -1.925217083154033e-10,
+        "actual_mse": 4.324998174506543,
+        "step_norm": 244.390269382695,
+        "backward_error": 2.845781832078511e-19
+      }
+    },
+    {
+      "step": 1,
+      "checkpoint_sha256": "879b8b645208027e609989e1f5b3b0fe32bd15e3659ee7c5d62f231f8fc73d71",
+      "state_sha256": "4175ba327a245f066753a41bf081315379a4a350e574e243178f3018b9155845",
+      "gradient_physical_readout_norm": 1.0671155521764708e-06,
+      "gradient_physical_gamma_norm": 3.693706373749151e-11,
+      "gradient_reference_readout_norm": 5.040990101063057e-07,
+      "gradient_lambda_norm": 9.455888316797826e-09
+    },
+    {
+      "step": 10,
+      "checkpoint_sha256": "8b2c060fe564c3772184ac9a5527d853af3c7598ae6284ff493ed235207c4995",
+      "state_sha256": "38988988c4a51df6519ec9e52ba0b455bf8325d51fd235268940604820d242e0",
+      "gradient_physical_readout_norm": 3.453726142617925e-06,
+      "gradient_physical_gamma_norm": 1.2167867724587625e-10,
+      "gradient_reference_readout_norm": 1.639966130433053e-06,
+      "gradient_lambda_norm": 3.114974137494432e-08
+    },
+    {
+      "step": 100,
+      "checkpoint_sha256": "836c184b0e1ee73e728960487b34d1cd15c431dbfefdf0865799d4417a415f40",
+      "state_sha256": "a0834f8e498af9b812b57e0703d5c251dfde22ea1cf2a420b0f5f44952ccc973",
+      "gradient_physical_readout_norm": 1.5331552419281376e-06,
+      "gradient_physical_gamma_norm": 3.1594704877646196e-11,
+      "gradient_reference_readout_norm": 7.568029240565872e-07,
+      "gradient_lambda_norm": 8.088244448677426e-09
+    },
+    {
+      "step": 1000,
+      "checkpoint_sha256": "a1221ae88213c870750e498ba1633ad9bed9c49e2c2078f54a5aaa5d960fa4d0",
+      "state_sha256": "6ba5f88bb2bbe7da42e91861fbb978b8f84b9e1048e2d97d2d3549d522dffbfc",
+      "gradient_physical_readout_norm": 1.1882877743671146e-07,
+      "gradient_physical_gamma_norm": 1.8454349973676827e-11,
+      "gradient_reference_readout_norm": 3.253989528091269e-08,
+      "gradient_lambda_norm": 4.724313593261268e-09,
+      "curvature": {
+        "minimum": -1.7761492399774714e-09,
+        "maximum": 124.4379791829765,
+        "negative_eigenvalues": 456,
+        "residual_curvature_norm": 1.3683815852571866e-06,
+        "gn_norm": 124.44130430596624,
+        "eigen_backward_error": 3.3306893088456928e-15
+      },
+      "directional_curvature": {
+        "minimum": {
+          "gauss_newton": 4.7354232163016817e-11,
+          "residual_curvature": -1.8235034721109512e-09,
+          "total": -1.7761492399479344e-09,
+          "directional_gradient": 2.925975864978529e-14,
+          "dense_eigenvalue": -1.7761492399774714e-09,
+          "geometry_vector_energy": 0.9702322489479517
+        },
+        "maximum": {
+          "gauss_newton": 124.43797913585044,
+          "residual_curvature": 4.7125543035529423e-08,
+          "total": 124.43797918297598,
+          "directional_gradient": 3.277510046454481e-08,
+          "dense_eigenvalue": 124.4379791829765,
+          "geometry_vector_energy": 0.034557453927927
+        }
+      },
+      "same_radius_trials": [
+        {
+          "model": "full_hessian",
+          "radius": 0.00390625,
+          "shift": 1.7901129343504298e-09,
+          "hard_case": false,
+          "predicted_reduction": 2.3710211269556716e-14,
+          "actual_mse": 3.5338264583547197e-12,
+          "readout_step_norm": 2.087794582151729e-05,
+          "lambda_step_norm": 0.0037417697320667217
+        },
+        {
+          "model": "gauss_newton",
+          "radius": 0.00390625,
+          "shift": 1.5106655123679236e-09,
+          "hard_case": false,
+          "predicted_reduction": 2.3408101916504298e-14,
+          "actual_mse": 3.4234934075480505e-12,
+          "readout_step_norm": 6.033025124993073e-05,
+          "lambda_step_norm": 0.003674612818081315
+        }
+      ],
+      "undamped": {
+        "warnings": [
+          "An ill-conditioned matrix detected: slice 0 has rcond = 8.608863028885941e-24."
+        ],
+        "directional_derivative": -2.683641521422182e-12,
+        "actual_mse": 0.020358642046127345,
+        "step_norm": 79.0237861540847,
+        "backward_error": 4.402653829620474e-19
+      }
+    },
+    {
+      "step": 2000,
+      "checkpoint_sha256": "3c210200d3db4b3ee7100873a8886240a197b2c3d4aa8c14ccb1d2344b17c8c9",
+      "state_sha256": "7625d79edc8308db2036014c55b2fb55aab93f6b96f3b6af3e84b4346080fa62",
+      "gradient_physical_readout_norm": 4.5829548232500973e-10,
+      "gradient_physical_gamma_norm": 3.2099599498620144e-13,
+      "gradient_reference_readout_norm": 1.6604718494090165e-10,
+      "gradient_lambda_norm": 8.217497471646757e-11
+    },
+    {
+      "step": 5000,
+      "checkpoint_sha256": "7b930ebedf4345b8194f559626bad6514c620be940333a04cec708c723229855",
+      "state_sha256": "696fd7fb81fece6ff53b6f4e838fe7024b6f9a971488889540aba3f2393bf06b",
+      "gradient_physical_readout_norm": 1.6947984436008494e-09,
+      "gradient_physical_gamma_norm": 7.12586996899726e-13,
+      "gradient_reference_readout_norm": 3.370517307689051e-11,
+      "gradient_lambda_norm": 1.8242227120632986e-10
+    },
+    {
+      "step": 10000,
+      "checkpoint_sha256": "49ae83674c7e008428f3d6f47f554c249e4af397cfbc83e9fdab412fd49dd806",
+      "state_sha256": "0328f8efc61faace1bf69b77ef12bb79bcf29f528adaec4b9ac817b4e82836af",
+      "gradient_physical_readout_norm": 3.9213612088149783e-10,
+      "gradient_physical_gamma_norm": 1.6971435649976017e-14,
+      "gradient_reference_readout_norm": 1.8332782999214086e-10,
+      "gradient_lambda_norm": 4.34468752639386e-12
+    },
+    {
+      "step": 20000,
+      "checkpoint_sha256": "cf6b7186ef3bf60feda2702e267cbf9913ac6c856f55c9f68b8f778f06426316",
+      "state_sha256": "80b923cf4fa1937f56b7a4206d0a5af7d2f795381126ee91cfe120f45a6e57b8",
+      "gradient_physical_readout_norm": 1.493602136642195e-11,
+      "gradient_physical_gamma_norm": 3.3402074936319716e-15,
+      "gradient_reference_readout_norm": 9.210049866141891e-12,
+      "gradient_lambda_norm": 8.550931183697847e-13,
+      "curvature": {
+        "minimum": -4.911506446872146e-12,
+        "maximum": 127.58478028886903,
+        "negative_eigenvalues": 212,
+        "residual_curvature_norm": 3.523874019743446e-10,
+        "gn_norm": 127.60544634467448,
+        "eigen_backward_error": 2.362041075655739e-15
+      },
+      "directional_curvature": {
+        "minimum": {
+          "gauss_newton": 7.474397132066207e-16,
+          "residual_curvature": -4.9122566971366445e-12,
+          "total": -4.911509257423438e-12,
+          "directional_gradient": 1.0804592708671462e-19,
+          "dense_eigenvalue": -4.911506446872146e-12,
+          "geometry_vector_energy": 0.9856877935930597
+        },
+        "maximum": {
+          "gauss_newton": 127.58478028884758,
+          "residual_curvature": 2.083050975126534e-11,
+          "total": 127.58478028886842,
+          "directional_gradient": 9.131727407066465e-12,
+          "dense_eigenvalue": 127.58478028886903,
+          "geometry_vector_energy": 0.05917817982963077
+        }
+      },
+      "curvature_profile": {
+        "minimum_sampled_mse": 1.1771155972700446e-16,
+        "minimum_sampled_amplitude": -5.62341325190349e-07,
+        "amplitude_over_radius": 0.009213400271918679,
+        "second_derivative_norm": 5.866054940963051
+      },
+      "same_radius_trials": [
+        {
+          "model": "full_hessian",
+          "radius": 6.103515625e-05,
+          "shift": 4.913799565387918e-12,
+          "hard_case": false,
+          "predicted_reduction": 1.2863567155132412e-20,
+          "actual_mse": 1.6008698461531258e-16,
+          "readout_step_norm": 2.6022411434206275e-07,
+          "lambda_step_norm": 5.373543890564596e-05
+        },
+        {
+          "model": "gauss_newton",
+          "radius": 6.103515625e-05,
+          "shift": 3.1277533117313523e-12,
+          "hard_case": false,
+          "predicted_reduction": 1.1664099691544627e-20,
+          "actual_mse": 1.1768837234510296e-16,
+          "readout_step_norm": 4.0437368853801034e-07,
+          "lambda_step_norm": 4.1412777480944096e-05
+        }
+      ],
+      "undamped": {
+        "warnings": [
+          "An ill-conditioned matrix detected: slice 0 has rcond = 1.1484662683591842e-27."
+        ],
+        "directional_derivative": 2.9164905225068765e-16,
+        "actual_mse": 15.564698354560425,
+        "step_norm": 58.031883017730316,
+        "backward_error": 1.0841164894957073e-19
+      }
+    }
+  ],
+  "unshifted_fraction": 0.0,
+  "maximum_solve_backward_error": 2.3564579051516353e-15,
+  "shift_quantiles": [
+    2.026262488540106e-12,
+    6.917960787873555e-12,
+    1.745493236424594e-11,
+    3.3208932907805473e-10,
+    6.293478559001755e-07
+  ],
+  "radius_quantiles": [
+    1.9073486328125e-06,
+    1.52587890625e-05,
+    3.0517578125e-05,
+    0.00048828125,
+    0.015625
+  ]
+}

@@ -1,0 +1,27 @@
+........................................................................ [ 30%]
+........................................................................ [ 60%]
+........................................................................ [ 91%]
+.....................                                                    [100%]
+=============================== warnings summary ===============================
+tests/test_construction.py::TestQIResultBasics::test_types
+tests/test_construction.py::TestQIPrecisionSine::test_linf_below_1e11
+tests/test_construction.py::TestExponentialConvergence::test_error_decreases_monotonically
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/_pytest/fixtures.py:1313: PytestRemovedIn10Warning: Class-scoped fixture defined as instance method is deprecated.
+  Instance attributes set in this fixture will NOT be visible to test methods,
+  as each test gets a new instance while the fixture runs only once per class.
+  Use @classmethod decorator and set attributes on cls instead.
+  See https://docs.pytest.org/en/stable/deprecations.html#class-scoped-fixture-as-instance-method
+    fixturefunc = resolve_fixture_function(fixturedef, request)
+
+tests/test_training.py::test_build_optimizer_dispatch
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/mpmath/ctx_mp.py:35: DeprecationWarning: mpnumeric is deprecated
+    warnings.warn(f"{name} is deprecated", DeprecationWarning)
+
+tests/test_training.py::test_build_optimizer_dispatch
+tests/test_training.py::test_build_optimizer_dispatch
+tests/test_training.py::test_build_optimizer_dispatch
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/mpmath/rational.py:4: DeprecationWarning: the rational private module is deprecated
+    warnings.warn("the rational private module is deprecated",
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+237 passed, 7 warnings in 67.49s (0:01:07)

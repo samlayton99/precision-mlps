@@ -1,0 +1,26 @@
+{
+  "campaign": "joint_conditioning",
+  "optimizer": "gn",
+  "coordinates": "parameter_scale",
+  "eta": 1.0,
+  "n": 512,
+  "seed": 1,
+  "damping_floor": 1e-30,
+  "followup": "newton_handoffs_v1",
+  "diagnostics": true,
+  "warm_start": {
+    "root": "../joint_conditioning",
+    "source_key": "adam_N512_s1_parameter_scale_4b0f8f8c10",
+    "step": 5300000,
+    "sha256": "198c86b1792feaf67794ef49b24811707680b10a8bde1a988e296c4344f0e24f"
+  },
+  "target": "sine",
+  "initialization": "checkpoint_handoff",
+  "samples_per_cell": 16,
+  "validation_points": 32768,
+  "objective": "half-MSE",
+  "reference_lambda": 0.25,
+  "minimum_updates": 20000,
+  "ssbroyden_commit": "4c87785c68f0fec6b09000f474daef76fb181eea",
+  "optimistix_commit": "8cd4931713658f8dfe4423ead6f11b348b675540"
+}

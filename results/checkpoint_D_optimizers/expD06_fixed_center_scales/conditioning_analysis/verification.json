@@ -1,0 +1,33 @@
+{
+  "comparison_update": 13000000,
+  "full_suite": "224 passed, 7 warnings in 53.15s",
+  "training_arrays": [
+    351,
+    353,
+    354,
+    358,
+    361,
+    364,
+    367,
+    371
+  ],
+  "final_cpu_jobs": [
+    376,
+    377,
+    378,
+    379,
+    380
+  ],
+  "source_sha256": {
+    "experiments/expD06_fixed_center_scales/difference_training.py": "fcb796d01321d634a7f1ebaffafc322ad1cef6ca029113cab2efadef0b0df654",
+    "experiments/expD06_fixed_center_scales/difference_analysis.py": "6d778dff2ccea698afa53a7da59ed29a38510eb244287b76ab86faddd8d39253",
+    "tests/test_expD06_difference_training.py": "57b9ad19a1f5bf037324d49c52842c7fe4e4cb802bd6e26a93f542c52a94aeb4"
+  },
+  "implementation_commit": "2038af9",
+  "analysis_at_cpu_execution_sha256": "a1facc2736a8869f3bd0ae6dde73b7d9de4509130c218cf440f9be353c2d5ca7",
+  "render_change": "Final 256 consecutive states expose alternating motion; numerical analysis unchanged.",
+  "animation_verification": "continuation_final/animation_verification.json",
+  "consecutive_update_audit": "continuation_final/late_motion_audit.json",
+  "final_cpu_accounting": "slurm_final_analysis_accounting.txt",
+  "final_report_commit": "f66d2cb"
+}
