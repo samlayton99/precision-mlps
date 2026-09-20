@@ -24,7 +24,11 @@ The duration extension repeats the same twenty current-readout cases for 10,000 
 
 For the extended split runs, reconstruct the fitted model on the training samples at every step and report its relative $L_2$ error. At about 200 saved states, including the best sampled projection-loss state, refit on the training grid and score predictions on 8,192 separate midpoint samples. Score the final and best saved independent-grid refits again on 65,536 samples. The companion diagnostic plots $\|\eta\mu u_h\|_2/\|\eta u_{\rm rest}\|_2$, the ratio of the two actual proposed geometry-step norms after Adam and outside multiplication. Its value does not determine the angle between the streams or whether their sum improves approximation.
 
+The matched $J$ versus $J_*$ follow-up uses four separate function figures, with columns $\mu=100,250,500,1000$. All paired runs have identical Xavier arrays, samples, Adam settings, outside multiplier, and cosine schedule from $0.002$ to $0.000002$ across 10,000 updates. Twelve existing $J_*$ trajectories are reused; sixteen current-$J$ trajectories and four $J_*/1000$ trajectories fill the missing settings. The schedule is applied to both geometry streams and the readout. The top row is trained relative $L_2$, computed exactly as $\sqrt{2L/\mathrm{mean}(y^2)}$; the middle row uses the explicitly reconstructed least-squares relative residual; both use the same training samples. The bottom row is mean gamma. Each panel has exactly the two method curves. Eleven selected implementation checks pass, including independently computed scheduled updates. Initial and final predictions independently verify the relative-error conversion for all 32 trajectories. No performance interpretation is added.
+
 **Code & data**
+
+- Matched cosine comparison: [plotting](../../../experiments/expD33_current_readout_split/compare_jstar.py), [missing-run fill](../../../experiments/expD33_current_readout_split/fill_comparison.py), [source manifest](j_vs_jstar/data/sources.json), [additional trajectories](j_vs_jstar/data/trajectories/), and four figures: [sine](j_vs_jstar/figures/sine.png), [mixed sine](j_vs_jstar/figures/sine_mixture.png), [Runge](j_vs_jstar/figures/runge.png), [Gaussian envelope](j_vs_jstar/figures/gaussian_envelope.png).
 
 - [Runner](../../../experiments/expD33_current_readout_split/run.py), [configuration](../../../experiments/expD33_current_readout_split/config.yaml), [tests](../../../tests/test_expD33_current_readout_split.py), [requirements and status](../../../docs/expD33_status.md).
 - [Figure](figures/xavier.png), [trajectories and evaluation checks](data/).
@@ -70,6 +74,13 @@ All endpoint refits were checked again on 65,536 points. The largest relative ch
 - **Logarithmic gamma view:** the same mean-gamma trajectories on common logarithmic axes, so the smaller-multiplier curves remain visible alongside the large excursions.
 
 - **Current-readout split, Xavier:** four function columns; actual squared loss on top, numerical least-squares squared loss in the middle, and mean gamma on the bottom. Viridis colors identify the five multipliers, black dots mark ordinary Adam, and gray dashes show the previous VarPro-$\mu=1000$ reference in the loss rows. Gamma has expanded linear axes per function so the small movement is visible.
+
+### Matched comparison figures
+
+- **Sine:** four multiplier columns; trained relative L2, refitted relative L2, and linear mean gamma. Purple solid is the original VarPro split; teal dashed is the current-readout split. Axes match within each row.
+- **Mixed sine:** the same two methods, columns, quantities, and common cosine schedule.
+- **Runge:** the same layout, with both error rows evaluated on identical training samples.
+- **Gaussian envelope:** the same layout and finite-interval training objective as the other functions.
 
 ## Additional details
 
