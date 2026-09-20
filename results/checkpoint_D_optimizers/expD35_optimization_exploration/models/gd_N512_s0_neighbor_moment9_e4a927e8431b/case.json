@@ -1,0 +1,26 @@
+{
+  "batch_size": 1024,
+  "beta1": 0.9,
+  "beta2": 0.999,
+  "coordinates": "neighbor",
+  "ema_alpha": 0.98,
+  "ema_location": 1,
+  "ema_normalized": false,
+  "ema_strength": 0.0,
+  "epsilon": 1e-08,
+  "eta": 0.0003,
+  "initialization": "reference_xavier",
+  "n": 512,
+  "optimizer": "gd",
+  "reset": "none",
+  "sampling": "full",
+  "schedule": "constant",
+  "slope_initialization": "lambda_xavier",
+  "target": "moment9",
+  "seed": 0,
+  "origin": {
+    "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_neighbor_moment9_43eb93d7a006/checkpoint_000500000.npz",
+    "sha256": "3ebce97032097bd1735ebc5cef8bb3082c9433b52a8e7b56ca3131ce38a84489",
+    "carry_optimizer": false
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "inputs": [
+    "/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race/continue100k"
+  ],
+  "analyses": [
+    {
+      "end": 100000,
+      "bundles": [
+        "core_N128_s0",
+        "core_N128_s1",
+        "core_N128_s2",
+        "core_N128_s3",
+        "core_N128_s4"
+      ],
+      "rows": 875,
+      "reference_rows": 51100,
+      "probe_rows": 63875,
+      "source_sha256": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+      "reference_snapshot_schedule": "early plus logarithmic",
+      "probe_schedule": "steps 0 through 20 and nearest saved states to 61 logarithmic times",
+      "evidence_role": "descriptive optimization diagnostics; no checkpoint selection"
+    }
+  ],
+  "source_sha256": "983e276011649ce01d6224400ff0ca154251c4f21aaa9db21aef96f58e298084",
+  "files": {
+    "rate_contrasts.csv": "f73b172998da0bf17b667cf52ff801bfc095b4f51e50f834f154485a9fd14458",
+    "sample_probes.csv": "6f90c62a7e10d6d99a2e5ed33332fe5d1b28d61ec53d6b207d04984727533f62",
+    "probe_audit.csv": "113f779fc93337446a7b614d9b714c7f89a4a2bd7d868f325626e406f6804c5e",
+    "matched_target_audit.csv": "61bb1c4e27a06445bea39e28671a793739a4791f0db93f057f8a12adfdd7f659",
+    "reference_audit.csv": "cfcb4b48f8ed8bb23ddc8b13b1461caf9e5426718b3b6f9959610976ce100802",
+    "summary.csv": "784ee1072d30e8008e01bd285e84a5e9abc47db99900fe5c337b9454a0a7254d",
+    "summary.json": "087b77c6bc59d12812a5c1f8248ce2281093d78a3b9c93215fce08bb9d2960b8",
+    "core_N128_s0_curves.npz": "4897189befd1d4741564399c8872452827fa2dbae625de9d2784b3d4dc893dbf",
+    "core_N128_s1_curves.npz": "c736c05e5adbfb81b8fd915c56fd6eda58e96b2dc014485bfefdf04cf7746afc",
+    "core_N128_s2_curves.npz": "398fe77e42ae05df500e34109f2b6d8c8d664e3a26331ad7e8150fc6b2d6d54a",
+    "core_N128_s3_curves.npz": "e771c68be1d2a75e5807e0f0de4b5c5738eacf03eb4df185a00e407f3739ffcf",
+    "core_N128_s4_curves.npz": "b1f6edf4caf16627a51ee2dfad7295d557c273c6cf72e2e92fa9e9aa6f61e046"
+  },
+  "audit_scope": "All analyzed rows; max_abs fields are descriptive maxima; 5% is a post-observation summary threshold",
+  "curve_scope": "Only columns identified by plot_trace_columns are included; all full traces remain at source",
+  "probe_scope": "Full sample probe curves retained for width 177 seed 0; other probes summarized and retained at source"
+}

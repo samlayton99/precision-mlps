@@ -1,0 +1,150 @@
+{
+  "snapshot": "results/checkpoint_D_optimizers/expD35_optimization_exploration/evidence/gd_N512_s0_neighbor_sine_f73698e3a7bd/snapshot_000100000.npz",
+  "config": {
+    "batch_size": 1024,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "coordinates": "neighbor",
+    "ema_alpha": 0.98,
+    "ema_location": 1,
+    "ema_normalized": false,
+    "ema_strength": 0.0,
+    "epsilon": 1e-15,
+    "eta": 0.0003,
+    "initialization": "reference_xavier",
+    "n": 512,
+    "optimizer": "gd",
+    "reset": "none",
+    "sampling": "full",
+    "schedule": "constant",
+    "slope_initialization": "lambda_xavier",
+    "target": "sine",
+    "seed": 0,
+    "origin": {
+      "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_neighbor_sine_9a6a1ff26cd2/checkpoint_000500000.npz",
+      "sha256": "cd17708688ca1725f22db068c234c20841dde219eb678f975844f1ba122c8996",
+      "carry_optimizer": false
+    }
+  },
+  "grid_size": 8193,
+  "quadrature": "training endpoint grid",
+  "mse": 9.831227882496687e-11,
+  "lambda_quantiles": [
+    2.0754055545172145e-05,
+    0.00625876090732077,
+    0.06712574867084743,
+    0.1381341871784381,
+    0.5162480544962431
+  ],
+  "resolved_mode_energy": 9.831227882496682e-11,
+  "residual_energy": 9.831227882496687e-11,
+  "least_squares": [
+    {
+      "relative_cutoff": 1.8192114481507815e-12,
+      "rank": 274,
+      "fit_mse": 2.076085959354054e-24,
+      "validation_mse": 2.0756458888456043e-24,
+      "coefficient_l2": 1.2556702320120017
+    },
+    {
+      "relative_cutoff": 1e-12,
+      "rank": 279,
+      "fit_mse": 1.5613992287019237e-24,
+      "validation_mse": 1.560726655742902e-24,
+      "coefficient_l2": 1.2569557385981012
+    },
+    {
+      "relative_cutoff": 1e-14,
+      "rank": 310,
+      "fit_mse": 3.1322909955133923e-28,
+      "validation_mse": 2.998722065488033e-28,
+      "coefficient_l2": 1.4639263397822082
+    },
+    {
+      "relative_cutoff": 1e-16,
+      "rank": 363,
+      "fit_mse": 4.118419448566567e-29,
+      "validation_mse": 4.065988996190319e-29,
+      "coefficient_l2": 2.4206334586959413
+    }
+  ],
+  "mode_edges": [
+    0.0,
+    1e-08,
+    1e-06,
+    0.0001,
+    0.01,
+    0.1,
+    1.0000001
+  ],
+  "mode_energy": [
+    1.074254826273715e-16,
+    1.5499785464470224e-12,
+    9.672933825499629e-11,
+    3.2854353282266093e-14,
+    2.4141762240120944e-19,
+    3.3409715718117086e-21
+  ],
+  "frequency_bands": [
+    "0\u20130",
+    "1\u20131",
+    "2\u20133",
+    "4\u20137",
+    "8\u201315",
+    "16\u201331",
+    "32\u201363",
+    "64\u2013127",
+    "128\u2013255",
+    "256+"
+  ],
+  "frequency_mse": [
+    7.406532768190232e-22,
+    3.716263173920899e-21,
+    3.751481594627386e-20,
+    4.791735800337257e-19,
+    9.180682154960767e-18,
+    9.144750976049541e-16,
+    5.957497158370327e-12,
+    7.64686544620217e-11,
+    3.832297701559944e-12,
+    1.205290532608982e-11
+  ],
+  "geometry_signal": {
+    "coarse_residual_mse": 9.232774388944764e-22,
+    "remainder_residual_mse": 9.831227882404359e-11,
+    "gradient_norm": 5.643549696207505e-12,
+    "coarse_gradient_norm": 3.6267747910901285e-12,
+    "remainder_gradient_norm": 6.1901046489231715e-12,
+    "readout_span_gradient_norm": 5.643549695909794e-12,
+    "orthogonal_gradient_norm": 2.1625489406060866e-21,
+    "span_relative_cutoff": 1e-12
+  },
+  "fourier_gradient": {
+    "readout_norms": [
+      3.855098782609679e-10,
+      5.887831587002378e-10,
+      1.1197795710049583e-09,
+      2.0641158010727023e-09,
+      5.872729925451867e-09,
+      1.9754082743406505e-08,
+      4.6368972393968214e-07,
+      2.4188356012170106e-06,
+      2.3491177309476367e-08,
+      2.007264665335394e-06
+    ],
+    "gamma_norms": [
+      3.1585051709336145e-12,
+      5.544106392048462e-12,
+      1.0479509461353036e-11,
+      2.0187670229372714e-11,
+      5.891847032016262e-11,
+      2.0128595145837434e-10,
+      4.7181568575435646e-09,
+      2.4609861311804642e-08,
+      2.3487136743951906e-10,
+      2.0421895481922296e-08
+    ],
+    "readout_sum_error": 6.976526556000619e-21,
+    "gamma_sum_error": 4.159909535232772e-23
+  }
+}
