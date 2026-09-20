@@ -52,6 +52,7 @@ def snapshot(path,config,out):
     centered=x-np.mean(x)
     coarse=np.mean(residual)+centered*np.mean(residual*centered)/np.mean(centered**2)
     gamma_gradient=gamma_jacobian.T@residual/m
+    readout_gradient=design.T@residual/m
     coarse_gradient=gamma_jacobian.T@coarse/m
     keep=relative>1e-12
     removable=u[:,keep]@(u[:,keep].T@residual)
@@ -73,6 +74,7 @@ def snapshot(path,config,out):
         native_singular_values=s,physical_singular_values=physical_s,projected_residual=projected,
         mode_edges=mode_edges,mode_residual_energy=mode_energy,band_energy=band_energy(residual),
         physical_gamma_gradient=gamma_gradient,coarse_gamma_gradient=coarse_gradient,
+        physical_readout_gradient=readout_gradient,native_readout_gradient=mapping.T@readout_gradient,
         remainder_gamma_gradient=gamma_gradient-coarse_gradient,readout_span_gamma_gradient=removable_gradient,
         orthogonal_gamma_gradient=gamma_gradient-removable_gradient,
         least_squares_coefficients=np.stack(coefficients))
@@ -96,6 +98,7 @@ def snapshot(path,config,out):
 def dense(folder,config,out):
     g=core.old.geometry(config['n']);m=max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
     y=core.target(x,config['target'],np);rows=[];basis=None;spectrum=None
+    mapping=transform(g,config['coordinates'])
     edges=np.array([0.,1e-8,1e-6,1e-4,1e-2,.1,1.0000001])
     for path in sorted(folder.glob('dense_*.npz')):
         with np.load(path) as data:
@@ -114,6 +117,15 @@ def dense(folder,config,out):
             f0=c0[0]+phi@c0[1:];fr=c1[0]+phi@c1[1:]
             f1=c1[0]+np.tanh((x[:,None]-g.centers)*ga1+beta1)@c1[1:]
             r=f0-y;dr=fr-f0;dg=f1-fr
+            gc=np.r_[np.mean(r),phi.T@r/m];gr=mapping.T@gc
+            pre=(x[:,None]-g.centers)*ga0+beta0;exp=np.exp(-2*np.abs(pre));sech=4*exp/(1+exp)**2
+            gg=np.mean(r[:,None]*c0[1:]*(x[:,None]-g.centers)*sech,axis=0)
+            gg/=1. if config['coordinates']=='physical' else g.h
+            if config.get('architecture')=='affine':gg=np.r_[gg,np.mean(r[:,None]*c0[1:]*sech,axis=0)]
+            delta=zs[i+1]-zs[i];dzr=delta[:g.width+1];dzg=delta[g.width+1:]
+            def alignment(a,b):
+                den=np.linalg.norm(a)*np.linalg.norm(b)
+                return float(a@b/den) if den else np.nan
             # Exact sequential attribution: readout first, then geometry.
             linear_r=2*band_product(r,dr)
             linear_g=2*band_product(r,dg)
@@ -127,6 +139,9 @@ def dense(folder,config,out):
                 mode_geometry_descent=aggregate(-2*ur*ug),outside_fixed_span=max(0.,np.mean(r*r)-np.sum(ur**2)),
                 readout_update_outside_span=max(0.,np.mean(dr*dr)-np.sum(uw**2)),
                 geometry_update_outside_span=max(0.,np.mean(dg*dg)-np.sum(ug**2)),
+                native_readout_gradient=np.linalg.norm(gr),native_geometry_gradient=np.linalg.norm(gg),
+                native_readout_motion=np.linalg.norm(dzr),native_geometry_motion=np.linalg.norm(dzg),
+                readout_gradient_alignment=alignment(dzr,-gr),geometry_gradient_alignment=alignment(dzg,-gg),
                 readout_motion=np.sqrt(np.mean((c1-c0)**2)),gamma_motion=np.sqrt(np.mean((ga1-ga0)**2)),
                 offset_motion=np.sqrt(np.mean((beta1-beta0)**2))))
     if rows:run.save(out,singular_values=spectrum,mode_edges=edges,
