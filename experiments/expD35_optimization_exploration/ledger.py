@@ -44,8 +44,8 @@ def export(root, out):
     scores = []
     for horizon in (20000, 100000, 200000, 300000, 500000):
         for row in design.rank(root, horizon=horizon):
-            mse = [e['validation_mse'] for e in history.evaluations(root / row['id'])
-                   if .8 * horizon <= e['step'] <= horizon]
+            mse = [e['validation_mse'] for e in design.selection_window(
+                history.evaluations(root / row['id']), horizon)]
             scores.append(dict(id=row['id'], horizon=horizon, mean_relative_mse=row['score'],
                                mean_mse=float(np.mean(mse)), median_mse=float(np.median(mse)),
                                q90_mse=float(np.quantile(mse, .9)),

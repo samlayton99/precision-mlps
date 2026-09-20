@@ -8,6 +8,12 @@ from . import run
 from . import history
 
 
+def selection_window(evaluations,endpoint):
+    """Use identical update indices despite extra scheduler/SSB evaluations."""
+    stride=1000 if endpoint<=20000 else 5000
+    return [e for e in evaluations if .8*endpoint<=e['step']<=endpoint and e['step']%stride==0]
+
+
 def rank(root, minimum=20000, horizon=None):
     rows=[]
     for path in sorted(root.glob('*/case.json')):
@@ -19,8 +25,8 @@ def rank(root, minimum=20000, horizon=None):
         if latest['failed_update'] and latest['failed_update']<=endpoint:continue
         values=[];evaluations=history.evaluations(folder)
         if not any(e['step']==endpoint for e in evaluations):continue
-        for e in evaluations:
-            if .8*endpoint<=e['step']<=endpoint and e['validation_relative_mse'] is not None:
+        for e in selection_window(evaluations,endpoint):
+            if e['validation_relative_mse'] is not None:
                 values.append(e['validation_relative_mse'])
         if not values or not np.all(np.isfinite(values)): continue
         rows.append(dict(id=folder.name,config=json.loads(path.read_text()),step=endpoint,

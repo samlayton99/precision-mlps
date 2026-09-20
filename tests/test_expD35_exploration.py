@@ -225,6 +225,19 @@ def test_selection_can_compare_same_horizon_after_promotion(tmp_path):
     assert design.rank(tmp_path)[0]['score']==pytest.approx(1e-8)
 
 
+def test_selection_does_not_reweight_policies_that_save_extra_evaluations(tmp_path):
+    from experiments.expD35_optimization_exploration import run,design
+    for policy in ('constant','decay'):
+        folder=tmp_path/policy;folder.mkdir()
+        run.write_json(folder/'case.json',run.case(schedule=policy))
+        run.write_json(folder/'latest.json',dict(step=100000,failed_update=0))
+        for step in range(80000,100001,5000):
+            run.write_json(folder/f'evaluation_{step:09d}.json',dict(step=step,validation_relative_mse=.1))
+        if policy=='decay':
+            run.write_json(folder/'evaluation_000081000.json',dict(step=81000,validation_relative_mse=100.))
+    assert [r['score'] for r in design.rank(tmp_path,horizon=100000)]==pytest.approx([.1,.1])
+
+
 def test_replay_cannot_silently_run_without_source_events(tmp_path):
     from experiments.expD35_optimization_exploration import run
     c=run.case(n=64,reset='replay_state',replay_directory=str(tmp_path/'missing'))
