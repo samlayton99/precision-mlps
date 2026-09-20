@@ -1,6 +1,8 @@
 """Replay common observed secants under different priors; no live model reset."""
 import argparse
 import json
+import hashlib
+import os
 from pathlib import Path
 import equinox as eqx
 import jax
@@ -81,6 +83,7 @@ def main():
                 trace=np.asarray(trace),direction_cosine=cosine,geometry_fraction=geometry,secant_error=secant,valid=active)
             old.write_json(out.with_suffix('.json'),dict(start=at,accepted=int(end['count'])-at,status=int(end['status']),
                 replay_valid_steps=active.sum(axis=0).tolist(),cosine_at_1_10_100_512=cosine[[0,9,99,511]].tolist(),
+                source_commit=os.environ.get('EXPLORATION_SOURCE_COMMIT'),source_hash=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                 meaning='common-secant diagnostic replay; no counterfactual training trajectory'))
             print(out,flush=True)
 
