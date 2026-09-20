@@ -154,7 +154,7 @@ def main():
     deadline=time.monotonic()+args.seconds
     cases=json.loads(args.manifest.read_text())
     for i,config in enumerate(cases):
-        if i%args.workers!=args.worker:continue
+        if config.get('worker_group',i)%args.workers!=args.worker:continue
         if not advance(args.root,config,args.source,args.frontier,deadline):break
 
 

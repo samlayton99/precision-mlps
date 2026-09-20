@@ -40,7 +40,7 @@ def main():
         row.update(case=path.parent.name,config=config);probes.append(row)
     compact=[{k:v for k,v in r.items() if k!='curve'} for r in records]
     memory=[]
-    for path in sorted(args.root.glob('*/memory_*.json')):
+    for path in sorted(args.root.glob('*/memory_pinned_*.json')):
         row=json.loads(path.read_text());valid=min(row['replay_valid_steps'])
         samples=row.pop('cosine_at_1_10_100_512')
         row['valid_cosine_at_1_10_100_512']=[float(v) if position<=valid else None for position,v in zip((1,10,100,512),samples)]

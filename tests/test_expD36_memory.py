@@ -7,6 +7,21 @@ from experiments.expD06_fixed_center_scales import higher_order as higher
 from experiments.expD36_ssb_geometry_switching.memory import update
 
 
+def test_replay_first_secant_matches_the_pinned_priming_convention():
+    import jax
+    from experiments.expD35_optimization_exploration import core,run,ssb
+    source=os.environ.get('SSB_SOURCE')
+    if not source:pytest.skip('Pinned SSBroyden required')
+    config=run.case(n=64,optimizer='ssbroyden');g,loss,physical=ssb.problem(config)
+    solver=higher.ssb_solver(source,1e-30,1e-15,'accepted_step')
+    initial=higher.ssb_initial(solver,loss,core.initialize(config)['z'])
+    advanced,_=higher.ssb_step(solver,loss,physical,1e-30)(initial)
+    s=advanced['z']-initial['z'];y=jax.grad(loss)(advanced['z'])-jax.grad(loss)(initial['z'])
+    replayed,valid=update(solver,jnp.eye(len(s)),s,y,jnp.array(False))
+    assert bool(valid)
+    np.testing.assert_allclose(replayed,advanced['solver'].f_info.hessian_inv.pytree,rtol=2e-10,atol=2e-10)
+
+
 def test_common_secant_update_is_covariant_and_satisfies_secant():
     source=os.environ.get('SSB_SOURCE')
     if not source:pytest.skip('Pinned SSBroyden required')

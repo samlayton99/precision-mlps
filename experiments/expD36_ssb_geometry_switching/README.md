@@ -107,6 +107,10 @@ with the same metric, and the recorded metric mixture. Parameters are identical
 at the branch point. This isolates initial acquisition from the much later
 switching events of the primary controller. No new target or mixture strength is
 selected from the continuation outcomes.
+All three branches from a parent share one worker and one compiled kernel.
+An independent-process null comparison exhibited a roundoff-sized discrepancy
+at its second update that amplified later, so small endpoint differences alone
+are not treated as strong causal evidence.
 
 The metric-memory interpretation also has a restricted exact statement. If an
 observed secant subspace $U$ is invariant under $H$ and every $s_k,y_k$ lies in
@@ -115,6 +119,11 @@ therefore changes as $H_{U^\perp,k+1}=H_{U^\perp,k}/\tau_k$. Its relative prior
 anisotropy remains unchanged, even though its overall scalar changes. A focused
 test checks this property. The nonlinear network replay measures memory without
 assuming that its observed directions form such an invariant subspace.
+The replay uses the pinned implementation's actual priming convention: its
+zero-displacement initialization clears the first-self-scaling flag before the
+first nonzero secant. `memory_pinned_*` artifacts use that convention and replace
+the earlier diagnostic variant that applied first-iteration scaling to its first
+recorded secant. A test compares the replayed first matrix with the live solver.
 
 Every finite scientific run has at least 20k accepted updates. Numerical failures
 remain in the ledger. Actual loss, complete-window averages, accessibility,

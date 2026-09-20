@@ -39,7 +39,7 @@ def capture(config,source,state,length):
     return run(state)
 
 
-def replay(solver,priors,steps,differences,gradients,split,first=True):
+def replay(solver,priors,steps,differences,gradients,split,first=False):
     @jax.jit
     def run(h0):
         def step(carry,inputs):
@@ -59,7 +59,8 @@ def replay(solver,priors,steps,differences,gradients,split,first=True):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--source',required=True)
-    p.add_argument('--worker',type=int,default=0);p.add_argument('--workers',type=int,default=1);args=p.parse_args()
+    p.add_argument('--worker',type=int,default=0);p.add_argument('--workers',type=int,default=1)
+    p.add_argument('--replay-only',action='store_true');args=p.parse_args()
     old.verify_gpu(args.root)
     cases=[]
     for path in sorted(args.root.glob('*/case.json')):
@@ -71,17 +72,26 @@ def main():
         template=higher.ssb_initial(solver,loss,core.initialize(c)['z'])
         for at in (0,5000):
             state=ssb.load_solver(folder/f'solver_{at:09d}.npz',template)
-            end,(s,y,grad,trace)=capture(c,args.source,state,512)
+            if args.replay_only:
+                previous=np.load(folder/f'memory_{at:09d}.npz')
+                s,y,grad,trace=(jnp.asarray(previous[key]) for key in ('steps','gradient_differences','gradients','trace'))
+                old_record=json.loads((folder/f'memory_{at:09d}.json').read_text())
+                accepted,status=old_record['accepted'],old_record['status']
+            else:
+                end,(s,y,grad,trace)=capture(c,args.source,state,512)
+                accepted,status=int(end['count'])-at,int(end['status'])
             native=state['solver'].f_info.hessian_inv.pytree
             # Both replay priors see exactly the same observed secants.
             # At initialization compare readout/geometry ratios; later restore I.
             other=jnp.diag(jnp.r_[jnp.full(g.width+1,100.),jnp.full(g.width,.01)]) if at==0 else jnp.eye(len(state['z']))
-            final,rows=replay(solver,(native,other),s,y,grad,g.width+1,first=at==0)
+            # The pinned implementation clears its first-self-scaling flag
+            # during the zero-displacement priming call, before any secant.
+            final,rows=replay(solver,(native,other),s,y,grad,g.width+1,first=False)
             cosine,geometry,secant,active=map(np.asarray,rows)
-            out=folder/f'memory_{at:09d}.npz'
+            out=folder/f'memory_pinned_{at:09d}.npz'
             old.save(out,steps=np.asarray(s),gradient_differences=np.asarray(y),gradients=np.asarray(grad),
                 trace=np.asarray(trace),direction_cosine=cosine,geometry_fraction=geometry,secant_error=secant,valid=active)
-            old.write_json(out.with_suffix('.json'),dict(start=at,accepted=int(end['count'])-at,status=int(end['status']),
+            old.write_json(out.with_suffix('.json'),dict(start=at,accepted=accepted,status=status,first_self_scaling=False,
                 replay_valid_steps=active.sum(axis=0).tolist(),cosine_at_1_10_100_512=cosine[[0,9,99,511]].tolist(),
                 source_commit=os.environ.get('EXPLORATION_SOURCE_COMMIT'),source_hash=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                 meaning='common-secant diagnostic replay; no counterfactual training trajectory'))
