@@ -35,11 +35,14 @@ def band_product(a,b):
     return np.array([np.sum(energy[lo:hi]) for lo,hi in BANDS])
 
 
-def snapshot(path,config,out,grid_size=None):
+def snapshot(path,config,out,grid_size=None,training_grid=False):
     g=core.old.geometry(config['n'])
     with np.load(path) as data:z=np.asarray(data['z'])
     c,gamma=map(np.asarray,core.physical(z,g,config['coordinates']))
-    m=grid_size or max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
+    if training_grid:
+        m=16*config['n']+1;x=np.linspace(-1,1,m)
+    else:
+        m=grid_size or max(2048,4*config['n']);x=-1+2*(np.arange(m)+.5)/m
     beta=np.asarray(core.offsets(z,g))
     y=core.target(x,config['target'],np);pre=(x[:,None]-g.centers)*gamma+beta;phi=np.tanh(pre)
     design=np.column_stack((np.ones(m),phi));residual=design@c-y
@@ -81,7 +84,8 @@ def snapshot(path,config,out,grid_size=None):
         orthogonal_gamma_gradient=gamma_gradient-removable_gradient,
         least_squares_coefficients=np.stack(coefficients))
     run.save(out.with_suffix('.npz'),**arrays)
-    result=dict(snapshot=str(path),config=config,grid_size=m,mse=float(np.mean(residual**2)),
+    result=dict(snapshot=str(path),config=config,grid_size=m,
+        quadrature='training endpoint grid' if training_grid else 'diagnostic midpoint grid',mse=float(np.mean(residual**2)),
         lambda_quantiles=np.quantile(np.abs(g.h*gamma),[0,.1,.5,.9,1]).tolist(),
         resolved_mode_energy=float(np.sum(projected**2)),residual_energy=float(np.mean(residual**2)),
         least_squares=ls,mode_edges=mode_edges,mode_energy=mode_energy.tolist(),
