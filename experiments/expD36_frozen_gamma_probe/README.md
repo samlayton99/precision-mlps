@@ -90,3 +90,25 @@ hitting-time comparisons, and equal-budget trained precision. It requires the
 saved training traces; it does not launch or extend training. The summary keeps
 executed hits, budget-censored cases, and spectral extrapolations separate.
 Scientific prose and result tables are authored directly in the results report.
+
+## Full sweep
+
+`full_config.yaml` freezes the expanded campaign: five targets, five exact
+readout maps, eleven slopes, nonzero paired initializations, width and coordinate
+controls, polynomial probes, and a separate end-to-end baseline. The original
+probe artifacts remain unchanged. Full-sweep outputs use a distinct directory.
+
+`full_core.py` implements the expanded maps and formulas. `full_kernels.py`
+batches independent targets, recipes, and initializations as matrix columns;
+no diagnostic solve enters an update. Neighboring coefficients are scaled
+before differencing and retain their final anchor. The Adam pilot schedule
+holds its terminal rate after 50k, including when resumed.
+
+Before training, `full_benchmark.py` measures actual frozen and end-to-end batch
+shapes. Launch `full_benchmark.sbatch` once with one GPU and once with
+`--gres=none` and `PROBE_CPU=1`; both require `PROBE_CODE` and `PROBE_OUTPUT`.
+Benchmark compilation, allocation overhead, and failures count against the
+existing total limits of 7,200 GPU-seconds and 3,600 CPU-only allocation seconds.
+The first probe consumed 207 and 193 seconds respectively. Forecast the complete
+matrix with a 20% reserve before committing the remaining compute; an over-budget
+forecast requires a revised resource decision, not silent removal of cases.
