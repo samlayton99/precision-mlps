@@ -49,3 +49,24 @@ a_j=\frac{\lambda_j}{h},\quad b_j=\beta_j-\frac{\lambda_jt_j^{\rm ref}}h.
 $$
 
 Thus every affine slope and hidden bias can change. The same native scalar rate updates readouts, $\lambda$, and $\beta$. The fixed reference centers define coordinates; they do not constrain the learned centers. A checkpoint release appends zero offsets and retains the previous parameters and optimizer moments, with fresh state only for the new offsets. Cold comparisons use grid centers, jitter within half a spacing, or sorted random centers over the original halo extent. The readout map stays tied to the original ordering throughout training. This promotion is separate from the primary fixed-center comparisons and excludes neuron recycling and SSBroyden in its initial assay.
+
+The width promotion ranks a recipe by the arithmetic mean of its two seed scores at the same horizon. Width 512 receives a three-rate screen and 100k confirmation before width 1024. The stronger-memory extension tests $\rho=32$ because several GD optima were on the earlier $\rho=8$ boundary. Adam guards are compared at $10^{-8},10^{-15},10^{-24}$ outside the square root. A separate GD screen extends the constant shared rate to $10$ under bandwidth-Xavier initialization: stability under the old initialization does not justify limiting the new initialization to the old rate neighborhood. Warm EMA forks start after 100k ordinary updates and preserve optimizer state, isolating a late intervention from the initial geometry transient.
+
+For reference, with corrected-halo allowances $\alpha_j$, the readout maps are
+
+$$
+\text{collective: }c_j=\sqrt{\alpha_j}\,z_j,
+\qquad
+\text{individual: }c_j=\alpha_jz_j.
+$$
+
+The neighboring map instead uses
+
+$$
+A_j=\sum_{k=1}^{j}\alpha_k,\qquad q_j=A_jz_j,
+\qquad w_j=q_j-q_{j-1},\qquad q_0=0,\qquad b_0=\alpha_0z_0.
+$$
+
+Thus its function can also be evaluated as $b_0+\sum_{j=1}^{W-1}q_j(\phi_j-\phi_{j+1})+q_W\phi_W$. The final anchor is retained. Initial slopes use the absolute value of the original Gaussian Xavier draw; subsequent slopes are unconstrained. `lambda_xavier` applies those same draws directly to $\lambda=h\gamma$.
+
+The shared-graph SSB confirmation makes reset modes runtime inputs to one compiled function. Its no-reset and late-reset controls agree exactly until the first reset, including their failure if it occurs earlier. The subsequent `neighbor_stable` assay evaluates the same model through cancellation-aware tanh differences, with the analytic derivative $d(\tanh a-\tanh b)=\operatorname{sech}^2(a)\,da-\operatorname{sech}^2(b)\,db$. Its unchanged-arithmetic controls remain separate cases. Final precision audits report both the rounded physical-weight function and the exact native coordinate map, as well as the two FP64 evaluation forms.

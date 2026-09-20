@@ -11,7 +11,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from experiments.expD06_fixed_center_scales import higher_order as higher
-from . import core, run
+from . import core, run, stable
 
 TRACE=('mse','accepted_count','accepted','status','search_calls','step_size','curvature',
        'guard_active','gradient_readout','gradient_geometry','delta_readout_rms',
@@ -166,7 +166,7 @@ def main():
     run.write_json(args.root/f'ssb_source_{os.environ.get("SLURM_JOB_ID","local")}.json',dict(
         commit=os.environ.get('EXPLORATION_SOURCE_COMMIT'),source_sha=higher.SSB_SOURCE_SHA256,
         integration='accepted_step',reset_graph='shared',sources={str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in
-        [Path(__file__),Path(core.__file__),Path(higher.__file__)]}))
+        [Path(__file__),Path(core.__file__),Path(stable.__file__),Path(higher.__file__)]}))
     cases=json.loads(args.manifest.read_text());deadline=time.monotonic()+args.seconds
     for i,c in enumerate(cases):
         if i%args.workers!=args.worker:continue
