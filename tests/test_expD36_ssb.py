@@ -46,12 +46,22 @@ def test_metric_change_restart_and_resume(tmp_path):
     state,_=step(state)
     previous=state['z'];h=state['solver'].f_info.hessian_inv.pytree
     mixed,_=access.mix_metric(h,jax.grad(loss)(state['z']),.2)
+    unchanged=ssb.restart(state,solver,loss,h)
     state=ssb.restart(state,solver,loss,mixed)
     np.testing.assert_array_equal(state['z'],previous)
     ssb.save_solver(tmp_path/'solver.npz',state)
     restored=ssb.load_solver(tmp_path/'solver.npz',state)
-    a,_=step(state);b,_=step(restored)
+    a,trace=step(state);b,_=step(restored)
     for x,y in zip(jax.tree.leaves(a),jax.tree.leaves(b)):np.testing.assert_array_equal(x,y)
+    control,control_trace=step(unchanged)
+    assert float(trace[0,14])==float(control_trace[0,14])==0.
+    assert np.linalg.norm(a['z']-control['z'])>1e-8
+    # The first accepted displacement must follow the requested mixed metric.
+    one=ssb.kernel(64,'individual','sine',source,1e-30,1e-15,'non_descent',1000,1)
+    first,_=one(state)
+    expected=-mixed@jax.grad(loss)(previous)
+    delta=first['z']-previous
+    np.testing.assert_allclose(delta/jnp.linalg.norm(delta),expected/jnp.linalg.norm(expected),atol=1e-10)
 
 
 def test_parameter_reset_keeps_centers_and_separates_zero_weight_signal():

@@ -77,6 +77,14 @@ readouts and broader Xavier bandwidths. Every branch gets 20k additional updates
 Sham histories replay the complete, frozen event list from the adaptive run;
 they can continue after that source run fails.
 
+An initial control audit found that the inherited non-descent guard classified
+a fresh search state's placeholder zero gradient as a bad direction. It overwrote
+both requested metric mixtures and history-only restarts with identity before
+priming. Those initial intervention trajectories are retained as invalid metric
+comparisons. The corrected guard checks only primed states, with a regression
+test verifying the direction of the first accepted displacement. Corrected
+primary configurations carry `implementation: primed_guard_v2` and start anew.
+
 Every finite scientific run has at least 20k accepted updates. Numerical failures
 remain in the ledger. Actual loss, complete-window averages, accessibility,
 signed bandwidth movement, physical trajectories, residual frequencies, gradient
