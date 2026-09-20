@@ -108,12 +108,17 @@ def prepare(root, config):
                 else:raise ValueError('Incompatible optimizer array in affine handoff')
             state['z']=desired_z
             state['eta']=jnp.array(config['eta'])
-        # EMA interventions start from the current gradient, not a hidden warm history.
-        x = jnp.linspace(-1, 1, 16*config['n']+1)
-        grad = core.field(state['z'], x, core.target(x, config['target']), g, config['coordinates'])[1]
-        state['ema'] = grad
-        hp = core.hyperparameters(dict(config, ema_strength=0.))
-        state['post_ema'] = core.optimizer_direction(state, grad, hp, config['optimizer'])[0]
+        if config['origin'].get('reset_filter',True):
+            # EMA interventions start from the current gradient.
+            x = jnp.linspace(-1, 1, 16*config['n']+1)
+            grad = core.field(state['z'], x, core.target(x, config['target']), g, config['coordinates'])[1]
+            state['ema'] = grad
+            hp = core.hyperparameters(dict(config, ema_strength=0.))
+            state['post_ema'] = core.optimizer_direction(state, grad, hp, config['optimizer'])[0]
+        else:
+            if not config['origin'].get('carry_optimizer',True):raise ValueError('Preserving the filter requires preserving optimizer state')
+            for field in ('ema_alpha','ema_strength','ema_location','ema_normalized'):
+                if parent[field]!=config[field]:raise ValueError('Filter settings changed while requesting exact state preservation')
     save(folder/'initial.npz', **state, step=0)
     save(folder/'state.npz', **state, step=0)
     return folder, state, 0

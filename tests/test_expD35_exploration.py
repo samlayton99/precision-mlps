@@ -52,6 +52,18 @@ def test_dense_samples_cover_cycle_phases():
     assert run.sample_indices(3,0)[-1]<3
 
 
+def test_schedule_handoff_preserves_filter_and_optimizer_state(tmp_path):
+    from experiments.expD35_optimization_exploration import run
+    import hashlib
+    parent=run.case(n=64,ema_strength=2.);folder,state,_=run.prepare(tmp_path,parent)
+    state.update(ema=jnp.ones_like(state['ema'])*3,post_ema=jnp.ones_like(state['post_ema'])*4,
+                 age=jnp.ones_like(state['age'])*100)
+    p=folder/'checkpoint_000100000.npz';run.save(p,**state,step=100000)
+    child=dict(parent,schedule='decay',origin=dict(checkpoint=str(p),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),reset_filter=False))
+    _,actual,_=run.prepare(tmp_path,child)
+    for name in state:np.testing.assert_array_equal(actual[name],state[name])
+
+
 def case(**extra):
     return dict(n=64, seed=0, coordinates='individual', optimizer='gd', eta=1e-4, **extra)
 
