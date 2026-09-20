@@ -9,6 +9,8 @@ import numpy as np
 from .analyze import table
 from .run import write_json
 
+PLOT_COLUMNS=np.array([0,1,3,4,5,9,11,12,16,17,25,28,31,32])
+
 
 def number(row,key):
     value=row.get(key,'')
@@ -54,7 +56,10 @@ def main():
         rows.extend(json.loads((path/'summary.json').read_text()))
         for source in path.glob('*_curves.npz'):
             with np.load(source) as data:
-                np.savez_compressed(out/source.name,**{k:data[k] for k in data.files})
+                arrays={k:data[k] for k in data.files}
+            for key in arrays:
+                if key.endswith('_trace'): arrays[key]=arrays[key][:,:,PLOT_COLUMNS]
+            np.savez_compressed(out/source.name,plot_trace_columns=PLOT_COLUMNS,**arrays)
     assert len({(r['bundle'],r['degree'],r['target'],r['kappa']) for r in rows})==len(rows)
     write_json(out/'summary.json',rows);table(out/'summary.csv',rows)
     keys=('bundle','target','seed','n','degree','kappa')
@@ -78,6 +83,7 @@ def main():
         source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         files={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir() if p.is_file() and p.name!='evidence_manifest.json'},
         audit_scope='All analyzed rows; max_abs fields are descriptive maxima; 5% is a post-observation summary threshold',
+        curve_scope='Only columns identified by plot_trace_columns are included; all full traces remain at source',
         probe_scope='Full sample probe curves retained for width 177 seed 0; other probes summarized and retained at source'))
     print(json.dumps(dict(rows=len(rows),output=str(out))),flush=True)
 

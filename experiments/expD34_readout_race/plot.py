@@ -21,6 +21,12 @@ def load(root):
     for path in sorted(root.glob('core_*_curves.npz')):
         with np.load(path) as data:
             row={k:data[k] for k in data.files}
+        if 'plot_trace_columns' in row:
+            for key in tuple(row):
+                if key.endswith('_trace'):
+                    expanded=np.full((*row[key].shape[:2],42),np.nan)
+                    expanded[:,:,row['plot_trace_columns']]=row[key]
+                    row[key]=expanded
         row['config']=json.loads(str(row['configuration']))
         row['case_list']=json.loads(str(row['cases']))
         result.append(row)
