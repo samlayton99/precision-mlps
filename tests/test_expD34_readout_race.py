@@ -142,3 +142,24 @@ def test_disk_resume_and_manifest_identity(tmp_path):
         np.testing.assert_allclose(saved['z'][0],z,atol=1e-14)
     with pytest.raises(ValueError,match='Incompatible resume'):
         run.prepare(tmp_path,cfg|dict(eta=.003))
+    from experiments.expD34_readout_race import analyze
+    output=tmp_path/'analysis';output.mkdir()
+    rows,_,probes,_=analyze.analyze_bundle(tmp_path,output,80)
+    assert len(rows)==1 and rows[0]['complete'] and rows[0]['completed_updates']==80
+    assert rows[0]['heldout_mse']>0
+    assert len(probes)>20
+    for row in probes:
+        for order in (2,4,6,8):
+            assert row[f'pointwise_p{order}_error']<=row[f'pointwise_p{order}_bound']+1e-14
+
+
+def test_coarse_velocity_matches_finite_difference():
+    from experiments.expD34_readout_race import analyze
+    z,d,data=example('moment5');loss,mom,g,gd,_=core.field(z,d,data,0)
+    kappa=37.
+    probe=analyze.sample_probe(np.asarray(z),float(d),np.asarray(g),float(gd),np.asarray(data['x']),np.asarray(data['y']),kappa,0)
+    eta=1e-7
+    zn,dn=core.update(z,d,data,0,eta,kappa)
+    next_mom=core.field(zn,dn,data,0)[1]
+    change=np.asarray((next_mom[:2]-mom[:2])/jnp.array([1.,data['sigma']])/eta)
+    np.testing.assert_allclose(change,probe['Vv']+probe['Vq'],rtol=2e-6,atol=1e-8)
