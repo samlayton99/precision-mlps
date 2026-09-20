@@ -31,6 +31,10 @@ def collect(root,horizon=20000):
             a=np.load(p);t=a['trace'];traces.append(t[np.isfinite(t[:,0])])
         trace=np.concatenate(traces) if traces else np.empty((0,18))
         trace=trace[trace[:,1]<=horizon]
+        emergency_resets=int(np.nansum(trace[:,14]))
+        rejected_rows=int(np.sum(trace[:,2]==0))
+        # A failed terminal search records a finite row without a new update.
+        trace=trace[trace[:,2]>0]
         events=[r for r in rows if r.get('event') and r['step']<horizon]
         summary=dict(id=folder.name,config=config,latest=last,
             event_steps=[r['step'] for r in events],event_betas=[r.get('beta') for r in events],
@@ -39,7 +43,7 @@ def collect(root,horizon=20000):
             reliable_candidates={str(t):sum(curvature_error(r)<=t and r['curvature'][0]['curvature']>0 and
                 r['curvature'][0]['hvp_fd_relative']<=.1 for r in rows if r.get('beta_candidate') is not None) for t in (.1,.25,.5)},
             last_2048_mean_mse=float(np.mean(trace[-2048:,0])) if len(trace) else None,
-            accepted_trace_rows=len(trace),emergency_resets=int(np.nansum(trace[:,14])) if len(trace) else None,
+            accepted_trace_rows=len(trace),rejected_trace_rows=rejected_rows,emergency_resets=emergency_resets,
             curvature_guard_fraction=float(np.mean(trace[:,7])) if len(trace) else None,
             final_window_curvature_guard_fraction=float(np.mean(trace[-2048:,7])) if len(trace) else None,
             final_window_secant_error_median=float(np.nanmedian(trace[-2048:,12])) if len(trace) else None,
