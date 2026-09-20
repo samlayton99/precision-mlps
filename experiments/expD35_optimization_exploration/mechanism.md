@@ -75,6 +75,15 @@ Differencing removes the broad antiderivative component and produces localized f
 
 Finite intervals, the bias and final anchor, halos, unequal learned slopes, and nonuniform affine centers all change the actual singular spectrum. The experiment measures that spectrum and the residual's projection onto it. A large global condition number alone is insufficient evidence of an optimization barrier: the remaining target error must also occupy weak directions. Conversely, a favorable median bandwidth alone is insufficient evidence of useful geometry. The detached fits, coefficient norms, and function-space update measurements address these distinctions.
 
+Slope signs matter as well. For nonzero learned slopes,
+
+$$
+\lim_{x\to+\infty}(\phi_j(x)-\phi_{j+1}(x))
+=\operatorname{sign}(\gamma_j)-\operatorname{sign}(\gamma_{j+1}).
+$$
+
+Opposite signs therefore produce a nonzero tail, even though the centers remain adjacent. A positive-slope canonicalization replaces $\gamma_j$ by $|\gamma_j|$ and $w_j$ by $\operatorname{sign}(\gamma_j)w_j$, preserving the function exactly in real arithmetic. Reapplying the neighboring coordinate map after this change gives a different optimization metric. It is not a free conditioning improvement to the unchanged optimizer. The campaign's detached sign-canonicalization diagnostic compares these metrics at the same function; it does not train a new positive-slope model or establish that sign constraints would improve joint training.
+
 For the fixed-center model, the exact physical slope gradient is
 
 $$
