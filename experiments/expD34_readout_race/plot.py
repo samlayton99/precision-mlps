@@ -12,7 +12,7 @@ import numpy as np
 from . import targets
 
 LABELS=dict(sine='Sine',runge='Runge',moment3='Coarse + degree 3',moment5='Coarse + degree 5',moment9='Coarse + degree 9')
-COLORS=plt.colormaps['viridis'](np.linspace(.05,.95,7))
+COLORS=plt.colormaps['viridis'](np.linspace(.05,.80,7))
 PCOLORS={0:'black',1:'#999999',3:'#2b70b6',5:'#de7a22',7:'#139579'}
 
 
@@ -82,8 +82,9 @@ def signal_curves(bundles,root):
         axes[3,col].set_yscale('symlog',linthresh=1e-7)
     for row,label in enumerate(('Training MSE','Coarse residual norm','Slope gradient norm / residual RMS','Signed scale force\nsolid: coarse; dashed: remainder')):
         axes[row,0].set_ylabel(label)
+    for ax in axes.flat: ax.set_xscale('symlog',linthresh=.02)
     axes[0,-1].legend(fontsize=9)
-    finish(fig,root/'signal_evolution.png','Residual signal and signed forces · W=177, seed 0 · fixed rate anchors')
+    finish(fig,root/'signal_evolution.png','Residual signal and signed forces · W=177, seed 0 · time axis linear below 0.02, logarithmic above')
 
 
 def rate_contrasts(rows,root):
@@ -141,10 +142,11 @@ def reference_errors(bundles,root):
                     ax.semilogy(b[f'p{degree}_error_steps']*b['config']['eta'],b[key][index],
                         color=PCOLORS[degree],alpha=.6,lw=1,label=f'degree {degree}' if b['config']['seed']==0 else None)
             ax.set_title(f'{LABELS[target]} · κ={kappa:g}')
+            ax.set_xscale('symlog',linthresh=.02)
             if ti==0: ax.set_ylabel('Relative slope-gradient vector error')
             if ri==2: ax.set_xlabel('Geometry time τ')
     axes[0,-1].legend(fontsize=8)
-    finish(fig,root/'reference_errors.png','Independent reference validity · W=177 · each line is one seed')
+    finish(fig,root/'reference_errors.png','Independent reference validity · W=177 · time axis linear below 0.02, logarithmic above')
 
 
 def distribution_curves(bundles,root):
@@ -182,6 +184,7 @@ def coarse_velocities(root):
             for j,name in enumerate(('Vv','Vq','Vbias')):
                 axes[j,col].plot(tau,[float(r[name+'_coarse_energy_removal']) for r in chosen],color=COLORS[ki],label=f'κ={kappa:g}')
                 axes[j,col].set_yscale('symlog',linthresh=1e-8)
+                axes[j,col].set_xscale('symlog',linthresh=.02)
         axes[0,col].set_title(LABELS[target]);axes[2,col].set_xlabel('Geometry time τ')
     for j,label in enumerate(('Readout block: −mᵀVᵥ','Hidden block: −mᵀVq','Output bias within readout: −mᵀVbias')):
         axes[j,0].set_ylabel(label)
