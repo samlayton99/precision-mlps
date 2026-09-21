@@ -192,14 +192,16 @@ def curated_analysis(evidence, output):
     for name, rows in (("endpoints", endpoint_rows), ("sampled_curves", curve_rows),
                        ("reference_accuracy", reference_rows), ("post20k_changes", changes)):
         write_table(output / f"{name}.csv", rows)
-    return sources, curve_rows, changes
+    return sources, curve_rows, changes, endpoint_rows
 
 
-def replay_analysis(path, output):
+def replay_analysis(path, output, endpoints):
     with np.load(path) as f:
         data = {k: f[k] for k in f.files}
     cases = json.loads(str(data["cases"]))
-    rows, windows, vectors = [], [], {}
+    descent = {(r["seed"], r["target"]): r for r in endpoints
+               if r["package"] == "continue600k" and r["n"] == 128 and r["kappa"] == 1}
+    rows, windows, attribution, vectors = [], [], [], {}
     steps = data["steps"]
     # Dense early attribution, logarithmic later states, and exact endpoint states.
     wanted = np.unique(np.r_[np.arange(0, 2001, 20),
@@ -207,12 +209,35 @@ def replay_analysis(path, output):
         0, 20000, 100000, 600000]).astype(int)
     chosen = np.unique([int(np.argmin(abs(steps - s))) for s in wanted if s <= steps[-1]])
     for i, case in enumerate(cases):
+        losses = {}
         for j in chosen:
             scalar, vector = state_diagnostics(data["z"][i, j], data["d"][i, j],
                                                data["x"], data["y"][i])
             rows.append(dict(**case, step=int(steps[j]), **scalar))
+            losses[int(steps[j])] = scalar["half_mse"]
             if steps[j] in (0, 20000, 100000, 600000):
                 vectors[f"seed{case['seed']}_{case['target']}_{steps[j]}_gradient"] = vector["gradient"]
+        early = [r for r in rows if r["seed"] == case["seed"] and r["target"] == case["target"]
+                 and r["step"] <= 2000 and r["step"] % 20 == 0]
+        if len(early) == 101:
+            times = np.array([r["step"] for r in early])*.002
+            decline = float(np.log(early[0]["xi"]/early[-1]["xi"]))
+            integrated = {k: float(np.trapezoid([r[k] for r in early], times))
+                          for k in ("D_c", "D_q", "D_d", "D_c_filter", "D_c_amplitude", "D_c_normalization")}
+            coarse = {k: float(np.trapezoid([r[k] for r in early[::2]], times[::2])) for k in integrated}
+            attribution.append(dict(**case, start=0, end=2000, observed_log_decline=decline,
+                **{"integral_"+k: v for k, v in integrated.items()},
+                **{"share_"+k: integrated[k]/decline for k in ("D_c", "D_q", "D_d")},
+                quadrature_change=sum(abs(integrated[k]-coarse[k]) for k in ("D_c", "D_q", "D_d")),
+                gd_identity_discrepancy=sum(integrated[k] for k in ("D_c", "D_q", "D_d"))-decline))
+        observed = descent[case["seed"], case["target"]]
+        alpha = None
+        if 599999 in steps and 600000 in losses and observed["descent_ratio_count"] == 599999:
+            last = int(np.searchsorted(steps, 599999))
+            scalar, vector = state_diagnostics(data["z"][i, last], data["d"][i, last], data["x"], data["y"][i])
+            denominator = .002*(np.sum(vector["gradient"]**2)+vector["gradient_d"]**2)
+            last_ratio = (scalar["half_mse"]-losses[600000])/denominator
+            alpha = min(observed["descent_ratio_min"], float(last_ratio))
         for start, end in ((0, 20000), (20000, 100000), (100000, 600000), (20000, 600000)):
             if start not in steps or end not in steps:
                 continue
@@ -227,6 +252,11 @@ def replay_analysis(path, output):
                 fraction_net_growing=float(np.mean(net > 0)),
                 accounting_error=float(np.max(abs(positive-negative-net))),
                 gradient_path_budget=path_budget, mean_path_budget=path_budget/np.sqrt(len(initial)))
+            # Archived ratios cover all but the final update, checked above.
+            # This is retrospective floating-point evidence, not certification.
+            item["observed_descent_alpha"] = alpha
+            item["generic_energy_budget"] = (float(np.sqrt(.002*(end-start)
+                *(losses[start]-losses[end])/alpha)) if alpha is not None and alpha > 0 else None)
             item.update({"positive_" + name: value for name, value in concentration(positive).items()})
             item.update({"net_positive_" + name: value for name, value in concentration(np.maximum(net, 0)).items()})
             for threshold in (1., 3.2, 16.):
@@ -238,11 +268,12 @@ def replay_analysis(path, output):
             windows.append(item)
     write_table(output / "state_diagnostics.csv", rows)
     write_table(output / "movement_windows.csv", windows)
+    write_table(output / "early_attribution.csv", attribution)
     np.savez_compressed(output / "endpoint_gradients.npz", **vectors)
-    return rows, windows
+    return rows, windows, attribution
 
 
-def plot_results(output, curves, changes, windows):
+def plot_results(output, curves, changes, windows, attribution):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -265,6 +296,8 @@ def plot_results(output, curves, changes, windows):
         axes[1, col].axhline(0, color="black", lw=.7)
         axes[1, col].set_ylim(-1.05, 1.05)
         axes[-1, col].set_xlabel("Equal-rate GD updates")
+        axes[-1, col].set_xticks([0, 1000, 10000, 100000, 600000],
+                                 ["0", "1k", "10k", "100k", "600k"])
     for row, label in enumerate((r"Total signal $\Xi$", "Signed alignment", r"Readout norm $\|c\|_2$", r"Mean slope $\overline{\gamma}$")):
         axes[row, 0].set_ylabel(label)
     axes[0, -1].legend(fontsize=8)
@@ -301,6 +334,24 @@ def plot_results(output, curves, changes, windows):
         fig.tight_layout()
         fig.savefig(output / "movement_concentration.png", dpi=170)
         plt.close(fig)
+    if attribution:
+        fig, axes = plt.subplots(1, 3, figsize=(12, 3.7), sharey=True)
+        for col, target in enumerate(PRIMARY):
+            for r in attribution:
+                if r["target"] != target:
+                    continue
+                axes[col].plot(np.arange(3)+(r["seed"]-2)*.06,
+                    [r["share_"+key] for key in ("D_c", "D_q", "D_d")], "o", color=colors[r["seed"]])
+            axes[col].set_xticks([0, 1, 2], ["Readout", "Geometry", "Output bias"])
+            axes[col].axhline(.5, color=".5", ls=":", lw=.8)
+            axes[col].axhline(0, color="black", lw=.7)
+            axes[col].set_title(titles[target])
+            axes[col].grid(axis="y", alpha=.2)
+        axes[0].set_ylabel("Share of observed log signal decline")
+        fig.suptitle("Integrated flow attribution at GD states · updates 0–2,000")
+        fig.tight_layout()
+        fig.savefig(output / "early_attribution.png", dpi=170)
+        plt.close(fig)
 
 
 def main():
@@ -310,16 +361,19 @@ def main():
     parser.add_argument("--replay", type=Path)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    sources, curves, changes = curated_analysis(args.evidence, args.output)
-    windows = []
+    sources, curves, changes, endpoints = curated_analysis(args.evidence, args.output)
+    windows, attribution = [], []
     if args.replay:
-        _, windows = replay_analysis(args.replay, args.output)
+        _, windows, attribution = replay_analysis(args.replay, args.output, endpoints)
         sources.append(args.replay)
-    plot_results(args.output, curves, changes, windows)
+    plot_results(args.output, curves, changes, windows, attribution)
     manifest = dict(role="Retrospective mechanism analysis; no model or checkpoint selection",
+        analysis_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        numpy_version=np.__version__,
         primary_targets=list(PRIMARY), baseline_step=20000,
         missing_neuronwise_data=not bool(windows),
         attribution="Instantaneous flow diagnostic at discrete GD states",
+        early_quadrature="Trapezoids every 20 updates through 2000; compare stride 40 and observed GD log decline",
         sparse_trace_policy="No cumulative quantities or continuous maxima inferred from sparse plotting traces",
         sources={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources})
     (args.output / "analysis_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

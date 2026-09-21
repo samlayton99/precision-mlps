@@ -35,6 +35,8 @@ universal necessary conditions for approximation.
 
 Focused checks: `JAX_ENABLE_X64=true python -m pytest -q tests/test_expD34_recovery.py`.
 
+The completed [focused report](../../results/checkpoint_D_optimizers/expD34_readout_race/signal_recovery/README.md) provides the compact replay, per-seed tables, population budgets, and verification records. Its [theory companion](../../docs/d34_scale_acquisition_theory.md) states the actual-initialization scope. Early integrated attribution uses 20-update trapezoids through update 2,000, checks a 40-update coarsening, and reports its discrepancy from the observed GD log decline. It is an approximate integration of flow diagnostics, not an exact finite-step attribution. The generic energy-budget comparison checks the final update in addition to the archived 599,999 descent ratios.
+
 This experiment tests whether readout adaptation depletes residual moments before a substantial population of hidden slopes can grow. The evidence sought is an initialization-only prediction of signed scale trajectories and their changes across readout rates. Successful execution does not require the hypothesis to hold.
 
 Measured findings and limitations are in the [results report](../../results/checkpoint_D_optimizers/expD34_readout_race/REPORT.md), with [curated evidence](../../results/checkpoint_D_optimizers/expD34_readout_race/README.md) that regenerates the figures without training.
