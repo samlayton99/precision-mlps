@@ -80,3 +80,18 @@ def test_invalid_filter_domain():
         gf.multiplier(0, [1.])
     with pytest.raises(ValueError):
         gf.geometry(np.array([-1., 1.]), np.array([2.]), 8, half_period=2.)
+
+
+def test_scalar_rescaling_preserves_normalized_learning_curve():
+    from experiments.expD36_frozen_gamma_probe.gamma_filter_analysis import scalar_control
+    anchor = dict(rates=np.array([.5,.02]),weights=np.array([[.3],[.7]]),floor=np.zeros(1))
+    for curvature in [1., 10., 100.]:
+        control = scalar_control(anchor,.5/curvature,curvature)
+        np.testing.assert_allclose(p.error(control,31),p.error(anchor,31))
+
+
+def test_harmonic_selection_keeps_the_declared_resolution():
+    from experiments.expD36_frozen_gamma_probe.gamma_filter_analysis import best
+    rows = [dict(gamma=8,harmonics=q,results=dict(combined=[dict(necessary=lo,sufficient=hi)]))
+            for q,lo,hi in [(64,3,None),(128,10,15),(256,9,13)]]
+    assert best(rows,8) == dict(necessary=10,sufficient=13,lower_harmonics=128,upper_harmonics=256)

@@ -1,0 +1,4027 @@
+{
+  "source_commit": "09d08a811b5361758cfa6c857f88e945b4cc8387",
+  "targets": [
+    "sine_mix_2_6_10",
+    "exp_sin_3pi",
+    "runge_25",
+    "quadratic",
+    "sine_2pi"
+  ],
+  "gammas": [
+    8,
+    12,
+    16,
+    64
+  ],
+  "harmonics": [
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048
+  ],
+  "resolution_key": "harmonics",
+  "epsilon": 0.01,
+  "n": 512,
+  "samples": 8193,
+  "width": 559,
+  "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+  "centers_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+  "target_hash": "64b1ee2d29540fa3630be81dd1f32fa446dffd214f413b083bc3233114206ec2",
+  "dictionaries": [
+    {
+      "gamma": 8,
+      "eta": 0.002068412912130894,
+      "matrix_hash": "9c01def650a54319180fc8e47a36f24d779db90d4f9438e01eaabf7be25123f4",
+      "archived_case": "N512_cap8_common_s0",
+      "archived_steps": 17000000,
+      "reference_hits": [
+        15798313,
+        426240,
+        26104,
+        879493,
+        7466
+      ],
+      "executed_hits": [
+        15798313,
+        426240,
+        26104,
+        879493,
+        7466
+      ],
+      "old_c2": [
+        {
+          "analytic": 449.0,
+          "directional": 141766.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 320.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 56.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 17.0
+        },
+        {
+          "analytic": 3.0,
+          "directional": 187.0
+        }
+      ]
+    },
+    {
+      "gamma": 12,
+      "eta": 0.0020399951089001152,
+      "matrix_hash": "b363a9ff40b415b47c8091a902578d36de447565ab9a02398e2c0e54b323b6a2",
+      "archived_case": "N512_cap12_common_s0",
+      "archived_steps": 200000,
+      "reference_hits": [
+        186057,
+        34753,
+        3566,
+        269292,
+        5263
+      ],
+      "executed_hits": [
+        186057,
+        34753,
+        3566,
+        -1,
+        5263
+      ],
+      "old_c2": [
+        {
+          "analytic": 11.0,
+          "directional": 5993.0
+        },
+        {
+          "analytic": 1.0,
+          "directional": 119.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 35.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 16.0
+        },
+        {
+          "analytic": 3.0,
+          "directional": 144.0
+        }
+      ]
+    },
+    {
+      "gamma": 16,
+      "eta": 0.0020298167987789703,
+      "matrix_hash": "c0777b8ae8ac39b4bfcdccdfa66af8fa8330d19d712ebc7c4c082a52126818c4",
+      "archived_case": "N512_cap16_common_s0",
+      "archived_steps": 200000,
+      "reference_hits": [
+        61792,
+        11961,
+        1606,
+        119632,
+        4289
+      ],
+      "executed_hits": [
+        61792,
+        11961,
+        1606,
+        119632,
+        4289
+      ],
+      "old_c2": [
+        {
+          "analytic": 3.0,
+          "directional": 1395.0
+        },
+        {
+          "analytic": 1.0,
+          "directional": 99.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 32.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 16.0
+        },
+        {
+          "analytic": 3.0,
+          "directional": 131.0
+        }
+      ]
+    },
+    {
+      "gamma": 64,
+      "eta": 0.0020173468150207307,
+      "matrix_hash": "82b3565b205d451eb917a9065124ca5d07d0b1efc0260cb585f7173f8d9767eb",
+      "archived_case": "N512_cap64_common_s0",
+      "archived_steps": 200000,
+      "reference_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "executed_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "old_c2": [
+        {
+          "analytic": 3.0,
+          "directional": 309.0
+        },
+        {
+          "analytic": 1.0,
+          "directional": 77.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 29.0
+        },
+        {
+          "analytic": 2.0,
+          "directional": 15.0
+        },
+        {
+          "analytic": 3.0,
+          "directional": 115.0
+        }
+      ]
+    }
+  ],
+  "geometries": [
+    {
+      "harmonics": 64,
+      "half_period": 8.0,
+      "radius": 2.08984375,
+      "sampling_hash": "f6e47050b6f49dd8e65ce5b6751a65e8a5cf6cf0d059d8399b98230b42b63b10",
+      "center_map_hash": "e9e0ba55e459593cdc045fd7b2c6d4d901fdb7afcb9dae2ac8f80f59f5f25464"
+    },
+    {
+      "harmonics": 128,
+      "half_period": 8.0,
+      "radius": 2.08984375,
+      "sampling_hash": "5bc0c3735f3b5c38c83f0537dec6f2819214666772a988ac0f0a192b4cf43550",
+      "center_map_hash": "1f7027b24a03a054c4fc8743c9e0ed4834978ed088240ac5447572b7cd5aa569"
+    },
+    {
+      "harmonics": 256,
+      "half_period": 8.0,
+      "radius": 2.08984375,
+      "sampling_hash": "5bfc9240cebf036a938e97af496795e214d34cfd3dc76722c4b8b6b368985305",
+      "center_map_hash": "7d3c5b033fe4a43053f47d3e4ecc8549f46f2650e13b17ed9bbf0d789a80e140"
+    },
+    {
+      "harmonics": 512,
+      "half_period": 8.0,
+      "radius": 2.08984375,
+      "sampling_hash": "1eb304f47db0d96f1de67b8246a3b977440246e962186a4520ec644fa5e519e3",
+      "center_map_hash": "15f2832b19e2a6eb593fffd370d3d7689f7a6667a44e8006bdbe9509ab1d423b"
+    },
+    {
+      "harmonics": 1024,
+      "half_period": 8.0,
+      "radius": 2.08984375,
+      "sampling_hash": "d8dda2e1e9696d9d4c31a94eafa5c5528d915fd686cafec64eadf52ae84dac6c",
+      "center_map_hash": "d1ec3aa23228da00a5a96f3f64479460c125bc9bbc91d2efecde696ef6e12eb4"
+    },
+    {
+      "harmonics": 2048,
+      "half_period": 8.0,
+      "radius": 2.08984375,
+      "sampling_hash": "f970eb7e7b2adb6aa5321ee89a865793a9a26a03315b991e0b51a62f37a03ba9",
+      "center_map_hash": "1f1eb6523afa748b2bd9319df8588bd27cb2df8c542bfde88236fdf42899ff6c"
+    }
+  ],
+  "rows": [
+    {
+      "gamma": 8,
+      "harmonics": 64,
+      "eta": 0.002068412912130894,
+      "extension": 3.420487804765489e-41,
+      "tail": 6.579079495368259e-05,
+      "synthesis_remainder": 0.0015555036623731767,
+      "construction_allowance": 3.1639225577916992e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 4.826081926601021e-12,
+      "measured_synthesis_frobenius": 0.000534017568537297,
+      "orthogonality_error": 9.933080439348735e-14,
+      "reconstruction_error": 1.1779299805674909e-13,
+      "approximate_eta_L": 0.5000000036401906,
+      "analytic_kernel_error": 0.048371454109662496,
+      "arithmetic_kernel_error": 1.500690279405255e-10,
+      "approximate_hits": [
+        15811515,
+        426130,
+        26104,
+        877659,
+        7466
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 3413,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1061,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 589,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1142,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 499,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 13983933,
+            "sufficient": 18550013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 398880,
+            "sufficient": 458873,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 25915,
+            "sufficient": 26297,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 675781,
+            "sufficient": 1399716,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7465,
+            "sufficient": 7467,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 13983933,
+            "sufficient": 18550013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 398880,
+            "sufficient": 458873,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 25915,
+            "sufficient": 26297,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 675781,
+            "sufficient": 1399716,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7465,
+            "sufficient": 7467,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 13898525,
+          "sufficient": 18768708,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 398813,
+          "sufficient": 458975,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 25914,
+          "sufficient": 26297,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 675530,
+          "sufficient": 1402071,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 7465,
+          "sufficient": 7467,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 525,
+      "reference_band_violations": [],
+      "max_approximate_error": 8.361054266456044e-06,
+      "seconds": 0.45652079209685326,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 12,
+      "harmonics": 64,
+      "eta": 0.0020399951089001152,
+      "extension": 1.0002350613792747e-61,
+      "tail": 0.0017667555925936094,
+      "synthesis_remainder": 0.041771721967068645,
+      "construction_allowance": 4.046263501701846e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 5.814556485000662e-12,
+      "measured_synthesis_frobenius": 0.012046765686212274,
+      "orthogonality_error": 1.0173174393774141e-13,
+      "reconstruction_error": 1.7561872804952862e-13,
+      "approximate_eta_L": 0.5000000723596179,
+      "analytic_kernel_error": 1.3096698883312718,
+      "arithmetic_kernel_error": 1.820610570683324e-10,
+      "approximate_hits": [
+        186282,
+        34624,
+        3566,
+        266056,
+        5265
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 157,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 101,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 60,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 99,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 86,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 184254,
+            "sufficient": 188406,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 27967,
+            "sufficient": 50547,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3495,
+            "sufficient": 3641,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 81077,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 5258,
+            "sufficient": 5272,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 184254,
+            "sufficient": 188406,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 27967,
+            "sufficient": 50547,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3495,
+            "sufficient": 3641,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 81077,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 5258,
+            "sufficient": 5272,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 184249,
+          "sufficient": 188410,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 27967,
+          "sufficient": 50550,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 3495,
+          "sufficient": 3641,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 81075,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        },
+        {
+          "necessary": 5258,
+          "sufficient": 5272,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 510,
+      "reference_band_violations": [],
+      "max_approximate_error": 9.096914811838885e-05,
+      "seconds": 0.43174062483012676,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 16,
+      "harmonics": 64,
+      "eta": 0.0020298167987789703,
+      "extension": 2.924934205637358e-82,
+      "tail": 0.009155160669417696,
+      "synthesis_remainder": 0.21645711928119768,
+      "construction_allowance": 4.804725994519706e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 6.552806260262481e-12,
+      "measured_synthesis_frobenius": 0.05487471219700727,
+      "orthogonality_error": 1.0410702970719686e-13,
+      "reconstruction_error": 1.1413777970889503e-13,
+      "approximate_eta_L": 0.5000002966126778,
+      "analytic_kernel_error": 6.841370531306307,
+      "arithmetic_kernel_error": 2.056904049900815e-10,
+      "approximate_hits": [
+        62555,
+        11830,
+        1606,
+        123759,
+        4294
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 37,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 30,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 20,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 30,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 31,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 58713,
+            "sufficient": 67564,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 8246,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1543,
+            "sufficient": 1676,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 21744,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 4269,
+            "sufficient": 4320,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 58713,
+            "sufficient": 67564,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 8246,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1543,
+            "sufficient": 1676,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 21744,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 4269,
+            "sufficient": 4320,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 58712,
+          "sufficient": 67566,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 8246,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        },
+        {
+          "necessary": 1543,
+          "sufficient": 1676,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 21743,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        },
+        {
+          "necessary": 4269,
+          "sufficient": 4320,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 500,
+      "reference_band_violations": [],
+      "max_approximate_error": 0.00040616842832991336,
+      "seconds": 0.42871137522161007,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 64,
+      "harmonics": 64,
+      "eta": 0.0020173468150207307,
+      "extension": 0.0,
+      "tail": 0.4044201253491508,
+      "synthesis_remainder": 9.561778156973176,
+      "construction_allowance": 7.67431657439066e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 9.466699763748865e-12,
+      "measured_synthesis_frobenius": 1.2019219054340327,
+      "orthogonality_error": 1.049024216894282e-13,
+      "reconstruction_error": 1.408720434892833e-13,
+      "approximate_eta_L": 0.5000029387916328,
+      "analytic_kernel_error": 392.4956406832938,
+      "arithmetic_kernel_error": 2.980743422819615e-10,
+      "approximate_hits": [
+        29853,
+        2683,
+        578,
+        93970,
+        2638
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 2,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 2,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 2,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 3193,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1076,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 498,
+            "sufficient": 707,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1727,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1424,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 3193,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1076,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 498,
+            "sufficient": 707,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1727,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1424,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 3193,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        },
+        {
+          "necessary": 1076,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        },
+        {
+          "necessary": 498,
+          "sufficient": 707,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 1727,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        },
+        {
+          "necessary": 1424,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        }
+      ],
+      "reference_check_count": 490,
+      "reference_band_violations": [],
+      "max_approximate_error": 0.006973908686528215,
+      "seconds": 0.4268388757482171,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 8,
+      "harmonics": 128,
+      "eta": 0.002068412912130894,
+      "extension": 3.420487804765489e-41,
+      "tail": 3.4029095300834195e-09,
+      "synthesis_remainder": 8.045560538515822e-08,
+      "construction_allowance": 3.1762024845312693e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 4.895951660148506e-12,
+      "measured_synthesis_frobenius": 2.7619033512308824e-08,
+      "orthogonality_error": 1.0372400431853412e-13,
+      "reconstruction_error": 1.0707861984905666e-13,
+      "approximate_eta_L": 0.499999999999508,
+      "analytic_kernel_error": 2.5019528043962435e-06,
+      "arithmetic_kernel_error": 1.5224165585701832e-10,
+      "approximate_hits": [
+        15798313,
+        426240,
+        26104,
+        879493,
+        7466
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 3359190,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 327812,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 25409,
+            "sufficient": 26872,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 494842,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 7420,
+            "sufficient": 7513,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 15784048,
+            "sufficient": 15812623,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 15784048,
+            "sufficient": 15812623,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 15657911,
+          "sufficient": 15943233,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 426148,
+          "sufficient": 426332,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 26103,
+          "sufficient": 26104,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 878881,
+          "sufficient": 880106,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 7466,
+          "sufficient": 7466,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 525,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.2238962360938688e-10,
+      "seconds": 0.44851329270750284,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 12,
+      "harmonics": 128,
+      "eta": 0.0020399951089001152,
+      "extension": 1.0002350613792747e-61,
+      "tail": 2.452632993673693e-06,
+      "synthesis_remainder": 5.798804539149548e-05,
+      "construction_allowance": 4.0784809496576175e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 5.934503539122135e-12,
+      "measured_synthesis_frobenius": 1.6722424228808536e-05,
+      "orthogonality_error": 1.0581084551076252e-13,
+      "reconstruction_error": 1.9948756061583284e-13,
+      "approximate_eta_L": 0.5000000000105846,
+      "analytic_kernel_error": 0.001815681855919816,
+      "arithmetic_kernel_error": 1.8581673634550514e-10,
+      "approximate_hits": [
+        186057,
+        34753,
+        3566,
+        269294,
+        5263
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 30792,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 4547,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 1809,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 8546,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 2081,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 186056,
+            "sufficient": 186059,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34754,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269198,
+            "sufficient": 269390,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 186056,
+            "sufficient": 186059,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34754,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269198,
+            "sufficient": 269390,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 186052,
+          "sufficient": 186063,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 34751,
+          "sufficient": 34754,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 3566,
+          "sufficient": 3566,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 269139,
+          "sufficient": 269450,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 5263,
+          "sufficient": 5264,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 510,
+      "reference_band_violations": [],
+      "max_approximate_error": 3.198302841057182e-08,
+      "seconds": 0.4430726245045662,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 16,
+      "harmonics": 128,
+      "eta": 0.0020298167987789703,
+      "extension": 2.924934205637358e-82,
+      "tail": 6.58396949242742e-05,
+      "synthesis_remainder": 0.001556659813220704,
+      "construction_allowance": 4.921519463099508e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 6.751015926075801e-12,
+      "measured_synthesis_frobenius": 0.0003946254160928157,
+      "orthogonality_error": 1.0915180281050832e-13,
+      "reconstruction_error": 1.1637761112741895e-13,
+      "approximate_eta_L": 0.5000000003492804,
+      "analytic_kernel_error": 0.048865441753744895,
+      "arithmetic_kernel_error": 2.1191207757095338e-10,
+      "approximate_hits": [
+        61792,
+        11961,
+        1606,
+        119644,
+        4289
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 1920,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 624,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 331,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 842,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 386,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 61790,
+            "sufficient": 61794,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11957,
+            "sufficient": 11965,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119193,
+            "sufficient": 120100,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 61790,
+            "sufficient": 61794,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11957,
+            "sufficient": 11965,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119193,
+            "sufficient": 120100,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 61789,
+          "sufficient": 61796,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 11957,
+          "sufficient": 11965,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 1606,
+          "sufficient": 1606,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 119180,
+          "sufficient": 120113,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 4289,
+          "sufficient": 4289,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 500,
+      "reference_band_violations": [],
+      "max_approximate_error": 6.131705694136305e-07,
+      "seconds": 0.44172212574630976,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 64,
+      "harmonics": 128,
+      "eta": 0.0020173468150207307,
+      "extension": 0.0,
+      "tail": 0.10874250506013142,
+      "synthesis_remainder": 2.5710187115956127,
+      "construction_allowance": 1.1267307704991783e-11,
+      "block_terms": 128,
+      "arithmetic_allowance": 1.3200703014082096e-11,
+      "measured_synthesis_frobenius": 0.33639509271875734,
+      "orthogonality_error": 1.1487473610580414e-13,
+      "reconstruction_error": 1.2489159765589356e-13,
+      "approximate_eta_L": 0.500000366032327,
+      "analytic_kernel_error": 87.56260839812855,
+      "arithmetic_kernel_error": 4.156444002192538e-10,
+      "approximate_hits": [
+        16968,
+        2406,
+        578,
+        16925,
+        2244
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 5,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 4,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 3,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 5,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 5,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 12629,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 2157,
+            "sufficient": 2764,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 568,
+            "sufficient": 589,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 8491,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 2189,
+            "sufficient": 2304,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 12629,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 2157,
+            "sufficient": 2764,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 568,
+            "sufficient": 589,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 8491,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 2189,
+            "sufficient": 2304,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 12629,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        },
+        {
+          "necessary": 2157,
+          "sufficient": 2764,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 568,
+          "sufficient": 589,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 8491,
+          "sufficient": null,
+          "status": "no_upper_witness"
+        },
+        {
+          "necessary": 2189,
+          "sufficient": 2304,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 490,
+      "reference_band_violations": [],
+      "max_approximate_error": 0.0008112250355899707,
+      "seconds": 0.43919933307915926,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 8,
+      "harmonics": 256,
+      "eta": 0.002068412912130894,
+      "extension": 3.420487804765489e-41,
+      "tail": 9.103763000544267e-18,
+      "synthesis_remainder": 2.1524191490152196e-16,
+      "construction_allowance": 3.18779231823344e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 4.98065092384267e-12,
+      "measured_synthesis_frobenius": 1.1670731204933075e-14,
+      "orthogonality_error": 1.0662796614928035e-13,
+      "reconstruction_error": 1.3503809858062934e-13,
+      "approximate_eta_L": 0.4999999999994985,
+      "analytic_kernel_error": 1.5488210777271534e-10,
+      "arithmetic_kernel_error": 1.5487541473573108e-10,
+      "approximate_hits": [
+        15798313,
+        426240,
+        26104,
+        879493,
+        7466
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 15783830,
+            "sufficient": 15812843,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879555,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 15783831,
+            "sufficient": 15812842,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879555,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 15783831,
+            "sufficient": 15812842,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879555,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 15655549,
+          "sufficient": 15945752,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 426147,
+          "sufficient": 426333,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 26103,
+          "sufficient": 26104,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 878872,
+          "sufficient": 880115,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 7466,
+          "sufficient": 7466,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 525,
+      "reference_band_violations": [],
+      "max_approximate_error": 2.1649348980190553e-15,
+      "seconds": 0.4552708752453327,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 12,
+      "harmonics": 256,
+      "eta": 0.0020399951089001152,
+      "extension": 1.0002350613792747e-61,
+      "tail": 4.726571801168678e-12,
+      "synthesis_remainder": 1.1175119182499144e-10,
+      "construction_allowance": 4.091471271411504e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 6.088741164987497e-12,
+      "measured_synthesis_frobenius": 3.222682396681348e-11,
+      "orthogonality_error": 1.120957262196389e-13,
+      "reconstruction_error": 2.4234112262955396e-13,
+      "approximate_eta_L": 0.49999999999950345,
+      "analytic_kernel_error": 3.6897158481508963e-09,
+      "arithmetic_kernel_error": 1.9064610952870635e-10,
+      "approximate_hits": [
+        186057,
+        34753,
+        3566,
+        269292,
+        5263
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 186047,
+            "sufficient": 186068,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34751,
+            "sufficient": 34754,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269161,
+            "sufficient": 269424,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269286,
+            "sufficient": 269299,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269286,
+            "sufficient": 269299,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 186052,
+          "sufficient": 186063,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 34752,
+          "sufficient": 34753,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 3566,
+          "sufficient": 3566,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 269224,
+          "sufficient": 269360,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 5263,
+          "sufficient": 5264,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 510,
+      "reference_band_violations": [],
+      "max_approximate_error": 3.5360603334311236e-14,
+      "seconds": 0.4523278344422579,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 16,
+      "harmonics": 256,
+      "eta": 0.0020298167987789703,
+      "extension": 2.924934205637358e-82,
+      "tail": 3.405438791735983e-09,
+      "synthesis_remainder": 8.051540517578899e-08,
+      "construction_allowance": 4.936752385276536e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 6.838145780752485e-12,
+      "measured_synthesis_frobenius": 2.0411423037475715e-08,
+      "orthogonality_error": 1.1355968923325945e-13,
+      "reconstruction_error": 1.1909352173698485e-13,
+      "approximate_eta_L": 0.4999999999994987,
+      "analytic_kernel_error": 2.5275656430967084e-06,
+      "arithmetic_kernel_error": 2.1464705379057909e-10,
+      "approximate_hits": [
+        61792,
+        11961,
+        1606,
+        119632,
+        4289
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 60293,
+            "sufficient": 63498,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11812,
+            "sufficient": 12118,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1605,
+            "sufficient": 1608,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 106127,
+            "sufficient": 141926,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4273,
+            "sufficient": 4305,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119631,
+            "sufficient": 119633,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119631,
+            "sufficient": 119633,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 61791,
+          "sufficient": 61794,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 11961,
+          "sufficient": 11961,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 1606,
+          "sufficient": 1606,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 119618,
+          "sufficient": 119646,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 4289,
+          "sufficient": 4289,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 500,
+      "reference_band_violations": [],
+      "max_approximate_error": 3.939900489191572e-12,
+      "seconds": 0.4482624586671591,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 64,
+      "harmonics": 256,
+      "eta": 0.0020173468150207307,
+      "extension": 0.0,
+      "tail": 0.009157313118421584,
+      "synthesis_remainder": 0.21650801002223488,
+      "construction_allowance": 1.3657059460350668e-11,
+      "block_terms": 128,
+      "arithmetic_allowance": 1.5708686796456922e-11,
+      "measured_synthesis_frobenius": 0.028428198098957268,
+      "orthogonality_error": 1.2060629401103981e-13,
+      "reconstruction_error": 1.528908833564752e-13,
+      "approximate_eta_L": 0.4999999928505704,
+      "analytic_kernel_error": 6.8639602552048125,
+      "arithmetic_kernel_error": 4.946119353032534e-10,
+      "approximate_hits": [
+        16015,
+        2394,
+        578,
+        15122,
+        2233
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 36,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 28,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 20,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 29,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 30,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 16003,
+            "sufficient": 16027,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2389,
+            "sufficient": 2400,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 579,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 14905,
+            "sufficient": 15348,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 16003,
+            "sufficient": 16027,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2389,
+            "sufficient": 2400,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 579,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 14905,
+            "sufficient": 15348,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 16003,
+          "sufficient": 16028,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 2389,
+          "sufficient": 2400,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 578,
+          "sufficient": 579,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 14904,
+          "sufficient": 15348,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 2233,
+          "sufficient": 2233,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 490,
+      "reference_band_violations": [],
+      "max_approximate_error": 2.4204714032180497e-06,
+      "seconds": 0.44865087512880564,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 8,
+      "harmonics": 512,
+      "eta": 0.002068412912130894,
+      "extension": 3.420487804765489e-41,
+      "tail": 6.515714151912681e-35,
+      "synthesis_remainder": 1.540522888345326e-33,
+      "construction_allowance": 3.1993820861909508e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 5.003836334685529e-12,
+      "measured_synthesis_frobenius": 1.1670724924602254e-14,
+      "orthogonality_error": 1.0726579578828972e-13,
+      "reconstruction_error": 1.3671695233712935e-13,
+      "approximate_eta_L": 0.4999999999994985,
+      "analytic_kernel_error": 1.5559637474176506e-10,
+      "arithmetic_kernel_error": 1.5559637474176506e-10,
+      "approximate_hits": [
+        15798313,
+        426240,
+        26104,
+        879493,
+        7466
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 15783763,
+            "sufficient": 15812910,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 15783763,
+            "sufficient": 15812910,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 15783763,
+            "sufficient": 15812910,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 15654895,
+          "sufficient": 15946450,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 426146,
+          "sufficient": 426334,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 26103,
+          "sufficient": 26104,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 878870,
+          "sufficient": 880118,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 7466,
+          "sufficient": 7466,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 525,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.392766110774879e-15,
+      "seconds": 0.49429258331656456,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 12,
+      "harmonics": 512,
+      "eta": 0.0020399951089001152,
+      "extension": 1.0002350613792747e-61,
+      "tail": 1.7553901068512605e-23,
+      "synthesis_remainder": 4.1503005732383833e-22,
+      "construction_allowance": 4.104413113414707e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 7.329833368910872e-12,
+      "measured_synthesis_frobenius": 1.2071186555494715e-14,
+      "orthogonality_error": 1.1167849941921781e-13,
+      "reconstruction_error": 1.4770234313131475e-12,
+      "approximate_eta_L": 0.49999999999947886,
+      "analytic_kernel_error": 2.295062604058918e-10,
+      "arithmetic_kernel_error": 2.2950626039289668e-10,
+      "approximate_hits": [
+        186057,
+        34753,
+        3566,
+        269292,
+        5263
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 186051,
+          "sufficient": 186064,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 34751,
+          "sufficient": 34754,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 3566,
+          "sufficient": 3566,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 269211,
+          "sufficient": 269374,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 5263,
+          "sufficient": 5264,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 510,
+      "reference_band_violations": [],
+      "max_approximate_error": 8.320601152522755e-15,
+      "seconds": 0.47214183397591114,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 16,
+      "harmonics": 512,
+      "eta": 0.0020298167987789703,
+      "extension": 2.924934205637358e-82,
+      "tail": 9.110529503869687e-18,
+      "synthesis_remainder": 2.1540189656326602e-16,
+      "construction_allowance": 4.950654729643058e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 8.317276884075518e-12,
+      "measured_synthesis_frobenius": 1.2023285293433933e-14,
+      "orthogonality_error": 1.1786814549012487e-13,
+      "reconstruction_error": 1.5167017976289025e-12,
+      "approximate_eta_L": 0.49999999999948375,
+      "analytic_kernel_error": 2.6108323386948505e-10,
+      "arithmetic_kernel_error": 2.6107647247773343e-10,
+      "approximate_hits": [
+        61792,
+        11961,
+        1606,
+        119632,
+        4289
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 61791,
+          "sufficient": 61794,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 11961,
+          "sufficient": 11961,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 1606,
+          "sufficient": 1606,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 119615,
+          "sufficient": 119649,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 4289,
+          "sufficient": 4289,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 500,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.4155343563970746e-14,
+      "seconds": 0.46710212528705597,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 64,
+      "harmonics": 512,
+      "eta": 0.0020173468150207307,
+      "extension": 0.0,
+      "tail": 6.585498660565421e-05,
+      "synthesis_remainder": 0.0015570213572088441,
+      "construction_allowance": 1.4066272853007172e-11,
+      "block_terms": 128,
+      "arithmetic_allowance": 1.602978478277927e-11,
+      "measured_synthesis_frobenius": 0.00020444691300473808,
+      "orthogonality_error": 1.151606334779361e-13,
+      "reconstruction_error": 1.5050792313456966e-13,
+      "approximate_eta_L": 0.49999999999136985,
+      "analytic_kernel_error": 0.04902761465792737,
+      "arithmetic_kernel_error": 5.047221981858749e-10,
+      "approximate_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 1030,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 420,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 242,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 622,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          },
+          {
+            "necessary": 322,
+            "sufficient": null,
+            "status": "no_upper_witness"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 15118,
+            "sufficient": 15119,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 15118,
+            "sufficient": 15119,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 16013,
+          "sufficient": 16013,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 2394,
+          "sufficient": 2394,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 578,
+          "sufficient": 578,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 15118,
+          "sufficient": 15120,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 2233,
+          "sufficient": 2233,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 490,
+      "reference_band_violations": [],
+      "max_approximate_error": 2.4824184097216317e-09,
+      "seconds": 0.4656912498176098,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 8,
+      "harmonics": 1024,
+      "eta": 0.002068412912130894,
+      "extension": 3.420487804765489e-41,
+      "tail": 3.337676059401895e-69,
+      "synthesis_remainder": 8.0871211712235e-40,
+      "construction_allowance": 3.2109718541484617e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 5.0154261026430395e-12,
+      "measured_synthesis_frobenius": 1.1670724924602254e-14,
+      "orthogonality_error": 1.0726579578828972e-13,
+      "reconstruction_error": 1.3671695233712935e-13,
+      "approximate_eta_L": 0.4999999999994985,
+      "analytic_kernel_error": 1.5595676340311814e-10,
+      "arithmetic_kernel_error": 1.5595676340311814e-10,
+      "approximate_hits": [
+        15798313,
+        426240,
+        26104,
+        879493,
+        7466
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 15783730,
+            "sufficient": 15812944,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 15783730,
+            "sufficient": 15812944,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 15783730,
+            "sufficient": 15812944,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 15654568,
+          "sufficient": 15946798,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 426146,
+          "sufficient": 426334,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 26103,
+          "sufficient": 26104,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 878868,
+          "sufficient": 880120,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 7466,
+          "sufficient": 7466,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 525,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.392766110774879e-15,
+      "seconds": 0.5109570417553186,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 12,
+      "harmonics": 1024,
+      "eta": 0.0020399951089001152,
+      "extension": 1.0002350613792747e-61,
+      "tail": 2.42118748244565e-46,
+      "synthesis_remainder": 5.724457348307955e-45,
+      "construction_allowance": 4.117354955241045e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 7.34277521073721e-12,
+      "measured_synthesis_frobenius": 1.2071186555494715e-14,
+      "orthogonality_error": 1.1167849941921781e-13,
+      "reconstruction_error": 1.4770234313131475e-12,
+      "approximate_eta_L": 0.49999999999947886,
+      "analytic_kernel_error": 2.2991148566483234e-10,
+      "arithmetic_kernel_error": 2.2991148566483234e-10,
+      "approximate_hits": [
+        186057,
+        34753,
+        3566,
+        269292,
+        5263
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 186051,
+          "sufficient": 186064,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 34751,
+          "sufficient": 34754,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 3566,
+          "sufficient": 3566,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 269210,
+          "sufficient": 269375,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 5263,
+          "sufficient": 5264,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 510,
+      "reference_band_violations": [],
+      "max_approximate_error": 8.320601152522755e-15,
+      "seconds": 0.5056510418653488,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 16,
+      "harmonics": 1024,
+      "eta": 0.0020298167987789703,
+      "extension": 2.924934205637358e-82,
+      "tail": 6.520557050555025e-35,
+      "synthesis_remainder": 1.541667094916878e-33,
+      "construction_allowance": 4.9645569450596245e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 8.319753436546415e-12,
+      "measured_synthesis_frobenius": 1.2023287044587386e-14,
+      "orthogonality_error": 1.170192288757874e-13,
+      "reconstruction_error": 1.5185997355557286e-12,
+      "approximate_eta_L": 0.4999999999994835,
+      "analytic_kernel_error": 2.611542106115024e-10,
+      "arithmetic_kernel_error": 2.611542106115024e-10,
+      "approximate_hits": [
+        61792,
+        11961,
+        1606,
+        119632,
+        4289
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 61791,
+          "sufficient": 61794,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 11961,
+          "sufficient": 11961,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 1606,
+          "sufficient": 1606,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 119615,
+          "sufficient": 119649,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 4289,
+          "sufficient": 4289,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 500,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.3822276656583199e-14,
+      "seconds": 0.5001223757863045,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 64,
+      "harmonics": 1024,
+      "eta": 0.0020173468150207307,
+      "extension": 0.0,
+      "tail": 3.4062297257151473e-09,
+      "synthesis_remainder": 8.053410537088698e-08,
+      "construction_allowance": 1.4089977914838522e-11,
+      "block_terms": 128,
+      "arithmetic_allowance": 1.542977342506736e-11,
+      "measured_synthesis_frobenius": 1.0574526244126519e-08,
+      "orthogonality_error": 7.606788327413527e-14,
+      "reconstruction_error": 1.4223890613124522e-13,
+      "approximate_eta_L": 0.4999999999995018,
+      "analytic_kernel_error": 2.536224852430833e-06,
+      "arithmetic_kernel_error": 4.858299263655443e-10,
+      "approximate_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 15815,
+            "sufficient": 16220,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2390,
+            "sufficient": 2399,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 14922,
+            "sufficient": 15325,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2229,
+            "sufficient": 2237,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 15119,
+            "sufficient": 15119,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 15119,
+            "sufficient": 15119,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 16013,
+          "sufficient": 16013,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 2394,
+          "sufficient": 2394,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 578,
+          "sufficient": 578,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 15118,
+          "sufficient": 15119,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 2233,
+          "sufficient": 2233,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 490,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.924788453622206e-13,
+      "seconds": 0.5026562921702862,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 8,
+      "harmonics": 2048,
+      "eta": 0.002068412912130894,
+      "extension": 3.420487804765489e-41,
+      "tail": 8.758071859649774e-138,
+      "synthesis_remainder": 8.0871211712235e-40,
+      "construction_allowance": 3.2225616221059726e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 5.027015870600551e-12,
+      "measured_synthesis_frobenius": 1.1670724924602254e-14,
+      "orthogonality_error": 1.0726579578828972e-13,
+      "reconstruction_error": 1.3671695233712935e-13,
+      "approximate_eta_L": 0.4999999999994985,
+      "analytic_kernel_error": 1.5631715206447123e-10,
+      "arithmetic_kernel_error": 1.5631715206447123e-10,
+      "approximate_hits": [
+        15798313,
+        426240,
+        26104,
+        879493,
+        7466
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 15783696,
+            "sufficient": 15812977,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879430,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 15783696,
+            "sufficient": 15812977,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879430,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 15783696,
+            "sufficient": 15812977,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 879430,
+            "sufficient": 879556,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 15654241,
+          "sufficient": 15947147,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 426146,
+          "sufficient": 426334,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 26103,
+          "sufficient": 26104,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 878867,
+          "sufficient": 880121,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 7466,
+          "sufficient": 7466,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 525,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.392766110774879e-15,
+      "seconds": 0.5914789577946067,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 12,
+      "harmonics": 2048,
+      "eta": 0.0020399951089001152,
+      "extension": 1.0002350613792747e-61,
+      "tail": 4.606148836468051e-92,
+      "synthesis_remainder": 2.3648738433771313e-60,
+      "construction_allowance": 4.130296797067383e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 7.355717052563548e-12,
+      "measured_synthesis_frobenius": 1.2071186555494715e-14,
+      "orthogonality_error": 1.1167849941921781e-13,
+      "reconstruction_error": 1.4770234313131475e-12,
+      "approximate_eta_L": 0.49999999999947886,
+      "analytic_kernel_error": 2.3031671093676797e-10,
+      "arithmetic_kernel_error": 2.3031671093676797e-10,
+      "approximate_hits": [
+        186057,
+        34753,
+        3566,
+        269292,
+        5263
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 186051,
+          "sufficient": 186064,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 34751,
+          "sufficient": 34754,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 3566,
+          "sufficient": 3566,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 269210,
+          "sufficient": 269375,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 5263,
+          "sufficient": 5264,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 510,
+      "reference_band_violations": [],
+      "max_approximate_error": 8.320601152522755e-15,
+      "seconds": 0.5861233342438936,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 16,
+      "harmonics": 2048,
+      "eta": 0.0020298167987789703,
+      "extension": 2.924934205637358e-82,
+      "tail": 3.3401568353353416e-69,
+      "synthesis_remainder": 7.897193207534815e-68,
+      "construction_allowance": 4.978459160476192e-12,
+      "block_terms": 128,
+      "arithmetic_allowance": 8.333655651962981e-12,
+      "measured_synthesis_frobenius": 1.2023287044587386e-14,
+      "orthogonality_error": 1.170192288757874e-13,
+      "reconstruction_error": 1.5185997355557286e-12,
+      "approximate_eta_L": 0.4999999999994835,
+      "analytic_kernel_error": 2.6159059639150844e-10,
+      "arithmetic_kernel_error": 2.6159059639150844e-10,
+      "approximate_hits": [
+        61792,
+        11961,
+        1606,
+        119632,
+        4289
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 61791,
+          "sufficient": 61794,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 11961,
+          "sufficient": 11961,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 1606,
+          "sufficient": 1606,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 119615,
+          "sufficient": 119649,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 4289,
+          "sufficient": 4289,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 500,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.3822276656583199e-14,
+      "seconds": 0.5777862071990967,
+      "status": "fp64_estimate_not_interval_certified"
+    },
+    {
+      "gamma": 64,
+      "harmonics": 2048,
+      "eta": 0.0020173468150207307,
+      "extension": 0.0,
+      "tail": 9.112645480045878e-18,
+      "synthesis_remainder": 2.154519249706424e-16,
+      "construction_allowance": 1.4108512443344283e-11,
+      "block_terms": 128,
+      "arithmetic_allowance": 1.722956658943157e-11,
+      "measured_synthesis_frobenius": 1.2868064319528038e-14,
+      "orthogonality_error": 7.525172759164966e-14,
+      "reconstruction_error": 1.9363464946023936e-12,
+      "approximate_eta_L": 0.49999999999944406,
+      "analytic_kernel_error": 5.425059402912184e-10,
+      "arithmetic_kernel_error": 5.424991564590803e-10,
+      "approximate_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "results": {
+        "analytic": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 15119,
+            "sufficient": 15119,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ],
+        "action": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 15119,
+            "sufficient": 15119,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 15119,
+            "sufficient": 15119,
+            "status": "fp64_estimate"
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "status": "fp64_estimate"
+          }
+        ]
+      },
+      "arithmetic_stress_10x": [
+        {
+          "necessary": 16013,
+          "sufficient": 16013,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 2394,
+          "sufficient": 2394,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 578,
+          "sufficient": 578,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 15118,
+          "sufficient": 15119,
+          "status": "fp64_estimate"
+        },
+        {
+          "necessary": 2233,
+          "sufficient": 2233,
+          "status": "fp64_estimate"
+        }
+      ],
+      "reference_check_count": 490,
+      "reference_band_violations": [],
+      "max_approximate_error": 1.824929096727601e-14,
+      "seconds": 0.5815712502226233,
+      "status": "fp64_estimate_not_interval_certified"
+    }
+  ],
+  "comparisons": [
+    {
+      "gamma": 8,
+      "scalar_control_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "selected": {
+        "analytic": [
+          {
+            "necessary": 15783830,
+            "sufficient": 15812843,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879555,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 15784048,
+            "sufficient": 15812623,
+            "lower_harmonics": 128,
+            "upper_harmonics": 128
+          },
+          {
+            "necessary": 426231,
+            "sufficient": 426249,
+            "lower_harmonics": 128,
+            "upper_harmonics": 128
+          },
+          {
+            "necessary": 26104,
+            "sufficient": 26104,
+            "lower_harmonics": 128,
+            "upper_harmonics": 128
+          },
+          {
+            "necessary": 879431,
+            "sufficient": 879555,
+            "lower_harmonics": 128,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 7466,
+            "sufficient": 7466,
+            "lower_harmonics": 128,
+            "upper_harmonics": 128
+          }
+        ]
+      },
+      "polynomial_baseline": [
+        {
+          "necessary": 15732978,
+          "sufficient": 15864610,
+          "lower_degree": 64,
+          "upper_degree": 64
+        },
+        {
+          "necessary": 426198,
+          "sufficient": 426282,
+          "lower_degree": 64,
+          "upper_degree": 64
+        },
+        {
+          "necessary": 26104,
+          "sufficient": 26104,
+          "lower_degree": 64,
+          "upper_degree": 64
+        },
+        {
+          "necessary": 879211,
+          "sufficient": 879775,
+          "lower_degree": 64,
+          "upper_degree": 64
+        },
+        {
+          "necessary": 7466,
+          "sufficient": 7466,
+          "lower_degree": 64,
+          "upper_degree": 64
+        }
+      ]
+    },
+    {
+      "gamma": 12,
+      "scalar_control_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "selected": {
+        "analytic": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 269284,
+            "sufficient": 269301,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 186057,
+            "sufficient": 186058,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 34752,
+            "sufficient": 34753,
+            "lower_harmonics": 128,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 3566,
+            "sufficient": 3566,
+            "lower_harmonics": 128,
+            "upper_harmonics": 128
+          },
+          {
+            "necessary": 269286,
+            "sufficient": 269299,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 5263,
+            "sufficient": 5264,
+            "lower_harmonics": 128,
+            "upper_harmonics": 128
+          }
+        ]
+      },
+      "polynomial_baseline": [
+        {
+          "necessary": 186054,
+          "sufficient": 186061,
+          "lower_degree": 128,
+          "upper_degree": 128
+        },
+        {
+          "necessary": 34752,
+          "sufficient": 34753,
+          "lower_degree": 64,
+          "upper_degree": 64
+        },
+        {
+          "necessary": 3566,
+          "sufficient": 3566,
+          "lower_degree": 64,
+          "upper_degree": 64
+        },
+        {
+          "necessary": 269242,
+          "sufficient": 269343,
+          "lower_degree": 128,
+          "upper_degree": 128
+        },
+        {
+          "necessary": 5263,
+          "sufficient": 5264,
+          "lower_degree": 64,
+          "upper_degree": 64
+        }
+      ]
+    },
+    {
+      "gamma": 16,
+      "scalar_control_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "selected": {
+        "analytic": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 119630,
+            "sufficient": 119634,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 61792,
+            "sufficient": 61792,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 11961,
+            "sufficient": 11961,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 1606,
+            "sufficient": 1606,
+            "lower_harmonics": 128,
+            "upper_harmonics": 128
+          },
+          {
+            "necessary": 119631,
+            "sufficient": 119633,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          },
+          {
+            "necessary": 4289,
+            "sufficient": 4289,
+            "lower_harmonics": 128,
+            "upper_harmonics": 128
+          }
+        ]
+      },
+      "polynomial_baseline": [
+        {
+          "necessary": 61791,
+          "sufficient": 61793,
+          "lower_degree": 128,
+          "upper_degree": 128
+        },
+        {
+          "necessary": 11961,
+          "sufficient": 11961,
+          "lower_degree": 128,
+          "upper_degree": 128
+        },
+        {
+          "necessary": 1606,
+          "sufficient": 1606,
+          "lower_degree": 64,
+          "upper_degree": 64
+        },
+        {
+          "necessary": 119623,
+          "sufficient": 119641,
+          "lower_degree": 128,
+          "upper_degree": 128
+        },
+        {
+          "necessary": 4289,
+          "sufficient": 4289,
+          "lower_degree": 64,
+          "upper_degree": 64
+        }
+      ]
+    },
+    {
+      "gamma": 64,
+      "scalar_control_hits": [
+        16013,
+        2394,
+        578,
+        15119,
+        2233
+      ],
+      "selected": {
+        "analytic": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "lower_harmonics": 2048,
+            "upper_harmonics": 2048
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "lower_harmonics": 2048,
+            "upper_harmonics": 2048
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "lower_harmonics": 1024,
+            "upper_harmonics": 1024
+          },
+          {
+            "necessary": 15119,
+            "sufficient": 15119,
+            "lower_harmonics": 2048,
+            "upper_harmonics": 2048
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "lower_harmonics": 2048,
+            "upper_harmonics": 2048
+          }
+        ],
+        "combined": [
+          {
+            "necessary": 16013,
+            "sufficient": 16013,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 2394,
+            "sufficient": 2394,
+            "lower_harmonics": 512,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 578,
+            "sufficient": 578,
+            "lower_harmonics": 256,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 15119,
+            "sufficient": 15119,
+            "lower_harmonics": 1024,
+            "upper_harmonics": 512
+          },
+          {
+            "necessary": 2233,
+            "sufficient": 2233,
+            "lower_harmonics": 256,
+            "upper_harmonics": 256
+          }
+        ]
+      },
+      "polynomial_baseline": [
+        {
+          "necessary": 16013,
+          "sufficient": 16013,
+          "lower_degree": 256,
+          "upper_degree": 256
+        },
+        {
+          "necessary": 2394,
+          "sufficient": 2394,
+          "lower_degree": 256,
+          "upper_degree": 256
+        },
+        {
+          "necessary": 578,
+          "sufficient": 578,
+          "lower_degree": 128,
+          "upper_degree": 128
+        },
+        {
+          "necessary": 15119,
+          "sufficient": 15119,
+          "lower_degree": 256,
+          "upper_degree": 256
+        },
+        {
+          "necessary": 2233,
+          "sufficient": 2233,
+          "lower_degree": 256,
+          "upper_degree": 256
+        }
+      ]
+    }
+  ],
+  "evidence_role": "Retrospective validation on archived training runs; no fitted rates or trajectory data",
+  "arithmetic_allowance_formula": "short-dot/pairwise allowance + phase allowance + SVD reconstruction + smax*orthogonality",
+  "numerical_status": "FP64 sensitivity estimates; primary endpoints require separate interval audit",
+  "seconds": 13.582184958271682,
+  "gpu_hours": 0
+}

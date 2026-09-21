@@ -1,4 +1,4 @@
-"""Independent Arb audit of polynomial-bound endpoints on nominal real tanh.
+"""Independent Arb audit of readout timing endpoints on nominal real tanh.
 
 Uses the common-slope Gram identity and integer matrix powers. Neither a GD
 trajectory nor an eigendecomposition enters this checker. It certifies the
@@ -83,7 +83,8 @@ def run(root, output, precision=192):
         evaluated = {}
         methods = {}
         for method in ['analytic','combined']:
-            bracket = analysis.best(summary['rows'],gamma,method=method)
+            bracket = analysis.best(summary['rows'],gamma,method=method,
+                resolution_key=summary.get('resolution_key','degree'))
             n_low, n_high = bracket['necessary']-1, bracket['sufficient']
             for n in [n_low,n_high]:
                 if n is not None and n not in evaluated:

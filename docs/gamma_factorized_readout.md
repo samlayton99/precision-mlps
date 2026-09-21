@@ -1,13 +1,14 @@
 # Gamma-controlled smoothing and finite readout acquisition times
 
-The question is whether the same explicit gamma mechanism can explain and
-accurately quantify a readout learning delay. With fixed centers and a common
-slope, every tanh feature is a gamma-controlled smoothing of a fixed step
-feature. Applying that filter to the full geometric kernel, retaining its
-couplings, gives a computable learning curve. A controlled approximation then
-transfers that curve to the original finite model. The construction below
-connects these statements without assuming Fourier modes are the finite
-model's eigenvectors.
+Gamma-controlled smoothing explains and accurately quantifies the readout
+learning delay in the prescribed common-slope study. Every tanh feature is a
+gamma-controlled smoothing of a fixed step feature. Applying that filter to
+the full geometric kernel, retaining its couplings, gives a computable learning
+curve. Its predicted gamma-8/gamma-64 acquisition-time ratio is 985.70–987.49,
+compared with the executed ratio 986.59. A controlled approximation transfers
+the curve to the original finite model without assuming Fourier modes are
+that model's eigenvectors. The evidence is retrospective on four slopes and
+five targets; it is not a sharp theorem uniform over all capped dictionaries.
 
 This note concerns zero-initialized Euclidean readout GD on the training
 samples. Neither hidden parameters nor the parameter metric change. The
@@ -261,11 +262,11 @@ upper count must be a checked witness. Valid endpoints can be combined across
 $Q$. For positive finite bounds $L_g\le n_\epsilon(g)\le U_g$, two slopes
 satisfy $L_g/U_h\le n_\epsilon(g)/n_\epsilon(h)\le U_g/L_h$.
 
-Equations (4), (8), and (10)–(12) are the promised quantitative bridge:
+Equations (4), (8), and (10)–(12) are the quantitative bridge:
 gamma changes an explicit filter on a fixed geometry, and that same filtered
-kernel determines a certified target-dependent acquisition interval. Sharpness
-of its numerical evaluation remains an empirical question. No monotonicity
-of target acquisition with gamma is assumed.
+kernel determines a target-dependent acquisition interval. The evaluation
+below tests its sharpness. No monotonicity of target acquisition with gamma
+is assumed.
 
 ## 5. Numerical implementation and evidence roles
 
@@ -283,7 +284,84 @@ SVD reconstruction and orthogonality diagnostics. These are not interval
 enclosures. Selected endpoint claims require the independent nominal-real
 Arb audit; that audit does not certify every plotted error envelope.
 
-The empirical comparison will reuse the archived four-gamma, five-target
+The empirical comparison reuses the archived four-gamma, five-target
 study with its exact targets, centers, samples, initialization, and saved
 steps. Its role is retrospective validation of optimization on those training
 samples, not held-out generalization or fitted prediction of GD trajectories.
+
+## 6. Does the explicit mechanism retain the timing accuracy?
+
+The [completed study report](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/REPORT.md)
+evaluates (8) at $T=8$ and $Q=64,128,256,512,1024,2048$. Each pair $F_Q,C_Q$
+is built once and reused unchanged for gamma 8, 12, 16, and 64, with hashes
+checked before and after. The geometry has $m=8193$, $W=559$, and the primary
+target is $\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(10\pi x)$.
+The runner never interpolates or evaluates tanh to construct its predictions.
+Direct tanh appears only in defect evaluation and independent validation.
+
+**Table 1. Primary necessary–sufficient update counts at 1% residual.**
+The analytic route uses the explicit feature remainder. The combined route
+can also use the target-dependent defect action. Both numerical evaluations
+include the stated floating-point sensitivity allowance.
+
+| Gamma | Analytic filter interval | Combined filter interval | Executed GD |
+|---:|---:|---:|---:|
+| 8 | 15,783,830–15,812,843 | 15,784,048–15,812,623 | 15,798,313 |
+| 12 | 186,057–186,058 | 186,057–186,058 | 186,057 |
+| 16 | 61,792–61,792 | 61,792–61,792 | 61,792 |
+| 64 | 16,013–16,013 | 16,013–16,013 | 16,013 |
+
+The analytic results use $Q=256,512,512,2048$; the combined results use
+$Q=128,256,256,512$. In particular, the explicit filter and analytic remainder
+already recover the sharp timing without evaluating discarded action.
+An independent 192-bit Arb calculation certifies all eight selected primary
+brackets on nominal-real tanh, using the exact archived binary inputs and
+integer powers of the raw-readout update matrix. In particular, it certifies
+the exact nominal-real first hits 61,792 and 16,013 at gamma 16 and 64.
+This certifies the endpoint statements, not all FP64 error bands.
+The gamma-8 combined interval has total width 0.181% of the executed time.
+At the common resolution $Q=2048$, gamma 8 has interval
+15,783,696–15,812,977 and the other three primary intervals are unchanged.
+Thus the accuracy does not require changing the geometric representation
+between gammas. Using fewer harmonics only reduces computation.
+
+Across all twenty target/gamma cases, the combined intervals contain all
+nineteen executed hits. The remaining quadratic/gamma-12 run is censored;
+its interval is 269,286–269,299 and its independent spectral forecast is
+269,292, not an executed hit. All selected interval widths are no larger than
+the previous polynomial widths. That numerical comparison also changes the
+construction's arithmetic allowance, so it does not isolate a sharper
+transfer inequality. The important observation is that making the gamma
+mechanism explicit preserves the timing accuracy.
+
+### Frequency-dependent deformation versus overall kernel scale
+
+As a control, scale the $Q=2048$ gamma-64 kernel to have each other filtered
+kernel's largest eigenvalue, while preserving its eigenvectors and relative
+eigenvalues. Use the same archived $\eta_\gamma$. This gives
+
+$$
+K_\gamma^{\rm scale}
+=\frac{\widetilde L_\gamma}{\widetilde L_{64}}\widetilde K_{64},
+\qquad
+\eta_\gamma\lambda_i(K_\gamma^{\rm scale})
+=\eta_\gamma\widetilde L_\gamma
+\frac{\widetilde\lambda_i(64)}{\widetilde L_{64}}.
+$$
+
+The normalized step is approximately one half in every run. Consequently
+this control predicts 16,013 primary updates at all four gammas, whereas the
+full explicit filter predicts the measured factor 986.59 delay. The largest
+curvature changes only from approximately 241.73 to 247.85. The large timing
+effect therefore requires the filter's deformation of the target-weighted
+spectrum, not merely the overall curvature scale. All four primary runs
+actually reach 1%, so inability to represent that tolerance cannot explain
+their different acquisition times.
+
+The original transform and eigenmode GD evolution are established ingredients;
+this argument's role is their explicit connection through the actual finite
+geometry, with a quantified approximation and a measured timing comparison.
+It requires a finite matrix calculation, and does not claim to save work over
+directly diagonalizing the dictionary. Its explanatory content is that the
+entire gamma dependence is localized in the known filter, whose effect on the
+same target is followed through without discarding the geometry.

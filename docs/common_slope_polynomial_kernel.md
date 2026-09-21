@@ -15,6 +15,12 @@ calculation certifies the primary endpoints. This is a fixed-common-slope
 result; sharp uniform guarantees over an entire interval of shared slopes
 remain a separate question.
 
+The [gamma-factorized follow-up](gamma_factorized_readout.md) now makes the
+mechanism explicit in the retained operator itself: a fixed geometric kernel
+is filtered by the known gamma-dependent multiplier. It applies the same
+transfer inequalities below to that construction and compares its acquisition
+intervals with these polynomial results.
+
 **Notation.** Norms of vectors are Euclidean; matrix norms without a subscript
 are spectral norms. The target and dictionary include the same empirical
 normalization.

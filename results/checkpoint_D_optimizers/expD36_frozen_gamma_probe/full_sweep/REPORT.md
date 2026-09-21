@@ -30,6 +30,19 @@ calculations certify these endpoints. This sharply improves fixed-dictionary
 timing while leaving the heterogeneous uniform-cap theorem's sharpness
 question unchanged. The probe reuses executed GD and consumes no new GPU time.
 
+The [gamma-factorized follow-up](refinements/gamma_factorized_kernel/REPORT.md)
+connects that timing accuracy to the explicit smoothing mechanism. It keeps
+the sampling and center matrices fixed and puts gamma only in the known
+Fourier multiplier. Its independently certified primary intervals are
+15,784,048–15,812,623 at gamma 8, 186,057–186,058 at gamma 12, and exact
+counts 61,792 and 16,013 at gamma 16 and 64. The predicted gamma-8/gamma-64
+delay ratio is 985.70–987.49, enclosing the executed 986.59. An overall
+kernel-rescaling control predicts 16,013 at every gamma under the normalized
+clock, demonstrating why the full frequency-dependent deformation matters.
+The new [proof](../../../../docs/gamma_factorized_readout.md) retains the
+actual finite geometry and raw readout metric; this follow-up also uses no
+new GPU training.
+
 **Notation and normalization. Errors are relative empirical $L_2$ errors unless otherwise stated.**
 
 | Symbol or term | Meaning |

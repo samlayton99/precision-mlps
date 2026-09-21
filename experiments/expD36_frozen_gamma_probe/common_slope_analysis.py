@@ -110,14 +110,14 @@ def run(root, output, gammas=GAMMAS, degrees=DEGREES):
     return summary
 
 
-def best(rows, gamma, target=0, method='combined'):
+def best(rows, gamma, target=0, method='combined', resolution_key='degree'):
     candidates = [(r,r['results'][method][target]) for r in rows if r['gamma']==gamma]
     low_row, low = max(candidates, key=lambda pair: pair[1]['necessary'])
     uppers = [(r,v) for r,v in candidates if v['sufficient'] is not None]
     high_row, high = min(uppers, key=lambda pair: pair[1]['sufficient']) if uppers else (None,None)
-    return dict(necessary=low['necessary'], lower_degree=low_row['degree'],
-        sufficient=high['sufficient'] if high else None,
-        upper_degree=high_row['degree'] if high_row else None)
+    return dict(necessary=low['necessary'], sufficient=high['sufficient'] if high else None,
+        **{'lower_'+resolution_key:low_row[resolution_key],
+           'upper_'+resolution_key:high_row[resolution_key] if high_row else None})
 
 
 def plot(summary, output):
