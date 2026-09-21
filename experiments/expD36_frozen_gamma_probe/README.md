@@ -281,6 +281,9 @@ Its `--method overlap` variant maximizes target overlap at a fixed curvature
 budget with scaled variables, addressing the poor conditioning observed in
 small-shift joint solves. Both methods polish and independently verify their
 proposed directions; an improved solver objective is not itself a theorem.
+`--budget-count 1` checks only the smallest budget, in a separate directory.
+The four-budget $N=128$ controls found the strongest cap-16 and cap-64 bounds
+at that budget, motivating the cheaper primary-width confirmation.
 
 `cap_analyze.py --root <campaign-json-snapshot> --output <curated-results>`
 collects executed hits, independent forecasts, and certified bounds without

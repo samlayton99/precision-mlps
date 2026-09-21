@@ -14,10 +14,12 @@ from . import core, cap_campaign as campaign, cap_certificate as c, cap_resolven
 
 
 def run_case(args):
-    root, archive, n, cap, ti, rank, intervals, method = args
+    root, archive, n, cap, ti, rank, intervals, method, budget_count = args
     root, archive = Path(root), Path(archive)
     method_name = 'joint' if method == 'resolvent' else 'overlap'
     destination = root/'certificates'/f'N{n}_cap{cap:g}_t{ti}_{method_name}_polished_r{rank}_i{intervals}'
+    if budget_count != 4:
+        destination = destination.with_name(destination.name+f'_b{budget_count}')
     if (destination/'result.json').exists():
         return
     destination.mkdir(parents=True, exist_ok=True)
@@ -32,7 +34,7 @@ def run_case(args):
     model, _ = campaign.fast_screen(j, targets)
     forecast = campaign.fg.first_hit(model)[ti]
     center = .1/forecast if forecast else 1e-9
-    shifts = center*np.array([1., 10., 100., 1000.])
+    shifts = center*np.array([1., 10., 100., 1000.])[:budget_count]
     certificates, candidates = [], []
     for index, shift in enumerate(shifts):
         label = f'joint_shift_{index}' if method == 'resolvent' else f'overlap_budget_{index}'
@@ -75,6 +77,7 @@ def run_case(args):
     certificates.append(c.analytic_small_cap(case['x'], len(case['centers']), cap, y))
     bounds = {str(e):c.time_bound(certificates, e) for e in campaign.EPSILONS}
     result = dict(n=n, cap=cap, target=campaign.TARGETS[ti], rank=rank, method=method,
+        budget_count=budget_count,
         max_intervals=intervals, certificates=certificates, candidates=candidates, bounds=bounds,
         source_commit=os.environ.get('PROBE_SOURCE_COMMIT', 'local'),
         grid_hash=core.array_hash(case['x']), centers_hash=core.array_hash(case['centers']), target_hash=core.array_hash(y))
@@ -97,8 +100,10 @@ def main():
     p.add_argument('--intervals', type=int, default=256)
     p.add_argument('--workers', type=int, default=2)
     p.add_argument('--method', choices=['resolvent', 'overlap'], default='resolvent')
+    p.add_argument('--budget-count', type=int, choices=[1, 2, 3, 4], default=4)
     a = p.parse_args()
-    jobs = [(str(a.root), str(a.archive), a.n, cap, ti, a.rank, a.intervals, a.method) for cap in a.caps for ti in a.targets]
+    jobs = [(str(a.root), str(a.archive), a.n, cap, ti, a.rank, a.intervals,
+             a.method, a.budget_count) for cap in a.caps for ti in a.targets]
     with ProcessPoolExecutor(max_workers=a.workers) as pool:
         for _ in pool.map(run_case, jobs):
             pass
