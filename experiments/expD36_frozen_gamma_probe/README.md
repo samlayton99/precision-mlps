@@ -233,6 +233,9 @@ dictionary is saved under a new case ID and must pass an independent spectral
 check and ordinary GD before contributing an upper witness. CPU requests for
 subsequent GPU jobs are limited to two cores so CPU certification can progress
 within Runpod's per-user CPU limit while both allocated GPUs are active.
+The `--method lbfgs` refinement uses a bounded line search after the projected
+Adam search has plateaued, with the same powered objective and subsequent
+ordinary-GD verification requirement.
 
 `cap_resolvent.py --root <capped-campaign>` tightens the conversion from a
 certified Rayleigh bound to a necessary learning time. The resolvent inequality

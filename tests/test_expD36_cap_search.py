@@ -1,9 +1,10 @@
 import numpy as np
 import pytest
+import time
 
 jax = pytest.importorskip('jax')
 import jax.numpy as jnp
-from experiments.expD36_frozen_gamma_probe.cap_search import powered_coefficients, objective
+from experiments.expD36_frozen_gamma_probe.cap_search import powered_coefficients, objective, lbfgs_search
 
 
 def test_powered_selection_surrogate_matches_ordinary_updates():
@@ -27,3 +28,13 @@ def test_selection_gradient_matches_centered_difference():
         direction = np.eye(7)[i]*1e-5
         fd = float((fun(slopes+direction)-fun(slopes-direction))/(2e-5))
         assert grad[i] == pytest.approx(fd, rel=2e-5, abs=2e-6)
+
+
+def test_bounded_line_search_improves_the_true_powered_residual():
+    x = jnp.linspace(-1., 1., 33); centers = jnp.linspace(-1.2, 1.2, 7)
+    y = jnp.sin(2*jnp.pi*x); initial = np.full(7, .5)
+    fun = lambda s:objective(s, 8., x, centers, y, 113)
+    best, history = lbfgs_search(jax.jit(jax.value_and_grad(fun)), initial, 40, time.monotonic()+120, 113)
+    assert np.all((best >= 0)&(best <= 1))
+    assert float(fun(best)) < float(fun(initial))-.1
+    assert history[-1]['evaluations'] > 1

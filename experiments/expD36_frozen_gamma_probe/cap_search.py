@@ -16,6 +16,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
+from scipy.optimize import minimize
 
 from . import core, cap_campaign as campaign
 
@@ -68,7 +69,39 @@ def save_case(root, n, cap, name, slopes, history):
     return meta
 
 
-def run(root, caps, n, iterations, starts, round_index, seconds):
+def lbfgs_search(value_gradient, initial, iterations, deadline, horizon):
+    """Bounded line-search refinement; outputs remain selection candidates."""
+    best_value, best_unit, history = float('inf'), np.asarray(initial).copy(), []
+    evaluations = 0
+
+    def evaluate(unit):
+        nonlocal best_value, best_unit, evaluations
+        if time.monotonic()+20 >= deadline:
+            raise TimeoutError('Selection allocation deadline')
+        value, gradient = value_gradient(jnp.asarray(unit))
+        value, gradient = float(value), np.asarray(gradient)
+        if not np.isfinite(value) or not np.all(np.isfinite(gradient)):
+            raise FloatingPointError('Nonfinite powered-GD selection objective')
+        if value < best_value:
+            best_value, best_unit = value, unit.copy()
+        evaluations += 1
+        if evaluations % 20 == 1:
+            history.append(dict(evaluation=evaluations, horizon=horizon,
+                surrogate_error=float(np.exp(value/2)), best_error=float(np.exp(best_value/2))))
+        return value, gradient
+
+    try:
+        result = minimize(evaluate, initial, method='L-BFGS-B', jac=True,
+            bounds=[(0., 1.)]*len(initial), options=dict(maxiter=iterations, maxls=30, ftol=1e-12, gtol=1e-7))
+        status = str(result.message)
+    except (TimeoutError, FloatingPointError) as exc:
+        status = str(exc)
+    history.append(dict(status=status, evaluations=evaluations, horizon=horizon,
+                        best_error=float(np.exp(best_value/2)) if np.isfinite(best_value) else None))
+    return best_unit, history
+
+
+def run(root, caps, n, iterations, starts, round_index, seconds, method='adam'):
     from .train import verify_gpu
     verify_gpu(root, f'search_{os.environ.get("SLURM_JOB_ID", "local")}')
     begun = time.monotonic(); deadline = begun+seconds
@@ -94,6 +127,14 @@ def run(root, caps, n, iterations, starts, round_index, seconds):
             if time.monotonic()+45 >= deadline:
                 break
             initial = np.load(root/'cases'/candidates[start]['id']/'parameters.npz')['slopes']/cap
+            if method == 'lbfgs':
+                best_unit, history = lbfgs_search(value_gradient, initial, iterations, deadline, horizon)
+                name = f'search_r{round_index}_start{start}'
+                meta = save_case(root, n, cap, name, cap*best_unit, history)
+                records.append(meta['id'])
+                core.write_json(root/f'search_round{round_index}_cases.json', records)
+                print('SEARCH_SELECTED', method, meta['id'], meta['screen_hits']['0.01'], flush=True)
+                continue
             unit = jnp.asarray(initial)
             optimizer = optax.adam(.02)
             state = optimizer.init(unit)
@@ -125,7 +166,7 @@ def run(root, caps, n, iterations, starts, round_index, seconds):
             break
     core.write_json(root/f'search_completion_{os.environ["SLURM_JOB_ID"]}.json',
         dict(round=round_index, selected=records, seconds=time.monotonic()-begun,
-             iterations=iterations, starts=starts, caps=caps,
+             iterations=iterations, starts=starts, caps=caps, method=method,
              source_commit=os.environ.get('PROBE_SOURCE_COMMIT', 'local')))
 
 
@@ -138,8 +179,9 @@ def main():
     p.add_argument('--starts', type=int, default=4)
     p.add_argument('--round', type=int, default=0)
     p.add_argument('--seconds', type=int, default=3300)
+    p.add_argument('--method', choices=['adam', 'lbfgs'], default='adam')
     a = p.parse_args()
-    run(a.root, a.caps, a.n, a.iterations, a.starts, a.round, a.seconds)
+    run(a.root, a.caps, a.n, a.iterations, a.starts, a.round, a.seconds, a.method)
 
 
 if __name__ == '__main__':
