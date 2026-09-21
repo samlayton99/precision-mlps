@@ -191,6 +191,16 @@ This is a flux near the threshold, not mean slope motion. For a density, the sha
 
 ## 5. What turns a successful forecast into a theorem?
 
+### A testable width prediction before a long-time theorem
+
+The rescaling in (4) offers a more specific prediction than merely saying that a slope gradient is small. In a post-coarse-fit regime with bounded rescaled moments and an order-one coarse inverse, tanh's first nonlinear term gives retained slope tangents for modes 2 and 3 of individual size $O(W^{-3/2})$. Their population norm is $O(W^{-1})$. The coarse-elimination correction in $T_a$ has the same order, so it must be retained even at leading order. Consequently the effective slope kernel on these modes, $T_a^TT_a$, is $O(W^{-2})$.
+
+For sine and the degree-3 target, an order-one non-affine target coefficient can therefore produce $\|g_a\|=O(W^{-1})$ after the coarse transient. For the degree-9 target, direct coupling to mode 9 first occurs through the eighth-order term of $xs$ and has population norm $O(W^{-4})$. But that is not the full force: the model's own order-$W^{-1}$ nonlinear residual in lower modes acts through their order-$W^{-1}$ tangent, giving an order-$W^{-2}$ contribution. Thus the proposed leading scale for the degree-9 *full* slope force is $W^{-2}$, not $W^{-4}$, absent cancellations or a larger remaining coarse transient.
+
+These are formal power-counting predictions in a stated regime, not matching upper and lower bounds. They predict approximate collapse of $W\|g_a\|$ for sine/degree 3 and $W^2\|g_a\|$ for degree 9 across widths, at a fixed post-transient time (the experiment uses $t=40$). They also identify a potential nonlinear drift time: since rescaled characteristic velocity is order $W^{-1}$ for low-order non-affine forcing, order-one rescaled geometry changes can begin on times of order $W$. A frozen-kernel extrapolation can therefore fail before the much longer initial fine-mode residual relaxation time suggested by a kernel of size $W^{-2}$.
+
+Moment growth, cancellation, unresolved coarse tracking, or finite-seed fluctuations can invalidate this proposed scaling regime. Width experiments must measure those alternatives rather than interpreting every departure as a different fitted exponent. In particular, this expansion does not control the moments up to time 1200 and cannot alone certify a gamma barrier. It supplies a concrete kernel prediction to test while pursuing that control.
+
 For a predicted distribution $\widehat\rho_t$ and a justified Wasserstein error bound $W_2(\rho_t,\widehat\rho_t)\le\varepsilon(t)$, any $0<\delta<\Gamma$ gives
 
 $$

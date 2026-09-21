@@ -10,6 +10,13 @@
   "physical_horizon": 1200.0,
   "population_thresholds": [1.0, 3.2, 16.0],
   "population_barrier_fraction": 0.1,
+  "formal_width_prediction": {
+    "widths": [89, 177, 353],
+    "physical_time": 40.0,
+    "sine_and_moment3_slope_norm": "Order W^-1 after coarse relaxation, while rescaled moments remain bounded",
+    "moment9_slope_norm": "Order W^-2 from generated lower-mode residual, despite order W^-4 direct degree-9 forcing",
+    "status": "Formal power counting; assess seed dispersion, coarse tracking, and moment control alongside observed exponents"
+  },
   "decision_rules": {
     "endpoint_mean_gamma_relative_error_max": 0.01,
     "endpoint_readout_l2_relative_error_max": 0.01,
