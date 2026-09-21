@@ -4,6 +4,8 @@ This study tests whether bounded hidden slopes restrict access to the target cor
 
 The theorem produces large, parameter-free necessary times in the low-gamma regime. Its empirical tightness depends strongly on coordinates: at gamma 64 the directional bound is 52 times below the observed raw-coordinate hitting time, but only 2.2 times below the collective neighboring result. The analytic slope-only envelope is much weaker at large gamma. The [first-probe report](../REPORT.md) remains a separate record.
 
+A post-hoc refinement below improves both parts of the argument. Accounting for adjacent-feature cancellation raises the neighboring analytic gamma-4 bound from 156,090 to 17,841,791 updates. A separate spectral-tail Jensen bound reduces the median observed-time/bound ratio from 24.1 to 1.33 across all 143 reached primary case/tolerance pairs. The latter uses target-weighted spectral information beyond gamma; it does not make the original uniform slope envelope tight. No additional optimizer trajectories were run.
+
 **Notation and normalization. Errors are relative empirical $L_2$ errors unless otherwise stated.**
 
 | Symbol or term | Meaning |
@@ -16,6 +18,8 @@ The theorem produces large, parameter-free necessary times in the low-gamma regi
 | $\mu_k$, $b_k$, $B_k$ | Directional access, polynomial-tail subspace access, and analytic access envelope. |
 | $L$, $\chi$ | $L=\|J\|_2^2$ and GD step fraction $\chi=\eta L$; the primary value is $0.5$. |
 | C2, C3 | Explicit discrete-GD necessary-time bound and the more spectrum-dependent effective-generator estimate. |
+| $p_a$, $\bar\nu_a$ | Initial-residual energy fraction in modes with curvature at most $a$, and their energy-weighted mean curvature. |
+| $D_k^{\rm shift}$ | Analytic degree-$k$ tail envelope for the center derivative of a tanh feature; used to preserve neighboring cancellation. |
 | QI reference | The existing quasi-interpolant construction at fixed $\lambda=0.25$; its measured recovery accuracy supplies a separate width-dependent tolerance. |
 | Censored / unresolved | A tolerance was not reached within executed updates / a numerical quantity is not resolved by the stated arithmetic check. |
 
@@ -186,6 +190,152 @@ At gamma 4 and the common cutoff $k=29$, write $s_k=\|Q_kJ\|_F^2$. The factors $
   <figcaption>Sine-mixture tightness audit. Left: the three access-slack factors at gamma 4, using resolved sampled cutoffs. Middle: directional C2 as a function of cutoff before its integer ceiling. Right: actual GD checkpoint errors and retained-SVD predictions at the same executed steps; connected lines interpolate saved predictions and are not extra training measurements.</figcaption>
 </figure>
 
+## Post-hoc bound refinements
+
+This analysis was proposed after inspecting the original sweep. It evaluates all 55 primary dictionaries, five targets, and six tolerances: 1,650 combinations, without changing training, targets, or the original figures. The two refinements address different inequalities. The first improves the analytic access envelope under the common-slope neighboring geometry. The second replaces the one-direction time conversion with a spectral energy argument and applies to any fixed linear least-squares problem.
+
+### Refinement 1: preserve neighboring cancellation analytically
+
+Write $\phi_c(x)=\tanh(\gamma(x-c))$, with the same $\gamma>0$ for adjacent centers. The original envelope treats $\phi_c-\phi_{c'}$ as two independent features. Instead, integrate its center derivative between $c$ and $c'$. If $D_k^{\rm shift}$ bounds the uniform error of a degree-$k$ polynomial approximation to $\partial_c\phi_c$, uniformly in the real center, then
+
+$$
+\|Q_k(\phi_c-\phi_{c'})\|_{\rm empirical}
+\le V_k(c,c')
+:=\min\{2U_k,\ |c-c'|D_k^{\rm shift}\}.
+$$
+
+The norm includes the sample-mean normalization. The inequality follows by integrating degree-$k$ approximants to the derivative; their integral is still a degree-$k$ polynomial. The real-axis derivative is bounded by $\gamma$, so $D_k^{\rm shift}\le\gamma$ is always available as a separate approximation bound.
+
+Here is an explicit pole-series construction of a valid $D_k^{\rm shift}$. Define
+
+$$
+v_\ell=\frac{\pi(\ell+1/2)}{\gamma},\qquad
+\rho_\ell=v_\ell+\sqrt{1+v_\ell^2},\qquad
+d_\ell=
+\begin{cases}
+\sqrt{2v_\ell},&v_\ell\le1,\\
+\sqrt{1+v_\ell^2},&v_\ell\ge1.
+\end{cases}
+$$
+
+For a pole $z=c+iv_\ell$, let $s=\sqrt{z^2-1}$ and choose $w=z+s$ with $|w|>1$. The resolvent Chebyshev expansion gives the degree-$n\ge1$ coefficient of the feature as $-(4/\gamma)\sum_\ell\operatorname{Re}(w^{-n}/s)$. Its derivative satisfies
+
+$$
+\frac{d}{dc}\frac{w^{-n}}s
+=-w^{-n}\left(\frac{n}{s^2}+\frac{z}{s^3}\right).
+$$
+
+Uniformly in real $c$, $|w|\ge\rho_\ell$, $|s|\ge d_\ell$, and $|z|^2\le |s|^2+1$. The bound on $|s|$ follows by minimizing
+$|s|^4=(c^2+v_\ell^2-1)^2+4v_\ell^2$ over $c^2\ge0$.
+Taking absolute values and summing degrees $n>k$ therefore yields
+
+$$
+\mathcal D_k=
+\frac4\gamma\sum_{\ell=0}^{\infty}
+\frac{\rho_\ell^{-k}}{\rho_\ell-1}
+\left[
+\frac{k+1+(\rho_\ell-1)^{-1}}{d_\ell^2}
++\frac{\sqrt{d_\ell^2+1}}{d_\ell^3}
+\right].
+$$
+
+This absolutely convergent tail bounds a uniform polynomial approximation error for the center derivative. The calculation retains poles $0\le\ell<M$ and adds the following upper bound on the omitted positive terms, with $v_M\ge1$:
+
+$$
+R_{k,M}^{\rm shift}=
+\frac{32\gamma^{k+2}(k+2+\sqrt2)}{\pi^{k+3}}
+\left[(2M+1)^{-k-3}
++\frac{(2M+1)^{-k-2}}{2(k+2)}\right].
+$$
+
+Indeed, for $\ell\ge M$, use $d_\ell\ge v_\ell$, $\rho_\ell\ge2v_\ell$, and $\rho_\ell-1\ge v_\ell$. Each summand is at most $32\gamma^{k+2}(k+2+\sqrt2)\pi^{-k-3}(2\ell+1)^{-k-3}$; its decreasing-series tail is bounded by its first term plus its integral. We use $M=128$ and set $D_k^{\rm shift}$ to the minimum of $\gamma$ and this finite sum plus remainder. Truncating the positive series without its remainder would not give an upper bound.
+
+For an anchored neighboring map, the resulting envelope is
+
+$$
+B_k^{\rm adjacent}
+=\sum_{j=1}^{W-1}s_j^2V_k(c_j,c_{j+1})^2+s_W^2U_k^2,
+\qquad
+\widetilde B_k=\min\{B_k,B_k^{\rm adjacent},L\}.
+$$
+
+The final anchor remains explicit. The cap $b_k\le L$ holds because an orthogonal projection cannot increase operator norm. For other maps this refinement uses only $\widetilde B_k=\min\{B_k,L\}$. Substituting $\widetilde B_k$ in C2 is valid and can never weaken the original analytic result. This is a geometry-aware strengthening of the tanh access theorem; it does not require measured target-direction access or the GD trajectory.
+
+For the collective neighboring sine mixture at gamma 4, the optimized analytic C2 bound rises from **156,090 to 17,841,791** updates, a factor of **114.3**, with maximizing $k=30$. At gamma 8 it rises from 2 to 69. The gamma-64 result only rises from 1 to 7, whereas directional C2 is 3,682: accounting for cancellation improves a real source of slack but does not make the analytic envelope close at large gamma. Raw gamma 4 remains 34,960,178, and raw gamma 64 rises from 3 to 7 solely because of the $L$ cap.
+
+### Refinement 2: a spectral-tail Jensen necessary-time theorem
+
+Let $K=JJ^\top$ have eigenvalues $\nu_i\ge0$ and orthonormal eigenvectors $u_i$, and set $a_i=\langle u_i,r_0\rangle$. For each cutoff $a$, define
+
+$$
+S_a=\{i:\nu_i\le a\},\qquad
+p_a=\frac{\sum_{i\in S_a}a_i^2}{\|r_0\|^2},\qquad
+\bar\nu_a=\frac{\sum_{i\in S_a}a_i^2\nu_i}{\sum_{i\in S_a}a_i^2}.
+$$
+
+**Proposition.** For $0<\eta L<1$ and $0<\epsilon<1$, whenever $p_a>\epsilon^2$ and $\bar\nu_a>0$,
+
+$$
+N_\epsilon\ge
+\left\lceil\frac{\log(\sqrt{p_a}/\epsilon)}
+{-\log(1-\eta\bar\nu_a)}\right\rceil.
+$$
+
+Take the maximum over cutoffs; a set with $p_a>\epsilon^2$ and $\bar\nu_a=0$ makes the tolerance unattainable. Any subset of exact eigenpairs is also a valid witness, so omitted eigenpairs can be discarded without assigning them to a nullspace.
+
+**Proof.** The exact GD recurrence gives
+
+$$
+\frac{\|r_n\|^2}{\|r_0\|^2}
+\ge\sum_{i\in S_a}\frac{a_i^2}{\|r_0\|^2}(1-\eta\nu_i)^{2n}
+\ge p_a(1-\eta\bar\nu_a)^{2n}.
+$$
+
+For every integer $n\ge1$, the function $\nu\mapsto(1-\eta\nu)^{2n}$ is convex on $[0,L]$. The second inequality is Jensen's inequality with weights $a_i^2/(p_a\|r_0\|^2)$; see [Boyd and Vandenberghe, convex-functions slides, 3.14](https://web.stanford.edu/~boyd/cvxbook/bv_cvxslides.pdf) for the general inequality. Rearranging the condition that the final expression be at most $\epsilon^2$ proves the proposition. At $n=0$ its lower bound also holds directly. This proof uses neither a parameter-displacement inequality nor the C2 effective-generator relaxation.
+
+The computation sorts retained curvatures $\nu_i=\sigma_i^2$ from smallest to largest, cumulatively sums the target energy and its curvature-weighted moment, evaluates the displayed expression at every prefix, and takes the largest value. The normalized loadings are computed from the initial residual; the current evaluation uses $r_0=-y$. No executed hitting time selects a prefix or fits a constant. The original C2 and this bound are not generally ordered, so their maximum is a valid combined certificate; the spectral bound happens to be stronger in every reached case here.
+
+For raw gamma 64, the maximizing prefix has $p_a=0.000334541752$, $\bar\nu_a=0.0251838124$, and $L=247.8502934$. With $\eta=0.5/L$ and $\epsilon=0.01$, substitution gives **11,885 necessary updates**, versus **309** from directional C2 and **16,013 executed updates**. The small amount of energy just above the requested error tolerance is slow enough to control the hitting time; a full-residual average or a single polynomial-tail ratio can hide that contribution.
+
+**Table 2b. Post-hoc sine-mixture necessary updates at 1% training error. Spectral-tail values use the retained cutoff-$10^{-14}$ spectrum. Censored rows remain unexecuted predictions beyond 200k updates, with no observed tightness ratio.**
+
+| Map | Gamma | Original directional C2 | Spectral-tail Jensen | Executed first hit | Hit / new bound |
+|---|---:|---:|---:|---:|---:|
+| Raw | 4 | 4,285,392,774 | 399,435,514,539 | $>200,000$ | — |
+| Raw | 12 | 5,993 | 177,804 | 186,057 | 1.046 |
+| Raw | 16 | 1,395 | 47,549 | 61,792 | 1.300 |
+| Raw | 64 | 309 | 11,885 | 16,013 | 1.347 |
+| Collective neighboring | 4 | 5,453,767,597 | 584,969,611,416 | $>200,000$ | — |
+| Collective neighboring | 16 | 4,669 | 242,617 | $>200,000$ | — |
+| Collective neighboring | 64 | 3,682 | 6,211 | 8,105 | 1.305 |
+
+<figure>
+  <img src="refinements/c2_tightening.png" alt="Executed GD hitting time divided by the original directional and new spectral-tail bounds, for reached sine-mixture cases in raw and collective neighboring coordinates" style="max-width: 100%;">
+  <figcaption>Post-hoc comparison at 1% training error. Every plotted hit was executed within 200k updates. A ratio of one would mean equality after integer rounding; the stronger spectral-tail bound gives ratios between 1.046 and 1.388 for these two maps. Missing low-gamma cases are budget-censored, not omitted successful runs. The original three-panel figures retain their pre-refinement C2 curves.</figcaption>
+</figure>
+
+Across all **143 reached primary case/tolerance pairs**, the new bound improves every directional C2 value. The median hit/bound ratio decreases from **24.118 to 1.331**, and the new ratios range from **1.042 to 1.458**. These are deterministic descriptive statistics over reached cases, not confidence intervals or evidence that the same ratios hold for the 1,507 censored combinations. Tightness was not a software acceptance threshold.
+
+The complete analysis checks **985 resolved subspace-access measurements**, **12,949 resolved directional-access measurements**, and **3,614 finite spectral-forecast comparisons** without a lower-bound violation. No refined bound exceeds any of the 143 executed hits. The spectral bound changes by at most $9.66\times10^{-12}$ relatively across the three retained singular-value cutoffs in reached cases. This checks truncation sensitivity, not eigenpair error or real-arithmetic rigor. Spectral energy outside the retained modes is deliberately omitted; an SVD truncation residual is never declared an exact zero mode. The low-gamma resolution limitations elsewhere in this report still apply. All **20 focused implementation tests** pass, including the three added refinement tests for independent polynomial projection, direct GD, a single eigenmode, exact null modes, and omitted spectral energy.
+
+### Recommended theorem changes and remaining limits
+
+Keep the original uniform bounded-slope theorem as the explanation of an optimization obstruction, with its exact assumptions and exponential degree dependence. Its sharp universal time prefactor cannot simply be increased: a one-eigenvalue residual at the largest curvature saturates the discrete formula. Uniform worst-case sharpness is compatible with considerable slack on a particular dictionary and target.
+
+Add the neighboring derivative envelope as a corollary for common-slope translated features, and always take the minimum access bound with $L$. This improves the theorem itself using extra geometric structure already present in the experiment. It preserves the original result for arbitrary heterogeneous slopes, where the new common-slope argument does not apply.
+
+Add the spectral-tail proposition as a separate target-dependent dynamics theorem and report its evaluation alongside C2. It gives a close numerical lower bound here while keeping the extra information explicit. It is a lower bound from a spectral moment, not a new optimizer and not an exact spectral hitting-time calculation. A full retained spectral evolution still gives a tighter model-specific forecast.
+
+For a closer prediction expressed through gamma, an additional theorem would need to control target energy in a slow spectral subspace, for example $p_a\ge p_*>\epsilon^2$ and $\bar\nu_a\le\Lambda(\gamma)$ with $\eta\Lambda(\gamma)<1$. The proposition would then imply
+
+$$
+N_\epsilon\ge
+\left\lceil\frac{\log(\sqrt{p_*}/\epsilon)}
+{-\log(1-\eta\Lambda(\gamma))}\right\rceil.
+$$
+
+Those spectral-mass assumptions are not supplied by the present polynomial-tail envelope. Proving them for a specified center geometry and target family remains open. Width and a slope cap alone allow repeated features, nearly constant shifted features, and different target alignments, so they cannot identify one tight convergence time across that whole class. The supported conclusion is therefore twofold: the analytic theorem can be sharpened substantially in neighboring coordinates, and a more informative spectral theorem is already much tighter on this saved study.
+
 ## Protocol and evidence roles
 
 The primary sweep fixes $N=512$, $W=559$, and endpoint training grids of $m=16N+1$ points. Validation uses 4,096 points with offset 0.37 of a grid cell; independent evaluation uses 32,768 midpoints. All optimizer computation and detached FP64 diagnostics use double precision. Centers, reference allowances, targets, and grids are fixed across the eleven slopes $[1,2,4,8,12,16,24,32,48,64,96]$.
@@ -323,3 +473,13 @@ python -m experiments.expD36_frozen_gamma_probe.full_analyze \
 ```
 
 The tracked compact inputs suffice for this command. Dense matrices, every-update traces, and full checkpoints are retained in the persistent Runpod archive; they are required for rerunning the numerical and per-update audits. The main figures also have [raw-coordinate PDF](figures/banner_raw.pdf), [raw-coordinate SVG](figures/banner_raw.svg), [neighboring-coordinate PDF](figures/banner_collective_neighbor.pdf), and [neighboring-coordinate SVG](figures/banner_collective_neighbor.svg) exports.
+
+The post-hoc refinement is implemented in [tighten.py](../../../../experiments/expD36_frozen_gamma_probe/tighten.py). Its [compact evidence](refinements/c2_tightening.json) records all 1,650 combinations, the numerical checks, the analysis source hash, and SHA-256 hashes of the 280 input artifacts. It has separate [PNG](refinements/c2_tightening.png) and [PDF](refinements/c2_tightening.pdf) exports. Regenerate it with the same Python environment:
+
+```bash
+OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 \
+python -m experiments.expD36_frozen_gamma_probe.tighten \
+  --root results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep
+```
+
+This runs only local CPU analysis of the compact archive. It neither extends the two-GPU-hour campaign nor changes the original archive checksum manifest or the original three-panel plots.
