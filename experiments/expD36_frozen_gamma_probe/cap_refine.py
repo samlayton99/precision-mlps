@@ -54,14 +54,16 @@ def candidate_score(delta, beta, target=False):
 
 
 def run_case(args):
-    root, archive, n, cap, target_index, rank, intervals, verify_count, order, reuse = args
+    root, archive, n, cap, target_index, rank, intervals, verify_count, order, reuse, proposal_case = args
     root, archive = Path(root), Path(archive)
     previous_search = root/'certificates'/f'N{n}_cap{cap:g}_t{target_index}_r{rank}_i{intervals}'
     destination = previous_search if order == 2 else previous_search.with_name(previous_search.name+f'_o{order}')
+    if proposal_case:
+        destination = destination.with_name(destination.name+f'_from_{proposal_case}')
     if (destination/'result.json').exists():
         return json.loads((destination/'result.json').read_text())
     destination.mkdir(parents=True, exist_ok=True)
-    if reuse and destination != previous_search:
+    if reuse and not proposal_case and destination != previous_search:
         for arrays in previous_search.glob('*.npz'):
             metadata = arrays.with_suffix('.json')
             if metadata.exists() and not (destination/arrays.name).exists():
@@ -71,7 +73,23 @@ def run_case(args):
     j, yy = campaign.matrices(case)
     y = yy[:, target_index]
     previous = archive/'dictionaries'/f'N{n}_raw_g{cap:g}'
-    if (previous/'U.npy').exists():
+    if proposal_case:
+        source = root/'cases'/proposal_case
+        meta = json.loads((source/'meta.json').read_text())
+        if meta['n'] != n or meta['cap'] > cap:
+            raise ValueError('Proposal dictionary must have matching width and obey the cap')
+        proposed_case = dict(np.load(source/'parameters.npz'))
+        if not np.all(np.isfinite(proposed_case['slopes'])) or np.any(np.abs(proposed_case['slopes']) > cap):
+            raise ValueError('Saved proposal slopes violate the cap')
+        for name in ['x', 'centers']:
+            if not np.array_equal(case[name], proposed_case[name]):
+                raise ValueError('Proposal dictionary must have identical geometry')
+        proposed_j, proposed_y = campaign.matrices(proposed_case)
+        if (not np.array_equal(yy, proposed_y) or core.array_hash(proposed_j) != meta['matrix_hash']
+                or core.array_hash(proposed_y) != meta['target_hash']):
+            raise ValueError('Proposal dictionary or target hash mismatch')
+        u, _, _ = svd(proposed_j, full_matrices=False, lapack_driver='gesdd')
+    elif (previous/'U.npy').exists():
         meta = json.loads((previous/'meta.json').read_text())
         assert meta['matrix_hash'] == core.array_hash(j)
         u = np.load(previous/'U.npy')
@@ -130,7 +148,8 @@ def run_case(args):
     for epsilon in campaign.EPSILONS:
         bounds[str(epsilon)] = certificate.time_bound(certified, epsilon)
     result = dict(n=n, cap=cap, target=campaign.TARGETS[target_index], rank=rank,
-        max_intervals=intervals, taylor_order=order, certificates=certified, bounds=bounds,
+        max_intervals=intervals, taylor_order=order, proposal_case=proposal_case,
+        certificates=certified, bounds=bounds,
         candidates=candidates, source_commit=os.environ.get('PROBE_SOURCE_COMMIT', 'local'),
         grid_hash=core.array_hash(case['x']), centers_hash=core.array_hash(case['centers']),
         target_hash=core.array_hash(y))
@@ -152,8 +171,10 @@ def main():
     p.add_argument('--workers', type=int, default=4)
     p.add_argument('--order', type=int, choices=[2, 4, 6], default=2)
     p.add_argument('--reuse-candidates', action='store_true')
+    p.add_argument('--proposal-case', help='Use this saved dictionary only to propose witness directions')
     a = p.parse_args()
-    jobs = [(str(a.root), str(a.archive), a.n, cap, target, a.rank, a.intervals, a.verify_count, a.order, a.reuse_candidates)
+    jobs = [(str(a.root), str(a.archive), a.n, cap, target, a.rank, a.intervals,
+             a.verify_count, a.order, a.reuse_candidates, a.proposal_case)
             for cap in a.caps for target in a.targets]
     with ProcessPoolExecutor(max_workers=a.workers) as pool:
         for _ in pool.map(run_case, jobs):

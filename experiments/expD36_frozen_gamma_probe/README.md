@@ -227,6 +227,10 @@ cap; a result above that cap is a certified obstruction, not an executed hit.
 `--order 4 --reuse-candidates` rechecks saved proposals with higher-order
 interval Taylor enclosures in a separate output directory. This directly
 measures numerical enclosure slack without changing the proposed witnesses.
+`--proposal-case <saved-case-id>` instead proposes directions from a searched
+admissible dictionary's left singular vectors. Width, samples, centers, matrix
+hash, and target values must match. This changes only the witness search; the
+subsequent certificate still covers every dictionary under the declared cap.
 
 `fourier_validate.py --archive <completed-full-sweep> --output <new-output>`
 executes the periodic controls, checks independent finite-Gram predictions
