@@ -96,27 +96,27 @@ def optimize_candidate(x, centers, gamma_cap, witness, basis, grid_size=25):
     constraints = []
     # Scaling resolves small target correlations without changing the SDP.
     features = [np.tanh(g*(x[:, None]-centers))/np.sqrt(len(x)) for g in slopes]
-    energy_scale = max(max(float(np.max((v@a)**2)) for a in features), 1e-14)
+    energy_scale = max(max(float(np.max((v@a)**2)) for a in features), 1e-30)
     for a in features:
         av, ab = v@a, basis.T@a
-        constraints.append((av*av-cp.sum(cp.multiply(ab, q@ab), axis=0))/energy_scale <= z)
+        constraints.append(av*av/energy_scale-cp.sum(cp.multiply(ab, q@ab), axis=0) <= z)
     bb = basis.T@b
-    constraints.append((float(v@b)**2-cp.sum(cp.multiply(bb, q@bb)))/energy_scale+cp.sum(z) <= 0)
+    constraints.append(float(v@b)**2/energy_scale-cp.sum(cp.multiply(bb, q@bb))+cp.sum(z) <= 0)
     problem = cp.Problem(cp.Minimize(cp.trace(q)), constraints)
     problem.solve(solver='CLARABEL', max_iter=150,
                   tol_gap_abs=1e-9, tol_feas=1e-9, tol_gap_rel=1e-8)
     if q.value is None:
         return dict(status=str(problem.status), factor=None)
     values, vectors = eigh((q.value+q.value.T)/2)
-    keep = values > max(1e-16, np.max(values)*1e-12)
-    factor = basis@(vectors[:, keep]*np.sqrt(np.maximum(values[keep], 0.)))
+    keep = values > max(np.finfo(float).tiny, np.max(values)*1e-12)
+    factor = basis@(vectors[:, keep]*np.sqrt(energy_scale*np.maximum(values[keep], 0.)))
     if (np.array_equal(x, -x[::-1]) and np.array_equal(centers, -centers[::-1])
             and (np.array_equal(v, v[::-1]) or np.array_equal(v, -v[::-1]))):
         # Reflection averaging preserves feasibility and trace on this geometry.
         factor = np.column_stack([.5*(factor+factor[::-1]), .5*(factor-factor[::-1])])
     return dict(status='grid_candidate', solver_status=str(problem.status),
                 factor=factor, beta=float(np.sum(factor**2)), grid=slopes,
-                solver_objective=float(problem.value))
+                solver_objective=float(energy_scale*problem.value), energy_scale=energy_scale)
 
 
 def optimize_joint_candidate(x, centers, gamma_cap, target, basis, t, grid_size=13):

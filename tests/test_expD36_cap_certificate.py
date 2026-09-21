@@ -40,14 +40,16 @@ def test_small_cap_baseline_and_invalid_direct_jensen():
         c.certify(x, [0.], .1, x, np.zeros((33, 0)), y, target_witness=True)
 
 
-def test_convex_candidate_recovers_two_sample_optimum():
+@pytest.mark.parametrize('cap', [1e-4, .001, .1])
+def test_convex_candidate_recovers_two_sample_optimum(cap):
     pytest.importorskip('cvxpy')
     x = np.array([-1., 1.]); y = x.copy()
-    result = c.optimize_candidate(x, np.zeros(4), .1, y, y[:, None], grid_size=5)
-    certified = c.certify(x, np.zeros(4), .1, y, result['factor'], y, target_witness=True)
-    optimum = 4*np.tanh(.1)**2
+    result = c.optimize_candidate(x, np.zeros(4), cap, y, y[:, None], grid_size=5)
+    certified = c.certify(x, np.zeros(4), cap, y, result['factor'], y,
+                          target_witness=True, relative_slack=1e-9)
+    optimum = 4*np.tanh(cap)**2
     assert certified['beta'] >= optimum
-    assert certified['beta'] < optimum+1e-6
+    assert certified['beta'] < optimum*(1+1e-5)+1e-14
 
 
 def test_joint_witness_optimization_recovers_exact_resolvent():
