@@ -1,0 +1,96 @@
+{
+  "tag": "N1024_raw_adam_continue",
+  "n": 1024,
+  "map": "raw",
+  "gammas": [
+    1,
+    4,
+    128.0
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "view": "common"
+    }
+  ],
+  "rates": [
+    [
+      0.001,
+      0.0001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.0001,
+      0.001,
+      0.001
+    ],
+    [
+      1e-05,
+      0.0001,
+      0.001,
+      0.001
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ]
+  ],
+  "matrix_hashes": [
+    "8a640c6e031ba2469d937d6c0fc301bb6bd274a80fba976f177988594504b796",
+    "16cfcfdd5bbec8287ad7fc7b6cd76ba53ebd29e4152ca7a572fafbb0f41d1073",
+    "047471b74fb541d1e511c3ae0dd932e2e03b0f9c713b9dac37c778a99e4e897d"
+  ],
+  "initial_hash": "f0dcb80645bb2e968a19c6868ac87bcbec3b72b0361cc404af6a80ef96cf2ecd",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

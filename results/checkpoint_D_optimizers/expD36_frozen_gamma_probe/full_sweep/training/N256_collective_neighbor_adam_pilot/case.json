@@ -1,0 +1,308 @@
+{
+  "tag": "N256_collective_neighbor_adam_pilot",
+  "n": 256,
+  "map": "collective_neighbor",
+  "gammas": [
+    1,
+    4,
+    32.0
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 1e-05,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 1e-05,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 0.0001,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 0.0001,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 0.001,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 0.001,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 0.01,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 0.01,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 0.1,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "initial_rate": 0.1,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 1e-05,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 1e-05,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 0.0001,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 0.0001,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 0.001,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 0.001,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 0.01,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 0.01,
+      "epsilon": 1e-12
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 0.1,
+      "epsilon": 1e-08
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "initial_rate": 0.1,
+      "epsilon": 1e-12
+    }
+  ],
+  "rates": [
+    [
+      1e-05,
+      1e-05,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.01,
+      0.01,
+      0.1,
+      0.1,
+      1e-05,
+      1e-05,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.01,
+      0.01,
+      0.1,
+      0.1
+    ],
+    [
+      1e-05,
+      1e-05,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.01,
+      0.01,
+      0.1,
+      0.1,
+      1e-05,
+      1e-05,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.01,
+      0.01,
+      0.1,
+      0.1
+    ],
+    [
+      1e-05,
+      1e-05,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.01,
+      0.01,
+      0.1,
+      0.1,
+      1e-05,
+      1e-05,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.01,
+      0.01,
+      0.1,
+      0.1
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12
+    ]
+  ],
+  "matrix_hashes": [
+    "2ace2c771a3dbcc916563fe3c76bb7e0656e6ce6c5c5c56cdd5d70ec404894c7",
+    "0b7e2ada7301ec171f7f2d41e43216f6b00ffdbd88bb12161dc313ed1b7f023f",
+    "960946a4a3c2d4a6a9f930397e52ad665cb3b4a1d0a051bdf632d40cbc9247e1"
+  ],
+  "initial_hash": "d125e1d073374aa2c74a5d291f0680dcba61f57f5782ca6a6b5e7a34aefdab35",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

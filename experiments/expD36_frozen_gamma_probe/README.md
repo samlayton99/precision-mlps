@@ -149,3 +149,14 @@ $K_c=160$. It compares 40- and 80-digit construction, ordinary and extended
 evaluation, and an independent 80-digit evaluation check. The constructor still
 samples target derivatives and returns coefficients in FP64; its measured
 recovery accuracy is not asserted to be an exact approximation floor.
+
+The [full-sweep report](../../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/REPORT.md)
+contains both three-panel figures, all controls, measured theorem slack, and
+complete allocation accounting. All 4,095 prescribed optimizer trajectories
+completed within the two-GPU-hour budget. `full_analyze.py --root <output>`
+regenerates the compact summary and thirteen figure families from saved
+evidence after checking every campaign completion flag. Run it as a module,
+`python -m experiments.expD36_frozen_gamma_probe.full_analyze`.
+The tracked compact artifacts suffice for figure regeneration; full matrices,
+optimizer checkpoints, and every-update traces are archived on Runpod under
+`/workspace/junmiaoh/experiments/precision-mlps/runs/frozen_gamma_full_v1`.

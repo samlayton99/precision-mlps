@@ -1,0 +1,96 @@
+{
+  "tag": "N512_collective_neighbor_polynomial_gd",
+  "n": 512,
+  "map": "collective_neighbor",
+  "gammas": [
+    4,
+    16,
+    64
+  ],
+  "optimizer": "gd",
+  "columns": [
+    {
+      "target": "polynomial_16",
+      "degree": 16,
+      "initialization": "zero",
+      "chi": 0.5
+    },
+    {
+      "target": "polynomial_32",
+      "degree": 32,
+      "initialization": "zero",
+      "chi": 0.5
+    },
+    {
+      "target": "polynomial_64",
+      "degree": 64,
+      "initialization": "zero",
+      "chi": 0.5
+    },
+    {
+      "target": "polynomial_128",
+      "degree": 128,
+      "initialization": "zero",
+      "chi": 0.5
+    }
+  ],
+  "rates": [
+    [
+      0.02540530639752681,
+      0.02540530639752681,
+      0.02540530639752681,
+      0.02540530639752681
+    ],
+    [
+      0.02435270451689222,
+      0.02435270451689222,
+      0.02435270451689222,
+      0.02435270451689222
+    ],
+    [
+      0.02431237394537614,
+      0.02431237394537614,
+      0.02431237394537614,
+      0.02431237394537614
+    ]
+  ],
+  "epsilons": [
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "matrix_hashes": [
+    "87285e28a7bbaba3d6b61442fe9bf3f6807fda84375c4edc1e2670b2bca44c15",
+    "b16f0bf7c50bd344e7f6ef220835956e40e60641f5eff3d0828922411b46f884",
+    "acf414809a8d82c02fe488257a67e7bc67945e19366f025cb7dcd4e443c215f8"
+  ],
+  "initial_hash": "3dd1b47dd95350a891906a22913dcfd6dd2dcf1c1a297b6b5321c1d66eed9c2c",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}
