@@ -89,6 +89,69 @@ $$
 
 The inner sum excludes the constant bias row, whose polynomial tail vanishes. This exhibits the exponential cutoff dependence and the explicit coordinate-map cost that enter the numerical predictions.
 
+### How the analytic and directional C2 values are computed
+
+These are two evaluations of the same necessary-time inequality. **Analytic C2** replaces the actual access by a proved upper envelope $B_k$ computed from the slope and readout map. **Directional C2**, called the measured or estimated C2 in some discussion, uses the actual target-tail direction and numerically evaluates $\mu_k$. The word *estimate* describes floating-point evaluation, not a fitted convergence law or a different optimizer. Both plotted curves use measured target tails and curvature $L$; even the analytic curve is not a function of gamma alone. Neither curve is an interval-certified numerical lower bound.
+
+The computations start from half empirical MSE, with $A$, $J$, and $y$ divided by $\sqrt m$. Set
+
+$$
+r_0=J\theta_0-y,\qquad
+q_k=\frac{Q_kr_0}{\|Q_kr_0\|},\qquad
+\delta_k=\frac{\|Q_kr_0\|}{\|r_0\|},\qquad
+\mu_k=\|J^\top q_k\|^2.
+$$
+
+At zero readout and zero output bias, $r_0=-y$, $\delta_k=E_k$, and $\epsilon_{\rm res}=\epsilon_{\rm target}$. The sign of $q_k$ does not affect its access. A Householder QR of the sampled polynomial matrix supplies $Q_k$; the implementation retains the entire sample-space complement, rather than only the remaining columns of a truncated polynomial basis. A zero tail contributes no witness.
+
+For either denominator $D_k\in\{\mu_k,B_k\}$, calculate
+
+$$
+F_\epsilon=\frac{L}{-\log(1-\chi)}
+\frac{\log(1/\epsilon_{\rm res})}{(1-\epsilon_{\rm res})^2},
+\qquad
+T_k(D)=F_\epsilon\frac{[\delta_k-\epsilon_{\rm res}]_+^2}{D_k},
+\qquad
+\underline N(D)=\left\lceil\max_k T_k(D)\right\rceil.
+$$
+
+The cutoff is maximized separately for each curve. Computation uses logarithms to preserve very large values; the integer ceiling is applied after maximization. The access inequalities explain their ordering:
+
+$$
+\mu_k\le b_k=\|Q_kJ\|_2^2
+\le s_k=\|Q_kJ\|_F^2\le B_k,
+\qquad
+\underline N(B)\le\underline N(\mu).
+$$
+
+For raw coordinates $R=I$, $B_k=WU_k^2$. For a diagonal map it is sufficient to use $U_k^2\sum_{j=1}^W s_j^2$. For the anchored neighboring map, the original columnwise envelope is $U_k^2(4\sum_{j=1}^{W-1}s_j^2+s_W^2)$, because it bounds a difference of two feature tails by the sum of their norms. This last triangle inequality loses cancellation between neighboring features. Each calculation also takes the minimum with the generic map-norm envelope displayed above.
+
+**Table 2a. Worked C2 substitutions for the zero-start sine mixture at 1% training error. Entries before the last column are rounded; the saved full-precision values determine the ceiling. Different cutoffs can have equal tails because this target is odd.**
+
+| Map, gamma | Denominator | Maximizing $k$ | $\delta_k$ | $F_\epsilon[\delta_k-0.01]^2$ | $D_k$ | Necessary updates |
+|---|---|---:|---:|---:|---:|---:|
+| Raw, 4 | Analytic $B_k$ | 30 | 0.0854927 | 8.72854 | $2.49671\times10^{-7}$ | 34,960,178 |
+| Raw, 4 | Directional $\mu_k$ | 29 | 0.0854927 | 8.72854 | $2.03681\times10^{-9}$ | 4,285,392,774 |
+| Raw, 64 | Analytic $B_k$ | 0 | 1 | 1,646.68 | 559 | 3 |
+| Raw, 64 | Directional $\mu_k$ | 8 | 0.468442 | 353.108 | 1.14475 | 309 |
+| Collective neighboring, 64 | Analytic $B_k$ | 0 | 1 | 136.635 | 10,906.3 | 1 |
+| Collective neighboring, 64 | Directional $\mu_k$ | 0 | 1 | 136.635 | 0.0371162 | 3,682 |
+
+For example, raw gamma 4 has $L=225.934055$, $\chi=0.5$, and $F_{0.01}=1531.55124$. Dividing the common numerator $8.72854222$ by the two access values gives $34,960,177.513$ and $4,285,392,773.719$ before taking ceilings. This difference comes entirely from the denominator and the separately selected cutoff, not a learning-rate adjustment.
+
+### Where the necessary-time argument loses information
+
+The time inequality first bounds the correction required in one direction by $[\delta_k-\epsilon]_+\|r_0\|$, then uses Cauchy–Schwarz to convert this to required parameter displacement. A sharp universal displacement inequality turns that requirement into time. Finally, discrete GD is related to the effective generator $K_\eta=-\log(I-\eta JJ^\top)$ using
+
+$$
+\eta JJ^\top\preceq K_\eta
+\preceq\frac{-\log(1-\chi)}{\chi}\eta JJ^\top.
+$$
+
+Keeping the exact effective-generator denominator gives C3. For the same witness and before integer rounding, its improvement over directional C2 is at most $-\log(1-\chi)/\chi=1.38629$ when $\chi=0.5$. Therefore C3 alone cannot remove the observed factors of 31–52. The larger loss is the compression of a residual spread over many spectral modes into one tail/access ratio. Replacing $\mu_k$ by $B_k$ introduces a further, separate loss.
+
+The theorem applies in both raw and neighboring coordinates by using the actual $J=AR$. Neighboring changes the curvature and which modes the initial residual excites; raw coordinates do not add stochastic noise. The time-conversion theorem holds for any fixed linear design and any sampled initial residual. The gamma envelope additionally assumes frozen tanh features with bounded slopes. A useful nonzero polynomial tail is a condition on the target or initial residual, not a universal property of every function class. None of these lower bounds establishes a positive asymptotic error floor: a finite non-hit means that the executed budget was insufficient.
+
 The structural envelope and the general-residual time conversion answer different tightness questions. Exponential degree dependence and a sharp universal prefactor do not imply a close prediction for a particular multi-mode target. The relevant empirical slack compares actual first hits with necessary times, while capacity diagnostics establish whether a retained numerical model can attain the requested tolerance at all.
 
 **Table 2. Necessary versus executed updates to 1% training error on the sine mixture. All values use the actual map and $\eta=0.5/L$; no constants are fit to trajectories. A dash means the ratio cannot be measured within the executed budget.**
