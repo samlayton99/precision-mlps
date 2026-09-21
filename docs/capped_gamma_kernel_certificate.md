@@ -258,6 +258,10 @@ $$
 This is an information limit for a single $(\beta,\delta)$ pair. The abstract
 operator need not be realizable by any tanh dictionary, so it is not an
 admissible upper witness for the capped-family optimization problem.
+If the normalization must have $\|H\|=1$ exactly, add $ww^T$ for a unit
+vector $w$ orthogonal to both $v$ and $\widehat y$ (available in dimension
+at least three). This leaves the directional constraint and target evolution
+unchanged while supplying a unit eigenvalue.
 
 The cap also gives useful order relations without claiming that every pair
 of dictionaries is ordered. If $\Gamma_1\le\Gamma_2$, their admissible
