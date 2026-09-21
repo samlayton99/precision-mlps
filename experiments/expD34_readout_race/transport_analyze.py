@@ -310,8 +310,15 @@ def plot_refinements(endpoints,kernels,output):
         for col,target in enumerate(targets):
             rr=sorted([r for r in laws if r['target']==target],key=lambda r:r['nodes'])
             for row,key in enumerate(('mean_gamma','readout_l2','fraction_3.2')):
-                axes[row,col].plot([r['nodes'] for r in rr],[r[key] for r in rr],'o-',color='#2563eb')
-                axes[row,col].set(ylabel=key)
+                values=np.array([r[key] for r in rr])
+                axes[row,col].plot([r['nodes'] for r in rr],values,'o-',color='#2563eb')
+                axes[row,col].set(ylabel={'mean_gamma':'Mean gamma','readout_l2':'Readout norm',
+                    'fraction_3.2':'Population above gamma = 3.2'}[key])
+                # Do not expand floating-point noise into a visible convergence trend.
+                if np.ptp(values)<1e-10*max(1.,abs(values.mean())):
+                    pad=.01*max(1.,abs(values.mean()))
+                    axes[row,col].set_ylim(values.mean()-pad,values.mean()+pad)
+                    axes[row,col].ticklabel_format(axis='y',style='plain',useOffset=False)
             axes[0,col].set_title(target); axes[-1,col].set_xlabel('Quadrature order per dimension')
         fig.tight_layout();fig.savefig(output/'law_refinement.png',dpi=160);plt.close(fig)
     rows=[r for r in kernels if r['run'] in ('primary33','width89full','width353full') and r['seed']<3 and r['step']==20000]

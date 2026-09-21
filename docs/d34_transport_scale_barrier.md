@@ -100,11 +100,13 @@ K=K_a+K_b+K_c+K_d,
 \tag{7}
 $$
 
+In the modal vector identities, $g_a$ means the finite-network slope gradient, or the weighted node vector $(\sqrt{Ww_i}\,g_a(z_i))_i$ for quadrature. Its squared norm is therefore $W\int g_a(z)^2d\rho$, consistent with (3). The raw characteristic force in (1) remains unweighted.
+
 For the complete residual representation, $\dot e=-Ke$. With a finite basis the exact full-network equation has the omitted-mode forcing $f$:
 
 $$
 \dot e=-Ke+f,\qquad
-f=-P_K\mathcal K r_\perp,
+f_k=-\langle q_k,\mathcal K r_\perp\rangle_m,
 \tag{8}
 $$
 
@@ -252,12 +254,12 @@ $$
 \tag{17}
 $$
 
-Proof: in a coupling, a true particle beyond $\Gamma$ either has a predicted partner beyond $\Gamma-\delta$ or their slope coordinates differ by at least $\delta$; apply Markov's inequality to squared displacement. For paired finite networks one may use $\varepsilon=\|a-\widehat a\|_2/\sqrt W$. The observed forecast error is not an independent proof of that radius.
+Proof: in a coupling, a true particle beyond $\Gamma$ either has a predicted partner beyond $\Gamma-\delta$ or their slope coordinates differ by at least $\delta$; apply Markov's inequality to squared displacement. The proof only requires a bound on the gamma-marginal Wasserstein distance. Thus for paired finite networks one may use $\varepsilon=\|a-\widehat a\|_2/\sqrt W$ even without a bound on the other parameter coordinates. The observed forecast error is not an independent proof of that radius.
 
 Equation (17) separates three obligations: certify the prediction's population tail; bound time-step and modal/quadrature errors; and, for a law forecast, control finite-seed fluctuations. Large global Lipschitz/Grönwall estimates may be valid yet useless at time 1200. A useful proof would exploit coarse relaxation, target-weighted effective forcing, or a localized moment enclosure. Failure of one route is a mathematical result to report, rather than a reason to replace its missing bound with an observed small gradient.
 
 ## Experimental discrimination
 
-The locked protocol in the [experiment README](../experiments/expD34_readout_race/README.md#transport-and-residual-basis-extension) tests degree 33 against degrees 9, 17, and 65; law quadrature orders 8, 12, and 16; full residual evolution; and a half time step at matched physical time. Fresh seeds assess independent predictions. Width and readout-rate changes assess transfer beyond the primary equal-rate setting. Frozen-initial-kernel predictions test whether kernel evolution is needed; the existing affine reference tests whether nonlinear features are needed.
+The locked protocol in the [experiment README](../experiments/expD34_readout_race/README.md#transport-and-residual-basis-extension) tests degree 33 against degrees 9, 17, and 65; law quadrature orders 8, 12, and 16; full residual evolution; and a half time step at matched physical time. Adaptive controls extend quadrature to orders 24 and 32 and check the full residual at order 32. Fresh seeds assess independent predictions. Width and readout-rate changes assess transfer beyond the primary equal-rate setting. Frozen-initial-kernel predictions test whether kernel evolution is needed; the existing affine reference tests whether nonlinear features are needed.
 
 There are three separate scientific questions. Does the exact-tanh modal forecast track actual trajectories and population tails? Does the law PDE predict the distribution of finite-seed outcomes, especially rare escapes? Do (5), (9)–(12), and (15) identify a quantity that can be bounded without the completed true trajectory? Positive answers to the first two do not automatically answer the third. The intended paper claim should be limited accordingly.
