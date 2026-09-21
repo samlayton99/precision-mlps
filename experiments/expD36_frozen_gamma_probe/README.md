@@ -233,3 +233,9 @@ dictionary is saved under a new case ID and must pass an independent spectral
 check and ordinary GD before contributing an upper witness. CPU requests for
 subsequent GPU jobs are limited to two cores so CPU certification can progress
 within Runpod's per-user CPU limit while both allocated GPUs are active.
+
+`cap_resolvent.py --root <capped-campaign>` tightens the conversion from a
+certified Rayleigh bound to a necessary learning time. The resolvent inequality
+is proved in the theorem note; a second interval checker encloses its scalar
+spectral minimum. Its output is a separate refinement artifact, preserving the
+original CDF calculation and the certificate from which both follow.

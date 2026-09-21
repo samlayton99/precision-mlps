@@ -154,3 +154,50 @@ research target, not a presupposed result. Selected dictionaries are frozen
 before ordinary GD; their hidden slopes are never updated during that timing.
 Training error supports an optimization statement, not a generalization claim.
 Any comparison to independent-grid error retains its separate evidence role.
+
+## Resolvent refinement of the learning-time conversion
+
+The CDF conversion does not use all of the relationship between the witness
+and target. A second inequality improves the necessary time while preserving
+the same uniform certificate (1). Set $H=K/L$ and $\widehat y=y/\|y\|$.
+For every $t>0$, weighted Cauchy–Schwarz gives
+
+$$
+\delta^2\le
+\big(v^T(H+tI)v\big)
+\big(\widehat y^T(H+tI)^{-1}\widehat y\big)
+\le(\beta+t)\widehat y^T(H+tI)^{-1}\widehat y.
+$$
+
+For $z\ge0$, define
+
+$$
+a(n,t,z)=\min_{0\le s\le1}
+\left\{(1-\chi s)^{2n}-\frac{z}{t+s}\right\}.
+$$
+
+Applying this scalar inequality in the eigenbasis of $H$ yields
+
+$$
+\boxed{E(n)^2\ge
+a(n,t,z)+\frac{z\delta^2}{\beta+t}.}
+\tag{4}
+$$
+
+Any $n$ for which the right side exceeds $\epsilon^2$ is excluded for every
+dictionary under the cap. Optimize $t,z$ to propose a stronger result, then
+independently enclose the scalar minimum over the entire interval $[0,1]$.
+For an interval $[\ell,u]$, the elementary lower enclosure
+
+$$
+(1-\chi u)^{2n}-\frac{z}{t+\ell}
+$$
+
+is valid because the two terms have opposite monotonicities. Adaptive
+subdivision and outward arithmetic establish (4) without relying on the
+optimizer or a grid of eigenvalues. The implementation takes the maximum of
+this result, the CDF bound, and the direct-target Jensen bound when applicable.
+
+This is a proof improvement, not a fitted time multiplier. The parameters
+$t,z$ use only $\beta,\delta,\chi,\epsilon$; no trained iterate is an input.
+It does not by itself tighten the upstream uniform estimate of $\beta$.
