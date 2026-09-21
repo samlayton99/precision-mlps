@@ -220,6 +220,9 @@ in the evidence and direct the next round toward tighter scalar enclosures.
 Proposal ranking retains log-scale forecasts above FP64's exact-integer range.
 Final integer bounds use adaptive precision and an explicit $10^{32}$ update
 cap; a result above that cap is a certified obstruction, not an executed hit.
+`--order 4 --reuse-candidates` rechecks saved proposals with higher-order
+interval Taylor enclosures in a separate output directory. This directly
+measures numerical enclosure slack without changing the proposed witnesses.
 
 `fourier_validate.py --archive <completed-full-sweep> --output <new-output>`
 executes the periodic controls, checks independent finite-Gram predictions

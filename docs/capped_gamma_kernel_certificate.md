@@ -131,6 +131,19 @@ over the entire cap interval. It bounds tanh, projections, derivatives, traces,
 normalization, and target overlap. Adaptive subdivision may stop with a loose
 but valid upper bound.
 
+For cancellation-sensitive witnesses the checker can use a Taylor polynomial
+of order four or six, with an interval remainder over the complete subinterval.
+The normalized derivatives of $f(g)=\tanh(gd)$ follow from
+$f'=d(1-f^2)$: if $a_k=f^{(k)}(g)/k!$, then
+$a_1=d(1-a_0^2)$ and
+$a_{k+1}=-d\sum_{i=0}^ka_i a_{k-i}/(k+1)$ for $k\ge1$.
+Linear projection and polynomial convolution give the corresponding
+coefficients of each scalar quadratic form. Point coefficients retain the
+projection cancellations; interval coefficients bound the final derivative
+remainder. Endpoint quadratic bounds also retain the sign of curvature.
+Taking the minimum of these valid upper enclosures changes their sharpness,
+not the certificate condition.
+
 If the resulting constraint upper bound is $r>0$, replace $X_0$ by
 $X=X_0+rbb^T$. The bias contribution falls by $r$, and every other supremum can
 only fall. Thus the repaired certificate is feasible, at the price of adding

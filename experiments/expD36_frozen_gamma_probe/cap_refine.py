@@ -6,6 +6,7 @@ from concurrent.futures import ProcessPoolExecutor
 import json
 import os
 from pathlib import Path
+import shutil
 import time
 
 import numpy as np
@@ -53,12 +54,19 @@ def candidate_score(delta, beta, target=False):
 
 
 def run_case(args):
-    root, archive, n, cap, target_index, rank, intervals, verify_count = args
+    root, archive, n, cap, target_index, rank, intervals, verify_count, order, reuse = args
     root, archive = Path(root), Path(archive)
-    destination = root/'certificates'/f'N{n}_cap{cap:g}_t{target_index}_r{rank}_i{intervals}'
+    previous_search = root/'certificates'/f'N{n}_cap{cap:g}_t{target_index}_r{rank}_i{intervals}'
+    destination = previous_search if order == 2 else previous_search.with_name(previous_search.name+f'_o{order}')
     if (destination/'result.json').exists():
         return json.loads((destination/'result.json').read_text())
     destination.mkdir(parents=True, exist_ok=True)
+    if reuse and destination != previous_search:
+        for arrays in previous_search.glob('*.npz'):
+            metadata = arrays.with_suffix('.json')
+            if metadata.exists() and not (destination/arrays.name).exists():
+                shutil.copy2(arrays, destination/arrays.name)
+                shutil.copy2(metadata, destination/metadata.name)
     case = campaign.make_case(n, cap, 'common', 0)
     j, yy = campaign.matrices(case)
     y = yy[:, target_index]
@@ -111,7 +119,7 @@ def run_case(args):
             values = dict(np.load(destination/f'{name}.npz'))
             result = certificate.certify(case['x'], case['centers'], cap,
                 values['witness'], values['factor'], y, max_intervals=intervals,
-                relative_slack=.01, target_witness=name == 'target', progress=True)
+                relative_slack=.01, target_witness=name == 'target', progress=True, taylor_order=order)
             result.update(label=name, factor_hash=core.array_hash(values['factor']),
                           witness_hash=core.array_hash(values['witness']))
             core.write_json(path, result)
@@ -122,7 +130,7 @@ def run_case(args):
     for epsilon in campaign.EPSILONS:
         bounds[str(epsilon)] = certificate.time_bound(certified, epsilon)
     result = dict(n=n, cap=cap, target=campaign.TARGETS[target_index], rank=rank,
-        max_intervals=intervals, certificates=certified, bounds=bounds,
+        max_intervals=intervals, taylor_order=order, certificates=certified, bounds=bounds,
         candidates=candidates, source_commit=os.environ.get('PROBE_SOURCE_COMMIT', 'local'),
         grid_hash=core.array_hash(case['x']), centers_hash=core.array_hash(case['centers']),
         target_hash=core.array_hash(y))
@@ -142,8 +150,10 @@ def main():
     p.add_argument('--intervals', type=int, default=64)
     p.add_argument('--verify-count', type=int, default=2)
     p.add_argument('--workers', type=int, default=4)
+    p.add_argument('--order', type=int, choices=[2, 4, 6], default=2)
+    p.add_argument('--reuse-candidates', action='store_true')
     a = p.parse_args()
-    jobs = [(str(a.root), str(a.archive), a.n, cap, target, a.rank, a.intervals, a.verify_count)
+    jobs = [(str(a.root), str(a.archive), a.n, cap, target, a.rank, a.intervals, a.verify_count, a.order, a.reuse_candidates)
             for cap in a.caps for target in a.targets]
     with ProcessPoolExecutor(max_workers=a.workers) as pool:
         for _ in pool.map(run_case, jobs):

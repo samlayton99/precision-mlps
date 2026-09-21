@@ -16,12 +16,13 @@ def test_exact_two_sample_certificate_and_jensen():
     assert c.time_bound([result])['bound'] == np.ceil(np.log(.01)/np.log1p(-.5*beta))
 
 
-def test_repair_is_valid_for_interior_and_endpoint_maxima():
+@pytest.mark.parametrize('order', [2, 4, 6])
+def test_repair_is_valid_for_interior_and_endpoint_maxima(order):
     rng = np.random.default_rng(8)
     x = np.linspace(-1, 1, 17); centers = np.array([-.8, .3, 1.2])
     y = np.sin(2*np.pi*x); v = rng.normal(size=len(x))
     factor = rng.normal(size=(len(x), 2))*.03
-    result = c.certify(x, centers, 4., v, factor, y, max_intervals=12)
+    result = c.certify(x, centers, 4., v, factor, y, max_intervals=12, taylor_order=order)
     v /= np.linalg.norm(v)
     b = np.ones(len(x))/np.sqrt(len(x))
     xx = factor@factor.T+result['bias_repair']*np.outer(b, b)
@@ -101,3 +102,15 @@ def test_long_horizons_are_ranked_and_certified_beyond_float_integer_range():
     assert result['status'] == 'interval_certified'
     assert result['bound'] > 10**18
     assert result['bound'] == pytest.approx(np.log(.01)/np.log1p(-.5*beta), rel=1e-12)
+
+
+def test_interval_tanh_polynomials_match_independent_derivatives():
+    import mpmath as mp
+    from flint import arb
+    with mp.workdps(50):
+        for g in [.03, .7, 2.]:
+            d = -1.3
+            coefficients = c.tanh_taylor_coefficients(arb(d), (arb(g)*arb(d)).tanh(), 7)
+            for k, value in enumerate(coefficients):
+                reference = mp.diff(lambda t:mp.tanh(mp.mpf(d)*t), mp.mpf(g), k)/mp.factorial(k)
+                assert float(value) == pytest.approx(float(reference), rel=1e-12, abs=1e-14)

@@ -15,6 +15,28 @@ import numpy as np
 from scipy.linalg import eigh
 
 
+def tanh_taylor_coefficients(d, a, degree):
+    """Derivatives of tanh(g*d), divided by factorial, through degree seven.
+
+    Factored derivative polynomials work with Arb intervals as well as points.
+    They avoid repeated convolution in the inner continuum-checking loop.
+    """
+    square = a*a
+    first = d*(1-square)
+    coefficients = [a, first, -d*a*first]
+    d2 = d*d
+    coefficients.append(-d2*(1-3*square)*first/3)
+    coefficients.append(d2*d*a*(2-3*square)*first/3)
+    if degree >= 5:
+        fourth = square*square
+        coefficients.append(d2*d2*(2-15*square+15*fourth)*first/15)
+    if degree >= 6:
+        coefficients.append(-d2*d2*d*a*(17-60*square+45*fourth)*first/45)
+    if degree >= 7:
+        coefficients.append(-d2*d2*d2*(17-231*square+525*fourth-315*fourth*square)*first/315)
+    return coefficients[:degree+1]
+
+
 def slow_mass(delta, beta, thresholds):
     thresholds = np.asarray(thresholds, dtype=float)
     ratio = np.minimum(np.divide(beta, thresholds, out=np.ones_like(thresholds),
@@ -216,7 +238,7 @@ def optimize_overlap_candidate(x, centers, gamma_cap, target, basis, budget, gri
 
 def certify(x, centers, gamma_cap, witness, factor, target, *,
             precision=96, max_intervals=256, relative_slack=.01, target_witness=False,
-            progress=False):
+            progress=False, taylor_order=2):
     """Rigorous interval certificate, including conservative bias repair.
 
     Subdivision may stop early without invalidating the result: every retained
@@ -224,8 +246,8 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
     The resulting theorem uses beta=tr(PP^T)+repair and the enclosed overlap.
     """
     from flint import arb, arb_mat, ctx
-    if gamma_cap < 0 or max_intervals < 1:
-        raise ValueError('Require a nonnegative cap and positive interval limit')
+    if gamma_cap < 0 or max_intervals < 1 or taylor_order not in (2, 4, 6):
+        raise ValueError('Require a nonnegative cap, positive interval limit, and Taylor order 2, 4 or 6')
     previous_precision = ctx.prec
     ctx.prec = precision
     started = time.monotonic()
@@ -264,7 +286,7 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
             and (np.array_equal(witness, witness[::-1]) or np.array_equal(witness, -witness[::-1]))
             and np.all(np.all(factor == factor[::-1], axis=0)|np.all(factor == -factor[::-1], axis=0)))
         reflected = {}
-        tolerance = relative_slack*max(upper(beta_base), 1e-12)/max(len(centers), 1)
+        tolerance = relative_slack*max(upper(beta_base), 1e-30)/max(len(centers), 1)
         for center in centers:
             key = abs(float(center))
             if symmetry and key in reflected:
@@ -274,6 +296,16 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
             offsets = [arb(float(t))-arb(float(center)) for t in x]
             cache = {}
             point_cache = {}
+            series_cache = {}
+
+            def projected_series(phi, degree):
+                entries = [tanh_taylor_coefficients(d, a, degree) for d, a in zip(offsets, phi)]
+                return matrix*arb_mat(entries)
+
+            def quadratic_coefficient(projected, degree):
+                return sum((sum((projected[i, k]*projected[i, degree-k]
+                           for k in range(degree+1)), arb(0))*(1 if i == 0 else -1)
+                           for i in range(len(rows))), arb(0))
 
             def point(g):
                 if g not in point_cache:
@@ -313,8 +345,36 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
                     _, midpoint_value, midpoint_derivative = point(mid)
                     radius = max(abs(arb(lo)-midpoint).upper(), abs(arb(hi)-midpoint).upper())
                     taylor = midpoint_value+abs(midpoint_derivative)*radius+abs(curvature)*radius**2/2
-                    # Both are upper enclosures; keep the sharper endpoint.
-                    result = arb(min(upper(direct), upper(taylor)))
+                    enclosures = [upper(direct), upper(taylor)]
+                    # Retain the sign of curvature, especially at q(0)=q'(0)=0.
+                    maximum_curvature = arb(upper(curvature))
+                    length = arb(hi)-arb(lo)
+                    for endpoint, direction in [(lo, 1), (hi, -1)]:
+                        q0 = arb(upper(point(endpoint)[1]))
+                        slope = arb(upper(direction*point(endpoint)[2]))
+                        end_value = q0+slope*length+maximum_curvature*length**2/2
+                        if maximum_curvature >= 0:
+                            bound = max(upper(q0), upper(end_value))
+                        elif slope <= 0:
+                            bound = upper(q0)
+                        elif slope+maximum_curvature*length >= 0:
+                            bound = upper(end_value)
+                        else:
+                            bound = upper(q0-slope**2/(2*maximum_curvature))
+                        enclosures.append(bound)
+                    if taylor_order > 2:
+                        if mid not in series_cache:
+                            at_mid = projected_series(point(mid)[0], taylor_order)
+                            series_cache[mid] = [quadratic_coefficient(at_mid, k)
+                                                 for k in range(taylor_order+1)]
+                        coefficients = series_cache[mid]
+                        interval_series = projected_series(phi, taylor_order+1)
+                        remainder = quadratic_coefficient(interval_series, taylor_order+1)
+                        high_order = coefficients[0]+sum((abs(coefficients[k])*radius**k
+                            for k in range(1, taylor_order+1)), arb(0))+abs(remainder)*radius**(taylor_order+1)
+                        enclosures.append(upper(high_order))
+                    # Every retained expression bounds the complete interval.
+                    result = arb(min(enclosures))
                 cache[key] = result
                 return result
 
@@ -348,6 +408,7 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
                     bias_repair=repair, constraint_upper_before_repair=upper(slack),
                     delta=max(0., min(1., lower(delta))), target_witness=target_witness,
                     gamma_cap=float(gamma_cap), precision_bits=precision,
+                    taylor_order=taylor_order,
                     columns=details, seconds=time.monotonic()-started,
                     input_semantics='binary input data; real tanh; real unit witness; X=PP^T+repair*bb^T')
     finally:
