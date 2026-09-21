@@ -4,6 +4,8 @@ The scientific interpretation is in [REPORT.md](REPORT.md). The [experiment READ
 
 The [focused signal-recovery analysis](signal_recovery/README.md) addresses the actual random-readout, equal-rate trajectories. It adds per-neuron travel, readout-versus-geometry attribution, and quantitative population-acquisition budgets for sine and degrees 3 and 9 through 600k updates. The [companion theory](../../../docs/d34_scale_acquisition_theory.md) distinguishes exact discrete bounds from the remaining predictive proof problem.
 
+The [transport and effective-kernel investigation](transport_barrier/README.md) adds independent residual-basis forecasts, fresh-seed validation, initialization-law PDE quadrature, and readout-rate/width controls. Its [theory note](../../../docs/d34_transport_scale_barrier.md) derives coarse tracking bounds for both flow and GD and identifies the kernel quantities needed for a finite-time population barrier.
+
 **Evidence packages. Each package compares a single update horizon; continuations reuse the original trajectories.**
 
 | Directory | Comparison |
@@ -17,6 +19,7 @@ The [focused signal-recovery analysis](signal_recovery/README.md) addresses the 
 | `provenance` | Original bundle manifests, initialization/data hashes, and Slurm allocation checks. |
 | `verification` | Full-horizon PyTorch comparison, saved-state Hessian spectra, lossless-compression ledgers, and repository validation logs. |
 | `signal_recovery` | Verified compact replay of 15 equal-rate cases, signed population motion, block attribution, and scale-acquisition budgets. |
+| `transport_barrier` | Exact-tanh modal forecasts, transport PDE checks, kernel decomposition, fresh predictions, and finite-time barrier diagnostics. |
 
 `summary.json` and `summary.csv` contain all model endpoints, failures, window errors, scale counts, and event times. `rate_contrasts.csv` contains paired actual and reference contrasts against ratio one. The three audit tables summarize every analyzed reference, matched-target, and sample-probe row; they do not average away failing cases. The `last_` and `max_abs_` prefixes distinguish the final observed value from a descriptive maximum over analyzed states. Detailed sample-probe curves are retained for width 177, seed 0.
 
