@@ -103,7 +103,7 @@ def time_bound(certificates, epsilon=.01, chi=.5, cap=10**32):
         ctx.prec = previous
 
 
-def optimize_candidate(x, centers, gamma_cap, witness, basis, grid_size=25):
+def optimize_candidate(x, centers, gamma_cap, witness, basis, grid_size=25, include_dual=False):
     """Finite-grid convex relaxation, explicitly not a continuous certificate."""
     import cvxpy as cp
     x, centers = np.asarray(x), np.asarray(centers)
@@ -136,9 +136,13 @@ def optimize_candidate(x, centers, gamma_cap, witness, basis, grid_size=25):
             and (np.array_equal(v, v[::-1]) or np.array_equal(v, -v[::-1]))):
         # Reflection averaging preserves feasibility and trace on this geometry.
         factor = np.column_stack([.5*(factor+factor[::-1]), .5*(factor-factor[::-1])])
-    return dict(status='grid_candidate', solver_status=str(problem.status),
+    result = dict(status='grid_candidate', solver_status=str(problem.status),
                 factor=factor, beta=float(np.sum(factor**2)), grid=slopes,
                 solver_objective=float(energy_scale*problem.value), energy_scale=energy_scale)
+    if include_dual:
+        result.update(dual_weights=np.maximum(np.stack([c.dual_value for c in constraints[:-1]]), 0.),
+                      dual_bias=float(constraints[-1].dual_value))
+    return result
 
 
 def optimize_joint_candidate(x, centers, gamma_cap, target, basis, t, grid_size=13):

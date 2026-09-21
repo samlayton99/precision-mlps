@@ -114,3 +114,15 @@ def test_interval_tanh_polynomials_match_independent_derivatives():
             for k, value in enumerate(coefficients):
                 reference = mp.diff(lambda t:mp.tanh(mp.mpf(d)*t), mp.mpf(g), k)/mp.factorial(k)
                 assert float(value) == pytest.approx(float(reference), rel=1e-12, abs=1e-14)
+
+
+def test_certificate_dual_identifies_exact_fast_control():
+    pytest.importorskip('cvxpy')
+    from experiments.expD36_frozen_gamma_probe.cap_dual import slope_probabilities
+    x = np.array([-1., 1.]); cap = .1
+    proposal = c.optimize_candidate(x, np.zeros(4), cap, x, x[:, None], grid_size=5, include_dual=True)
+    probabilities = slope_probabilities(proposal['dual_weights'], proposal['dual_bias'])
+    grid = np.r_[proposal['grid'], 0.]
+    assert np.all(probabilities >= 0)
+    np.testing.assert_allclose(probabilities.sum(axis=0), 1.)
+    np.testing.assert_allclose(grid[np.argmax(probabilities, axis=0)], cap)

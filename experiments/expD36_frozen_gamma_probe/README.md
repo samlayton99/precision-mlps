@@ -250,6 +250,10 @@ The `--explore` follow-up retains four fast starts and adds target-phase,
 sparse-lattice, and bimodal initial slopes. This checks whether selecting only
 initially fast dictionaries misses better admissible solutions. The primary
 target remains fixed, and all final learning times require frozen-slope GD.
+`cap_dual.py` uses the certificate solver's dual slope weights as another
+source of adversarial dictionaries. It rounds and samples the mixture into
+actual capped slope vectors. The mixture itself is a diagnostic relaxation;
+only the rounded dictionaries can become executed upper witnesses.
 
 `cap_resolvent.py --root <capped-campaign>` tightens the conversion from a
 certified Rayleigh bound to a necessary learning time. The resolvent inequality
