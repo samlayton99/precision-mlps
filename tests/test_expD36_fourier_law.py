@@ -16,6 +16,9 @@ def test_periodic_independent_synthesis(gamma, density, offset):
     fourier = np.exp(2j*np.pi*np.outer(np.arange(n), np.arange(n))/n)/np.sqrt(n)
     h = fourier.conj().T@(a.T@a)@fourier
     np.testing.assert_allclose(h, np.diag(p.sampled_spectrum(n, gamma, density, offset, 80)), atol=3e-14)
+    packets = p.sampled_packets(n, gamma, density, offset, 80)
+    packet_eigenvalues = n*np.array([np.sum(abs(packets[r::n])**2) for r in range(n)])
+    np.testing.assert_allclose(packet_eigenvalues, p.sampled_spectrum(n, gamma, density, offset, 80), atol=3e-14)
     if density == 1 and offset == 0:
         np.testing.assert_allclose(a@((-1.)**np.arange(n)), 0, atol=3e-14)
 

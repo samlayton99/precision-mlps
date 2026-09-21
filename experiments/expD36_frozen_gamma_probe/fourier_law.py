@@ -46,14 +46,21 @@ def periodized_design(n, gamma, density, offset=0., images=8):
     return values/np.sqrt(m)
 
 
-def sampled_design(n, gamma, density, offset=0., aliases=32):
-    """Fourier synthesis on the shifted sampling grid with coherent aliases."""
+def sampled_packets(n, gamma, density, offset=0., aliases=32):
+    """Normalized output Fourier coefficients of the first sampled column."""
     m = n*density
     ell = np.arange(-aliases*n, (aliases+1)*n)
     coefficients = amplitude(2*np.pi*ell/n, 2*gamma/n)/n
-    grid = np.arange(m)
     folded = np.zeros(m, dtype=complex)
     np.add.at(folded, ell % m, coefficients*np.exp(2j*np.pi*ell*offset/m))
+    return folded
+
+
+def sampled_design(n, gamma, density, offset=0., aliases=32):
+    """Fourier synthesis on the shifted sampling grid with coherent aliases."""
+    m = n*density
+    grid = np.arange(m)
+    folded = sampled_packets(n, gamma, density, offset, aliases)
     one = np.fft.ifft(folded)*m
     return np.column_stack([one[(grid-j*density) % m].real for j in range(n)])/np.sqrt(m)
 

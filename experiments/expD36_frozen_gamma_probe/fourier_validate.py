@@ -25,13 +25,20 @@ def periodic_checks(destination, steps=20000):
         x = -1+2*(np.arange(m)+offset)/m
         y = np.column_stack([np.sin(k*np.pi*x) for k in [2, 6, 10]]
                             +[f.target(x, 'sine_mix_2_6_10')])/np.sqrt(m)
-        keep = eigenvalues > 1e-14*np.max(eigenvalues)
-        modes = fourier_j@vectors[:, keep]/np.sqrt(eigenvalues[keep])
-        loadings = modes.conj().T@y
+        # Construct normalized packets in Fourier space. Spatial cancellation
+        # in J@V divided by a tiny singular value corrupts otherwise resolved
+        # low-frequency target weights even when J itself is accurate.
+        packets = law.sampled_packets(n, gamma, density, offset, aliases=64)
+        modes = np.zeros((m, n), dtype=complex)
+        for r in range(n):
+            if eigenvalues[r] > 0:
+                modes[r::n, r] = np.sqrt(n)*packets[r::n]/np.sqrt(eigenvalues[r])
+        transformed_y = np.fft.fft(y, axis=0)/np.sqrt(m)
+        loadings = modes.conj().T@transformed_y
         norm_sq = np.sum(y*y, axis=0)
-        model = dict(rates=.5*eigenvalues[keep]/(4/n),
+        model = dict(rates=.5*eigenvalues/(4/n),
                      weights=np.abs(loadings)**2/norm_sq,
-                     floor=np.sum(np.abs(y-modes@loadings)**2, axis=0)/norm_sq)
+                     floor=np.sum(np.abs(transformed_y-modes@loadings)**2, axis=0)/norm_sq)
         theta = np.zeros((n, y.shape[1])); hits = np.full(y.shape[1], -1)
         checkpoints = []; max_difference = 0.
         eta = .5/(4/n)
