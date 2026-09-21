@@ -14,9 +14,12 @@ The theorem applies to actual simultaneous GD, including random nonzero readouts
 | $\eta,\kappa,t_n=\eta n$ | Geometry step, readout/geometry rate ratio, and physical training time. D34's main setting has $\kappa=1$. |
 | $r,R,L$ | Training residual, its empirical RMS, and half-MSE: $R=\Vert r\Vert_m$, $L=R^2/2$. |
 | $g_I$ | Loss gradient in parameter block $I$. The actual slope velocity is $-g_a$. |
-| $e_C,e_H$ | Residual coefficients in coarse modes $\{0,1\}$ and retained higher modes. |
-| $K,C,Q$ | Rate-weighted modal tangent kernel, its coarse block $C=K_{CC}$, and coupling $Q=K_{CH}$. |
-| $B,z_C$ | Coarse equilibrium map $B=C^{-1}Q$ and tracking error $z_C=e_C+Be_H$. |
+| $q_k,e_k$ | Fixed degree-$k$ basis function and its residual coefficient $e_k=\langle q_k,r\rangle_m$. The index $k$ labels a function of input $x$, not a neuron. |
+| $e_C=(e_0,e_1)^T$, $e_H=(e_2,\ldots,e_\ell)^T$ | Two constant/linear error coefficients and the retained higher-degree error coefficients. Subscripts $C,H$ label these groups. |
+| $K$ | Matrix describing how training couples changes in the retained residual coefficients: $\dot e=-Ke+f$. It includes all parameter blocks. |
+| $C=K_{CC}$, $Q=K_{CH}$ | Abbreviations for the $2\times2$ coarse kernel block and the $2\times(\ell-1)$ coupling block. Standalone $C$ is always a matrix here; lowercase $c$ is the readout vector. |
+| $B=K_{CC}^{-1}K_{CH}$ | Computed response map, of size $2\times(\ell-1)$: the instantaneous retained coarse balance is $e_C^{\rm bal}=-Be_H$. It is not a trained parameter. |
+| $z_C=e_C-e_C^{\rm bal}$ | Two-component tracking error: departure of the actual constant/linear residual from its moving balance. |
 | $T_a,G_a,S$ | Effective slope map, its Gram matrix $G_a=T_a^TT_a$, and effective total kernel. |
 | $p,\Gamma,\mathcal D$ | Required population fraction, slope threshold, and distance to that acquired-population set. |
 | $\tau=\Vert z_C\Vert_C$ | Tracking error in the kernel metric: $\tau^2=z_C^TCz_C$. |
@@ -72,24 +75,26 @@ To see this, making one unacquired coordinate reach magnitude $\Gamma$ costs at 
 
 ## 2. Express the residual in coordinates that reveal competition
 
-Choose fixed functions $q_0,\ldots,q_\ell$ orthonormal under the empirical mean inner product. In D34 they are empirical Legendre modes; $q_0,q_1$ span constants and linear functions. Write
+The residual $r(x)=F(x)-y(x)$ is a function on the training inputs. We describe its shape using fixed functions $q_0,\ldots,q_\ell$ orthonormal under the empirical mean inner product. In D34 these are empirical Legendre modes, indexed by polynomial degree. On the symmetric training grid, $q_0(x)=1$ and $q_1(x)=x/\|x\|_m$; subsequent functions describe quadratic, cubic, and higher-degree shapes. The numbers $0,1,2,\ldots$ label these basis functions, not neurons or parameter values. Write
 
 $$
 e_k=\langle q_k,r\rangle_m,\qquad
 r=\sum_{k=0}^{\ell}e_kq_k+r_\perp.
 $$
 
-This changes residual coordinates without approximating tanh. Approximation enters only if we neglect $r_\perp$ or train a separate forecast with the projected residual. In the following identities, the omitted contribution remains explicit.
+Each $e_k$ is a scalar: how much of shape $q_k$ is present in the error. For example, $e_0$ is the mean residual, and $e_1$ measures its linear component. The vector $e=(e_0,\ldots,e_\ell)^T$ has $\ell+1$ entries. The remaining function $r_\perp$ is orthogonal to every retained basis function.
 
-For each parameter block, define its modal Jacobian. For slopes,
+Changing residual coordinates is exact. The forecast approximates the gradient by truncating residual modes while retaining exact tanh sensitivities. In the following identities, the omitted contribution remains explicit, so the decomposition itself introduces no approximation.
+
+We next ask how moving a parameter changes each residual coefficient. This derivative is the modal Jacobian. For slopes,
 
 $$
-(J_a)_{kj}=\langle q_k,c_jxs_j\rangle_m,
+(J_a)_{kj}=\frac{\partial e_k}{\partial a_j}=\langle q_k,c_jxs_j\rangle_m,
 \qquad g_a=J_a^Te+g_{a,\perp},
 \qquad (g_{a,\perp})_j=c_j\langle r_\perp,xs_j\rangle_m.
 $$
 
-Jacobian rows index residual modes and columns index parameters; $J_d$ is a single column. Stack the rate-weighted blocks as
+Thus $(J_a)_{kj}$ measures how slope $j$ affects error coefficient $k$. Jacobian rows index residual modes and columns index parameters; $J_a$ has $\ell+1$ rows and $W$ columns, while $J_d$ is a single column. Stack the rate-weighted blocks as
 
 $$
 J=[J_a\;J_b\;\sqrt\kappa J_c\;\sqrt\kappa J_d],\qquad
@@ -104,7 +109,9 @@ f_k=-\langle q_k,\mathcal K r_\perp\rangle_m,
 \tag{2}
 $$
 
-where $\mathcal K$ is the full empirical tangent operator. With a complete residual basis, $f=0$. The total kernel describes residual relaxation. Its slope block describes how that relaxation moves slopes. These are different measurements.
+where $\mathcal K$ is the full empirical tangent operator. In components, $\dot e_k=-\sum_{h=0}^{\ell}K_{kh}e_h+f_k$: an error coefficient $e_h$ contributes $-K_{kh}e_h$ to the rate of change of coefficient $e_k$. The matrix $K$ has $\ell+1$ rows and columns and is computed from the current network, so it changes during training. Orthogonal basis functions need not have orthogonal parameter gradients; consequently $K$ need not be diagonal. The vector $f$ is forcing from the omitted residual and vanishes for a complete basis.
+
+The total kernel describes residual relaxation through all parameter blocks. Its slope block describes how that relaxation moves slopes. These are different measurements. The dotted equations use gradient-flow time to expose this structure; Section 4 treats actual GD steps explicitly.
 
 ### How the transport PDE fits into this description
 
@@ -120,23 +127,109 @@ This is the same gradient-flow system; Euler stepping gives the GD update above.
 
 For law quadrature with masses $w_i$, the nodes follow the same characteristic velocity. Their Euclidean loss gradients have an extra factor $Ww_i$, which must be divided out. Kernel columns use $\sqrt{Ww_i}$ weighting, and the slope-force norm is $\sqrt{W\sum_iw_i g_a(z_i)^2}$. Physical width stays $W$ when quadrature resolution increases. The finite-network acquisition distance (1) uses integer neuron counts; continuum mass may split and instead uses the relaxed weighted distance implemented in `weighted_distance`.
 
-## 3. Remove the coarse transient without removing regeneration
+## 3. Find the slope force after constant and linear errors adjust
 
-Partition modes into $C=\{0,1\}$ and the remaining retained modes $H$. The coarse equation is
+The question is whether fitting the constant and linear error components leaves a useful force for moving slopes. The example below shows why we must account for the coarse residual that higher-degree fitting continually induces. We then repeat the same calculation for D34's vectors of residual coefficients. Whether the actual trajectory stays close to the resulting balance is a separate dynamical question for Section 4.
 
-$$
-\dot e_C=-Ce_C-Qe_H+f_C,\qquad C=K_{CC},\quad Q=K_{CH}.
-$$
+### An example before the matrix notation
 
-If $C$ is positive definite, define $B=C^{-1}Q$. With slowly changing higher modes and kernel, and small omitted forcing, the instantaneous coarse balance is $e_C\approx-Be_H$. It is generally not zero. The higher modes continually force the coarse modes while coarse fitting continually removes that forcing.
-
-Define the error in tracking this moving balance,
+Consider a linear toy model with two scalar parameters: a slope-like parameter $a$ and a readout-like parameter $c$. Its error has two orthonormal components. Call the low-degree error coefficient $u$ and the higher-degree error coefficient $v$, and suppose
 
 $$
-z_C=e_C+Be_H,
+u=3a,\qquad v=a+c-1,\qquad L=\tfrac12(u^2+v^2).
 $$
 
-and substitute $e_C=z_C-Be_H$ into the slope gradient:
+Moving $a$ changes both errors; moving $c$ changes only the higher-degree error. The numbers specify an illustrative linear model, not an approximation asserted for D34. Equal-rate gradient flow gives
+
+$$
+g_a=\frac{\partial L}{\partial a}=3u+v,\qquad
+g_c=\frac{\partial L}{\partial c}=v,\qquad
+\dot a=-(3u+v),\quad \dot c=-v.
+$$
+
+Suppose at some instant $v=1$ and $u=-1/3$. The higher-degree error contributes $+1$ to the slope gradient, while the low-degree error contributes $3(-1/3)=-1$. The contributions cancel: $g_a=0$, even though $g_c=1$ and readout fitting continues. Looking only at the higher-degree error would miss that cancellation.
+
+Why consider $u=-v/3$? Differentiate the two error coefficients along training:
+
+$$
+\dot u=3\dot a=-9u-3v,\qquad
+\dot v=\dot a+\dot c=-3u-2v.
+$$
+
+If we temporarily hold $v$ fixed, the first equation relaxes toward $u^{\rm bal}=-v/3$, where its two terms balance. Define the departure from this balance as $z=u-u^{\rm bal}=u+v/3$. Substitution gives
+
+$$
+g_a=3z,\qquad \dot v=-v-3z.
+$$
+
+These two equations express the point of the example. At exact balance ($z=0$), the slope gradient vanishes and the higher-degree error still decreases. When tracking is imperfect, $3z$ is the extra slope gradient and $-3z$ is the correction to higher-degree error evolution. The low-degree error $u$ itself can be nonzero at perfect tracking.
+
+This is an instantaneous statement, not permanent trapping. As $v$ changes, its balance $-v/3$ moves; starting at $z=0$ does not keep $z=0$. In fact, $\dot z=-10z-v/3$ in this example. Establishing how small tracking remains requires a dynamical estimate. For a general network, the surviving slope force at perfect tracking can also be nonzero. The calculation below separates that surviving force from the tracking correction.
+
+### Identify the residual coefficients and their coupled equations
+
+Group the coefficients from Section 2 into two vectors:
+
+$$
+e_C=\begin{pmatrix}e_0\\e_1\end{pmatrix},\qquad
+e_H=\begin{pmatrix}e_2\\\vdots\\e_\ell\end{pmatrix}.
+$$
+
+The subscript $C$ labels the constant/linear, or coarse, group. The subscript $H$ labels the retained higher-degree group. In particular, the phrase "modes 0 and 1" means the constant function $q_0$ and normalized linear function $q_1$. Both vectors describe output error; neither is a vector of neuron parameters. "Fine modes" below means the entries of $e_H$, starting at degree 2. This grouping does not itself assert that the first two modes learn faster.
+
+Split the rows and columns of the already defined matrix $K$ in the same way:
+
+$$
+K=\begin{pmatrix}
+K_{CC}&K_{CH}\\
+K_{CH}^T&K_{HH}
+\end{pmatrix},\qquad
+\begin{aligned}
+\dot e_C&=-K_{CC}e_C-K_{CH}e_H+f_C,\\
+\dot e_H&=-K_{CH}^Te_C-K_{HH}e_H+f_H.
+\end{aligned}
+$$
+
+Here $K_{CC}$ is the $2\times2$ block using rows and columns 0 and 1; $K_{CH}$ has those two rows and columns $2,\ldots,\ell$; $K_{HH}$ uses the higher-degree rows and columns. The vectors $f_C,f_H$ are the corresponding parts of omitted-mode forcing $f$ from (2).
+
+Read the first equation as two simultaneous effects: the coarse residual drives its own relaxation through $-K_{CC}e_C$, while the higher-degree residual drives changes in the coarse coefficients through $-K_{CH}e_H$. The second equation says that coarse residual also affects higher-degree residual. These couplings arise because the same parameter changes affect several output coefficients. All trained parameter blocks contribute to these kernel matrices; "coarse" does not mean "readout-only."
+
+### Find the balance and define its tracking error
+
+To locate the instantaneous balance, hold the kernel and $e_H$ fixed and temporarily set omitted forcing $f_C$ to zero. If $K_{CC}$ is positive definite, the coarse equation has zero velocity when
+
+$$
+K_{CC}e_C^{\rm bal}+K_{CH}e_H=0,
+\qquad
+e_C^{\rm bal}=-K_{CC}^{-1}K_{CH}e_H.
+$$
+
+This is why a relaxed coarse residual need not be zero: its own relaxation can balance forcing from higher-degree residual. It is an instantaneous balance of the retained coarse equation, not a stationary point of the entire training system. As the network and $e_H$ evolve, the balance moves. The omitted forcing is retained in the actual equations; if it is appreciable, it can also prevent tracking of this chosen balance.
+
+Only now introduce the abbreviation
+
+$$
+B=K_{CC}^{-1}K_{CH},\qquad e_C^{\rm bal}=-Be_H.
+$$
+
+The matrix $B$ maps a higher-degree residual vector to the negative of its induced coarse balance. It has two rows and $\ell-1$ columns, is computed from the current kernel, and is not an additional trained parameter. Define the tracking error as actual minus balanced coarse residual:
+
+$$
+z_C=e_C-e_C^{\rm bal}=e_C+Be_H,
+\qquad e_C=-Be_H+z_C.
+$$
+
+Accurate tracking means small $z_C$, not necessarily small $e_C$. In the opening example, these objects are scalars: $e_C=u$, $e_H=v$, $K_{CC}=9$, $K_{CH}=3$, $B=1/3$, and $z_C=z=u+v/3$. The vector notation repeats the same balance calculation for several residual coefficients.
+
+### Compute the slope force at and away from that balance
+
+Before using the balance, the slope gradient is simply the sum of contributions from the two residual groups and the omitted residual:
+
+$$
+g_a=J_{a,C}^Te_C+J_{a,H}^Te_H+g_{a,\perp}.
+$$
+
+Here $J_{a,C}$ selects rows 0 and 1 of the slope Jacobian, and $J_{a,H}$ selects its retained higher-degree rows. Substituting $e_C=-Be_H+z_C$ gives
 
 $$
 g_a=
@@ -146,9 +239,27 @@ g_a=
 \tag{3}
 $$
 
-The effective map is $T_a=J_{a,H}^T-J_{a,C}^TB$. It has $W$ rows and one column per retained fine mode, while $G_a=T_a^TT_a$ acts in fine-residual coordinates. It combines direct higher-mode forcing with the coarse response it induces. This subtraction is where interference enters. Simply discarding the coarse residual would retain $J_{a,H}^Te_H$ and miss that interference.
+The tracking contribution is the extra slope force due to departure from coarse balance. It is not the whole coarse-mode contribution: the balanced coarse force $-J_{a,C}^TBe_H$ has been included with the direct fine force $J_{a,H}^Te_H$. Their sum is the force that survives when tracking is perfect and omitted residual is absent. The two parts can interfere, so setting $e_C=0$ would miss a potentially important cancellation. The correction need not reduce every parameter block's force.
 
-The fine-mode equation becomes
+Name this surviving-force map $T_a=J_{a,H}^T-J_{a,C}^TB$. It has $W$ rows, one per slope, and $\ell-1$ columns, one per retained fine coefficient. Its Gram matrix $G_a=T_a^TT_a$ gives $\|T_ae_H\|^2=e_H^TG_ae_H$. These are computed quantities, not new dynamical parameters.
+
+### Obtain the fine-residual equation and connect it to slope movement
+
+Substitute the same $e_C=-Be_H+z_C$ into the second residual equation above:
+
+$$
+\dot e_H
+=-\left(K_{HH}-K_{CH}^TK_{CC}^{-1}K_{CH}\right)e_H
+-K_{CH}^Tz_C+f_H.
+$$
+
+Define $S=K_{HH}-K_{CH}^TK_{CC}^{-1}K_{CH}$, a square matrix with one row and column per retained fine mode. This is the effective fine-residual kernel: it incorporates how the coarse residual adjusts while the higher-degree residual is fitted. For compactness in the rest of the note, also write
+
+$$
+C=K_{CC},\qquad Q=K_{CH},\qquad B=C^{-1}Q.
+$$
+
+Standalone $C$ denotes only this matrix; it is not a set of indices or the readout vector $c$. The subscripts $C,H$ remain labels for the two groups. With these abbreviations, the fine-mode equation is
 
 $$
 \dot e_H=-Se_H-Q^Tz_C+f_H,\qquad
@@ -156,7 +267,11 @@ S=K_{HH}-Q^TC^{-1}Q.
 \tag{4}
 $$
 
-The matrix $S$ is the Schur complement: the effective residual kernel after coarse relaxation. Its positivity has a useful geometric explanation. In the rate-weighted parameter space, $P_C=J_C^TC^{-1}J_C$ is the orthogonal projection onto the span of the coarse tangent vectors. Hence
+The term $-Se_H$ is evolution at coarse balance, $-Q^Tz_C$ corrects for imperfect tracking, and $f_H$ accounts for omitted residual. If tracking and omitted terms are small, the paired descriptions are $\dot e_H\approx-Se_H$ and $\dot a\approx-T_ae_H$. The first measures residual fitting through all parameter blocks; the second measures slope movement. Residual fitting therefore need not imply substantial slope movement. Both maps change with the network and can reflect nonlinear revival. The two small corrections must be checked, not presumed from these identities.
+
+### The relation between effective fitting and effective slope force
+
+The matrix $S$ is called the Schur complement. Its positivity has a useful geometric explanation. Let $J_C,J_H$ select the coarse and higher-degree rows of the full rate-weighted Jacobian $J$ from Section 2. In that parameter space, $P_C=J_C^TC^{-1}J_C$ is the orthogonal projection onto the span of the coarse tangent vectors. Hence
 
 $$
 E=(I-P_C)J_H^T=J_H^T-J_C^TB,\qquad S=E^TE.
@@ -172,22 +287,7 @@ $$
 
 Consequently $e_H^TG_ae_H$ is the squared effective slope-force norm. The quotient $e_H^TG_ae_H/(e_H^TSe_H)$ is its share of effective fine-mode dissipation. A small share can indicate that other blocks do most of the fitting, but does not by itself imply a small force: the denominator also matters.
 
-### A two-mode example: the total kernel cannot determine slope learning
-
-Consider local linear models with one slope-like parameter and one readout-like parameter, at equal rates. Rows of each Jacobian are coarse and fine modes; columns are the two parameter blocks:
-
-$$
-J^{(1)}=\begin{pmatrix}1&0\\1&1\end{pmatrix},\qquad
-J^{(2)}=\begin{pmatrix}0&1\\1&1\end{pmatrix}.
-$$
-
-Both have
-
-$$
-K=\begin{pmatrix}1&1\\1&2\end{pmatrix},\qquad B=1,\qquad S=1.
-$$
-
-At coarse balance, $e_C=-e_H$. In model 1, the slope force is $e_C+e_H=0$: direct fine forcing cancels the regenerated coarse contribution. In model 2, the slope force is $e_H$. Thus $G_a=0$ versus $G_a=1$, despite identical total residual kernels. This algebraic example illustrates the measurement problem; it is not a claim that these matrices describe a particular D34 trajectory.
+The opening example has $J=\left(\begin{smallmatrix}3&0\\1&1\end{smallmatrix}\right)$, $K=\left(\begin{smallmatrix}9&3\\3&2\end{smallmatrix}\right)$, $S=1$, and $T_a=1-3(1/3)=0$. Swapping the two columns of $J$ leaves $K$ and $S$ unchanged but gives $T_a=1$: the slope parameter would then affect only the higher-degree error. Thus even the same total residual kernel can give different slope learning. We need the effective slope map as well as the effective total kernel to distinguish them.
 
 ## 4. Establish tracking, then convert force into a population barrier
 
@@ -372,7 +472,7 @@ Here $\lambda^{\rm eff}$ describes decay of the fine residual norm when the trac
 | $\Vert T_ae_H\Vert$; $\mu_a^{\rm eff}$ | Remaining effective force and coupling per unit fine residual. Neither determines outward direction. | T kernel tables: `effective_slope_norm`; $\mu_a^{\rm eff}$ is derived using `residual_modes`. |
 | $\theta_a=\Vert g_a\Vert^2/\mathcal E$ | Fraction of instantaneous full-field dissipation, where $\mathcal E=\Vert g_a\Vert^2+\Vert g_b\Vert^2+\kappa\Vert g_c\Vert^2+\kappa g_d^2$. A large share can multiply a tiny total. | T traces: `slope_share`; kernel-table `modal_a_share` uses retained modes and is a distinct approximation. |
 | $\theta_a^{\rm eff}$; corresponding readout share | Allocation after coarse relaxation. Readout weight and output bias are separate blocks. | T `effective_a_share`, `effective_c_share`, `effective_d_share`; $\lambda^{\rm eff}$ is derived. |
-| $v_k=(T_a)_{:,k}e_k$ for $k\in H$ | Which residual modes supply force. Components interfere; their norms do not add. | T `effective_mode3_norm`, `effective_mode9_norm`; `effective_mode*_along_full` equals $g_a^Tv_k/\Vert g_a\Vert^2$. |
+| $v_k=(T_a)_{:,k}e_k$ for mode labels $k=2,\ldots,\ell$ | Which residual modes supply force; columns are labeled by their original mode indices. Components interfere; their norms do not add. | T `effective_mode3_norm`, `effective_mode9_norm`; `effective_mode*_along_full` equals $g_a^Tv_k/\Vert g_a\Vert^2$. |
 
 The along-full projections can be negative or exceed one; they are signed contributions, not probabilities. Comparing $\|v_9\|$ with $\|T_ae_H\|$ tests direct target coupling versus force generated through other residual modes. Individual modal contributions depend on the chosen basis. Norms and quadratic forms above are invariant under orthonormal rotations within the fixed coarse and fine subspaces, but changing those subspaces changes the decomposition.
 
