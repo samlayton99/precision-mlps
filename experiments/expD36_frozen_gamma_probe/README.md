@@ -196,3 +196,16 @@ the continuous slope interval and reports the trace cost of any bias repair.
 Install the experiment-only `cap_requirements.txt` dependencies and run
 `pytest -q tests/test_expD36_cap_certificate.py`. The two-sample control has a
 known exact optimum, so it checks tightness as well as validity.
+
+`cap_campaign.py` prepares the capped heterogeneous families, selects fast
+admissible candidates, executes ordinary frozen-readout GD, and checks selected
+trajectories against independent rectangular factorizations. Its output root
+is separate from the completed full sweep. `prepare` and `reference` run in
+CPU-only Slurm allocations. `train` requires one allocated GPU and verifies the
+actual job-step mask. `cap_run.sbatch` accepts these stages through
+`PROBE_STAGE`, with `PROBE_CODE` and `PROBE_OUTPUT` identifying the immutable
+source snapshot and persistent results root. Slopes and targets are hashed;
+resumed batches retain coefficients, update counts, and every-iterate hits.
+Only sampled scalar curves and restart states are archived. The new campaign
+has an additional ten-GPU-hour cap, including compilation and allocated idle
+time; reconcile Slurm accounting before submitting further allocations.
