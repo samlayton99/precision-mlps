@@ -24,7 +24,7 @@ def slow_mass(delta, beta, thresholds):
     return np.maximum(delta*np.sqrt(1-ratio)-np.sqrt(max(0., 1-delta*delta))*np.sqrt(ratio), 0.)**2
 
 
-def time_bound(certificates, epsilon=.01, chi=.5, cap=10**18):
+def time_bound(certificates, epsilon=.01, chi=.5, cap=10**32):
     """Combine guaranteed CDFs by maximum, never by adding their masses."""
     from flint import arb, ctx
     if not 0 < epsilon < 1 or not 0 < chi < 1:
@@ -33,7 +33,7 @@ def time_bound(certificates, epsilon=.01, chi=.5, cap=10**18):
     if not valid:
         return dict(bound=0, thresholds=[], mass=[], status='vacuous')
     previous = ctx.prec
-    ctx.prec = 96
+    ctx.prec = max(128, int(math.ceil(math.log2(cap)))+64)
     try:
         smallest = min(max(c['beta'], 1e-30) for c in valid)
         thresholds = np.unique(np.r_[0., np.geomspace(smallest, 1., 512), 1.])

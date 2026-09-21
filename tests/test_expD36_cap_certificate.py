@@ -87,3 +87,17 @@ def test_overlap_search_retains_exact_two_sample_direction():
     assert certified['delta'] > 1-1e-8
     assert certified['beta'] >= optimum-1e-12
     assert certified['beta'] < optimum+1e-6
+
+
+def test_long_horizons_are_ranked_and_certified_beyond_float_integer_range():
+    from experiments.expD36_frozen_gamma_probe.cap_refine import candidate_score
+    assert candidate_score(.2, 1e-19) > 2**53
+    assert candidate_score(.2, 1e-19) > candidate_score(.2, 1e-8)
+    x = np.array([-1., 1.]); cap = 1e-10
+    beta = 4*np.tanh(cap)**2
+    proof = c.certify(x, np.zeros(4), cap, x, np.ones((2, 1))*np.sqrt(beta/2), x,
+                      target_witness=True)
+    result = c.time_bound([proof])
+    assert result['status'] == 'interval_certified'
+    assert result['bound'] > 10**18
+    assert result['bound'] == pytest.approx(np.log(.01)/np.log1p(-.5*beta), rel=1e-12)

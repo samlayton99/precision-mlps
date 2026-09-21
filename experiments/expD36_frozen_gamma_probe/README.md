@@ -217,6 +217,9 @@ to propose witnesses; the continuous-cap checker establishes validity for all
 admissible heterogeneous slopes. A local end-to-end check uses `--n 64 --caps
 16 --rank 4 --intervals 16 --verify-count 1`. Large interval repairs are retained
 in the evidence and direct the next round toward tighter scalar enclosures.
+Proposal ranking retains log-scale forecasts above FP64's exact-integer range.
+Final integer bounds use adaptive precision and an explicit $10^{32}$ update
+cap; a result above that cap is a certified obstruction, not an executed hit.
 
 `fourier_validate.py --archive <completed-full-sweep> --output <new-output>`
 executes the periodic controls, checks independent finite-Gram predictions

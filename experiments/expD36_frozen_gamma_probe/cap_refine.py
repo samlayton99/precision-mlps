@@ -39,6 +39,19 @@ def witness_bank(x, y, u):
     return [(name, v) for name, v in bank if np.linalg.norm(v) > 0]
 
 
+def candidate_score(delta, beta, target=False):
+    """Rank proposals beyond FP64's exact-integer range without claiming proof."""
+    thresholds = np.geomspace(max(min(beta, .999), 1e-30), 1., 256)
+    estimate = cdf_time_bound(thresholds, certificate.slow_mass(delta, beta, thresholds))
+    score = estimate['bound']
+    if score is None:
+        logarithm = estimate['log10_bound']
+        score = int(10**logarithm) if logarithm is not None else 0
+    if target and 0 < beta < 1:
+        score = max(score, int(np.ceil(np.log(.01)/np.log1p(-.5*beta))))
+    return score
+
+
 def run_case(args):
     root, archive, n, cap, target_index, rank, intervals, verify_count = args
     root, archive = Path(root), Path(archive)
@@ -60,7 +73,10 @@ def run_case(args):
     for label, witness in witness_bank(case['x'], y, u):
         saved = destination/f'{label}.json'
         if saved.exists():
-            candidates.append(json.loads(saved.read_text()))
+            row = json.loads(saved.read_text())
+            if row['status'] == 'grid_candidate':
+                row['rough_bound'] = candidate_score(row['delta'], row['beta_grid'], label == 'target')
+            candidates.append(row)
             continue
         started = time.monotonic()
         v = witness/np.linalg.norm(witness)
@@ -77,11 +93,7 @@ def run_case(args):
         if proposed['factor'] is None:
             continue
         beta = proposed['beta']
-        thresholds = np.geomspace(max(min(beta, .999), 1e-20), 1., 256)
-        mass = certificate.slow_mass(delta, beta, thresholds)
-        score = cdf_time_bound(thresholds, mass)['bound'] or 0
-        if label == 'target' and 0 < beta < 1:
-            score = max(score, int(np.ceil(np.log(.01)/np.log1p(-.5*beta))))
+        score = candidate_score(delta, beta, label == 'target')
         row = dict(label=label, delta=delta, beta_grid=beta, rough_bound=score,
                    status='grid_candidate', solver_status=proposed['solver_status'],
                    seconds=time.monotonic()-started)
