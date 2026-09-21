@@ -45,3 +45,13 @@ def test_frozen_forecast_matches_initial_gradient_and_linearized_loss():
     norm2=tracking @ C @ tracking
     upper=-measured['tracking_metric_decay_lower']*norm2+np.sqrt(norm2*(forcing @ C @ forcing))
     assert direct<=upper+1e-14
+    # Discrete tracking includes the changed coarse inverse and the exact step defect.
+    eta=.002; h=np.tanh(x[:,None]*z[0]+z[1]); residual=h @ z[2]+d-y; s=1-h*h
+    gradient=np.stack([z[2]*(x @ (residual[:,None]*s))/len(x),z[2]*(residual @ s)/len(x),h.T @ residual/len(x)])
+    zn=z-eta*np.array([1.,1.,.1])[:,None]*gradient; dn=d-eta*.1*residual.mean()
+    _,nxt=diagnostics(zn,dn,x,y,w,5,.1)
+    Kn=sum(nxt['K_'+k] for k in 'abcd'); Bn=np.linalg.solve(Kn[:2,:2],Kn[:2,2:]); en=nxt['residual_modes']
+    defect=en-e+eta*K @ e
+    transition=np.eye(2)-eta*(C+Bn @ Q.T)
+    forcing_step=(Bn-B-eta*Bn @ S) @ e[2:]+defect[:2]+Bn @ defect[2:]
+    np.testing.assert_allclose(en[:2]+Bn @ en[2:],transition @ tracking+forcing_step,atol=1e-14)

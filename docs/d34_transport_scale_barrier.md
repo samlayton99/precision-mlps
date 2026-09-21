@@ -175,6 +175,20 @@ Then $d\|z_C\|_C/dt\le-\alpha_C\|z_C\|_C+\|f_z\|_C$, interpreted by continuity a
 
 It remains a conditional estimate: those kernel and forcing bounds must be obtained from an independently controlled trajectory or invariant region for an initialization theorem. Sampling them on the completed true run is a diagnostic, not a uniform-in-time proof. This is nevertheless a more concrete proof obligation than assuming an arbitrary stable evolution operator or already-small slope gradients.
 
+For actual GD, there is an exact discrete counterpart; (12) must not be applied unchanged. Use a prime for the next GD state and define the modal step defect $R^\Delta=e'-e+\eta Ke$. This includes both omitted-mode forcing and the nonlinear finite-step remainder. Direct substitution gives
+
+$$
+z_C'=M^\Delta z_C+h^\Delta,\qquad
+M^\Delta=I-\eta(C+B'Q^T),
+$$
+
+$$
+h^\Delta=(B'-B-\eta B'S)e_H+R_C^\Delta+B'R_H^\Delta.
+\tag{12b}
+$$
+
+Consequently $\|z_C'\|_{C'}\le\beta\|z_C\|_C+\|h^\Delta\|_{C'}$, with the directly defined factor $\beta=\|C'^{1/2}M^\Delta C^{-1/2}\|_2$. Iterating this inequality gives products of $\beta$ and accumulated forcing; a uniform factor below one gives geometric tracking. There is no discarded time-step error in (12b). A predictive GD theorem must bound the step defect and kernel changes, rather than measure them only after training. The half-step experiments check the practical flow/GD difference, while the population path inequalities below apply to GD exactly.
+
 ## 4. Three routes from these equations to a population barrier
 
 **Moment control.** For $M_{2q}(t)=\int|a|^{2q}d\rho$, the weak transport equation gives $\dot M_{2q}=2q\int a|a|^{2q-2}v_a\,d\rho$ and
