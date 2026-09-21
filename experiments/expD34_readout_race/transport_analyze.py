@@ -75,6 +75,11 @@ def diagnostics(z,d,x,y,w,width,kappa=1.):
     for key in ('a','b','c','d'):
         scalar[f'modal_{key}_share']=float(e @ arrays['K_'+key] @ e/(e @ K @ e+1e-300))
     if scalar['coarse_inverse_resolved']:
+        values,vectors=np.linalg.eigh(K[:2,:2])
+        inverse_root=(vectors/np.sqrt(values)) @ vectors.T
+        relative_drift=inverse_root @ arrays['K_dot'][:2,:2] @ inverse_root
+        scalar['tracking_metric_decay_lower']=float(values[0]-.5*np.linalg.eigvalsh(relative_drift)[-1])
+        scalar['coarse_max_eigenvalue']=float(values[-1])
         B=np.linalg.solve(K[:2,:2],K[:2,2:])
         S=K[2:,2:]-K[2:,:2] @ B
         effective=ja[2:].T-ja[:2].T @ B

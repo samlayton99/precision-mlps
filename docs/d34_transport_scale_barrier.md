@@ -44,6 +44,8 @@ $$
 \tag{3}
 $$
 
+Equivalently, with $D=\operatorname{diag}(1,1,\kappa)$, the transport mobility is $v=-W^{-1}D\nabla_z(\delta L/\delta\rho)$. Importing a conventional Wasserstein gradient-flow time scale without this factor would change D34's dynamics. For compact initial support and $|x|\le1$, dissipation also gives $R(t)\le R(0)$, $|\dot c|\le\kappa R(0)$, and $|\dot a|,|\dot b|\le |c|R(0)$. These bounds keep support finite on every finite interval and give the usual characteristic well-posedness route. They are too loose for the desired barrier: the direct support estimate contains $\kappa R(0)^2t^2/2$, already of order $10^6$ at the experimental horizon when $R(0)$ is order one. Existence of the PDE is therefore much easier than a useful gamma bound.
+
 Transport descriptions of two-layer learning have established precedents in [Mei, Montanari, and Nguyen](https://arxiv.org/abs/1804.06561) and [Chizat and Bach](https://arxiv.org/abs/1805.09545). Their general framework does not by itself supply a gamma barrier for this initialization or scaling. Equations (1)–(3) are derived here in D34's coordinates.
 
 The law experiment starts from independent uniforms on $[-\sqrt{6/(W+1)},\sqrt{6/(W+1)}]^3$. It averages away realized finite-seed fluctuations. Tensor Gauss–Legendre quadrature at orders 8, 12, and 16 tests numerical convergence of this law experiment, not convergence to a particular random seed.
@@ -136,7 +138,7 @@ $$
 \tag{11}
 $$
 
-The coarse balance is $e_C\approx-Be_H$, rather than zero. $T_ae_H$ includes its regenerated contribution and its interference with the direct fine-mode slope force. Dropping $e_C$ instead produces the wrong reduced slope force. Equation (11) also shows why a small coarse residual or small $\dot K_{CC}$ alone is insufficient: a tracking bound must control the full forcing, including $\dot B$, $BS$, and omitted modes, and the evolution operator of $K_{CC}+BK_{HC}$. Although $S$ is positive semidefinite, the latter matrix need not be symmetric; its stability must not be inferred from a symmetric eigenvalue argument without justification.
+The coarse balance is $e_C\approx-Be_H$, rather than zero. $T_ae_H$ includes its regenerated contribution and its interference with the direct fine-mode slope force. Dropping $e_C$ instead produces the wrong reduced slope force. Equation (11) also shows why a small coarse residual or small $\dot K_{CC}$ alone is insufficient: a tracking bound must control the full forcing, including $\dot B$, $BS$, and omitted modes. The tracking matrix need not be symmetric, but the kernel structure supplies a useful metric estimate below.
 
 There is also an exact blockwise interpretation of $S$. Define $T_I=J_{I,H}^T-J_{I,C}^TB$ for each parameter block, with the same transpose convention for the single bias column. Then
 
@@ -155,7 +157,23 @@ $$
 \tag{12}
 $$
 
-This is a conditional tracking estimate with explicit missing inputs. It becomes explanatory only if $M,\alpha,b$ can be bounded by an independently controlled trajectory or invariant region. Estimating them from the completed true run supplies a diagnostic, not an initialization theorem.
+The evolution-operator hypothesis can itself be reduced to kernel quantities. Set $C=K_{CC}$, $Q=K_{CH}$, $A=C+C^{-1}QQ^T$, and $V=z_C^TCz_C/2$. Since $CA=C^2+QQ^T$, equation (11), with forcing $f_z$, gives
+
+$$
+\dot V=-z_C^T(C^2+QQ^T)z_C+\tfrac12z_C^T\dot C z_C+z_C^TCf_z.
+\tag{12a}
+$$
+
+Define
+
+$$
+\alpha_C(t)=\lambda_{\min}(C)
+-\tfrac12\lambda_{\max}(C^{-1/2}\dot C C^{-1/2}).
+$$
+
+Then $d\|z_C\|_C/dt\le-\alpha_C\|z_C\|_C+\|f_z\|_C$, interpreted by continuity at zero. In particular, if $mI\preceq C\preceq MI$ and $\alpha_C\ge\alpha>0$ on the interval, (12) holds with prefactor $\sqrt{M/m}$. A convenient sufficient drift check is $\|\dot C\|/\lambda_{\min}(C)^2<2$, though the signed eigenvalue expression is sharper. This proves coarse tracking from explicit kernel conditioning, drift, and forcing bounds, without assuming the tracking residual small.
+
+It remains a conditional estimate: those kernel and forcing bounds must be obtained from an independently controlled trajectory or invariant region for an initialization theorem. Sampling them on the completed true run is a diagnostic, not a uniform-in-time proof. This is nevertheless a more concrete proof obligation than assuming an arbitrary stable evolution operator or already-small slope gradients.
 
 ## 4. Three routes from these equations to a population barrier
 
