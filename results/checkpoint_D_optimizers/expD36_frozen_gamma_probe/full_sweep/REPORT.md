@@ -6,9 +6,20 @@ The structural theorem now makes the slope-to-spectrum implication explicit, inc
 
 The mechanism can be quantified without measuring the dictionary spectrum or even its largest curvature. A post-hoc geometric corollary below requires at least **1,444,090 updates** to reach 1% error at raw gamma 4, under the declared normalized-step rule. The same corollary gives bounds above a million updates across all four tested widths. This is a conservative explanation of an obstruction, not a close prediction of every learning time. The [first-probe report](../REPORT.md) remains a separate record.
 
-The latest CPU analysis identifies a remaining limitation: center-aware pole calculations nearly recover the measured directional access, but converting that access to slow-mode target energy still loses substantial accuracy. Combining multiple analytically bounded spectral thresholds gives median hit/bound slack **83.3** on 37 reached raw-map cases at 1%; replacing the analytic access by measured access gives the same median. On this same subset, measured spectral-tail Jensen gives **1.33**, and a finer measured spectral histogram gives **1.056**. The close spectral results do not establish a tight explicit gamma law. No additional campaign optimizer trajectories were run for these analyses.
+The earlier CPU analysis identifies a remaining limitation: center-aware pole calculations nearly recover the measured directional access, but converting that access to slow-mode target energy still loses substantial accuracy. Combining multiple analytically bounded spectral thresholds gives median hit/bound slack **83.3** on 37 reached raw-map cases at 1%; replacing the analytic access by measured access gives the same median. On this same subset, measured spectral-tail Jensen gives **1.33**, and a finer measured spectral histogram gives **1.056**. The close spectral results do not establish a tight explicit gamma law. No additional campaign optimizer trajectories were run for those analyses.
 
 A separate refinement accounts for adjacent-feature cancellation and raises the neighboring analytic gamma-4 bound from 156,090 to 17,841,791 updates. Across the broader 143 reached primary case/tolerance pairs, spectral-tail Jensen reduces median slack from 24.1 to 1.33. The different case sets are kept separate below.
+
+The subsequent [capped-kernel campaign](refinements/capped_kernel/REPORT.md)
+adds ordinary-GD experiments, periodic and finite-kernel verification, and an
+interval-checked theorem for **every independently heterogeneous dictionary
+under a maximum slope cap**. At the primary width, cap 8 forces at least
+70,371 updates to reach 1% error; the common-slope dictionary actually reaches
+it at update 15,798,313. Faster heterogeneous witnesses and the new
+[three-panel evaluation](refinements/capped_kernel/capped_kernel_three_panel.png)
+test the remaining gap. The declared factor-two sharpness objective remains
+unproved. That follow-up has its own resource ledger and preserves this
+original sweep and its polynomial-bound comparisons.
 
 **Notation and normalization. Errors are relative empirical $L_2$ errors unless otherwise stated.**
 

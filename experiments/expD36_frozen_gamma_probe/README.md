@@ -297,3 +297,8 @@ With the Fourier validation JSON present, it also plots periodic spectra and
 packet decay, finite-Gram predicted versus executed hits, matched gamma-speedup
 ratios, and finite learning curves. Width-control columns are matched through
 their saved target identifiers, since those runs contain a target subset.
+
+The completed [capped-kernel report](../../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/capped_kernel/REPORT.md)
+contains the uniform guarantees, executed upper witnesses, remaining sharpness
+gap, three-panel figures, and compact replay inputs. The campaign used 5.244
+additional GPU-hours; the factor-two sharpness objective remains unmet.
