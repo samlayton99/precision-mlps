@@ -63,10 +63,29 @@ def collect(root):
                     common_hit=common['training']['hits'][ti][0] if common else None,
                     common_steps=common['training']['steps'] if common else None)
                 bounds.append(row)
-                for c in reached:
-                    if c['training']['hits'][ti][0] < bound:
-                        violations.append(dict(certificate=row['certificate'], case=c['id'], target=target,
-                                               bound=bound, hit=c['training']['hits'][ti][0]))
+    # Audit each actual dictionary once, at every tolerance, including held-out
+    # seeds. A censored trajectory cannot contradict a necessary learning time.
+    certificate_checks = []
+    for case in cases:
+        if 'training' not in case:
+            continue
+        for ti, target in enumerate(campaign.TARGETS):
+            valid = [c for c in certificates if c['n'] == case['n']
+                     and c['cap'] >= case['cap'] and c['target'] == target]
+            for ei, epsilon in enumerate(campaign.EPSILONS):
+                def value(c):
+                    return c['bound'] if ei == 0 else c['cdf_bounds'][str(epsilon)]
+                winner = max(valid, key=value, default=None)
+                if winner is None:
+                    continue
+                hit = case['training']['hits'][ti][ei]
+                row = dict(case=case['id'], target=target, epsilon=epsilon,
+                    certificate=winner['id'], bound=value(winner), hit=hit,
+                    steps=case['training']['steps'], held_out=100 <= case['seed'] <= 104,
+                    violation=hit >= 0 and hit < value(winner))
+                certificate_checks.append(row)
+                if row['violation']:
+                    violations.append(row)
     agreements = []
     for c in cases:
         if 'training' not in c or 'reference' not in c:
@@ -79,8 +98,19 @@ def collect(root):
                     actual=actual, predicted=predicted,
                     difference=actual-predicted if actual >= 0 and predicted is not None else None,
                     censored=actual < 0, steps=c['training']['steps']))
-    return dict(cases=cases, certificates=certificates, bounds=bounds,
-                bound_violations=violations, forecast_checks=agreements)
+    coverage = {}
+    by_id = {c['id']:c for c in cases}
+    for phase in ['development', 'confirmation']:
+        manifest = root/f'{phase}_cases.json'
+        if manifest.exists():
+            names = read(manifest)
+            incomplete = [name for name in names
+                if by_id.get(name, {}).get('training', {}).get('steps', 0) < 200000]
+            coverage[phase] = dict(expected=len(names), completed=len(names)-len(incomplete),
+                                   incomplete=incomplete)
+    return dict(cases=cases, certificates=certificates, bounds=bounds, coverage=coverage,
+                certificate_checks=certificate_checks, bound_violations=violations,
+                forecast_checks=agreements)
 
 
 def style(ax, xlabel, ylabel, *, logx=True, logy=True):
