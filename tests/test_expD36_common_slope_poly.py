@@ -74,3 +74,36 @@ def test_upper_search_keeps_witness_for_nonmonotone_envelope():
 def test_reject_changed_unstable_clock():
     with pytest.raises(ValueError, match='archived step'):
         p.factor(np.eye(2), np.ones(2), 1.01)
+
+
+def test_interval_audit_matches_direct_small_system():
+    pytest.importorskip('flint')
+    from flint import arb, arb_mat, ctx
+    from experiments.expD36_frozen_gamma_probe import common_slope_audit as audit
+    with ctx.workprec(128):
+        x = np.linspace(-1,1,17)
+        centers = np.array([-.75,0.,.5])
+        y = np.sin(x)/np.sqrt(len(x))
+        gram, corr, norm = audit.finite_gram(x,centers,2,y)
+        root = arb(len(x)).sqrt()
+        j = arb_mat([[1/root]+[(2*(arb(float(t))-arb(float(c)))).tanh()/root
+                              for c in centers] for t in x])
+        direct = j.transpose()*j
+        for i in range(gram.nrows()):
+            for k in range(gram.ncols()):
+                assert (gram[i,k]-direct[i,k]).contains(0)
+        evolution = audit.augmented(gram,corr,.1)
+        output_step = arb_mat([[arb(int(i==k)) for k in range(len(x))] for i in range(len(x))])
+        output_step -= arb(.1)*(j*j.transpose())
+        residual = output_step**37*arb_mat([[arb(float(t))] for t in y])
+        direct_error = (residual.transpose()*residual)[0,0]/norm
+        checked = audit.residual_squared(gram,corr,norm,evolution,37)
+        assert (checked-direct_error).contains(0)
+        assert float(checked.rad()) < 1e-28
+
+
+def test_best_bracket_combines_only_same_gamma_and_method():
+    from experiments.expD36_frozen_gamma_probe import common_slope_analysis as analysis
+    rows = [dict(gamma=g,degree=d,results=dict(combined=[dict(necessary=lo,sufficient=hi)]))
+            for g,d,lo,hi in [(8,32,10,None),(8,64,20,28),(8,128,19,26),(16,64,100,101)]]
+    assert analysis.best(rows,8) == dict(necessary=20,sufficient=26,lower_degree=64,upper_degree=128)

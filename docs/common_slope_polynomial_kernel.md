@@ -172,3 +172,32 @@ endpoints. Agreement at increased precision alone is not a certificate.
 The fixed grid, centers, archived target arrays, readout coordinates, and
 actual saved step define each comparison. Polynomial degree is swept without
 fitting to the GD hits. This is retrospective verification on existing runs.
+
+Run the archived comparison and its independent primary-target audit with:
+
+```bash
+python -m experiments.expD36_frozen_gamma_probe.common_slope_analysis
+python -m experiments.expD36_frozen_gamma_probe.common_slope_audit
+```
+
+Both accept `--root` for the full-sweep archive and `--output` for a fresh
+evidence directory. The default output is the `common_slope_polynomial`
+refinement. They require the archived common arrays, dictionary certificates,
+and capped-kernel campaign summary. The comparison verifies matrix and target
+hashes and uses each trajectory's recorded step.
+
+The independent audit encloses the common-slope finite Gram identity in Arb.
+For $G=J^TJ$ and $c=J^Ty$, it raises the augmented affine update matrix
+
+$$
+\begin{pmatrix}I-\eta G&\eta c\\0&1\end{pmatrix}
+$$
+
+to the requested integer power, starting from zero readout. If the resulting
+readout is $a_n$, it encloses
+$E_n^2=(\|y\|^2-2a_n^Tc+a_n^TGa_n)/\|y\|^2$.
+An interval Gershgorin bound checks contraction. This independently certifies
+the *endpoint statements* for nominal real tanh on exact archived binary
+inputs. It does not certify every FP64 error-envelope value or the numerical
+evaluation of the interpolation remainder. Integer matrix powers require
+logarithmically many squarings, without replaying GD or computing eigenvectors.
