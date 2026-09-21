@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import sys
 from experiments.expD36_frozen_gamma_probe import cap_campaign as c
 
 
@@ -27,3 +28,15 @@ def test_ordinary_gd_every_iterate_hits_and_resume():
     expected[expected >= 200] = -1
     np.testing.assert_array_equal(np.asarray(hits)[0, 0], expected)
     np.testing.assert_allclose(np.asarray(j@theta-y).ravel(), [0, -.92**200], atol=1e-15)
+
+
+def test_single_gpu_cli_defaults_to_all_cases(tmp_path, monkeypatch):
+    captured = []
+    monkeypatch.setattr(c, 'train', lambda *args:captured.append(args))
+    monkeypatch.setattr(sys, 'argv', ['cap_campaign', 'train', '--root', str(tmp_path)])
+    c.main()
+    assert captured[0][3:5] == (0, 1)
+    monkeypatch.setattr(sys, 'argv', ['cap_campaign', 'train', '--root', str(tmp_path),
+                                    '--workers', '2', '--worker', '1'])
+    c.main()
+    assert captured[1][3:5] == (1, 2)

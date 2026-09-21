@@ -219,6 +219,7 @@ def train(root, case_list, frontier, worker, workers, seconds, batch_size):
                 return
     core.write_json(root/f'train_completion_{os.environ["SLURM_JOB_ID"]}.json',
         dict(case_list=str(case_list), frontier=frontier, worker=worker,
+             workers=workers, assigned_cases=ids,
              seconds=time.monotonic()-start, completed=True))
 
 
@@ -265,12 +266,16 @@ def main():
     parser.add_argument('--root', type=Path, required=True)
     parser.add_argument('--phase', choices=['development', 'confirmation'], default='development')
     parser.add_argument('--case-list', type=Path)
-    parser.add_argument('--workers', type=int, default=4)
+    parser.add_argument('--workers', type=int)
     parser.add_argument('--worker', type=int, default=0)
     parser.add_argument('--steps', type=int, default=200000)
     parser.add_argument('--seconds', type=int, default=1500)
     parser.add_argument('--batch-size', type=int, default=12)
     args = parser.parse_args()
+    if args.workers is None:
+        args.workers = 4 if args.stage == 'prepare' else 1
+    if args.workers < 1 or not 0 <= args.worker < args.workers:
+        parser.error('Require a positive worker count and 0 <= worker < workers')
     args.root.mkdir(parents=True, exist_ok=True)
     case_list = args.case_list or args.root/f'{args.phase}_cases.json'
     if args.stage == 'prepare':

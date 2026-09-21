@@ -206,6 +206,10 @@ actual job-step mask. `cap_run.sbatch` accepts these stages through
 `PROBE_STAGE`, with `PROBE_CODE` and `PROBE_OUTPUT` identifying the immutable
 source snapshot and persistent results root. Slopes and targets are hashed;
 resumed batches retain coefficients, update counts, and every-iterate hits.
+Training defaults to one worker covering the entire supplied case list;
+multi-GPU submissions explicitly specify both `--workers` and `--worker`.
+Completion records identify their assigned cases so a completed shard cannot
+be mistaken for a completed full sweep.
 Only sampled scalar curves and restart states are archived. The new campaign
 has an additional ten-GPU-hour cap, including compilation and allocated idle
 time; reconcile Slurm accounting before submitting further allocations.
