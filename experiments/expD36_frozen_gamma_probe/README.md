@@ -179,3 +179,12 @@ measured spectral diagnostics, and executed hits separately. Its report
 discusses the remaining gap between polynomial-tail access and target-relevant
 spectral mass; close measured spectral forecasts are not labeled a sharp
 gamma-only theorem.
+
+The capped-kernel follow-up adds independent periodic synthesis in
+`fourier_law.py` and the finite common-slope Gram identity in
+`finite_gamma_gram.py`. These are offline diagnostics; they do not change the
+optimizer. Run their normalization, coherent-alias, null-mode, finite-Gram,
+and ordinary-GD checks with `pytest -q tests/test_expD36_fourier_law.py`.
+The Gram forecast reports unresolved spectral mass explicitly because forming
+a Gram matrix loses accuracy in small singular directions. Its forecast is
+not a certified bound for every heterogeneous dictionary under a slope cap.
