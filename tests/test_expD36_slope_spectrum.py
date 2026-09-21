@@ -4,7 +4,7 @@ import pytest
 from experiments.expD36_frozen_gamma_probe import core
 from experiments.expD36_frozen_gamma_probe.slope_spectrum import (
     analytic_access, cdf_atoms, cdf_error, cdf_time_bound, distribution_bound,
-    exceptional_target_tails, pole_coefficients, target_cdf_bound,
+    exceptional_target_tails, mean_spectrum_bound, pole_coefficients, target_cdf_bound,
 )
 
 
@@ -21,6 +21,9 @@ def test_distribution_spectral_tail_with_large_slope_exceptions():
         assert np.all(result['bound'] <= result['cap_bound']*(1+1e-12))
         for rank, bound in zip(result['rank'], result['bound']):
             assert values[rank:].sum() <= bound*(1+1e-11)+1e-25
+    mean_only = mean_spectrum_bound(len(slopes), np.mean(np.abs(slopes)),
+                                   np.arange(32), np.geomspace(.1, 500, 101))
+    assert np.all(values <= mean_only*(1+1e-10)+1e-25)
 
 
 def test_center_poles_against_independent_projected_tanh_and_target_access():
@@ -68,7 +71,8 @@ def test_cdf_combination_is_below_direct_gd_and_uses_more_than_one_threshold():
     assert hit is not None
     assert cdf_time_bound(thresholds, p)['bound'] <= hit
     assert cdf_time_bound([.01], [1.])['bound'] == np.ceil(np.log(.01)/np.log(.995))
-    assert cdf_time_bound([0.], [.1])['status'] == 'above_prediction_cap'
+    assert cdf_time_bound([0.], [.1])['status'] == 'proved_zero_mode_obstruction'
+    np.testing.assert_allclose(target_cdf_bound([.5], [0.], [0., .1], 1), [.25, .25])
 
 
 def test_exception_aligned_target_and_inactive_neuron_counterexample():

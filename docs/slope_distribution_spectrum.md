@@ -9,7 +9,7 @@ controls a maximum, or that the resulting time estimates are uniformly tight.
 
 | Symbol | Meaning |
 |---|---|
-| $g_j=|\gamma_j|$, $W$ | Absolute hidden slope and number of hidden neurons. |
+| $g_j=\lvert\gamma_j\rvert$, $W$ | Absolute hidden slope and number of hidden neurons. |
 | $J$, $K=JJ^\top$, $L$ | Raw readout matrix, function-space curvature, and largest eigenvalue. |
 | $\nu_i$ | Eigenvalues of $K$ in decreasing order, including zero modes. |
 | $e_k(g)$ | Existing uniform degree-$k$ tanh approximation envelope. |
@@ -102,6 +102,12 @@ in the factor $W-q(G)$, which would incorrectly shrink the bound.
 An empirical tail constraint $q(G)/W\le\tau(G)$ works the same way.
 These are deterministic implications for the actual slope vector, not
 probability guarantees about a sampled population.
+
+The numerical mean-only envelope takes the minimum of
+$We_k(G)^2/[i-k-1-q_*]$ over positive denominators, selected thresholds and
+degrees, with $q_*=\min\{W,\lfloor W\mu/G\rfloor\}$. The raw trace bound
+$\nu_i\le W+1$ supplies an initial bound. Optimizing over a finite threshold
+set preserves validity but need not find the best possible moment theorem.
 
 A median cap gives only $q(G)\le\lfloor W/2\rfloor$ under the convention that
 at least half the slopes are at most $G$. It can leave many exceptional
@@ -255,3 +261,10 @@ has been proved. The claim concerns frozen readout GD, not Adam or joint hidden
 feature training. Measured spectral-tail Jensen remains a separate benchmark
 for how much accuracy is lost when replacing the actual spectrum by a
 slope-derived guarantee.
+
+The [full-sweep report](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/REPORT.md#slope-distributions-spectrum-and-the-remaining-time-bound-slack)
+contains the executed CPU analysis, saved-hit comparisons, distribution
+controls, and remaining tightness gap. A mathematically proved zero-access
+direction is allowed at threshold zero; if its forced mass is at least
+$\epsilon^2$, the tolerance cannot be reached at a finite step under
+$0<\chi<1$. This case is kept separate from a finite prediction cap.

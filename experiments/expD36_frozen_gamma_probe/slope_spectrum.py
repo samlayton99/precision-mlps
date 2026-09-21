@@ -27,6 +27,27 @@ def distribution_bound(slopes, degrees, threshold):
                 cap_bound=int(low.sum())*np.exp(2*core.log_feature_envelope(threshold, degrees)))
 
 
+def mean_spectrum_bound(width, mean_cap, degrees, thresholds):
+    """Optimize an eigenvalue envelope using only width and mean absolute slope.
+
+    Each threshold uses q <= floor(W*mean/G) and the safe W*e_k(G)^2
+    tail budget. The global trace bound W+1 includes the output bias.
+    """
+    degrees = np.asarray(degrees, int)
+    indices = np.arange(1, width+2)
+    upper = np.full(width+1, float(width+1))
+    for threshold in thresholds:
+        if threshold <= 0:
+            raise ValueError('Mean-cap thresholds must be positive')
+        count = min(width, int(np.floor(width*mean_cap/threshold)))
+        rank = degrees+1+count
+        offsets = indices[:, None]-rank
+        budget = width*np.exp(2*core.log_feature_envelope(threshold, degrees))
+        candidate = np.divide(budget, offsets, out=np.full(offsets.shape, np.inf), where=offsets > 0)
+        upper = np.minimum(upper, candidate.min(axis=1))
+    return upper
+
+
 def omitted_pole_tail(slopes, degrees, terms):
     """Uniform degree-k tail of pole pairs ell >= terms (not the full feature).
 
@@ -122,9 +143,12 @@ def target_cdf_bound(tails, access, thresholds, curvature):
     tails = np.asarray(tails)
     access = np.asarray(access)
     thresholds = np.asarray(thresholds)
-    if curvature <= 0 or np.any(thresholds <= 0) or np.any(np.diff(thresholds) <= 0):
-        raise ValueError('Require positive curvature and increasing positive thresholds')
-    values = forced_slow_mass(tails[:, None], access[:, None]/(curvature*thresholds))
+    if curvature <= 0 or np.any(thresholds < 0) or np.any(np.diff(thresholds) <= 0):
+        raise ValueError('Require positive curvature and increasing nonnegative thresholds')
+    ratio = np.divide(access[:, None], curvature*thresholds,
+                      out=np.full((len(access), len(thresholds)), np.inf), where=thresholds > 0)
+    ratio[access == 0] = 0
+    values = forced_slow_mass(tails[:, None], ratio)
     return np.maximum.accumulate(np.max(values, axis=0))
 
 
@@ -153,6 +177,8 @@ def cdf_time_bound(thresholds, lower_mass, epsilon=.01, chi=.5, cap=10**32):
     if not 0 < chi < 1 or not 0 < epsilon < 1:
         raise ValueError('Require chi and epsilon in (0, 1)')
     rates, weights = cdf_atoms(thresholds, lower_mass)
+    if weights[rates == 0].sum() >= epsilon**2:
+        return dict(bound=None, log10_bound=None, status='proved_zero_mode_obstruction')
     lo, hi = 0, 1
     while cdf_error(hi, rates, weights, chi) > epsilon and hi < cap:
         lo, hi = hi, min(2*hi, cap)

@@ -160,3 +160,22 @@ evidence after checking every campaign completion flag. Run it as a module,
 The tracked compact artifacts suffice for figure regeneration; full matrices,
 optimizer checkpoints, and every-update traces are archived on Runpod under
 `/workspace/junmiaoh/experiments/precision-mlps/runs/frozen_gamma_full_v1`.
+
+The subsequent CPU analysis `slope_spectrum_analysis.py` tests the
+[slope-distribution spectral theorem](../../docs/slope_distribution_spectrum.md)
+against saved raw-map spectra and executed first hits, and constructs eight
+small heterogeneous dictionaries. It runs no campaign training. Regenerate its
+JSON evidence, curve arrays, and three-panel figure with:
+
+```bash
+OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python -m experiments.expD36_frozen_gamma_probe.slope_spectrum_analysis \
+  --root results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep
+```
+
+`slope_spectrum.py` contains the distribution tail bound, signed pole expansion
+with explicit remainders, exceptional-feature target projection, and the
+combined spectral-CDF error bound. The analysis records analytic predictions,
+measured spectral diagnostics, and executed hits separately. Its report
+discusses the remaining gap between polynomial-tail access and target-relevant
+spectral mass; close measured spectral forecasts are not labeled a sharp
+gamma-only theorem.

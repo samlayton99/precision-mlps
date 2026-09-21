@@ -2,9 +2,13 @@
 
 This study tests a specific mechanism: bounded hidden slopes suppress the high-degree polynomial content of each feature, and a readout trained by GD can acquire that content only slowly. The primary raw-coordinate comparison separates capacity from finite-budget optimization: at $\gamma=4$, a detached refit reaches approximately $8\times10^{-9}$ relative error, but 200,000 ordinary GD updates leave error $0.421$. Increasing the frozen slope to 64 reduces GD error to $0.00211$ and validation-selected Adam error to $1.43\times10^{-5}$. Coordinate choice and target both matter; the theorem does not predict monotone Adam performance or a universal necessary slope proportional to width.
 
+The structural theorem now makes the slope-to-spectrum implication explicit, including heterogeneous slopes: if only $q(G)$ neurons exceed slope $G$, the spectral tail after $k+1+q(G)$ directions is bounded by the polynomial approximation budget of the remaining features. A separate target condition forces energy into slow modes; the GD rate follows from ordinary spectral dynamics. [The proof and distribution corollaries](../../../../docs/slope_distribution_spectrum.md) cover maximum, mean, and quantile constraints without equating them. Mean or median slope alone cannot guarantee slow learning of every target.
+
 The mechanism can be quantified without measuring the dictionary spectrum or even its largest curvature. A post-hoc geometric corollary below requires at least **1,444,090 updates** to reach 1% error at raw gamma 4, under the declared normalized-step rule. The same corollary gives bounds above a million updates across all four tested widths. This is a conservative explanation of an obstruction, not a close prediction of every learning time. The [first-probe report](../REPORT.md) remains a separate record.
 
-A separate refinement accounts for adjacent-feature cancellation and raises the neighboring analytic gamma-4 bound from 156,090 to 17,841,791 updates. The target-weighted spectral-tail Jensen bound gives much closer predictions, reducing the median observed-time/bound ratio from 24.1 to 1.33 across 143 reached primary case/tolerance pairs. That result is a dynamics benchmark: its closeness does not establish a sharp gamma dependence. No additional optimizer trajectories were run for these analyses.
+The latest CPU analysis identifies a remaining limitation: center-aware pole calculations nearly recover the measured directional access, but converting that access to slow-mode target energy still loses substantial accuracy. Combining multiple analytically bounded spectral thresholds gives median hit/bound slack **83.3** on 37 reached raw-map cases at 1%; replacing the analytic access by measured access gives the same median. On this same subset, measured spectral-tail Jensen gives **1.33**, and a finer measured spectral histogram gives **1.056**. The close spectral results do not establish a tight explicit gamma law. No additional campaign optimizer trajectories were run for these analyses.
+
+A separate refinement accounts for adjacent-feature cancellation and raises the neighboring analytic gamma-4 bound from 156,090 to 17,841,791 updates. Across the broader 143 reached primary case/tolerance pairs, spectral-tail Jensen reduces median slack from 24.1 to 1.33. The different case sets are kept separate below.
 
 **Notation and normalization. Errors are relative empirical $L_2$ errors unless otherwise stated.**
 
@@ -20,6 +24,8 @@ A separate refinement accounts for adjacent-feature cancellation and raises the 
 | $L_*$ | Geometric lower bound on $L$ for the raw map; evaluated without the dictionary spectrum. |
 | C2, C3 | Explicit discrete-GD necessary-time bound and the more spectrum-dependent effective-generator estimate. |
 | $p_a$, $\bar\nu_a$ | Initial-residual energy fraction in modes with curvature at most $a$, and their energy-weighted mean curvature. |
+| $q(G)$, $B_{k,G}$ | Number of hidden slopes with $\lvert\gamma_j\rvert>G$, and the squared polynomial-tail budget of the remaining columns. |
+| $F(s)$ | Initial-residual energy fraction in eigenspaces with normalized curvature $\nu_i/L\le s$. |
 | $D_k^{\rm shift}$ | Analytic degree-$k$ tail envelope for the center derivative of a tanh feature; used to preserve neighboring cancellation. |
 | QI reference | The existing quasi-interpolant construction at fixed $\lambda=0.25$; its measured recovery accuracy supplies a separate width-dependent tolerance. |
 | Censored / unresolved | A tolerance was not reached within executed updates / a numerical quantity is not resolved by the stated arithmetic check. |
@@ -190,6 +196,79 @@ At gamma 4 and the common cutoff $k=29$, write $s_k=\|Q_kJ\|_F^2$. The factors $
   <img src="figures/tightness_and_gd_checks.png" alt="Access slack decomposition, cutoff-dependent certificates, and executed GD checkpoints versus spectral predictions" style="max-width: 100%;">
   <figcaption>Sine-mixture tightness audit. Left: the three access-slack factors at gamma 4, using resolved sampled cutoffs. Middle: directional C2 as a function of cutoff before its integer ceiling. Right: actual GD checkpoint errors and retained-SVD predictions at the same executed steps; connected lines interpolate saved predictions and are not extra training measurements.</figcaption>
 </figure>
+
+## Slope distributions, spectrum, and the remaining time-bound slack
+
+This post-hoc extension addresses the structural part of the explanation: which spectral restrictions follow from slope constraints before observing a GD trajectory? The analysis uses the existing finite-interval center geometry, endpoint sampling, raw readout coordinates, zero start, and $\eta=0.5/L$. Its primary comparison contains 55 target/gamma combinations: 37 reached 1% training relative residual within 200k steps and 18 were censored. Eight additional heterogeneous dictionaries are CPU diagnostics without executed training. There is no new validation selection or generalization claim.
+
+### Distribution theorem and the target condition
+
+For $g_j=|\gamma_j|$, let $q(G)=\#\{j:g_j>G\}$ and let $e_k(g)$ be the existing uniform feature-tail envelope. With eigenvalues of $JJ^\top$ in decreasing order, the new formulation is
+
+$$
+\boxed{\sum_{i>k+1+q(G)}\nu_i
+\le B_{k,G}:=\sum_{j:g_j\le G}e_k(g_j)^2
+\le[W-q(G)]e_k(G)^2.}
+$$
+
+Approximate the capped columns by degree-$k$ polynomials and retain the exceptional columns exactly. This gives a rank-at-most-$k+1+q(G)$ approximation. Its squared Frobenius error bounds the remaining spectral energy. In particular, $\nu_{k+1+q(G)+s}\le B_{k,G}/s$ for positive integer $s$. This is the slope-to-spectrum theorem; the optimization recurrence is its downstream use.
+
+A maximum cap gives $q(G)=0$ and the explicit factor $e^{-2k\operatorname{asinh}(\pi/(2G))}$. A mean absolute slope cap $\mu$ implies $q(G)\le W\mu/G$. An empirical upper-tail constraint supplies its own bound on $q(G)$. The mean-only analysis optimizes over 201 thresholds and degrees 0 through 128, retaining the safe budget $We_k(G)^2$ when the exact exception count is unknown. It is much weaker than knowing the actual slope vector: for the mean-four dictionaries, the resulting mode-40 eigenvalue upper bound is 4.026, while even the common-four dictionary has a measured mode-40 eigenvalue about $4.09\times10^{-17}$. A median cap permits up to half the neurons to remain exceptional. These different assumptions are not interchangeable.
+
+For target-specific learning times, enlarge the polynomial space by the exceptional features, and let $\delta_{k,G}$ be the initial residual's relative distance from that space. The [angle argument](../../../../docs/slope_distribution_spectrum.md) bounds the target energy below any spectral threshold using $\delta_{k,G}$ and $B_{k,G}$. This condition becomes uninformative when the exceptional features already supply the target, which is necessary for a valid theorem. The statement accounts for $L$ under normalized-step GD; an additional geometric lower bound on $L$ gives a separate weaker evaluation requiring no measured curvature.
+
+### Center-aware calculations and a bound using several spectral thresholds
+
+The new calculation evaluates signed Chebyshev coefficients from 128 conjugate pole pairs through degree 512, using each actual center and slope. It includes explicit bounds for both omitted poles and omitted degrees. Polynomial projection precedes Frobenius or directional aggregation, retaining cancellations discarded by the uniform envelope. These predictions use geometry and targets, not measured kernel eigenvectors or GD histories. Values conditioned on the actual prescribed step remain distinct from values using only the elementary geometric curvature lower bound.
+
+For spectral thresholds $s_j$, let $p_j\le F(s_j)$ be the nondecreasing lower envelope supplied by the target witnesses. Put $p_0=0$. Then
+
+$$
+\frac{\|r_t\|^2}{\|r_0\|^2}\ge
+\sum_j(p_j-p_{j-1})(1-\chi s_j)^{2t}
++(1-p_M)(1-\chi)^{2t}.
+$$
+
+Each guaranteed increment of target energy is placed at its fastest allowed rate, and the remainder at rate one. This combines thresholds without counting target energy twice. The calculation uses 641 logarithmic thresholds from $10^{-32}$ through one. It improves on each constituent single-threshold error witness, but need not improve on C2 or measured spectral-tail Jensen. A bound of seven updates here is merely the universal $\chi=0.5$ contraction limit at 1% error; it does not establish a gamma effect.
+
+<figure>
+  <img src="refinements/slope_spectrum.png" alt="Slope-dependent spectral-tail bounds, target energy in slow modes, and necessary times compared with executed GD hits" style="max-width: 100%;">
+  <figcaption>Raw readout, primary geometry, zero initialization, and 1% relative residual. (a) Measured retained spectral tails after rank k+1 (solid), uniform-cap bounds (dashed), and center-aware bounds (dotted), for gammas 4, 16, and 64. Unresolved measured tails are omitted. (b) Gamma-16 sine-mixture target mass versus normalized spectral threshold. The horizontal line is the squared tolerance, 10⁻⁴; the uniform-cap witness gives zero mass throughout this view. (c) Necessary times conditioned on the prescribed step, with executed hits and budget-censored cases. Curves extending above the axis are predictions, not executed horizons. In particular, the nominal low-gamma predictions are not validated by unresolved FP64 eigenmodes.</figcaption>
+</figure>
+
+**Table 2d. Sine-mixture necessary updates at 1% error. Center-aware columns use the actual prescribed step, signed pole calculations, and analytic truncation remainders. The spectral column uses measured eigenpairs.**
+
+| Gamma | Center-aware CDF bound | Center-aware C2 bound | Measured spectral Jensen | Executed first hit |
+|---:|---:|---:|---:|---:|
+| 4 | 1,104,905,471 | 4,285,388,970 | 399,435,514,539 | $>200,000$ |
+| 8 | 52,198 | 141,766 | 12,107,139 | $>200,000$ |
+| 12 | 2,206 | 5,993 | 177,804 | 186,057 |
+| 16 | 529 | 1,395 | 47,549 | 61,792 |
+| 64 | 168 | 309 | 11,885 | 16,013 |
+
+On the common set of 37 reached cases, median hit/bound ratios are 751.9 for the uniform-cap CDF bound, 362.0 for the center-aware Frobenius version, 83.3 for its target-direction version, and 44.3 for center-aware C2. The center-aware and measured-access CDF bounds produce identical integer necessary times in 32 of 37 reached cases and the same median slack. The measured spectral-tail Jensen median is 1.331; applying the histogram conversion to measured spectral mass gives 1.056, with range 1.016–1.089. The latter uses more of the actual spectrum and is a diagnostic approaching exact spectral evolution, not a new slope-based prediction. Existing C2 bounds remain available; their maximum with another valid bound remains valid.
+
+The missing accuracy is now localized. At gamma 4 and degree 30, the uniform squared-access envelope is $2.497\times10^{-7}$. The center-aware Frobenius envelope is $3.098902\times10^{-9}$ versus measured $3.098900\times10^{-9}$, and the center-aware target-direction value is $2.036814\times10^{-9}$ versus measured $2.036813\times10^{-9}$. Nevertheless, the actual spectral tail after rank 31 is only $6.946\times10^{-13}$: even accurate polynomial projection is not an optimal spectral subspace. At gamma 16, the measured target mass exceeds $10^{-4}$ by normalized threshold $2.512\times10^{-5}$ on the selected threshold grid, whereas the center-aware target witness only guarantees that much mass by $5.012\times10^{-3}$. Improving the tanh coefficient calculation alone cannot close this gap. A sharper structural theorem needs better control of the target's spectral subspace, beyond its polynomial-tail Rayleigh quotients.
+
+### Heterogeneous slopes and limitations of summary statistics
+
+The CPU dictionaries use $N=128$, $W=153$, and 2,049 training-grid points. They include common slope 4; slopes evenly spaced from 1 to 7; and one, four, or eight slope-64 exceptions. In the exception cases, the bulk slope is $(4W-64q)/(W-q)$ so the mean remains four. Four and eight exceptions are assigned both across the grid including halo centers and in a cluster near the origin. The one-exception case places it at the origin. These are deterministic interventions, not random draws from a slope distribution.
+
+For four exceptions, the bulk slope is 2.38926. The spread and clustered assignments have the same mean, median, maximum, and histogram, but their degree-30 residual distances from polynomials plus exceptions differ. For the Runge target these distances are 0.00151263 and 0.00142428, respectively; the distribution/target CDF bounds are 23,662 and 12,883 updates. Neither hitting time was executed, and ordering two lower bounds does not order the actual times. This comparison demonstrates why a histogram-based spectral theorem still needs target and geometry information for a specific learning-time claim. Exceptional spans whose numerical rank was unresolved were excluded as witnesses, not treated as exactly deficient.
+
+The final control contains one centered slope-64 feature and 152 inactive features. Its mean slope is 0.4183 and its median is zero, while its kernel is identical to the model containing just the active feature and bias. For a target equal to that active feature, the exact one-mode dynamics reaches 1% at seven updates; the distribution theorem correctly gives no extra target obstruction. For the sine-mixture and Runge targets, the exact remaining span obstruction instead proves unattainability at 1%. These exact zero modes follow from the explicit zero columns and target projection, not from an SVD cutoff. This control rules out a universal target-independent delay based only on a small mean or median.
+
+### Verification, tightness, and arithmetic limits
+
+The CPU analysis completes 3,724 resolved saved spectral-tail comparisons, 2,075 center-aware Frobenius comparisons, 2,285 directional comparisons, and 132,330 target-mass comparisons. All 37 executed first hits and 660 executed checkpoint errors respect the evaluated bounds. Heterogeneous checks add 107 spectral-tail, 252 mean-only eigenvalue, and 13,568 target-mass comparisons. These counts are deterministic correctness audits, not statistical replications or interval-certified proofs.
+
+All 28 focused ExpD36 tests pass, including independent sampled-feature projection, signed-pole parity and remainder checks, direct GD versus the combined spectral-mass bound, and the inactive-neuron control. The complete CPU analysis takes about six seconds locally and launches no GPU job. Its [JSON evidence](refinements/slope_spectrum.json), [curve arrays](refinements/slope_spectrum_curves.npz), and [PDF figure](refinements/slope_spectrum.pdf) accompany the PNG above. Seven source/configuration hashes and 43 input-artifact hashes identify the calculation; commands are in the [experiment README](../../../../experiments/expD36_frozen_gamma_probe/README.md).
+
+Increasing degree/pole count from 512/128 to 1024/256 changes the sine-mixture CDF bound at gamma 4 by one step out of approximately $1.1\times10^9$, leaves the gamma-16 and gamma-64 integer bounds unchanged, and changes gamma 96 from 159 to 161. Truncation error does not account for the observed orders-of-magnitude slack. Low-gamma predictions below the FP64 resolution monitor remain conditional nominal-feature calculations, not confirmations against the retained spectrum. The analysis preserves these flags and the analytic remainder separately from the heuristic roundoff monitor.
+
+The earlier geometric C2 calculation is now also joined explicitly to saved first hits across all 73 width/target/gamma cases. Among 43 reached cases its lower bound is one update, with median slack 5,263 and range 530–186,057. Thirty cases are censored; 16 have a lower bound already above the 200k budget. The strong low-gamma obstruction and lack of tightness on reached cases are both retained in the scientific conclusion.
+
+The [derivation](../../../../docs/slope_distribution_spectrum.md) therefore establishes a distribution-to-spectrum theorem and a valid route to target-specific rate bounds. The numerical evidence does not establish a tight explicit gamma law. It identifies the remaining task as controlling target-relevant spectral subspaces sharply for this geometry, rather than further refining a feature envelope that already reproduces measured directional access.
 
 ## A mechanism expressed through gamma, target complexity, and budget
 
