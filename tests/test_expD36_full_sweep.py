@@ -133,6 +133,9 @@ def test_full_screen_selection_resume_and_controls(tmp_path):
     from experiments.expD36_frozen_gamma_probe import full_diagnostics as diagnostics
     rows=diagnostics.case_certificates(tmp_path,tmp_path/'training/N64_raw_gd',cfg,deadline)
     assert len(rows)==len(cfg['targets'])*len(cfg['tolerances'])*8
+    polynomial_rows=diagnostics.case_certificates(tmp_path,tmp_path/'training/N64_raw_polynomial_gd',cfg,deadline)
+    assert any(row['kind']=='polynomial_mean_access' for row in polynomial_rows)
+    json.dumps(train.safe_json(polynomial_rows),allow_nan=False)
     np.testing.assert_allclose([row['epsilon_residual'] for row in rows],
                                [row['epsilon_target'] for row in rows],rtol=1e-14)
     core.write_json(tmp_path/'reference/measurements.json',[

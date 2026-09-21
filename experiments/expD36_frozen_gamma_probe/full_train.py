@@ -22,6 +22,8 @@ def safe_json(value):
         return float(value) if np.isfinite(value) else None
     if isinstance(value,np.integer):
         return int(value)
+    if isinstance(value,np.bool_):
+        return bool(value)
     return value
 
 
