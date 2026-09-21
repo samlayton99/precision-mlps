@@ -126,3 +126,12 @@ def test_certificate_dual_identifies_exact_fast_control():
     assert np.all(probabilities >= 0)
     np.testing.assert_allclose(probabilities.sum(axis=0), 1.)
     np.testing.assert_allclose(grid[np.argmax(probabilities, axis=0)], cap)
+
+
+def test_capacity_witness_checks_real_features_and_binary_coefficients():
+    from experiments.expD36_frozen_gamma_probe.cap_capacity import certify_readout
+    x = np.array([-1., 1.]); gamma = .1
+    theta = np.array([0., 1/np.tanh(gamma)])
+    proof = certify_readout(x, np.array([0.]), gamma, theta, x/np.sqrt(2))
+    assert proof['relative_error_upper'] < 1e-12
+    assert proof['status'] == 'interval_certified_capacity'

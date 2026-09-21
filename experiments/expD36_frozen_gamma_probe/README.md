@@ -254,6 +254,9 @@ target remains fixed, and all final learning times require frozen-slope GD.
 source of adversarial dictionaries. It rounds and samples the mixture into
 actual capped slope vectors. The mixture itself is a diagnostic relaxation;
 only the rounded dictionaries can become executed upper witnesses.
+`cap_capacity.py` independently encloses the residual of an archived detached
+readout under real tanh evaluation. It proves attainability of the declared
+training tolerance for that dictionary; it makes no optimizer-timing claim.
 
 `cap_resolvent.py --root <capped-campaign>` tightens the conversion from a
 certified Rayleigh bound to a necessary learning time. The resolvent inequality
