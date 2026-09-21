@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from experiments.expD34_readout_race.transport_analyze import weighted_distance, frozen_forecast
+from experiments.expD34_readout_race.transport_analyze import weighted_distance, frozen_forecast, marginal_w2
 from experiments.expD34_readout_race.recovery import acquisition_distance
 from experiments.expD34_readout_race import transport as tr, targets
 
@@ -11,6 +11,12 @@ def test_weighted_population_distance_matches_integer_counts():
     for population in (.25,.5,.75,1.):
         assert weighted_distance(a,w,4,2.,population)==pytest.approx(acquisition_distance(a,2.,population))
     assert weighted_distance(a,w,4,2.,.375)==pytest.approx(np.sqrt(.5*.8**2))
+
+
+def test_weighted_quantile_coupling():
+    assert marginal_w2(np.array([0.,2.]),np.array([.25,.75]),np.array([1.]),np.array([1.]))==pytest.approx(1.)
+    a=np.array([3.,1.,2.]); b=np.array([1.1,3.2,2.3]); w=np.ones(3)/3
+    assert marginal_w2(a,w,b,w)==pytest.approx(np.sqrt(np.mean((np.sort(a)-np.sort(b))**2)))
 
 
 def test_frozen_forecast_matches_initial_gradient_and_linearized_loss():

@@ -16,6 +16,7 @@ def observables(z, d, x, y, w, width):
     r = np.tanh(x[:, None]*z[0]+z[1]) @ (width*w*z[2])+d-y
     return dict(half_mse=float(np.mean(r*r)/2), mean_gamma=float(w @ gamma),
                 max_gamma=float(gamma.max()), readout_l2=float(np.sqrt(width*(w @ z[2]**2))),
+                gamma_second_moment=float(w @ gamma**2),
                 **{f"fraction_{threshold:g}": float(w @ (gamma >= threshold)) for threshold in (1,3.2,16)})
 
 
@@ -28,6 +29,18 @@ def weighted_distance(a, w, width, threshold, population):
     order = np.argsort(gap)
     masses = np.minimum(w[order], np.maximum(population-np.r_[0., np.cumsum(w[order])[:-1]], 0))
     return float(np.sqrt(width*np.sum(masses*gap[order]**2)))
+
+
+def marginal_w2(a, wa, b, wb):
+    """Exact one-dimensional weighted quantile coupling, up to roundoff."""
+    ia,ib=np.argsort(a),np.argsort(b)
+    ca,cb=np.cumsum(wa[ia]),np.cumsum(wb[ib])
+    if abs(ca[-1]-1)>1e-12 or abs(cb[-1]-1)>1e-12:
+        raise ValueError('Both distributions must have unit mass')
+    ca[-1]=cb[-1]=1.
+    edges=np.unique(np.r_[0.,ca,cb]); mid=(edges[1:]+edges[:-1])/2
+    gaps=a[ia][np.searchsorted(ca,mid)]-b[ib][np.searchsorted(cb,mid)]
+    return float(np.sqrt(np.diff(edges) @ (gaps*gaps)))
 
 
 def frozen_forecast(z, d, x, y, width, horizon, degree=65, kappa=1.):
@@ -59,6 +72,8 @@ def diagnostics(z,d,x,y,w,width,kappa=1.):
     r=h @ (width*w*z[2])+d-y
     full=np.sqrt(width*w)*z[2]*(x @ (r[:,None]*s))/len(x)
     K=sum(arrays['K_'+key] for key in ('a','b','c','d'))
+    for key in ('a','b','c','d'):
+        scalar[f'modal_{key}_share']=float(e @ arrays['K_'+key] @ e/(e @ K @ e+1e-300))
     if scalar['coarse_inverse_resolved']:
         B=np.linalg.solve(K[:2,:2],K[:2,2:])
         S=K[2:,2:]-K[2:,:2] @ B
@@ -173,9 +188,33 @@ def analyze(runs, output, archive=None):
             reference=candidates[0]
             refinements.append(dict(run=run,reference=ref,seed=row['seed'],target=row['target'],
                 **{key+'_difference':row[key]-reference[key] for key in ('half_mse','mean_gamma','max_gamma','readout_l2','path','fraction_1','fraction_3.2','fraction_16')}))
-    for name, rows in [('endpoints',endpoints),('paired_errors',comparisons),('refinement',refinements),('kernels',kernels),('actual_kernels',actual_kernels),('budgets',budgets),('frozen_kernel',frozen)]:
+    law_errors=[]
+    for root,config,f,curve,status in loaded:
+        if not config['cases'][0]['nodes'] or not status['complete']: continue
+        for i,case in enumerate(config['cases']):
+            for key,(ref,ri) in truth.items():
+                if key[0]!=case['width'] or key[2]!=case['target'] or key[3:]!=(case['kappa'],case['eta']): continue
+                indices=np.flatnonzero(ref['steps']==round(config['end_time']/case['eta']))
+                if not len(indices):continue
+                rj=indices[0]
+                law_errors.append(dict(run=root.name,target=case['target'],seed=key[1],
+                    gamma_wasserstein2=marginal_w2(abs(f['z'][i,-1,0]),f['weights'][i],abs(ref['z'][ri,rj,0]),np.ones(case['width'])/case['width'])))
+    for name, rows in [('endpoints',endpoints),('paired_errors',comparisons),('refinement',refinements),('law_errors',law_errors),('kernels',kernels),('actual_kernels',actual_kernels),('budgets',budgets),('frozen_kernel',frozen)]:
         write_table(output/f'{name}.csv',rows)
     np.savez_compressed(output/'kernel_blocks.npz',**kernel_arrays)
+    validation=[]
+    for row in comparisons:
+        if row['run']!='fresh33' or row['step']!=600000: continue
+        ref=next((r for r in endpoints if r['run']=='freshfull' and r['target']==row['target'] and r['seed']==row['seed'] and r['complete'] and r['finite']),None)
+        if ref is None: continue
+        errors={k:abs(row[k+'_error'])/ref[k] for k in ('mean_gamma','readout_l2')}
+        errors['half_mse']=abs(row['half_mse_error'])
+        errors['population_count']=max(abs(row[f'fraction_{g:g}_error'])*row['width'] for g in (1.,3.2,16.))
+        classification=all((ref[f'fraction_{g:g}']>=.1)==(ref[f'fraction_{g:g}']+row[f'fraction_{g:g}_error']>=.1) for g in (1.,3.2,16.))
+        passed=errors['mean_gamma']<=.01 and errors['readout_l2']<=.01 and errors['half_mse']<=.001 and errors['population_count']<=1+1e-12 and classification
+        validation.append(dict(seed=row['seed'],target=row['target'],errors=errors,barrier_agreement=classification,passed=passed))
+    (output/'fresh_validation.json').write_text(json.dumps(clean(dict(expected_cases=15,evaluated_cases=len(validation),
+        all_passed=len(validation)==15 and all(v['passed'] for v in validation),cases=validation)),indent=2)+'\n')
     (output/'analysis_manifest.json').write_text(json.dumps(clean(dict(runs=[str(r) for r in runs],archive=str(archive),
         endpoint_count=len(endpoints),paired_count=len(comparisons),kernel_count=len(kernels))),indent=2)+'\n')
     plot(loaded, output)
