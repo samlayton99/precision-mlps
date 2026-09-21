@@ -101,7 +101,18 @@ def lbfgs_search(value_gradient, initial, iterations, deadline, horizon):
     return best_unit, history
 
 
-def run(root, caps, n, iterations, starts, round_index, seconds, method='adam'):
+def exploratory_start(centers, start, seed):
+    """Admissible phase, sparse-lattice, and bimodal slope starts."""
+    if start < 8:
+        phase = (start-4)*np.pi/4
+        return .03+.97*np.abs(np.sin(10*np.pi*centers+phase))**8
+    if start < 12:
+        stride = [4, 8, 16, 32][start-8]
+        return np.where(np.arange(len(centers)) % stride == 0, 1., .01)
+    return np.clip(np.random.default_rng(seed).beta(.25, .25, len(centers)), .001, .999)
+
+
+def run(root, caps, n, iterations, starts, round_index, seconds, method='adam', explore=False):
     from .train import verify_gpu
     verify_gpu(root, f'search_{os.environ.get("SLURM_JOB_ID", "local")}')
     begun = time.monotonic(); deadline = begun+seconds
@@ -126,9 +137,15 @@ def run(root, caps, n, iterations, starts, round_index, seconds, method='adam'):
         for start in range(min(starts, len(candidates))):
             if time.monotonic()+45 >= deadline:
                 break
-            initial = np.load(root/'cases'/candidates[start]['id']/'parameters.npz')['slopes']/cap
+            if explore and start >= 4:
+                initial = exploratory_start(geometry.centers, start, 100000+1000*round_index+10*int(cap)+start)
+                initial_label = f'exploratory_pattern_{start}'
+            else:
+                initial = np.load(root/'cases'/candidates[start]['id']/'parameters.npz')['slopes']/cap
+                initial_label = candidates[start]['id']
             if method == 'lbfgs':
                 best_unit, history = lbfgs_search(value_gradient, initial, iterations, deadline, horizon)
+                history.insert(0, dict(initialization=initial_label))
                 name = f'search_r{round_index}_start{start}'
                 meta = save_case(root, n, cap, name, cap*best_unit, history)
                 records.append(meta['id'])
@@ -166,7 +183,7 @@ def run(root, caps, n, iterations, starts, round_index, seconds, method='adam'):
             break
     core.write_json(root/f'search_completion_{os.environ["SLURM_JOB_ID"]}.json',
         dict(round=round_index, selected=records, seconds=time.monotonic()-begun,
-             iterations=iterations, starts=starts, caps=caps, method=method,
+             iterations=iterations, starts=starts, caps=caps, method=method, explore=explore,
              source_commit=os.environ.get('PROBE_SOURCE_COMMIT', 'local')))
 
 
@@ -180,8 +197,9 @@ def main():
     p.add_argument('--round', type=int, default=0)
     p.add_argument('--seconds', type=int, default=3300)
     p.add_argument('--method', choices=['adam', 'lbfgs'], default='adam')
+    p.add_argument('--explore', action='store_true')
     a = p.parse_args()
-    run(a.root, a.caps, a.n, a.iterations, a.starts, a.round, a.seconds, a.method)
+    run(a.root, a.caps, a.n, a.iterations, a.starts, a.round, a.seconds, a.method, a.explore)
 
 
 if __name__ == '__main__':
