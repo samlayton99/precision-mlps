@@ -209,3 +209,11 @@ resumed batches retain coefficients, update counts, and every-iterate hits.
 Only sampled scalar curves and restart states are archived. The new campaign
 has an additional ten-GPU-hour cap, including compilation and allocated idle
 time; reconcile Slurm accounting before submitting further allocations.
+
+`cap_refine.py` searches target and spectral-tail witnesses plus windowed sine
+directions, ranks finite-grid candidates, and independently certifies the
+selected factors. It reuses archived common-slope left singular vectors only
+to propose witnesses; the continuous-cap checker establishes validity for all
+admissible heterogeneous slopes. A local end-to-end check uses `--n 64 --caps
+16 --rank 4 --intervals 16 --verify-count 1`. Large interval repairs are retained
+in the evidence and direct the next round toward tighter scalar enclosures.
