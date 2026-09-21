@@ -110,9 +110,63 @@ def optimize_candidate(x, centers, gamma_cap, witness, basis, grid_size=25):
     values, vectors = eigh((q.value+q.value.T)/2)
     keep = values > max(1e-16, np.max(values)*1e-12)
     factor = basis@(vectors[:, keep]*np.sqrt(np.maximum(values[keep], 0.)))
+    if (np.array_equal(x, -x[::-1]) and np.array_equal(centers, -centers[::-1])
+            and (np.array_equal(v, v[::-1]) or np.array_equal(v, -v[::-1]))):
+        # Reflection averaging preserves feasibility and trace on this geometry.
+        factor = np.column_stack([.5*(factor+factor[::-1]), .5*(factor-factor[::-1])])
     return dict(status='grid_candidate', solver_status=str(problem.status),
                 factor=factor, beta=float(np.sum(factor**2)), grid=slopes,
                 solver_objective=float(problem.value))
+
+
+def optimize_joint_candidate(x, centers, gamma_cap, target, basis, t, grid_size=13):
+    """Joint convex witness/certificate search for a resolvent lower bound.
+
+    In scaled variables maximize 2*yhat^T*v-||v||^2-tr(Q), with
+    X=t*UQU^T satisfying the unnormalized directional certificate.
+    Dividing the optimum by t gives a candidate resolvent lower bound.
+    Only the subsequent independent interval checker certifies the output.
+    """
+    import cvxpy as cp
+    if t <= 0:
+        raise ValueError('The resolvent shift must be positive')
+    x, centers = np.asarray(x), np.asarray(centers)
+    y = np.asarray(target)/np.linalg.norm(target)
+    b = np.ones(len(x))/np.sqrt(len(x))
+    basis, _ = np.linalg.qr(np.column_stack([b, basis, y]))
+    r, w = basis.shape[1], len(centers)
+    coefficients = cp.Variable(r)
+    q = cp.Variable((r, r), PSD=True)
+    slack = cp.Variable(w, nonneg=True)
+    grid = np.unique(np.r_[0., np.geomspace(gamma_cap/4096, gamma_cap, grid_size),
+                          np.linspace(0, gamma_cap, grid_size)])
+    constraints = []
+    for slope in grid:
+        a = np.tanh(slope*(x[:, None]-centers))/np.sqrt(len(x))
+        ab = basis.T@a
+        constraints.append(cp.square(coefficients@ab)/t-cp.sum(cp.multiply(ab, q@ab), axis=0) <= slack)
+    bb = basis.T@b
+    constraints.append(cp.square(coefficients@bb)/t-cp.sum(cp.multiply(bb, q@bb))+cp.sum(slack) <= 0)
+    objective = 2*(basis.T@y)@coefficients-cp.sum_squares(coefficients)-cp.trace(q)
+    problem = cp.Problem(cp.Maximize(objective), constraints)
+    try:
+        problem.solve(solver='CLARABEL', max_iter=200,
+                      tol_gap_abs=1e-9, tol_feas=1e-9, tol_gap_rel=1e-8)
+    except cp.error.SolverError as exc:
+        return dict(status='solver_failed', detail=str(exc), factor=None)
+    if coefficients.value is None or q.value is None:
+        return dict(status=str(problem.status), factor=None)
+    witness = basis@coefficients.value
+    norm = np.linalg.norm(witness)
+    if norm < 1e-12:
+        return dict(status='unresolved_zero_witness', factor=None)
+    values, vectors = eigh((q.value+q.value.T)/2)
+    keep = values > max(1e-16, np.max(values)*1e-12)
+    factor = (basis@(vectors[:, keep]*np.sqrt(t*np.maximum(values[keep], 0.))))/norm
+    return dict(status='grid_candidate', solver_status=str(problem.status),
+                witness=witness, factor=factor, beta=float(np.sum(factor**2)),
+                delta=abs(float(witness@y))/norm, grid=grid,
+                resolvent_candidate=float(problem.value/t), shift=t)
 
 
 def certify(x, centers, gamma_cap, witness, factor, target, *,
@@ -160,8 +214,17 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
             return values[0]**2-sum((a*a for a in values[1:]), arb(0))
 
         all_upper, details = [], []
+        symmetry = (np.array_equal(x, -x[::-1])
+            and (np.array_equal(witness, witness[::-1]) or np.array_equal(witness, -witness[::-1]))
+            and np.all(np.all(factor == factor[::-1], axis=0)|np.all(factor == -factor[::-1], axis=0)))
+        reflected = {}
         tolerance = relative_slack*max(upper(beta_base), 1e-12)/max(len(centers), 1)
         for center in centers:
+            key = abs(float(center))
+            if symmetry and key in reflected:
+                entry = dict(reflected[key], center=float(center), reflection_reuse=True)
+                all_upper.append(entry['upper']); details.append(entry)
+                continue
             offsets = [arb(float(t))-arb(float(center)) for t in x]
             cache = {}
 
@@ -222,6 +285,8 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
             all_upper.append(bound)
             details.append(dict(center=float(center), upper=bound, sample_lower=best,
                                 subdivisions=splits, remaining_intervals=len(heap)))
+            if symmetry:
+                reflected[key] = details[-1]
         slack = bias_q+sum((arb(t) for t in all_upper), arb(0))
         repair = max(0., upper(slack))
         beta = upper(beta_base+arb(repair))

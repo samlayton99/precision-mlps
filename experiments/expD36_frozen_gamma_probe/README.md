@@ -239,3 +239,10 @@ certified Rayleigh bound to a necessary learning time. The resolvent inequality
 is proved in the theorem note; a second interval checker encloses its scalar
 spectral minimum. Its output is a separate refinement artifact, preserving the
 original CDF calculation and the certificate from which both follow.
+
+`cap_joint.py` tests a stronger witness-selection strategy by jointly optimizing
+the witness and PSD certificate for a resolvent shift. It records unsuccessful
+conic solves, polishes successful directions with the fixed-witness solver, and
+then verifies them independently. Symmetric target witnesses and reflection-
+averaged certificates allow reuse of center-pair interval calculations without
+restricting the independently heterogeneous slope family.

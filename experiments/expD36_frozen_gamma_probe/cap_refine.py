@@ -32,7 +32,11 @@ def witness_bank(x, y, u):
         for power in [1, 2]:
             bank.append((f'windowed_sine_{frequency}_{power}',
                          np.sin(frequency*np.pi*x)*(1-x*x)**power))
-    return bank
+    if np.array_equal(y, -y[::-1]):
+        bank = [(name, .5*(v-v[::-1])) for name, v in bank]
+    elif np.array_equal(y, y[::-1]):
+        bank = [(name, .5*(v+v[::-1])) for name, v in bank]
+    return [(name, v) for name, v in bank if np.linalg.norm(v) > 0]
 
 
 def run_case(args):

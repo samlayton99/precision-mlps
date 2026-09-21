@@ -48,3 +48,27 @@ def test_convex_candidate_recovers_two_sample_optimum():
     optimum = 4*np.tanh(.1)**2
     assert certified['beta'] >= optimum
     assert certified['beta'] < optimum+1e-6
+
+
+def test_joint_witness_optimization_recovers_exact_resolvent():
+    pytest.importorskip('cvxpy')
+    x = np.array([-1., 1.]); y = x.copy()
+    optimum = 4*np.tanh(.1)**2
+    result = c.optimize_joint_candidate(x, np.zeros(4), .1, y, y[:, None], .01, grid_size=5)
+    assert result['resolvent_candidate'] == pytest.approx(1/(optimum+.01), rel=1e-5)
+    certified = c.certify(x, np.zeros(4), .1, result['witness'], result['factor'], y)
+    assert certified['beta'] >= optimum-1e-12
+    assert certified['beta'] < optimum+1e-6
+
+
+def test_reflection_reuse_does_not_assume_paired_slopes():
+    x = np.linspace(-1, 1, 17); y = np.sin(2*np.pi*x)
+    centers = np.array([-.75, 0., .75])
+    factor = np.ones((len(x), 1))*.01
+    result = c.certify(x, centers, 4., y, factor, y, max_intervals=16)
+    assert result['columns'][-1]['reflection_reuse']
+    assert result['columns'][-1]['upper'] == result['columns'][0]['upper']
+    v = y/np.linalg.norm(y)
+    for slopes in [[.1, 4., 2.], [4., -.01, .01], [0., 0., 4.]]:
+        j = core.design(x, centers, np.array(slopes))
+        assert np.linalg.norm(j.T@v)**2 <= result['beta']*np.linalg.norm(j, 2)**2+1e-12

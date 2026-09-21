@@ -201,3 +201,28 @@ this result, the CDF bound, and the direct-target Jensen bound when applicable.
 This is a proof improvement, not a fitted time multiplier. The parameters
 $t,z$ use only $\beta,\delta,\chi,\epsilon$; no trained iterate is an input.
 It does not by itself tighten the upstream uniform estimate of $\beta$.
+
+The witness can also be searched jointly with $X$. Allow an unnormalized $v$
+in (C), which still gives $v^THv\le\operatorname{tr}X$. The variational identity
+for the inverse gives
+
+$$
+\widehat y^T(H+tI)^{-1}\widehat y\ge
+2\widehat y^Tv-\operatorname{tr}X-t\|v\|^2.
+$$
+
+Maximizing this concave expression subject to (C) and $X\succeq0$ is a convex
+optimization problem: each feature constraint is convex in $v$ and affine in
+$X$. The experimental solver searches a finite-dimensional basis and slope
+grid, then normalizes the proposed direction, re-solves its fixed-direction
+certificate, and applies the same independent continuum checker. Absolute
+solver tolerances can become large after normalizing a small witness, so the
+unpolished joint objective is never reported as a proved bound.
+
+On reflection-symmetric samples and centers, a witness of definite parity
+permits replacing $X$ by $(X+RXR)/2$, where $R$ reverses sample order. This
+preserves the trace and feasibility of (C). Factoring the even and odd parts
+separately makes the symmetry exact in the saved binary data, allowing the
+checker to reuse the scalar supremum for centers $c$ and $-c$. The neuron slopes
+remain independent; this computational reduction assumes no symmetry of the
+actual slope vector.
