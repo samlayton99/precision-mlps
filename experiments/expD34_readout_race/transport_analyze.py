@@ -159,7 +159,8 @@ def analyze(runs, output, archive=None):
                 # Full modal diagnostics at the actual/forecast state, not a fitted closure.
                 scalar, arrays = diagnostics(z[j],d[j],x,y,w,case['width'],case['kappa'])
                 kernels.append(dict(**meta,step=int(step),**scalar))
-                if step in (0,600000) and not case['nodes']:
+                # Keep primary matrices; all other matrices are reproducible from saved states.
+                if step in (0,600000) and root.name in ('primary33','freshfull'):
                     for key in ('K_a','K_b','K_c','K_d','residual_modes','K_dot','residual_velocity'):
                         kernel_arrays[f'{root.name}_{i}_{step}_{key}'] = arrays[key]
                 pair = truth.get(identity(case))
@@ -194,7 +195,7 @@ def analyze(runs, output, archive=None):
                     **observables(zn,dn,x,y,w,case['width'])))
     refinements=[]
     for run,ref in [('degree9','primary33'),('degree17','primary33'),('degree65','primary33'),
-                    ('halfstep','primary33'),('law8','law12'),('law12','law16'),('law12full','law12')]:
+                    ('halfstep','primary33'),('law8','law12'),('law12','law16'),('law16','law24'),('law24','law32'),('law12full','law12'),('law12half','law12')]:
         for row in [r for r in endpoints if r['run']==run and r['complete'] and r['finite']]:
             candidates=[r for r in endpoints if r['run']==ref and r['complete'] and r['finite'] and r['seed']==row['seed'] and r['target']==row['target']]
             if not candidates: continue
@@ -210,7 +211,7 @@ def analyze(runs, output, archive=None):
                 indices=np.flatnonzero(ref['steps']==round(config['end_time']/case['eta']))
                 if not len(indices):continue
                 rj=indices[0]
-                law_errors.append(dict(run=root.name,target=case['target'],seed=key[1],
+                law_errors.append(dict(run=root.name,target=case['target'],seed=key[1],physical_time=config['end_time'],
                     gamma_wasserstein2=marginal_w2(abs(f['z'][i,-1,0]),f['weights'][i],abs(ref['z'][ri,rj,0]),np.ones(case['width'])/case['width'])))
     for name, rows in [('endpoints',endpoints),('paired_errors',comparisons),('refinement',refinements),('law_errors',law_errors),('kernels',kernels),('actual_kernels',actual_kernels),('budgets',budgets),('frozen_kernel',frozen)]:
         write_table(output/f'{name}.csv',rows)
@@ -231,6 +232,7 @@ def analyze(runs, output, archive=None):
     (output/'analysis_manifest.json').write_text(json.dumps(clean(dict(runs=[str(r) for r in runs],archive=str(archive),
         endpoint_count=len(endpoints),paired_count=len(comparisons),kernel_count=len(kernels))),indent=2)+'\n')
     plot(loaded, output)
+    plot_refinements(endpoints,kernels,output)
     if actual_kernels:
         plot_actual(actual_kernels,output)
     print(json.dumps(dict(endpoints=len(endpoints),paired=len(comparisons),kernels=len(kernels))))
@@ -242,9 +244,9 @@ def plot(loaded, output):
     import matplotlib.pyplot as plt
     fig, axes = plt.subplots(3,3,figsize=(12,9),sharex=True)
     for root, config, _, curve, _ in loaded:
-        if root.name not in ('primary33','law8','law12','law16','fresh33','freshfull'): continue
+        if root.name not in ('primary33','law12','law32','freshfull'): continue
         law='law' in root.name
-        color={'primary33':'#6b7280','law8':'#f59e0b','law12':'#10b981','law16':'#8b5cf6','fresh33':'#2563eb','freshfull':'#dc2626'}[root.name]
+        color={'primary33':'#6b7280','law12':'#10b981','law32':'#111827','freshfull':'#dc2626'}[root.name]
         for i, case in enumerate(config['cases']):
             row=('sine','moment3','moment9').index(case['target'])
             for col,key in enumerate(('mean_gamma','xi','readout_l2')):
@@ -278,6 +280,39 @@ def plot_actual(rows,output):
         for ax in axes[:,col]: ax.set_xscale('symlog',linthresh=1)
     axes[0,0].legend(fontsize=7)
     fig.tight_layout(); fig.savefig(output/'actual_effective_force.png',dpi=160); plt.close(fig)
+
+
+def plot_refinements(endpoints,kernels,output):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    targets=('sine','moment3','moment9')
+    laws=[r for r in endpoints if r['run'] in ('law8','law12','law16','law24','law32') and r['complete'] and r['finite']]
+    if laws:
+        fig,axes=plt.subplots(3,3,figsize=(11,8),sharex=True)
+        for col,target in enumerate(targets):
+            rr=sorted([r for r in laws if r['target']==target],key=lambda r:r['nodes'])
+            for row,key in enumerate(('mean_gamma','readout_l2','fraction_3.2')):
+                axes[row,col].plot([r['nodes'] for r in rr],[r[key] for r in rr],'o-',color='#2563eb')
+                axes[row,col].set(ylabel=key)
+            axes[0,col].set_title(target); axes[-1,col].set_xlabel('Quadrature order per dimension')
+        fig.tight_layout();fig.savefig(output/'law_refinement.png',dpi=160);plt.close(fig)
+    rows=[r for r in kernels if r['run'] in ('primary33','width89full','width353full') and r['seed']<3 and r['step']==20000]
+    if rows:
+        fig,axes=plt.subplots(1,3,figsize=(11,3.5))
+        for ax,target,power in zip(axes,targets,(1,1,2)):
+            for seed in range(3):
+                rr=sorted([r for r in rows if r['target']==target and r['seed']==seed],key=lambda r:r['width'])
+                ax.loglog([r['width'] for r in rr],[r['full_slope_norm'] for r in rr],'o-',alpha=.5,color='#6b7280')
+            anchor=np.median([r['full_slope_norm'] for r in rows if r['target']==target and r['width']==177])
+            width=np.array([89,177,353])
+            ax.loglog(width,anchor*(177/width)**power,'--',color='#2563eb',label=f'W^(-{power}), anchored at W=177')
+            law=sorted([r for r in kernels if r['run'] in ('law8','law_width89_early','law_width353_early') and r['target']==target and r['step']==20000],key=lambda r:r['width'])
+            if law:
+                ax.loglog([r['width'] for r in law],[r['full_slope_norm'] for r in law],'s-',color='#111827',label='Initialization law, quadrature order 8')
+            ax.set(title=target,xlabel='Physical width',ylabel='Slope-force norm at t=40')
+            ax.legend(fontsize=7)
+        fig.tight_layout();fig.savefig(output/'width_scaling.png',dpi=160);plt.close(fig)
 
 
 def main():
