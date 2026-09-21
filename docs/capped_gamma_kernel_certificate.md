@@ -219,6 +219,44 @@ certificate, and applies the same independent continuum checker. Absolute
 solver tolerances can become large after normalizing a small witness, so the
 unpolished joint objective is never reported as a proved bound.
 
+An alternative convex search maximizes $\widehat y^Tv$ subject to (C),
+$X\succeq0$, $\operatorname{tr}X\le b_0$, and $\|v\|\le1$, for a chosen
+budget $b_0>0$. With $v=\sqrt{b_0}Uc$ and $X=b_0UQU^T$, an orthonormal
+search basis gives the well-scaled constraints $\operatorname{tr}Q\le1$
+and $\|c\|^2\le1/b_0$. A nonzero output is normalized, polished, and
+checked in exactly the same way. This changes the witness search; it adds no
+assumption about the actual dictionary or its training trajectory.
+
+There are two distinct sources of slack. Condition (C) bounds a directional
+curvature uniformly over the capped family. Equations (2)–(4) then turn that
+directional information into a target learning delay. Improving the second
+step cannot recover information already discarded by the first. For example,
+when $0<\beta<\delta^2$, the abstract operator
+$H=(\beta/\delta^2)\widehat y\widehat y^T$ satisfies the same directional
+constraint for a witness with overlap $\delta$ and learns the target at rate
+$\beta/\delta^2$. Consequently these two scalar inputs alone cannot prove a
+necessary time larger than
+
+$$
+\left\lceil\frac{\log\epsilon}
+{\log(1-\chi\beta/\delta^2)}\right\rceil.
+$$
+
+This is an information limit for a single $(\beta,\delta)$ pair. The abstract
+operator need not be realizable by any tanh dictionary, so it is not an
+admissible upper witness for the capped-family optimization problem.
+
+The cap also gives useful order relations without claiming that every pair
+of dictionaries is ordered. If $\Gamma_1\le\Gamma_2$, their admissible
+families are nested. A bound proved at $\Gamma_2$ is valid at $\Gamma_1$,
+and a dictionary executed at $\Gamma_1$ is an admissible upper witness at
+$\Gamma_2$. Thus one may replace computed bounds by the nonincreasing hull
+$B(\Gamma)=\max_{G\ge\Gamma}B_G$ and upper witnesses by
+$U(\Gamma)=\min_{G\le\Gamma}U_G$. A comparison
+$B(\Gamma_1)>U(\Gamma_2)$ proves a uniform obstruction at the smaller cap
+relative to that larger-cap witness. Neither this nesting nor the theorem
+says that lowering each individual slope always slows every target.
+
 On reflection-symmetric samples and centers, a witness of definite parity
 permits replacing $X$ by $(X+RXR)/2$, where $R$ reverses sample order. This
 preserves the trace and feasibility of (C). Factoring the even and odd parts
