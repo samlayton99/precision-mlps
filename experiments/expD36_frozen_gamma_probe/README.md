@@ -254,6 +254,9 @@ target remains fixed, and all final learning times require frozen-slope GD.
 source of adversarial dictionaries. It rounds and samples the mixture into
 actual capped slope vectors. The mixture itself is a diagnostic relaxation;
 only the rounded dictionaries can become executed upper witnesses.
+Its `--method overlap` alternative takes dual weights from the joint
+target-overlap problem, preserving the target's role in the stationarity
+conditions instead of challenging only a fixed witness direction.
 `cap_capacity.py` independently encloses the residual of an archived detached
 readout under real tanh evaluation. It proves attainability of the declared
 training tolerance for that dictionary; it makes no optimizer-timing claim.

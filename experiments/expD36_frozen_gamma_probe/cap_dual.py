@@ -25,7 +25,7 @@ def slope_probabilities(weights, bias):
     return values/values.sum(axis=0)
 
 
-def run(root, archive, caps, n, rank, round_index):
+def run(root, archive, caps, n, rank, round_index, method, budget_scale):
     names = []
     for cap in caps:
         candidates = []
@@ -42,15 +42,20 @@ def run(root, archive, caps, n, rank, round_index):
         source = max(candidates, key=lambda row:row[0])[1]
         witness = np.load(source)['witness']
         case = campaign.make_case(n, cap, 'common', 0)
-        j, _ = campaign.matrices(case)
+        j, targets = campaign.matrices(case)
         old = archive/'dictionaries'/f'N{n}_raw_g{cap:g}'
         if (old/'U.npy').exists():
             assert json.loads((old/'meta.json').read_text())['matrix_hash'] == core.array_hash(j)
             u = np.load(old/'U.npy')
         else:
             u, _, _ = svd(j, full_matrices=False, lapack_driver='gesdd')
-        proposal = certificate.optimize_candidate(case['x'], case['centers'], cap, witness,
-            np.column_stack([u[:, :rank], witness/np.linalg.norm(witness)]), grid_size=17, include_dual=True)
+        if method == 'overlap':
+            meta = json.loads(source.with_suffix('.json').read_text())
+            proposal = certificate.optimize_overlap_candidate(case['x'], case['centers'], cap,
+                targets[:, 0], u[:, :rank], budget_scale*meta['beta_grid'], grid_size=17, include_dual=True)
+        else:
+            proposal = certificate.optimize_candidate(case['x'], case['centers'], cap, witness,
+                np.column_stack([u[:, :rank], witness/np.linalg.norm(witness)]), grid_size=17, include_dual=True)
         if proposal['factor'] is None:
             raise RuntimeError(f'Dual proposal failed: {proposal["status"]}')
         grid = np.r_[proposal['grid'], 0.]
@@ -58,7 +63,8 @@ def run(root, archive, caps, n, rank, round_index):
         destination = root/'dual_proposals'/f'N{n}_cap{cap:g}_r{round_index}'
         core.save_arrays(destination/'mixture.npz', grid=grid, probabilities=probabilities)
         core.write_json(destination/'meta.json', dict(source=str(source.relative_to(root)),
-            rank=rank, beta_grid=proposal['beta'], dual_bias=proposal['dual_bias'],
+            rank=rank, method=method, budget_scale=budget_scale,
+            beta_grid=proposal['beta'], dual_bias=proposal['dual_bias'],
             interpretation='finite-grid dual mixture; selection diagnostic only'))
         selections = [('argmax', grid[np.argmax(probabilities, axis=0)]),
                       ('mean', grid@probabilities)]
@@ -68,7 +74,8 @@ def run(root, archive, caps, n, rank, round_index):
             selections.append((f'sample{seed}', grid[draw]))
         for label, slopes in selections:
             name = f'dual_r{round_index}_{label}'
-            history = [dict(initialization='certificate_dual', source=str(source.relative_to(root)), rounding=label)]
+            history = [dict(initialization='certificate_dual', source=str(source.relative_to(root)),
+                            method=method, budget_scale=budget_scale, rounding=label)]
             meta = cap_search.save_case(root, n, cap, name, slopes, history)
             names.append(meta['id'])
             core.write_json(root/f'search_round{round_index}_cases.json', names)
@@ -83,8 +90,10 @@ def main():
     parser.add_argument('--n', type=int, default=512)
     parser.add_argument('--rank', type=int, default=16)
     parser.add_argument('--round', type=int, default=7)
+    parser.add_argument('--method', choices=['directional', 'overlap'], default='directional')
+    parser.add_argument('--budget-scale', type=float, default=.1)
     args = parser.parse_args()
-    run(args.root, args.archive, args.caps, args.n, args.rank, args.round)
+    run(args.root, args.archive, args.caps, args.n, args.rank, args.round, args.method, args.budget_scale)
 
 
 if __name__ == '__main__':

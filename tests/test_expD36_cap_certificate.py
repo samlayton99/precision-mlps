@@ -116,11 +116,16 @@ def test_interval_tanh_polynomials_match_independent_derivatives():
                 assert float(value) == pytest.approx(float(reference), rel=1e-12, abs=1e-14)
 
 
-def test_certificate_dual_identifies_exact_fast_control():
+@pytest.mark.parametrize('method', ['directional', 'overlap'])
+def test_certificate_dual_identifies_exact_fast_control(method):
     pytest.importorskip('cvxpy')
     from experiments.expD36_frozen_gamma_probe.cap_dual import slope_probabilities
     x = np.array([-1., 1.]); cap = .1
-    proposal = c.optimize_candidate(x, np.zeros(4), cap, x, x[:, None], grid_size=5, include_dual=True)
+    if method == 'directional':
+        proposal = c.optimize_candidate(x, np.zeros(4), cap, x, x[:, None], grid_size=5, include_dual=True)
+    else:
+        proposal = c.optimize_overlap_candidate(x, np.zeros(4), cap, x, x[:, None], .01,
+                                                grid_size=5, include_dual=True)
     probabilities = slope_probabilities(proposal['dual_weights'], proposal['dual_bias'])
     grid = np.r_[proposal['grid'], 0.]
     assert np.all(probabilities >= 0)

@@ -195,7 +195,7 @@ def optimize_joint_candidate(x, centers, gamma_cap, target, basis, t, grid_size=
                 resolvent_candidate=float(problem.value/t), shift=t)
 
 
-def optimize_overlap_candidate(x, centers, gamma_cap, target, basis, budget, grid_size=17):
+def optimize_overlap_candidate(x, centers, gamma_cap, target, basis, budget, grid_size=17, include_dual=False):
     """Maximize target overlap at a fixed curvature budget, then normalize.
 
     Scaled variables avoid the very small witnesses in the joint resolvent
@@ -235,9 +235,13 @@ def optimize_overlap_candidate(x, centers, gamma_cap, target, basis, budget, gri
     values, vectors = eigh((q.value+q.value.T)/2)
     keep = values > max(1e-16, np.max(values)*1e-12)
     factor = basis@(vectors[:, keep]*np.sqrt(np.maximum(values[keep], 0.)))/norm
-    return dict(status='grid_candidate', solver_status=str(problem.status),
+    result = dict(status='grid_candidate', solver_status=str(problem.status),
                 witness=witness, factor=factor, beta=float(np.sum(factor**2)),
                 delta=abs(float(witness@y))/norm, grid=grid, curvature_budget=budget)
+    if include_dual:
+        result.update(dual_weights=np.maximum(np.stack([c.dual_value for c in constraints[3:]]), 0.),
+                      dual_bias=float(constraints[2].dual_value))
+    return result
 
 
 def certify(x, centers, gamma_cap, witness, factor, target, *,
