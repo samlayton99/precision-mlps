@@ -14,9 +14,10 @@ from . import core, cap_campaign as campaign, cap_certificate as c, cap_resolven
 
 
 def run_case(args):
-    root, archive, n, cap, ti, rank, intervals = args
+    root, archive, n, cap, ti, rank, intervals, method = args
     root, archive = Path(root), Path(archive)
-    destination = root/'certificates'/f'N{n}_cap{cap:g}_t{ti}_joint_polished_r{rank}_i{intervals}'
+    method_name = 'joint' if method == 'resolvent' else 'overlap'
+    destination = root/'certificates'/f'N{n}_cap{cap:g}_t{ti}_{method_name}_polished_r{rank}_i{intervals}'
     if (destination/'result.json').exists():
         return
     destination.mkdir(parents=True, exist_ok=True)
@@ -34,14 +35,15 @@ def run_case(args):
     shifts = center*np.array([1., 10., 100., 1000.])
     certificates, candidates = [], []
     for index, shift in enumerate(shifts):
-        label = f'joint_shift_{index}'
+        label = f'joint_shift_{index}' if method == 'resolvent' else f'overlap_budget_{index}'
         proof_path = destination/f'{label}_certificate.json'
         if proof_path.exists():
             certificates.append(json.loads(proof_path.read_text()))
             continue
-        proposal = c.optimize_joint_candidate(case['x'], case['centers'], cap, y, u[:, :rank], float(shift))
+        optimizer = c.optimize_joint_candidate if method == 'resolvent' else c.optimize_overlap_candidate
+        proposal = optimizer(case['x'], case['centers'], cap, y, u[:, :rank], float(shift))
         if proposal['factor'] is None:
-            candidates.append(dict(label=label, status=proposal['status'], shift=float(shift)))
+            candidates.append(dict(label=label, status=proposal['status'], search_parameter=float(shift)))
             core.write_json(destination/f'{label}.json', candidates[-1])
             continue
         witness = proposal['witness']
@@ -55,7 +57,7 @@ def run_case(args):
         polished = c.optimize_candidate(case['x'], case['centers'], cap, witness,
             np.column_stack([u[:, :rank], y/np.linalg.norm(y), witness/np.linalg.norm(witness)]), grid_size=17)
         if polished['factor'] is None:
-            candidates.append(dict(label=label, status='polish_failed', shift=float(shift)))
+            candidates.append(dict(label=label, status='polish_failed', search_parameter=float(shift)))
             continue
         proposal.update(witness=witness, factor=polished['factor'], beta=polished['beta'])
         core.save_arrays(destination/f'{label}.npz', witness=proposal['witness'], factor=proposal['factor'], grid=proposal['grid'])
@@ -67,12 +69,12 @@ def run_case(args):
         proof = c.certify(case['x'], case['centers'], cap, proposal['witness'], proposal['factor'],
                           y, max_intervals=intervals, progress=True)
         proof.update(label=label, factor_hash=core.array_hash(proposal['factor']),
-                     witness_hash=core.array_hash(proposal['witness']), shift=float(shift))
+                     witness_hash=core.array_hash(proposal['witness']), search_parameter=float(shift))
         core.write_json(proof_path, proof); certificates.append(proof)
         print('JOINT_CERTIFIED', n, cap, ti, rank, proof['beta'], proof['delta'], proof['bias_repair'], flush=True)
     certificates.append(c.analytic_small_cap(case['x'], len(case['centers']), cap, y))
     bounds = {str(e):c.time_bound(certificates, e) for e in campaign.EPSILONS}
-    result = dict(n=n, cap=cap, target=campaign.TARGETS[ti], rank=rank,
+    result = dict(n=n, cap=cap, target=campaign.TARGETS[ti], rank=rank, method=method,
         max_intervals=intervals, certificates=certificates, candidates=candidates, bounds=bounds,
         source_commit=os.environ.get('PROBE_SOURCE_COMMIT', 'local'),
         grid_hash=core.array_hash(case['x']), centers_hash=core.array_hash(case['centers']), target_hash=core.array_hash(y))
@@ -94,8 +96,9 @@ def main():
     p.add_argument('--rank', type=int, default=32)
     p.add_argument('--intervals', type=int, default=256)
     p.add_argument('--workers', type=int, default=2)
+    p.add_argument('--method', choices=['resolvent', 'overlap'], default='resolvent')
     a = p.parse_args()
-    jobs = [(str(a.root), str(a.archive), a.n, cap, ti, a.rank, a.intervals) for cap in a.caps for ti in a.targets]
+    jobs = [(str(a.root), str(a.archive), a.n, cap, ti, a.rank, a.intervals, a.method) for cap in a.caps for ti in a.targets]
     with ProcessPoolExecutor(max_workers=a.workers) as pool:
         for _ in pool.map(run_case, jobs):
             pass

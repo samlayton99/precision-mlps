@@ -246,6 +246,10 @@ conic solves, polishes successful directions with the fixed-witness solver, and
 then verifies them independently. Symmetric target witnesses and reflection-
 averaged certificates allow reuse of center-pair interval calculations without
 restricting the independently heterogeneous slope family.
+Its `--method overlap` variant maximizes target overlap at a fixed curvature
+budget with scaled variables, addressing the poor conditioning observed in
+small-shift joint solves. Both methods polish and independently verify their
+proposed directions; an improved solver objective is not itself a theorem.
 
 `cap_analyze.py --root <campaign-json-snapshot> --output <curated-results>`
 collects executed hits, independent forecasts, and certified bounds without

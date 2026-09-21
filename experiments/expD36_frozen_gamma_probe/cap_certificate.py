@@ -169,6 +169,51 @@ def optimize_joint_candidate(x, centers, gamma_cap, target, basis, t, grid_size=
                 resolvent_candidate=float(problem.value/t), shift=t)
 
 
+def optimize_overlap_candidate(x, centers, gamma_cap, target, basis, budget, grid_size=17):
+    """Maximize target overlap at a fixed curvature budget, then normalize.
+
+    Scaled variables avoid the very small witnesses in the joint resolvent
+    problem. This remains a proposal until independently interval certified.
+    """
+    import cvxpy as cp
+    if budget <= 0:
+        raise ValueError('Require a positive curvature budget')
+    x, centers = np.asarray(x), np.asarray(centers)
+    y = np.asarray(target)/np.linalg.norm(target)
+    b = np.ones(len(x))/np.sqrt(len(x))
+    basis, _ = np.linalg.qr(np.column_stack([b, basis, y]))
+    r = basis.shape[1]
+    coefficients = cp.Variable(r)
+    q = cp.Variable((r, r), PSD=True)
+    slack = cp.Variable(len(centers), nonneg=True)
+    bb = basis.T@b
+    constraints = [cp.sum_squares(coefficients) <= 1/budget, cp.trace(q) <= 1,
+        cp.square(coefficients@bb)-cp.sum(cp.multiply(bb, q@bb))+cp.sum(slack) <= 0]
+    grid = np.unique(np.r_[0., np.geomspace(gamma_cap/4096, gamma_cap, grid_size),
+                          np.linspace(0, gamma_cap, grid_size)])
+    for slope in grid:
+        a = basis.T@(np.tanh(slope*(x[:, None]-centers))/np.sqrt(len(x)))
+        constraints.append(cp.square(coefficients@a)-cp.sum(cp.multiply(a, q@a), axis=0) <= slack)
+    problem = cp.Problem(cp.Maximize((basis.T@y)@coefficients), constraints)
+    try:
+        problem.solve(solver='CLARABEL', max_iter=200,
+                      tol_gap_abs=1e-8, tol_feas=1e-9, tol_gap_rel=1e-8)
+    except cp.error.SolverError as exc:
+        return dict(status='solver_failed', detail=str(exc), factor=None)
+    if coefficients.value is None or q.value is None:
+        return dict(status=str(problem.status), factor=None)
+    witness = basis@coefficients.value
+    norm = np.linalg.norm(witness)
+    if norm < 1e-12:
+        return dict(status='unresolved_zero_witness', factor=None)
+    values, vectors = eigh((q.value+q.value.T)/2)
+    keep = values > max(1e-16, np.max(values)*1e-12)
+    factor = basis@(vectors[:, keep]*np.sqrt(np.maximum(values[keep], 0.)))/norm
+    return dict(status='grid_candidate', solver_status=str(problem.status),
+                witness=witness, factor=factor, beta=float(np.sum(factor**2)),
+                delta=abs(float(witness@y))/norm, grid=grid, curvature_budget=budget)
+
+
 def certify(x, centers, gamma_cap, witness, factor, target, *,
             precision=96, max_intervals=256, relative_slack=.01, target_witness=False,
             progress=False):

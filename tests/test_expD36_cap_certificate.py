@@ -75,3 +75,15 @@ def test_reflection_reuse_does_not_assume_paired_slopes():
     for slopes in [[.1, 4., 2.], [4., -.01, .01], [0., 0., 4.]]:
         j = core.design(x, centers, np.array(slopes))
         assert np.linalg.norm(j.T@v)**2 <= result['beta']*np.linalg.norm(j, 2)**2+1e-12
+
+
+def test_overlap_search_retains_exact_two_sample_direction():
+    pytest.importorskip('cvxpy')
+    x = np.array([-1., 1.]); y = x.copy()
+    optimum = 4*np.tanh(.1)**2
+    result = c.optimize_overlap_candidate(x, np.zeros(4), .1, y, y[:, None], .01, grid_size=5)
+    certified = c.certify(x, np.zeros(4), .1, result['witness'], result['factor'], y,
+                          relative_slack=1e-8)
+    assert certified['delta'] > 1-1e-8
+    assert certified['beta'] >= optimum-1e-12
+    assert certified['beta'] < optimum+1e-6
