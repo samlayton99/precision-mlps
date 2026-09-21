@@ -98,6 +98,31 @@ def save(fig, output, name):
     plt.close(fig)
 
 
+def exact_controls(output):
+    from . import cap_certificate as certificate
+    rows = []
+    x = np.array([-1., 1.]); y = x/np.sqrt(2)
+    for cap in [.05, .1, .2]:
+        beta = 4*np.tanh(cap)**2
+        proof = certificate.certify(x, np.zeros(4), cap, y,
+            np.ones((2, 1))*np.sqrt(beta/2), y, target_witness=True)
+        bound = certificate.time_bound([proof])['bound']
+        j = core.design(x, np.zeros(4), np.full(4, cap))
+        eta = .5/np.linalg.norm(j, 2)**2
+        theta = np.zeros(5)
+        for step in range(10000):
+            residual = j@theta-y
+            if np.linalg.norm(residual) <= .01:
+                break
+            theta -= eta*j.T@residual
+        else:
+            raise AssertionError('Exact two-sample control did not reach tolerance')
+        assert step == bound
+        rows.append(dict(cap=cap, beta=beta, certified_beta=proof['beta'],
+                         bound=bound, executed_hit=step, eta=eta, samples=x.tolist(), width=4))
+    core.write_json(output/'two_sample_controls.json', rows)
+
+
 def time_panel(ax, rows):
     x = [r['cap'] for r in rows]
     lower = [r['bound'] or np.nan for r in rows]
@@ -266,6 +291,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     summary = collect(args.root)
     core.write_json(args.output/'campaign_summary.json', summary)
+    exact_controls(args.output)
     plot(summary, args.output)
     if args.archive:
         banner(summary, args.archive, args.output)
