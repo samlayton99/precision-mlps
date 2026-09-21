@@ -246,3 +246,12 @@ conic solves, polishes successful directions with the fixed-witness solver, and
 then verifies them independently. Symmetric target witnesses and reflection-
 averaged certificates allow reuse of center-pair interval calculations without
 restricting the independently heterogeneous slope family.
+
+`cap_analyze.py --root <campaign-json-snapshot> --output <curated-results>`
+collects executed hits, independent forecasts, and certified bounds without
+mixing their evidence roles. Larger-cap certificates apply to smaller caps;
+smaller-cap executed dictionaries supply admissible upper witnesses for larger
+caps. The script checks these comparisons and emits JSON plus a focused
+three-panel figure. With `--archive <completed-full-sweep>`, it also creates a
+new paper banner preserving the existing learned-slope and precision panels.
+It does not generate report text or change the completed archive.
