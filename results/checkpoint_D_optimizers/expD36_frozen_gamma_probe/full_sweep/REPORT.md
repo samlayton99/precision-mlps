@@ -1,10 +1,10 @@
 # Frozen-gamma readout dynamics: full theorem evaluation
 
-This study tests whether bounded hidden slopes restrict access to the target corrections that a readout must learn. The completed primary raw-coordinate comparison already separates capacity from finite-budget optimization: at $\gamma=4$, a detached refit reaches approximately $8\times10^{-9}$ relative error, but 200,000 ordinary GD updates leave error $0.421$. Increasing the frozen slope to 64 reduces GD error to $0.00211$ and validation-selected Adam error to $1.43\times10^{-5}$. These are controlled comparisons within one fixed readout map. Coordinate choice and target both matter; the theorem does not predict monotone Adam performance or a universal necessary slope proportional to width.
+This study tests a specific mechanism: bounded hidden slopes suppress the high-degree polynomial content of each feature, and a readout trained by GD can acquire that content only slowly. The primary raw-coordinate comparison separates capacity from finite-budget optimization: at $\gamma=4$, a detached refit reaches approximately $8\times10^{-9}$ relative error, but 200,000 ordinary GD updates leave error $0.421$. Increasing the frozen slope to 64 reduces GD error to $0.00211$ and validation-selected Adam error to $1.43\times10^{-5}$. Coordinate choice and target both matter; the theorem does not predict monotone Adam performance or a universal necessary slope proportional to width.
 
-The theorem produces large, parameter-free necessary times in the low-gamma regime. Its empirical tightness depends strongly on coordinates: at gamma 64 the directional bound is 52 times below the observed raw-coordinate hitting time, but only 2.2 times below the collective neighboring result. The analytic slope-only envelope is much weaker at large gamma. The [first-probe report](../REPORT.md) remains a separate record.
+The mechanism can be quantified without measuring the dictionary spectrum or even its largest curvature. A post-hoc geometric corollary below requires at least **1,444,090 updates** to reach 1% error at raw gamma 4, under the declared normalized-step rule. The same corollary gives bounds above a million updates across all four tested widths. This is a conservative explanation of an obstruction, not a close prediction of every learning time. The [first-probe report](../REPORT.md) remains a separate record.
 
-A post-hoc refinement below improves both parts of the argument. Accounting for adjacent-feature cancellation raises the neighboring analytic gamma-4 bound from 156,090 to 17,841,791 updates. A separate spectral-tail Jensen bound reduces the median observed-time/bound ratio from 24.1 to 1.33 across all 143 reached primary case/tolerance pairs. The latter uses target-weighted spectral information beyond gamma; it does not make the original uniform slope envelope tight. No additional optimizer trajectories were run.
+A separate refinement accounts for adjacent-feature cancellation and raises the neighboring analytic gamma-4 bound from 156,090 to 17,841,791 updates. The target-weighted spectral-tail Jensen bound gives much closer predictions, reducing the median observed-time/bound ratio from 24.1 to 1.33 across 143 reached primary case/tolerance pairs. That result is a dynamics benchmark: its closeness does not establish a sharp gamma dependence. No additional optimizer trajectories were run for these analyses.
 
 **Notation and normalization. Errors are relative empirical $L_2$ errors unless otherwise stated.**
 
@@ -17,6 +17,7 @@ A post-hoc refinement below improves both parts of the argument. Accounting for 
 | $E_k$, $\delta_k$ | Tail norms relative to the target and to the actual initial residual, respectively. They coincide at zero start. |
 | $\mu_k$, $b_k$, $B_k$ | Directional access, polynomial-tail subspace access, and analytic access envelope. |
 | $L$, $\chi$ | $L=\|J\|_2^2$ and GD step fraction $\chi=\eta L$; the primary value is $0.5$. |
+| $L_*$ | Geometric lower bound on $L$ for the raw map; evaluated without the dictionary spectrum. |
 | C2, C3 | Explicit discrete-GD necessary-time bound and the more spectrum-dependent effective-generator estimate. |
 | $p_a$, $\bar\nu_a$ | Initial-residual energy fraction in modes with curvature at most $a$, and their energy-weighted mean curvature. |
 | $D_k^{\rm shift}$ | Analytic degree-$k$ tail envelope for the center derivative of a tanh feature; used to preserve neighboring cancellation. |
@@ -190,6 +191,152 @@ At gamma 4 and the common cutoff $k=29$, write $s_k=\|Q_kJ\|_F^2$. The factors $
   <figcaption>Sine-mixture tightness audit. Left: the three access-slack factors at gamma 4, using resolved sampled cutoffs. Middle: directional C2 as a function of cutoff before its integer ceiling. Right: actual GD checkpoint errors and retained-SVD predictions at the same executed steps; connected lines interpolate saved predictions and are not extra training measurements.</figcaption>
 </figure>
 
+## A mechanism expressed through gamma, target complexity, and budget
+
+The spectral-tail prediction identifies which target-relevant modes are slow after the dictionary has been specified. By itself, it does not identify why those modes are slow. The bounded-slope envelope supplies that additional explanation: every feature has very little polynomial content beyond a gamma-dependent degree, and gradient training cannot amplify that content arbitrarily quickly. The following corollaries make this statement explicit without using measured eigenvalues. They are consequences and extensions of the existing access argument, not claims of a new general spectral-bias phenomenon.
+
+### Finite-time polynomial content of the learned correction
+
+**Proposition.** Fix the hidden features and map, assume $r_0\ne0$, use $0<\eta L\le1$, and let $\Delta f_n=J(\theta_n-\theta_0)$. For every integer $n\ge0$,
+
+$$
+\frac{\|Q_k\Delta f_n\|}{\|r_0\|}
+\le\sqrt{n\eta B_k(\gamma)},
+\qquad
+\frac{\|r_n\|}{\|r_0\|}
+\ge\left[\delta_k-\sqrt{n\eta B_k(\gamma)}\right]_+.
+$$
+
+At zero start, $\Delta f_n$ is the learned function and $\delta_k=E_k$. The lower bound is a **finite-budget error obstruction**, not a positive asymptotic error floor. It can become zero at larger budgets.
+
+**Proof.** In an orthonormal eigenbasis of $JJ^\top$, write the initial residual coefficients as $a_i$ and the curvatures as $\nu_i$. Summing GD's parameter updates gives
+
+$$
+\|\theta_n-\theta_0\|^2
+=\sum_{\nu_i>0}a_i^2
+\frac{[1-(1-\eta\nu_i)^n]^2}{\nu_i}
+\le n\eta\|r_0\|^2.
+$$
+
+For $0\le x\le1$, $0\le1-(1-x)^n\le\min\{1,nx\}$ and $\min\{1,nx\}^2\le nx$, proving the inequality term by term. Multiplying parameter displacement by $\|Q_kJ\|\le\sqrt{B_k}$ proves the first assertion. The reverse triangle inequality applied to $Q_kr_n=Q_kr_0+Q_k\Delta f_n$ proves the second. The spectral expansion is used in the proof; no spectral quantities appear in the final bound's inputs.
+
+The pole envelope makes the gamma dependence explicit. With $\beta_\gamma=\operatorname{asinh}(\pi/(2\gamma))$, put
+
+$$
+C_\gamma=\frac4{e^{\beta_\gamma}-1}
+\left[\frac1{\sqrt{\gamma^2+\pi^2/4}}+\frac1\pi\right],
+\qquad
+S_R=\min\left\{W\|R\|^2,\sum_\ell\left(\sum_{j=1}^W|R_{j\ell}|\right)^2\right\}.
+$$
+
+The previously proved envelope satisfies $B_k\le S_RC_\gamma^2e^{-2\beta_\gamma k}$. Consequently
+
+$$
+\frac{\|Q_k\Delta f_n\|}{\|r_0\|}
+\le C_\gamma\sqrt{n\eta S_R}\,e^{-\beta_\gamma k}.
+$$
+
+For $n\ge1$, choosing a degree at least
+$[\log(C_\gamma\sqrt{n\eta S_R}/\tau)]_+/\beta_\gamma$
+makes the learned correction's polynomial approximation error at most $\tau\|r_0\|$, within the available sample-space degrees. This degree bound grows only logarithmically with training budget for a fixed dictionary and learning rate. Its explicit slope dependence is through $1/\beta_\gamma$, which behaves like $2\gamma/\pi$ at large gamma. This controls how much fine polynomial structure can have been learned; it does not guarantee that every lower-degree component has already been learned.
+
+The physical distinction from capacity is now visible. A coefficient solve may amplify tiny feature tails using large, cancelling readout coefficients. Starting from zero, ordinary GD has the parameter-displacement limitation proved above. Feature smoothness therefore limits finite-time access even when an accurate representation exists.
+
+### Removing measured curvature, and why width need not remove the delay
+
+The study uses $\eta=\chi/L$ with $\chi=0.5$. Replacing $L$ by a lower bound $L_*$ gives the conservative upper step size $\eta\le\chi/L_*$. Thus neither the finite-time bound nor the following weaker evaluation of C2 needs a measured curvature:
+
+$$
+N_\epsilon\ge
+\left\lceil
+\frac{L_*}{-\log(1-\chi)}
+\frac{\log(1/\epsilon)}{(1-\epsilon)^2}
+\max_k\frac{[E_k-\epsilon]_+^2}{B_k(\gamma)}
+\right\rceil.
+$$
+
+The normalized-step rule is still an assumption about the optimizer. This corollary eliminates curvature measurements from the prediction, rather than changing how the original runs chose their step size.
+
+For the **raw map with common positive slope**, a simple geometric lower bound suffices. Assume the sample grid is symmetric about zero, count $M_{\rm in}$ centers in $[-1/2,1/2]$, and let $\sigma_{\rm out}$ be the fraction of observations with $|x_i|\ge3/4$. Then
+
+$$
+L\ge L_*:=\max\{1,\ M_{\rm in}\sigma_{\rm out}^2\tanh^2(\gamma/4)\}.
+$$
+
+**Proof.** The normalized output-bias column implies $L\ge1$. For the second bound use $v_i=\operatorname{sign}(x_i)/\sqrt m$, whose norm is at most one. Pairing $x$ and $-x$ shows that each central hidden column has inner product at least $\sigma_{\rm out}\tanh(\gamma/4)$ with $v$: all pairs contribute nonnegatively, and the outer pairs have both tanh arguments at least $\gamma/4$ after pairing. Sum the squares over the $M_{\rm in}$ columns and use $\|J^\top v\|^2\le L\|v\|^2\le L$.
+
+For raw coordinates $B_k=WU_k^2$. If $M_{\rm in}/W\ge\vartheta>0$ and $\sigma_{\rm out}$ stays bounded below as width increases, then
+
+$$
+\frac{B_k}{L}
+\le\frac{U_k^2}{\vartheta\sigma_{\rm out}^2\tanh^2(\gamma/4)}.
+$$
+
+The explicit factor of width cancels. Thus increasing width alone does not eliminate this fixed-gamma obstruction under the normalized-step rule when the relevant target tail persists. This is a statement about a persistent lower bound, not a claim that actual learning times are identical across widths. It assumes the stated raw/common-slope geometry and does not automatically apply to arbitrary readout maps or moving hidden features.
+
+For a unit degree-$d$ discrete orthogonal polynomial, with $d\ge1$ and zero start, $E_{d-1}=1$. One especially interpretable consequence is
+
+$$
+N_\epsilon\ge
+\frac{\vartheta\sigma_{\rm out}^2\tanh^2(\gamma/4)}{C_\gamma^2}
+\frac{\log(1/\epsilon)}{-\log(1-\chi)}
+e^{2\beta_\gamma(d-1)}.
+$$
+
+This displays the exponential dependence on required target degree relative to slope, with all prefactors stated. It applies as a necessary time, including when the tolerance is unattainable. It is not a matching upper bound. For a general target, the measured target-only tail $E_k$ replaces the pure-polynomial value one. Target complexity, rather than width by itself, is what makes the slope obstruction relevant.
+
+### The bridge from polynomial access to target-relevant slow modes
+
+The access theorem also forces a spectral consequence without measuring the spectrum. The min-max principle gives $\nu_{k+2}(JJ^\top)\le B_k$ for eigenvalues in descending order, because $\operatorname{rank}(P_kJ)\le k+1$ and $\|J-P_kJ\|^2\le B_k$. Thus at most $k+1$ sample-space directions have curvature greater than $B_k$. Counting slow directions alone is insufficient when the target does not need them.
+
+For a nonzero target-relevant tail, take $q=Q_kr_0/\|Q_kr_0\|$ and let $p_a$ be the initial-residual energy fraction in modes with curvature at most $a>0$. Since $q^\top JJ^\top q\le B_k$, its squared projection onto the faster modes is at most $B_k/a$. Define $s=\sqrt{\min\{B_k/a,1\}}$. Then
+
+$$
+\sqrt{p_a}\ge
+G_k(a):=\left[\delta_k\sqrt{1-s^2}
+-\sqrt{1-\delta_k^2}\,s\right]_+
+\ge[\delta_k-\sqrt{B_k/a}]_+.
+$$
+
+**Proof.** Let $\alpha$ be the norm of the fast projection of $q$, so $\alpha\le s$. Decomposing $q$ and $r_0/\|r_0\|$ into slow and fast parts gives
+$\delta_k\le\sqrt{1-\alpha^2}\sqrt{p_a}+\alpha\sqrt{1-p_a}$.
+The resulting two-dimensional angle inequality is
+$\arcsin\sqrt{p_a}\ge[\arcsin\delta_k-\arcsin s]_+$,
+which gives $G_k(a)$. The simpler bound follows directly from
+$\delta_k\le\sqrt{p_a}+s$; it is weaker than the angle bound.
+
+For $0<a\le L$, this implies the trajectory bound
+
+$$
+\frac{\|r_n\|}{\|r_0\|}\ge G_k(a)(1-\eta a)^n,
+$$
+
+because every mode in this slow subspace decays no faster than $(1-\eta a)^n$. This supplies an explicit logical chain from small gamma to weak polynomial-tail access, to necessary target energy in slow modes, to delayed GD. It is a conservative bridge, not a replacement for the sharper measured spectral moments. No uniform improvement over C2 is claimed for this bridge. Establishing the mechanism and improving numerical tightness are distinct achievements; the bridge establishes the former.
+
+### Quantitative check without spectral inputs
+
+At $N=512$, the raw geometry has $W=559$, $M_{\rm in}=257$, and $\sigma_{\rm out}=2050/8193$. At gamma 4, $L_*=9.332589$, compared with measured $L=225.934055$, which is not used in this prediction. The sine-mixture cutoff $k=30$ has $E_{30}=0.0854927$ and $B_{30}=2.49671\times10^{-7}$. The finite-time proposition gives relative training error at least **0.0337698 after 200k updates**, while the C2 corollary requires at least **1,444,090 updates to 1%**. These are weaker than the original evaluations using measured $L$, but still exclude success within the executed budget using gamma, geometry counts, and the target alone. The independent refit result establishes that 1% accuracy is available in the retained numerical dictionary at this gamma.
+
+**Table 2c. Raw gamma-4 sine-mixture obstruction across widths. Bounds use the elementary $L_*$, target-only polynomial tails, and the analytic feature envelope. The last column is executed training error at 200k updates.**
+
+| Hidden width $W$ | Necessary updates to 1% | Error lower bound at 200k | Observed error at 200k |
+|---:|---:|---:|---:|
+| 153 | 1,351,670 | 0.0321160 | 0.424317 |
+| 289 | 1,408,227 | 0.0331464 | 0.422404 |
+| 559 | 1,444,090 | 0.0337698 | 0.421431 |
+| 1,089 | 1,476,352 | 0.0343212 | 0.420736 |
+
+<figure>
+  <img src="refinements/gamma_mechanism.png" alt="Analytic finite-budget error bounds versus gamma and necessary-time bounds versus width, computed without measured spectral information" style="max-width: 100%;">
+  <figcaption>Post-hoc mechanism check for zero-start raw GD with the sine mixture. Left: the analytic finite-time error bound and the executed error at 200k updates. A zero lower bound is uninformative, rather than a prediction of successful training. Right: the bound to 1% remains above a million updates across widths at gamma 4; the dashed line is the executed budget. Predictions are computed before the analysis reads saved optimizer evaluations.</figcaption>
+</figure>
+
+The analysis computes 73 raw-map target/width/gamma cases and checks 876 saved checkpoint errors; all 306 positive error lower bounds are respected. All 23 focused implementation tests pass. The calculation regenerates target tails from the declared target functions and grids; it does not load dictionary spectra, directional access, measured curvature, or optimizer data while computing predictions. Polynomial tails below $10^{-12}$ are excluded from finite-error claims as a roundoff precaution. The mathematical inequalities are exact under their assumptions; these numerical evaluations are not interval-certified enclosures. Existing low-gamma capacity qualifications still apply.
+
+The limitations are informative. At gamma 8 the analytic error lower bound at 200k is already zero, while observed training error is 0.178245. The new corollary therefore explains a provable source of low-gamma delay, not the full residual or its eventual hitting time. Its width result concerns the declared normalized-step GD and common-slope raw geometry. It does not prove an Adam law, monotone improvement with gamma, or a universal requirement that gamma grow in proportion to width.
+
+The phenomenon belongs to the broader literature on frequency-dependent learning and activation regularity; see [Rahaman et al., 2019](https://proceedings.mlr.press/v97/rahaman19a.html) and [Xu et al., Frequency Principle](https://arxiv.org/abs/1901.06523). Here polynomial approximation on the finite interval supplies an explicit slope- and coordinate-dependent access estimate. The contribution being evaluated is the quantitative finite-budget obstruction under the stated protocol, rather than the general observation that neural networks can learn fine-scale structure slowly.
+
 ## Post-hoc bound refinements
 
 This analysis was proposed after inspecting the original sweep. It evaluates all 55 primary dictionaries, five targets, and six tolerances: 1,650 combinations, without changing training, targets, or the original figures. The two refinements address different inequalities. The first improves the analytic access envelope under the common-slope neighboring geometry. The second replaces the one-direction time conversion with a spectral energy argument and applies to any fixed linear least-squares problem.
@@ -334,7 +481,7 @@ N_\epsilon\ge
 {-\log(1-\eta\Lambda(\gamma))}\right\rceil.
 $$
 
-Those spectral-mass assumptions are not supplied by the present polynomial-tail envelope. Proving them for a specified center geometry and target family remains open. Width and a slope cap alone allow repeated features, nearly constant shifted features, and different target alignments, so they cannot identify one tight convergence time across that whole class. The supported conclusion is therefore twofold: the analytic theorem can be sharpened substantially in neighboring coordinates, and a more informative spectral theorem is already much tighter on this saved study.
+The mechanism corollary above now supplies conservative spectral-mass control directly from the polynomial-tail envelope. What remains open is control sharp enough to reproduce the measured spectral-time predictions for a specified geometry and target family. Width and a slope cap alone allow repeated features, nearly constant shifted features, and different target alignments, so they cannot identify one tight convergence time across that whole class. The analytic gamma argument explains an obstruction; the measured spectral theorem quantifies the fuller target-dependent conditioning. Their scientific roles should remain separate.
 
 ## Protocol and evidence roles
 
@@ -483,3 +630,11 @@ python -m experiments.expD36_frozen_gamma_probe.tighten \
 ```
 
 This runs only local CPU analysis of the compact archive. It neither extends the two-GPU-hour campaign nor changes the original archive checksum manifest or the original three-panel plots.
+
+The mechanism calculation is [mechanism.py](../../../../experiments/expD36_frozen_gamma_probe/mechanism.py), with [predictions and checkpoint checks](refinements/gamma_mechanism.json), [PNG](refinements/gamma_mechanism.png), and [PDF](refinements/gamma_mechanism.pdf). Its `predict` function reads no experiment output. Its separate audit reads the eight recorded case/evaluation files only after all predictions have been formed; hashes identify those validation inputs. Regenerate this additional analysis with:
+
+```bash
+OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 \
+python -m experiments.expD36_frozen_gamma_probe.mechanism \
+  --root results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep
+```
