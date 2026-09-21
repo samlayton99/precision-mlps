@@ -386,8 +386,8 @@ store parameters, scalar curve checkpoints, first-hit counters, final readout
 states, certificate factors, interval diagnostics, and source commits; they do
 not store dense per-update parameter histories.
 
-The broad development design has 280 dictionaries, with five targets per
-dictionary. Projected-Adam and bounded line-search searches use powered linear
+The broad development design has 280 case entries, with five targets per
+entry. Projected-Adam and bounded line-search searches use powered linear
 recurrences only to select slopes; those evaluations are not counted as
 executed readout updates. Selected slopes are frozen before ordinary GD.
 Reserved seeds 100–104 are excluded from adaptive slope and witness search.
@@ -401,7 +401,7 @@ dictionaries**, comprising 220 at $N=512$ and three at each secondary width.
 Only these new dictionaries count as held-out cases. Consequently the
 confirmation is not described as 280 independent new random draws. The all-tolerance audit
 applies each certificate to compatible smaller-cap cases and checks each
-actual dictionary once. Censored trajectories are retained and are not treated
+stored case once per target and tolerance. Censored trajectories are retained and are not treated
 as observed threshold crossings.
 
 The final snapshot has 1,471 case records, of which 682 have executed GD and
