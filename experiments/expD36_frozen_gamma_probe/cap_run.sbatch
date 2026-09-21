@@ -3,7 +3,7 @@
 #SBATCH --account=lab
 #SBATCH --qos=lab-gpu2
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=2
 #SBATCH --mem=64G
 #SBATCH --time=00:30:00
 set -euo pipefail

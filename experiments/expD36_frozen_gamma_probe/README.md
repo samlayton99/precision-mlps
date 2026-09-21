@@ -225,3 +225,11 @@ coordinate effects. It preserves the actual training clock. A modified Gram
 block without an output realization is labeled a curvature diagnostic and
 receives no borrowed target weights or learning-time claim. Invalid contraction
 clocks and unresolved small eigenvalues remain explicit in the JSON evidence.
+
+`cap_search.py` searches slopes under the hard cap using differentiable binary
+powering of the affine GD recurrence as a selection surrogate. These powered
+evaluations are never counted as executed optimizer updates. Each selected
+dictionary is saved under a new case ID and must pass an independent spectral
+check and ordinary GD before contributing an upper witness. CPU requests for
+subsequent GPU jobs are limited to two cores so CPU certification can progress
+within Runpod's per-user CPU limit while both allocated GPUs are active.
