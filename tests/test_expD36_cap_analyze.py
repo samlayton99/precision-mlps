@@ -1,4 +1,5 @@
 import json
+import numpy as np
 
 from experiments.expD36_frozen_gamma_probe import cap_analyze as a, cap_campaign as c
 
@@ -30,3 +31,13 @@ def test_audit_checks_strict_tolerance_and_cap_nesting_on_held_out_case(tmp_path
     reused = a.collect(tmp_path)
     assert not any(row['held_out'] for row in reused['certificate_checks'])
     assert reused['coverage']['confirmation']['new_dictionaries_vs_development'] == 0
+
+
+def test_cdf_envelope_reuses_larger_caps_without_interpolating_mass():
+    certificates = [dict(n=128, cap=4, target='y', cdf=dict(thresholds=[0., .2, 1.], mass=[0., .4, 1.])),
+                    dict(n=128, cap=8, target='y', cdf=dict(thresholds=[0., .1, .5, 1.], mass=[0., .1, .6, 1.]))]
+    thresholds, mass = a.cdf_envelope(certificates, 128, 4, 'y')
+    np.testing.assert_array_equal(thresholds, [0., .1, .2, .5, 1.])
+    np.testing.assert_array_equal(mass, [0., .1, .4, .6, 1.])
+    _, larger = a.cdf_envelope(certificates, 128, 8, 'y')
+    np.testing.assert_array_equal(larger, [0., .1, .6, 1.])

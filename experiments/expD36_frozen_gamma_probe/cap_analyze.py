@@ -177,18 +177,28 @@ def time_panel(ax, rows):
     ax.legend(fontsize=7)
 
 
+def cdf_envelope(certificates, n, cap, target):
+    """Combine compatible guarantees as step functions, preserving cap nesting."""
+    valid = [c['cdf'] for c in certificates if c['n'] == n and c['cap'] >= cap
+             and c['target'] == target and c['cdf']['thresholds']]
+    if not valid:
+        return np.array([]), np.array([])
+    thresholds = np.unique(np.concatenate([c['thresholds'] for c in valid]))
+    mass = np.zeros_like(thresholds)
+    for c in valid:
+        index = np.searchsorted(c['thresholds'], thresholds, side='right')-1
+        available = index >= 0
+        mass[available] = np.maximum(mass[available], np.asarray(c['mass'])[index[available]])
+    return thresholds, np.maximum.accumulate(mass)
+
+
 def plot(summary, output):
     rows = [r for r in summary['bounds'] if r['n'] == 512 and r['target'] == campaign.TARGETS[0]]
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.2), layout='constrained')
     for cap in [4, 8, 16, 64]:
-        available = [c for c in summary['certificates'] if c['n'] == 512 and c['cap'] == cap
-                     and c['target'] == campaign.TARGETS[0]]
-        if not available:
-            continue
-        c = max(available, key=lambda c:c['bound'])
-        threshold = np.asarray(c['cdf']['thresholds']); mass = np.asarray(c['cdf']['mass'])
+        threshold, mass = cdf_envelope(summary['certificates'], 512, cap, campaign.TARGETS[0])
         keep = (mass > 0)&(threshold < 1)
-        axes[0].plot(threshold[keep], mass[keep], label=f'Γ = {cap}')
+        axes[0].step(threshold[keep], mass[keep], where='post', label=f'Γ = {cap}')
     axes[0].axhline(.01**2, ls=':', color='#555555', label='1% error squared')
     style(axes[0], 'Normalized curvature threshold s', 'Guaranteed target energy F(s)')
     axes[0].set_ylim(1e-6, 1); axes[0].legend(fontsize=7)
