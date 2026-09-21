@@ -217,3 +217,11 @@ to propose witnesses; the continuous-cap checker establishes validity for all
 admissible heterogeneous slopes. A local end-to-end check uses `--n 64 --caps
 16 --rank 4 --intervals 16 --verify-count 1`. Large interval repairs are retained
 in the evidence and direct the next round toward tighter scalar enclosures.
+
+`fourier_validate.py --archive <completed-full-sweep> --output <new-output>`
+executes the periodic controls, checks independent finite-Gram predictions
+across the saved matrix, and measures finite-window, anchor, halo, and native
+coordinate effects. It preserves the actual training clock. A modified Gram
+block without an output realization is labeled a curvature diagnostic and
+receives no borrowed target weights or learning-time claim. Invalid contraction
+clocks and unresolved small eigenvalues remain explicit in the JSON evidence.

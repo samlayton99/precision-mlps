@@ -56,3 +56,39 @@ def test_integer_first_hit_and_gram_forecast():
     hit = f.first_hit(model, .01)[0]
     assert hit == int(np.ceil(np.log(.01)/np.log(.95)))
     assert f.error(model, hit)[0] <= .01 < f.error(model, hit-1)[0]
+
+
+def test_whole_line_neighbor_integral_and_noncommuting_transfer():
+    from scipy.integrate import quad
+    from experiments.expD36_frozen_gamma_probe.fourier_validate import whole_line_neighbor_gram
+    for gamma in [.5, 4., 16.]:
+        h = .25
+        matrix = whole_line_neighbor_gram(5, h, gamma)
+        for k in range(5):
+            def integrand(x):
+                a = np.tanh(gamma*x)-np.tanh(gamma*(x-h))
+                b = np.tanh(gamma*(x-k*h))-np.tanh(gamma*(x-(k+1)*h))
+                return a*b/2
+            actual, _ = quad(integrand, -40/gamma, 5*h+40/gamma, epsabs=1e-12)
+            assert matrix[0, k] == pytest.approx(actual, abs=2e-12)
+    rng = np.random.default_rng(4)
+    a = rng.normal(size=(8, 5)); b = rng.normal(size=(8, 5))
+    k, kt = a@a.T, b@b.T
+    eta = .5/max(np.linalg.norm(k, 2), np.linalg.norm(kt, 2))
+    y = rng.normal(size=8); y /= np.linalg.norm(y)
+    actual, surrogate = y.copy(), y.copy()
+    accumulated = 0.
+    for step in range(50):
+        assert np.linalg.norm(actual-surrogate) <= accumulated+1e-12
+        accumulated += eta*np.linalg.norm((k-kt)@surrogate)
+        actual = actual-eta*k@actual
+        surrogate = surrogate-eta*kt@surrogate
+
+
+def test_coefficient_rescaling_with_matching_clock():
+    rng = np.random.default_rng(22)
+    j, y = rng.normal(size=(12, 7)), rng.normal(size=12)
+    original = f.rectangular_forecast(j, y)
+    scaled = f.rectangular_forecast(13*j, y)
+    for step in [0, 1, 20, 1000]:
+        np.testing.assert_allclose(f.error(original, step), f.error(scaled, step), atol=2e-14)
