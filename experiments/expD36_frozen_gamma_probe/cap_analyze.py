@@ -172,6 +172,91 @@ def banner(summary, archive, output):
     save(fig, output, 'banner_capped_kernel')
 
 
+def validation_figures(root, archive, output):
+    from . import fourier_law as law
+    periodic = read(root/'fourier_validation/periodic_checks.json')
+    finite = read(root/'fourier_validation/finite_checks.json')
+    colors = ['#245c9f', '#d65f28', '#438c67']
+    fig, axes = plt.subplots(1, 2, figsize=(10.8, 4.1), layout='constrained')
+    for gamma, color in zip([4, 16, 64], colors):
+        spectrum, lo, hi = law.continuous_spectrum(128, gamma, 64)
+        frequency = np.arange(1, 65)
+        axes[0].plot(frequency, spectrum[1:65]*32, color=color, label=f'γ = {gamma}')
+        axes[0].fill_between(frequency, lo[1:65], hi[1:65], color=color, alpha=.2)
+        p = next(p for p in periodic if p['n'] == 128 and p['gamma'] == gamma and p['density'] == 16 and p['offset'] == .5)
+        checkpoints = [r for r in p['checkpoints'] if r['step'] > 0]
+        axes[1].plot([r['step'] for r in checkpoints], [r['prediction'][3] for r in checkpoints], color=color, label=f'γ = {gamma}: forecast')
+        axes[1].scatter([r['step'] for r in checkpoints], [r['actual'][3] for r in checkpoints], facecolors='none', edgecolors=color, s=28)
+    style(axes[0], 'Periodic Fourier index', 'Curvature / largest curvature', logx=False)
+    axes[0].set_ylim(1e-20, 2); axes[0].legend(fontsize=8)
+    axes[0].set_title('(a) Exact continuous spectrum and multiplier bracket')
+    style(axes[1], 'Ordinary GD updates', 'Sine-mixture relative training error')
+    axes[1].scatter([], [], facecolors='none', edgecolors='#555555', label='Executed checkpoints')
+    axes[1].set_ylim(1e-16, 2); axes[1].legend(fontsize=8)
+    axes[1].set_title('(b) Sampled packets: forecast and executed checkpoints')
+    save(fig, output, 'periodic_validation')
+
+    checks = []
+    for row in finite:
+        folder = archive/'training'/f'N{row["n"]}_{row["map"]}_gd'
+        if not (folder/'hitting_audit.npz').exists():
+            continue
+        config = read(folder/'case.json')
+        if row['gamma'] not in config['gammas']:
+            continue
+        index = config['gammas'].index(row['gamma'])
+        actual = np.load(folder/'hitting_audit.npz')['first'][index]
+        for column, specification in enumerate(config['columns']):
+            ti, target = specification['target_index'], specification['target']
+            for ei, epsilon in enumerate(campaign.EPSILONS):
+                predicted = row['gram_hits'][str(epsilon)][ti]
+                hit = int(actual[column, ei])
+                checks.append(dict(n=row['n'], gamma=row['gamma'], map=row['map'], target=target,
+                    epsilon=epsilon, actual=hit, predicted=predicted,
+                    log10_hit_ratio=float(np.log10(predicted/hit)) if hit > 0 and predicted else None))
+    reached = [c for c in checks if c['actual'] > 0 and c['predicted'] is not None]
+    speedups = []
+    for row in reached:
+        if row['gamma'] == 64:
+            continue
+        anchor = next((r for r in reached if r['gamma'] == 64 and all(r[k] == row[k]
+                        for k in ['n', 'map', 'target', 'epsilon'])), None)
+        if anchor:
+            speedups.append(dict(n=row['n'], gamma=row['gamma'], map=row['map'], target=row['target'],
+                epsilon=row['epsilon'], actual=row['actual']/anchor['actual'],
+                predicted=row['predicted']/anchor['predicted']))
+    fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.1), layout='constrained')
+    for epsilon, color in [(1e-2, colors[0]), (1e-4, colors[1]), (1e-6, colors[2])]:
+        selected = [r for r in reached if r['epsilon'] == epsilon]
+        axes[0].scatter([r['actual'] for r in selected], [r['predicted'] for r in selected], s=15, alpha=.6, color=color, label=f'ε = {epsilon:g}')
+    axes[0].plot([1, 2e5], [1, 2e5], '--', color='#555555')
+    style(axes[0], 'Executed first-hit update', 'Finite-Gram predicted update')
+    axes[0].legend(fontsize=8); axes[0].set_title('(a) Resolved reached cases; unchanged clocks')
+    selected = [r for r in speedups if r['epsilon'] >= 1e-6]
+    axes[1].scatter([r['actual'] for r in selected], [r['predicted'] for r in selected], s=16, alpha=.6, color=colors[0])
+    if selected:
+        low = min(min(r['actual'], r['predicted']) for r in selected)
+        high = max(max(r['actual'], r['predicted']) for r in selected)
+        axes[1].plot([low, high], [low, high], '--', color='#555555')
+    style(axes[1], 'Executed n(γ) / n(64)', 'Predicted n(γ) / n(64)')
+    axes[1].set_title('(b) Matched gamma-dependent learning delays')
+    for gamma, color in zip([4, 16, 64], colors):
+        row = next(r for r in finite if r['n'] == 512 and r['map'] == 'raw' and r['gamma'] == gamma)
+        data = [r for r in row['comparisons'] if r['step'] > 0]
+        axes[2].plot([r['step'] for r in data], [r['gram'][0] for r in data], color=color, label=f'γ = {gamma}')
+        axes[2].scatter([r['step'] for r in data], [r['actual'][0] for r in data], s=15, facecolors='none', edgecolors=color)
+    style(axes[2], 'Ordinary GD updates', 'Raw sine-mixture training error')
+    axes[2].legend(fontsize=8); axes[2].set_title('(c) Finite-Gram curves and executed checkpoints')
+    save(fig, output, 'finite_kernel_validation')
+    core.write_json(output/'validation_summary.json', dict(periodic_cases=len(periodic),
+        periodic_max_curve_difference=max(r['max_curve_absolute_difference'] for r in periodic),
+        finite_dictionaries=len(finite), finite_max_gram_difference=max(r['gram_relative_difference'] for r in finite),
+        hit_checks=checks, gamma_speedups=speedups,
+        periodic_aliases=64, periodic_spatial_images=8,
+        largest_spatial_tail=max(float(law.spatial_tail(r['n'], r['gamma'], 8)) for r in periodic),
+        largest_principal_energy_alias_tail=max(float(law.alias_tail(np.pi, 2*r['gamma']/r['n'], 64)) for r in periodic)))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', type=Path, required=True)
@@ -184,6 +269,8 @@ def main():
     plot(summary, args.output)
     if args.archive:
         banner(summary, args.archive, args.output)
+        if (args.root/'fourier_validation/finite_checks.json').exists():
+            validation_figures(args.root, args.archive, args.output)
     print(json.dumps(dict(cases=len(summary['cases']), certificates=len(summary['certificates']),
                           bound_violations=len(summary['bound_violations']))))
 

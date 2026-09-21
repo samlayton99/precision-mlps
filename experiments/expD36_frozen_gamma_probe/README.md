@@ -262,3 +262,7 @@ caps. The script checks these comparisons and emits JSON plus a focused
 three-panel figure. With `--archive <completed-full-sweep>`, it also creates a
 new paper banner preserving the existing learned-slope and precision panels.
 It does not generate report text or change the completed archive.
+With the Fourier validation JSON present, it also plots periodic spectra and
+packet decay, finite-Gram predicted versus executed hits, matched gamma-speedup
+ratios, and finite learning curves. Width-control columns are matched through
+their saved target identifiers, since those runs contain a target subset.
