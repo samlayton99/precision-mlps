@@ -4,6 +4,8 @@ The exact-tanh residual-basis model predicts the actual random-readout, equal-ra
 
 The [theory note](../../../../docs/d34_transport_scale_barrier.md) derives the width-dependent transport equation, its metric and time normalization, the nonlinear layer-balance defect, coarse tracking, and three conditional population-barrier criteria. The [implementation and protocol](../../../../experiments/expD34_readout_race/README.md#transport-and-residual-basis-extension) describe the independent forecasts and controls. This report extends the [signal-recovery study](../signal_recovery/README.md), whose verified original-seed states remain the baseline evidence.
 
+The [educational theorem walkthrough and metrics guide](../../../../docs/d34_barrier_theorem_walkthrough.md) explains the proof, its assumptions, and how to interpret and locate the measurements in this package.
+
 ## What is being predicted
 
 Here $W$ is physical width, $\gamma=|a|$ is a slope magnitude, $\kappa$ is the readout/geometry learning-rate ratio, and $t=\eta n$ is physical time. The main setting uses $W=177$, $\kappa=1$, $\eta=0.002$, 2,048 training midpoints, and $t=1200$ (600k simultaneous GD updates). The loss is half-MSE. The primary population event is at least 10% of neurons reaching a specified threshold $\Gamma\in\{1,3.2,16\}$; at width 177 this requires 18 neurons. These are scale-acquisition criteria, not a theorem that every target requires these scales for representation.

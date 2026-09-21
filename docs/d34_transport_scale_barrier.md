@@ -2,6 +2,8 @@
 
 This extension of the [D34 scale-acquisition argument](d34_scale_acquisition_theory.md) studies the actual random-readout, equal-rate initialization. Its purpose is to predict when signal depletion persists, when signal regenerates without population scale acquisition, and when a substantial population acquires the specified scale. These outcomes need not have the same explanation. All barrier statements below concern a specified finite horizon; they allow isolated escaping neurons.
 
+The [educational walkthrough and metrics guide](d34_barrier_theorem_walkthrough.md) derives the population-barrier theorem step by step, gives an explicit constant-bound corollary for GD, and maps the mathematical quantities to the exported diagnostics.
+
 The distinction between an identity, a numerical prediction, and a proved enclosure is essential. The exact transport equation includes every finite-network trajectory. A quadrature solution initialized from the probability law instead of the realized particles is a separate approximation. A finite residual basis is another approximation. Agreement between these predictions and training is evidence for a mechanism, but is not a uniform theorem about all seeds or arbitrarily late training.
 
 ## Quantities and normalization
