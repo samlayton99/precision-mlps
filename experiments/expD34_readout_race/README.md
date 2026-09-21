@@ -1,5 +1,40 @@
 # Ordinary-GD readout competition
 
+## Signal-recovery audit
+
+`recovery.py` analyzes whether renewed slope signal produces signed movement
+and population-scale acquisition. It reads the existing evidence packages,
+including exact cumulative signed-force summaries; it never integrates sparse
+plotting traces. The primary targets are sine, degree three, and degree nine.
+The 20k state is the fixed comparison baseline, not a selected signal minimum.
+
+```bash
+MPLCONFIGDIR=/tmp/race-mpl python -m experiments.expD34_readout_race.recovery \
+  --evidence results/checkpoint_D_optimizers/expD34_readout_race \
+  --output results/checkpoint_D_optimizers/expD34_readout_race/signal_recovery
+```
+
+The original raw archive was retired after curation. To recover neuronwise
+diagnostics, `replay_recovery.py` replays only width 177, seeds 0–4, those three
+targets, and equal physical rates 0.002. It uses the unchanged D34 vector field,
+checks original initial/data hashes, and checks archived scalar observations
+at 20k, 100k, and 600k. Run it in a GPU Slurm step with `JAX_ENABLE_X64=true`,
+`--evidence <curated-evidence> --output <compact-replay-directory>`.
+The executable verifies the allocation and GPU mask. It stores selected states
+and per-neuron upward/downward travel accumulated at every update, rather than
+recreating the retired dense archive. Pass its `compact_states.npz` to the
+analysis command with `--replay`.
+
+New measurements separate signed alignment, concentration of positive travel,
+endpoint net movement, residual filtering, coefficient amplification, and
+output-bias effects. Hessian-block attribution is an instantaneous flow
+diagnostic at a GD state. Reference population bounds are conditional on a
+justified error radius; observed prediction errors are not certificates.
+Raw slope thresholds and construction bandwidths remain diagnostics, not
+universal necessary conditions for approximation.
+
+Focused checks: `JAX_ENABLE_X64=true python -m pytest -q tests/test_expD34_recovery.py`.
+
 This experiment tests whether readout adaptation depletes residual moments before a substantial population of hidden slopes can grow. The evidence sought is an initialization-only prediction of signed scale trajectories and their changes across readout rates. Successful execution does not require the hypothesis to hold.
 
 Measured findings and limitations are in the [results report](../../results/checkpoint_D_optimizers/expD34_readout_race/REPORT.md), with [curated evidence](../../results/checkpoint_D_optimizers/expD34_readout_race/README.md) that regenerates the figures without training.
