@@ -56,7 +56,8 @@ def test_joint_witness_optimization_recovers_exact_resolvent():
     optimum = 4*np.tanh(.1)**2
     result = c.optimize_joint_candidate(x, np.zeros(4), .1, y, y[:, None], .01, grid_size=5)
     assert result['resolvent_candidate'] == pytest.approx(1/(optimum+.01), rel=1e-5)
-    certified = c.certify(x, np.zeros(4), .1, result['witness'], result['factor'], y)
+    certified = c.certify(x, np.zeros(4), .1, result['witness'], result['factor'], y,
+                          relative_slack=1e-8)
     assert certified['beta'] >= optimum-1e-12
     assert certified['beta'] < optimum+1e-6
 

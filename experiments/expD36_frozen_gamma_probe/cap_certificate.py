@@ -170,7 +170,8 @@ def optimize_joint_candidate(x, centers, gamma_cap, target, basis, t, grid_size=
 
 
 def certify(x, centers, gamma_cap, witness, factor, target, *,
-            precision=96, max_intervals=256, relative_slack=.01, target_witness=False):
+            precision=96, max_intervals=256, relative_slack=.01, target_witness=False,
+            progress=False):
     """Rigorous interval certificate, including conservative bias repair.
 
     Subdivision may stop early without invalidating the result: every retained
@@ -227,39 +228,44 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
                 continue
             offsets = [arb(float(t))-arb(float(center)) for t in x]
             cache = {}
+            point_cache = {}
+
+            def point(g):
+                if g not in point_cache:
+                    phi = [(arb(g)*d).tanh() for d in offsets]
+                    projected = matrix*arb_mat([[a, d*(1-a*a)] for d, a in zip(offsets, phi)])
+                    q = quadratic([projected[i, 0] for i in range(len(rows))])
+                    derivative = 2*(projected[0, 0]*projected[0, 1]
+                        -sum((projected[i, 0]*projected[i, 1] for i in range(1, len(rows))), arb(0)))
+                    point_cache[g] = phi, q, derivative
+                return point_cache[g]
 
             def evaluate(lo, hi):
                 key = (lo, hi)
                 if key in cache:
                     return cache[key]
-                # union encloses binary endpoints, including non-dyadic midpoints.
-                interval = arb(lo).union(arb(hi))
-                phi = [(interval*d).tanh() for d in offsets]
-                projected = matrix*arb_mat([[a] for a in phi])
+                if lo == hi:
+                    cache[key] = point(lo)[1]
+                    return cache[key]
+                # tanh(g*d) is monotone in g for each fixed real d. Reuse
+                # endpoint enclosures instead of reevaluating interval tanh.
+                phi = [a.union(b) for a, b in zip(point(lo)[0], point(hi)[0])]
+                projected = matrix*arb_mat([[a, d*(1-a*a), -2*d*d*a*(1-a*a)]
+                                           for d, a in zip(offsets, phi)])
                 values = [projected[i, 0] for i in range(len(rows))]
                 direct = quadratic(values)
-                if lo == hi:
-                    cache[key] = direct
-                    return direct
-                dphi = [d*(1-a*a) for d, a in zip(offsets, phi)]
-                ddphi = [-2*d*d*a*(1-a*a) for d, a in zip(offsets, phi)]
-                first = matrix*arb_mat([[a] for a in dphi])
-                second = matrix*arb_mat([[a] for a in ddphi])
-                derivative = 2*(values[0]*first[0, 0]-sum((values[i]*first[i, 0] for i in range(1, len(rows))), arb(0)))
+                derivative = 2*(values[0]*projected[0, 1]
+                    -sum((values[i]*projected[i, 1] for i in range(1, len(rows))), arb(0)))
                 if derivative > 0:
                     result = evaluate(hi, hi)
                 elif derivative < 0:
                     result = evaluate(lo, lo)
                 else:
-                    curvature = 2*(first[0, 0]**2+values[0]*second[0, 0]
-                        -sum((first[i, 0]**2+values[i]*second[i, 0] for i in range(1, len(rows))), arb(0)))
+                    curvature = 2*(projected[0, 1]**2+values[0]*projected[0, 2]
+                        -sum((projected[i, 1]**2+values[i]*projected[i, 2] for i in range(1, len(rows))), arb(0)))
                     mid = (lo+hi)/2
                     midpoint = arb(mid)
-                    midphi = [(midpoint*d).tanh() for d in offsets]
-                    pv = matrix*arb_mat([[a] for a in midphi])
-                    pd = matrix*arb_mat([[d*(1-a*a)] for d, a in zip(offsets, midphi)])
-                    midpoint_value = quadratic([pv[i, 0] for i in range(len(rows))])
-                    midpoint_derivative = 2*(pv[0, 0]*pd[0, 0]-sum((pv[i, 0]*pd[i, 0] for i in range(1, len(rows))), arb(0)))
+                    _, midpoint_value, midpoint_derivative = point(mid)
                     radius = max(abs(arb(lo)-midpoint).upper(), abs(arb(hi)-midpoint).upper())
                     taylor = midpoint_value+abs(midpoint_derivative)*radius+abs(curvature)*radius**2/2
                     # Both are upper enclosures; keep the sharper endpoint.
@@ -287,6 +293,9 @@ def certify(x, centers, gamma_cap, witness, factor, target, *,
                                 subdivisions=splits, remaining_intervals=len(heap)))
             if symmetry:
                 reflected[key] = details[-1]
+            if progress and len(details) % 32 == 0:
+                print('CERTIFICATE_INTERVALS', gamma_cap, len(details), len(centers),
+                      'seconds', round(time.monotonic()-started, 1), flush=True)
         slack = bias_q+sum((arb(t) for t in all_upper), arb(0))
         repair = max(0., upper(slack))
         beta = upper(beta_base+arb(repair))

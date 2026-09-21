@@ -65,7 +65,7 @@ def run_case(args):
         core.write_json(destination/f'{label}.json', metadata)
         print('JOINT_CANDIDATE', n, cap, ti, rank, shift, proposal['beta'], proposal['delta'], flush=True)
         proof = c.certify(case['x'], case['centers'], cap, proposal['witness'], proposal['factor'],
-                          y, max_intervals=intervals)
+                          y, max_intervals=intervals, progress=True)
         proof.update(label=label, factor_hash=core.array_hash(proposal['factor']),
                      witness_hash=core.array_hash(proposal['witness']), shift=float(shift))
         core.write_json(proof_path, proof); certificates.append(proof)

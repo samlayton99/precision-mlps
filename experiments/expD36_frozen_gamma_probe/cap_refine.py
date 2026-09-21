@@ -99,7 +99,7 @@ def run_case(args):
             values = dict(np.load(destination/f'{name}.npz'))
             result = certificate.certify(case['x'], case['centers'], cap,
                 values['witness'], values['factor'], y, max_intervals=intervals,
-                relative_slack=.01, target_witness=name == 'target')
+                relative_slack=.01, target_witness=name == 'target', progress=True)
             result.update(label=name, factor_hash=core.array_hash(values['factor']),
                           witness_hash=core.array_hash(values['witness']))
             core.write_json(path, result)
