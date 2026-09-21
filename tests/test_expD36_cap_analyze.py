@@ -26,3 +26,7 @@ def test_audit_checks_strict_tolerance_and_cap_nesting_on_held_out_case(tmp_path
     assert violation['epsilon'] == 1e-4 and violation['held_out']
     assert violation['certificate'] == 'larger_cap'
     assert result['coverage']['confirmation']['incomplete'] == ['missing']
+    write(tmp_path/'development_cases.json', ['held_out'])
+    reused = a.collect(tmp_path)
+    assert not any(row['held_out'] for row in reused['certificate_checks'])
+    assert reused['coverage']['confirmation']['new_dictionaries_vs_development'] == 0

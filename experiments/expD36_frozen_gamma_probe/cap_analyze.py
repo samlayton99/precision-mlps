@@ -63,6 +63,10 @@ def collect(root):
                     common_hit=common['training']['hits'][ti][0] if common else None,
                     common_steps=common['training']['steps'] if common else None)
                 bounds.append(row)
+    by_id = {c['id']:c for c in cases}
+    development_path = root/'development_cases.json'
+    development_hashes = {by_id[name]['matrix_hash'] for name in read(development_path)
+                          if name in by_id} if development_path.exists() else set()
     # Audit each actual dictionary once, at every tolerance, including held-out
     # seeds. A censored trajectory cannot contradict a necessary learning time.
     certificate_checks = []
@@ -81,7 +85,8 @@ def collect(root):
                 hit = case['training']['hits'][ti][ei]
                 row = dict(case=case['id'], target=target, epsilon=epsilon,
                     certificate=winner['id'], bound=value(winner), hit=hit,
-                    steps=case['training']['steps'], held_out=100 <= case['seed'] <= 104,
+                    steps=case['training']['steps'],
+                    held_out=100 <= case['seed'] <= 104 and case['matrix_hash'] not in development_hashes,
                     violation=hit >= 0 and hit < value(winner))
                 certificate_checks.append(row)
                 if row['violation']:
@@ -99,7 +104,6 @@ def collect(root):
                     difference=actual-predicted if actual >= 0 and predicted is not None else None,
                     censored=actual < 0, steps=c['training']['steps']))
     coverage = {}
-    by_id = {c['id']:c for c in cases}
     for phase in ['development', 'confirmation']:
         manifest = root/f'{phase}_cases.json'
         if manifest.exists():
@@ -108,6 +112,9 @@ def collect(root):
                 if by_id.get(name, {}).get('training', {}).get('steps', 0) < 200000]
             coverage[phase] = dict(expected=len(names), completed=len(names)-len(incomplete),
                                    incomplete=incomplete)
+            if phase == 'confirmation':
+                coverage[phase]['new_dictionaries_vs_development'] = len({by_id[name]['matrix_hash']
+                    for name in names if name in by_id and by_id[name]['matrix_hash'] not in development_hashes})
     return dict(cases=cases, certificates=certificates, bounds=bounds, coverage=coverage,
                 certificate_checks=certificate_checks, bound_violations=violations,
                 forecast_checks=agreements)
