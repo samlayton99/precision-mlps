@@ -164,12 +164,23 @@ def analyze(runs, output, archive=None):
                 zn,dn,linear_loss=frozen_forecast(z[0],d[0],x,y,case['width'],config['end_time'],kappa=case['kappa'])
                 frozen.append(dict(**meta,linearized_projected_loss=linear_loss,
                     **observables(zn,dn,x,y,w,case['width'])))
-    for name, rows in [('endpoints',endpoints),('paired_errors',comparisons),('kernels',kernels),('actual_kernels',actual_kernels),('budgets',budgets),('frozen_kernel',frozen)]:
+    refinements=[]
+    for run,ref in [('degree9','primary33'),('degree17','primary33'),('degree65','primary33'),
+                    ('halfstep','primary33'),('law8','law12'),('law12','law16'),('law12full','law12')]:
+        for row in [r for r in endpoints if r['run']==run and r['complete'] and r['finite']]:
+            candidates=[r for r in endpoints if r['run']==ref and r['complete'] and r['finite'] and r['seed']==row['seed'] and r['target']==row['target']]
+            if not candidates: continue
+            reference=candidates[0]
+            refinements.append(dict(run=run,reference=ref,seed=row['seed'],target=row['target'],
+                **{key+'_difference':row[key]-reference[key] for key in ('half_mse','mean_gamma','max_gamma','readout_l2','path','fraction_1','fraction_3.2','fraction_16')}))
+    for name, rows in [('endpoints',endpoints),('paired_errors',comparisons),('refinement',refinements),('kernels',kernels),('actual_kernels',actual_kernels),('budgets',budgets),('frozen_kernel',frozen)]:
         write_table(output/f'{name}.csv',rows)
     np.savez_compressed(output/'kernel_blocks.npz',**kernel_arrays)
     (output/'analysis_manifest.json').write_text(json.dumps(clean(dict(runs=[str(r) for r in runs],archive=str(archive),
         endpoint_count=len(endpoints),paired_count=len(comparisons),kernel_count=len(kernels))),indent=2)+'\n')
     plot(loaded, output)
+    if actual_kernels:
+        plot_actual(actual_kernels,output)
     print(json.dumps(dict(endpoints=len(endpoints),paired=len(comparisons),kernels=len(kernels))))
 
 
@@ -188,10 +199,33 @@ def plot(loaded, output):
                 v=curve['trace'][i,:,config['trace_columns'].index(key)]
                 axes[row,col].plot(curve['steps']*case['eta'],v,color=color,alpha=.85 if law else .4,lw=1.5 if law else .7,
                     label=root.name if case['target']=='sine' and (law or case['seed']==config['cases'][0]['seed']) else None)
-                axes[row,col].set(xscale='symlog',linthresh=1,yscale='log',ylabel=f"{case['target']}: {key}")
+                axes[row,col].set(yscale='log',ylabel=f"{case['target']}: {key}")
+                axes[row,col].set_xscale('symlog',linthresh=1)
     for ax in axes[-1]: ax.set_xlabel('Physical time')
-    axes[0,0].legend(fontsize=7)
+    if axes[0,0].get_legend_handles_labels()[0]:
+        axes[0,0].legend(fontsize=7)
     fig.tight_layout(); fig.savefig(output/'transport_comparison.png',dpi=160); plt.close(fig)
+
+
+def plot_actual(rows,output):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    fig,axes=plt.subplots(2,3,figsize=(12,7),sharex=True)
+    for col,target in enumerate(('sine','moment3','moment9')):
+        for seed in range(5):
+            rr=[r for r in rows if r['target']==target and r['seed']==seed]
+            time=np.array([r['step']*.002 for r in rr])
+            for key,label,color,style in [('full_slope_norm','full slope force','#111827','-'),
+                    ('effective_slope_norm','effective fine-mode force','#2563eb','--'),
+                    ('transient_slope_norm','coarse tracking remainder','#d97706',':')]:
+                axes[0,col].plot(time,[r[key] for r in rr],style,color=color,alpha=.6,label=label if seed==0 else None)
+            axes[1,col].plot(time,[r['modal_slope_share'] for r in rr],color='#7c3aed',alpha=.5)
+        axes[0,col].set(title=target,yscale='log',ylabel='Slope-force norm')
+        axes[1,col].set(ylabel='Slope share of dissipation',ylim=(0,1),xlabel='Physical time')
+        for ax in axes[:,col]: ax.set_xscale('symlog',linthresh=1)
+    axes[0,0].legend(fontsize=7)
+    fig.tight_layout(); fig.savefig(output/'actual_effective_force.png',dpi=160); plt.close(fig)
 
 
 def main():

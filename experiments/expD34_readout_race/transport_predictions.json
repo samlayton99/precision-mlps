@@ -1,0 +1,22 @@
+{
+  "purpose": "Lock fresh-seed prediction rules before evaluating fresh full-residual trajectories",
+  "dynamics_commit": "109caf7",
+  "physical_width": 177,
+  "targets": ["sine", "moment3", "moment9"],
+  "fresh_seeds": [10, 11, 12, 13, 14],
+  "primary_degree": 33,
+  "geometry_step": 0.002,
+  "readout_ratio": 1.0,
+  "physical_horizon": 1200.0,
+  "population_thresholds": [1.0, 3.2, 16.0],
+  "population_barrier_fraction": 0.1,
+  "decision_rules": {
+    "endpoint_mean_gamma_relative_error_max": 0.01,
+    "endpoint_readout_l2_relative_error_max": 0.01,
+    "endpoint_half_mse_absolute_error_max": 0.001,
+    "endpoint_population_count_error_max": 1,
+    "barrier_classification": "Require agreement on whether at least ceil(0.1 W) slopes cross each threshold at the horizon",
+    "nonfinite_or_incomplete": "Report separately; never treat as a successful prediction"
+  },
+  "interpretation": "Rules were set after inspecting the original-seed degree-33 forecasts, before running fresh-seed full-residual validation. They validate numerical predictive adequacy, not a rigorous trajectory enclosure. The law PDE has no single-seed acceptance claim; compare quadrature error and original/fresh seed dispersion."
+}
