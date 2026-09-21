@@ -64,7 +64,7 @@ def identity(case):
     return tuple(case[k] for k in ('width','seed','target','kappa','eta'))
 
 
-def diagnostics(z,d,x,y,w,width,kappa=1.):
+def diagnostics(z,d,x,y,w,width,kappa=1.,eta=None):
     scalar, arrays = tr.modal_diagnostics(z,d,x,y,w,width,65,kappa)
     e, ja = arrays['residual_modes'], arrays['J_a']
     u=x[:,None]*z[0]+z[1]; h=np.tanh(u)
@@ -91,6 +91,22 @@ def diagnostics(z,d,x,y,w,width,kappa=1.):
             effective_blocks.append(gram)
             scalar[f'effective_{key}_share']=float(e[2:] @ gram @ e[2:]/(e[2:] @ S @ e[2:]+1e-300))
         scalar['effective_kernel_accounting_error']=float(np.linalg.norm(sum(effective_blocks)-S))
+        if eta is not None:
+            gradient=np.stack([z[2]*(x @ (r[:,None]*s))/len(x),z[2]*(r @ s)/len(x),h.T @ r/len(x)])
+            zn=z-eta*np.array([1.,1.,kappa])[:,None]*gradient; dn=d-eta*kappa*r.mean()
+            nxt_scalar,nxt=tr.modal_diagnostics(zn,dn,x,y,w,width,65,kappa)
+            if nxt_scalar['coarse_inverse_resolved']:
+                Kn=sum(nxt['K_'+key] for key in 'abcd'); Cn=Kn[:2,:2]
+                Bn=np.linalg.solve(Cn,Kn[:2,2:]); en=nxt['residual_modes']
+                defect=en-e+eta*K @ e
+                transition=np.eye(2)-eta*(K[:2,:2]+Bn @ K[2:,:2])
+                forcing_step=(Bn-B-eta*Bn @ S) @ e[2:]+defect[:2]+Bn @ defect[2:]
+                vn,un=np.linalg.eigh(Cn); root_next=(un*np.sqrt(vn)) @ un.T
+                factor=np.linalg.norm(root_next @ transition @ inverse_root,2)
+                identity_error=np.linalg.norm(en[:2]+Bn @ en[2:]-transition @ (e[:2]+B @ e[2:])-forcing_step)
+                scalar.update(discrete_tracking_factor=float(factor),discrete_tracking_identity_error=float(identity_error),
+                    discrete_tracking_forcing_per_time=float(np.linalg.norm(root_next @ forcing_step)/eta),
+                    modal_step_defect_norm=float(np.linalg.norm(defect)))
         Bdot=np.linalg.solve(K[:2,:2],arrays['K_dot'][:2,2:]-arrays['K_dot'][:2,:2] @ B)
         force=(Bdot-B @ S) @ e[2:]
         omitted=arrays['residual_velocity']+K @ e
@@ -121,7 +137,7 @@ def analyze(runs, output, archive=None):
             truth[(177,seed,target,1.,.002)] = (f, i)
             for step in (0,2000,20000,100000,600000):
                 j=int(np.flatnonzero(f['steps']==step)[0])
-                scalar,_=diagnostics(f['z'][i,j],f['d'][i,j],f['x'],f['y'][i],np.ones(177)/177,177)
+                scalar,_=diagnostics(f['z'][i,j],f['d'][i,j],f['x'],f['y'][i],np.ones(177)/177,177,eta=.002)
                 actual_kernels.append(dict(run='verified_actual',seed=seed,target=target,step=step,**scalar))
     for root in runs:
         if not (root/'states.npz').exists():
@@ -157,7 +173,7 @@ def analyze(runs, output, archive=None):
                 if step*case['eta'] not in (0.,4.,40.,200.,1200.):
                     continue
                 # Full modal diagnostics at the actual/forecast state, not a fitted closure.
-                scalar, arrays = diagnostics(z[j],d[j],x,y,w,case['width'],case['kappa'])
+                scalar, arrays = diagnostics(z[j],d[j],x,y,w,case['width'],case['kappa'],eta=None if case['nodes'] else case['eta'])
                 kernels.append(dict(**meta,step=int(step),**scalar))
                 # Keep primary matrices; all other matrices are reproducible from saved states.
                 if step in (0,600000) and root.name in ('primary33','freshfull'):
@@ -195,7 +211,7 @@ def analyze(runs, output, archive=None):
                     **observables(zn,dn,x,y,w,case['width'])))
     refinements=[]
     for run,ref in [('degree9','primary33'),('degree17','primary33'),('degree65','primary33'),
-                    ('halfstep','primary33'),('law8','law12'),('law12','law16'),('law16','law24'),('law24','law32'),('law12full','law12'),('law12half','law12')]:
+                    ('halfstep','primary33'),('law8','law12'),('law12','law16'),('law16','law24'),('law24','law32'),('law12full','law12'),('law32full','law32'),('law12half','law12')]:
         for row in [r for r in endpoints if r['run']==run and r['complete'] and r['finite']]:
             candidates=[r for r in endpoints if r['run']==ref and r['complete'] and r['finite'] and r['seed']==row['seed'] and r['target']==row['target']]
             if not candidates: continue

@@ -28,8 +28,9 @@ def test_frozen_forecast_matches_initial_gradient_and_linearized_loss():
     np.testing.assert_allclose((z-zn)/dt,np.stack([arrays['J_'+k].T @ e*r for k,r in [('a',1),('b',1),('c',.1)]]),rtol=2e-6,atol=1e-8)
     K=sum(arrays['K_'+k] for k in ('a','b','c','d'))
     assert (.5*(e @ e)-loss)/dt==pytest.approx(e @ K @ e,rel=2e-6)
-    measured,exact=diagnostics(z,d,x,y,w,5,.1)
+    measured,exact=diagnostics(z,d,x,y,w,5,.1,eta=.002)
     assert measured['effective_kernel_accounting_error']<1e-14
+    assert measured['discrete_tracking_identity_error']<1e-14
     assert sum(measured['effective_'+k+'_share'] for k in 'abcd')==pytest.approx(1.,abs=1e-12)
     K=sum(exact['K_'+k] for k in 'abcd'); C,Q=K[:2,:2],K[:2,2:]
     B=np.linalg.solve(C,Q); S=K[2:,2:]-Q.T @ B
