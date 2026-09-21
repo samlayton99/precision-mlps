@@ -561,3 +561,46 @@ T `actual_kernels.csv` contains full-field diagnostics of the verified original 
 The selected states can be evaluated with `transport.modal_diagnostics(..., degree=65, kappa=...)` to reconstruct modal Jacobians, residual coefficients, kernel blocks, and $\dot K$; use `transport_analyze.diagnostics(..., eta=...)` for the added discrete-step scalars. The latter routine returns the same underlying arrays for deriving $\tau$, $\mu_a^{\rm eff}$, and $\lambda^{\rm eff}$.
 
 For example, reconstruct $C=K_{CC}$, $Q=K_{CH}$, solve $CB=Q$, and form $z_C=e_C+Be_H$, $T_a=J_{a,H}^T-J_{a,C}^TB$, and $S=K_{HH}-Q^TB$. This yields the derived metrics without fitting coefficients to future data. Do not silently mix values from different states, bases, or rate conventions. The evidence report includes reproduction commands, validation logs, prediction-freeze records, and numerical-error controls.
+
+## 9. Further research directions: transport bounds that allow revival
+
+The current theorem can be proved directly for finite-network GD. The transport formulation may nevertheless make a sharper population theorem easier to derive: an equivalent formulation can expose useful comparison arguments, invariant regions, and bounds on population escape. Distributional descriptions have enabled symmetry reductions and analyses of both successful and failed learning in other two-layer models; see [Mei, Montanari, and Nguyen](https://pmc.ncbi.nlm.nih.gov/articles/PMC6099898/). Those results motivate the approach but do not establish a barrier for D34's initialization, normalization, or training horizon.
+
+The full joint distribution of $(a,b,c)$ retains depletion, nonlinear revival, interference, and isolated escape through its self-consistent velocity. Its slope marginal generally does not close, because slopes' correlations with biases and readouts affect that velocity. The equation is nonlocal nonlinear transport: the population generates the field that moves it. Results for a prescribed advection field supply methods whose hypotheses still need to be justified for this coupled system.
+
+### Bound outward transport near the desired scale
+
+The path budget in Section 4 counts every slope displacement. A transport bound can instead focus on the population crossing a transition region below the requested threshold, allowing substantial motion elsewhere. Fix $0<\gamma_0<\Gamma$ and choose a smooth function $\psi(a)\in[0,1]$ that is zero for $|a|\le\gamma_0$, one for $|a|\ge\Gamma$, and increases with $|a|$ between them. Put $M_\psi(t)=\int\psi(a)\,d\rho_t$. Then
+
+$$
+P_\Gamma(t)\le M_\psi(t),\qquad
+\dot M_\psi(t)=\int\psi'(a)v_a\,d\rho_t.
+$$
+
+Only the transition region contributes to this derivative. If an independently justified nonnegative envelope $\varepsilon(t)$ bounds the integral from above throughout $[s,T]$, the exact weak transport identity gives
+
+$$
+P_\Gamma(t)\le M_\psi(s)+\int_s^t\varepsilon(u)\,du,
+\qquad s\le t\le T.
+$$
+
+If the right-hand side at $T$ is strictly below $p$, fraction $p$ cannot acquire scale $\Gamma$ anywhere in the interval. This permits inward motion, strong revival inside the small-slope region, and an escaping fraction smaller than $p$. The initial term also counts some population below $\Gamma$, so the choice of transition region affects sharpness.
+
+The proof obligation is to bound the weighted outward velocity from residual coefficients, readout magnitudes, and joint parameter geometry in that region. A pointwise bound on $\psi'(a)v_a$ over an independently controlled support region is sufficient; a bound on its population integral can be sharper. The effective-force decomposition in Section 3 could supply estimates that preserve cancellation. A small leakage measured along completed training is a useful diagnostic, but is not an independent envelope.
+
+For actual GD, use the exact one-step identity, with $v_{a,n}$ evaluated using the entire current network:
+
+$$
+M_{\psi,n+1}-M_{\psi,n}
+=\int\big[\psi(a+\eta v_{a,n})-\psi(a)\big]\,d\rho_n.
+$$
+
+Bounds on these increments telescope into the same population conclusion without a time-step approximation. They must also account for a step that crosses the transition region; sampling the flow derivative only at the initial point of a GD step is insufficient. Atomic measures are allowed, so this route does not require replacing the realized initialization by a smooth law.
+
+### Related routes and what remains unresolved
+
+An invariant-region argument would bound the velocity normal to the boundary of a suitable region in joint parameter space. Inward velocity can give trapping under the usual characteristic regularity assumptions; a bound on outward transport can give slow leakage. For a moving region, the relevant quantity is velocity relative to its boundary. A population barrier should allow exceptional escaping neurons rather than require the entire support to remain small. For GD, the corresponding condition concerns the complete update map.
+
+Transport stability estimates offer another route: transfer a tail bound for a tractable approximate distribution to the actual trajectory using an independently controlled error radius, as in Section 5. Moment inequalities or preserved symmetries may help construct the needed estimates. A continuous initialization law and a particular random finite network have different symmetries and fluctuations, so that transfer requires its own control. Nonlinear moment evolution also remains unclosed unless further structure is established.
+
+These directions use residual coordinates to bound the driving force and transport methods to convert those bounds into population statements. The present campaign has not established the required leakage envelopes, invariant regions, or certified future transport errors. A useful next result would derive one of them from conditions on the residual and joint parameter distribution that can be checked before the proposed barrier interval, while retaining nonlinear regeneration and the actual equal-rate GD update.
