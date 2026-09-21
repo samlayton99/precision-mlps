@@ -188,3 +188,11 @@ and ordinary-GD checks with `pytest -q tests/test_expD36_fourier_law.py`.
 The Gram forecast reports unresolved spectral mass explicitly because forming
 a Gram matrix loses accuracy in small singular directions. Its forecast is
 not a certified bound for every heterogeneous dictionary under a slope cap.
+
+`cap_certificate.py` implements the
+[uniform capped-kernel theorem](../../docs/capped_gamma_kernel_certificate.md).
+The convex solver produces candidates; the independent interval checker covers
+the continuous slope interval and reports the trace cost of any bias repair.
+Install the experiment-only `cap_requirements.txt` dependencies and run
+`pytest -q tests/test_expD36_cap_certificate.py`. The two-sample control has a
+known exact optimum, so it checks tightness as well as validity.

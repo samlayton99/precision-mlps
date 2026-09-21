@@ -1,0 +1,256 @@
+"""Uniform heterogeneous-slope certificates, independent of any GD trajectory.
+
+Optimization proposes X=P P^T. Only the Arb checker establishes the continuous
+slope constraint; it repairs remaining slack with a bias projector. Inputs
+x, centers, witness, factor and target are interpreted as exact binary floats.
+The tanh features and all normalization factors are enclosed over the reals.
+"""
+from __future__ import annotations
+
+import heapq
+import math
+import time
+
+import numpy as np
+from scipy.linalg import eigh
+
+
+def slow_mass(delta, beta, thresholds):
+    thresholds = np.asarray(thresholds, dtype=float)
+    ratio = np.minimum(np.divide(beta, thresholds, out=np.ones_like(thresholds),
+                                 where=thresholds > 0), 1.)
+    if beta == 0:
+        ratio[:] = 0.
+    return np.maximum(delta*np.sqrt(1-ratio)-np.sqrt(max(0., 1-delta*delta))*np.sqrt(ratio), 0.)**2
+
+
+def time_bound(certificates, epsilon=.01, chi=.5, cap=10**18):
+    """Combine guaranteed CDFs by maximum, never by adding their masses."""
+    from flint import arb, ctx
+    if not 0 < epsilon < 1 or not 0 < chi < 1:
+        raise ValueError('Require 0<epsilon,chi<1')
+    valid = [c for c in certificates if c['status'] == 'interval_certified' and c['beta'] < 1]
+    if not valid:
+        return dict(bound=0, thresholds=[], mass=[], status='vacuous')
+    previous = ctx.prec
+    ctx.prec = 96
+    try:
+        smallest = min(max(c['beta'], 1e-30) for c in valid)
+        thresholds = np.unique(np.r_[0., np.geomspace(smallest, 1., 512), 1.])
+        mass = np.zeros(len(thresholds))
+        for c in valid:
+            delta, beta = arb(c['delta']), arb(c['beta'])
+            for i, threshold in enumerate(thresholds):
+                if beta == 0:
+                    p = delta**2
+                elif threshold <= c['beta']:
+                    continue
+                else:
+                    ratio = beta/arb(float(threshold))
+                    overlap = delta*(1-ratio).sqrt()-(1-delta**2).sqrt()*ratio.sqrt()
+                    p = overlap**2 if overlap > 0 else arb(0)
+                mass[i] = max(mass[i], max(0., float(np.nextafter(float(p.lower()), -np.inf))))
+        mass = np.maximum.accumulate(mass)
+        mass[-1] = 1.
+        atoms = [arb(float(p))-arb(float(q)) for p, q in zip(mass, np.r_[0., mass[:-1]])]
+        decay = [1-arb(float(chi))*arb(float(s)) for s in thresholds]
+        direct = [1-arb(float(chi))*arb(c['beta']) for c in valid if c.get('target_witness')]
+        tolerance = arb(float(epsilon))**2
+
+        def still_above(n):
+            total = sum((p*d**(2*n) for p, d in zip(atoms, decay)), arb(0))
+            return total > tolerance or any(d**(2*n) > tolerance for d in direct)
+
+        lo, hi = 0, 1
+        while hi < cap and still_above(hi):
+            lo, hi = hi, min(2*hi, cap)
+        if still_above(hi):
+            bound, status = int(hi)+1, 'interval_certified_above_forecast_cap'
+        else:
+            while hi-lo > 1:
+                mid = (lo+hi)//2
+                if still_above(mid):
+                    lo = mid
+                else:
+                    hi = mid
+            # Every n<=lo is excluded rigorously; equality never overclaims.
+            bound, status = int(lo)+1, 'interval_certified'
+        return dict(bound=bound, log10_bound=math.log10(bound), status=status,
+                    thresholds=thresholds.tolist(), mass=mass.tolist())
+    finally:
+        ctx.prec = previous
+
+
+def optimize_candidate(x, centers, gamma_cap, witness, basis, grid_size=25):
+    """Finite-grid convex relaxation, explicitly not a continuous certificate."""
+    import cvxpy as cp
+    x, centers = np.asarray(x), np.asarray(centers)
+    v = np.asarray(witness)/np.linalg.norm(witness)
+    b = np.ones(len(x))/np.sqrt(len(x))
+    basis, _ = np.linalg.qr(np.column_stack([b, basis]))
+    slopes = np.unique(np.r_[0., np.geomspace(gamma_cap/4096, gamma_cap, grid_size),
+                             np.linspace(0, gamma_cap, grid_size)])
+    r, w = basis.shape[1], len(centers)
+    q = cp.Variable((r, r), PSD=True)
+    z = cp.Variable(w, nonneg=True)
+    constraints = []
+    # Scaling resolves small target correlations without changing the SDP.
+    features = [np.tanh(g*(x[:, None]-centers))/np.sqrt(len(x)) for g in slopes]
+    energy_scale = max(max(float(np.max((v@a)**2)) for a in features), 1e-14)
+    for a in features:
+        av, ab = v@a, basis.T@a
+        constraints.append((av*av-cp.sum(cp.multiply(ab, q@ab), axis=0))/energy_scale <= z)
+    bb = basis.T@b
+    constraints.append((float(v@b)**2-cp.sum(cp.multiply(bb, q@bb)))/energy_scale+cp.sum(z) <= 0)
+    problem = cp.Problem(cp.Minimize(cp.trace(q)), constraints)
+    problem.solve(solver='CLARABEL', max_iter=150,
+                  tol_gap_abs=1e-9, tol_feas=1e-9, tol_gap_rel=1e-8)
+    if q.value is None:
+        return dict(status=str(problem.status), factor=None)
+    values, vectors = eigh((q.value+q.value.T)/2)
+    keep = values > max(1e-16, np.max(values)*1e-12)
+    factor = basis@(vectors[:, keep]*np.sqrt(np.maximum(values[keep], 0.)))
+    return dict(status='grid_candidate', solver_status=str(problem.status),
+                factor=factor, beta=float(np.sum(factor**2)), grid=slopes,
+                solver_objective=float(problem.value))
+
+
+def certify(x, centers, gamma_cap, witness, factor, target, *,
+            precision=96, max_intervals=256, relative_slack=.01, target_witness=False):
+    """Rigorous interval certificate, including conservative bias repair.
+
+    Subdivision may stop early without invalidating the result: every retained
+    interval upper bound is included in the repair. This can make beta vacuous.
+    The resulting theorem uses beta=tr(PP^T)+repair and the enclosed overlap.
+    """
+    from flint import arb, arb_mat, ctx
+    if gamma_cap < 0 or max_intervals < 1:
+        raise ValueError('Require a nonnegative cap and positive interval limit')
+    previous_precision = ctx.prec
+    ctx.prec = precision
+    started = time.monotonic()
+    try:
+        x, centers, witness, factor, target = map(np.asarray, (x, centers, witness, factor, target))
+        if factor.ndim != 2 or factor.shape[0] != len(x) or len(witness) != len(x) or len(target) != len(x):
+            raise ValueError('Certificate arrays have incompatible sample dimensions')
+        if not all(np.all(np.isfinite(a)) for a in [x, centers, witness, factor, target]):
+            raise ValueError('Certificate inputs must be finite')
+        if target_witness and not np.array_equal(witness, target):
+            raise ValueError('Direct Jensen requires exactly the target witness')
+        root_m = arb(len(x)).sqrt()
+        vnorm = sum((arb(float(t))**2 for t in witness), arb(0)).sqrt()
+        ynorm = sum((arb(float(t))**2 for t in target), arb(0)).sqrt()
+        if vnorm.contains(0) or ynorm.contains(0):
+            raise ValueError('Witness and target must be nonzero')
+        v = [arb(float(t))/vnorm for t in witness]
+        rows = [v]+[[arb(float(t)) for t in col] for col in factor.T]
+        matrix = arb_mat([[t/root_m for t in row] for row in rows])
+        beta_base = sum((arb(float(t))**2 for t in factor.flat), arb(0))
+        bias_values = [sum(row, arb(0))/root_m for row in rows]
+        bias_q = bias_values[0]**2-sum((t*t for t in bias_values[1:]), arb(0))
+        delta = abs(sum((v[i]*arb(float(target[i])) for i in range(len(x))), arb(0)))/ynorm
+
+        def upper(value):
+            return float(np.nextafter(float(value.upper()), np.inf))
+
+        def lower(value):
+            return float(np.nextafter(float(value.lower()), -np.inf))
+
+        def quadratic(values):
+            return values[0]**2-sum((a*a for a in values[1:]), arb(0))
+
+        all_upper, details = [], []
+        tolerance = relative_slack*max(upper(beta_base), 1e-12)/max(len(centers), 1)
+        for center in centers:
+            offsets = [arb(float(t))-arb(float(center)) for t in x]
+            cache = {}
+
+            def evaluate(lo, hi):
+                key = (lo, hi)
+                if key in cache:
+                    return cache[key]
+                # union encloses binary endpoints, including non-dyadic midpoints.
+                interval = arb(lo).union(arb(hi))
+                phi = [(interval*d).tanh() for d in offsets]
+                projected = matrix*arb_mat([[a] for a in phi])
+                values = [projected[i, 0] for i in range(len(rows))]
+                direct = quadratic(values)
+                if lo == hi:
+                    cache[key] = direct
+                    return direct
+                dphi = [d*(1-a*a) for d, a in zip(offsets, phi)]
+                ddphi = [-2*d*d*a*(1-a*a) for d, a in zip(offsets, phi)]
+                first = matrix*arb_mat([[a] for a in dphi])
+                second = matrix*arb_mat([[a] for a in ddphi])
+                derivative = 2*(values[0]*first[0, 0]-sum((values[i]*first[i, 0] for i in range(1, len(rows))), arb(0)))
+                if derivative > 0:
+                    result = evaluate(hi, hi)
+                elif derivative < 0:
+                    result = evaluate(lo, lo)
+                else:
+                    curvature = 2*(first[0, 0]**2+values[0]*second[0, 0]
+                        -sum((first[i, 0]**2+values[i]*second[i, 0] for i in range(1, len(rows))), arb(0)))
+                    mid = (lo+hi)/2
+                    midpoint = arb(mid)
+                    midphi = [(midpoint*d).tanh() for d in offsets]
+                    pv = matrix*arb_mat([[a] for a in midphi])
+                    pd = matrix*arb_mat([[d*(1-a*a)] for d, a in zip(offsets, midphi)])
+                    midpoint_value = quadratic([pv[i, 0] for i in range(len(rows))])
+                    midpoint_derivative = 2*(pv[0, 0]*pd[0, 0]-sum((pv[i, 0]*pd[i, 0] for i in range(1, len(rows))), arb(0)))
+                    radius = max(abs(arb(lo)-midpoint).upper(), abs(arb(hi)-midpoint).upper())
+                    taylor = midpoint_value+abs(midpoint_derivative)*radius+abs(curvature)*radius**2/2
+                    # Both are upper enclosures; keep the sharper endpoint.
+                    result = arb(min(upper(direct), upper(taylor)))
+                cache[key] = result
+                return result
+
+            hi = float(gamma_cap)
+            best = max(0., lower(evaluate(hi, hi)))
+            heap = [(-upper(evaluate(0., hi)), 0., hi)]
+            splits = 0
+            while heap and -heap[0][0] > best+tolerance and splits < max_intervals:
+                _, lo, hi = heapq.heappop(heap)
+                mid = (lo+hi)/2
+                if mid == lo or mid == hi:
+                    heapq.heappush(heap, (-upper(evaluate(lo, hi)), lo, hi))
+                    break
+                best = max(best, lower(evaluate(mid, mid)))
+                for left, right in [(lo, mid), (mid, hi)]:
+                    heapq.heappush(heap, (-upper(evaluate(left, right)), left, right))
+                splits += 1
+            bound = max(0., -heap[0][0])
+            all_upper.append(bound)
+            details.append(dict(center=float(center), upper=bound, sample_lower=best,
+                                subdivisions=splits, remaining_intervals=len(heap)))
+        slack = bias_q+sum((arb(t) for t in all_upper), arb(0))
+        repair = max(0., upper(slack))
+        beta = upper(beta_base+arb(repair))
+        return dict(status='interval_certified', beta=beta, beta_base=upper(beta_base),
+                    bias_repair=repair, constraint_upper_before_repair=upper(slack),
+                    delta=max(0., min(1., lower(delta))), target_witness=target_witness,
+                    gamma_cap=float(gamma_cap), precision_bits=precision,
+                    columns=details, seconds=time.monotonic()-started,
+                    input_semantics='binary input data; real tanh; real unit witness; X=PP^T+repair*bb^T')
+    finally:
+        ctx.prec = previous_precision
+
+
+def analytic_small_cap(x, width, gamma_cap, target):
+    """Explicit mean-zero witness baseline, evaluated with Arb."""
+    from flint import arb, ctx
+    previous = ctx.prec
+    ctx.prec = 96
+    try:
+        xx = [arb(float(t)) for t in x]
+        yy = [arb(float(t)) for t in target]
+        mean_x = sum(xx, arb(0))/len(xx)
+        mean_y = sum(yy, arb(0))/len(yy)
+        variance = sum(((a-mean_x)**2 for a in xx), arb(0))/len(xx)
+        energy = sum((a*a for a in yy), arb(0))
+        tail = sum(((a-mean_y)**2 for a in yy), arb(0))
+        beta = arb(width)*arb(float(gamma_cap))**2*variance
+        return dict(status='interval_certified', beta=float(np.nextafter(float(beta.upper()), np.inf)),
+                    delta=max(0., float(np.nextafter(float((tail/energy).sqrt().lower()), -np.inf))),
+                    gamma_cap=float(gamma_cap), kind='analytic_lipschitz', target_witness=False)
+    finally:
+        ctx.prec = previous
