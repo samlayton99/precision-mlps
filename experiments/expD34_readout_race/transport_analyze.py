@@ -78,6 +78,14 @@ def diagnostics(z,d,x,y,w,width,kappa=1.):
         B=np.linalg.solve(K[:2,:2],K[:2,2:])
         S=K[2:,2:]-K[2:,:2] @ B
         effective=ja[2:].T-ja[:2].T @ B
+        effective_blocks=[]
+        for key,rate in [('a',1.),('b',1.),('c',kappa),('d',kappa)]:
+            j=np.atleast_2d(arrays['J_'+key]).T if key=='d' else arrays['J_'+key]
+            block=j[2:].T-j[:2].T @ B
+            gram=rate*(block.T @ block)
+            effective_blocks.append(gram)
+            scalar[f'effective_{key}_share']=float(e[2:] @ gram @ e[2:]/(e[2:] @ S @ e[2:]+1e-300))
+        scalar['effective_kernel_accounting_error']=float(np.linalg.norm(sum(effective_blocks)-S))
         Bdot=np.linalg.solve(K[:2,:2],arrays['K_dot'][:2,2:]-arrays['K_dot'][:2,:2] @ B)
         force=(Bdot-B @ S) @ e[2:]
         omitted=arrays['residual_velocity']+K @ e

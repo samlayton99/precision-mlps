@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from experiments.expD34_readout_race.transport_analyze import weighted_distance, frozen_forecast, marginal_w2
+from experiments.expD34_readout_race.transport_analyze import weighted_distance, frozen_forecast, marginal_w2, diagnostics
 from experiments.expD34_readout_race.recovery import acquisition_distance
 from experiments.expD34_readout_race import transport as tr, targets
 
@@ -28,3 +28,6 @@ def test_frozen_forecast_matches_initial_gradient_and_linearized_loss():
     np.testing.assert_allclose((z-zn)/dt,np.stack([arrays['J_'+k].T @ e*r for k,r in [('a',1),('b',1),('c',.1)]]),rtol=2e-6,atol=1e-8)
     K=sum(arrays['K_'+k] for k in ('a','b','c','d'))
     assert (.5*(e @ e)-loss)/dt==pytest.approx(e @ K @ e,rel=2e-6)
+    measured,_=diagnostics(z,d,x,y,w,5,.1)
+    assert measured['effective_kernel_accounting_error']<1e-14
+    assert sum(measured['effective_'+k+'_share'] for k in 'abcd')==pytest.approx(1.,abs=1e-12)

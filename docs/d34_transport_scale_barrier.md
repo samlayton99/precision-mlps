@@ -138,6 +138,15 @@ $$
 
 The coarse balance is $e_C\approx-Be_H$, rather than zero. $T_ae_H$ includes its regenerated contribution and its interference with the direct fine-mode slope force. Dropping $e_C$ instead produces the wrong reduced slope force. Equation (11) also shows why a small coarse residual or small $\dot K_{CC}$ alone is insufficient: a tracking bound must control the full forcing, including $\dot B$, $BS$, and omitted modes, and the evolution operator of $K_{CC}+BK_{HC}$. Although $S$ is positive semidefinite, the latter matrix need not be symmetric; its stability must not be inferred from a symmetric eigenvalue argument without justification.
 
+There is also an exact blockwise interpretation of $S$. Define $T_I=J_{I,H}^T-J_{I,C}^TB$ for each parameter block, with the same transpose convention for the single bias column. Then
+
+$$
+S=T_a^TT_a+T_b^TT_b+\kappa T_c^TT_c+\kappa T_d^TT_d.
+\tag{11a}
+$$
+
+To prove this, stack the rate-weighted Jacobian blocks into $J$. Expanding $(J_H^T-J_C^TB)^T(J_H^T-J_C^TB)$ and using $K_{CC}B=K_{CH}$ gives $S$. Thus the effective slope kernel $G_a=T_a^TT_a$ satisfies $0\preceq G_a\preceq S$. The ratio $e_H^TG_ae_H/(e_H^TSe_H)$ measures the slope share after coarse relaxation. This identifies a precise candidate for a readout-depletion argument: readout fitting can dominate the effective fine-mode dissipation while $G_a$ remains small in the current residual direction. Proving $S$ small alone does not establish this allocation, and a bound along the target direction is weaker than a uniform operator inequality. The identity also retains interference inside each $T_I$ instead of assigning independent positive forces to coarse and fine residuals.
+
 If $\|U_C(t,s)\|\le M e^{-\alpha(t-s)}$ bounds that evolution operator and $b(t)=\| (\dot B-BS)e_H+f_C+Bf_H\|$, variation of constants gives
 
 $$
