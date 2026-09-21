@@ -1,0 +1,51 @@
+{
+  "source_commit": "caf70f5a4eb19caa9125afcc0c3bd236dd199b1c",
+  "full_suite": {
+    "command": "pytest -q -m 'not slow' -p no:cacheprovider",
+    "passed": 758,
+    "failed": 17,
+    "skipped": 9,
+    "deselected": 4,
+    "baseline_failure_match": true,
+    "failures": [
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+      "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+      "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+      "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+      "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+      "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+      "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+      "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+      "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+      "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+      "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+      "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+    ],
+    "log_sha256": "25a9fb7f1d69664c31c686372eaf4fdfac0ccb4eecd0bd90cc62286e9676bee7"
+  },
+  "focused_tests": {
+    "passed": 22
+  },
+  "evidence": {
+    "executed_hits_checked": 19,
+    "censored_cases": 1,
+    "reference_error_comparisons": 14175,
+    "band_violations": 0,
+    "interval_certified_primary_brackets": 8,
+    "interval_endpoint_evaluations": 16
+  },
+  "input_archive_sha256": "d4133ca209d51ea997636b578596978b08c21ef13232e6a8e38c93f4aa23b0a3",
+  "input_manifest": {
+    "common/N512/arrays.npz": "f7d20b7d9b481f4db1f744d0f36a4be1dcb3b356263779e196c3a59fc99c6dd8",
+    "dictionaries/N512_raw_g8/certificates.json": "818e4184206c79fe218ad3d1b43acbee15f9749f0f4a8f81bfb35e63e16d10ef",
+    "dictionaries/N512_raw_g12/certificates.json": "a9a27e161ea1e776567c112f1b607974daf6e4547bca87dc5ebfae7fa70b7561",
+    "dictionaries/N512_raw_g16/certificates.json": "1ce311da2a5ddb615f0a6c9dda62364e9f389b124a2e5c21f263d04491f6aa20",
+    "dictionaries/N512_raw_g64/certificates.json": "6bf5841ee5596acedab52f9fd10efce32bef1708dd7ee61522eff3b0d9741138",
+    "refinements/capped_kernel/campaign_summary.json": "8a0b0138baa66f6b568314434d5a1b505cb24ccacf024ec00fdf09fc11da1fc6"
+  }
+}

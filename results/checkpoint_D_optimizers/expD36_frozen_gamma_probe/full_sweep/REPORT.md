@@ -21,6 +21,15 @@ test the remaining gap. The declared factor-two sharpness objective remains
 unproved. That follow-up has its own resource ledger and preserves this
 original sweep and its polynomial-bound comparisons.
 
+The subsequent [common-slope polynomial-kernel probe](refinements/common_slope_polynomial/REPORT.md)
+retains the approximating kernel's full action and bounds its discarded part.
+For the fixed common-slope sine-mixture problems, it gives acquisition-time
+intervals of 15,732,978–15,864,610 at gamma 8, 186,054–186,061 at gamma 12,
+61,791–61,793 at gamma 16, and exactly 16,013 at gamma 64. Independent Arb
+calculations certify these endpoints. This sharply improves fixed-dictionary
+timing while leaving the heterogeneous uniform-cap theorem's sharpness
+question unchanged. The probe reuses executed GD and consumes no new GPU time.
+
 **Notation and normalization. Errors are relative empirical $L_2$ errors unless otherwise stated.**
 
 | Symbol or term | Meaning |

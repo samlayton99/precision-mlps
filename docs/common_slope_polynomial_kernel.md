@@ -8,6 +8,10 @@ cross-couplings, and an explicit remainder controls the discarded action.
 This is a fixed-geometry, fixed-common-slope result. It does not establish a
 uniform acquisition-time bound over an interval of slopes.
 
+The [executed archive probe](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/common_slope_polynomial/REPORT.md)
+reports the timing intervals, degree refinement, control targets, and
+independent interval verification of the selected primary endpoints.
+
 | Symbol | Meaning |
 |---|---|
 | $m,W$ | Number of training samples and hidden features. |
