@@ -123,9 +123,18 @@ $\pi/(2\gamma)$; decreasing gamma moves them away from the real interval
 and increases the decay rate $\beta_\gamma$. For large gamma,
 $\beta_\gamma\sim\pi/(2\gamma)$.
 
-To construct an approximant, choose $D\ge1$ and interpolate each feature at
-the $D+1$ Chebyshev-Lobatto nodes $z_j=\cos(j\pi/D)$. Denote this operator
-by $I_D$. Its two endpoint Chebyshev coefficients have magnitude at most
+For a continuous function $h:[-1,1]\to\mathbb R$, let $I_Dh$ be its
+degree-at-most-$D$ polynomial interpolant at the $D+1$ Chebyshev-Lobatto
+nodes $z_\ell=\cos(\ell\pi/D)$, $\ell=0,\ldots,D$, with $D\ge1$.
+The estimate below is applied separately to each hidden feature:
+
+$$
+h=h_j,\qquad h_j(x)=\tanh(\gamma(x-c_j)).
+$$
+
+Thus $h-I_Dh$ is a hidden feature's approximation error. The target $c(x)$
+remains unchanged. For general $h$, the interpolant's two endpoint Chebyshev
+coefficients have magnitude at most
 $\|h\|_\infty$ and its $D-1$ interior coefficients at most
 $2\|h\|_\infty$, giving $\|I_D\|_{\infty\to\infty}\le2D$.
 Since $I_Dp=p$ for $p\in\mathcal P_D$,
@@ -137,6 +146,7 @@ $$
 \tag{5}
 $$
 
+Apply (5) to each $h_j$ and use Lemma 1 to bound its best polynomial error.
 Keep the bias exact and sample the interpolating features to form
 $\widetilde J_{\gamma,D}$. Each hidden column's normalized error norm is
 at most $(1+2D)e_D(\gamma)$, independently of $m$. Summing squared column
