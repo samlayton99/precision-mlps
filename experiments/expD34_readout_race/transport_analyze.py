@@ -116,6 +116,7 @@ def diagnostics(z,d,x,y,w,width,kappa=1.,eta=None):
         scalar['effective_outward_alignment']=float(-(np.sqrt(w)*np.sign(z[0])) @ (effective @ e[2:])/(np.linalg.norm(effective @ e[2:])+1e-300))
         for mode in (3,9):
             scalar[f'residual_mode{mode}']=float(e[mode])
+            scalar[f'effective_mode{mode}_norm']=float(np.linalg.norm(effective[:,mode-2]*e[mode]))
             scalar[f'effective_mode{mode}_along_full']=float(full @ (effective[:,mode-2]*e[mode])/(full @ full+1e-300))
     for degree in (9,17,33,65):
         scalar[f'projection{degree}_relative_error'] = float(np.linalg.norm(full-ja[:degree+1].T @ e[:degree+1])/(np.linalg.norm(full)+1e-300))
