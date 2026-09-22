@@ -155,6 +155,7 @@ additional independent seeds. Reports are written directly after inspection.
 the completed continuations against original GD, every frozen block, all 60
 matched half-step cases, degree-129 modal diagnostics, and doubled frozen-study
 grids. `mechanism_curate --root <evidence> --archives <full archives...>` retains
-all scalar tables losslessly, mode-2-through-9 force curves, and verified states
+all scalar tables losslessly, mode-0-through-9 residual coefficients,
+mode-2-through-9 force curves, and verified states
 at fixed milestones and sampled post-20k force maxima. The full compact archives
 remain separate from this curated Git evidence package.

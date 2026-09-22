@@ -30,6 +30,7 @@ def curate(root,archives):
         f=dict(np.load(path)); destination=output/path.parent.name/path.name
         # Keep all sampled times for degrees 2..9; full modal tables remain reproducible.
         np.savez_compressed(destination,row=f['row'],mode_labels=np.arange(2,10),
+            residual_mode_labels=np.arange(10),residual_modes=f['residual_modes'][:,:10],
             **{key:f[key][:,:8] for key in ('norm','along_effective','outward')})
         audit.append(dict(source=str(path),artifact=str(destination.relative_to(root)),sha256=digest(destination),mode_labels=list(range(2,10))))
     for folder in sorted(root.glob('*_geometry')):

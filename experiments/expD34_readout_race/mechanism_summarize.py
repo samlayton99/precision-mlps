@@ -125,11 +125,13 @@ def plot(root,metrics,curves,endpoints):
             t=np.array([int(r['step'])*.002 for r in rr]); alpha=1 if seed==0 else .3
             for field,color,style in [('full_slope_norm','#111827','-'),('effective_slope_norm','#2563eb','--'),('transient_slope_norm','#d97706',':')]:
                 axs[0,col].plot(t,[number(r,field) for r in rr],style,color=color,alpha=alpha,lw=1,
-                    label=field.replace('_',' ') if seed==0 else None)
+                    label={'full_slope_norm':'Full force','effective_slope_norm':'Effective fine force',
+                           'transient_slope_norm':'Coarse tracking'}[field] if seed==0 else None)
             axs[1,col].plot(t,[number(r,'readout_l2') for r in rr],color='#7c3aed',alpha=alpha)
             axs[2,col].plot(t,[number(r,'actual_outward') for r in rr],color='#059669',alpha=alpha)
             for field,color in [('mean_gamma','#111827'),('q90_gamma','#2563eb')]:
-                axs[3,col].plot(t,[number(r,field) for r in rr],color=color,alpha=alpha,label=field if seed==0 else None)
+                axs[3,col].plot(t,[number(r,field) for r in rr],color=color,alpha=alpha,
+                    label={'mean_gamma':'Mean gamma','q90_gamma':'90th percentile'}[field] if seed==0 else None)
         axs[0,col].set_title(target)
         axs[0,col].set_yscale('log'); axs[1,col].set_yscale('log')
         axs[2,col].set_yscale('symlog',linthresh=1e-7); axs[2,col].axhline(0,color='#d1d5db',lw=.5)
@@ -156,7 +158,7 @@ def plot(root,metrics,curves,endpoints):
                            and r.get('seed')==str(seed) and r['updates']=='600000'],key=lambda r:int(r['step']))
                 if rr: axs[col].plot([int(r['step'])*.002 for r in rr],[number(r,'relative_heldout_mse') for r in rr],
                     'o-',color=color,alpha=.85 if seed==0 else .3,ms=3,label=label if seed==0 else None)
-        axs[col].set(title=target,xscale='symlog',yscale='log',ylim=(1e-4,1.1),xlabel='Physical time of geometry snapshot')
+        axs[col].set(title=target,xscale='symlog',yscale='log',ylim=(1e-3,1.1),xlabel='Physical time of geometry snapshot')
         axs[col].set_xscale('symlog',linthresh=1)
     axs[0].set_ylabel('Frozen readout relative MSE after 600k'); axs[0].legend(fontsize=6)
     fig.tight_layout(); fig.savefig(root/'learned_geometry_usefulness.png',dpi=160); plt.close(fig)
@@ -171,7 +173,7 @@ def plot(root,metrics,curves,endpoints):
                     if not a: continue
                     axs[ri,col].scatter(np.full(len(a),ai),a,color=colors[arm],s=18,alpha=.65)
                     axs[ri,col].plot([ai-.2,ai+.2],[np.median(a)]*2,color=colors[arm],lw=2)
-                axs[ri,col].set(title=f'{target}; fork {fork:,}',yscale='log',xticks=range(len(ARMS)))
+                axs[ri,col].set(title=f'{target}; fork {fork:,}',yscale='log',ylim=(1e-3,1.1),xticks=range(len(ARMS)))
                 axs[ri,col].set_xticklabels([labels[a] for a in ARMS],rotation=60,ha='right',fontsize=7)
             axs[ri,0].set_ylabel(label)
         fig.tight_layout(); fig.savefig(root/(filename+'.png'),dpi=160); plt.close(fig)

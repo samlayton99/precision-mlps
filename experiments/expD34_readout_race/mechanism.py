@@ -164,7 +164,7 @@ def analyze(archives, output, stride=1):
                 row['negative_mean']=float(f['negative'][i,j].mean())
                 rows.append(row); measured.append(row)
                 if 'mode_force_norm' in arr:
-                    modal.append((len(rows)-1,arr['mode_force_norm'],arr['mode_force_along'],arr['mode_outward']))
+                    modal.append((len(rows)-1,arr['mode_force_norm'],arr['mode_force_along'],arr['mode_outward'],arr['residual_modes']))
             for lo,hi in ((0,20000),(20000,100000),(100000,600000),(20000,600000)):
                 js=np.flatnonzero(f['steps']==lo); je=np.flatnonzero(f['steps']==hi)
                 if not len(js) or not len(je): continue
@@ -183,7 +183,7 @@ def analyze(archives, output, stride=1):
     write_table(output/'metrics.csv',rows); write_table(output/'movement_windows.csv',windows)
     np.savez_compressed(output/'modal_forces.npz',row=np.array([r[0] for r in modal]),
         norm=np.array([r[1] for r in modal]),along_effective=np.array([r[2] for r in modal]),
-        outward=np.array([r[3] for r in modal]))
+        outward=np.array([r[3] for r in modal]),residual_modes=np.array([r[4] for r in modal]))
     (output/'manifest.json').write_text(json.dumps(clean(dict(archives=provenance,states=len(rows),
         degree=65,stride=stride,force_driver_units='d(norm squared / 2)/d physical time')),indent=2)+'\n')
 
