@@ -1,0 +1,59 @@
+{
+  "cases": [
+    {
+      "seed": 4,
+      "target": "sine",
+      "arm": "joint",
+      "fork_step": 20000,
+      "eta": 0.002,
+      "training_eta": 0.002
+    },
+    {
+      "seed": 4,
+      "target": "runge",
+      "arm": "joint",
+      "fork_step": 20000,
+      "eta": 0.002,
+      "training_eta": 0.002
+    },
+    {
+      "seed": 4,
+      "target": "moment3",
+      "arm": "joint",
+      "fork_step": 20000,
+      "eta": 0.002,
+      "training_eta": 0.002
+    },
+    {
+      "seed": 4,
+      "target": "moment5",
+      "arm": "joint",
+      "fork_step": 20000,
+      "eta": 0.002,
+      "training_eta": 0.002
+    },
+    {
+      "seed": 4,
+      "target": "moment9",
+      "arm": "joint",
+      "fork_step": 20000,
+      "eta": 0.002,
+      "training_eta": 0.002
+    }
+  ],
+  "source_archives": [
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/recovery-a752d80/output/compact_states.npz",
+      "sha256": "87c8949e1249f1f5b725ed1c5696104fe83239203b40d91312d0648ad50e4f50"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/useful-ef9859a/runs/missing/compact_states.npz",
+      "sha256": "3ab86d2d11dae85839a85c9c3e36dec8033e4f8256fd919794a0cbec04f3f1aa"
+    }
+  ],
+  "reference_eta": 0.002,
+  "training_eta": 0.002,
+  "step_convention": "reference GD updates; physical time = step * 0.002",
+  "source_commit": "ef9859a",
+  "source_hash": "914aea73a912c36a292787fa64c39dfc2582f2cbb7d5798e1694aff74481b65e"
+}

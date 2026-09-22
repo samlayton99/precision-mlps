@@ -1,0 +1,29 @@
+{
+  "eta": 0.002,
+  "horizons": [
+    0,
+    2000,
+    20000,
+    100000,
+    600000
+  ],
+  "gammas": [
+    0.1,
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    3.2,
+    4.0,
+    8.0,
+    16.0
+  ],
+  "initialization": "zero readout; diagnostic only",
+  "width": 177,
+  "training_samples": 2048,
+  "evaluation_samples": 8192,
+  "target_mapping": "fitted once on the D34 training grid",
+  "archives": [
+    "results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/seed0_fork20000/compact_states.npz"
+  ]
+}
