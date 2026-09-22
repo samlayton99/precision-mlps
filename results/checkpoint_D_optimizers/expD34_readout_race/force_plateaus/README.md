@@ -1,21 +1,73 @@
-# Effective-force plateaus: checkpoint audit and Modal campaign
+# Effective-force plateaus through six million updates
 
-The completed audit identifies a useful distinction. In ordinary GD, the hard
-degree-9 target has a weak, slowly decaying, almost directionally fixed effective
-slope force. A frozen-Jacobian calculation from update 100k predicts its force
-vector at 600k with 1.7% median relative error across five seeds. This calculation
-fails on several targets that recover. In Adam, a quiet-looking sparse norm
-trace can hide rapid force reversals: the adjacent-update effective-force cosine
-is negative in 59 of 65 windows starting at 600k. These observations narrow the
-mechanisms worth studying; they do not establish a permanent gamma barrier.
+Ordinary GD remains stalled on the degree-9 target through **six million
+updates** in all three continued seeds: relative evaluation MSE is approximately
+0.75 and every slope remains below magnitude 1. Adam reaches relative MSE
+between $4.79\times10^{-5}$ and $2.88\times10^{-4}$ on the same target. Degree 5
+shows why a long-lived plateau cannot be treated as permanent: one GD seed
+recovers to relative MSE 0.0149 while two remain near 0.75. The evidence supports
+target- and seed-dependent persistence, not a universal or permanent barrier.
 
-This is an **interim evidence report**. The saved-state audit and dense windows
-are complete. The campaign has moved to a bounded two-H100 Modal runtime after
-the verification pilot passed; the original Runpod jobs have been cancelled.
-Long continuations, paired interventions, independent-seed confirmation, and
-numerical controls retain their original scientific protocol. No completed
-results from those stages are claimed here. The [migration record](#modal-migration-and-current-execution)
-separates runtime verification from the still-pending scientific conclusions.
+This is an **interim scientific readout** of the completed long continuations.
+The initial Runpod CPU analysis contains 572 endpoint records and 140 prospective
+forecast comparisons; final independent-seed intervention bundles are being
+incorporated. Additional Runpod interventions start at six million updates,
+after their H200 verification pilot passed. The
+[migration record](#modal-migration-and-current-execution) retains the original
+runtime checks and accounting. All scientific computations run remotely.
+
+**Terminology used in the new long-horizon results. Errors are dimensionless;
+slope quantities use the original physical parameterization.**
+
+| Quantity | Definition |
+|---|---|
+| Relative evaluation MSE | Mean squared residual divided by mean squared target, measured on 8,192 independent midpoints. |
+| Mean gamma | Mean absolute hidden slope, $N^{-1}\sum_j |a_j|$. |
+| Effective force | Slope gradient after instantaneous coarse balance; its norm alone does not determine outward movement. |
+| Tracking correction | Additional slope gradient from departure from coarse balance; Adam attribution also retains its optimizer history. |
+
+## First long-horizon result: persistence depends on target and seed
+
+Both optimizers completed the fixed 600k-to-6m continuation for all 13 targets
+and seeds 0–2, retaining FP64 and complete optimizer histories. There were no
+failed cases or unresolved coarse solves. Evaluation uses an independent
+deterministic grid; it measures approximation error, not statistical
+generalization. No target, seed, or endpoint was selected by its performance.
+
+**Relative evaluation MSE at six million updates, by seed. The degree-5 GD
+outcome differs sharply between seeds despite the same training protocol.**
+
+| Optimizer / target | Seed 0 | Seed 1 | Seed 2 |
+|---|---:|---:|---:|
+| GD / degree 9 | 0.750006 | 0.750006 | 0.750006 |
+| Adam / degree 9 | 0.0002885 | 0.00004785 | 0.0001776 |
+| GD / degree 5 | 0.749991 | 0.014867 | 0.749245 |
+| Adam / degree 5 | 0.00001829 | 0.00006153 | 0.00004029 |
+| GD / mixed sine | 0.102407 | 0.060183 | 0.125254 |
+| GD / chirp | 0.085247 | 0.003979 | 0.272384 |
+
+The [complete endpoint table](runpod_followup/initial-analysis/endpoints.csv)
+retains every target and seed. Degree-9 GD has mean gamma 0.0885–0.0895 at 6m,
+with zero fraction of slopes at or above 1. Its mean gamma **decreases** by
+0.000398–0.000594 between 600k and 6m. The effective force norm falls to
+0.329–0.477 of its 600k value, while the endpoint force-vector cosine remains
+0.784–0.877. Thus the failure to acquire scales persists even though the force
+is neither constant in magnitude nor exactly fixed in direction over this
+longer interval.
+
+Degree-5 GD seed 1 instead reaches mean gamma 0.445, with 5 of 177 slopes at
+or above 1. The other two seeds have no slopes at or above 1. This is a
+finite-horizon observation of seed-dependent recovery, not a proof that the
+remaining seeds cannot recover later. The new late interventions and dense
+windows test whether the earlier force explanation remains informative after
+such divergent trajectories.
+
+The [prospectively issued forecast scores](runpod_followup/initial-analysis/forecasts.csv)
+and [paired intervention contrasts](runpod_followup/initial-analysis/contrasts.csv)
+are available with their individual cases. Their interpretation and numerical
+control comparisons will be added after the final independent-seed bundles
+are incorporated; a passing execution check is not a verdict on these
+scientific hypotheses.
 
 ## What was measured
 
