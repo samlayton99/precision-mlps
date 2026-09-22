@@ -2,6 +2,16 @@
 
 ## Adam force attribution and additional targets
 
+`frozen_scale_gap --root <Adam-evidence> --output <comparison-directory>`
+compares learned Adam geometry with common frozen gammas through 256 and with
+multiples of its own learned slopes. The latter multiplies both $a$ and $b$,
+preserving feature centers and relative slope magnitudes. Every geometry gets
+the same zero-initialized readout-GD assay at 0.002 through 600k steps, evaluated
+by the verified linear recurrence. Scale selection uses training-grid error;
+independent-grid error and doubled-grid checks are reported separately. This
+measures the best tested scale under the stated assay, not a universal optimal
+gamma. Run the numerical work and figure generation in CPU-only Runpod Slurm.
+
 The [implemented plan](../../docs/d34_adam_force_plan.md) specifies the target
 definitions, comparisons, measurements, and interpretation gates. The
 [completed report](../../results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/README.md)
