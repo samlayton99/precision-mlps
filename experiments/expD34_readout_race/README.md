@@ -24,6 +24,13 @@ to define a valid continuous-time approximation; the finite-step remainder
 is reported explicitly. The initial audit uses all 13 targets and five seeds
 at 20k, 100k, 200k, 400k, and 600k updates.
 
+`plateau_dense` resumes every primary case for 512 adjacent updates at both
+100k and 600k, preserving the complete optimizer history. It measures lag-one
+and lag-two vector cosines, norm variation, and net-vector/path coherence
+separately for raw effective/tracking forces and their actual optimizer steps.
+These windows distinguish a constant force vector from reversals hidden by
+a constant norm. The observer is checked against the unchanged training kernel.
+
 `plateau_run` continues the existing 600k states to 6 million updates for all
 13 targets, GD and Adam, and seeds 0–2. Optimizer history is preserved. One
 batched job per optimizer permits two-GPU execution. Every-update force/path
