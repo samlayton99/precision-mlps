@@ -12,7 +12,7 @@ network drives most of the motion, with an inward effect on mean scale. These
 errors relax slowly; the large ninth-degree error supplies little opposing
 force. Sine recovers a stronger force without reaching the intended geometry
 and precision, so its explanation must retain more of the evolving coupling.
-The proposed perturbations test that coupling directly. The observed $O(h)$
+The matched-feedback experiments test that coupling directly. The observed $O(h)$
 readouts at large frozen gammas remain a supporting observation.
 
 **Notation for simultaneous GD in physical coordinates. The network is a sum of features, with no division by width.**
@@ -28,18 +28,19 @@ readouts at large frozen gammas remain a supporting observation.
 | $J_{a,C}$ | Derivative of coarse coefficients with respect to slopes: coarse modes are rows, slopes are columns. |
 | $z_C=e_C+Be_H$ | Departure from instantaneous coarse balance; it is not a least-squares readout error. |
 | $F_a=T_ae_H$, $R_a=g_a-F_a$ | Effective fine slope gradient and remaining corrections. Velocity has the opposite sign. |
-| $I$, $F_{a,I}=T_{a,I}e_I$ | Selected modes and their contribution to the effective slope gradient. |
-| $\varepsilon\in[0,1]$ | Fraction of the selected contribution removed; zero is ordinary GD. |
+| $T_{a,s}$, $e_s$ | Effective slope map and fine residual frozen at the starting checkpoint. |
 | $\eta$, $n$ | Physical GD step and additional update index after a checkpoint. |
 | $h$ | Center spacing in a construction dictionary, used in the readout-scale comparison. |
 
 Every numbered section follows **example → theory → prediction**. Sections
-1–3 explain the mechanism and perturbation response; Section 4 connects these
+1–3 explain the mechanism, matched feedback, and a reduced movement model; Section 4 connects these
 to acquisition bounds. Section 5 states what must transfer to sine and Adam;
 Section 6 places the readout observation in this framework. The
 [detailed companion](d34_coarse_balance_stagnation_details.md) preserves the
-earlier proofs and evidence and adds the response proofs in
-[Section 11](d34_coarse_balance_stagnation_details.md#11-perturbing-the-identified-effective-force).
+earlier proofs and evidence. Its
+[Section 12](d34_coarse_balance_stagnation_details.md#12-matched-feedback-tests-and-a-target-general-movement-budget)
+derives the current experiments and movement budget; Section 11 preserves the
+earlier attenuation analysis.
 
 ## 1. The force that remains after coarse balance
 
@@ -92,12 +93,11 @@ establish which directions the actual neurons follow.
 
 **Prediction.** A reduced model must reproduce the signed modal force and
 its relaxation, not only the total residual norm. For degree 9, the quadratic
-and cubic errors remain active state variables. Attenuating their contribution
-should weaken contraction; whether the remaining force produces appreciable
-travel is a separate question. The completed removal of modes 2–8 below
-illustrates that distinction.
+and cubic errors remain active state variables. The sharper question is now
+whether their evolving amplitudes explain the motion with nearly fixed
+sensitivities, and where sensitivity changes become indispensable.
 
-## 2. Attenuation identifies direction, but direction is not acquisition
+## 2. Give the same initial force two different kinds of feedback
 
 **Example: removing contraction leaves a very weak outward force.** The
 completed degree-9 experiment removes loss penalties on modes 2–8 from every
@@ -109,93 +109,102 @@ Removing the inward driver does not recover the intended scale. The
 [ablation evidence](d34_coarse_balance_stagnation_details.md#removing-the-generated-error-penalty)
 separates this tiny persistent motion from the initial coarse transient.
 
-**Theory: perturb the signal entering the slope update directly.** Remove a
-fraction $\varepsilon$ of a selected effective force:
+**Theory: separate the two evolving factors of the identified force.**
+The removal experiment establishes a direction, but also changes the starting
+signal. To isolate feedback, start three branches at the same checkpoint
+$\theta_s$. Each applies its ordinary remainder $R_a(\theta)$ plus one of
+these effective slope forces:
+
+| Branch | Effective force | What can respond inside that force? |
+|---|---|---|
+| Ordinary GD | $T_a(\theta)e_H(\theta)$ | Sensitivities and errors. |
+| Freeze the map | $T_{a,s}e_H(\theta)$ | Errors. |
+| Clamp the supplied residual | $T_a(\theta)e_s$ | Sensitivities. |
+
+Readouts and both bias blocks always use their ordinary gradients at the
+branch's current state. Its actual network error continues to evolve even
+when the residual supplied to the slope force is clamped. The remainder is
+also recomputed at that state. Thus every branch remains a coupled system.
+
+All three have exactly the same first update in real arithmetic. At their
+common next state $\theta_1$, the second slope-update differences are
 
 $$
-a_{n+1}^{\varepsilon}=a_n^{\varepsilon}
--\eta\bigl[g_a(\theta_n^{\varepsilon})
--\varepsilon F_{a,I}(\theta_n^{\varepsilon})\bigr].
+\begin{aligned}
+a_2^{\rm freeze\_map}-a_2^{\rm GD}
+&=\eta[T_a(\theta_1)-T_{a,s}]e_H(\theta_1),\\
+a_2^{\rm clamp\_residual}-a_2^{\rm GD}
+&=\eta T_a(\theta_1)[e_H(\theta_1)-e_s].
+\end{aligned}
 $$
 
-All other blocks take their ordinary gradients at the same pre-update state.
-This differs from changing the loss for every block. Each branch recomputes
-its own residual, balance, and sensitivities; no readout solve is installed.
+These formulas distinguish the immediate effects of map drift and error
+drift. They verify the experiment. Longer differences require a forecast
+that propagates their consequences through the other parameters.
 
-At one fixed state with nonzero slopes, let
-$V=-W^{-1}\operatorname{sign}(a)^Tg_a$ be the instantaneous mean-gamma
-velocity. Then
+**Prediction.** An error-relaxation explanation requires the fixed-map branch
+to remain close to GD and the residual-clamped branch to depart in the
+predicted direction and amount. A sensitivity-driven explanation reverses
+those roles. When both factors matter, predict both departures. Simply
+observing that an intervention changes training does not distinguish these
+claims. The experiment records vector displacement, signed outward travel,
+and approximation error, with forecasts issued before continuation.
 
-$$
-V^{\varepsilon}=V+
-\frac{\varepsilon}{W}\operatorname{sign}(a)^TF_{a,I}.
-$$
+## 3. What a fixed effective map can predict
 
-This affine response also gives the exact one-step mean-gamma increment
-divided by $\eta$ if no slope changes sign. With crossings, use
-$W^{-1}\sum_j(|a_j-\eta g_{a,j}^{\varepsilon}|-|a_j|)$, a piecewise affine
-function of $\varepsilon$. A resolved zero identifies how much attenuation
-reverses direction. It does not determine the duration or strength of growth.
+**Example: degree 9 motivates a reduction that sine can falsify.** The
+two-error degree-9 model retains the changing quadratic and cubic errors
+and predicts long, slow contraction. Sine develops substantial changes in
+sensitivity, so keeping that coupling fixed eventually misses its motion.
+We need a model whose success has a clear meaning and whose failure points
+to a specific missing response.
 
-**Prediction.** Predict the first update and any direction-reversal threshold
-before continuing a branch. A modest attenuation need not reverse a strongly
-dominated force. Retain modes 4–8 near reversal: their contribution is small
-relative to the main contraction but amounts to 18–84% of the opposing
-hard-mode contribution in the degree-9 audit. Later growth beyond the direct
-change requires an explanation through feedback.
-
-## 3. Predict the coupled response instead of replaying a fixed force
-
-**Example: an intervention can create a transient absent from its baseline.**
-In the completed penalty-removal runs, net mean-gamma growth over physical
-time 40 is $2.70\times10^{-8}$ to $3.96\times10^{-8}$. This exceeds the
-tiny effective-force travel above because changing the loss first induces
-coarse rebalancing. A useful new comparison therefore gives two branches
-the same first slope step, with different responses in the other blocks.
-
-**Theory: propagate the perturbation through the whole system.** Let $E_a$
-insert a slope vector into the full parameter vector. The slope-only update is
+**Theory: first freeze the map, then let its errors relax.** Freeze the
+full-parameter effective map $T_s$ at the checkpoint. Its induced coupling
+is $S_s=J_{H,s}T_s=T_s^TT_s$. The reduced dynamics are
 
 $$
-\theta_{n+1}^{\varepsilon}=\theta_n^{\varepsilon}
--\eta\nabla L(\theta_n^{\varepsilon})
-+\eta\varepsilon E_aF_{a,I}(\theta_n^{\varepsilon}).
+\widehat e_{n+1}=(I-\eta S_s)\widehat e_n,\qquad
+\widehat\theta_{n+1}=\widehat\theta_n-\eta T_s\widehat e_n,
+\qquad \widehat e_0=e_s,\quad\widehat\theta_0=\theta_s.
 $$
 
-Its first response $\chi_n=\partial_{\varepsilon}\theta_n^{\varepsilon}|_0$
-satisfies, exactly along ordinary GD,
+This model runs forward using the checkpoint alone. It retains all chosen
+fine modes, and applies to sine as well as degree 9. It is a separate
+approximation to the full dynamics: unlike the slope-only experiment above,
+it moves every block with the frozen effective map and omits the remainder.
+
+In the nonoscillating regime $0<\eta\lambda_i\le1$ for positive eigenvalues,
+the model has an explicit movement budget. If $v_i$ is an eigenvector of
+$S_s$ with eigenvalue $\lambda_i>0$, write $b_i=v_i^Te_s$. Its contribution
+to displacement is
 
 $$
-\chi_0=0,\qquad
-\chi_{n+1}=\bigl(I-\eta\nabla^2L(\theta_n)\bigr)\chi_n
-+\eta E_aF_{a,I}(\theta_n).
+-b_i\frac{1-(1-\eta\lambda_i)^N}{\lambda_i}\,T_sv_i.
 $$
 
-The forcing term removes the selected input. The Hessian propagates its
-consequences through readouts, biases, and residuals. Under the neighborhood
-and smoothness bounds in Section 11,
-$\theta_n^{\varepsilon}=\theta_n+\varepsilon\chi_n+O(\varepsilon^2)$ has a
-controlled finite-horizon remainder. Using a recorded baseline gives a
-baseline-conditioned response prediction. An autonomous surrogate needs its
-own forecast-error control.
+The three relevant quantities are now visible: the error loading $b_i$,
+the sensitivity vector $T_sv_i$, and the time allowed for relaxation. An
+exactly insensitive direction has $T_sv_i=0$ and contributes no motion.
+A weakly sensitive direction contributes little over a short interval,
+even if its eventual fitting displacement is large. These eigenvectors are
+mixtures of polynomial errors; they are not individual polynomial degrees.
 
-Although $J_CT_I=0$, generally $J_{a,C}F_{a,I}\ne0$. Slope-only attenuation
-changes coarse-output velocity by $\varepsilon J_{a,C}F_{a,I}$ at the same
-state. Adding $\eta\varepsilon T_Ie_I$ to the full-parameter update instead
-has the same first slope step and zero coarse-output velocity perturbation
-at the fork; a finite GD step retains nonlinear output changes. It also
-changes the other blocks directly. Their later differences include
-that feedback and cannot be attributed solely to coarse rebalancing. Even
-preserving coarse output does not ensure unchanged $z_C$, since its balance
-itself moves.
+To forecast the three actual experimental branches, we also linearize each
+complete update field at the fork. That calculation includes sensitivity
+drift and the full loss curvature. It is richer than the fixed-map residual
+model, but still uses no future trajectory. The
+[detailed derivation](d34_coarse_balance_stagnation_details.md#12-matched-feedback-tests-and-a-target-general-movement-budget)
+gives both predictors, positive-travel bounds, and the correction terms
+required to transfer a surrogate bound to ordinary GD.
 
-**Prediction.** Small attenuations should match the coupled response better
-than simply accumulating the removed force. Within the linear-response regime,
-halving $\varepsilon$ should reduce a resolved first-order state remainder by
-about four. The matched interventions should have identical first slope
-increments and the predicted coarse-output difference. Tracking generated by
-surgery is a response to the intervention; it does not overturn its small
-contribution on the original trajectory.
+**Prediction.** Compare both models with the same predeclared motion curves.
+If the fixed-map model fails while the complete local linearization succeeds,
+the omitted local feedback matters. If both fail, the checkpoint's fixed
+coefficients are insufficient over that interval. A longer predictive model
+must account for nonlinear feedback over that interval; fitting a new coefficient from
+the future trajectory would be an explanation of that trajectory, not a
+successful prior forecast.
 
 ## 4. What the degree-9 theorem actually proves
 
@@ -230,7 +239,7 @@ event gives the exclusion. The
 does not establish entry from initialization, permanent trapping, or a
 directed-rounding numerical certificate.
 
-Selective slope-force removal need not decrease this loss, so the theorem
+The modified feedback fields need not decrease this loss, so the theorem
 cannot be transferred automatically. A bound that survives any discrete
 update uses exact positive travel,
 
@@ -292,9 +301,10 @@ tracking activity often cancels. Its remaining influence through the shared
 denominator is part of the coupled system. Test transfer through persistent
 signed motion, rather than requiring small raw tracking norms in Adam.
 
-**Prediction.** A sine model must predict the response to removing a specified
-modal force, including feedback on $T_a$ and $e_H$. The later Adam test applies
-the same raw-gradient perturbation before both moments update, preserving
+**Prediction.** A sine model must predict the signed responses to fixing
+$T_a$ or the supplied $e_H$, including their later feedback through all
+parameters. Adam is outside the current GD campaign. A later transfer test
+would alter the specified raw force before both moments update, preserving
 their starting histories. Agreement concerns which interventions strengthen
 or suppress sustained acquisition; magnitudes and timescales may differ.
 Subtracting a component from a recorded Adam step only attributes the original
