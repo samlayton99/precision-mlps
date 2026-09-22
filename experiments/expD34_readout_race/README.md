@@ -1,5 +1,31 @@
 # Ordinary-GD readout competition
 
+## Adam force attribution and additional targets
+
+`adam_forces.py` defines thirteen targets and an exact full-residual split into
+effective force and coarse-tracking correction. The higher-mode residual is
+the entire complement of the constant/linear projector, with no activation or
+polynomial truncation. All parameter blocks enter the coarse kernel, including
+the output bias. The five original targets retain their exact definitions;
+new mixed-sine, localized-sine, and chirp targets use unit training-grid RMS.
+
+Auxiliary first-moment buffers propagate the force components through ordinary
+Adam using its actual shared second-moment denominator. Their steps add to the
+actual optimizer step. They are measurements, not independent Adam optimizers
+or interventions in training. A separate diagonal-mobility balance can be
+evaluated with the actual Adam preconditioner; it is not a claim that Adam
+obeys the GD tracking theorem. Unresolved coarse solves retain the full gradient
+in an explicitly unresolved channel rather than changing the training update.
+
+Focused checks compare gradients and coarse Jacobians with PyTorch autodiff,
+reconcile the full-complement split with the retained-basis split, and check
+ordinary Adam and component histories against PyTorch under cancellation,
+tiny gradients, and zero-gradient intervals:
+
+```bash
+JAX_ENABLE_X64=true .venv/bin/python -m pytest -q tests/test_expD34_adam_forces.py
+```
+
 ## Signal-recovery audit
 
 `recovery.py` analyzes whether renewed slope signal produces signed movement
