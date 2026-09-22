@@ -94,3 +94,76 @@ def test_targets_preserve_anchors_and_matched_moments():
         if name in af.BLENDS or name == 'moment4':
             np.testing.assert_allclose(q[:, :2].T @ y/len(x), [.3, .4], atol=3e-15)
     assert len(af.TARGETS) == 13
+
+
+@pytest.mark.parametrize('optimizer', ['gd', 'adam', 'momentum', 'adaptive_only'])
+def test_actual_training_and_resume(optimizer):
+    from experiments.expD34_readout_race import adam_run as ar
+    p, _, _ = example(); x = targets.grid(64); y = np.sin(2*np.pi*x)+.3
+    beta1 = .9 if optimizer in ('adam', 'momentum') else 0.
+    adaptive = optimizer in ('adam', 'adaptive_only')
+    setting = np.array([.002, beta1, .999, 1e-8, adaptive])[None]
+    state = jax.tree.map(lambda v: v[None], ar.initial(p))
+    advance = ar.advance_factory(64)
+    full, row, lo, hi = advance(state, jnp.array(y[None]), jnp.array(setting), 37)
+    part, *_ = advance(state, jnp.array(y[None]), jnp.array(setting), 13)
+    # Serialization round trip of all parameter, optimizer and diagnostic state.
+    part = jax.tree.map(lambda v: jnp.asarray(np.asarray(v).copy()), part)
+    resumed, *_ = advance(part, jnp.array(y[None]), jnp.array(setting), 24)
+    for key in full:
+        np.testing.assert_array_equal(full[key], resumed[key])
+    assert row.shape == (1, len(ar.METRICS))
+    assert np.isfinite(row).all()
+    pt = torch.nn.Parameter(torch.tensor(p, dtype=torch.float64)); xx = torch.tensor(x)
+    opt = torch.optim.Adam([pt], lr=.002, betas=(beta1, .999), eps=1e-8) if adaptive else None
+    moment = np.zeros_like(p)
+    for n in range(1, 38):
+        pt.grad = None
+        a, b, c = pt[:-1].reshape(3, -1)
+        prediction = torch.tanh(xx[:, None]*a+b) @ c+pt[-1]
+        (.5*((prediction-torch.tensor(y))**2).mean()).backward()
+        if adaptive:
+            opt.step()
+        else:
+            moment = beta1*moment+(1-beta1)*pt.grad.numpy()
+            with torch.no_grad(): pt -= torch.tensor(.002*moment/(1-beta1**n))
+    np.testing.assert_allclose(full['p'][0], pt.detach().numpy(), atol=5e-15, rtol=5e-13)
+    width = 7
+    np.testing.assert_allclose(full['positive'][0]-full['negative'][0], abs(full['p'][0, :width])-abs(p[:width]), atol=1e-15)
+    growth = np.mean(abs(full['p'][0, :width])-abs(p[:width]))
+    assert full['signed_channels'][0].sum()+full['crossing'][0] == pytest.approx(growth, abs=3e-15)
+    assert float(full['identity_max'].max()) < 3e-15
+
+
+def test_preconditioned_coarse_velocity_and_finite_step_defect():
+    p, x, y = example()
+    g, _, j, ec = af.field(jnp.array(p), jnp.array(x), jnp.array(y))
+    mobility = jnp.geomspace(.1, 2., len(p))
+    lag = jnp.sin(jnp.arange(len(p)))*.01
+    channels, info = af.split(g, j, ec, mobility)
+    velocity = -mobility*(g+lag)
+    prediction = -info['C'] @ info['z']-j @ (mobility*lag)
+    np.testing.assert_allclose(j @ velocity, prediction, atol=2e-15)
+    defects = []
+    for step in (.001, .0005, .00025):
+        _, _, _, en = af.field(jnp.array(p)+step*velocity, jnp.array(x), jnp.array(y))
+        defects.append(np.linalg.norm(en-ec-step*prediction))
+    assert defects[-1] < defects[0]/14
+
+
+def test_runner_checkpoint_resume_preserves_case_and_trace(monkeypatch, tmp_path):
+    from argparse import Namespace
+    from experiments.expD34_readout_race import adam_run as ar
+    selected = ar.cases('primary', 0)[:2]
+    monkeypatch.setattr(ar, 'cases', lambda stage, index: selected)
+    monkeypatch.setattr(ar, 'verify_gpu', lambda output: None)
+    def execute(folder, end):
+        ar.run(Namespace(output=folder, stage='primary', index=0, samples=64, end_step=end, max_seconds=100))
+    execute(tmp_path/'resume', 3)
+    execute(tmp_path/'resume', 7)
+    execute(tmp_path/'whole', 7)
+    for filename in ('state.npz', 'trace.npz'):
+        actual = np.load(tmp_path/'resume/primary_0'/filename)
+        expected = np.load(tmp_path/'whole/primary_0'/filename)
+        for key in expected.files:
+            np.testing.assert_array_equal(actual[key], expected[key])

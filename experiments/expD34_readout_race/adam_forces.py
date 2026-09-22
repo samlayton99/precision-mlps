@@ -57,7 +57,9 @@ def field(p, x, y):
     s = 4*exponential/(1+exponential)**2
     r = h @ c+d-y
     m = len(x)
-    gradient = jnp.concatenate((c*((r*x) @ s)/m, c*(r @ s)/m, h.T @ r/m, jnp.array([r.mean()])))
+    weighted = r[:, None]*s
+    gradient = jnp.concatenate((c*(x @ weighted)/m, c*jnp.sum(weighted, axis=0)/m,
+                                h.T @ r/m, jnp.array([r.mean()])))
     q = jnp.stack((jnp.ones_like(x), x/jnp.sqrt(jnp.mean(x*x))))
     ja = (q @ (x[:, None]*s)/m)*c
     jb = (q @ s/m)*c

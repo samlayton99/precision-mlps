@@ -26,6 +26,30 @@ tiny gradients, and zero-gradient intervals:
 JAX_ENABLE_X64=true .venv/bin/python -m pytest -q tests/test_expD34_adam_forces.py
 ```
 
+`adam_run.py` runs five paired primary seed bundles, two Adam rate-sensitivity
+bundles, three control bundles, and one epsilon-sensitivity bundle: 184 cases
+through 600k updates. Primary GD and Adam use 0.002; Adam rates 0.0002 and 0.001
+are separate sensitivity cases. Adam uses betas (0.9, 0.999), epsilon 1e-8,
+and zero initial moments. Controls use bias-corrected EMA momentum without
+adaptive scaling, or Adam with beta1 zero. Epsilon 1e-12 is a separate control.
+The existing raw physical coordinates and half-MSE are unchanged.
+
+Every-update accumulators retain raw-force allowances, actual component path
+lengths, signed outward contributions, actual positive/negative travel, and
+reconstruction errors. Trace rows describe the gradient state before the last
+update of their interval; interval minima and maxima retain intervening
+excursions. Snapshots and the resumable state retain all moment buffers. A
+nonfinite training case is frozen and explicitly marked failed; unresolved
+decomposition alone does not alter training. Loss increases are recorded, not
+used for selecting a checkpoint or stopping a finite run.
+
+Use `adam.sbatch <campaign-root> <stage> [end-step]` with arrays `0-4%2` for
+`primary`, `0-1%2` for `rates`, `0-2%2` for `controls`, and index 0 for
+`epsilon`. Queue dependent stages to keep at most two campaign GPUs active;
+each array task requests one GPU and preserves Slurm's allocation mask. The
+new extension has a six allocated GPU-hour ceiling within the earlier total
+eight-hour allowance. Include compilation and unsuccessful allocations.
+
 ## Signal-recovery audit
 
 `recovery.py` analyzes whether renewed slope signal produces signed movement
