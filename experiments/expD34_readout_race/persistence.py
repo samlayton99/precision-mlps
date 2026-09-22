@@ -105,6 +105,15 @@ def advance_factory(x, q, model, eta, mass=None):
 
 
 def load_inputs(source, start, seeds):
+    if source.is_file():
+        with np.load(source) as f:
+            if str(f['target']) != 'moment9' or float(f['eta']) != .002:
+                raise ValueError('Expected the curated degree-nine GD input pack')
+            positions = np.flatnonzero(f['steps'] == start)
+            if len(positions) != 1: raise ValueError(f'Missing checkpoint {start} in {source}')
+            indices = [np.flatnonzero(f['seeds'] == seed)[0] for seed in seeds]
+            pp, x, y = f['p'][indices, positions[0]], f['x'], f['y']
+        return pp, x, y, {str(source): hashlib.sha256(source.read_bytes()).hexdigest()}
     pp = []; hashes = {}
     for seed in seeds:
         folder = source/f'primary_{seed}'

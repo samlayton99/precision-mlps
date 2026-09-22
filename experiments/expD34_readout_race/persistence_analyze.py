@@ -168,6 +168,10 @@ def bounds(source, root):
 
 
 def original_states(source, seed):
+    if source.is_file():
+        with np.load(source) as f:
+            i = np.flatnonzero(f['seeds'] == seed)[0]
+            return {int(t): f['p'][i, j] for j, t in enumerate(f['steps'])}
     folder = source/f'primary_{seed}'
     cases = json.loads((folder/'manifest.json').read_text())['cases']
     i = next(i for i, c in enumerate(cases) if c['target'] == 'moment9' and c['optimizer'] == 'gd')

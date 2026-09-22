@@ -422,6 +422,13 @@ directory has a fixed manifest, resumable sampled states, exact per-update
 positive/negative gamma travel, and coarse-projection tracking accounting.
 The projection diagnoses the active model and never changes its updates.
 
+The curated `persistence/inputs.npz` also works as `--source` for the runner,
+analysis, and bounds. It contains all 195 original degree-nine GD states,
+their step and seed labels, and the unchanged empirical inputs and target.
+Use a fresh output directory when replaying from this pack: its source hash
+differs from the original larger archives even though the parameter arrays
+are identical.
+
 Run the module with `--source`, `--output`, and `--model`. The default GPU
 backend verifies a Slurm allocation. `--backend cpu` with `JAX_PLATFORMS=cpu`
 supports the same protocol locally when remote source transfer is unavailable;
