@@ -1,6 +1,7 @@
 """Exact effective-force derivatives and frozen-tangent forecasts at D34 states."""
 from __future__ import annotations
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import jax
@@ -60,6 +61,8 @@ def diagnostics(p, m, v, cm, count, y, x, settings):
         participation=f2*f2/(w*jnp.sum(F**4)),
         log_rates=parts @ F/f2, driver_norms=jnp.linalg.norm(parts, axis=1),
         total_log_rate=F @ total/f2, target_force_norm=jnp.linalg.norm(target),
+        relative_vector_rate=jnp.linalg.norm(total)/jnp.sqrt(f2),
+        derivative_cancellation=jnp.linalg.norm(total)/jnp.maximum(jnp.sum(jnp.linalg.norm(parts,axis=1)),1e-300),
         generated_force_norm=jnp.linalg.norm(generated),
         target_outward=-jnp.mean(jnp.sign(p[:w])*target),
         generated_outward=-jnp.mean(jnp.sign(p[:w])*generated),
@@ -95,16 +98,21 @@ def frozen_tangent(p, x, y, horizons, eta=.002):
 DRIVERS = ('shape', 'readout', 'residual_effective', 'residual_tracking')
 
 
-def analyze(root, output, seed_limit=5):
+def analyze(root, output, seed_limit=5, snapshots_root=None):
     output.mkdir(parents=True, exist_ok=True)
-    rows = []; windows = []; forecasts = []; vectors = []; identities = []
+    source = snapshots_root if snapshots_root is not None else root/'raw'
+    rows = []; windows = []; forecasts = []; vectors = []; identities = []; hashes = {}
     for seed in range(seed_limit):
-        folder = root/'curated'/f'primary_{seed}'
+        folder = source/f'primary_{seed}'
         cases = json.loads((folder/'manifest.json').read_text())['cases']; f = np.load(folder/'snapshots.npz')
+        required=(20000,100000,200000,400000,600000)
+        if not set(required).issubset(set(f['steps'])):
+            raise ValueError(f'{folder} omits required states; use the full training archive, not curated snapshots')
+        hashes[str(folder/'snapshots.npz')]=hashlib.sha256((folder/'snapshots.npz').read_bytes()).hexdigest()
         for i, case in enumerate(cases):
             x, y, _, _ = af.data(case['target']); xx = jnp.asarray(x); yy = jnp.asarray(y)
             settings = jnp.array([case[k] for k in ('eta', 'beta1', 'beta2', 'epsilon', 'adaptive')]); records = {}
-            for step in (20000, 100000, 200000, 400000, 600000):
+            for step in required:
                 si = int(np.flatnonzero(f['steps']==step)[0])
                 args = [jnp.asarray(f[k][i, si]) for k in ('p', 'm', 'v', 'channel_m', 'count')]
                 d = jax.device_get(diagnostics(*args, yy, xx, settings))
@@ -134,6 +142,7 @@ def analyze(root, output, seed_limit=5):
     aa.write_csv(output/'states.csv', rows); aa.write_csv(output/'windows.csv', windows); aa.write_csv(output/'forecasts.csv', forecasts)
     np.savez_compressed(output/'forces.npz', force=np.stack(vectors))
     (output/'audit.json').write_text(json.dumps(dict(states=len(rows), maximum_identity_error=float(max(identities)),
+        input_hashes=hashes,source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         unresolved=sum(not bool(r['resolved']) for r in rows),
         derivative_units='per t=eta*n; Adam is a next-step directional derivative, not a flow theorem'), indent=2)+'\n')
 
@@ -141,5 +150,6 @@ def analyze(root, output, seed_limit=5):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, required=True); parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--snapshots-root',type=Path)
     parser.add_argument('--seed-limit', type=int, default=5); args=parser.parse_args()
-    analyze(args.root, args.output, args.seed_limit)
+    analyze(args.root, args.output, args.seed_limit,args.snapshots_root)
