@@ -167,3 +167,25 @@ def test_runner_checkpoint_resume_preserves_case_and_trace(monkeypatch, tmp_path
         expected = np.load(tmp_path/'whole/primary_0'/filename)
         for key in expected.files:
             np.testing.assert_array_equal(actual[key], expected[key])
+
+
+def test_offline_analysis_matches_online_force_and_next_step():
+    from experiments.expD34_readout_race import adam_analyze as aa, adam_run as ar
+    p, _, _ = example(); x = targets.grid(64); y = np.sin(2*np.pi*x)+.3
+    case = ar.cases('primary', 0)[1]
+    settings = jnp.array([case[k] for k in ('eta', 'beta1', 'beta2', 'epsilon', 'adaptive')])[None]
+    state = jax.tree.map(lambda v: v[None], ar.initial(p))
+    state, *_ = ar.advance_factory(64)(state, jnp.array(y[None]), settings, 21)
+    current = {k: np.asarray(v[0]) for k, v in state.items()}
+    metrics, arrays = aa.state_metrics(current['p'], current['m'], current['v'], current['channel_m'],
+                                      int(current['count']), case, x, y)
+    _, online, *_ = ar.advance_factory(64)(state, jnp.array(y[None]), settings, 1)
+    online = dict(zip(ar.METRICS, np.asarray(online[0])))
+    assert metrics['raw_norm'] == pytest.approx(online['raw_total_norm'], abs=2e-15)
+    assert metrics['step_norm'] == pytest.approx(online['step_total_norm'], abs=2e-15)
+    assert metrics['effective_norm'] == pytest.approx(online['raw_effective_norm'], abs=2e-15)
+    assert metrics['step_tracking_ratio'] == pytest.approx(online['step_tracking_norm']/online['step_total_norm'], rel=1e-12)
+    assert metrics['preconditioned_coarse_identity_error'] < 1e-15
+    modal, _ = aa.modal_metrics(current['p'], x, arrays, 33)
+    assert modal['reconstruction_error'] < 1e-15
+    assert modal['effective_vector_difference'] < 1e-12

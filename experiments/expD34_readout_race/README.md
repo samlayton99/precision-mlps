@@ -50,6 +50,18 @@ each array task requests one GPU and preserves Slurm's allocation mask. The
 new extension has a six allocated GPU-hour ceiling within the earlier total
 eight-hour allowance. Include compilation and unsuccessful allocations.
 
+`adam_analyze --source <completed-bundle> --output <analysis-directory>` exports
+state diagnostics, exact motion-window accounting, modal refinement, and
+frozen-geometry curves. It requires the full 600k horizon. `--construction`
+instead exports the common-gamma references. The Adam balance check uses the
+virtual next update's bias-corrected moments and denominator, retaining both
+the momentum-lag forcing and actual finite-step coarse-residual defect.
+The virtual update at the terminal state is not part of the trained trajectory;
+actual-step attribution comes from online traces and cumulative measurements.
+These measurements do not assume that the GD balance is Adam's equilibrium.
+Analysis tables retain all cases and failure flags; scientific interpretation
+and figure captions are written after inspecting the outputs.
+
 ## Signal-recovery audit
 
 `recovery.py` analyzes whether renewed slope signal produces signed movement
