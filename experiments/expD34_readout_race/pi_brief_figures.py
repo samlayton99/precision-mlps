@@ -122,8 +122,8 @@ def main():
             "effective_coupling_median": float(np.median(matrix("effective_coupling")[:, -1])),
             "fine_residual_norm_median": float(np.median(matrix("fine_residual_norm")[:, -1])),
         }
-    axes[0, 0].set_ylabel("Slope-force norm")
-    axes[1, 0].set_ylabel(r"Sensitivity $\mu_a^{\rm eff}$")
+    axes[0, 0].set_ylabel("Force norm")
+    axes[1, 0].set_ylabel("Sensitivity\n" + r"$\mu_a^{\rm eff}$")
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="outside upper center", ncol=3, frameon=False, fontsize=8)
     save(fig, "effective_sensitivity")
