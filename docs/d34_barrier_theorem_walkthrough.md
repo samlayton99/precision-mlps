@@ -10,6 +10,16 @@ The [mechanism companion](d34_transport_mechanisms.md) develops this interpretat
 
 The [expanded target and Adam study](../results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/README.md) strengthens one empirical simplification for GD: across 13 targets and five seeds, tracking contributes at most 0.469% of the summed component-force norm budget over updates 20,000–600,000. Understanding the effective fine force remains the main problem in that setting. Adam does not satisfy the same small-tracking observation: tracking can dominate raw-gradient and step activity while much of its signed motion cancels. Its first-moment history, shared second-moment scaling, and zero crossings must be measured separately; the GD theorem is not an Adam theorem.
 
+The subsequent [conditional stagnation study](d34_coarse_balance_stagnation.md#9-from-a-force-decomposition-to-a-persistence-prediction)
+identifies two slow generated-error modes as the main source of motion in the
+degree-9 GD regime. It also gives a stronger local bound: subtract the hard-mode
+loss that cannot yet be removed, then use GD descent to limit parameter travel.
+Its FP64 evaluation confines all slopes below 0.388 for at least ten million
+further updates from each of ten retained starting states. This is a
+conditional theorem from specified checkpoints, with numerical constants rather than
+directed-rounding certification; it does not establish entry from initialization
+or permanent trapping.
+
 **Notation. Physical parameters and empirical norms are used throughout.**
 
 | Symbol | Meaning |
@@ -769,7 +779,7 @@ An invariant-region argument would bound the velocity normal to the boundary of 
 
 Transport stability estimates offer another route: transfer a tail bound for a tractable approximate distribution to the actual trajectory using an independently controlled error radius, as in Section 5. Moment inequalities or preserved symmetries may help construct the needed estimates. A continuous initialization law and a particular random finite network have different symmetries and fluctuations, so that transfer requires its own control. Nonlinear moment evolution also remains unclosed unless further structure is established.
 
-These directions use residual coordinates to bound the driving force and transport methods to convert those bounds into population statements. The present campaign has not established the required leakage envelopes, invariant regions, or certified future transport errors. A useful next result would derive one of them from conditions on the residual and joint parameter distribution that can be checked before the proposed barrier interval, while retaining nonlinear regeneration and the actual equal-rate GD update.
+These directions use residual coordinates to bound the driving force and transport methods to convert those bounds into population statements. General leakage envelopes and a result from initialization remain open. The later [local confinement argument](d34_coarse_balance_stagnation.md#9-from-a-force-decomposition-to-a-persistence-prediction) supplies one concrete step: an analytic hard-mode loss floor over a parameter ball and a discrete step-containment induction bound future full-GD travel from a specified checkpoint. It preserves nonlinear regeneration and equal-rate updates; its computed horizon must still be distinguished from a formally certified numerical result.
 
 ## Appendix A. Exact tracking for GD
 
