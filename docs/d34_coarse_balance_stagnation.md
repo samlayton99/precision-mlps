@@ -544,6 +544,24 @@ model, including directions that are extremely slow but not exactly null.
 Replacing their finite-time factors by infinite-time inverses would answer a
 different question and can grossly overstate the available motion.
 
+One can reduce this prediction further by retaining only the eigenvectors
+carrying the initial effective slope force. Their ranking uses
+$|d_i|\|(P_Cu_i)_a\|$, with the coarse-complement projector $P_C$ fixed at the
+starting checkpoint. For a retained index set $I$, the omitted parameter
+displacement has the exact norm
+
+$$
+E_{\mathrm{spec}}(N)^2=
+\sum_{i\notin I}d_i^2\Phi_N(\lambda_i)^2.
+\tag{P4a}
+$$
+
+This follows from eigenvector orthonormality. It permits a two-mode predictor
+with a separately quantified spectral remainder when two modes dominate.
+It is a reduction of the local frozen model; it is not a two-dimensional
+closure of the nonlinear transport PDE. A nonlinear error radius can be added
+to $E_{\mathrm{spec}}$ when transferring its prediction to actual GD.
+
 An intermediate model distinguishes evolving readout interaction from feature
 curvature. Replace each tanh feature by
 $h_{j,s}+h'_{j,s}[x(a_j-a_{j,s})+(b_j-b_{j,s})]$, while continuing to train $c_j$
