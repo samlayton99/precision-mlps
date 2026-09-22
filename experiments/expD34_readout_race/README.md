@@ -2,6 +2,269 @@
 
 ## Proposed effective-force perturbations
 
+**Current protocol: matched feedback, with outcomes still to be measured.**
+This specification supersedes the broad mode-deletion proposal retained below.
+The question is now whether evolving errors or evolving sensitivities supplies
+the feedback that limits scale acquisition. The identified object remains
+$F_a=T_ae_H$; coarse disequilibrium and the orthogonal residual remain measured
+corrections, not newly proposed dominant drivers. The
+[main note](../../docs/d34_coarse_balance_stagnation.md) supplies the mechanism
+and the [detailed note](../../docs/d34_coarse_balance_stagnation_details.md)
+supplies the existing degree-9 persistence and acquisition results.
+
+### Example: one fixed coupling succeeds and another does not
+
+The degree-9 two-error model predicts slope displacement over a long ordinary-GD
+continuation with nearly fixed effective sensitivities. Sine's sensitivities
+change substantially, and the analogous frozen forecast fails. This contrast
+motivates a sharper test than removing arbitrary modal penalties: give three
+branches the same initial slope signal, then change which factor of that signal
+is allowed to respond. The campaign does not assume that the degree-9 closure
+works for every target, nor treat a failed sine prediction as support for it.
+
+### Theory: three branches share the complete first update
+
+At a fork $\theta_s$, abbreviate $T_s=T_a(\theta_s)$ and
+$e_s=e_H(\theta_s)$. The selected finite empirical basis is fixed throughout.
+Every branch uses the full original loss gradient in the non-slope blocks.
+Its applied slope direction is the corresponding force below plus the same
+state-dependent remainder field
+$R_a(\theta)=J_{a,C}^Tz_C+g_{a,\perp}$:
+
+| Arm | Applied effective slope force at its own current state $\theta$ |
+|---|---|
+| `joint` | $T_a(\theta)e_H(\theta)$ |
+| `freeze_map` | $T_se_H(\theta)$ |
+| `clamp_residual` | $T_a(\theta)e_s$ |
+
+The remainder is recomputed from the branch's own state. It is not held fixed,
+borrowed from the baseline, or omitted. The `clamp_residual` arm changes only
+the residual supplied to this slope-force term; it does not hold the actual
+network residual constant. Both modified arms remain coupled to ordinary
+readout, hidden-bias, and output-bias updates. They need not descend a scalar
+objective. The readout-size observation is a secondary diagnostic, with no
+constraint imposed on the readouts.
+
+At the common first next state $\theta_1=\theta_s-\eta g(\theta_s)$, the
+second slope updates have the exact differences
+
+$$
+a_2^{\rm freeze\_map}-a_2^{\rm joint}
+=\eta[T_a(\theta_1)-T_s]e_H(\theta_1),
+$$
+
+$$
+a_2^{\rm clamp\_residual}-a_2^{\rm joint}
+=\eta T_a(\theta_1)[e_H(\theta_1)-e_s].
+$$
+
+These identities check the intervention and distinguish the first effects of
+map drift and error drift. They do not by themselves explain long persistence.
+Later differences include feedback through all blocks. Baseline-small tracking
+can grow after an intervention; measure that growth rather than assuming its
+continued irrelevance or reinterpreting it as a baseline driver.
+
+The fork-only affine predictor differentiates each actual applied direction,
+denoted $g^{(b)}$, including the residual-weighted curvature terms:
+
+$$
+x_0^{(b)}=0,\qquad
+x_{n+1}^{(b)}=[I-\eta Dg^{(b)}(\theta_s)]x_n^{(b)}-\eta g(\theta_s),
+\qquad \widehat\theta_n^{(b)}=\theta_s+x_n^{(b)}.
+$$
+
+This is a discrete forecast fixed at the fork. It does not replay future
+Hessians, import future residuals, or substitute the Gauss–Newton matrix for
+the full derivative. A separate fixed-$T$, fixed-Schur-coupling residual
+forecast retains all chosen fine modes. Its pure effective dynamics and its
+constant-remainder correction are reported separately. Neither model is
+relabelled as ordinary nonlinear GD.
+
+### Predictions: distinguish the hypotheses before reading outcomes
+
+For every fork, issue the three predicted signed per-neuron displacement curves
+and effective-force curves before any continuation, together with derivative
+rates, numerical checks, supported horizons, and source hashes. The fork
+prediction files and their issuance digest must be retained. Long matrix-power
+forecasts that overflow are unsupported; unstable modes are not silently
+discarded to obtain a plausible curve.
+
+| Proposed explanation | Required discriminating prediction |
+|---|---|
+| Error evolution supplies the relevant limiting feedback. | The precomputed `freeze_map` trajectory approximates `joint`; `clamp_residual` has a resolved, predicted signed departure. |
+| Sensitivity evolution supplies that feedback. | The precomputed `clamp_residual` trajectory approximates `joint`; `freeze_map` has a resolved, predicted signed departure. |
+| Both factors must evolve. | Both modified branches have distinct predicted departures, with the sign, timing, and per-neuron displacement specified before continuation. |
+
+A predicted contrast smaller than the numerical uncertainty does not
+discriminate. A verified branch with the opposite sign, or a displacement
+outside a justified forecast envelope, rejects that prediction. If all local
+forecasts fail, the local closure fails; this is not positive evidence that
+unspecified coupling explains the result. Failure of a forecast does not
+invalidate the exact force decomposition. Agreement at the first two updates
+is implementation verification, not independent support for persistence.
+
+Numerical uncertainty comes from independent derivative/reconstruction checks,
+basis refinement, and matched-time step refinement. These checks do not bound
+model error. A prospective model envelope requires the explicit neighborhood
+remainder bound or an independently calibrated error model, frozen before
+held-out validation. Report absolute errors and unresolved contrasts when no
+such envelope is available; do not choose a percentage tolerance after seeing
+the branch. Keep the predeclared horizons even if a later curve is inconvenient.
+
+### Locked cases, horizon tiers, and common budget
+
+Use the 13 targets in `adam_forces.TARGETS`: sine, Runge, moments 3, 5, and 9,
+mixed sine, localized sine, chirp, moment 4, and the four existing blends.
+Preserve their original training-grid normalization, width 177, FP64,
+2,048 midpoint training points, and $\eta=0.002$. Independent evaluation uses
+8,192 midpoint points and does not select endpoints. Use the fixed empirical
+orthogonal-polynomial basis through degree 65. Its orthogonal residual remains
+in $R_a$; a degree-129 control changes the intervention as well as its diagnosis.
+
+| Cohort | Starts and branches | Additional-update tiers |
+|---|---|---|
+| Existing trajectories | 13 targets × seeds 0–4 × forks 100k, 400k, 600k: **195 starts, 585 branches**. | 1k, 10k, 50k, 200k. |
+| Fresh validation | Seeds 20 and 21 supply **26 ordinary-GD backbones** from the unchanged initialization. Fork all targets at 100k, 400k, 600k: **78 starts, 234 branches**. | The same 1k, 10k, 50k, 200k tiers. |
+| Locked long panel | Sine, moment 9, moment 5, mixed sine, chirp × seeds 0 and 20 × forks 400k and 600k: **20 starts, 60 branches**. | 500k, 2m, 5.4m if throughput and the shared ceiling permit. |
+
+Complete broad common tiers before expanding their horizon. The long panel is
+fixed by target, seed, and fork rather than selected for an interesting result.
+Report eligible, completed, failed, and budget-censored cases separately.
+An uncompleted tier is not a failed scientific prediction, and a planned
+5.4-million-update endpoint is not a claim that it was reached.
+
+The existing forks come from
+`results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/raw/primary_{seed}/`.
+Resolve each case from manifest labels and snapshot steps, never array position.
+Record source hashes, normalization, initial parameters, backend, source
+revision, and the prediction issuance record. Fresh backbones preserve the
+original initialization and training setup; issue each fork's forecast before
+continuing its three branches. Reuse the same fork and branch state when
+advancing a horizon tier.
+
+The entire campaign shares **10 allocated GPU-hours**, including compilation,
+verification, unsuccessful allocations, fresh backbones, and controls:
+
+| Budget reservation | GPU-hours |
+|---|---:|
+| Verification and throughput measurement | 0.75 |
+| Existing-trajectory panel | 2.50 |
+| Fresh backbones and validation | 2.00 |
+| Locked long panel | 2.00 |
+| Degree-129 and half-step controls | 1.50 |
+| Reserve | 1.25 |
+
+These are subdivisions of one ceiling, not separate authorizations. Reserve
+allocations in the common ledger before launch; account for elapsed allocated
+GPU time across providers. Runpod permits at most two concurrent GPUs and
+Modal at most four; both draw from this same 10-GPU-hour ceiling. Forecast
+preparation can use CPU. Throughput determines which locked horizon tiers fit the ceiling;
+it does not change the target list, select favorable cases, or authorize
+additional GPU time. Adam is outside this GD campaign.
+
+### Measurements, checks, and the acquisition theorem
+
+Accumulate signed effective, tracking, and orthogonal slope contributions,
+the exact absolute-value crossing correction, and positive and negative gamma
+travel **at every update for every neuron**. Record first hits and initial
+occupancy at gamma 1, 3.2, and 16, alongside the complete distribution of
+displacement and original-objective training/evaluation errors. Those scales
+are reference diagnostics, not universal precision thresholds. A sparse
+forecast endpoint difference is not cumulative positive travel; the current
+affine forecast explicitly leaves that quantity unavailable.
+
+Save offsets 0, 1, 2, 10, 100, 1k and each horizon tier, with intermediate
+1k checkpoints. Verify identical starts and first updates, the exact second
+update contrasts, independent full-gradient derivatives, decomposition
+reconstruction, resolved coarse inversion, and signed-travel accounting.
+Compare degree 65 with 129 and $\eta=0.002$ with $0.001$ at equal physical
+time on the five long-panel targets, seed 0, forks 400k and 600k: 10 starts
+and 30 branches for each control. Begin at the primary 10k-update physical
+horizon, using 20k updates for the half-step control; extend to the 50k and
+200k primary horizons only within the control reservation. Compare with the
+existing same-case, same-arm baseline, including ordinary GD. Retain the
+discrepancy as evidence rather than fitting the prediction to it.
+A singular/unresolved coarse solve invalidates that
+intervention case and is reported, not silently regularized.
+
+The existing degree-9 local-loss-floor theorem applies to ordinary GD; it
+does not automatically apply to either modified field. The new fork-only
+enclosure likewise states its scope explicitly. Uniform tanh derivative
+bounds give a GD-map Lipschitz constant $\beta_R$ in a radius-$R$ ball. If
+
+$$
+Q_K=\eta\|g_s\|\sum_{j=0}^{K-1}\beta_R^j<R,
+$$
+
+a first-exit argument bounds every ordinary-GD update through $K$. Comparing
+$Q_K$ with the distance to an acquisition event excludes that event. Taylor
+remainders also bound the discrepancy from the ordinary affine forecast
+while this neighborhood is enclosed. These real-arithmetic inequalities are
+evaluated in FP64, not directed-rounding arithmetic. The bound may close only
+over a short interval even when a much longer forecast is numerically finite.
+Do not replace that shorter theorem horizon by the plotted forecast horizon.
+
+Exact measured outward travel gives a retrospective acquisition audit. A
+prospective travel claim needs an independently controlled future envelope.
+The enclosure's maximum simultaneous occupancy is not the number of distinct
+neurons ever crossing a threshold. Finally, confinement of a modified branch
+does not establish confinement of ordinary GD without an additional bound on
+the discrepancy between their update fields.
+
+Completion means verified matched evidence and a decision about the stated
+forecasts, including rejection or unresolved cases. It does not require the
+desired mechanism, large slopes, or precision recovery to appear.
+
+### Executable entry points
+
+The following preparation and prediction commands run from the repository
+root. The prediction directory is immutable once issued; resume trajectory
+tiers rather than regenerating predictions after seeing their outcomes.
+
+```sh
+D34_DATA=results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback
+JAX_ENABLE_X64=true JAX_PLATFORMS=cpu .venv/bin/python -m experiments.expD34_readout_race.effective_feedback prepare \
+  --source results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/raw \
+  --output "$D34_DATA/existing_inputs.npz"
+JAX_ENABLE_X64=true JAX_PLATFORMS=cpu OPENBLAS_NUM_THREADS=1 .venv/bin/python -m experiments.expD34_readout_race.effective_feedback predict \
+  --inputs "$D34_DATA/existing_inputs.npz" --output "$D34_DATA/existing_predictions"
+JAX_ENABLE_X64=true JAX_PLATFORMS=cpu .venv/bin/python -m experiments.expD34_readout_race.effective_feedback prepare \
+  --fresh --seeds 20,21 --starts 0 --output "$D34_DATA/fresh_inputs.npz"
+```
+
+Run the continuation command only inside its reserved Slurm GPU step; the
+provided `effective_feedback.sbatch` supplies the execution and reservation
+environment. This example shows `joint`; use distinct output directories for
+the other two arms and the same issued prediction manifest.
+
+```sh
+python -m experiments.expD34_readout_race.effective_feedback run \
+  --inputs "$D34_DATA/existing_inputs.npz" --output "$D34_DATA/runs/joint" \
+  --arm joint --backend slurm --degree 65 --eta .002 --horizon 1000 \
+  --predictions "$D34_DATA/existing_predictions/manifest.json"
+```
+
+Fresh backbones use ordinary GD. Export each saved fork before issuing its
+three-branch forecasts; the source below is a backbone run directory. Do not
+run modified branches directly from initialization as a substitute for the
+specified late forks.
+
+```sh
+python -m experiments.expD34_readout_race.effective_feedback export-fork \
+  --source "$D34_DATA/runs/fresh_joint" --offset 100000 \
+  --output "$D34_DATA/fresh_fork_100000.npz"
+python -m experiments.expD34_readout_race.effective_feedback analyze \
+  --source "$D34_DATA/runs" --output "$D34_DATA/analysis"
+```
+
+For Modal, `effective_feedback_modal.py` provides the corresponding bounded
+single-GPU invocation. It requires an explicit budget reservation and records
+input, prediction, and source hashes. The same scientific protocol applies
+on either provider; command availability does not authorize extra allocations.
+
+<details>
+<summary>Superseded modal-attenuation proposal (historical specification, not the current run matrix)</summary>
+
 **Status: specified, not executed.** This study tests selective attenuation of
 the effective fine slope force identified in the existing trajectories. Its
 theoretical basis is the [main note](../../docs/d34_coarse_balance_stagnation.md)
@@ -182,6 +445,8 @@ Completion means verified interventions, complete matched evidence, and an
 interpretation of both positive and negative outcomes. Recovery of large
 slopes or precision is not an acceptance requirement. This section proposes
 future runs; the implementation of the present plan changes documentation only.
+
+</details>
 
 ## Effective-force plateau investigation
 
