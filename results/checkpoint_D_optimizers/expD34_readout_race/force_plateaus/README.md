@@ -218,7 +218,7 @@ by correcting generated output. At 600k, the generated-output force norm is
 $5.3\times10^{-6}$ to $9.7\times10^{-6}$, whereas the target's effective force
 is $1.9\times10^{-10}$ to $5.7\times10^{-10}$. Generated output contributes
 inward mean motion in all five seeds. The independent
-[generated-mode audit](../../../../docs/d34_coarse_balance_stagnation.md#7-what-the-audit-and-continuations-establish) resolves which lower modes
+[generated-mode audit](../../../../docs/d34_coarse_balance_stagnation_details.md#7-what-the-audit-and-continuations-establish) resolves which lower modes
 produce that opposition. This is compatible with a slowly evolving feature
 geometry and the successful checkpoint forecast.
 

@@ -2,7 +2,7 @@
 
 Why can noiseless gradient descent reduce the error and revive slope motion while remaining far from the intended gamma and precision regime? This extension of the [D34 scale-acquisition argument](d34_scale_acquisition_theory.md) studies that question for D34's random nonzero readouts and equal learning rates. The central mechanism is a feedback: fitting changes the residual that drives slope motion, while parameter motion changes sensitivity to that residual. Acquisition requires this feedback to sustain enough outward motion across the population. Partial error correction through better readout fitting does not establish that the required geometry has been acquired.
 
-The evidence motivates centering the post-transient theory on the effective fine force. Section 4 develops its coupled evolution and a cubic surrogate. The [conditional stagnation note](d34_coarse_balance_stagnation.md#9-from-a-force-decomposition-to-a-persistence-prediction) now resolves persistence into slow correction of generated quadratic/cubic errors and a weak hard-mode drive. It also derives a full-GD confinement bound from a local hard-mode loss floor. The results are conditional on specified starting states; they do not establish entry into the regime from initialization. Population statements always concern a specified threshold and horizon; the strongest local bound excludes even an isolated neuron crossing scale 1 on its stated interval.
+The evidence motivates centering the post-transient theory on the effective fine force. Section 4 develops its coupled evolution and a cubic surrogate. The [conditional stagnation note](d34_coarse_balance_stagnation.md) gives an example-led account of the mechanisms and the new frozen-readout scale check. Its [detailed persistence argument](d34_coarse_balance_stagnation_details.md#9-from-a-force-decomposition-to-a-persistence-prediction) resolves the degree-9 regime into slow correction of generated quadratic/cubic errors and a weak hard-mode drive. It also derives a full-GD confinement bound from a local hard-mode loss floor. The results are conditional on specified starting states; they do not establish entry into the regime from initialization. Population statements always concern a specified threshold and horizon; the strongest local bound excludes even an isolated neuron crossing scale 1 on its stated interval.
 
 **Notation. Physical parameter coordinates and the empirical mean inner product are used throughout.**
 
@@ -427,7 +427,7 @@ Ordinary FP64 evaluation excludes scale 1 for at least ten million additional
 updates from each of ten retained degree-9 starting states; this is an
 analytical conditional result with numerical constants, not a directed-rounding
 certificate or a theorem from random initialization. The same bound keeps
-relative MSE above 0.749998. The [derivation and evidence](d34_coarse_balance_stagnation.md#10-testing-what-keeps-the-force-small)
+relative MSE above 0.749998. The [derivation and evidence](d34_coarse_balance_stagnation_details.md#10-testing-what-keeps-the-force-small)
 separate this confinement claim from the accuracy of the local predictor.
 
 ### From force feedback to a finite-time acquisition statement
