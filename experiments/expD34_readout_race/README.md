@@ -1,5 +1,49 @@
 # Ordinary-GD readout competition
 
+## Effective-force plateau investigation
+
+The new exploration has a 10 GPU-hour ceiling, including verification and
+interventions, with at most two concurrent Runpod GPUs. All numerical work,
+tests, and plotting run through Slurm; local work is editing and inspection.
+
+The primary question is why the effective fine force can remain nearly
+constant, and whether its persistence predicts stalled or useful scale
+acquisition. Four competing hypotheses guide the first measurements: weak
+coupling with slow state evolution; replenishment balancing residual fitting;
+rotation or concentration hidden by a flat norm; and correction of generated
+lower-order output dominating access to a hard target. A constant nonzero
+force alone does not imply a permanent barrier.
+
+`plateau` measures the exact complete-residual force and its directional
+derivative, separating geometry-map change, readout-map change, residual
+evolution from effective steps, and residual evolution from tracking steps.
+It also compares force directions across saved states, separates target and
+generated-output forces, and makes parameter-free frozen-tangent GD forecasts.
+Adam derivatives follow its actual next-step direction and are not assumed
+to define a valid continuous-time approximation; the finite-step remainder
+is reported explicitly. The initial audit uses all 13 targets and five seeds
+at 20k, 100k, 200k, 400k, and 600k updates.
+
+`plateau_run` continues the existing 600k states to 6 million updates for all
+13 targets, GD and Adam, and seeds 0–2. Optimizer history is preserved. One
+batched job per optimizer permits two-GPU execution. Every-update force/path
+accumulators and interval extrema are retained, with full states every 100k.
+This tests plateau persistence without selecting favorable targets or seeds.
+Long-run allocations are capped initially at two GPU-hours; diagnostic CPU
+work runs alongside them. Remaining budget is reserved for paired mechanism
+interventions selected from the diagnostic contrasts, with the selection
+recorded before running those interventions.
+
+Training uses the original 2048 midpoints, fixed target definitions, width
+177, FP64, and physical rate 0.002. Independent-grid errors check deterministic
+approximation, not statistical generalization. No held-out model-selection
+claim is made. Verification checks force reconstruction, derivative finite
+differences, frozen linear GD against explicit updates, and archived-state
+continuation. Failed hypotheses remain reportable outcomes. A completed
+deliverable consists of interpretable force trajectories, tested mechanism
+contrasts, and a note stating which prediction or conditional bound the
+evidence supports, including failures of frozen-force predictions.
+
 ## Adam force attribution and additional targets
 
 `frozen_scale_gap --root <Adam-evidence> --output <comparison-directory>`
