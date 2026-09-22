@@ -105,10 +105,10 @@ def collect(root):
 
 
 def plot(data, output):
-    plt.rcParams.update({'font.size': 9, 'axes.titlesize': 10,
+    plt.rcParams.update({'font.size': 7.5, 'axes.titlesize': 8,
                          'axes.spines.top': False, 'axes.spines.right': False,
                          'pdf.fonttype': 42, 'ps.fonttype': 42})
-    fig, axes = plt.subplots(1, 3, figsize=(12.4, 3.8), layout='constrained')
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.9), layout='constrained')
     widths = np.array([row['width'] for row in data['joint']])
     ax = axes[0]
     for key, color, marker, label in [
@@ -121,12 +121,12 @@ def plot(data, output):
                 ms=4, lw=1.5, label=label, zorder=4)
     ax.plot(widths, [row['reference_gamma'] for row in data['joint']],
             '--', color=GREEN, lw=1.7, label=r'Reference $\gamma=N/8$')
-    ax.set(title='A  Learned slopes miss the reference scale',
+    ax.set(title='A  Learned slope gap',
            xlabel=r'Hidden width $W$', ylabel='Physical slope magnitude',
            xscale='log', yscale='log', ylim=(.07, 250))
-    ax.text(.03, .97, 'Joint Adam: 20k updates, 5 seeds', transform=ax.transAxes,
-            va='top', fontsize=8, color='.3')
-    ax.legend(loc='center left', bbox_to_anchor=(.015, .33), fontsize=8, frameon=False)
+    ax.text(.03, .97, 'Joint Adam, 20k; 5 seeds', transform=ax.transAxes,
+            va='top', fontsize=6.5, color='.3')
+    ax.legend(loc='center left', bbox_to_anchor=(.015, .33), fontsize=6.5, frameon=False)
 
     ax = axes[1]
     gammas = np.array([row['gamma'] for row in data['timing']])
@@ -136,14 +136,14 @@ def plot(data, output):
     middle = (low+high)/2
     ax.plot(gammas, middle, color=ORANGE, lw=1.5)
     ax.errorbar(gammas, middle, yerr=[middle-low, high-middle], fmt='none',
-                ecolor=ORANGE, capsize=6, elinewidth=2, label='Certified filter interval')
+                ecolor=ORANGE, capsize=4, elinewidth=1.5, label='Certified interval')
     ax.scatter(gammas, hits, color='.1', s=24, zorder=4, label='Executed GD hit')
-    ax.set(title='B  Gamma predicts the acquisition delay', xlabel=r'Common slope $\gamma$',
-           ylabel='Updates to 1% training residual', xscale='log', yscale='log',
+    ax.set(title='B  Predicted learning delay', xlabel=r'Common slope $\gamma$',
+           ylabel='Updates to 1% residual', xscale='log', yscale='log',
            xlim=(7, 75), ylim=(1e4, 3e7))
-    ax.text(.03, .97, r'Raw readout GD: $W=559$', transform=ax.transAxes,
-            va='top', fontsize=8, color='.3')
-    ax.legend(loc='upper right', bbox_to_anchor=(1.02, .86), fontsize=7.5, frameon=False)
+    ax.text(.03, .97, r'Raw GD, $W=559$', transform=ax.transAxes,
+            va='top', fontsize=6.5, color='.3')
+    ax.legend(loc='upper right', bbox_to_anchor=(1.04, .86), fontsize=6, frameon=False)
     ax.set_xticks(gammas, [str(g) for g in gammas])
     # Show interval tightness separately; the main log axis hides the bracket widths.
     inset = ax.inset_axes([.49, .34, .48, .30])
@@ -155,9 +155,9 @@ def plot(data, output):
     inset.set(xlim=(-.5, 3.5), ylim=(.9988, 1.0012))
     inset.set_xticks(np.arange(4), [str(g) for g in gammas])
     inset.set_yticks([.999, 1, 1.001], ['0.999', '1.000', '1.001'])
-    inset.set_title('Bound / measured time', fontsize=7, pad=4)
-    inset.tick_params(labelsize=6.5, length=2)
-    inset.set_xlabel(r'$\gamma$', fontsize=7, labelpad=0)
+    inset.set_title('Bound / hit', fontsize=6.5, pad=4)
+    inset.tick_params(labelsize=5.5, length=2)
+    inset.set_xlabel(r'$\gamma$', fontsize=6, labelpad=0)
 
     ax = axes[2]
     for strategy, color, label in [('fixed', BLUE, r'Fixed $\gamma=4$'),
@@ -166,12 +166,12 @@ def plot(data, output):
         ax.plot([r['width'] for r in rows], [r['residual'] for r in rows],
                 'o-', color=color, ms=4, lw=1.7, label=label)
     ax.axhline(data['epsilon'], color='.5', ls=':', lw=1, label='1% residual')
-    ax.set(title='C  Scaling gamma restores progress', xlabel=r'Hidden width $W$',
-           ylabel='Training residual after 200k updates', xscale='log', yscale='log',
+    ax.set(title='C  Recovery across widths', xlabel=r'Hidden width $W$',
+           ylabel='Residual after 200k updates', xscale='log', yscale='log',
            ylim=(8e-4, 1.1))
-    ax.text(.03, .97, 'Raw readout GD: fixed target, all widths', transform=ax.transAxes,
-            va='top', fontsize=8, color='.3')
-    ax.legend(loc='center left', bbox_to_anchor=(.03, .56), fontsize=8, frameon=False)
+    ax.text(.03, .97, 'Raw GD, fixed target', transform=ax.transAxes,
+            va='top', fontsize=6.5, color='.3')
+    ax.legend(loc='center left', bbox_to_anchor=(.03, .56), fontsize=6.5, frameon=False)
     for ax in axes:
         ax.grid(True, which='major', alpha=.16, linewidth=.6)
         ax.xaxis.set_minor_locator(NullLocator())

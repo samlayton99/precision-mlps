@@ -1,0 +1,56 @@
+{
+  "base_commit": "15fde6b",
+  "focused_tests": {
+    "command": "python -m pytest -q -p no:cacheprovider tests/test_expD36_gamma_filter.py tests/test_expD36_common_slope_poly.py",
+    "passed": 20
+  },
+  "full_suite": {
+    "command": "python -m pytest -q -p no:cacheprovider -m 'not slow'",
+    "passed": 768,
+    "failed": 17,
+    "skipped": 9,
+    "deselected": 4,
+    "seconds": 279.76,
+    "baseline_failure_match": true,
+    "failures": [
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+      "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+      "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+      "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+      "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+      "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+      "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+      "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+      "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+      "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+      "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+      "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+    ],
+    "log_sha256": "492187396d9fdf5f180da6ba07442f9a244a9a38bbb5cf4a6b839bb8a1a071a4"
+  },
+  "figure": {
+    "source_files_checked": 23,
+    "all_sources_tracked": true,
+    "certified_brackets_checked": 4,
+    "executed_hits_enclosed": 4,
+    "joint_seeds_per_width": 5,
+    "widths": 4,
+    "grid_scaling_formula_checked": true,
+    "pdf_width_inches": 7.2,
+    "pdf_height_inches": 2.9,
+    "visual_review": "PNG inspected at intended two-column dimensions; plotted points and inset unobscured"
+  },
+  "gpu_hours": 0,
+  "artifact_sha256": {
+    "experiments/expD36_frozen_gamma_probe/paper_figure.py": "cd3400c6f2daf49ca81b787bdfcd89bc04584550a5d9b716f976de6bc53e8da1",
+    "docs/gamma_readout_paper_note.md": "caae45ed1f803f0a0c5f466d5f9d6a14850813e43865cf9792fc7d42302021af",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_figure_data.json": "bb24d0f03f6a3e404055e23d463b390757b58e846b7922ef8407a17d03969e46",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.png": "bf420e68468d3b455134892201dd3f243cd62b2564f47ca8cbc42b73c16a273e",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.pdf": "ee23eba5e86b0d8a5cd04c0aaff51f703834370e3c3b9904b72a35649046388a"
+  }
+}
