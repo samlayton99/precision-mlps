@@ -160,7 +160,7 @@ def analyze_bundle(source, destination):
                     modal_rows.append(dict(**identity, step=int(step), **modal))
                     if degree==129:
                         residuals.append(dict(**identity, step=int(step), **{f'e_{j}': v for j, v in enumerate(e)}))
-            selected_geometry = step in (0, 20000, 100000, 600000) if primary else step==600000
+            selected_geometry = step in (0, 2000, 20000, 100000, 600000) if primary else step==600000
             if selected_geometry:
                 mark = dict(**identity, step=int(step))
                 curves.extend(geometry(p, x, y, xe, ye, mark, 'learned'))
@@ -180,9 +180,10 @@ def analyze_bundle(source, destination):
                     unresolved_steps=int(f['unresolved_steps'][i, k]), loss_increases=int(f['loss_increases'][i, k]),
                     frozen_relative_mse=curves[-1]['relative_heldout_mse'] if not primary else
                         next(r['relative_heldout_mse'] for r in reversed(curves) if r['kind']=='learned' and r['updates']==600000)))
-        for start in (0, 20000, 100000):
-            a = int(np.flatnonzero(steps==start)[0]); b = int(np.flatnonzero(steps==600000)[0])
-            row = dict(**identity, start=start, end=600000, path=f['path'][i, b]-f['path'][i, a],
+        for start, end in ((0, 200), (200, 2000), (2000, 20000), (20000, 100000),
+                           (100000, 600000), (20000, 600000), (0, 600000)):
+            a = int(np.flatnonzero(steps==start)[0]); b = int(np.flatnonzero(steps==end)[0])
+            row = dict(**identity, start=start, end=end, path=f['path'][i, b]-f['path'][i, a],
                 mean_gamma_change=np.mean(abs(f['p'][i, b, :177])-abs(f['p'][i, a, :177])),
                 crossing=f['crossing'][i, b]-f['crossing'][i, a],
                 positive_mean=np.mean(f['positive'][i, b]-f['positive'][i, a]),

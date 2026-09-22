@@ -2,6 +2,11 @@
 
 ## Adam force attribution and additional targets
 
+The [implemented plan](../../docs/d34_adam_force_plan.md) specifies the target
+definitions, comparisons, measurements, and interpretation gates. The
+[completed report](../../results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/README.md)
+collects all 184 cases and the distinction between force activity and net growth.
+
 `adam_forces.py` defines thirteen targets and an exact full-residual split into
 effective force and coarse-tracking correction. The higher-mode residual is
 the entire complement of the constant/linear projector, with no activation or
@@ -61,6 +66,16 @@ actual-step attribution comes from online traces and cumulative measurements.
 These measurements do not assume that the GD balance is Adam's equilibrium.
 Analysis tables retain all cases and failure flags; scientific interpretation
 and figure captions are written after inspecting the outputs.
+
+`adam_analysis.sbatch <campaign-root>` runs the numerical analysis, verification,
+curation, and figures in a CPU-only Slurm allocation on Runpod. It explicitly
+disables GPUs. `adam_summarize --root <evidence> --figures-only` redraws the
+figures from merged tables and curated traces. Curated traces retain selected
+last-state values and exact minimum/maximum envelopes over each combined
+interval; cumulative movement comes from every-update accumulators, not
+quadrature of these plotting samples. `adam_verify` checks the original GD
+replays and fixed-state grid refinement; `--curate` exports selected complete
+optimizer states and the coarsened traces with source hashes.
 
 ## Signal-recovery audit
 
