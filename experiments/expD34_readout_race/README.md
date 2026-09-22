@@ -430,3 +430,11 @@ These comparisons test how much evolving sensitivity is needed to predict
 stagnation. A successful forecast alone is not a uniform error certificate or
 evidence of useful geometry. The theory must distinguish measured travel from
 a bound obtained without the future true trajectory.
+
+`--quadrature 64` accelerates the tanh models using Gaussian quadrature for the
+original discrete 2048-point measure. It preserves its polynomial moments
+through degree 127 in real arithmetic; it does not replace them with continuum
+moments. Tanh integrals remain numerical approximations. Direct-sum forecasts,
+node doubling, and analytic truncation bounds separate this evaluation error
+from modal-surrogate error and GD step-size effects. The default still sums
+the original samples. The linearized-feature model uses its full Gram matrix.

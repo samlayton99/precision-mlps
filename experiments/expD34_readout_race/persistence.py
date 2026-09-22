@@ -32,16 +32,19 @@ def features(p, p0, x, linear=False):
     return h, s, c, d
 
 
-def field(p, p0, x, y, q, model):
+def field(p, p0, x, y, q, model, mass=None):
+    mass = jnp.ones_like(x)/len(x) if mass is None else mass
     h, s, c, d = features(p, p0, x, model == 'linear_features')
     residual = h @ c+d-y
-    active = q @ (q.T @ residual/len(x)) if q.shape[1] else residual
-    g = jnp.r_[c*(x @ (active[:, None]*s))/len(x),
-               c*(active @ s)/len(x), h.T @ active/len(x), active.mean()]
-    qc = jnp.stack((jnp.ones_like(x), x/jnp.sqrt(jnp.mean(x*x))))
-    jc = jnp.concatenate(((qc @ (x[:, None]*s)/len(x))*c,
-                         (qc @ s/len(x))*c, qc @ h/len(x),
-                         jnp.mean(qc, axis=1)[:, None]), axis=1)
+    active = q @ (q.T @ (mass*residual)) if q.shape[1] else residual
+    weighted = mass*active
+    g = jnp.r_[c*((mass*x) @ (active[:, None]*s)),
+               c*(weighted @ s), h.T @ weighted, weighted.sum()]
+    qc = jnp.stack((jnp.ones_like(x), x/jnp.sqrt(mass @ (x*x))))
+    jq = qc*mass
+    jc = jnp.concatenate(((jq @ (x[:, None]*s))*c,
+                         (jq @ s)*c, jq @ h,
+                         jq.sum(axis=1)[:, None]), axis=1)
     return g, residual, jc
 
 
@@ -73,7 +76,7 @@ def linear_field(p, p0, context):
     return g, jc
 
 
-def advance_factory(x, q, model, eta):
+def advance_factory(x, q, model, eta, mass=None):
     def one(state, p0, y, length):
         context = linear_context(p0, x, y) if model == 'linear_features' else None
         def step(_, old):
@@ -81,7 +84,7 @@ def advance_factory(x, q, model, eta):
             if model == 'linear_features':
                 g, jc = linear_field(p, p0, context)
             else:
-                g, _, jc = field(p, p0, x, y, q, model)
+                g, _, jc = field(p, p0, x, y, q, model, mass)
             C = jc @ jc.T; rhs = jc @ g
             det = C[0, 0]*C[1, 1]-C[0, 1]**2
             z = jnp.array([C[1, 1]*rhs[0]-C[0, 1]*rhs[1],
@@ -129,13 +132,23 @@ def run(args):
         raise ValueError('CPU job exposed an accelerator backend')
     seeds = [int(s) for s in args.seeds.split(',')]
     p0, x, y, hashes = load_inputs(args.source, args.start, seeds)
-    q = transport.basis(x, 9)
+    empirical_x = x.copy(); mass = np.ones_like(x)/len(x)
+    if args.quadrature:
+        if args.model == 'linear_features': raise ValueError('Linear features already use an exact Gram evaluation')
+        from .persistence_quadrature import empirical_rule
+        x, mass = empirical_rule(empirical_x, args.quadrature)
+        mapping = targets.polynomial_map(empirical_x)
+        y = targets.values('moment9', x, mapping)
+        q = np.polynomial.legendre.legvander(x, 9) @ mapping
+    else:
+        q = transport.basis(x, 9)
     columns = (0, 1, 2, 3, 9) if args.model == 'five_mode' else tuple(range(10))
     q = q[:, columns] if args.model in ('five_mode', 'ten_mode') else np.empty((len(x), 0))
     factor = round(.002/args.eta)
     if args.eta not in (.002, .001): raise ValueError('Use reference or matched half step')
     manifest = dict(model=args.model, seeds=seeds, start=args.start, end=args.end, eta=args.eta,
-        reference_eta=.002, width=(p0.shape[1]-1)//3, samples=len(x), backend=args.backend,
+        reference_eta=.002, width=(p0.shape[1]-1)//3, samples=len(empirical_x), backend=args.backend,
+        quadrature_points=args.quadrature,
         source_commit=os.environ.get('RACE_SOURCE_COMMIT'), input_hashes=hashes,
         model_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         evidence_role='Deterministic training-grid optimization and autonomous forecasts')
@@ -150,11 +163,11 @@ def run(args):
             snapshots = {int(t): {k: f[k][:, i] for k in state} for i, t in enumerate(f['steps'])}
         step = max(snapshots); state = jax.tree.map(jnp.asarray, snapshots[step])
         prior_seconds = json.loads((out/'status.json').read_text())['seconds']
-    advance = advance_factory(jnp.asarray(x), jnp.asarray(q), args.model, args.eta)
+    advance = advance_factory(jnp.asarray(x), jnp.asarray(q), args.model, args.eta, jnp.asarray(mass))
     begun = time.monotonic(); yy = jnp.asarray(np.broadcast_to(y, (len(seeds), len(y))))
     def save():
         tt = sorted(snapshots); host = snapshots[step]; w = manifest['width']
-        ar.atomic_npz(out/'snapshots.npz', steps=np.array(tt), p0=p0, x=x, y=y,
+        ar.atomic_npz(out/'snapshots.npz', steps=np.array(tt), p0=p0, x=x, y=y, mass=mass, empirical_x=empirical_x,
                       **{k: np.stack([snapshots[t][k] for t in tt], axis=1) for k in state})
         status = dict(step=step, complete=step == args.end,
             seconds=prior_seconds+time.monotonic()-begun,
@@ -185,4 +198,5 @@ if __name__ == '__main__':
     parser.add_argument('--stride', type=int, default=10000)
     parser.add_argument('--max-seconds', type=float, default=3300)
     parser.add_argument('--backend', choices=('cpu', 'gpu'), default='gpu')
+    parser.add_argument('--quadrature', type=int, default=0)
     run(parser.parse_args())
