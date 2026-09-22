@@ -2,13 +2,16 @@
 
 ## Effective-force plateau investigation
 
-The [interim evidence report](../../results/checkpoint_D_optimizers/expD34_readout_race/force_plateaus/README.md)
-walks through the four completed audit figures and records the queued stages.
+The [evidence report](../../results/checkpoint_D_optimizers/expD34_readout_race/force_plateaus/README.md)
+covers the completed checkpoint audit, long continuations, independent-seed
+tests, numerical controls, and Runpod interventions from 6m to 6.5m updates.
 
-The exploration has a 10 GPU-hour ceiling, including verification and
-interventions, with at most two concurrent GPUs. The active campaign uses
-[the bounded Modal launcher](modal_campaign.md) with two H100 workers and a
-USD 50 spending stop. The original Slurm launch path remains the default for
+The exploration has a combined 10 GPU-hour ceiling, including verification
+and interventions, and a USD 50 spending stop. The completed campaign used
+[the bounded Modal launcher](modal_campaign.md) with up to two H100 workers
+and supplemental Slurm work with up to two Runpod GPUs. Final conservative
+reservations total 9.7917 GPU-hours; all jobs have finished. The original Slurm
+launch path remains the default for
 `plateau_run` and `plateau_probes`; Modal calls explicitly select
 `--runtime modal`. Numerical work, tests, and postprocessing run remotely;
 local work is editing, submission, transfers, and inspection.
