@@ -15,8 +15,11 @@ samples. Neither hidden parameters nor the parameter metric change. The
 polynomial transfer results are used as general operator comparison tools;
 their polynomial approximation is not used to construct this predictor.
 
-For the condensed theorem, width-scaling corollary, and main-paper figure,
-see the [paper-facing note](gamma_readout_paper_note.md).
+For the mechanism theorem and main-paper figure, see the
+[paper-facing note](gamma_optimization_paper_note.md); its learning-time
+corollary is in the appendix. The
+[expanded exposition](gamma_readout_paper_note.md) retains the worked
+matrix construction.
 
 **Notation.** Vector norms are Euclidean and matrix norms are spectral unless
 marked otherwise. The same empirical normalization applies to target and

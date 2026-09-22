@@ -13,10 +13,12 @@ There are no new GD runs, fitted rates, or held-out generalization claims.
 The numerical intervals include an exposed floating-point sensitivity allowance;
 independent interval arithmetic checks the selected primary endpoint claims.
 
-The [paper-facing note](../../../../../../docs/gamma_readout_paper_note.md)
-connects these timing results to the archived joint-training slope gap and
-width intervention in a new main-paper figure. The filter/spectrum figure
-below remains supporting evidence.
+The [paper-facing note](../../../../../../docs/gamma_optimization_paper_note.md)
+leads with the explicit gamma mechanism and connects these timing results
+to the archived joint-training slope gap and width intervention in the
+main-paper figure. Its learning-time corollary and certification details
+are in the appendix. The filter/spectrum figure below remains supporting
+evidence.
 
 **Table 1. Notation and evidence roles.** Errors are relative residual norms;
 times count ordinary readout GD updates.

@@ -49,6 +49,7 @@
   "artifact_sha256": {
     "experiments/expD36_frozen_gamma_probe/paper_figure.py": "cd3400c6f2daf49ca81b787bdfcd89bc04584550a5d9b716f976de6bc53e8da1",
     "docs/gamma_readout_paper_note.md": "9ec4a299716c19dfb2f0a6abe0eef2bf9748ef9326157bc1304304c4233f3fd5",
+    "docs/gamma_optimization_paper_note.md": "1709b393de464adaa5624f4d068b27efd8de4bd068f4a9a41bb620beec5029d6",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_figure_data.json": "bb24d0f03f6a3e404055e23d463b390757b58e846b7922ef8407a17d03969e46",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.png": "bf420e68468d3b455134892201dd3f243cd62b2564f47ca8cbc42b73c16a273e",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.pdf": "ee23eba5e86b0d8a5cd04c0aaff51f703834370e3c3b9904b72a35649046388a"
@@ -146,5 +147,29 @@
     ],
     "archive_unchanged": true,
     "full_suite_rerun": false
+  },
+  "mechanism_paper_note_revision": {
+    "base_commit": "f9e7381",
+    "note": "docs/gamma_optimization_paper_note.md",
+    "checks": [
+      "main theorem isolates the explicit gamma filter and common-slope cap inequality",
+      "learning-time corollary and approximation margins occur only in the appendix",
+      "relative links, heading anchor, embedded figure, and math delimiters",
+      "existing figure collection checks agree with all archived plotted data",
+      "timing table agrees with the four independently certified intervals and executed hits",
+      "averaging identity and density Fourier transform checked by numerical quadrature",
+      "cap monotonicity and width-scaling substitution checked numerically",
+      "two-point acquisition counts checked against direct coefficient GD",
+      "existing figure visually inspected and all prior artifact hashes preserved"
+    ],
+    "links_checked": 23,
+    "archived_source_files_checked": 23,
+    "feature_quadrature_max_error": 6.217248937900877e-15,
+    "transform_quadrature_max_error": 1.2837217781978624e-13,
+    "toy_executed_hits": [925, 14],
+    "training_archive_unchanged": true,
+    "full_suite_rerun": false,
+    "validation_scope": "Documentation and source-evidence checks; existing implementation-test results above were not rerun.",
+    "gpu_hours": 0
   }
 }
