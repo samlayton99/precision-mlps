@@ -1,0 +1,54 @@
+{
+  "source_sha256": "27065f06aafcb4dd4b2f6759f27ea22e47f21a17aed6f981690b10281d207366",
+  "input_hashes": {
+    "geometry.csv.gz": "060183de8637b75c6c074e16751a1d230ce8246d450d333445c47e86f8abe5ee",
+    "analysis/construction.csv": "4d6e9ccbb534172bcde88c432bd8f24e4c3e182ad5c3eb46c3e00c21ef87d87a",
+    "curated/primary_0/snapshots.npz": "70230fd17909220702056691ba1035d63cb60b2ce5d915fe86aefcc1c5d049a7",
+    "curated/primary_1/snapshots.npz": "46b2bfb55a218f2ea9e88ac8075f71ee94f2f78669475c3334dd3ade1a2019a0",
+    "curated/primary_2/snapshots.npz": "52b2e1a903d4ae133adbf757f5d116dbd11f930d17086057e6015b68b4c96651",
+    "curated/primary_3/snapshots.npz": "9823da9f19e425a9be815b65f56eb5c3152de10b7a7481e3f62907f1e3534c1c",
+    "curated/primary_4/snapshots.npz": "9f1162a55dc0c1533786e4d54fc2e6f5b09ca49c09da740f2ad8ba601b426c7c"
+  },
+  "gammas": [
+    0.1,
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    3.2,
+    4.0,
+    8.0,
+    16.0,
+    32.0,
+    64.0,
+    128.0,
+    256.0
+  ],
+  "factors": [
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0,
+    32.0
+  ],
+  "horizons": [
+    0,
+    2000,
+    20000,
+    100000,
+    600000
+  ],
+  "samples": 2048,
+  "evaluation_samples": 8192,
+  "readout_optimizer": "GD",
+  "eta": 0.002,
+  "readout_initialization": "zero",
+  "selection": "minimum training-grid relative MSE, separately for each horizon",
+  "evaluation_role": "independent quadrature for this diagnostic sweep, not a blind generalization estimate",
+  "max_archive_replay_difference": 0.0,
+  "scaled_cases": 520,
+  "construction_cases": 169
+}

@@ -4,6 +4,8 @@
 
 The most useful new control is degree 9: neither EMA momentum alone nor adaptive scaling alone escapes the weak-scale regime in the three tested control seeds, while their combination in Adam does. This escape depends on the rate and target. A small cubic admixture enables learning in low-rate Adam cases where the pure degree-9 target still stalls. These are mechanisms to explain, not an initialization-only barrier theorem or a claim that Adam universally solves scale acquisition.
 
+The [frozen-scale follow-up](frozen_scale_gap/README.md) quantifies the remaining geometry gap. Larger common-gamma constructions outperform the median learned Adam geometry under identical readout GD. But simply enlarging Adam's slopes while preserving centers does not help every target: degree 9 selects the original scales in all five seeds. The gap therefore cannot be reduced to insufficient mean gamma alone.
+
 All 184 cases finished 600,000 updates. Training ran on Runpod through Slurm, with at most two GPUs concurrently, consuming **2,841 allocated GPU-seconds = 0.78917 GPU-hours**, including pilots. The [implemented plan](../../../../docs/d34_adam_force_plan.md) gives the full protocol; [Slurm accounting](verification/slurm.psv) records the allocations. CPU analysis and final rendering were completed on Runpod after local analysis was stopped.
 
 ## What the channels mean
@@ -107,6 +109,8 @@ $X$ is the nonnegative remainder from crossing the nonsmooth point of absolute v
 
 For a concrete example, Adam mixed-sine seed 0 has 79.2% tracking share of component step length, but its signed effective, tracking, and crossing contributions are $1.863$, $-0.054$, and $0.023$, summing to net mean-gamma growth $1.832$. Its positive and negative mean travel are 18.653 and 16.821. Large tracking activity therefore does not imply tracking-driven useful expansion. Across all 65 primary Adam cases, effective signed motion is positive in 64; tracking is positive in 31. This suggests studying persistent outward force separately from oscillatory activity, while retaining the exceptions and crossings. [Exact motion windows](windows.csv) include earlier phases as well.
 
+Thus Adam supports a narrower continuation of the GD story: effective fine-force history often supplies sustained outward drift even when oscillatory tracking dominates activity. It does not support declaring tracking irrelevant in every run. Some degree-9 seeds have positive tracking contributions, and even a signed contribution that cancels can affect Adam's shared second moment and subsequent trajectory. These full-batch fluctuations are deterministic, not minibatch noise.
+
 ## Which mechanisms enable escape?
 
 ![Matched momentum and preconditioning controls](controls.png)
@@ -115,11 +119,29 @@ For a concrete example, Adam mixed-sine seed 0 has 79.2% tracking share of compo
 
 ![Controlled cubic and degree-9 mixtures](mixtures.png)
 
-**Figure 8.** The right panel tracks $e_9^2/[0.75(1-s^2)]$, separately from total error and mean gamma. It is undefined at the pure cubic endpoint, which is therefore omitted there. Under GD the normalized degree-9 error remains approximately one throughout the mixture sweep, including $s=0.3$ where total error decreases. That decrease is largely easier-mode fitting, not escape into degree-9 learning. Adam reduces the difficult-mode coefficient as well; its median ratio falls from $1.42\times10^{-4}$ at $s=0$ to $5.79\times10^{-6}$ at $s=0.01$. This coefficient alone does not represent all remaining error.
+**Figure 8 asks whether fitting an added easy component also helps fit the hard component.** Each horizontal position is a different target, evaluated after the same 600,000 updates at rate 0.002; the axis is not training time. The targets are
+
+$$
+y_s=0.3q_0+0.4q_1+\sqrt{0.75}\left(sq_3+\sqrt{1-s^2}\,q_9\right),
+$$
+
+where $q_k$ is the training-grid orthonormal polynomial of degree $k$. The constant and linear parts stay fixed. At $s=0$ there is no cubic component; at $s=0.01$ there is a very small one; at $s=0.3$ it contains 9% of the non-affine target energy. At $s=1$ the non-affine part is entirely cubic. The negative value reverses the cubic component's sign. Dots show five seeds, and horizontal marks show their medians. The displayed target settings are equally spaced for readability, not a linear scale in $s$.
+
+Read the panels from left to right:
+
+1. **Total relative MSE:** how well the entire target is fitted. Lower is better, but fitting only the easier cubic component can lower this number.
+2. **Mean gamma:** how far the slope magnitudes have grown. Growth alone does not establish that the degree-9 part is learned.
+3. **Remaining degree-9 error:** $e_9^2/[0.75(1-s^2)]$, where $e_9$ is the coefficient of the residual along $q_9$. A value near one means the degree-9 error is still as large as that target component. A value near zero means its coefficient has been fitted. The quantity is undefined at $s=1$, where the target contains no degree-9 component. It does not include error in other modes.
+
+For GD at $s=0.3$, the total median error falls to 0.691, but the right panel stays near one. Fitting the cubic alone can remove $0.75(0.3)^2=0.0675$ of error, leaving degree-9 energy $0.75(1-0.3^2)=0.6825$. This explains the apparent improvement without difficult-mode learning. Adam's right-panel values are much smaller: the median is $1.42\times10^{-4}$ at $s=0$ and $5.79\times10^{-6}$ at $s=0.01$. At this primary rate Adam learns the degree-9 coefficient both with and without the cubic addition. Figure 8 separates easy-only progress from genuine hard-mode fitting; it does not show a temporal staircase or an Adam escape that requires adding the cubic.
 
 ![Adam rate sensitivity across all targets](rates.png)
 
 **Figure 9.** Seed 0, fixed update count, no selection across rates. Pure degree 9 stays at approximately 0.750 relative error for rates 0.0002 and 0.001, while rate 0.002 reaches 0.00718. With only $s=0.01$ cubic admixture, the two lower rates reach 0.00506 and 0.000844. Thus the route into harder-mode learning can depend sharply on a small target change. Smaller rates also reduce tracking step activity on several oscillatory targets: mixed sine's exact post-20k tracking share falls from 79.2% at 0.002 to 31.5% at 0.0002. Fixed update counts do not make these matched-time gradient-flow experiments.
+
+The small cubic component at $s=0.01$ carries only $0.75(0.01)^2=0.000075$ of target energy. Fitting it alone cannot explain the low-rate error reduction from about 0.75 to 0.00506 or 0.000844. This is the stronger endpoint evidence for an easier component changing access to the difficult one. Establishing the proposed sequence of cubic fitting, geometry change, and renewed degree-9 coupling would require time-resolved evidence for those events.
+
+The broad idea of easier components enabling harder learning is established in the staircase literature, including [Abbe et al. (2021)](https://arxiv.org/abs/2108.10573), the [merged-staircase theory for two-layer networks (2022)](https://proceedings.mlr.press/v178/abbe22a.html), and [leap complexity and saddle-to-saddle dynamics (2023)](https://proceedings.mlr.press/v195/abbe23a.html). The formal results concern particular high-dimensional input distributions, hierarchical supports, and training regimes. They do not directly establish the mechanism in this one-dimensional tanh/Adam experiment, where the input coordinate is already present in the fixed linear term. The appropriate connection is a staircase-like facilitation hypothesis. The contribution sought here is to identify its slope-force mechanism and its limits, not to claim the general facilitation phenomenon is new.
 
 The four epsilon checks are tabulated in [all endpoints](endpoints.csv), rather than adding another figure. Changing $10^{-8}$ to $10^{-12}$ preserves the broad seed-0 outcomes: for degree 9, relative error changes from 0.00718 to 0.00761; mixed sine changes from 0.00552 to 0.00325. These checks rule out a simple epsilon-floor explanation for those particular escapes, not all epsilon sensitivity.
 
