@@ -317,7 +317,34 @@ The parameter blocks of $E$ are $T_a,T_b,\sqrt\kappa T_c,\sqrt\kappa T_d$, stack
 
 ## 4. Establish tracking, then convert force into a population barrier
 
-Small $z_C$ must be established rather than assumed from a small $e_C$. Differentiating $z_C$ in flow gives
+Section 3 identified the effective slope force $T_ae_H$, but a small effective force alone does not bound actual slope movement. If the coarse residual falls behind its moving balance, the additional force $J_{a,C}^Tz_C$ could still move slopes substantially. Even starting exactly at balance does not remove this possibility, because the balance changes during training.
+
+This section has two jobs. First, bound the lag $z_C=e_C-(-Be_H)$ tightly enough to control its contribution to slope movement. Second, combine that tracking bound with separate bounds on the effective fine force and omitted-mode force, and accumulate all three over GD updates. If the resulting travel allowance is smaller than the distance needed for population scale acquisition, the barrier follows. The tracking calculation supplies one ingredient; it does not establish the other two force bounds.
+
+### The toy example: following a moving balance
+
+Return to Section 3's scalar example: $u$ is the low-degree error, $v$ is the higher-degree error, and the coarse balance is $u=-v/3$. The tracking error and its evolution are
+
+$$
+z=u+v/3,\qquad
+\dot z=\underbrace{-10z}_{\text{restores tracking}}
+\underbrace{-v/3}_{\text{forcing from the moving balance}}.
+$$
+
+At $z=0$ and $v=1$, the derivative is $-1/3$: the system immediately departs from exact balance. The useful question is how large that departure can become. If $|v(t)|\le v_{\max}$ throughout $[0,T]$, integrating this equation gives
+
+$$
+|z(t)|\le e^{-10t}|z(0)|
++\frac{v_{\max}}{30}(1-e^{-10t}).
+$$
+
+The initial mismatch decays, while the moving balance contributes an allowance set by the ratio of forcing to restoring rate. The slope gradient in this toy model is $g_a=3z$, so this estimate directly bounds slope movement. For example, starting at balance gives $|g_a(t)|\le v_{\max}/10$. The assumption on $v$ must hold on the interval; the tracking equation alone does not provide that bound.
+
+The full-network calculation follows the same logic. Its restoring rate depends on the coarse kernel, and its forcing includes both movement of the balance and omitted residual. We need estimates on those quantities over the proposed barrier interval, rather than assuming that a small lag at one checkpoint persists.
+
+### Bound the tracking contribution in the full network
+
+Differentiate $z_C=e_C+Be_H$ using both residual equations in Section 3. This gives the matrix counterpart of the toy tracking equation:
 
 $$
 \dot z_C=-(C+C^{-1}QQ^T)z_C+f_z,
@@ -326,9 +353,9 @@ f_z=(\dot B-BS)e_H+f_C+Bf_H.
 \tag{6}
 $$
 
-The forcing includes changes in the equilibrium map, evolution of the fine residual, and omitted modes. A bound on $\dot C$ alone cannot control it.
+The vector $f_z$ is the forcing that can create tracking error. Its terms come from changes in the balance map $B$, evolution of the fine residual, and omitted modes. A bound on $\dot C$ alone cannot control it.
 
-The matrix multiplying $z_C$ is not necessarily symmetric. Use the metric $\tau^2=z_C^TCz_C$ instead of guessing Euclidean contraction. For $V=\tau^2/2$,
+We measure tracking in a norm that bounds its slope force. Define $\tau^2=z_C^TCz_C$; then $\|J_{a,C}^Tz_C\|\le\tau$, as shown in (11) below. Thus small $\tau$ directly limits the extra slope speed. In the toy example, $C=9$ and $\tau=3|z|$, exactly the slope-gradient magnitude. This metric also handles the generally nonsymmetric matrix multiplying $z_C$ in (6). For $V=\tau^2/2$,
 
 $$
 \dot V=-z_C^T(C^2+QQ^T)z_C
@@ -349,7 +376,7 @@ Interpret the norm inequality by a limiting argument at $\tau=0$. A uniformly po
 
 ### Actual GD has an exact discrete tracking equation
 
-Use a prime for the next GD state, not the next saved checkpoint. Define the exact modal step defect $R^\Delta=e'-e+\eta Ke$. It includes the nonlinear finite-step remainder and omitted modes. Substitution into $z_C'=e_C'+B'e_H'$ gives
+The flow argument explains relaxation versus forcing, but D34 uses finite GD updates. We therefore need a tracking bound that accounts for the complete update and its change to the balance map. Use a prime for the next GD state, not the next saved checkpoint. Define the exact modal step defect $R^\Delta=e'-e+\eta Ke$. It includes the nonlinear finite-step remainder and omitted modes. Substitution into $z_C'=e_C'+B'e_H'$ gives
 
 $$
 z_C'=M^\Delta z_C+h^\Delta,
@@ -372,6 +399,8 @@ $$
 There is no discarded step-size term. Products of the $\beta_n$ and accumulated forcing bound tracking; a constant bound below one gives the simpler corollary below. Sampled factors below one do not prove that every intervening factor is below one.
 
 ### Theorem: a sufficient finite-time population barrier for GD
+
+We now connect force control to the desired outcome. Each GD update moves the slope vector by $-\eta g_a$. Bounding the three force contributions and summing their magnitudes limits how far that vector can travel. Section 1 gives the minimum distance required for the requested fraction of slopes to reach $\Gamma$. The following theorem compares that required distance with the available travel allowance.
 
 Consider updates $s,\ldots,N$ with $N>s$, positive definite coarse blocks, and the exact decomposition (3). Suppose nonnegative envelopes satisfy, at every update $n=s,\ldots,N-1$,
 
