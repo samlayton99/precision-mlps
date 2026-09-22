@@ -1462,6 +1462,150 @@ The second term has no general favorable sign or magnitude bound, and a discrete
 
 **Prediction.** Report exact cumulative outward travel and threshold occupancy alongside error reduction. An intervention that reverses the slope direction but has a small bound in (Q15) has isolated a contraction mechanism without restoring acquisition. A response model that predicts the direction but misses travel has not explained the barrier. For Adam, the corresponding exact travel audit still applies to its realized steps, but (Q7) must be replaced by a first variation of the augmented parameter-and-moment state. Attenuation before the moment update is a different intervention from subtracting a contribution from the final normalized step; sustained signed acquisition is the appropriate transfer test.
 
+## 12. Matched feedback tests and a target-general movement budget
+
+This section connects the revised [experiment protocol](../experiments/expD34_readout_race/README.md#proposed-effective-force-perturbations) to a specific theoretical question: how much motion can correction of the present fine errors supply before changing sensitivities becomes essential? Section 9 answers this for a two-error approximation and for the full sample-Jacobian model. Here we keep **all retained fine modes**, remove the coarse directions through their effective map, and distinguish the exact budget of that model from the additional estimates needed for ordinary GD. No ninth-degree target assumption enters these identities.
+
+### 12.1 Match the initial signal, then alter its feedback
+
+**Example.** The degree-9 evidence supports an approximately fixed coupling over a long interval; the corresponding approximation fails for sine. Deleting a force component changes the initial signal as well as its subsequent feedback. The new comparison instead starts three branches with the same complete update.
+
+**Theory.** At the fork, put $T_{a,s}=T_a(\theta_s)$ and $e_s=e_H(\theta_s)$. The applied slope directions are
+
+$$
+\begin{aligned}
+g_a^{\rm joint}(\theta)&=T_a(\theta)e_H(\theta)+R_a(\theta),\\
+g_a^{\rm freeze\_map}(\theta)&=T_{a,s}e_H(\theta)+R_a(\theta),\\
+g_a^{\rm clamp\_residual}(\theta)&=T_a(\theta)e_s+R_a(\theta).
+\end{aligned}
+\tag{M1}
+$$
+
+Each branch recomputes the same remainder *field* at its own state; the remainder values need not agree once states separate. All non-slope blocks take the ordinary full-loss gradient at that branch's state. In particular, clamping the residual supplied to the slope force does not clamp the actual network error. Both modified directions can fail to be gradients of a scalar objective.
+
+At the common first next state $\theta_1=\theta_s-\eta g_s$, the second slope updates satisfy
+
+$$
+\begin{aligned}
+a_2^{\rm freeze\_map}-a_2^{\rm joint}
+&=\eta[T_a(\theta_1)-T_{a,s}]e_H(\theta_1),\\
+a_2^{\rm clamp\_residual}-a_2^{\rm joint}
+&=\eta T_a(\theta_1)[e_H(\theta_1)-e_s].
+\end{aligned}
+\tag{M2}
+$$
+
+These are exact discrete identities. For a forecast from the fork, let $\mathcal H_s=\nabla^2L(\theta_s)$. The derivatives of the full applied directions are
+
+$$
+\begin{aligned}
+Dg_s^{\rm joint}&=\mathcal H_s,\\
+Dg_s^{\rm freeze\_map}[d]
+&=\mathcal H_sd-E_a(DT_{a,s}[d])e_s,\\
+Dg_s^{\rm clamp\_residual}[d]
+&=\mathcal H_sd-E_aT_{a,s}J_{H,s}d.
+\end{aligned}
+\tag{M3}
+$$
+
+The affine recurrences $x_{n+1}^{(b)}=(I-\eta Dg_s^{(b)})x_n^{(b)}-\eta g_s$, $x_0^{(b)}=0$, therefore make different predictions without consulting future states. They retain the full loss curvature, including the residual-weighted output Hessian. Their derivative matrices can be nonsymmetric; they must not be replaced by a positive-semidefinite Gauss–Newton matrix or have unstable modes removed without changing the model.
+
+**Prediction.** Issue the signed per-neuron curves before continuation. If error evolution supplies the proposed limiting feedback, the predicted residual-clamped departure must occur while the fixed-map prediction remains adequate; the opposite contrast tests the sensitivity-feedback hypothesis. A specified sign, rate, or displacement that fails outside its justified uncertainty rejects that prediction. The exact checks (M2) cannot themselves validate long persistence, and agreement with a model that reads future Hessians is not an autonomous forecast.
+
+### 12.2 The fixed effective map gives a finite movement budget
+
+**Example.** A large residual can occupy a direction to which the current features have almost no sensitivity. Such a direction contributes little movement over a finite interval even though its eventual best-fitting coefficient could be large. Conversely, a small residual in a sensitive direction can carry most of the present motion. A useful bound must retain the residual loading, sensitivity, and available time together.
+
+**Theory: the all-mode effective model.** Freeze the full-parameter map
+
+$$
+T_s=\Pi_sJ_{H,s}^T,\qquad
+\Pi_s=I-J_{C,s}^T(J_{C,s}J_{C,s}^T)^{-1}J_{C,s},\qquad
+S_s=J_{H,s}T_s=T_s^TT_s.
+$$
+
+Assume the coarse inverse exists. The equality follows from $\Pi_s^T=\Pi_s^2=\Pi_s$. Consider the surrogate
+
+$$
+\widehat e_{n+1}=(I-\eta S_s)\widehat e_n,\qquad
+\widehat\theta_{n+1}=\widehat\theta_n-\eta T_s\widehat e_n,
+\qquad \widehat e_0=e_s,\quad \widehat\theta_0=\theta_s.
+\tag{M4}
+$$
+
+This model moves **all parameter blocks** with the fixed effective force and omits tracking and orthogonal-residual corrections. It is neither ordinary GD nor literally the slope-only `freeze_map` intervention in (M1). It is the separate reduced model whose prediction that intervention helps assess. A finite retained basis makes (M4) a finite-mode approximation; omitted force is not silently projected away from actual GD.
+
+Let $S_sv_i=\lambda_iv_i$ with orthonormal $v_i$, set $b_i=v_i^Te_s$, and assume $0<\eta\lambda_i\le1$ for positive eigenvalues. Define the finite-time factor
+
+$$
+\Phi_N(\lambda)=\eta\sum_{n=0}^{N-1}(1-\eta\lambda)^n
+=\frac{1-(1-\eta\lambda)^N}{\lambda}\quad(\lambda>0),
+\qquad \Phi_N(0)=\eta N.
+$$
+
+Then the endpoint displacement and its full-parameter norm are exactly
+
+$$
+\widehat\theta_N-\theta_s
+=-\sum_{\lambda_i>0}b_i\Phi_N(\lambda_i)T_sv_i,
+\qquad
+\|\widehat\theta_N-\theta_s\|^2
+=\sum_{\lambda_i>0}b_i^2\lambda_i\Phi_N(\lambda_i)^2.
+\tag{M5}
+$$
+
+Indeed, $\|T_sv_i\|^2=\lambda_i$, and distinct images are orthogonal. Exact null directions satisfy $T_sv_i=0$, so they may retain arbitrary error without moving this model. The equivalent expression $-T_sS_s^\dagger[I-(I-\eta S_s)^N]e_s$ is an algebraic identity, not a prescription to threshold small eigenvalues numerically. A small **positive** eigenvalue retains its finite-time factor and is not treated as null.
+
+The norm in (M5) is nondecreasing with $N$ under the stated nonoscillating-step condition. Consequently, if it is smaller than $D_{p,\Gamma}(a_s)$, defined in Section 9, the surrogate cannot have a fraction $p$ of slopes at or above $\Gamma$ at any update through $N$. This is simultaneous occupancy, not the number of distinct neurons that ever visit the threshold.
+
+For per-neuron positive travel, the different bound
+
+$$
+\widehat P_{j,+}(N)
+\le\sum_{n<N}|\widehat a_{j,n+1}-\widehat a_{j,n}|
+\le\sum_{\lambda_i>0}|b_i|\,|(T_sv_i)_{a,j}|\,\Phi_N(\lambda_i)
+\tag{M6}
+$$
+
+follows by the triangle inequality. The first inequality includes all sign crossings. It controls the fraction ever reaching a threshold through (Q15) or (Q16). Endpoint displacement can cancel, so it must not be substituted for positive travel. Even (M6) is an upper bound, not a claim that all modal motions point outward.
+
+**Prediction.** Compute the modal loadings, decay factors, and budgets at the fork. A proposed fixed-map explanation must predict which neurons move and the timescale and magnitude of that movement, rather than merely produce a finite bound. If the available budget is too small to acquire the reference scale, later ordinary-GD acquisition requires a failure of the fixed-map approximation or enough accumulated correction. The experiment tests those specific departures; it does not infer a universal barrier from $S_s$ alone.
+
+### 12.3 Corrections need a cumulative bound, not just a small initial value
+
+**Example.** A weak correction can accumulate over millions of updates. An accurate short forecast or a shared first update therefore does not transfer a surrogate's entire future movement budget to ordinary GD.
+
+**Theory: variation of constants.** For any comparison sequence, write its dynamics exactly in the form
+
+$$
+e_{n+1}=(I-\eta S_s)e_n-\eta\xi_n,\qquad
+\theta_{n+1}=\theta_n-\eta(T_se_n+\delta g_n),
+\qquad e_0=e_s,\quad\theta_0=\theta_s.
+$$
+
+Here $\delta g_n$ is a full-parameter direction defect and $\xi_n$ is the residual-update defect. For ordinary GD, they include changing sensitivities, tracking, omitted residuals, and the nonlinear finite-step change of the modal output. Direct summation gives
+
+$$
+\theta_N-\widehat\theta_N
+=-\eta\sum_{n=0}^{N-1}\delta g_n
++\eta\sum_{k=0}^{N-2}T_s\Phi_{N-1-k}(S_s)\xi_k.
+\tag{M7}
+$$
+
+Taking norms supplies an explicit accumulated error budget. Applying the same formula at every intermediate update yields coordinate envelopes or an occupancy bound by adding the error radius to (M5). The expression also explains why an initial force norm does not determine acquisition: a residual defect is subsequently transported through the fixed coupling before changing displacement.
+
+Measured defects from a completed trajectory make (M7) a retrospective explanation. A prospective theorem must instead bound them in an independently enclosed neighborhood. Equivalently, use the Section 9 update-map recurrence with the autonomous forecast (M4):
+
+$$
+R_{n+1}\le\beta_{{\rm map},n}R_n
++\eta\|g(\widehat\theta_n)-T_s\widehat e_n\|.
+\tag{M8}
+$$
+
+The defect is evaluated on the forecast, not a future true state; the map derivative must be bounded on the neighborhood joining true and predicted states. Closing that neighborhood and comparing the resulting envelope with the acquisition distance gives a conditional **ordinary-GD** exclusion. Without closure, it remains an attempted bound. A bound on either modified branch transfers only with an additional bound on its discrepancy from the ordinary-GD field.
+
+**Prediction.** Report separately the interval over which the surrogate predicts motion, the shorter interval over which an ordinary-GD enclosure closes, and the cumulative contribution of each controlled defect. Long-time success of the first does not lengthen the second automatically. Failure of a uniform bound is not evidence of acquisition; verified acquisition outside a claimed closed envelope would instead invalidate that bound or its implementation.
+
 ## Appendix A. Computable neighborhood bounds
 
 Section 9 needs two kinds of uniform estimates: how much one GD step can
