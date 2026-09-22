@@ -68,6 +68,19 @@ def summarize(root,archives):
                 summary.append(entry)
     write_table(root/'endpoints.csv',endpoints); write_table(root/'paired_interventions.csv',paired)
     write_table(root/'summary.csv',summary)
+    geometry={(key(r),int(r['step']),r['kind']):number(r,'relative_heldout_mse') for r in curves
+              if r['kind']!='construction_centers' and r['updates']=='600000'}
+    effects=[]
+    for row in curves:
+        if row['kind']!='new_slopes_old_biases' or row['updates']!='600000': continue
+        identity=key(row); step=int(row['step']); previous=int(row['previous_step'])
+        oo=geometry[identity,previous,'learned']; nn=geometry[identity,step,'learned']
+        no=geometry[identity,step,'new_slopes_old_biases']; on=geometry[identity,step,'old_slopes_new_biases']
+        effects.append(dict(target=identity[0],seed=identity[1],arm=identity[2],fork_step=identity[3],
+            previous_step=previous,step=step,old_geometry_error=oo,new_geometry_error=nn,
+            slope_gain_at_old_bias=oo-no,bias_gain_at_old_slope=oo-on,total_gain=oo-nn,
+            interaction_gain=no+on-oo-nn))
+    write_table(root/'geometry_effects.csv',effects)
     peaks=[]
     for identity in sorted({key(r) for r in metrics}):
         rr=[r for r in metrics if key(r)==identity and int(r['step'])>=20000]
@@ -105,6 +118,9 @@ def plot(root,metrics,curves,endpoints):
         for seed in range(5):
             rr=sorted([r for r in metrics if r['target']==target and int(r['seed'])==seed and
                        r['arm']=='joint' and int(r['fork_step'])==0],key=lambda r:int(r['step']))
+            dense=[r for r in metrics if r['target']==target and int(r['seed'])==seed and
+                   r['arm']=='joint' and int(r['fork_step'])==20000 and int(r['step'])>20000]
+            if dense: rr=sorted([r for r in rr if int(r['step'])<=20000]+dense,key=lambda r:int(r['step']))
             if not rr: continue
             t=np.array([int(r['step'])*.002 for r in rr]); alpha=1 if seed==0 else .3
             for field,color,style in [('full_slope_norm','#111827','-'),('effective_slope_norm','#2563eb','--'),('transient_slope_norm','#d97706',':')]:
