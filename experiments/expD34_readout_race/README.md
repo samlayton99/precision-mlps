@@ -332,3 +332,17 @@ The five-mode choice uses prior checkpoint evidence; the continuations test
 that fixed choice without fitting coefficients or importing future states.
 These are training-grid optimization measurements. Partial error reduction
 and small outward drift are not evidence of the intended scale or precision.
+
+`stagnation_analyze --root <coarse_balance>` joins all eight run directories,
+checks common starting states and the available first-step baseline replays,
+compares force vectors and parameter trajectories with full GD and matched
+half steps, and writes endpoint tables, numerical checks, and two figures.
+It also reproduces the motivating signed-mode attribution from the existing
+curated diagnostics. Reports are authored after inspecting those artifacts.
+The scientific argument and interpretation belong in the
+[conditional stagnation note](../../docs/d34_coarse_balance_stagnation.md).
+
+Local CPU execution uses the same `stagnation_run.run` function with
+`require_gpu=False` and `JAX_PLATFORMS=cpu`; the CLI retains the established
+Slurm GPU allocation check. The evidence records the backend and source
+revision, and the matched half-step comparisons use the same backend.

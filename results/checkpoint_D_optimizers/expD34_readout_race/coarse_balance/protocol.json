@@ -1,0 +1,113 @@
+{
+  "target": "moment9",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "audit_steps": [
+    20000,
+    100000,
+    600000
+  ],
+  "starts": [
+    20000,
+    100000
+  ],
+  "horizon": 20000,
+  "eta": 0.002,
+  "half_step_eta": 0.001,
+  "half_step_seeds": [
+    0
+  ],
+  "width": 177,
+  "m": 2048,
+  "dtype": "float64",
+  "arms": {
+    "full": {
+      "modes": [],
+      "remove": false
+    },
+    "five_mode": {
+      "modes": [
+        0,
+        1,
+        2,
+        3,
+        9
+      ],
+      "remove": false
+    },
+    "ten_mode": {
+      "modes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "remove": false
+    },
+    "remove_lower": {
+      "modes": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "remove": true
+    }
+  },
+  "diagnostic_stride": 200,
+  "extra_early_offsets": [
+    1,
+    2,
+    5,
+    10,
+    20,
+    50,
+    100
+  ],
+  "integrals": "Exact per-update travel and full-complement coarse-projection tracking; scalar modal curves sampled",
+  "evidence_role": "Training-grid optimization mechanism; no held-out generalization evaluation",
+  "selection": "Five-mode choice informed by prior retained-state diagnostics; fixed before continuations",
+  "source_archives": [
+    {
+      "seed": 0,
+      "path": "results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/curated/states/seed0_fork20000/compact_states.npz",
+      "sha256": "546740d545e613f51c47528f565e75d6f1b29cd498a264180308ad3b7e77b357"
+    },
+    {
+      "seed": 1,
+      "path": "results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/curated/states/seed1_fork20000/compact_states.npz",
+      "sha256": "b1022ba50b1129e000a152322fe29d93d7d3a63905f5cd77f558a7049fc2748a"
+    },
+    {
+      "seed": 2,
+      "path": "results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/curated/states/seed2_fork20000/compact_states.npz",
+      "sha256": "1872050cd50d669c2c84d1f852d00685dd0f48568b64a9a095b536399eb91ff3"
+    },
+    {
+      "seed": 3,
+      "path": "results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/curated/states/dense_seed3/compact_states.npz",
+      "sha256": "8938d3183e3a574c28e3855760fbfa212e8eace2fac017c8b745a6023aba979b"
+    },
+    {
+      "seed": 4,
+      "path": "results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/curated/states/dense_seed4/compact_states.npz",
+      "sha256": "877eb83f14b15904c9a2c9a7081305ff042737bc9bc63663c2b797ff42ea228a"
+    }
+  ],
+  "duplicate_state_max_error": 0.0,
+  "inputs_sha256": "036913cd7674c2e20b81eab2ea3db633ae5514a6a0a44493f85127c5c01d9982"
+}
