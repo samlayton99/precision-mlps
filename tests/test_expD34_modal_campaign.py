@@ -30,6 +30,14 @@ def test_reservations_include_startup_and_do_not_extend_deadlines():
         reserve(state, dict(seconds=100), 19901)
 
 
+def test_pilot_allows_slow_dispatch_without_extending_gpu_allocations():
+    state = dict(reserved_gpu_seconds=450, deadline=campaign.PILOT_COORDINATOR_SECONDS)
+    first = reserve(state, dict(id='pilot-gd', seconds=450), 5)
+    second = reserve(state, dict(id='pilot-adam', seconds=450), 50)
+    assert first['deadline'] == 425 and second['deadline'] == 470
+    assert state['reserved_gpu_seconds'] == 1350
+
+
 @pytest.mark.parametrize('incomplete', [False, True])
 def test_scheduler_pool_and_completion_dependencies(monkeypatch, incomplete):
     running = set()

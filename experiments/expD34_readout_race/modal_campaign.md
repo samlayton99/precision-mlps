@@ -38,6 +38,9 @@ passes, cancel only those nine campaign jobs, save final accounting, and change
 the cutover state to `"cancelled"` before launching the campaign. If the pilot
 fails, stop its Modal app and release the held Runpod arrays. Do not issue a
 fresh campaign identifier to bypass a failed GPU attempt's budget ledger.
+For a manually reconciled pilot retry, record `prior_modal_campaign` in the
+cutover file. The coordinator requires that pilot to be stopped and carries
+its entire reservation into the new ledger; no failed allocation is refunded.
 
 The sole GPU function requests H100, four CPU cores and 48 GiB, with hard CPU
 and memory limits, serial inputs, at most two containers, and single-use
@@ -54,6 +57,8 @@ not automatically spend that reserve. A CPU watchdog cancels calls at their
 original deadlines and enforces an independent campaign deadline. Unexpected
 failure stops all active campaign calls. Incomplete scientific runs are retained;
 the existing completion gates prevent dependent stages from reading them.
+The pilot coordinator has a 15-minute wall deadline to allow CPU dispatch and
+storage RPCs; its two GPU inputs each retain their own 450-second reservation.
 
 The spending calculation uses USD 0.001097 per H100-second, USD 0.0000131 per CPU
 core-second, and USD 0.00000222 per GiB-second, plus a USD 4 CPU/build allowance.

@@ -29,6 +29,7 @@ GPU_SECOND_USD = .001097 + 4 * .0000131 + 48 * .00000222
 CPU_RESERVE_USD = 4.0
 GPU_CEILING_SECONDS = 36000
 SPENDING_STOP_USD = 50.0
+PILOT_COORDINATOR_SECONDS = 900
 
 app = modal.App(APP_NAME)
 inputs = modal.Volume.from_name(INPUT_VOLUME, create_if_missing=True)
@@ -300,14 +301,21 @@ def coordinator(campaign, phase):
     if cutover['jobs'] != [1025, *range(1036, 1044)] or cutover['gpu_seconds'] != 0:
         raise RuntimeError('Runpod accounting needs explicit reconciliation')
     previous = ledger.get(campaign + '/pilot/state', {})
+    carried_seconds = previous.get('reserved_gpu_seconds', 0)
     if phase == 'pilot':
         if cutover['state'] != 'held':
             raise RuntimeError('Hold the pending Runpod campaign before the pilot')
         jobs = [dict(id=f'pilot-{opt}', stage='pilot', optimizer=opt, seconds=450)
                 for opt in ('gd', 'adam')]
-        deadline = time.time() + 450
-        # Reservation needs room for the two sequential submission RPCs.
-        deadline += 10
+        # CPU dispatch/Volume RPCs are outside the two fixed GPU reservations.
+        # Leave time to dispatch both inputs without extending either deadline.
+        deadline = time.time() + PILOT_COORDINATOR_SECONDS
+        prior_campaign = cutover.get('prior_modal_campaign')
+        if prior_campaign:
+            prior = ledger[prior_campaign + '/pilot/state']
+            if prior['status'] != 'stopped' or not ledger.get(prior_campaign + '/pilot/finished', False):
+                raise RuntimeError('Previous pilot has not stopped and reconciled')
+            carried_seconds = prior['reserved_gpu_seconds']
     elif phase == 'campaign':
         if cutover['state'] != 'cancelled' or not ledger.get(campaign + '/pilot/passed', False):
             raise RuntimeError('Pilot must pass and Runpod campaign must be cancelled')
@@ -316,7 +324,7 @@ def coordinator(campaign, phase):
     else:
         raise ValueError(phase)
     state = dict(phase=phase, deadline=deadline, source=lock, started=time.time(),
-                 attempts=[], reserved_gpu_seconds=previous.get('reserved_gpu_seconds', 0),
+                 attempts=[], reserved_gpu_seconds=carried_seconds,
                  gpu_ceiling_seconds=GPU_CEILING_SECONDS, spending_stop_usd=SPENDING_STOP_USD,
                  gpu_second_usd=GPU_SECOND_USD, cpu_reserve_usd=CPU_RESERVE_USD,
                  accounting='full submission-to-deadline reservations; no reclaimed time', runpod=cutover)
