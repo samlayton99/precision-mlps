@@ -389,6 +389,9 @@ and a model whose tanh features are linearized at the starting slopes and biases
 The latter continues to train the readouts, preserving their bilinear interaction
 with geometry. It is distinct from freezing the entire tangent map. All four
 parameter blocks use simultaneous updates and the original rate and grid.
+The linearized-feature runner evaluates its gradient through the full fixed
+feature Gram matrix, centered at the initial residual to reduce cancellation.
+This changes evaluation cost without dropping ranks or training samples.
 
 The source is the full `adam_force_extension/raw` archive. Default seeds are
 0–4; `--start 100000 --end 600000` tests against retained trajectories, while

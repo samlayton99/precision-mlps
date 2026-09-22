@@ -54,11 +54,34 @@ def initial(p):
                 crossing=jnp.zeros(p.shape[:-1]), min_coarse=jnp.full(p.shape[:-1], jnp.inf))
 
 
+def linear_context(p0, x, y):
+    """Exact fixed-feature Gram calculation; no rank or quadrature truncation."""
+    h, s, c, d = features(p0, p0, x, True)
+    psi = jnp.concatenate((x[:, None]*s, s, h, jnp.ones((len(x), 1))), axis=1)
+    qc = jnp.stack((jnp.ones_like(x), x/jnp.sqrt(jnp.mean(x*x))))
+    return psi.T @ psi/len(x), psi.T @ (h @ c+d-y)/len(x), qc @ psi/len(x)
+
+
+def linear_field(p, p0, context):
+    (a, b, c), d = af.unpack(p); (a0, b0, c0), d0 = af.unpack(p0)
+    gram, v0, qc = context; w = len(a)
+    delta = jnp.r_[c*(a-a0), c*(b-b0), c-c0, d-d0]
+    v = v0+gram @ delta
+    g = jnp.r_[c*v[:w], c*v[w:2*w], v[2*w:3*w]+(a-a0)*v[:w]+(b-b0)*v[w:2*w], v[-1]]
+    jc = jnp.concatenate((qc[:, :w]*c, qc[:, w:2*w]*c,
+        qc[:, 2*w:3*w]+qc[:, :w]*(a-a0)+qc[:, w:2*w]*(b-b0), qc[:, -1:]), axis=1)
+    return g, jc
+
+
 def advance_factory(x, q, model, eta):
     def one(state, p0, y, length):
+        context = linear_context(p0, x, y) if model == 'linear_features' else None
         def step(_, old):
             p = old['p']; w = (len(p)-1)//3
-            g, _, jc = field(p, p0, x, y, q, model)
+            if model == 'linear_features':
+                g, jc = linear_field(p, p0, context)
+            else:
+                g, _, jc = field(p, p0, x, y, q, model)
             C = jc @ jc.T; rhs = jc @ g
             det = C[0, 0]*C[1, 1]-C[0, 1]**2
             z = jnp.array([C[1, 1]*rhs[0]-C[0, 1]*rhs[1],

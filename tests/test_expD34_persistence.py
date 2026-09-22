@@ -40,6 +40,11 @@ def test_linear_features_retains_readout_interaction():
     (a0, b0, _), _ = plateau.af.unpack(p0)
     expected = (1-np.tanh(x[:, None]*a0+b0)**2)*(x[:, None]*displacement[:7]+displacement[7:14])
     np.testing.assert_allclose(np.asarray(h @ c+d)-linear, expected @ displacement[14:21], atol=2e-16)
+    y = np.sin(7*x)
+    direct, _, jc = pe.field(p, p0, x, y, np.empty((len(x), 0)), 'linear_features')
+    compressed, compressed_jc = pe.linear_field(p, p0, pe.linear_context(p0, x, y))
+    np.testing.assert_allclose(compressed, direct, rtol=1e-11, atol=2e-15)
+    np.testing.assert_allclose(compressed_jc, jc, rtol=1e-11, atol=2e-15)
 
 
 @pytest.mark.parametrize('model', pe.MODELS)
