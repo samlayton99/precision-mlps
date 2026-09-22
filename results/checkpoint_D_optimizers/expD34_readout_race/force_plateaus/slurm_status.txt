@@ -1,0 +1,44 @@
+Tue Sep 22 10:55:47 UTC 2026
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+      1025_[0-1%2]       gpu d34-plat junmiaoh PD       0:00      1 (Resources)
+      1036_[0-5%2]       gpu d34-forc junmiaoh PD       0:00      1 (Priority)
+              1037       gpu d34-disc junmiaoh PD       0:00      1 (Dependency)
+      1038_[0-4%2]       gpu d34-conf junmiaoh PD       0:00      1 (Dependency)
+              1039       gpu d34-conf junmiaoh PD       0:00      1 (Dependency)
+      1040_[0-4%2]       gpu d34-conf junmiaoh PD       0:00      1 (Dependency)
+      1041_[0-3%2]       gpu d34-forc junmiaoh PD       0:00      1 (Priority)
+              1042       gpu d34-endp junmiaoh PD       0:00      1 (Dependency)
+              1043       gpu d34-conf junmiaoh PD       0:00      1 (Dependency)
+JobID             State    Elapsed  Timelimit                                AllocTRES
+------------ ---------- ---------- ---------- ----------------------------------------
+1025_[0-1%2]    PENDING   00:00:00   01:00:00
+1027          COMPLETED   00:02:04   00:20:00           billing=4,cpu=4,mem=16G,node=1
+1027.batch    COMPLETED   00:02:04                                cpu=4,mem=16G,node=1
+1027.0        COMPLETED   00:02:04                                cpu=4,mem=16G,node=1
+1029          COMPLETED   00:02:52   00:20:00           billing=4,cpu=4,mem=32G,node=1
+1029.batch    COMPLETED   00:02:52                                cpu=4,mem=32G,node=1
+1029.0        COMPLETED   00:00:05                                cpu=4,mem=32G,node=1
+1029.1        COMPLETED   00:02:47                                cpu=4,mem=32G,node=1
+1030          COMPLETED   00:00:21   00:05:00           billing=2,cpu=2,mem=12G,node=1
+1030.batch    COMPLETED   00:00:21                                cpu=2,mem=12G,node=1
+1030.0        COMPLETED   00:00:21                                cpu=2,mem=12G,node=1
+1031             FAILED   00:00:09   00:10:00           billing=4,cpu=4,mem=16G,node=1
+1031.batch       FAILED   00:00:09                                cpu=4,mem=16G,node=1
+1031.0        COMPLETED   00:00:08                                cpu=4,mem=16G,node=1
+1031.1           FAILED   00:00:01                                cpu=4,mem=16G,node=1
+1032          COMPLETED   00:00:09   00:05:00           billing=2,cpu=2,mem=12G,node=1
+1032.batch    COMPLETED   00:00:09                                cpu=2,mem=12G,node=1
+1032.0        COMPLETED   00:00:09                                cpu=2,mem=12G,node=1
+1033             FAILED   00:01:17   00:10:00           billing=4,cpu=4,mem=24G,node=1
+1033.batch       FAILED   00:01:17                                cpu=4,mem=24G,node=1
+1033.0           FAILED   00:01:17                                cpu=4,mem=24G,node=1
+1034          COMPLETED   00:01:41   00:10:00           billing=4,cpu=4,mem=24G,node=1
+1034.batch    COMPLETED   00:01:41                                cpu=4,mem=24G,node=1
+1034.0        COMPLETED   00:01:41                                cpu=4,mem=24G,node=1
+1035          COMPLETED   00:00:28   00:05:00           billing=4,cpu=4,mem=16G,node=1
+1035.batch    COMPLETED   00:00:28                                cpu=4,mem=16G,node=1
+1035.0        COMPLETED   00:00:28                                cpu=4,mem=16G,node=1
+1036_[0-5%2]    PENDING   00:00:00   00:30:00
+1038_[0-4%2]    PENDING   00:00:00   00:12:00
+1040_[0-4%2]    PENDING   00:00:00   00:12:00
+1041_[0-3%2]    PENDING   00:00:00   00:20:00
