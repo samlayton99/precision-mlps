@@ -414,6 +414,8 @@ The focused theoretical question is whether the coupled system can build substan
 
 The model is an analytical surrogate rather than a derived truncation of the D34 equations. Actual tanh modal coefficients include biases, additional powers and modes, and coarse-balance corrections. Establishing the correspondence requires checking those terms and their signs. Its present value is to isolate a concrete feedback whose predictions can fail: an externally prescribed decay of $h_3$ or a frozen map would remove the very interaction under study.
 
+For persistence after coarse relaxation, the [conditional stagnation note](d34_coarse_balance_stagnation.md) retains the coarse output explicitly in a three-mode surrogate. It derives a region where the effective force contracts slopes while readouts grow, gives a quantitative tolerance on readout disequilibrium for flow and GD, and proves a local inward effective field for exact tanh in the same symmetric odd sector. It then proposes experiments from observed checkpoints to test how these mechanisms extend to heterogeneous states with trained biases.
+
 ### From force feedback to a finite-time acquisition statement
 
 Force strength is only one ingredient of transport. Away from zero slopes, (C1) gives
