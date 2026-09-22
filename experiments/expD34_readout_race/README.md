@@ -131,3 +131,16 @@ Add `--geometry` and use a separate output directory for frozen-readout curves
 and capacity diagnostics. Curves use the original 2,048-point target map and an
 8,192-point evaluation grid, physical step 0.002, and unchanged raw readout
 coordinates. The capacity solves are separate from the finite-budget curves.
+
+`replay_recovery --targets runge moment5` adds the two missing equal-rate
+baselines and verifies their initialization, targets, and archived observations.
+`mechanism_run` accepts these and the original compact archive through
+`--archives`, one `--seed`, and `--fork-step 20000` or `100000`. Its six default
+arms share exactly the same saved state. Frozen blocks remain bitwise unchanged.
+The saved `steps` always use the original 0.002 reference clock; a half-step
+refinement takes two updates per clock tick and records `training_eta=0.001`.
+Positive/negative travel and path are accumulated at every actual update.
+Completed archives can resume unchanged toward a larger `--end-step`.
+
+GPU entry points must run through `mechanism.sbatch` in an isolated committed
+checkout. Queue these jobs sequentially or with an array concurrency of one.

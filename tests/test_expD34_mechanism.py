@@ -60,3 +60,22 @@ def test_frozen_diagnostic_retains_tiny_finite_time_coupling():
     expected=.002*100000*np.mean(x*x)*a[0]
     assert coeff[-1,0]==pytest.approx(expected,rel=1e-8)
     assert rows[-1]['train_mse']<=rows[0]['train_mse']
+
+
+def test_continuations_apply_old_state_gradients_and_exact_freezes():
+    import jax.numpy as jnp
+    from experiments.expD34_readout_race.mechanism_run import initial,advance_factory
+    rng=np.random.default_rng(8); z=rng.normal(size=(6,3,5))*.3; d=rng.normal(size=6)*.1
+    x=targets.grid(64); y=np.broadcast_to(np.sin(2*np.pi*x),(6,64)).copy()
+    rates=np.array(list(mech.ARMS.values()))
+    state=initial(z,d)
+    result=advance_factory(64,.002)(state,jnp.asarray(y),jnp.asarray(rates),1)
+    for i,rate in enumerate(rates):
+        _,arr=mech.force_metrics(z[i],d[i],x,y[i],rate,degree=17)
+        expected=z[i]-.002*rate[:3,None]*arr['gradient']
+        np.testing.assert_allclose(result['z'][i],expected,rtol=1e-13,atol=1e-15)
+        assert float(result['d'][i])==pytest.approx(d[i]-.002*rate[3]*arr['residual'].mean(),abs=1e-15)
+        np.testing.assert_allclose(result['positive'][i]-result['negative'][i],abs(expected[0])-abs(z[i,0]),atol=1e-15)
+        assert float(result['path'][i])==pytest.approx(.002*rate[0]*np.linalg.norm(arr['gradient'][0]))
+        for block in range(3):
+            if rate[block]==0: np.testing.assert_array_equal(result['z'][i,block],z[i,block])

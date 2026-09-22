@@ -50,7 +50,7 @@ def initial_state(z, d):
                 path=jnp.zeros_like(d), coarse=jnp.zeros_like(d), tail=jnp.zeros_like(d))
 
 
-def scientific_inputs(evidence, seeds):
+def scientific_inputs(evidence, seeds, selected=PRIMARY):
     cases, zz, dd, yy, expected, checks = [], [], [], [], [], []
     schedule = {0, 20000, 100000, 600000}
     for seed in seeds:
@@ -65,7 +65,7 @@ def scientific_inputs(evidence, seeds):
         if ih != manifest["initial_hash"] or dh != manifest["data_hash"]:
             raise ValueError(f"Archived initialization or target mismatch: seed {seed}")
         checks.append(dict(seed=seed, initial_hash=ih, data_hash=dh))
-        for target in PRIMARY:
+        for target in selected:
             cases.append(dict(seed=seed, target=target))
             zz.append(z.copy()); dd.append(d)
             yy.append(all_data[targets.TARGETS.index(target)]["y"])
@@ -73,7 +73,7 @@ def scientific_inputs(evidence, seeds):
             path = evidence / package / f"core_N128_s{seed}_curves.npz"
             arrays, cfg, archived_cases, cols = load_curated(path)
             schedule.update(int(step) for step in arrays["p0_steps"])
-            for target in PRIMARY:
+            for target in selected:
                 ci = next(i for i, case in enumerate(archived_cases)
                           if case["target"] == target and case["kappa"] == 1)
                 expected.extend(dict(seed=seed, target=target, step=int(step),
@@ -124,6 +124,7 @@ def main():
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--seeds", type=int, nargs="+", default=list(range(5)))
+    parser.add_argument("--targets", choices=targets.TARGETS, nargs="+", default=PRIMARY)
     parser.add_argument("--frontier", type=int, default=600000)
     args = parser.parse_args()
     if not jax.config.x64_enabled:
@@ -131,7 +132,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     from .run import verify_gpu
     verify_gpu(args.output)
-    cases, z, d, y, schedule, expected, checks = scientific_inputs(args.evidence, args.seeds)
+    cases, z, d, y, schedule, expected, checks = scientific_inputs(args.evidence, args.seeds, args.targets)
     schedule = sorted(set(s for s in schedule if s <= args.frontier) | {args.frontier})
     x = targets.grid(2048)
     state = initial_state(z, d)
