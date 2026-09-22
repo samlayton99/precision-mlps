@@ -441,3 +441,19 @@ moments. Tanh integrals remain numerical approximations. Direct-sum forecasts,
 node doubling, and analytic truncation bounds separate this evaluation error
 from modal-surrogate error and GD step-size effects. The default still sums
 the original samples. The linearized-feature model uses its full Gram matrix.
+
+`persistence_analyze` has four actions: `audit` resolves generated-error
+relaxation and the force derivative; `predict` constructs frozen-tangent,
+constant-gradient, and two-mode forecasts from their starting states; `bounds`
+evaluates the analytical neighborhood enclosures without future true states;
+`compare` joins the completed forecast prefixes. Each takes `--source` and
+`--root`. The exact spectral remainder is separate from nonlinear prediction
+error. Infinite-time two-mode budgets apply only to that restricted model.
+
+`persistence_verify --source ... --root ...` checks starting states, accumulated
+travel, matched numerical controls, empirical quadrature, modal reconstruction,
+and independent sampled errors against the predictive radii. Its JSON explicitly
+lists incomplete runs. `persistence_figures --root ...` renders the curated
+numerical comparisons; neither entry point writes the scientific report.
+The bound formulas are analytical real-arithmetic statements evaluated in
+ordinary FP64, not directed-rounding interval certificates.

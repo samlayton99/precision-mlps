@@ -82,7 +82,7 @@ def audit(source, root):
 
 
 def predict(source, root):
-    spectra_rows = []; summaries = []
+    spectra_rows = []; summaries = []; budgets = []
     for start, ends in ((100000, np.arange(100000, 600001, 10000)),
                         (600000, np.arange(600000, 6000001, 100000))):
         pp, x, y, hashes = pe.load_inputs(source, start, range(5))
@@ -108,6 +108,12 @@ def predict(source, root):
                 remainder = force-component[:, ranking[:rank]].sum(axis=1)
                 summaries.append(dict(seed=seed, start=start, retained=rank,
                     force_relative_error=np.linalg.norm(remainder)/np.linalg.norm(force)))
+            pair = ranking[:2]
+            future_path = np.sum(abs(spectrum['loading'][pair])*np.linalg.norm(spectrum['vectors'][:w, pair], axis=0)/spectrum['values'][pair])
+            budgets.append(dict(seed=seed, start=start, initial_maximum_gamma=np.max(abs(p[:w])),
+                two_mode_infinite_slope_path=future_path,
+                two_mode_uniform_gamma_cap=np.max(abs(p[:w]))+future_path,
+                excludes_gamma_one_in_two_mode_model=bool(np.max(abs(p[:w]))+future_path < 1.)))
             prediction = [pt.frozen_at(spectrum, int(end-start)) for end in ends]
             reduced = dict(spectrum, loading=spectrum['loading']*np.isin(np.arange(len(spectrum['loading'])), ranking[:2]))
             pair_prediction = [pt.frozen_at(reduced, int(end-start)) for end in ends]
@@ -122,6 +128,7 @@ def predict(source, root):
             constant=np.stack(constants), slope_path_bound=np.stack(paths),
             two_mode=np.stack(two), two_effective=np.stack(two_forces), spectral_parameter_error=np.stack(truncation))
     table(root/'spectrum.csv.gz', spectra_rows); table(root/'spectral_reconstruction.csv', summaries)
+    table(root/'two_mode_budgets.csv', budgets)
 
 
 def bounds(source, root):

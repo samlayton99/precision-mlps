@@ -22,6 +22,10 @@ The analytical starting point retains the coarse output alongside cubic and nint
 | $V_G,V_9,V_R$ | Signed mean-gamma velocities from generated lower modes, the hard mode, and remaining forces. |
 | $\mathcal K$ | Residual modes retained by the autonomous surrogate. |
 | $P_+(s,t)$ | Exact cumulative outward gamma travel of a particle over an interval. |
+| $H_s,u_i,\lambda_i,d_i$ | Frozen parameter Gram matrix, its eigenvectors and eigenvalues, and initial gradient loadings. |
+| $\Pi_s$ | Parameter-space orthogonal projector onto the complement of the coarse Jacobian at the starting checkpoint. |
+| $R_n,\beta_n$ | Nonlinear prediction-error radius and local one-step amplification bound. |
+| $D_{p,\Gamma}$ | Euclidean slope distance to acquisition of scale $\Gamma$ by a fraction $p$ of neurons. |
 
 ## 1. What small readout disequilibrium actually controls
 
@@ -510,6 +514,11 @@ prediction therefore says that their *changing* sensitivities are a small
 correction over the tested interval; it does not say that readouts are absent
 from the mechanism.
 
+The effective force of this frozen model is $(\Pi_s\widehat g_n)_a$, where
+$\Pi_s=I-J_{C,s}^T(J_{C,s}J_{C,s}^T)^{-1}J_{C,s}$ projects parameter vectors
+onto the complement of the starting coarse Jacobian. This projection diagnoses
+the force; (P3) still updates all parameters with the full gradient.
+
 For orthonormal eigenvectors $u_i$ of $H_s$, eigenvalues $\lambda_i\ge0$, and
 $d_i=u_i^Tg_s$, define
 
@@ -546,14 +555,14 @@ different question and can grossly overstate the available motion.
 
 One can reduce this prediction further by retaining only the eigenvectors
 carrying the initial effective slope force. Their ranking uses
-$|d_i|\|(P_Cu_i)_a\|$, with the coarse-complement projector $P_C$ fixed at the
+$|d_i|\|(\Pi_su_i)_a\|$, with the coarse-complement projector $\Pi_s$ fixed at the
 starting checkpoint. For a retained index set $I$, the omitted parameter
 displacement has the exact norm
 
 $$
 E_{\mathrm{spec}}(N)^2=
 \sum_{i\notin I}d_i^2\Phi_N(\lambda_i)^2.
-\tag{P4a}
+\tag{P5a}
 $$
 
 This follows from eigenvector orthonormality. It permits a two-mode predictor
@@ -561,6 +570,16 @@ with a separately quantified spectral remainder when two modes dominate.
 It is a reduction of the local frozen model; it is not a two-dimensional
 closure of the nonlinear transport PDE. A nonlinear error radius can be added
 to $E_{\mathrm{spec}}$ when transferring its prediction to actual GD.
+
+There is also an illustrative duration-independent statement inside this
+reduced model. If its retained eigenvalues are positive, their entire future
+slope path is bounded by
+$B_I=\sum_{i\in I}|d_i|\|u_{i,a}\|/\lambda_i$. Thus
+$\max_j|a_{j,s}|+B_I<\Gamma$ excludes even one neuron reaching $\Gamma$ at any
+later update of that model. Correcting a finite amount of generated error can
+therefore exhaust a bounded movement budget. This statement must not be
+transferred to full GD without the omitted modes and nonlinear error: a weak
+hard direction can accumulate movement over a much longer horizon.
 
 An intermediate model distinguishes evolving readout interaction from feature
 curvature. Replace each tanh feature by
