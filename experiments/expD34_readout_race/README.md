@@ -102,6 +102,15 @@ evidence supports, including failures of frozen-force predictions.
 
 ## Adam force attribution and additional targets
 
+`frozen_readout_scale --output <directory>` checks physical readout magnitudes
+on frozen construction-center sine dictionaries at $N=64,128,256$ and
+$\gamma h=0.25,0.5,1$. Zero-start GD uses the finite-time SVD recurrence;
+ordinary Adam at rates 0.002 and 0.0002 uses a QR representation of the same
+empirical loss. All cases run through 600k updates. Individual weights are
+reported relative to $h=2/N$, with interior, core, halo, and bias distinguished.
+Consecutive terminal Adam windows and direct-feature controls check numerical
+oscillations. Run locally with `JAX_ENABLE_X64=true JAX_PLATFORMS=cpu`.
+
 `frozen_scale_gap --root <Adam-evidence> --output <comparison-directory>`
 compares learned Adam geometry with common frozen gammas through 256 and with
 multiples of its own learned slopes. The latter multiplies both $a$ and $b$,
