@@ -2,7 +2,7 @@
 
 Why can noiseless gradient descent reduce the error and revive slope motion while remaining far from the intended gamma and precision regime? This extension of the [D34 scale-acquisition argument](d34_scale_acquisition_theory.md) studies that question for D34's random nonzero readouts and equal learning rates. The central mechanism is a feedback: fitting changes the residual that drives slope motion, while parameter motion changes sensitivity to that residual. Acquisition requires this feedback to sustain enough outward motion across the population. Partial error correction through better readout fitting does not establish that the required geometry has been acquired.
 
-The evidence motivates centering the post-transient theory on the effective fine force. Section 4 develops its coupled evolution, proves an amplification/depletion calculation in a cubic surrogate, and identifies what a model with a weakly accessible hard component must explain next. The tanh barrier remains conditional; the surrogate results do not prove long-time trapping from D34 initialization. All population-barrier statements concern a specified horizon and allow isolated escaping neurons.
+The evidence motivates centering the post-transient theory on the effective fine force. Section 4 develops its coupled evolution and a cubic surrogate. The [conditional stagnation note](d34_coarse_balance_stagnation.md#9-from-a-force-decomposition-to-a-persistence-prediction) now resolves persistence into slow correction of generated quadratic/cubic errors and a weak hard-mode drive. It also derives a full-GD confinement bound from a local hard-mode loss floor. The results are conditional on specified starting states; they do not establish entry into the regime from initialization. Population statements always concern a specified threshold and horizon; the strongest local bound excludes even an isolated neuron crossing scale 1 on its stated interval.
 
 **Notation. Physical parameter coordinates and the empirical mean inner product are used throughout.**
 
@@ -412,9 +412,23 @@ For comparable residual coefficients at small $|a_j|$, the direct ninth-degree s
 
 The focused theoretical question is whether the coupled system can build substantial hard-mode sensitivity before its initially accessible drive is exhausted, and how much outward motion remains if it cannot. A useful result would identify an interval of slow acquisition with a weak, nonzero hard force, allow subsequent amplification, and account for whether the movement is broad or concentrated. These are proposed results to establish, not consequences already proved by (C10)–(C11). The cubic balance is generally broken by the additional mode, so (C9) cannot simply be carried over.
 
-The model is an analytical surrogate rather than a derived truncation of the D34 equations. Actual tanh modal coefficients include biases, additional powers and modes, and coarse-balance corrections. Establishing the correspondence requires checking those terms and their signs. Its present value is to isolate a concrete feedback whose predictions can fail: an externally prescribed decay of $h_3$ or a frozen map would remove the very interaction under study.
+The model is an analytical surrogate rather than a derived truncation of the D34 equations. Actual tanh modal coefficients include biases, additional powers and modes, and coarse-balance corrections. Establishing the correspondence requires checking those terms and their signs. Freezing its kernel retains the residual coupling while removing changes in its coefficients. Whether that local approximation predicts the relevant interval is an empirical question; externally prescribing the residual decay would bypass that test.
 
 For persistence after coarse relaxation, the [conditional stagnation note](d34_coarse_balance_stagnation.md) derives an inward-force region and a quantitative tracking tolerance in a symmetric three-mode surrogate, together with a local exact-tanh result. Its degree-9 D34 experiments identify generated quadratic and cubic errors as the dominant drivers of mean contraction. An autonomous exact-tanh model retaining modes 0, 1, 2, 3, and 9 closely reproduces the coupled motion over the tested interval. Removing the lower-mode penalties leaves an outward hard-mode force too weak to acquire appreciable scale. Heterogeneous particles still move in both directions, so the population statement uses an outward-travel budget alongside the signed mean-force condition.
+
+The persistence analysis narrows the mechanism further. Two force-carrying
+directions, almost purely quadratic and cubic in output space, explain the slow
+relaxation with a fixed local tangent. Their coupled residual equations yield
+a bounded transient movement budget plus a weak persistent hard force. A
+separate argument subtracts the hard-mode loss that cannot be removed inside
+a parameter ball before applying GD descent. A step-containment induction
+then closes that ball without assuming the future trajectory stays inside.
+Ordinary FP64 evaluation excludes scale 1 for at least ten million additional
+updates from each of ten retained degree-9 starting states; this is an
+analytical conditional result with numerical constants, not a directed-rounding
+certificate or a theorem from random initialization. The same bound keeps
+relative MSE above 0.749998. The [derivation and evidence](d34_coarse_balance_stagnation.md#10-testing-what-keeps-the-force-small)
+separate this confinement claim from the accuracy of the local predictor.
 
 ### From force feedback to a finite-time acquisition statement
 
