@@ -87,3 +87,31 @@ verification and pilot evidence, immutable attempt provenance, conservative
 accounting, checkpoints, and the CPU endpoint audit. Modal's app page supplies
 live worker logs. Interpret completed scientific evidence in the owning report;
 launch success alone supports no new scientific conclusion.
+
+## Runpod late-checkpoint follow-up
+
+The supplemental Runpod work retains the combined 10 GPU-hour ceiling and
+USD 50 stop. Its separately funded pod adds no campaign spending. Reserve the
+entire Modal plan, including both pilot attempts: 31,350 GPU-seconds. Runpod
+reserves 300 seconds for a one-GPU pilot and three 1,200-second seed bundles,
+leaving 750 seconds for explicitly accounted recovery. Reservations are not
+refunded on early completion. Permit at most two Runpod GPUs across the user's
+jobs, alongside the existing two Modal workers; use only Slurm-assigned GPUs.
+
+`plateau_followup prepare` adapts the completed Modal GD checkpoints at six
+million updates into per-seed inputs, retaining every state field. It writes
+the unchanged constant-force and frozen-Jacobian forecasts before GPU work.
+`pilot` checks representative GD and Adam states, including an on-disk 13+19
+update resume against 32 uninterrupted updates. `probe --seed 0|1|2` invokes
+the existing 37-case intervention matrix for 500,000 additional updates.
+These are exploratory late interventions; they do not replace the original
+independent-seed confirmation. Numerical kernels and forecast rules are unchanged.
+
+`plateau_followup.sbatch` accepts a campaign root and phase. Submit `prepare`
+and `analysis` as CPU-only jobs with `--gres=none --mem=32G --time=01:00:00`.
+Submit `pilot` with `--gres=gpu:1 --time=00:05:00` after successful preparation;
+submit `probe` as `--array=0-2%2 --gres=gpu:1 --time=00:20:00` after the pilot.
+Disable requeues, retain exclusive bundle owners, and record every submission
+in the combined accounting before allocating GPUs. The campaign root contains
+the pinned `code`, immutable downloaded `modal` bundles and their
+`transfer_hashes.json`, separate `late` inputs/outputs, and job logs.
