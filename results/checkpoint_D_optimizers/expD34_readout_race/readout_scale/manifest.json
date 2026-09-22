@@ -1,0 +1,45 @@
+{
+  "widths": [
+    64,
+    128,
+    256
+  ],
+  "lambdas": [
+    0.25,
+    0.5,
+    1.0
+  ],
+  "horizons": [
+    0,
+    2000,
+    20000,
+    100000,
+    600000
+  ],
+  "samples": 2048,
+  "eval_samples": 8192,
+  "target": "sin(2*pi*x), unnormalized",
+  "initialization": "zero physical readouts and bias",
+  "gd_eta": 0.002,
+  "adam_rates": [
+    0.002,
+    0.0002
+  ],
+  "adam_betas": [
+    0.9,
+    0.999
+  ],
+  "adam_epsilon": 1e-08,
+  "terminal_window": "256 consecutive additional updates",
+  "direct_controls": "N128, first 20k updates, all gammas/rates",
+  "geometry": "fixed centers -1+j*(2/N), j=-3N/16,...,N+3N/16; gamma=lambda/h",
+  "gd_method": "finite-time SVD recurrence",
+  "adam_method": "QR-factor residual, ordinary Adam updates",
+  "no_readout_norm_constraint": true,
+  "no_model_selection": true,
+  "backend": "cpu",
+  "jax_version": "0.11.1",
+  "numpy_version": "2.5.1",
+  "elapsed_seconds": 80.42046395799844,
+  "source_sha256": "16a9543bebcf14d144b10592e09fed583047fe66c8c757b63c319dc0e7e2af21"
+}
