@@ -85,13 +85,15 @@ def figures(root):
     finish(fig, root/'persistence_forecasts')
 
     summary = read(root/'bound_summary.csv'); tubes = read(root/'enclosures.csv.gz'); validation = read(root/'bound_validation.csv')
+    energy = read(root/'energy_bounds.csv')
     fig, ax = plt.subplots(1, 2, figsize=(11, 4))
     xx = np.arange(len(summary))
-    ax[0].bar(xx-.18, [int(v['local_updates'])/1e6 for v in summary], width=.36, label='Starting-state path bound', color='#aaaaaa')
-    ax[0].bar(xx+.18, [int(v['enclosed_updates'])/1e6 for v in summary], width=.36, label='Frozen-forecast enclosure', color='#1f77b4')
+    ax[0].bar(xx-.25, [int(v['local_updates'])/1e6 for v in summary], width=.25, label='Starting-state gradient bound', color='#aaaaaa')
+    ax[0].bar(xx, [int(v['enclosed_updates'])/1e6 for v in summary], width=.25, label='Frozen-forecast enclosure', color='#1f77b4')
+    ax[0].bar(xx+.25, [int(v['updates'])/1e6 for v in energy], width=.25, label='Local hard-loss floor', color='#27843b')
     ax[0].set_xticks(xx, [f"{v['seed']}\n{int(v['start'])//1000}k" for v in summary])
     ax[0].set(xlabel='Seed / starting update', ylabel='Excluded horizon (million further updates)', title=r'Computed exclusion of $\gamma\geq1$')
-    ax[0].set_ylim(0, .56)
+    ax[0].set_yscale('log'); ax[0].set_ylim(.02, 80)
     ax[0].legend(fontsize=8)
     r = [v for v in tubes if v['seed'] == '0' and v['start'] == '100000' and v['closed'] == 'True']
     ax[1].plot([int(v['end'])/1e6 for v in r], [float(v['end_error']) for v in r], color='#1f77b4', label='Predictive parameter radius')

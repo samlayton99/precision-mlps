@@ -20,7 +20,7 @@ def verify(source, root):
     q = np.polynomial.legendre.legvander(x, 9) @ mapping
     rules = {n: pq.empirical_rule(x, n) for n in (64, 128)}
     field = jax.jit(pe.field, static_argnums=(5,))
-    pairs = []; checks = []; force_rows = []; refinements = []; bounds = []
+    pairs = []; checks = []; force_rows = []; refinements = []; bounds = []; energy = []
     archives = {}; hashes = {}
     for folder in sorted((root/'runs').iterdir()):
         if not (folder/'snapshots.npz').exists(): continue
@@ -109,12 +109,30 @@ def verify(source, root):
     if force_rows: pa.table(root/'quadrature_verification.csv', force_rows)
     if refinements: pa.table(root/'modal_verification.csv', refinements)
     if bounds: pa.table(root/'bound_validation.csv', bounds)
+    if (root/'energy_bounds.csv').exists():
+        with (root/'energy_bounds.csv').open() as f: energy_bounds = list(csv.DictReader(f))
+        for row in energy_bounds:
+            seed, start = int(row['seed']), int(row['start'])
+            p0 = pe.load_inputs(source, start, [seed])[0][0]
+            actual = pa.original_states(source, seed)
+            if reference:
+                actual.update({int(t): reference[1]['p'][seed, i] for i, t in enumerate(reference[1]['steps'])})
+            for step, p in actual.items():
+                if not start < step <= start+int(row['updates']): continue
+                path_bound = np.sqrt(.002*(step-start)*float(row['available_loss'])/float(row['descent_factor']))
+                displacement = np.linalg.norm(p-p0)
+                energy.append(dict(seed=seed, start=start, step=step,
+                    parameter_displacement=displacement, path_bound=path_bound,
+                    ratio=displacement/path_bound,
+                    contained=bool(displacement <= path_bound < float(row['inner_radius']))))
+        pa.table(root/'energy_validation.csv', energy)
     record = dict(run_hashes=hashes, backend='cpu', float_precision='float64',
         implementation_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         maximum_starting_error=max(r['starting_parameter_error'] for r in checks),
         maximum_motion_identity=max(r['motion_identity'] for r in checks),
         incomplete_runs=[r['run'] for r in checks if not r['complete']],
         bound_validation_failures=sum(not r['contained'] for r in bounds),
+        energy_validation_failures=sum(not r['contained'] for r in energy),
         claim='Analytical inequalities evaluated in FP64; no directed-rounding interval certification')
     (root/'verification.json').write_text(json.dumps(record, indent=2)+'\n')
     print(json.dumps({k: v for k, v in record.items() if k != 'run_hashes'}), flush=True)

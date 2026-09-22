@@ -749,6 +749,169 @@ their ordinary FP64 evaluations and numerical checks are not directed-rounding
 interval certificates. Their useful horizon must be reported separately from
 the much longer interval over which a surrogate may predict motion accurately.
 
+### A stronger bound from the loss the network cannot yet remove
+
+The force decomposition suggests another route. A large hard residual does
+not supply much movement if it cannot decrease appreciably inside the current
+parameter neighborhood. GD can spend only the loss available above that local
+floor. This yields a bound for full GD without transferring a surrogate.
+
+Here is an explicit floor. Let $R>0$ be a ball radius around $\theta_s$, and
+write $A_j=|a_{j,s}|+R$. On a Bernstein ellipse with parameter $\rho_j>1$,
+the imaginary part of $a_jx+b_j$ has magnitude at most
+$v_j=A_j(\rho_j-\rho_j^{-1})/2$. Choose $v_j<\pi/2$. Tanh is analytic there
+and has modulus at most $M_j=\max(1,\tan v_j)$, uniformly over real biases.
+Indeed,
+$|\tanh(u+iv)|^2=(\sinh^2u+\sin^2v)/(\sinh^2u+\cos^2v)$.
+The Chebyshev coefficients have magnitude at most $2M_j\rho_j^{-k}$:
+substitute $x=(z+z^{-1})/2$ and apply the Cauchy coefficient bound on
+$|z|=\rho_j$. Summing the tail from degree 9 gives a uniform degree-8
+polynomial approximation error
+
+$$
+\delta_j(R)=\frac{2M_j\rho_j^{-9}}{1-\rho_j^{-1}}.
+$$
+
+Since $q_9$ has empirical norm one and is orthogonal to every polynomial of
+degree at most 8, $|\langle q_9,h_j\rangle_m|\le\delta_j(R)$. Cauchy–Schwarz
+on the readout increments therefore gives, everywhere in the ball,
+
+$$
+|\langle q_9,f_\theta\rangle_m|
+\le H_R:=\sum_j|c_{j,s}|\delta_j(R)+R\|\delta(R)\|_2,
+\qquad
+L(\theta)\ge\ell_R:=\tfrac12[|Y_9|-H_R]_+^2.
+\tag{P10}
+$$
+
+This controls changing readouts and slopes together. It does not assume that
+the observed trajectory stays small: the next argument closes that condition.
+For each neuron the computation selects the smallest bound over 256 valid
+ellipses; every candidate separately satisfies the analytical inequality.
+
+Let $U_R$ bound the Hessian operator norm throughout the ball, using the
+upper constant in (P7), which also dominates its negative-curvature bound.
+Suppose $q_R=1-\eta U_R/2>0$ and $R>\eta\|g_s\|$. Define
+
+$$
+r_R=\frac{R-\eta\|g_s\|}{1+\eta U_R},\qquad
+\Delta_R=L(\theta_s)-\ell_R,\qquad
+Q_N=\sqrt{\frac{\eta N\Delta_R}{q_R}}.
+\tag{P11}
+$$
+
+**Conditional finite-time confinement.** If $\Delta_R\ge0$ and $Q_N<r_R$,
+then every full-GD iterate through update $N$ remains within $r_R$ of
+$\theta_s$, and its cumulative parameter path is at most $Q_N$. Consequently
+$Q_N<D_{p,\Gamma}(a_s)$ excludes the requested scale-acquisition event at
+every one of these updates.
+
+To prove this without assuming the next step remains in the ball, suppose
+the previous path is below $r_R$. The gradient bound
+$\|g_n\|\le\|g_s\|+U_Rr_R$ places the entire next step within radius
+$r_R+\eta(\|g_s\|+U_Rr_R)=R$. The descent lemma thus applies on that step:
+$L_{n+1}\le L_n-\eta q_R\|g_n\|^2$. Summing and using (P10) gives
+$\eta q_R\sum_{n<k}\|g_n\|^2\le\Delta_R$. Cauchy–Schwarz then bounds the
+path through update $k$ by $Q_k\le Q_N<r_R$, closing the induction.
+
+The resulting horizon is
+
+$$
+N<\frac{r_R^2q_R}{\eta\Delta_R}.
+\tag{P12}
+$$
+
+This explains what a generic loss-dissipation bound misses. Using the full
+remaining loss charges the large ninth-degree error to the movement budget.
+Subtracting its locally unavoidable floor leaves the generated and coarse
+errors, plus a small allowance for hard-mode improvement. Near coarse balance
+that available loss is tiny. The argument requires no contraction in mean,
+no frozen actual Jacobian, and no noise; it is conditional on an explicit
+starting state and constants over a ball. Its numerical evaluation has the
+same FP64 qualification as the preceding enclosure.
+
+## 10. Testing what keeps the force small
+
+The persistence experiment asks three distinct questions. Which term changes
+the effective force at an observed stalled state? How far can an autonomous
+model predict subsequent motion with its sensitivities held fixed? How much
+of that predicted interval can be enclosed without consulting the future true
+trajectory? Attribution, prediction, and a conditional acquisition bound answer
+these questions at different levels of strength.
+
+All comparisons use the same five retained degree-9 GD trajectories, width
+177, 2,048 fixed training midpoints, and simultaneous raw-coordinate updates
+with $\eta=0.002$. The retrospective forecast starts at update 100k and is
+checked through 600k. A prospective continuation starts at 600k and runs to
+6m. The three evolving models are exact-tanh modal GD, a model with linearized
+features and trainable readouts, and full tanh GD. Constant-gradient and frozen
+tangent predictions are computed from each starting checkpoint. No future
+true state supplies any predictor's coefficients.
+
+The five-mode tanh loss retains modes 0, 1, 2, 3, and 9 on the retrospective
+interval. The ten-mode loss retains all modes 0 through 9 on both intervals.
+The two spectral modes and the physical quadratic/cubic reduction were
+selected after inspecting the starting-state spectrum. They test an
+interpretation of the frozen model; they are not an independent model-selection
+validation. All reported errors concern this deterministic training problem.
+
+### Small generated errors carry the motion and relax slowly
+
+At the 25 original checkpoints, from 20k through 600k, the residual-evolution
+term accounts for 89.37–94.68% of the instantaneous decline of
+$\log\|F_a\|$. Changing geometry accounts for 4.89–8.89%, and changing readouts
+for 0.32–1.74%. The tracking contribution is below 0.0013% in magnitude and
+opposes the decline. These are signed projections of the four terms in (P1)
+onto $F_a/\|F_a\|^2$, not fractions of training loss or integrated causal
+effects. The norm of their sum is 92.4–95.2% of the sum of their norms, so this
+slow evolution does not conceal a large cancellation between rapidly changing
+forces.
+
+The generated-error energy gives a second check. The hard-mode contribution
+replenishes only $3.77\times10^{-6}$ to $3.63\times10^{-5}$ of the energy
+removed by generated-mode self-relaxation at those states. Thus the force is
+not being maintained by a substantial balance between fresh hard-mode forcing
+and generated-error removal. Nor do changing readouts dominate its decline in
+this regime. The generated errors themselves are simply slow to relax.
+
+Two eigenvectors account for the initial effective force to a relative vector
+error of $1.89\times10^{-5}$ to $7.15\times10^{-5}$ across the ten starting
+states. Their output directions have more than 99.8% squared overlap with the
+quadratic and cubic modes, respectively. Their measured rates correspond to
+roughly 2.8–3.7 million GD updates for one quadratic e-fold and 52–80 million
+for one cubic e-fold. A plateau over hundreds of thousands of updates is
+therefore expected even with fixed sensitivities. The much larger hard
+residual is almost invisible to these force-carrying directions.
+
+The physical two-residual calculation makes that explanation explicit. Its
+forced-equilibrium norm is $6.30\times10^{-8}$ to $1.58\times10^{-7}$, whereas
+the starting quadratic/cubic residual norm is $9.45\times10^{-4}$ to
+$1.34\times10^{-3}$. The states are far above the small forced floor.
+Its limiting effective slope-force norm is only $9.65\times10^{-11}$ to
+$3.43\times10^{-10}$. The transient slope-path budget in (P2c) is
+0.322–0.380 in Euclidean norm. These numbers describe the frozen reduction,
+not an asserted limiting state of full GD. They explain why the observed
+window is controlled by the removal of generated error rather than by the
+eventual hard-force floor.
+
+### What the transport interpretation adds
+
+In the transport equation, every neuron follows the velocity generated by the
+shared residual. The decomposition above identifies the residual channels
+that actually move those characteristics. The two dominant channels mostly
+correct output that the small-slope network generated unintentionally; their
+combined signed mean velocity is inward in the audited regime. The unresolved
+target channel is large in output norm but weak in parameter force. No
+diffusion, stochastic escape, or waiting for a random fluctuation is involved.
+
+The reduced theory therefore has two different timescales: slow decay of the
+currently accessible generated errors, and much longer accumulation of motion
+from the weak hard drive. Changes in the feature map can alter both, which is
+why the full-tanh forecast and the nonlinear enclosure remain necessary.
+What the successful frozen prediction removes is the need to posit rapid
+ongoing adjustment of the coupling to explain this interval. It preserves
+coupling through the starting tangent and its off-diagonal blocks.
+
 ## Derivation checks and evidence scope
 
 The formulas and propositions in this note are derived above. Bounded numerical checks verified 500 symmetric force decompositions and constrained-loss derivatives, 300 heterogeneous layer-energy identities with their exact GD increments, 400 readout-force transfer inequalities, and 300 phase boundaries with 600 perturbed GD contraction steps. The exact-tanh effective-force and metric identities were also checked on 257 symmetric midpoints at $a=0.2,0.1,0.05,0.025$, with $W=7$, $\beta=0.7$, and $Y_9=0.866$; the normalized loss derivative approached its positive leading coefficient as predicted. These checks support transcription and algebra. Sections 6–7 provide the separate empirical test in heterogeneous D34 states.

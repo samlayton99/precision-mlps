@@ -467,3 +467,12 @@ lists incomplete runs. `persistence_figures --root ...` renders the curated
 numerical comparisons; neither entry point writes the scientific report.
 The bound formulas are analytical real-arithmetic statements evaluated in
 ordinary FP64, not directed-rounding interval certificates.
+
+`persistence_energy --source ... --root ...` evaluates a second predictive
+bound. A Chebyshev approximation on complex ellipses bounds the hard output
+coefficient throughout a parameter ball. The resulting local loss floor,
+combined with discrete GD descent and a step-containment induction, bounds
+the total available parameter travel. `energy_bounds.csv` retains the best
+valid candidate from a fixed grid of ball radii; `energy_candidates.csv.gz`
+retains every candidate. No future trajectory enters the bound. This refinement
+was motivated by the persistence analysis rather than fixed before it.
