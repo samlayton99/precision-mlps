@@ -271,23 +271,49 @@ The term $-Se_H$ is evolution at coarse balance, $-Q^Tz_C$ corrects for imperfec
 
 ### The relation between effective fitting and effective slope force
 
-The matrix $S$ is called the Schur complement. Its positivity has a useful geometric explanation. Let $J_C,J_H$ select the coarse and higher-degree rows of the full rate-weighted Jacobian $J$ from Section 2. In that parameter space, $P_C=J_C^TC^{-1}J_C$ is the orthogonal projection onto the span of the coarse tangent vectors. Hence
+The purpose of this step is to distinguish progress in fitting the output from movement of the slopes. In the opening example, at coarse balance the higher-degree error obeys $\dot v=-v$ while the slope velocity is zero: readout movement continues to fit the error. A statement about error decay alone therefore cannot establish that slopes are acquiring scales. We need a separate measurement of the slope force associated with that decay.
+
+The two equations just derived provide those measurements. At perfect coarse tracking with no omitted residual,
+
+$$
+\underbrace{-\frac{d}{dt}\frac12\|e_H\|^2=e_H^TSe_H}_{\text{rate of fine-error energy decrease}},
+\qquad
+\underbrace{\|\dot a\|^2=\|T_ae_H\|^2}_{\text{squared slope speed}}.
+$$
+
+The first quantity includes the effects of all trained parameters. The second concerns slopes alone. With imperfect tracking or omitted residual, they describe the effective part of the dynamics; the correction terms in (3) and (4) must also be included when computing actual speed and error decay.
+
+These quantities are connected by an exact algebraic identity. For each parameter block $I\in\{a,b,c,d\}$, define $T_I=J_{I,H}^T-J_{I,C}^TB$ by the same balance substitution used for slopes, and put $G_I=T_I^TT_I$. Then
+
+$$
+\begin{aligned}
+S&=G_a+G_b+\kappa G_c+\kappa G_d,\\
+e_H^TSe_H
+&=\|T_ae_H\|^2+\|T_be_H\|^2
++\kappa\|T_ce_H\|^2+\kappa\|T_de_H\|^2.
+\end{aligned}
+\tag{5}
+$$
+
+Thus the squared effective slope force is one nonnegative part of the effective dissipation total. This proves $0\preceq G_a\preceq S$ and, when the denominator is positive, makes
+
+$$
+\frac{\|T_ae_H\|^2}{e_H^TSe_H}
+$$
+
+the slopes' share of that total. It is an allocation of squared gradients at the current state; it does not predict the effect of retraining with a parameter block frozen.
+
+Read the total and the share together. A small total bounds the effective slope force even if slopes receive most of it. A small slope share means that the other blocks account for most of the total, but only the product of share and total determines the squared slope force. In the opening example, $S=1$ and $T_a=0$: for nonzero $v$, the total is $v^2$ and the slope share is zero. Swapping the two parameter roles leaves the residual kernel unchanged but gives $T_a=1$, so the same total can instead be allocated entirely to slopes.
+
+For the gamma-barrier argument, the quantity to bound over time is the absolute force $\|T_ae_H\|$, together with the tracking and omitted contributions. The share helps explain where fitting effort goes; it is not itself a movement bound. Nor does a large force ensure outward or broadly distributed slope movement. Later metrics measure those additional requirements.
+
+**Why the identity holds.** The matrix $S=K_{HH}-Q^TC^{-1}Q$ is the Schur complement. Let $J_C,J_H$ select the coarse and higher-degree rows of the full rate-weighted Jacobian $J$. The matrix $P_C=J_C^TC^{-1}J_C$ projects onto the span of the coarse tangent vectors in that parameter space. Removing their overlap with the fine tangent vectors gives
 
 $$
 E=(I-P_C)J_H^T=J_H^T-J_C^TB,\qquad S=E^TE.
 $$
 
-We have removed the part of each fine tangent that can be accounted for by coarse tangents. Separating $E$ into parameter blocks gives the exact identity
-
-$$
-S=G_a+G_b+\kappa G_c+\kappa G_d,
-\qquad G_I=T_I^TT_I,\qquad 0\preceq G_a\preceq S.
-\tag{5}
-$$
-
-Consequently $e_H^TG_ae_H$ is the squared effective slope-force norm. The quotient $e_H^TG_ae_H/(e_H^TSe_H)$ is its share of effective fine-mode dissipation. A small share can indicate that other blocks do most of the fitting, but does not by itself imply a small force: the denominator also matters.
-
-The opening example has $J=\left(\begin{smallmatrix}3&0\\1&1\end{smallmatrix}\right)$, $K=\left(\begin{smallmatrix}9&3\\3&2\end{smallmatrix}\right)$, $S=1$, and $T_a=1-3(1/3)=0$. Swapping the two columns of $J$ leaves $K$ and $S$ unchanged but gives $T_a=1$: the slope parameter would then affect only the higher-degree error. Thus even the same total residual kernel can give different slope learning. We need the effective slope map as well as the effective total kernel to distinguish them.
+The parameter blocks of $E$ are $T_a,T_b,\sqrt\kappa T_c,\sqrt\kappa T_d$, stacked vertically. Multiplying out $E^TE$ proves (5). This also explains why $S$ is positive semidefinite: its quadratic form is a squared norm. The projection argument supplies the algebra behind the measurements above; it does not establish that the total or the slope share remains small during training.
 
 ## 4. Establish tracking, then convert force into a population barrier
 
