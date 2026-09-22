@@ -246,3 +246,45 @@ all scalar tables losslessly, mode-0-through-9 residual coefficients,
 mode-2-through-9 force curves, and verified states
 at fixed milestones and sampled post-20k force maxima. The full compact archives
 remain separate from this curated Git evidence package.
+
+## Conditional stagnation near coarse balance
+
+`stagnation_run` tests whether correction of generated lower modes sustains
+weak scale acquisition in the retained degree-9 joint-GD states. It compares
+the full tanh loss, exact-tanh residual losses retaining modes 0/1/2/3/9 or
+0–9, and the full loss with penalties on modes 2–8 removed. Every arm trains
+all four parameter blocks by simultaneous raw-coordinate GD. Coarse projection
+is used to measure forces; it is never imposed on the training update.
+
+First audit and deduplicate the retained states and prepare the shared inputs:
+
+```bash
+JAX_ENABLE_X64=true JAX_PLATFORMS=cpu OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  .venv/bin/python -m experiments.expD34_readout_race.stagnation_run audit \
+  --curated results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/curated \
+  --output results/checkpoint_D_optimizers/expD34_readout_race/coarse_balance
+```
+
+For each `--arm full`, `five_mode`, `ten_mode`, and `remove_lower`, submit
+`stagnation_run run --inputs <inputs.npz> --output <unique run directory>
+--arm <arm> --eta 0.002` through `mechanism.sbatch` in an isolated committed
+checkout. Run the four arms sequentially. Repeat each with `--eta 0.001` in
+a separate directory. The primary setting batches all five seeds at the 20k
+and 100k starts; the half step uses seed 0 at both starts. The default horizon
+is 20,000 reference updates (physical time 40), giving 40 primary continuations
+and eight numerical controls.
+
+The audit includes all parameter-block tracking forces, readout conditioning,
+degree-65/129 diagnostic comparisons, individual signed slope forces, and
+fixed-state loss-penalty and hard-target probes. Continuations sample their own
+active-loss forces every 200 reference updates, with extra early samples after
+intervention. Exact positive/negative scale travel, gradient path, layer-energy
+identities, and full-complement coarse tracking travel are accumulated every
+actual GD update. Sampled finite-degree tracking and omitted forces are reported
+separately. Fixed-state effective-direction reversals do not by themselves
+predict raw GD motion after the loss changes.
+
+The five-mode choice uses prior checkpoint evidence; the continuations test
+that fixed choice without fitting coefficients or importing future states.
+These are training-grid optimization measurements. Partial error reduction
+and small outward drift are not evidence of the intended scale or precision.

@@ -26,11 +26,12 @@ def law_initial(width, nodes):
     return z*np.sqrt(6/(width+1)), 0., weights
 
 
-def field(z, d, x, y, weights, width, modes):
+def field(z, d, x, y, weights, width, modes, *, remove=False):
     """Unscaled characteristic negative velocities and both residuals.
 
 An empty mode matrix means the full empirical residual. Otherwise all four
 parameter blocks train the squared norm of the projected residual.
+With remove=True, train its orthogonal complement instead.
 """
     a, b, c = z
     u = x[:, None]*a+b
@@ -39,6 +40,8 @@ parameter blocks train the squared norm of the projected residual.
     s = 4*exp/(1+exp)**2
     r = h @ (width*weights*c)+d-y
     projected = modes @ (modes.T @ r/len(x)) if modes.shape[1] else r
+    if remove:
+        projected = r-projected
     g = jnp.stack((c*(x @ (projected[:, None]*s))/len(x),
                    c*(projected @ s)/len(x), h.T @ projected/len(x)))
     return g, jnp.mean(projected), r, projected, h, s
