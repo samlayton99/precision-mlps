@@ -144,3 +144,9 @@ Completed archives can resume unchanged toward a larger `--end-step`.
 
 GPU entry points must run through `mechanism.sbatch` in an isolated committed
 checkout. Queue these jobs sequentially or with an array concurrency of one.
+
+`mechanism_summarize --root <evidence> --archives <completed archives...>` joins
+the `*_metrics` and `*_geometry` outputs into per-seed endpoints, paired
+intervention contrasts, numerical identity checks, and figures. Keep half-step
+verification outputs in a separate subdirectory rather than pooling them as
+additional independent seeds. Reports are written directly after inspection.
