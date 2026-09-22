@@ -4,7 +4,9 @@ Why can training fit the output while a population of slopes fails to acquire a 
 
 The theorem applies to actual simultaneous GD, including random nonzero readouts and nonlinear signal regeneration. It does not establish that its hypotheses hold for every D34 initialization. The [technical theory note](d34_transport_scale_barrier.md) gives the broader transport formulation; the [evidence report](../results/checkpoint_D_optimizers/expD34_readout_race/transport_barrier/README.md) records the numerical tests. Here the goal is to make the mathematical steps and diagnostic interpretation accessible without prior knowledge of Schur complements or transport PDEs.
 
-The population event is a precise benchmark, not the definition of all useful scale learning. The subsequent [useful-slope study](../results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/README.md) finds that moderate, heterogeneous slope growth can substantially improve target access without meeting that event. Section 7 below explains the additional measurement needed to connect this theorem's movement accounting to the broader research question.
+The population event measures one part of the failure to reach the gamma and precision regime motivated by the approximation theory. The subsequent [fixed-geometry readout study](../results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/README.md) measures partial error reduction at the observed small gammas. Those errors remain far from precision; better readout fitting does not establish successful scale acquisition. Section 7 explains how to retain these measurements without replacing the research objective by relative improvement.
+
+The [mechanism companion](d34_transport_mechanisms.md) develops this interpretation through illustrative results on affine arrest, weak nonlinear transport, residual depletion during coupled fitting, and population flux. It separates those results from a proof of long-time trapping from D34 initialization.
 
 **Notation. Physical parameters and empirical norms are used throughout.**
 
@@ -675,11 +677,11 @@ Rate interventions also constrain the explanation: slowing readout increases deg
 
 The width-operator check approaches powers 1, 1, and 2 at an affine-law reference. Actual finite-seed exponents over widths 89–353 are approximately 0.81, 0.72, and 1.68 and vary across seeds. Together these support a regime prediction while leaving uniform moment control and finite-width transfer unresolved.
 
-### Measure whether the acquired geometry is useful
+### Distinguish partial readout correction from the intended scale regime
 
-Consider degree 3 first. Its equal-rate final mean slope is about 0.22, and the path theorem still excludes the requested 10% population at 3.2. Yet its learned geometry supports much faster readout learning than its initial geometry. There is useful acquisition even though this particular population event is absent.
+Consider degree 3 first. Its equal-rate final mean slope is about 0.22, and the path theorem excludes the requested 10% population at 3.2. Readout fitting reduces error on the final geometry, but the remaining error is far from precision and the gamma regime remains far from that motivated by the theory. This is partial correction within the observed regime, not evidence that the intended geometry has been acquired.
 
-To quantify that distinction, freeze a supplied geometry $(a,b)$ and train a fresh raw readout from zero for a fixed budget $H$, using the same physical step for every geometry. Define
+To measure that partial correction, freeze a supplied geometry $(a,b)$ and train a fresh raw readout from zero for a fixed budget $H$, using the same physical step for every geometry. Define
 
 $$
 \mathcal U_H(a,b)=
@@ -687,11 +689,11 @@ $$
 {\|y_{\rm eval}\|^2},
 $$
 
-where $A$ contains the tanh features and the constant feature, and $v_H$ collects the diagnostic weights and output bias. This is a diagnostic readout, distinct from the actual trained $c,d$. It is never fed into joint training. A smaller $\mathcal U_H$ means better target access under the specified readout map, initialization, rate, and budget; it is not an intrinsic, target-independent geometry score.
+where $A$ contains the tanh features and the constant feature, and $v_H$ collects the diagnostic weights and output bias. This is a diagnostic readout, distinct from the actual trained $c,d$. It is never fed into joint training. A smaller $\mathcal U_H$ means a smaller error under the specified readout map, initialization, rate, and budget. It does not establish precision or acquisition of the gamma regime sought by the theory.
 
-At $H=600{,}000$, the median degree-3 value decreases from 0.75053 on the initial geometry to 0.02480 on the learned geometry. Degree 9 remains near 0.75001. The construction-center, common-gamma comparison supplies a separate reference: degree 9 reaches 0.003624 at gamma 16 under the same diagnostic. This does not make gamma 16 necessary for every heterogeneous representation.
+At $H=600{,}000$, the median degree-3 value decreases from 0.75053 on the initial geometry to 0.02480 on the final geometry. Degree 9 remains near 0.75001. These are substantial unresolved errors. The construction-center, common-gamma comparison supplies a separate reference: degree 9 reaches 0.003624 at gamma 16 under the same diagnostic. That finite-budget readout result is also not a precision result, and does not make gamma 16 necessary for every heterogeneous representation.
 
-Between two snapshots, evaluate $(a_s,b_s)$, $(a_t,b_s)$, $(a_s,b_t)$, and $(a_t,b_t)$ to separate changes in slopes, biases, and their interaction. These fixed-geometry comparisons are complemented by actual continuations with slopes, biases, or readouts frozen. The distinction matters: freezing readout can yield more mean slope growth yet worse geometry on Runge; on degree 3 it can yield useful geometry whose frozen coefficients cannot exploit it. Frozen slopes prevent the large later lower-order recoveries within the tested budget.
+Between two snapshots, evaluate $(a_s,b_s)$, $(a_t,b_s)$, $(a_s,b_t)$, and $(a_t,b_t)$ to separate changes in slopes, biases, and their interaction. These fixed-geometry comparisons are complemented by actual continuations with slopes, biases, or readouts frozen. Freezing readout can yield more mean slope growth yet a higher fresh-readout error on Runge; on degree 3, a fresh readout can reduce the error left by the frozen coefficients. Frozen slopes prevent the large later lower-order error reductions within the tested budget. These comparisons explain partial fitting changes, without establishing the desired scale or precision regime.
 
 The [new evidence package](../results/checkpoint_D_optimizers/expD34_readout_race/useful_slopes/README.md) also measures signed derivatives of the force. For $F_a=T_ae_H$, the exact flow identity is
 
@@ -701,15 +703,15 @@ $$
 
 Here $f_H$ is the omitted-mode forcing already defined in the fine-residual equation. The four terms describe changing sensitivities, fine-residual evolution, tracking, and omitted modes. Their inner products with $F_a$ sum to $d\|F_a\|^2/(2dt)$. They explain force amplification or weakening at the supplied state; they do not by themselves predict the future. In particular, fine-residual relaxation can rotate the residual toward a more slope-sensitive direction, so its contribution to force magnitude need not be negative.
 
-The resulting framework follows three links: available residual, sustained outward movement, and useful acquired geometry. A reduced model is optional. The immediate theoretical task is to understand which target and state conditions strengthen or break these links, rather than assuming that every small movement budget explains a failure to learn useful features.
+The resulting framework follows the remaining residual, sustained outward movement, and the unresolved distance to the intended scale and precision regime. The immediate theoretical task is to explain why the observed force and fitting recovery still fail to deliver that regime. The movement budget establishes a population exclusion; the readout diagnostic records the partial correction possible before acquisition.
 
 ## 8. A practical reading order
 
-1. **Specify the outcome and interval.** For useful acquisition, fix the target and frozen-readout diagnostic. For a population barrier, additionally fix $(p,\Gamma)$. State the starting state, horizon, physical rates, and whether the data are actual GD, a projected forecast, or law quadrature. Inspect counts and distributions before naming a barrier.
+1. **Specify the outcome and interval.** State the intended precision and scale regime. For a population barrier, fix $(p,\Gamma)$; for a readout diagnostic, also fix its initialization, rate, and budget. State the starting state, horizon, physical rates, and whether the data are actual GD, a projected forecast, or law quadrature. Inspect counts and distributions before naming a barrier.
 2. **Separate error from signal.** Read $R$, $\|g_a\|$, and $\Xi$ together. For the effective force, separate residual size, coupling $\mu_a^{\rm eff}$, and allocation $\theta_a^{\rm eff}$.
 3. **Check the coarse explanation.** Compare removal and regeneration vectors, tracking contribution, and omitted force. A small coarse residual or positive sampled contraction rate alone is insufficient.
 4. **Identify what changes the signal.** Use signed $D_I$ for normalized depletion/regeneration, and effective modal contributions for surviving force. Use rate interventions to test dynamical consequences; do not equate instantaneous attribution with an intervention.
-5. **Follow motion into useful geometry.** Inspect alignment, positive/negative travel, concentration, and threshold counts, then evaluate $\mathcal U_H$ and crossed slope/bias geometries. More mean growth need not give more useful features; useful features need not require the chosen population threshold.
+5. **Compare motion with the intended regime.** Inspect alignment, positive/negative travel, concentration, and threshold counts, then evaluate $\mathcal U_H$ and crossed slope/bias geometries. Record partial error reductions together with the remaining error and scale gap; do not infer successful acquisition from a relative readout improvement.
 6. **Choose the strength of the conclusion.** An exact measured path below $\mathcal D$ gives retrospective exclusion, subject to numerical verification. Independent forecasts give predictive evidence. Independently justified envelopes in (10)–(14) give a theorem. Each is useful, but they answer different questions.
 
 The mathematical assumptions identify quantities that need control, and failures of those assumptions identify mechanisms worth studying. The metrics remain useful even when the proof cannot yet close: they show whether the obstruction is weak coupling, readout allocation, renewed coarse forcing, poor direction, concentrated motion, or an inadequate approximation.
