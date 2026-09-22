@@ -1,19 +1,19 @@
 {
-  "base_commit": "5c2685db2c9d3375d2af877052c79c4a258602f9",
+  "base_commit": "4ccb2c97b4742c0add4991ddada3e13cad4a0745",
   "pdf": {
     "pages": 2,
-    "bytes": 210256,
+    "bytes": 190446,
     "latex_warnings": 0,
     "all_fonts_embedded": true,
-    "visual_review": "Both final pages inspected; shared gamma colors, uncluttered axes, no overlapping or clipped labels",
+    "visual_review": "Both final pages inspected; enlarged panel B has explicit forecast/measurement legend, measured GD checkpoints, and readable crossing labels; no overlaps or clipping",
     "text_bounds_checked": true,
-    "relative_links_checked": 7,
+    "relative_links_checked": 8,
     "build_command": "latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=/tmp/gamma-pi-latex docs/gamma_optimization_pi_brief.tex"
   },
   "evidence": {
-    "source_files": 13,
-    "previously_tracked_sources": 9,
-    "archived_model_files_added": 4,
+    "source_files": 25,
+    "previously_tracked_sources": 13,
+    "archived_model_files_added": 0,
     "gammas": [
       8,
       12,
@@ -30,7 +30,13 @@
     "maximum_gd_final_residual_gap": 8.919080751734754e-15,
     "adam_line_convention": "Straight segments connect saved checkpoints; no resampling or smoothing.",
     "figure_reproduction": "PNG, PDF, and data JSON byte-identical",
-    "previous_review_artifact_hashes_unchanged": 14
+    "previous_review_artifact_hashes_unchanged": 14,
+    "archived_gd_files_added": 12,
+    "archived_gd_files_exact_copies": true,
+    "gd_checkpoints_checked": 1796,
+    "maximum_gd_checkpoint_residual_gap": 8.919080751734754e-15,
+    "gd_marker_convention": "Saved checkpoints nearest 18 equally spaced log-update counts per gamma; all checkpoints retained and checked.",
+    "gd_prediction_extent": "Each run ends at its final executed update"
   },
   "full_suite": {
     "command": "python -m pytest -q -p no:cacheprovider -m 'not slow'",
@@ -39,7 +45,7 @@
     "skipped": 9,
     "deselected": 4,
     "warnings": 10,
-    "seconds": 274.55,
+    "seconds": 278.03,
     "baseline_failure_match": true,
     "failures": [
       "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
@@ -60,16 +66,16 @@
       "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
       "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
     ],
-    "log_sha256": "7cf5b15eaff36b9638455c74064a0ba9e869c8235f9696eb920657daa6933b98"
+    "log_sha256": "73de6721458481a2675af4cd5ad6dcd7ebe3536e03e21e8b456b244cea77d22e"
   },
   "artifact_sha256": {
-    "docs/gamma_optimization_pi_brief.md": "cd89e6ef2b8be2cc5d8dfcb50ddd1e2093dc588eb57b43bcf2515a572460fa26",
-    "docs/gamma_optimization_pi_brief.tex": "3ac7149550857c0c77be41aa6c90144acb246246de98debd810d71ec3472a13f",
-    "docs/gamma_optimization_pi_brief.pdf": "8f4642eafe0f68d827f7aefe1b178598c61564d8c11a1a62c3b562cfa7a48cc2",
-    "experiments/expD36_frozen_gamma_probe/pi_brief_figure.py": "268614e9a17d159db7ba3262b637641294c664a08e38d451b5ea9e3e81523744",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.png": "84070800914f2945654267f7ed954a2aff0ec858dd8d0479ddd0373fa9d5f8b4",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.pdf": "4eba5bf8911af49106d5bc11becc2bd844a744280bf8fdb8b5b4e0c38e2e6a86",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_figure_data.json": "6480e2540226fbdecb3fb06d09b397dd6e28ab1dac3b6238ecbf7757ad46bfc5"
+    "docs/gamma_optimization_pi_brief.md": "66e8480aafcc6254b0a44b99a2b5aed5b52724077bed5b4b1658451af8f38480",
+    "docs/gamma_optimization_pi_brief.tex": "4f4cbc406240bffe3185923160ee6f0de20fe3aa8fb733e207e9c82151f2b869",
+    "docs/gamma_optimization_pi_brief.pdf": "0e79790d36fc836642209f4d08c58d40a68aef3c66b5cab939081e99cca98429",
+    "experiments/expD36_frozen_gamma_probe/pi_brief_figure.py": "7fd7cfb3f75324e85a8c73155ca94e5a83d098c1c3fdb9ad5ae5d93ff8420b85",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.png": "da26b716930cfa4c9f563ce668d11ea4a23a7ecd0a6844711bcff5998bfae953",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.pdf": "00f11d21dd0efe5fcb8c9cf50d80c9071d7dbfbec22282bd951f486223076cfe",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_figure_data.json": "92cad52683d4d8b28568349270102accf7f36fa39c44064b2d1b8b9c692ca74f"
   },
   "gpu_hours": 0
 }

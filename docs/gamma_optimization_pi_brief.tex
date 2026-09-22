@@ -70,11 +70,13 @@ Fourier frequencies need not be kernel eigenvectors.
  \caption{\textbf{Same target, different access during optimization.}
  The target is $\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x)$,
  with 559 fixed-center features and 8193 training inputs on $[-1,1]$.
- \textbf{A:} The exact gamma filter; vertical guides mark the target frequencies.
- \textbf{B:} Solid curves are kernel predictions; open circles mark executed GD
- first hits of 1\%. Dotted verticals project predicted crossings onto update time.
- \textbf{C:} Adam learning curves join saved checkpoints, with identical optimizer
- settings across gammas. Dashed horizontals mark 1\%. Both optimizers start at zero;
+ \textbf{A:} The analytic gamma filter; vertical guides mark the target frequencies.
+ \textbf{B:} Lines are kernel predictions; open circles are actual GD checkpoints,
+ subsampled for visibility. Diamonds mark measured first hits of 1\%; dotted
+ verticals locate predicted crossings. The predicted and measured crossing counts
+ coincide for all four gammas.
+ \textbf{C:} Adam curves join saved checkpoints under identical settings.
+ Dashed horizontals mark 1\%. Both optimizers start at zero;
  GD uses $\eta_\gamma\simeq0.5/\|K_\gamma\|_2$.}
 \end{figure}
 

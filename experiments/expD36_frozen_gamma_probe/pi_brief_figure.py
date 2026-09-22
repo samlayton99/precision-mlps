@@ -77,7 +77,26 @@ def collect(folder):
         final_error = actual['training']['final_train'][0]
         final_gap = abs(error(model, final_step)[0]-final_error)
         assert final_gap < 1e-10
-        steps = np.unique(np.r_[0, np.geomspace(100, 30000000, 420).astype(int),
+        archive = f"refinements/capped_kernel/evidence/gd_trajectories/{actual['id']}"
+        meta, training = read(archive+'/meta.json'), read(archive+'/training.json')
+        assert training == actual['training']
+        assert meta['matrix_hash'] == actual['matrix_hash']
+        assert meta['target_hash'] == actual['target_hash']
+        assert meta['eta'] == dictionary['eta']
+        assert meta['map'] == 'raw' and meta['initialization'] == 'zero'
+        checkpoints = [dict(step=c['step'], residual=c['train'][0])
+                       for c in read(archive+'/curve.json')]
+        assert all(a['step'] < b['step'] for a, b in zip(checkpoints, checkpoints[1:]))
+        assert checkpoints[-1] == dict(step=final_step, residual=final_error)
+        checkpoint_gap = max(abs(error(model, c['step'])[0]-c['residual'])
+                             for c in checkpoints)
+        assert checkpoint_gap < 1e-10
+        # Select markers by update count only, never by agreement with the forecast.
+        # Keep every checkpoint in the data export and the numerical comparison.
+        log_steps = np.log([c['step'] for c in checkpoints])
+        marker_indices = np.unique([int(np.argmin(abs(log_steps-s)))
+                                    for s in np.linspace(log_steps[0], log_steps[-1], 18)])
+        steps = np.unique(np.r_[0, np.geomspace(1000, final_step, 420).astype(int),
                                  forecast_hit, hit, final_step])
         residual = [float(error(model, int(n))[0]) for n in steps]
         assert np.isclose(residual[0], 1, rtol=0, atol=1e-12)
@@ -85,7 +104,9 @@ def collect(folder):
             executed_hit=hit, predicted_hit=forecast_hit,
             necessary=certified['necessary'], sufficient=certified['sufficient'],
             eta=dictionary['eta'], observed_final_step=final_step,
-            observed_final_residual=final_error, final_prediction_gap=float(final_gap)))
+            observed_final_residual=final_error, final_prediction_gap=float(final_gap),
+            checkpoints=checkpoints, marker_indices=marker_indices.tolist(),
+            maximum_checkpoint_prediction_gap=float(checkpoint_gap)))
 
         gi = cont_case['gammas'].index(gamma)
         pi = selection['indices'][gi][ci]
@@ -112,7 +133,9 @@ def collect(folder):
         attenuation=attenuation, gd=gd, adam=adam, delay_ratio=timing['ratios'][0],
         source_sha256=sources,
         plotting_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        evidence_role='GD: kernel forecast and executed first hits. Adam: saved common-recipe checkpoints.',
+        evidence_role='GD: kernel forecast, executed trajectory checkpoints, and executed first hits. Adam: saved common-recipe checkpoints.',
+        gd_checkpoint_archive='/workspace/junmiaoh/experiments/precision-mlps/runs/frozen_gamma_cap_v1/cases',
+        gd_marker_convention='Saved checkpoints nearest 18 equally spaced log-update counts per gamma; all checkpoints retained and checked.',
         adam_line_convention='Straight segments connect saved checkpoints; no resampling or smoothing.',
         gpu_hours=0)
 
@@ -126,8 +149,9 @@ def plot(data, output):
         'axes.spines.top': False, 'axes.spines.right': False, 'axes.edgecolor': '#9AA3AA',
         'axes.linewidth': .6, 'xtick.major.width': .6, 'ytick.major.width': .6,
         'pdf.fonttype': 42, 'ps.fonttype': 42})
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.2))
-    fig.subplots_adjust(left=.065, right=.985, bottom=.17, top=.75, wspace=.45)
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.35),
+                             gridspec_kw={'width_ratios': [1, 1.65, 1]})
+    fig.subplots_adjust(left=.065, right=.985, bottom=.17, top=.74, wspace=.48)
     handles = [Line2D([], [], color=c, lw=2, label=rf'$\gamma={g}$')
                for g, c in zip(GAMMAS, COLORS)]
     fig.legend(handles=handles, loc='upper center', bbox_to_anchor=(.5, 1.015),
@@ -137,7 +161,7 @@ def plot(data, output):
         ax.plot(data['frequency_cycles'], row['multiplier'], color=color, lw=1.9)
     for frequency in [1, 3, 5]:
         ax.axvline(frequency, color='#CCD1D5', lw=.65, ls=(0, (2, 3)), zorder=0)
-    ax.set(title='A  Gamma filters the features', xlabel=r'Frequency $\omega/(2\pi)$',
+    ax.set(title='A  Feature attenuation', xlabel=r'Frequency $\omega/(2\pi)$',
            ylabel=r'Feature amplitude retained, $M_\gamma$', xlim=(0, 8), ylim=(0, 1.03))
     ax.set_xticks([0, 2, 4, 6, 8])
     ax.set_yticks([0, .5, 1], ['0', '0.5', '1'])
@@ -145,13 +169,26 @@ def plot(data, output):
     ax = axes[1]
     for row, color in zip(data['gd'], COLORS):
         ax.plot(row['steps'], 100*np.array(row['residual']), color=color, lw=1.7)
+        saved = [row['checkpoints'][i] for i in row['marker_indices']]
+        ax.scatter([c['step'] for c in saved], [100*c['residual'] for c in saved],
+                   s=15, facecolors='white', edgecolors=color, linewidths=.9, zorder=4)
         ax.vlines(row['predicted_hit'], .1, 1, color=color, lw=.8, ls=(0, (2, 2)))
-        ax.scatter(row['executed_hit'], 1, s=33, facecolors='white', edgecolors=color,
-                   linewidths=1.4, zorder=5)
-    ax.set(title='B  GD from the kernel', xlabel='Gradient updates',
+        ax.scatter(row['executed_hit'], 1, s=23, marker='D', color=color,
+                   edgecolors='white', linewidths=.5, zorder=5)
+    ax.legend(handles=[Line2D([], [], color=ink, lw=1.7, label='Kernel prediction'),
+                       Line2D([], [], color=ink, lw=0, marker='o', ms=4,
+                              markerfacecolor='white', label='Measured GD')],
+              loc='upper right', frameon=False, fontsize=7.5, handlelength=1.8,
+              borderaxespad=.15, labelspacing=.4)
+    for row, color, alignment in [(data['gd'][-1], COLORS[-1], 'left'),
+                                   (data['gd'][0], COLORS[0], 'right')]:
+        ax.text(row['predicted_hit'], .135, f"{row['predicted_hit']:,}", color=color,
+                ha=alignment, va='bottom', fontsize=7.5)
+    ax.text(1000, 1.12, '1% target', color=gray, fontsize=7.5)
+    ax.set(title='B  GD: prediction and training', xlabel='Gradient updates',
            ylabel='Relative residual (%)', xscale='log', yscale='log',
-           xlim=(100, 30000000), ylim=(.1, 100))
-    ax.set_xticks([1e2, 1e4, 1e6], [r'$10^2$', r'$10^4$', r'$10^6$'])
+           xlim=(800, 30000000), ylim=(.1, 100))
+    ax.set_xticks([1e3, 1e5, 1e7], [r'$10^3$', r'$10^5$', r'$10^7$'])
     ax.set_yticks([.1, 1, 10, 100], ['0.1', '1', '10', '100'])
 
     ax = axes[2]
@@ -186,8 +223,9 @@ def main():
     plot(data, output)
     (output/'pi_brief_figure_data.json').write_text(json.dumps(data, indent=2, allow_nan=False)+'\n')
     print(json.dumps(dict(sources=len(data['source_sha256']), gd_crossings=len(data['gd']),
+        gd_checkpoints=sum(len(r['checkpoints']) for r in data['gd']),
         adam_checkpoints=sum(len(r['checkpoints']) for r in data['adam']),
-        max_gd_endpoint_gap=max(r['final_prediction_gap'] for r in data['gd']))))
+        max_gd_checkpoint_gap=max(r['maximum_checkpoint_prediction_gap'] for r in data['gd']))))
 
 
 if __name__ == '__main__':
