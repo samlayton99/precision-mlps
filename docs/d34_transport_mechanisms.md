@@ -4,6 +4,8 @@ Why does noiseless gradient descent remain far from the gamma regime motivated b
 
 This note develops the intuition behind the [conditional barrier walkthrough](d34_barrier_theorem_walkthrough.md). It proves elementary results for the actual tanh vector field and for an illustrative coupled model, then connects them to the measured D34 trajectories. The purpose is to understand mechanisms present in the failure cases. The results do not establish a long-time barrier from D34 initialization.
 
+The [coupled-evolution exposition](d34_transport_scale_barrier.md#4-coupled-evolution-of-the-residual-and-slope-sensitivity) develops the next step: how changing residual direction and parameter sensitivity amplify or deplete the effective slope force. It derives the cubic model's force peak, introduces a two-mode surrogate with a weakly accessible hard component, and connects this feedback to the finite-time population barrier.
+
 **Notation. Inner products are empirical means over the fixed training grid.**
 
 | Symbol | Meaning |
