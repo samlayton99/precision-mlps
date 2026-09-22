@@ -41,6 +41,34 @@ work runs alongside them. Remaining budget is reserved for paired mechanism
 interventions selected from the diagnostic contrasts, with the selection
 recorded before running those interventions.
 
+The paired GD probes are fixed before execution: degrees 3, 4, 5, and 9,
+mixed sine, localized sine, and chirp; seeds 0–2; forks at 100k and 600k;
+500k further updates. `plateau_probes` compares joint GD, frozen readout,
+clamping the fine-residual input to the effective slope force at its fork
+value, and removing only the slope tracking correction. The last two are
+artificial diagnostic dynamics. Clamping keeps the current force map and
+ordinary tracking force; it does not freeze the whole gradient. Frozen-readout
+results also measure the balance using the remaining movable blocks.
+
+For pure degrees 4, 5, and 9, additional losses multiply the squared residual
+in degrees 2 through $k-1$ by 0, 0.1, or 10; weight 1 is the joint-GD arm.
+The target, initialization, and residual basis stay fixed. These are 37 paired
+cases per fork and seed. Exact positive/negative slope travel, signed force
+channels, zero-crossing correction, force coherence, and unresolved projections
+are retained. Changing the lower-mode penalty tests generated-mode opposition;
+it is not evidence about ordinary GD unless the unmodified arm agrees.
+
+Independent confirmation uses seeds 20–24, the seven GD anchors, and Adam on
+degree 9, mixed sine, and chirp through 1.1 million updates. Parameter-free
+constant-force and frozen-Jacobian GD predictions are written at 100k and
+600k, before the next 500k updates. No coefficients are fitted to future
+trajectories. The same intervention matrix starts at 600k for these new seeds.
+The prespecified comparisons are force-vector error, norm ratio, signed
+outward movement, and error reduction. Prediction failure on recovering targets
+is a scientific outcome, not a reason to change the validation set. No
+conditional inequality is promoted to a predictive theorem without independent
+control of its future assumptions.
+
 Training uses the original 2048 midpoints, fixed target definitions, width
 177, FP64, and physical rate 0.002. Independent-grid errors check deterministic
 approximation, not statistical generalization. No held-out model-selection
