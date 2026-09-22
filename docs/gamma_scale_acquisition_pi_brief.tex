@@ -38,8 +38,9 @@
 The companion brief, \emph{Gamma controls readout learning speed}, establishes
 why scale matters. Here we ask why joint training often fails to acquire it.
 Rate interventions support competition between readout and geometry; an early
-theorem captures signal depletion; the current approach studies the fine-residual
-sensitivity that survives coarse fitting. The long-time prediction is still open.
+theorem captures signal depletion; the current approach asks which remaining
+errors can still drive slope growth. GD and Adam help separate gradient activity
+from sustained outward motion. A quantitative long-time prediction is still open.
 
 {\small
 \textbf{Notation.} Parameter-vector norms are Euclidean; residual norms use the stated data measure.\par
@@ -49,7 +50,7 @@ $a_j,b_j,w_j,d$ & Hidden slope, hidden bias, readout weight, and output bias.\\
 $\gamma_j=|a_j|$, $\bar\gamma$ & Individual slope magnitude and its population mean.\\
 $r=f-y$, $L=\|r\|_m^2/2$ & Residual and half-MSE; $\|r\|_m^2=m^{-1}\sum_i r(x_i)^2$.\\
 $\kappa$, $t=\eta n$ & Readout/geometry rate ratio and flow clock for GD update $n$.\\
-$e_C,e_H$, $\mu_a^{\rm eff}$ & Coarse/fine residual coefficients and effective slope sensitivity (Section 3).\\
+$e_C,e_H$, $\mu_a^{\rm eff}$ & Mean/linear error, remaining error, and effective slope sensitivity (Section 3).\\
 \bottomrule
 \end{tabularx}}
 
@@ -58,36 +59,45 @@ The jointly trained model is
 \begin{equation}\label{eq:model}
  f(x)=d+\sum_{j=1}^W w_j\tanh(a_jx+b_j).
 \end{equation}
-Reparameterization first motivated the timescale hypothesis: a fixed scaling
+Our first mechanistic evidence was that reparameterizing readout versus
+geometry changed gamma acquisition. A fixed scaling
 $\theta=Du$ makes a GD step in $u$ induce
 $\Delta\theta=-\eta DD^T\nabla_\theta L$. For example, training signed slopes
 in grid units $h a_j$, with fixed reference spacing $h$, multiplies the physical
 slope step by $h^{-2}$.
 These changes alter the relative mobility of readout and geometry.
 The subsequent direct intervention isolates the rate ratio: keep slope and
-hidden-bias rate $\eta=0.002$ fixed, and vary the readout and output-bias rate
+hidden-bias rate $\eta$ fixed, and vary the readout and output-bias rate
 $\kappa\eta$, from exactly the same random initial parameters [1].
+
+\textbf{Why measure the mean and linear trend?}
+At small initialization, $\tanh(a_jx+b_j)\approx a_jx+b_j$, so the network
+mainly represents a constant plus a linear trend. We call the projection of
+the residual onto these two functions the \emph{coarse error}; the remaining
+non-affine error is the \emph{fine error}. This is a definition of what we
+measure, not an assumption that training has already fitted it.
+Figure~\ref{fig:rates} tests whether faster readout fitting leaves less slope
+growth. Each horizontal position is a different rate ratio, not a training time.
 
 \begin{figure}[h!]
  \centering
  \includegraphics[width=\linewidth]{rate_intervention.pdf}
- \caption{\textbf{Faster readout removes coarse error sooner and leaves less slope growth.}
- Ordinary simultaneous GD, $W=177$, 2,048 training midpoints, five paired seeds,
- 20,000 updates. Target: $0.3\phi_0+0.4\phi_1+\sqrt{0.75}\phi_9$, with empirically
- orthonormal polynomial modes $\phi_k$. Coarse means constant and linear.
- Bold lines show medians; faint curves and shading retain all seeds. B measures net mean-slope change
- at the common final update. These are allocation effects while fine error remains large.}
+ \caption{\textbf{Faster readout fits the mean and linear trend sooner, while gamma grows less.}
+ A: updates until the coarse-error norm reaches 1\% of its initial value.
+ B: net change in mean $\gamma$ after the same 20,000 updates.
+ The illustrative target combines a constant, a linear trend, and a degree-nine
+ polynomial component. All parameters train simultaneously: $W=177$,
+ 2,048 training points, geometry rate $0.002$, five paired seeds.
+ Bold lines are medians; faint lines and shading show the seeds.}
  \label{fig:rates}
 \end{figure}
 
-Increasing $\kappa$ from 1 to 100 changes the median coarse-fitting time from
-1,675 to 33 updates and mean slope growth from $0.002332$ to $0.00004810$:
-\textbf{48.5 times less growth}, with independent-grid MSE still about $0.75$.
-At the same coarse-error threshold, the growth contrast is already present
-($0.002298$ versus $0.00004822$). It is therefore not just a comparison at
-different stages of the transient. The effect is target dependent: Runge can
-gain slope growth with faster readout. The evidence supports a coupled
-allocation mechanism, not a universal prescription to slow the readout.
+The trend is consistent with a race: readout adaptation can reduce the error
+that would otherwise move the slopes, before much gamma growth accumulates.
+Fine error remains large, and the growth contrast is also present when runs
+are compared at the same coarse-error threshold. This is mechanistic evidence
+for competition. Its direction varies with the target, so it does not yet
+give a universal rule for choosing the relative rates.
 
 \clearpage
 \section*{2. First proof idea: quantify early signal depletion}
@@ -154,11 +164,10 @@ counterfactual. Individual contributions can later become negative.
 
 \textbf{Why this was not yet quantitatively predictive.}
 The proof supplies width and time scaling, but its conservative constants do
-not give tight bounds at our experimental widths. For one audited target an
-explicit old bound contains $905520/W$, subject to sufficient-width conditions;
-the refined asymptotic post-depletion prediction is about $0.2623/W$.
-These are not competing certified bounds at $W=512$: the contrast exposes
-the slack between a uniform proof estimate and the predicted leading signal.
+not give tight bounds at our experimental widths. Uniform remainder estimates
+can be much larger than the surviving signal they bound. The asymptotic
+readout share quantifies a mechanism, but does not predict how far gamma moves,
+when useful scales are reached, or whether nonlinear forcing later recovers.
 The guarantee also covers an early logarithmic-time window and a zero-readout
 law, whereas the long D34 trajectories start with random nonzero readouts.
 Accurate cubic or quintic reference forecasts help, but measured agreement
@@ -169,7 +178,7 @@ force that remains, including its subsequent recovery, on the actual training
 trajectory. That motivates resolving the gradient-flow equations more directly.
 
 \clearpage
-\section*{3. Current approach: the sensitivity left after coarse fitting}
+\section*{3. Current approach: identify the force that still moves slopes}
 Return to the empirical model \eqref{eq:model}, with all four blocks trained,
 random nonzero readouts, and equal physical rates. Its slope equation is
 \begin{equation}\label{eq:slope}
@@ -178,7 +187,8 @@ random nonzero readouts, and equal physical rates. Its slope equation is
 \end{equation}
 Residual size alone cannot determine this velocity: the residual must align
 with each current slope tangent, and the readout weight multiplies that tangent.
-We now identify the force after constant and linear fitting have relaxed [3].
+We now separate the contribution associated with the mean and linear trend
+from the force supplied by the remaining error [3].
 
 \textbf{Resolve the residual into coarse and fine components.}
 Choose a fixed empirical orthonormal basis $q_k(x)$ on the training points,
@@ -222,13 +232,13 @@ balanced coarse response $-J_{a,C}^TBe_H$. Setting $e_C=0$ would omit it.
 hardest target mode. These identities are exact for the full complement;
 a truncated modal calculation must retain its omitted-residual corrections.
 
-\textbf{The measurements identify which force to study.}
-Across 13 targets and five seeds, updates 20,000--600,000, the tracking channel
-contributes at most \textbf{0.469\%} of
-$\sum_n(\|J_{a,C}^Tz_C\|+\|T_ae_H\|)$ in ordinary equal-rate GD [4].
-This is a fraction of summed component norms, not net gamma growth.
-It supports concentrating on $T_ae_H$ over this observed interval.
-The same simplification does not hold for Adam.
+\textbf{Why focus on the effective fine force?}
+Across the post-transient GD panel (13 targets, five seeds), $J_{a,C}^Tz_C$
+is small and $T_ae_H$ accounts for nearly the whole slope gradient [4]. Adam gives a useful
+contrast: coarse disagreement can be large without supplying positive net
+gamma growth (Figure~\ref{fig:force}). Thus the quantity to understand is
+the surviving force and its sustained outward direction, not residual size
+or instantaneous gradient magnitude alone.
 
 \textbf{Arriving at the effective sensitivity.}
 For $R_H=\|e_H\|>0$, let $u_H=e_H/R_H$ and define
@@ -244,30 +254,38 @@ strongly that error can move the slopes}. It also incorporates interference
 between direct fine forcing and the induced coarse response.
 
 \clearpage
-{\color{ink}\large\bfseries What this sensitivity suggests next}\par
+{\color{ink}\large\bfseries Large gradient activity need not acquire scale}\par
+In the mixed-sine example, coarse disagreement is small in GD but comparable
+to the full slope gradient in Adam. Yet it supplies no positive signed
+mean-gamma growth in any of the five Adam seeds shown.
 \begin{figure}[h!]
  \centering
- \includegraphics[width=\linewidth]{effective_sensitivity.pdf}
- \caption{\textbf{Coarse disagreement is small, but the surviving sensitivity is target dependent.}
- Equal-rate GD, $W=177$, 2,048 training points, seeds 0--4; the polynomial targets
- share their coarse coefficients and fine-target energy.
- Upper row: full slope-gradient norm, effective fine-force norm, and tracking-force
- norm. Black and dashed blue nearly coincide. Lower row: \eqref{eq:sensitivity}.
- Lines join saved-state medians; shading spans seeds, with separate vertical ranges.
- The clock $t=0.002n$ labels GD states; these are measured trajectories, not
- continuous-time certificates. Gradients are evaluated at those states.}
+ \includegraphics[width=\linewidth]{force_and_motion.pdf}
+ \caption{\textbf{Adam's large coarse-disagreement force does not imply outward growth.}
+ A--B: gradient norms on each optimizer's trajectory, with a shared vertical
+ scale; lines are five-seed medians, shading spans seeds. C: signed Adam
+ contributions accumulated at every update; diamonds show net growth and gray
+ accounts for zero crossings. Orange is negative despite its large norm in B.
+ A normalized sum of three sine waves; $W=177$, 2,048 points, rate $0.002$,
+ updates 20,000--600,000 [4].}
  \label{fig:force}
 \end{figure}
 
-At update 600,000, the degree-nine case still has median fine-residual norm
-$R_H=0.8660$, but $\mu_a^{\rm eff}=7.51\times10^{-11}$.
-The degree-three case has $R_H=0.1596$ and
-$\mu_a^{\rm eff}=1.54\times10^{-5}$ [4].
-The latter recovers appreciable sensitivity before weakening again;
-degree nine remains weakly coupled despite its large error.
-Thus a single small endpoint gradient cannot explain the history.
+\textbf{For Adam, the test must use the actual updates.}
+Split the first-moment history by channel and apply the \emph{same actual
+second-moment denominator} to both. Then
+$\Delta a_n=\Delta a_n^{\rm eff}+\Delta a_n^{\rm track}$, with exact accounting
+\begin{equation}\label{eq:adam-motion}
+ D_k=\sum_n\frac{\sign(a_n)^T\Delta a_n^k}{W},\qquad
+ \Delta\bar\gamma=D_{\rm eff}+D_{\rm track}+X.
+\end{equation}
+Here $X\ge0$ is the absolute-value remainder at zero crossings. Coarse activity
+mostly cancels or points inward, while the fine channel supplies positive drift.
+Tracking can contribute positively on other targets; this accounting does not
+establish what removing it would do. Large disagreement also remains when
+the instantaneous balance uses Adam's metric [4].
 
-\textbf{The race now has an explicit dynamical form.}
+\textbf{Back in gradient flow, the race has an explicit dynamical form.}
 Write $F_a=T_ae_H$. Differentiating the force gives
 \begin{equation}\label{eq:force-evolution}
  \dot F_a=
@@ -275,11 +293,9 @@ Write $F_a=T_ae_H$. Differentiating the force gives
  -\underbrace{T_aSe_H}_{\text{evolving fine residual}}
  -\underbrace{T_aK_{HC}z_C}_{\text{tracking correction}}.
 \end{equation}
-Readout evolution affects both $T_a$ and $S$: it can improve coupling while
-also fitting away the residual that supplies the drive. Residual direction
-can rotate as components fit at different speeds, so even decreasing residual
-energy need not decrease force. These effects explain why permanently
-discarding nonlinear recovery would miss the competition.
+Readout evolution changes both $T_a$ and $S$: coupling can improve while the
+driving residual depletes or rotates. Both weakening and renewed forcing
+remain possible.
 
 To connect sensitivity to acquisition, define the signed outward alignment
 $\chi_a=-\sign(a)^TF_a/(\sqrt W\|F_a\|)$ where $F_a\ne0$.
@@ -289,22 +305,16 @@ Away from slope zero crossings, the exact flow identity is
  =\frac{R_H\sqrt{\mu_a^{\rm eff}}\,\chi_a}{\sqrt W}
   -\frac{\sign(a)^TJ_{a,C}^Tz_C}{W},\qquad |\chi_a|\le1.
 \end{equation}
-Sensitivity determines available force; alignment determines whether it
-sharpens or flattens the network. A population claim additionally needs its
-distribution across neurons. With bounds on the full slope force, the exact
-GD path budget $\eta\sum_n\|g_{a,n}\|$ can be compared with the distance to a
-specified acquired population [3]. The measured budget is a retrospective
-check; a prediction requires independently justified bounds along the trajectory.
+Sensitivity measures available force; alignment determines outward growth.
+A population claim also needs its distribution across neurons. Adam requires
+the filtered, preconditioned direction in \eqref{eq:adam-motion}.
 
 \textbf{Working hypothesis.}
-After coarse relaxation, readout--geometry feedback can leave the remaining
-error weakly coupled to slopes, or remove its useful driving components before
-enough outward motion accumulates. The promising object is therefore the
-\emph{evolving, target-dependent sensitivity} in \eqref{eq:sensitivity}, together
-with the force evolution in \eqref{eq:force-evolution}.
-The next proof must control this feedback and its tracking correction from
-initialization or a justified entry state. The decomposition and measurements
-identify that problem; they do not yet prove a long-time acquisition barrier.
+Readout--geometry feedback may weaken sensitivity or deplete useful residual
+directions before enough outward motion accumulates. Controlling
+$R_H\sqrt{\mu_a^{\rm eff}}$ and its alignment could predict acquisition time
+or bound attainable motion. This connects the ODEs directly to gamma growth;
+the missing proof is control of that feedback over time.
 
 \vspace{2pt}
 {\footnotesize
@@ -315,11 +325,8 @@ identify that problem; they do not yet prove a long-time acquisition barrier.
 \href{run:../results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/README.md}{[4] Expanded GD/Adam force study}.
 The companion motivation is
 \href{run:../../precision-mlps-frozen-gamma-probe/docs/gamma_optimization_pi_brief.pdf}{\emph{Gamma controls readout learning speed}}.
-Figures replot existing fp64 results; no new training was run. Exact inputs,
-selected plotting values, checks, and hashes are in
+Figures replot existing fp64 runs. Inputs, values, checks, and hashes are in
 \href{run:assets/gamma_scale_acquisition_pi_brief/evidence.json}{the evidence record}.
-Rebuild figures with \texttt{python -m experiments.expD34\_readout\_race.pi\_brief\_figures};
-the LaTeX source gives the compilation command. Local source links resolve
-within the research checkout; the argument above is self-contained.
+Figure and PDF rebuild commands are in the LaTeX source. Links resolve locally.
 }
 \end{document}
