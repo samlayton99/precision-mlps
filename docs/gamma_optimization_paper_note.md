@@ -7,6 +7,9 @@ updates. Small gamma strongly attenuates fine spatial variation. Carrying
 this filter through the finite training geometry predicts the measured
 learning delay: in our controlled comparison, reducing gamma from 64 to 8
 requires 986.59 times as many updates to reach the same attainable accuracy.
+Across five tested targets, the measured slowdown ranges from 3.34 to
+986.59, and all 19 available executed acquisition times lie inside their
+predicted intervals; one further run is censored.
 The mechanism is exact; the size of the delay depends on the target,
 geometry, and optimizer. The theorem below states the mechanism, the main
 figure tests its quantitative consequences, and the appendix supplies the
@@ -172,6 +175,35 @@ centers with a common slope; the tight numerical intervals evaluate the
 specified geometry and target. They do not assert that every target slows
 by the same factor or that learning time is monotone in gamma.
 
+The archived study also evaluates four other targets on the same geometry
+and at the same four slopes. They cover a single oscillation frequency, a
+localized rational profile, a quadratic, and an exponential of a sine.
+Every target reaches 1% at both gamma 8 and gamma 64, allowing a measured
+comparison of acquisition times at those endpoints.
+
+**Table 3. The gamma-induced delay depends strongly on the target.**
+Each entry is the executed first-hit count at gamma 8 divided by that at
+gamma 64, rounded to two decimals. The samples, centers, zero readout
+initialization, 1% relative-residual tolerance, and curvature-normalized
+step rule are shared with Table 2. Appendix E gives the predicted
+intervals, executed counts, and verification status for all four slopes.
+
+| Target | Exact function $f^\star(x)$ | Measured slowdown |
+|---|---|---:|
+| Single sine | $\sqrt2\sin(2\pi x)$ | 3.34× |
+| Runge | $1/(1+25x^2)$ | 45.16× |
+| Quadratic | $\sqrt5x^2$ | 58.17× |
+| Exponential of sine | $\exp(\sin(3\pi x))$ | 178.05× |
+| Sine mixture | $\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(10\pi x)$ | 986.59× |
+
+The same gamma filter produces very different acquisition delays because
+each target places different energy in the finite kernel's learning
+directions. These observations support a quantitative, target-dependent
+explanation rather than a universal slowdown factor. In particular, the
+quadratic still needs 58.17 times as many updates at gamma 8: low polynomial
+degree alone does not imply fast acquisition in this tanh dictionary.
+The finite geometry and target alignment remain part of the calculation.
+
 ## Three panels: observed scale gap, measured delay, and a slope intervention
 
 <figure>
@@ -211,14 +243,70 @@ integral. Each pair of steps becomes a pair of tanh features; the constant
 term stays one. Bounded features and an integrable density justify the
 exchanges. The steps themselves need not be integrable on the whole line.
 
-With Fourier convention
-$\widehat\rho(\omega)=\int\rho(t)e^{-i\omega t}\,dt$, the identity
-$\int\operatorname{sech}^2(t)e^{-iat}\,dt=\pi a/\sinh(\pi a/2)$
-and the substitution $t\mapsto\gamma t$ give $M_\gamma$.
-The [technical proof](gamma_factorized_readout.md#2-exact-gamma-factorization-before-sampling)
-derives that transform. Its zero-frequency value follows by continuity.
-At small $z$, $z/\sinh z=1-z^2/6+O(z^4)$; at large $z$ it is
-asymptotic to $2ze^{-z}$.
+To derive the multiplier, use Fourier convention
+$\widehat\rho(\omega)=\int_{\mathbb R}\rho(t)e^{-i\omega t}\,dt$.
+For a real number $a>0$, set
+
+$$
+I(a)=\int_{\mathbb R}\frac{e^{-iau}}{\cosh^2u}\,du,
+\qquad F(\zeta)=\frac{e^{-ia\zeta}}{\cosh^2\zeta}.
+$$
+
+Integrate $F$ counterclockwise around the rectangle with vertices
+$-R,R,R+i\pi,-R+i\pi$, where $R>0$, and let $R\to\infty$.
+On either vertical side, $|e^{-ia\zeta}|\le e^{a\pi}$ and
+$|\cosh(\pm R+iv)|^2=\sinh^2R+\cos^2v\ge\sinh^2R$ for
+$0\le v\le\pi$. The vertical integrals therefore tend to zero.
+Since $F(u+i\pi)=e^{a\pi}F(u)$ and the upper side is traversed
+from right to left, the two horizontal integrals tend to
+$(1-e^{a\pi})I(a)$.
+
+The only pole inside the rectangle is the double pole at
+$\zeta_0=i\pi/2$. Writing $w=\zeta-\zeta_0$ and using
+$\cosh(\zeta_0+w)=i\sinh w$ gives
+
+$$
+F(\zeta_0+w)=e^{a\pi/2}
+\left(-\frac1{w^2}+\frac{ia}{w}+O(1)\right),
+\qquad
+\operatorname{Res}_{\zeta=\zeta_0}F=ia e^{a\pi/2}.
+$$
+
+The residue theorem now yields
+
+$$
+(1-e^{a\pi})I(a)=-2\pi a e^{a\pi/2},
+\qquad
+I(a)=\frac{\pi a}{\sinh(\pi a/2)}.
+$$
+
+The odd sine part of the real-line integrand integrates to zero, so $I$
+is real and even; the formula extends to negative $a$. At $a=0$,
+$I(0)=\int_{\mathbb R}\operatorname{sech}^2u\,du=2$, also the continuous
+limit of this expression. Substituting $u=\gamma t$ proves the transform
+with its normalization:
+
+$$
+\widehat\rho_\gamma(\omega)
+=\frac12 I(\omega/\gamma)
+=\frac{\pi|\omega|/(2\gamma)}
+{\sinh(\pi|\omega|/(2\gamma))}
+=M_\gamma(\omega),
+\qquad M_\gamma(0)=1.
+$$
+
+In particular, averaging a wave $e^{i\omega t}$ gives
+
+$$
+\int_{\mathbb R}\rho_\gamma(x-t)e^{i\omega t}\,dt
+=M_\gamma(\omega)e^{i\omega x}.
+$$
+
+This makes the frequency interpretation precise in either kernel input,
+without taking an ordinary integrable Fourier transform of the step
+features themselves. For $z=\pi|\omega|/(2\gamma)$, expansion of
+$\sinh z$ gives $M_\gamma=1-z^2/6+O(z^4)$ as $z\to0$, while
+$\sinh z\sim e^z/2$ gives $M_\gamma\sim2ze^{-z}$ as $z\to\infty$.
 
 Finally, $z/\sinh z$ decreases for $z>0$, since its derivative has
 numerator $\sinh z-z\cosh z<0$. The latter expression vanishes at zero
@@ -302,6 +390,8 @@ are contractions; the implemented refinement also retains the error's
 action on the target. Dividing necessary and sufficient counts across
 gammas gives the reported ratio interval. All approximation matrices and
 full margin formulas belong to the linked technical proof.
+The margin formulas are exact-arithmetic statements. The verification
+status of their numerical evaluations is recorded separately in Appendix E.
 
 ## Appendix C. Gamma proportional to width preserves relative bandwidth
 
@@ -356,7 +446,10 @@ and saved steps. They do not certify each floating-point iterate or every
 plotted curve. The underlying filter calculation exposes its arithmetic
 sensitivity allowance separately. Across five targets and four slopes,
 all 19 available executed hits lie inside the selected intervals; the
-remaining run was censored. This is training evidence, with no held-out
+remaining run was censored. Appendix E distinguishes the four certified
+primary intervals from the sixteen control-target intervals, which have
+floating-point sensitivity checks without separate interval certificates.
+This is training evidence, with no held-out
 generalization claim and no newly executed training for this note.
 
 The [evaluation report](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/REPORT.md)
@@ -374,3 +467,70 @@ repository root with:
 MPLCONFIGDIR=/tmp/gamma-paper-mpl \
 python -m experiments.expD36_frozen_gamma_probe.paper_figure
 ```
+
+## Appendix E. Complete five-target acquisition results
+
+The five target functions are defined exactly in Table 3. Every row below
+uses the same 559-neuron geometry, 8,193 training samples, zero raw readout
+initialization, half empirical mean squared error, and saved step for its
+gamma, approximately $0.5/L_\gamma$. The tolerance is 1% relative residual.
+Each interval is the selected combined filter prediction: the analytic
+approximation margin and the target-action refinement are combined as
+described in the technical proof. Harmonic resolutions are selected from
+the calculated bounds, without fitting endpoints to executed GD hits.
+
+The verification column describes the numerical evidence for each interval:
+
+- **Interval-certified:** an independent 192-bit interval-arithmetic audit
+  certifies the excluded and sufficient iterates for nominal-real tanh on
+  the archived binary inputs and step. This applies to the sine mixture.
+- **FP64-checked:** the prediction has double-precision reference and
+  arithmetic-sensitivity checks, including a disclosed heuristic allowance
+  for transcendental evaluations. No independent interval-arithmetic
+  certificate was computed for these targets. A zero-width numerical
+  interval alone does not establish a certified exact first hit.
+
+**Table 4. All twenty target–gamma predictions and their executed checks.**
+Times count ordinary readout GD updates to 1% training residual. All 19
+available first hits lie inside the selected intervals. The quadratic at
+gamma 12 is censored and is not counted as an executed crossing.
+
+| Target | Gamma | Predicted interval | Executed first hit | Verification |
+|---|---:|---:|---:|---|
+| Sine mixture | 8 | 15,784,048–15,812,623 | 15,798,313 | Interval-certified |
+| Sine mixture | 12 | 186,057–186,058 | 186,057 | Interval-certified |
+| Sine mixture | 16 | 61,792–61,792 | 61,792 | Interval-certified |
+| Sine mixture | 64 | 16,013–16,013 | 16,013 | Interval-certified |
+| Exponential of sine | 8 | 426,231–426,249 | 426,240 | FP64-checked |
+| Exponential of sine | 12 | 34,752–34,753 | 34,753 | FP64-checked |
+| Exponential of sine | 16 | 11,961–11,961 | 11,961 | FP64-checked |
+| Exponential of sine | 64 | 2,394–2,394 | 2,394 | FP64-checked |
+| Runge | 8 | 26,104–26,104 | 26,104 | FP64-checked |
+| Runge | 12 | 3,566–3,566 | 3,566 | FP64-checked |
+| Runge | 16 | 1,606–1,606 | 1,606 | FP64-checked |
+| Runge | 64 | 578–578 | 578 | FP64-checked |
+| Quadratic | 8 | 879,431–879,555 | 879,493 | FP64-checked |
+| Quadratic | 12 | 269,286–269,299 | Censored at 200,000 | FP64-checked |
+| Quadratic | 16 | 119,631–119,633 | 119,632 | FP64-checked |
+| Quadratic | 64 | 15,119–15,119 | 15,119 | FP64-checked |
+| Single sine | 8 | 7,466–7,466 | 7,466 | FP64-checked |
+| Single sine | 12 | 5,263–5,264 | 5,263 | FP64-checked |
+| Single sine | 16 | 4,289–4,289 | 4,289 | FP64-checked |
+| Single sine | 64 | 2,233–2,233 | 2,233 | FP64-checked |
+
+The censored run stopped before acquisition. Its separate original-kernel
+spectral forecast is 269,292 updates, inside the filter-derived interval,
+but neither forecast is an executed hit. The other nineteen rows compare
+predictions against actual GD crossings. These checks assess the
+target-dependent timing calculation on the archived training problems;
+they do not extend the theorem to a universal learning-time ordering over
+targets or dictionaries.
+
+The [numerical summary](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/summary.json)
+contains all twenty selected intervals, their harmonic resolutions, and
+the executed-hit records. The
+[interval audit](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/interval_audit.json)
+supports the four certification labels. The
+[evaluation report](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/REPORT.md)
+documents sensitivity checks and unresolved individual approximation
+resolutions as well as the selected results.
