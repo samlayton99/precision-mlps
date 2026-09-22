@@ -37,13 +37,14 @@ These claims concern continuation from observed stalled states. Full GD through 
 
 ### The argument and how to read it
 
-The note answers three questions in order. Each needs a different kind of result.
+The note answers four questions in order. Each needs a different kind of result.
 
 1. **Why can fitting error shrink slopes?** Sections 1–5 isolate the direction mechanism. After defining coarse balance, a small surrogate shows why preserving the coarse output while flattening features can reduce unwanted cubic error. Its contraction theorem is conditional and restricted to identical neurons.
 2. **Does that mechanism describe the observed network?** Sections 6–8 test it on heterogeneous tanh networks. Quadratic error is also essential, and individual neurons move in both directions. The transport formulation converts their outward travel into a population-acquisition bound.
 3. **Why does the regime last, and for how long can acquisition be excluded?** Sections 9–10 develop and test the two-error predictor, then bound actual GD using the small amount of loss it can remove locally. Small coarse disequilibrium alone supplies neither conclusion.
+4. **What happens when we weaken the identified force?** Section 11 predicts the immediate and coupled response to selective attenuation, then states what additional control turns that response into an acquisition bound. Its proposed interventions have not yet been run.
 
-For the latest explanation, read Section 1, then [Section 9](#9-from-a-force-decomposition-to-a-persistence-prediction) and its evidence in Section 10. Sections 2–5 explain the sign mechanism in detail. The technical estimates needed to evaluate the finite-time bounds are collected in Appendices A–B, after the main argument.
+For the latest explanation, read Section 1, then [Section 9](#9-from-a-force-decomposition-to-a-persistence-prediction) and its evidence in Section 10. [Section 11](#11-perturbing-the-identified-effective-force) develops the next tests. Sections 2–5 explain the sign mechanism in detail. The technical estimates needed to evaluate the finite-time bounds are collected in Appendices A–B. Appendix C preserves the separate optimal-readout hypothesis and its unverified assumptions.
 
 ## 1. What small readout disequilibrium actually controls
 
@@ -1193,6 +1194,274 @@ This also clarifies the earlier penalty-removal result: eliminating generated
 error correction can reverse the effective direction while leaving the hard
 force much too weak to acquire appreciable scale over the tested interval.
 
+## 11. Perturbing the identified effective force
+
+The experiments have already narrowed the explanatory object. In the audited regime, the effective fine force supplies the relevant slope motion; coarse disequilibrium and the orthogonal residual are controlled corrections. The next intervention should therefore change a specified part of that effective force and predict the response. It should not restart the search for a dominant driver among terms already found to be small.
+
+This section develops conditional response results for simultaneous, noiseless GD. They are mathematical statements about specified interventions, not new evidence that the conditions hold along a long sine continuation. The [experiment protocol](../experiments/expD34_readout_race/README.md#proposed-effective-force-perturbations) specifies how to test them. The readout-size observation remains useful context: a change in readout size matters here through its effect on the identified force, rather than supplying an independent acquisition mechanism.
+
+### 11.1 Define what is removed before predicting its effect
+
+**Example.** In Section 7, removing lower-mode penalties reverses the eventual effective direction but leaves extremely small outward travel. That experiment changes the loss and every parameter block. To ask more directly whether a mode drives slope motion, we can instead attenuate only its contribution to the slope update while leaving the ordinary readout, bias, and output-bias updates intact.
+
+**Theory.** At each state write the exact slope decomposition, for the chosen finite modal basis, as
+
+$$
+g_a=F_a+R_a,\qquad F_a=T_ae_H,\qquad
+R_a=J_{a,C}^Tz_C+g_{a,\perp}.
+\tag{Q1}
+$$
+
+For the finite empirical polynomial basis through degree $D$, take $H=\{2,\ldots,D\}$. Here $g_{a,\perp}$ comes from the residual orthogonal to those retained polynomial modes, not from projection onto the full feature span or a least-squares readout solve. It stays outside the intervention, including when all retained fine modes are attenuated. The proposed protocol uses $D=65$ and verifies the decomposition at $D=129$.
+
+For a selected set $I\subset H$, define the full-parameter effective map and the selected force by
+
+$$
+T=J_H^T-J_C^TC^{-1}J_CJ_H^T,\qquad
+U_I=T_Ie_I,\qquad F_{a,I}=(U_I)_a.
+\tag{Q2}
+$$
+
+Here $T_I$ denotes the columns indexed by $I$. This definition requires $C=J_CJ_C^T$ to be invertible; uniform conditioning is an additional hypothesis whenever derivative bounds are used below. Let $E_a$ insert a slope vector into the full parameter vector, with zeros in all other blocks, and put $p_I=E_aF_{a,I}$. Removing a fraction $\varepsilon\in[0,1]$ means iterating
+
+$$
+\theta_{n+1}^{\varepsilon}
+=\theta_n^{\varepsilon}-\eta\nabla L(\theta_n^{\varepsilon})
++\eta\varepsilon p_I(\theta_n^{\varepsilon}).
+\tag{Q3}
+$$
+
+All quantities on the right are evaluated at the same old state. Every force, including the balance correction inside $T_I$, is recomputed on the intervened trajectory. The non-slope blocks receive their original GD updates at that trajectory's state. They are not frozen, nor forced to equal the baseline trajectory after the fork. In particular, this is not equivalent to weighting $e_I^2$ in the loss: that change would directly modify all blocks and would initially remove $J_I^Te_I$, rather than $T_Ie_I$.
+
+**Prediction.** If modes 2 and 3 explain the observed inward slope motion, their slope-only attenuation must produce the immediate signed response below. Failure of this fixed-state identity indicates a decomposition or intervention implementation error. Whether that change persists is a separate prediction requiring the coupled analysis in Section 11.3.
+
+### 11.2 The immediate response is affine until an absolute-value crossing
+
+**Example.** An inward component can dominate a tiny outward component. Removing it changes the direction without making the remaining velocity large. Section 7 exhibits precisely this distinction. A perturbation test must measure both direction and attainable travel, rather than equating a sign reversal with recovered learning.
+
+**Theory: fixed-state response.** Fix a state with every $a_j\ne0$, and let $s_j=\operatorname{sign}(a_j)$. The instantaneous mean-gamma velocity under (Q3) is
+
+$$
+V(\varepsilon)=-\frac1W\sum_j s_j(g_{a,j}-\varepsilon F_{a,I,j})
+=V(0)+\varepsilon D_I,\qquad
+D_I=\frac1W\sum_j s_jF_{a,I,j}.
+\tag{Q4}
+$$
+
+The original contribution of this channel to mean-gamma velocity is $-D_I$. Thus removing an inward channel has $D_I>0$. If $V(0)<0$, an inward-to-outward reversal within the allowed intervention range is possible exactly when $D_I>0$ and $-V(0)/D_I<1$; equality gives zero velocity at complete removal. The crossing fraction is $\varepsilon_*=-V(0)/D_I$. If $D_I\le0$, attenuation cannot reverse that initial inward direction. The same formula applies to a particular nonzero neuron by dropping the average. It does not bound the persistence of the new direction.
+
+For an exact GD step, define
+
+$$
+\Delta_j(\varepsilon)=-\eta g_{a,j}+\eta\varepsilon F_{a,I,j},\qquad
+\xi_{\rm abs}(a,\Delta)=|a+\Delta|-|a|-\operatorname{sign}(a)\Delta,
+\quad \operatorname{sign}(0)=0.
+$$
+
+Then
+
+$$
+\frac1W\sum_j\bigl(|a_j+\Delta_j(\varepsilon)|-|a_j|\bigr)
+=\eta V(\varepsilon)+\frac1W\sum_j\xi_{\rm abs}(a_j,\Delta_j(\varepsilon)).
+\tag{Q5}
+$$
+
+For $a\ne0$, $\xi_{\rm abs}=0$ unless the step crosses zero; after a crossing it is $2|a+\Delta|$. At $a=0$, it equals $|\Delta|$. In all cases $0\le\xi_{\rm abs}\le2|\Delta|$. This is the exact absolute-value remainder, not discretization error. The left side is a continuous, convex, piecewise-affine function of $\varepsilon$. Its possible breakpoints are
+
+$$
+\varepsilon_j^{\rm cross}
+=\frac{\eta g_{a,j}-a_j}{\eta F_{a,I,j}},
+\tag{Q6}
+$$
+
+for nonzero $F_{a,I,j}$ and breakpoints in $[0,1]$. On every interval between these breakpoints, the exact sign threshold follows by solving the affine expression there. Equation (Q4) alone gives the exact finite-step mean increment only when the correction in (Q5) vanishes. A neuron initially at zero requires (Q5), rather than a chosen sign convention interpreted as a derivative of $|a|$.
+
+**Proof.** Substitute the modified slope increment into the signed sum to obtain (Q4). Equation (Q5) is the defining identity for $\xi_{\rm abs}$. For nonzero $a$, separate whether $a+\Delta$ has the same sign as $a$. The remaining statements follow from absolute value applied to an affine function of $\varepsilon$.
+
+**Prediction.** Evaluate (Q4)–(Q6) before running continuations. The measured first step must match (Q5), including crossings. Report the remaining outward speed at complete removal and its one-step travel, not just $\varepsilon_*$. Near cancellation, retain modes that were negligible relative to the original contraction but are comparable with the surviving outward force.
+
+### 11.3 Coupled feedback has a first variation and a finite-time error bound
+
+**Example.** A slope-only intervention leaves the first readout update unchanged, but the changed slopes alter later residuals and Jacobians. Subsequent readout updates can therefore diverge from the baseline. A fixed-state force budget cannot predict that feedback; a response equation can.
+
+**Theory: discrete first variation.** Let $\theta_n=\theta_n^0$ be the baseline GD trajectory from a common initial state. Assume $L$ is twice continuously differentiable and $p_I$ is continuously differentiable near the finite trajectories in question. Define
+
+$$
+\chi_n=\left.\partial_\varepsilon\theta_n^{\varepsilon}\right|_{\varepsilon=0}.
+$$
+
+Differentiating (Q3) gives the exact recurrence
+
+$$
+\chi_0=0,\qquad
+\chi_{n+1}=(I-\eta\nabla^2L(\theta_n))\chi_n+\eta p_I(\theta_n).
+\tag{Q7}
+$$
+
+The matrix $\nabla^2L(\theta_n)$ is the full parameter Hessian; $H$ still denotes the fine-mode index set. The forcing in (Q7) is the directly removed slope contribution. The Hessian transports its effect through every parameter block. There is no term involving $Dp_I\chi_n$ at first order, because that derivative is multiplied by $\varepsilon$ in (Q3). This response $\chi_n$ is distinct from the two-error state $u_n$ in Section 9.
+
+For an explicit remainder, put $\Phi(\theta)=\theta-\eta\nabla L(\theta)$. Fix a finite horizon $K$ and an attenuation range $0\le\varepsilon\le\varepsilon_0$. Suppose a convex neighborhood contains both trajectories and all joining segments through update $K$, and on it
+
+$$
+\|D\Phi\|\le\beta_\Phi,\qquad
+\operatorname{Lip}(D\Phi)\le\ell_\Phi,\qquad
+\|p_I\|\le P_I,\qquad \|Dp_I\|\le\ell_I.
+\tag{Q8}
+$$
+
+All norms here are compatible Euclidean operator norms. For example, a Hessian Lipschitz bound $M$ allows $\ell_\Phi=\eta M$. These constants must be valid on the neighborhood, not merely sampled at its center. Define nonnegative scalar recurrences
+
+$$
+v_0=w_0=0,\qquad
+v_{n+1}=\beta_\Phi v_n+\eta P_I,\qquad
+w_{n+1}=\beta_\Phi w_n+\tfrac12\ell_\Phi v_n^2+\eta\ell_Iv_n.
+\tag{Q9}
+$$
+
+Then, throughout that horizon,
+
+$$
+\|\theta_n^{\varepsilon}-\theta_n\|\le\varepsilon v_n,
+\qquad
+\|\theta_n^{\varepsilon}-\theta_n-\varepsilon\chi_n\|
+\le\varepsilon^2 w_n.
+\tag{Q10}
+$$
+
+**Proof.** Write $d_n=\theta_n^{\varepsilon}-\theta_n$. The Lipschitz bound on $\Phi$ and the uniform bound on $p_I$ give $\|d_{n+1}\|\le\beta_\Phi\|d_n\|+\eta\varepsilon P_I$, proving the first inequality by induction. Taylor expansion of $\Phi$ around $\theta_n$ has remainder at most $\ell_\Phi\|d_n\|^2/2$. Subtract $\varepsilon$ times (Q7) from the equation for $d_{n+1}$. The additional intervention remainder is bounded by $\eta\varepsilon\ell_I\|d_n\|$. Induction with (Q9) proves the second inequality.
+
+The neighborhood hypothesis can be checked by a separate enclosure: if the predicted deviations $\varepsilon_0v_n$ fit strictly inside a domain on which (Q8) holds, a first-exit argument closes the bound. Without that closure, (Q10) is conditional on staying in the domain. Large $\beta_\Phi$, a nearly singular coarse kernel, or a long horizon can make the bound uninformative. Small initial perturbations alone do not justify extrapolation to complete removal or to arbitrarily long times.
+
+**Prediction.** For attenuation fractions $0.01,0.005,0.0025$, the discrepancy between the true parameter change and $\varepsilon\chi_n$ should decrease quadratically at a fixed horizon once it is above roundoff and in the asymptotic regime. If the quadratic coefficient vanishes, convergence can be faster. If the change becomes much larger than the direct first-step effect, (Q7) tests whether ordinary coupled feedback explains that amplification. The finite-horizon bound need not be sharp for this derivative check to be useful.
+
+Computing (Q7) from a recorded baseline is a **baseline-conditioned response prediction**. It does not establish an autonomous reduced theory. An autonomous surrogate must evolve its retained residuals and sensitivities from the initial state without borrowing future $e_H$, $T_a$, or Hessians from the full trajectory. For the exact full fine complement, the unperturbed identity from Section 9 remains
+
+$$
+\dot F_a=\dot T_ae_H-T_aSe_H-T_aK_{HC}z_C.
+$$
+
+Under an intervention, both $\dot T_a$ and the residual equation change. In particular, the continuous-time counterpart of (Q3) adds $\varepsilon J_Hp_I$ to $\dot e_H$. A proposed closure must retain or bound these responses rather than continuing to use an unmodified residual-decay equation.
+
+### 11.4 Slope-only attenuation can create a coarse transient
+
+**Example.** The original low-disequilibrium trajectory has little tracking force. That does not guarantee that a force intervention preserves low disequilibrium. The selected effective force is tangent to the current coarse-output level set only when its contributions to all parameter blocks are taken together.
+
+**Theory: a matched first-step control.** From (Q2),
+
+$$
+J_CU_I=J_CJ_I^Te_I-CC^{-1}J_CJ_I^Te_I=0.
+\tag{Q11}
+$$
+
+Let $\varphi_C$ denote the vector of coarse output coefficients and fix the common fork state $\theta$. Write $g=\nabla L(\theta)$, and let $\bar\theta=\theta-\eta g$ be its ordinary next state. Slope-only attenuation changes that next state by exactly $\eta\varepsilon p_I$. If the second derivative of $\varphi_C$ has operator norm at most $M_C$ on the relevant segments, then
+
+$$
+\varphi_C(\bar\theta+\eta\varepsilon p_I)-\varphi_C(\bar\theta)
+=\eta\varepsilon J_{a,C}(\theta)F_{a,I}+r_C,
+$$
+
+$$
+\|r_C\|\le M_C\eta^2
+\left(\varepsilon\|g\|\|p_I\|
++\tfrac12\varepsilon^2\|p_I\|^2\right).
+\tag{Q12}
+$$
+
+Thus $\eta\varepsilon J_{a,C}F_{a,I}$ is the leading output change in the joint small-step expansion. At fixed nonzero $\eta$, the derivative with respect to $\varepsilon$ is instead exactly $\eta J_C(\bar\theta)p_I$; the first term in the remainder accounts for this distinction.
+
+A matched full-parameter intervention is
+
+$$
+\widetilde\theta_{n+1}^{\varepsilon}
+=\widetilde\theta_n^{\varepsilon}-\eta\nabla L(\widetilde\theta_n^{\varepsilon})
++\eta\varepsilon U_I(\widetilde\theta_n^{\varepsilon}).
+\tag{Q13}
+$$
+
+At the fork it has exactly the same slope increment as (Q3). By (Q11), its leading coarse-output change in (Q12) vanishes, with $p_I$ replaced by $U_I$. Discrete nonlinear output changes of order $\eta^2\varepsilon$ or $\eta^2\varepsilon^2$ can remain. This is first-order tangency, not exact preservation of the coarse coefficients under an Euler step.
+
+Nor is coarse-output tangency equivalent to preserving coarse disequilibrium. Since $z_C=e_C+B e_H$, its differential is
+
+$$
+Dz_C[p]=J_Cp+(DB[p])e_H+B J_Hp.
+\tag{Q14}
+$$
+
+Even when $J_Cp=0$, the balance moves through the other two terms. The continuation must measure $z_C$ and its slope-force contribution directly.
+
+**Proof.** Equation (Q11) follows from the definition of $C$. Expand $\varphi_C$ first at $\bar\theta$, bound its quadratic remainder, and use $\|J_C(\bar\theta)-J_C(\theta)\|\le M_C\eta\|g\|$ to obtain (Q12). Equation (Q14) is the product rule.
+
+**Prediction.** Pair slope-only and full-parameter removal of the same mode group. Their first slope steps must agree, while their leading coarse-output responses follow (Q12). A later separation is evidence of different coupled feedback, not a clean identification of coarse causality: (Q13) also changes readouts and biases directly. Report that separation alongside $z_C$, the residual coefficients, and the relevant columns of $T_a$.
+
+### 11.5 Convert a response into a finite-time acquisition statement
+
+**Example.** Almost half the neurons can move outward while the mean contracts. Conversely, a positive mean response can be too small to carry even one neuron into the intended scale regime. An acquisition statement must therefore resolve travel and initial occupancy rather than rely on a mean sign.
+
+**Theory: exact discrete travel bound.** For any trajectory produced by (Q3), including sign crossings and complete removal, define
+
+$$
+\gamma_{j,n}^{\varepsilon}=|a_{j,n}^{\varepsilon}|,\qquad
+P_{j,+}^{\varepsilon}(K)=\sum_{n=0}^{K-1}
+[\gamma_{j,n+1}^{\varepsilon}-\gamma_{j,n}^{\varepsilon}]_+.
+$$
+
+Let $A_\Gamma^{\varepsilon}(K)$ be the fraction of neurons that reach or exceed $\Gamma$ at any sampled update from $0$ through $K$, including neurons already there initially. For every $\gamma_0<\Gamma$,
+
+$$
+A_\Gamma^{\varepsilon}(K)
+\le\min\left\{1,
+\frac{\#\{j:\gamma_{j,0}>\gamma_0\}}{W}
++\frac{1}{W(\Gamma-\gamma_0)}
+\sum_{j:\gamma_{j,0}\le\gamma_0}P_{j,+}^{\varepsilon}(K)
+\right\}.
+\tag{Q15}
+$$
+
+A more individualized version is
+
+$$
+A_\Gamma^{\varepsilon}(K)
+\le\frac{\#\{j:\gamma_{j,0}\ge\Gamma\}}{W}
++\frac1W\sum_{j:\gamma_{j,0}<\Gamma}
+\min\left\{1,\frac{P_{j,+}^{\varepsilon}(K)}{\Gamma-\gamma_{j,0}}\right\}.
+\tag{Q16}
+$$
+
+**Proof.** A neuron starting below a threshold must accumulate at least the gap to that threshold in positive increments before its first crossing. Negative increments cannot reduce the required positive travel. Apply this statement neuron by neuron, accounting separately for the initial tail, and average. This is a statement about actual discrete GD states; it makes no interpolation assumption between updates.
+
+To turn the bound into a prediction, suppose an approximation $\widehat a_{j,n}$ has a certified coordinate error $|a_{j,n}^{\varepsilon}-\widehat a_{j,n}|\le b_{j,n}$. Absolute value and positive part are both 1-Lipschitz, so
+
+$$
+P_{j,+}^{\varepsilon}(K)
+\le\widehat P_{j,+}(K)
++\sum_{n=0}^{K-1}(b_{j,n+1}+b_{j,n}).
+\tag{Q17}
+$$
+
+For the first-order predictor $\widehat a_{j,n}=a_{j,n}+\varepsilon(\chi_n)_{a,j}$, (Q10) supplies the conservative choice $b_{j,n}=\varepsilon^2w_n$. Tighter coordinate enclosures can improve it. A separate, sometimes sharper bound follows directly from the envelope:
+
+$$
+A_\Gamma^{\varepsilon}(K)
+\le\frac1W\#\left\{j:
+\max_{0\le n\le K}\bigl(|\widehat a_{j,n}|+b_{j,n}\bigr)\ge\Gamma
+\right\}.
+\tag{Q18}
+$$
+
+These are conditional predictive bounds only when the approximation errors are controlled. Substituting measured travel after a run is an exact retrospective audit, not a forecast. Likewise, a baseline-conditioned response uses future baseline information; an autonomous acquisition claim needs an independently closed surrogate or neighborhood enclosure.
+
+There is no automatic transfer of the local-loss-floor GD bound from Section 9 to the surgically modified dynamics. For the continuous counterpart of (Q3),
+
+$$
+\frac{dL}{dt}=-\|\nabla L\|^2
++\varepsilon\langle g_a,F_{a,I}\rangle.
+\tag{Q19}
+$$
+
+The second term has no general favorable sign or magnitude bound, and a discrete step adds its usual curvature remainder. Selected effective forces can cancel other contributions. Thus (Q3) need not descend any specified scalar objective, even though $\varepsilon\in[0,1]$. Equations (Q15)–(Q18) remain valid without descent; a descent-based barrier requires an additional proved inequality for the modified update.
+
+**Prediction.** Report exact cumulative outward travel and threshold occupancy alongside error reduction. An intervention that reverses the slope direction but has a small bound in (Q15) has isolated a contraction mechanism without restoring acquisition. A response model that predicts the direction but misses travel has not explained the barrier. For Adam, the corresponding exact travel audit still applies to its realized steps, but (Q7) must be replaced by a first variation of the augmented parameter-and-moment state. Attenuation before the moment update is a different intervention from subtracting a contribution from the final normalized step; sustained signed acquisition is the appropriate transfer test.
+
 ## Appendix A. Computable neighborhood bounds
 
 Section 9 needs two kinds of uniform estimates: how much one GD step can
@@ -1341,6 +1610,59 @@ For each neuron the computation selects the smallest bound over 256 valid
 ellipses; every candidate separately satisfies the analytical inequality.
 These real-arithmetic estimates are evaluated in ordinary FP64, with the
 numerical qualifications stated in Section 10.
+
+## Appendix C. A separate optimal-readout-path hypothesis
+
+This appendix preserves a conditional explanation raised by the readout-scale observation. It is secondary to the experimentally identified effective-force model. Its small-lag and conditioning assumptions have not been established in the observed D34 regime. In particular, optimal-readout lag below is not the coarse disequilibrium $z_C$ used throughout the note.
+
+**Example.** In the scalar model $f=c\gamma$ with target 1, the fitted coefficient is $c=1/\gamma$. Increasing $c$ increases slope sensitivity, while increasing $\gamma$ decreases the coefficient required to fit the target. Nevertheless, the entire curve $c\gamma=1$ has zero loss. Those endpoint preferences alone imply no energy barrier; on the curve GD has no force to move. This is a distinction illustrated by a toy model, not an explanation of sine's remaining error.
+
+**Theory.** For a frozen common-gamma dictionary, write $f=A(\gamma)w$ with $w=(c,d)$. Suppose a differentiable fitted-readout branch $w_*(\gamma)$ satisfies $\nabla_wL(\gamma,w_*)=0$, and its readout Hessian $H_w=A^TA/m$ is nonsingular on a fixed subspace containing the dynamics under consideration. Define
+
+$$
+\overline L(\gamma)=L(\gamma,w_*(\gamma)),\qquad
+\delta w=w-w_*(\gamma).
+$$
+
+The fitted loss $\overline L$ evaluates a hypothetical readout optimum at each geometry; ordinary GD does not perform that solve. With readout learning rate $\kappa$ times the scalar-geometry rate, quadratic readout loss gives the exact flow equation
+
+$$
+\dot{\delta w}=-\kappa H_w\delta w-w_*'(\gamma)\dot\gamma.
+$$
+
+Near that branch the geometry equation is
+
+$$
+\dot\gamma=-\overline L'(\gamma)
+-\partial^2_{\gamma w}L(\gamma,w_*)\delta w
++O(\|\delta w\|^2).
+$$
+
+Differentiating the branch's stationary condition gives $\partial^2_{\gamma w}L=-w_*'^TH_w$. If the lag is small and relaxes sufficiently fast to be approximately steady, then $H_w\delta w\approx-\kappa^{-1}w_*'\dot\gamma$, and hence
+
+$$
+\left(1+\frac{\|w_*'(\gamma)\|^2}{\kappa}\right)\dot\gamma
+\approx-\overline L'(\gamma).
+$$
+
+A rapidly changing fitted readout can slow motion in this approximation. General non-steady lag can instead oppose or reinforce the current force; the mixed derivative and lag determine its sign. A large endpoint coefficient change does not establish a large local $w_*'$ or either tracking assumption. Near-null readout directions can invalidate the approximation entirely. Small $z_C$ controls neither $\delta w$ nor the conditioning of $H_w$. Extending the calculation to vector geometry requires the corresponding mixed Hessian blocks and parameter metric.
+
+The geometry coordinate also matters. The raw D34 slope derivative holds the bias independent:
+
+$$
+\partial_{a_j}f=c_jx\operatorname{sech}^2(a_jx+b_j).
+$$
+
+For a fixed center $\tau_j$ and $b_j=-\gamma_j\tau_j$, it is instead
+
+$$
+\frac{\partial f}{\partial\gamma_j}\Big|_{\tau_j}
+=c_j(x-\tau_j)\operatorname{sech}^2(\gamma_j(x-\tau_j)).
+$$
+
+Changing coordinates without transforming the update metric changes the dynamics. Frozen large-gamma endpoint fits do not determine either learning speed.
+
+**Prediction.** Only after independently verifying small lag and a well-conditioned, rapidly relaxing branch does the speed factor above give a justified local prediction. Better tracking could then reduce that particular slowdown. If the fitted loss is nearly flat, it still offers little outward drive; if the actual mismatch supplies the drive, fitting faster can remove it. These possibilities must be tested through their signed effects on the surviving effective force. They do not replace the mode-specific perturbation analysis in Section 11, and an increased readout learning rate alone does not establish improved tracking.
 
 ## Derivation checks and evidence scope
 

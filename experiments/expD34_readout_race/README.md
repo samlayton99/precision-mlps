@@ -1,6 +1,192 @@
 # Ordinary-GD readout competition
 
+## Proposed effective-force perturbations
+
+**Status: specified, not executed.** This study tests selective attenuation of
+the effective fine slope force identified in the existing trajectories. Its
+theoretical basis is the [main note](../../docs/d34_coarse_balance_stagnation.md)
+and the [response propositions](../../docs/d34_coarse_balance_stagnation_details.md#11-perturbing-the-identified-effective-force).
+The completed `stagnation_run` experiments instead changed lower-mode loss
+penalties in every parameter gradient. Neither those results nor the earlier
+`plateau_probes` specification supply outcomes for these new interventions.
+
+### Example: weaken the modes that contract slopes
+
+In the degree-9 trajectories, modes 2 and 3 explain most inward effective
+slope motion. Removing lower-mode penalties reveals an outward force, but
+one too small to produce appreciable travel over the tested interval. The
+next question is whether selective attenuation has the predicted immediate
+effect and whether coupling subsequently sustains, cancels, or amplifies it.
+
+At each current state, decompose the original full-loss GD gradient as
+
+$$
+g_a=F_a+J_{a,C}^Tz_C+g_{a,\perp},\qquad F_{a,I}=T_{a,I}e_I.
+$$
+
+For a removed fraction $\varepsilon$, the slope-only intervention is
+
+$$
+a_{n+1}=a_n-\eta\bigl(g_a-\varepsilon F_{a,I}\bigr).
+$$
+
+The other blocks use their ordinary gradients at the same pre-update state.
+Recompute every component on the branch's own trajectory. This is generally
+not GD on a modified scalar loss. The matched full-parameter intervention is
+
+$$
+\theta_{n+1}=\theta_n-\eta g+\eta\varepsilon T_Ie_I.
+$$
+
+Both have the same first slope update, but only the full-parameter field
+satisfies $J_CT_I=0$. Slope-only attenuation introduces the leading coarse
+output perturbation $\eta\varepsilon J_{a,C}F_{a,I}$. At a finite step, both
+statements have nonlinear output remainders; preserving coarse output to first
+order does not preserve $z_C$ because its equilibrium also moves. Later
+differences between the two arms include both coarse rebalancing and the
+other parameter feedback changed by the full-parameter intervention.
+
+### Theory: distinguish immediate response from coupled response
+
+At a fixed state, the predicted signed slope velocity is affine in
+$\varepsilon$. Evaluate that prediction for
+$\varepsilon\in\{0,0.01,0.1,0.5,1\}$ and mode groups 2, 3, 2–3, 4–8, 9,
+10–65, and all retained effective modes 2–65. Record direction-reversal
+thresholds and the denominator determining each threshold before any
+continuation. Compute the exact next-step change in $|a_j|$, including zero
+crossings. A reversed direction alone does not predict appreciable acquisition.
+
+For the coupled response, let $E_a$ insert a slope vector into the full
+parameter vector. Along the ordinary-GD baseline, propagate
+
+$$
+\chi_{n+1}=
+\bigl(I-\eta\nabla^2L(\theta_n)\bigr)\chi_n
++\eta E_aF_{a,\{2,3\}}(\theta_n),\qquad \chi_0=0.
+$$
+
+Then $\varepsilon\chi_n$ predicts the first-order parameter displacement
+caused by attenuation. Use the full Hessian action, not its Gauss–Newton
+replacement. This prediction uses the baseline trajectory; an autonomous
+surrogate must separately evolve its own residuals and sensitivities. It
+cannot obtain them from the branch it is supposed to predict.
+
+From every starting state below, attenuate modes 2–3 by
+$\varepsilon=0.01,0.005,0.0025$ for 1,000 updates. These are 36 perturbed
+continuations, sharing ordinary-GD baselines. Compare the parameter remainder
+$\|\theta_n^\varepsilon-\theta_n^0-\varepsilon\chi_n\|$ at offsets 1, 10,
+100, and 1,000. Test for quadratic reduction as $\varepsilon$ is halved,
+before floating-point error dominates. Separately record changes in readout,
+hidden bias, modal residuals, and the force map to locate the feedback.
+
+### Starting states and nonlinear continuations
+
+Use `sine` and `moment9`, seeds 0–2, and forks at updates 100,000 and 600,000:
+12 starting states. Preserve width 177, FP64 arithmetic, the original
+2,048-point midpoint training grid, target normalization, and physical GD
+step $\eta=0.002$. Evaluate on the independent 8,192-point grid; this checks
+deterministic approximation and does not select endpoints.
+
+The common source bundle is
+`results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/raw/primary_{seed}/`.
+Select each case through `manifest.json` by target, `optimizer == "gd"`, and
+`eta == 0.002`; locate the fork through `snapshots.npz["steps"]`. Do not
+hardcode case positions. The parameter array `p[case, checkpoint]` has 532
+entries in $(a,b,c,d)$ order, with 177 entries per hidden block. Record hashes
+of both source files, selected case metadata, source checkpoint, implementation
+revision, backend, grid, and normalization. Require identical initial
+parameters across matched arms.
+
+Use the existing empirical orthogonal-polynomial basis through degree 65,
+constructed once from the original training measure and held fixed across
+branches and time.
+The residual outside that span remains the separate $g_{a,\perp}$ contribution
+and is not attenuated. Do not silently substitute the complete-complement
+projection for a finite-basis intervention. Degree 129 supplies a basis
+sensitivity check below.
+
+Run 20,000 additional updates for each of these nine arms from each starting
+state: 108 primary continuations. All cases are fixed in advance.
+
+| Arm | Removed contribution |
+|---|---|
+| Ordinary GD | None. |
+| Slope all-effective off | $\varepsilon=1$, modes 2–65, slope block only. |
+| Slope mode 2 off | $\varepsilon=1$, mode 2, slope block only. |
+| Slope mode 3 off | $\varepsilon=1$, mode 3, slope block only. |
+| Slope modes 2–3 off | $\varepsilon=1$, modes 2–3, slope block only. |
+| Slope modes 2–3 half | $\varepsilon=0.5$, modes 2–3, slope block only. |
+| Slope complementary force off | $\varepsilon=1$, modes 4–65, slope block only. |
+| Full-parameter modes 2–3 off | $\varepsilon=1$, modes 2–3, all parameter blocks. |
+| Full-parameter complementary force off | $\varepsilon=1$, modes 4–65, all parameter blocks. |
+
+Accumulate exact per-neuron positive and negative gamma travel, signed channel
+contributions, zero-crossing corrections, and first threshold crossings at
+every update. Save states and diagnostics at offsets 0, 1, 10, 100, then every
+200 updates through 20,000, including offset 1,000. Diagnostics include modal
+residuals, sensitivities, tracking and orthogonal corrections, projection
+conditioning, original full-loss error, evaluation error, and physical readout
+magnitudes, with output bias reported separately.
+
+For gamma thresholds 1, 3.2, and 16, report initial occupancy and new crossings
+separately. These are reference geometric scales, not universal necessary
+conditions for approximation. Compare each new crossing's initial threshold
+deficit with its accumulated outward travel. A change in mean gamma does not
+resolve whether a small population acquires large scales. For sine, record
+network and target modal coefficients separately: its cubic residual includes
+a genuine target component.
+
+### Predictions and what each outcome would change
+
+| Observation | Interpretation or next refinement |
+|---|---|
+| Removing modes 2–3 reverses motion but leaves tiny outward travel. | These modes explain contraction; the remaining force still does not deliver appreciable acquisition. |
+| The response grows beyond the accumulated immediate effect. | Coupled feedback matters; test the variational prediction before assigning a mechanism. |
+| Slope-only and full-parameter arms produce different coarse transients. | Test the predicted initial coarse leakage; later differences also include other parameter feedback. |
+| An autonomous surrogate misses a verified intervention response. | Refine its residual modes or evolving sensitivities; controlled baseline corrections become candidates only if new measurements show that they matter. |
+| Readouts change substantially while effective force changes little. | Magnitude alone does not explain motion; its relevance must appear through $T_ae_H$. |
+| Original loss increases after attenuation. | Selective force removal need not preserve descent; the ordinary-GD loss-floor theorem does not transfer automatically. |
+
+The exact outward-travel audit bounds observed threshold crossings. A
+prospective finite-time claim additionally requires a bound on future force,
+a controlled response remainder, or a closed trajectory enclosure. Report
+which of these is supplied; do not call measured past travel a forecast.
+
+### Numerical checks and the later Adam test
+
+Before interpreting continuations, verify reconstruction of the original
+gradient, identical starts, unchanged non-slope first updates in slope-only
+arms, equal first slope perturbations in matched full-parameter arms, and
+$J_CT_I$ tangency. Check derivatives independently, including near-cancellation
+and slope sign crossings. Report unresolved coarse inversions; do not silently
+regularize them into evidence for the proposed regime.
+
+For seed 0, both targets, and both forks, repeat ordinary GD, slope modes 2–3
+off, and full-parameter modes 2–3 off at $\eta=0.001$ for 40,000 updates.
+These 12 controls compare equal physical time. Compare degree-65 and degree-129
+decompositions and applied intervention directions at every starting state
+and saved endpoint. If the differences materially affect attribution or the
+predicted displacement, run representative continuations with degree 129
+before interpreting the primary contrast. A changed basis can change the
+intervention itself, not just its diagnostic label.
+
+A later Adam litmus test should attenuate the raw-gradient contribution
+**before both moment updates**, preserving the fork's optimizer history.
+Counterfactual branches must evolve their own second moments and denominators.
+Assess sustained signed acquisition and original-objective error alongside
+moment evolution. Large coarse-channel oscillations can cancel in signed
+travel while still changing the second moment. The GD response propositions
+do not establish an Adam theorem.
+
+Completion means verified interventions, complete matched evidence, and an
+interpretation of both positive and negative outcomes. Recovery of large
+slopes or precision is not an acceptance requirement. This section proposes
+future runs; the implementation of the present plan changes documentation only.
+
 ## Effective-force plateau investigation
+
+The section below records the earlier campaign specification. Its resource
+ceiling is historical; the new protocol above does not launch or allocate runs.
 
 The [interim evidence report](../../results/checkpoint_D_optimizers/expD34_readout_race/force_plateaus/README.md)
 walks through the four completed audit figures and records the queued stages.
