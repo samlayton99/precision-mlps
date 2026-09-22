@@ -5,9 +5,13 @@
 The [interim evidence report](../../results/checkpoint_D_optimizers/expD34_readout_race/force_plateaus/README.md)
 walks through the four completed audit figures and records the queued stages.
 
-The new exploration has a 10 GPU-hour ceiling, including verification and
-interventions, with at most two concurrent Runpod GPUs. All numerical work,
-tests, and plotting run through Slurm; local work is editing and inspection.
+The exploration has a 10 GPU-hour ceiling, including verification and
+interventions, with at most two concurrent GPUs. The active campaign uses
+[the bounded Modal launcher](modal_campaign.md) with two H100 workers and a
+USD 50 spending stop. The original Slurm launch path remains the default for
+`plateau_run` and `plateau_probes`; Modal calls explicitly select
+`--runtime modal`. Numerical work, tests, and postprocessing run remotely;
+local work is editing, submission, transfers, and inspection.
 
 The primary question is why the effective fine force can remain nearly
 constant, and whether its persistence predicts stalled or useful scale

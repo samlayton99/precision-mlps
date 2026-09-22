@@ -1,4 +1,4 @@
-# Effective-force plateaus: checkpoint audit and queued interventions
+# Effective-force plateaus: checkpoint audit and Modal campaign
 
 The completed audit identifies a useful distinction. In ordinary GD, the hard
 degree-9 target has a weak, slowly decaying, almost directionally fixed effective
@@ -10,10 +10,12 @@ is negative in 59 of 65 windows starting at 600k. These observations narrow the
 mechanisms worth studying; they do not establish a permanent gamma barrier.
 
 This is an **interim evidence report**. The saved-state audit and dense windows
-are complete. Long continuations, paired interventions, independent-seed
-confirmation, and numerical controls remain queued on Runpod. No results from
-those queued stages are claimed here. The user chose to retain the Runpod queue
-when all five GPUs were occupied; Hazy access is not being pursued.
+are complete. The campaign has moved to a bounded two-H100 Modal runtime after
+the verification pilot passed; the original Runpod jobs have been cancelled.
+Long continuations, paired interventions, independent-seed confirmation, and
+numerical controls retain their original scientific protocol. No completed
+results from those stages are claimed here. The [migration record](#modal-migration-and-current-execution)
+separates runtime verification from the still-pending scientific conclusions.
 
 ## What was measured
 
@@ -240,7 +242,7 @@ while retaining an explicit route by which those conditions fail during
 recovery. The existing movement-budget theorem remains conditional until such
 control is established.
 
-## Queue, budget, and verification
+## Original Runpod queue, budget, and verification
 
 All numerical analysis, tests, dense training windows, and plotting ran in
 CPU-only Runpod Slurm allocations. The local MacBook was used for editing,
@@ -282,5 +284,95 @@ metadata. These were CPU jobs and consumed no GPU budget.
 The [implemented protocol](../../../../experiments/expD34_readout_race/README.md)
 and `plateau*.py` entrypoints reproduce the analysis. Source/input hashes are in
 [the checkpoint audit](diagnostics/audit.json) and [the dense audit](dense/audit.json).
-The queued training source is pinned to `0f3385d`. Figure tables retain all
+The numerical training source is pinned to `0f3385d`. Figure tables retain all
 target/seed outcomes; no unsuccessful forecast was excluded.
+
+## Modal migration and current execution
+
+On 2026-09-22, the migration pilot passed on two NVIDIA H100 80GB GPUs using
+JAX 0.10.2, NumPy 2.4.6, and FP64. The final image passed
+[105 remote CPU tests](modal_migration/cpu-tests-v4.log), including the existing
+D34 checks, both runtime-verification paths, checkpoint forecasts and completion
+gates, the two-worker scheduler, and allocation deadlines. The
+[input hashes](modal_migration/input_hashes.json) preserve the original raw and
+curated seed-0–2 archives and manifests. The
+[source lock](modal_migration/source_lock.json) identifies the archived numerical
+source and each runtime overlay; no numerical kernel was replaced.
+
+The GPU pilot replayed the degree-9 and mixed-sine seed-0 checkpoints at 600k
+updates for both GD and Adam. Each producer saved the complete optimizer and
+movement state after 13 updates and was terminated with SIGTERM. After explicit
+Volume commit/reload, the other GPU resumed that state for 19 updates and
+compared every state field with an uninterrupted 32-update reference. Both
+comparisons passed the following criterion for each scalar state entry $s$:
+
+$$
+|s_{\mathrm{resume}}-s_{\mathrm{reference}}|\leq
+2\times10^{-13}+2\times10^{-12}|s_{\mathrm{reference}}|.
+$$
+
+The results were **not bitwise identical**. This verifies restart agreement at
+the stated FP64 tolerance, rather than exact reproducibility of every bit.
+
+**Table: maximum absolute defects and elapsed times for the two-case GPU pilot
+bundles. Signed-motion defects compare the change in mean absolute slope with
+the accumulated signed channels and zero-crossing correction. Times describe
+these short pilot bundles, not the full 39-case continuations.**
+
+| Quantity | GD | Adam |
+|---|---:|---:|
+| Gradient versus autodiff, maximum absolute defect | $3.04\times10^{-18}$ | $5.71\times10^{-18}$ |
+| Force-channel reconstruction, maximum absolute defect | $1.08\times10^{-19}$ | $8.67\times10^{-19}$ |
+| Signed-motion defect | $3.22\times10^{-17}$ | $6.87\times10^{-16}$ |
+| Compilation plus 32 updates, seconds | 3.560 | 3.545 |
+| Subsequent 13 updates, seconds | 0.00998 | 0.00990 |
+
+The [GD replay record](modal_migration/modal-20260922b/pilot/resumed_gd.json),
+[Adam replay record](modal_migration/modal-20260922b/pilot/resumed_adam.json),
+and downloaded pilot checkpoints retain the cross-container provenance. No
+failed or unresolved cases occurred. The largest recorded optimizer accounting
+identity defect was $7.32\times10^{-16}$. Gradient and force comparisons used
+absolute tolerance $2\times10^{-13}$ and relative tolerance $2\times10^{-11}$;
+the signed-motion comparison used absolute tolerance $10^{-12}$. These are
+implementation checks, not estimates of long-horizon discretization error.
+
+An initial pilot dispatch attempt stopped when the CPU coordinator's scheduling
+allowance was too short to submit the second worker. Its first GPU call was
+cancelled, the Runpod holds were released, and its full 450 GPU-second reservation
+was retained in the [failed-attempt ledger](modal_migration/pilot-failed-accounting.json).
+After a tested dispatch fix and a fresh Runpod accounting check, the successful
+pilot reserved another 900 GPU-seconds. The
+[combined pilot ledger](modal_migration/modal-20260922b/pilot_accounting.json)
+therefore carries 1,350 GPU-seconds (0.375 hours); early completion does not
+refund a reservation. The unchanged stage caps reserve another 30,000 seconds,
+leaving 4,650 seconds (1.292 hours) unassigned within the 10 GPU-hour ceiling.
+
+At 19:40:47 UTC, [final Slurm accounting](modal_migration/runpod-final-accounting.txt)
+confirmed cancellation of only jobs 1025 and 1036–1043, all with zero elapsed
+allocation time. Campaign `modal-20260922b` is running under the
+[remote Modal coordinator](https://modal.com/apps/kinematic-pretrain/main/ap-7ZR8zAc4xn55BPMHcgqowO).
+Both 39-case ordinary continuation bundles reached and saved update 700k by
+19:42:55 UTC, as recorded in the [startup log](modal_migration/campaign-start.log).
+The downloaded [GD status](modal_migration/running/long/gd/status.json) and
+[Adam status](modal_migration/running/long/adam/status.json) subsequently record
+update 800k, with no failed cases or unresolved coarse solves in either bundle.
+The [accounting snapshot](modal_migration/campaign-accounting.json) reserves
+8,550 GPU-seconds for all pilot attempts plus these first two one-hour jobs.
+Its independent stop deadline is 2026-09-23 at 00:29:12 UTC (17:29:12 PDT on
+September 22); later stages must also fit their original per-job reservations.
+Its single GPU worker function serves every stage, permits at most two serial
+workers, records actual devices, and commits durable checkpoint bundles.
+The CPU coordinator retains the discovery and confirmation completion gates;
+incomplete bundles cannot unlock dependent work. An independent CPU watchdog
+and original per-attempt deadlines bound startup, computation, interruption,
+and shutdown. Repeated platform inputs cannot acquire a fresh output owner or
+deadline. The USD 50 stop and 10 GPU-hour ceiling both remain in effect.
+
+The persistent output Volume is `d34-plateau-outputs`, under
+`/modal-20260922b`; original inputs are mounted read-only from
+`d34-plateau-inputs-0f3385d`. The
+[runtime instructions](../../../../experiments/expD34_readout_race/modal_campaign.md)
+describe submission, conservative resource accounting, and downloads. Long-run
+scientific results and their numerical controls remain contingent on completed
+experiments. The pilot supports the migration; it supplies no new evidence for
+or against a permanent force plateau or scale-acquisition barrier.
