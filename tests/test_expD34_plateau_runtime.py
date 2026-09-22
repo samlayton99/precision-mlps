@@ -17,6 +17,16 @@ def test_slurm_dispatch_keeps_allocation_checks(monkeypatch, tmp_path):
     monkeypatch.setattr(run.subprocess, 'check_output', lambda *a, **k: 'JobState=PENDING')
     with pytest.raises(RuntimeError, match='running GPU allocation'):
         runtime.verify_gpu(tmp_path)
+    monkeypatch.setattr(run.subprocess, 'check_output', lambda *a, **k: 'JobState=RUNNING State=RUNNING gpu:1')
+    monkeypatch.setattr(runtime.jax, 'devices', lambda: [SimpleNamespace(platform='gpu')])
+    runtime.verify_gpu(tmp_path)
+    assert (tmp_path / 'environment_12_0.json').exists()
+
+
+def test_runtime_rejects_disabled_fp64(monkeypatch, tmp_path):
+    monkeypatch.setattr(runtime.jax, 'config', SimpleNamespace(x64_enabled=False))
+    with pytest.raises(RuntimeError, match='FP64'):
+        runtime.verify_gpu(tmp_path, 'modal')
 
 
 def test_modal_requires_remote_input_gpu_and_provenance(monkeypatch, tmp_path):
