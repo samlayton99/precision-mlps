@@ -1,5 +1,8 @@
 # Gamma controls the scales available to readout gradient descent
 
+[Download the review PDF](gamma_optimization_paper_note.pdf) ·
+[LaTeX source](gamma_optimization_paper_note.tex)
+
 **Gamma changes how quickly a readout learns an attainable target.** For a
 fixed set of neuron centers, a common slope gamma applies an explicit
 frequency filter to the features and hence to the kernel governing readout
@@ -15,17 +18,13 @@ geometry, and optimizer. The theorem below states the mechanism, the main
 figure tests its quantitative consequences, and the appendix supplies the
 standard conversion from kernels to learning times.
 
-**Table 1. Main-text notation.** Gamma is a physical slope; frequency is
-measured in radians per unit input distance.
-
-| Symbol | Meaning |
-|---|---|
-| $\gamma,c_j,W$ | Common hidden slope, fixed center of neuron $j$, and hidden width. |
-| $x_i,m$ | Training inputs and their count. |
-| $k_\gamma,K_\gamma$ | Feature inner-product kernel and its sampled, mean-normalized update matrix. |
-| $\rho_\gamma$ | Unit-mass averaging density that turns a sharp step into a tanh feature. |
-| $M_\gamma(\omega)$ | Amplitude retained by this averaging at frequency $\omega$. |
-| $r_n,\eta_\gamma$ | Vector of training residuals after $n$ updates and the readout GD step. |
+**Notation.** Gamma is a physical slope; $c_j$ denotes a neuron center,
+$W$ the hidden width, and $x_i$ the $m$ training inputs. The function
+$k_\gamma$ and matrix $K_\gamma$ describe readout updates; $r_n$ is the
+residual vector and $\eta_\gamma$ the step size. The averaging density
+$\rho_\gamma$ has frequency multiplier $M_\gamma(\omega)$, where
+$\omega$ is measured in radians per unit input distance. Each object is
+defined where it enters the argument below.
 
 ## The readout kernel gives gamma a direct role in optimization
 
@@ -135,7 +134,7 @@ kernel's target-dependent GD decay, and compare its predicted crossings to
 executed readout GD. The calculation uses the target and prescribed step,
 without fitting a rate to a training trajectory. A controlled finite
 expansion makes the calculation practical; its approximation bounds give
-the intervals below. This is a retrospective check against archived runs.
+the plotted intervals. This is a retrospective check against archived runs.
 
 The primary comparison uses 559 hidden neurons, 8,193 equally spaced
 training samples on $[-1,1]$, fixed equispaced centers with a boundary halo,
@@ -150,17 +149,11 @@ largest eigenvalue of $K_\gamma$. Thus the comparison uses the same
 curvature-normalized step rule. All four models actually attain 1% relative
 residual, equivalent to relative squared loss $10^{-4}$.
 
-**Table 2. Predicted and executed updates to 1% training residual.**
-Intervals are deterministic necessary–sufficient counts for the fixed
-problem above, with independently certified endpoints; they are not
-statistical confidence intervals.
-
-| Common slope | Filter-derived interval | Executed first hit |
-|---:|---:|---:|
-| 8 | 15,784,048–15,812,623 | 15,798,313 |
-| 12 | 186,057–186,058 | 186,057 |
-| 16 | 61,792–61,792 | 61,792 |
-| 64 | 16,013–16,013 | 16,013 |
+Figure 1B compares the filter-derived intervals with the four executed
+first hits. The measured acquisition time changes from 15,798,313 updates
+at gamma 8 to 16,013 at gamma 64. These are deterministic
+necessary–sufficient intervals with independently certified endpoints,
+rather than statistical confidence intervals.
 
 The predicted gamma-8/gamma-64 delay ratio is **985.70–987.49**; the
 executed ratio is **986.59**. At gamma 8, the interval's total width is
@@ -176,27 +169,14 @@ specified geometry and target. They do not assert that every target slows
 by the same factor or that learning time is monotone in gamma.
 
 The archived study also evaluates four other targets on the same geometry
-and at the same four slopes. They cover a single oscillation frequency, a
-localized rational profile, a quadratic, and an exponential of a sine.
+and at the same four slopes: the single sine $\sqrt2\sin(2\pi x)$,
+the Runge function $1/(1+25x^2)$, the quadratic $\sqrt5x^2$, and
+the exponential of sine $\exp(\sin(3\pi x))$.
 Every target reaches 1% at both gamma 8 and gamma 64, allowing a measured
 comparison of acquisition times at those endpoints.
 
-**Table 3. The gamma-induced delay depends strongly on the target.**
-Each entry is the executed first-hit count at gamma 8 divided by that at
-gamma 64, rounded to two decimals. The samples, centers, zero readout
-initialization, 1% relative-residual tolerance, and curvature-normalized
-step rule are shared with Table 2. Appendix E gives the predicted
-intervals, executed counts, and verification status for all four slopes.
-
-| Target | Exact function $f^\star(x)$ | Measured slowdown |
-|---|---|---:|
-| Single sine | $\sqrt2\sin(2\pi x)$ | 3.34× |
-| Runge | $1/(1+25x^2)$ | 45.16× |
-| Quadratic | $\sqrt5x^2$ | 58.17× |
-| Exponential of sine | $\exp(\sin(3\pi x))$ | 178.05× |
-| Sine mixture | $\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(10\pi x)$ | 986.59× |
-
-The same gamma filter produces very different acquisition delays because
+Figure 2 compares these five target-dependent slowdowns. The same gamma
+filter produces very different acquisition delays because
 each target places different energy in the finite kernel's learning
 directions. These observations support a quantitative, target-dependent
 explanation rather than a universal slowdown factor. In particular, the
@@ -226,6 +206,11 @@ consequence of the filter identity. All panels measure training behavior.
 The supporting [filter and target-weighted spectrum figure](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/three_panel.png)
 shows the intermediate mechanism; Appendix D records the protocols and
 evidence provenance.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/target_slowdown.png" alt="Five-target slowdown ratios range from 3.34 for a single sine to 986.59 for the sine mixture; predicted intervals overlap executed ratios" style="max-width: 100%;">
+  <figcaption><strong>Figure 2. The same gamma intervention gives target-dependent delays.</strong> Each dot is the executed first-hit count at gamma 8 divided by that at gamma 64; whiskers give the ratio interval obtained from the predicted acquisition bounds. Labels report executed ratios to two decimals. All cases share the 559-neuron geometry, 8,193 samples, zero readout initialization, 1% residual tolerance, and curvature-normalized step rule. The sine-mixture interval has independent interval-arithmetic certification; the four control targets have numerical sensitivity checks. Whiskers are narrower than the dots at this scale. Appendix E resolves their tightness and includes every intermediate gamma.</figcaption>
+</figure>
 
 ## Appendix A. Proof of the gamma mechanism
 
@@ -468,9 +453,24 @@ MPLCONFIGDIR=/tmp/gamma-paper-mpl \
 python -m experiments.expD36_frozen_gamma_probe.paper_figure
 ```
 
+The [review figure builder](../experiments/expD36_frozen_gamma_probe/review_figures.py)
+reads the existing numerical summary and interval audit to produce Figures
+2–3 and their [data record](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/review_figure_data.json).
+The Markdown and LaTeX versions are authored directly; plotting code only
+produces numerical evidence and figure files. Build the new figures and
+compile the review document from the repository root with:
+
+```bash
+MPLCONFIGDIR=/tmp/gamma-review-mpl \
+python -m experiments.expD36_frozen_gamma_probe.review_figures
+mkdir -p /tmp/gamma-review-latex
+latexmk -pdf -interaction=nonstopmode -halt-on-error \
+  -outdir=/tmp/gamma-review-latex docs/gamma_optimization_paper_note.tex
+```
+
 ## Appendix E. Complete five-target acquisition results
 
-The five target functions are defined exactly in Table 3. Every row below
+The five target functions are defined in the main text. Every case below
 uses the same 559-neuron geometry, 8,193 training samples, zero raw readout
 initialization, half empirical mean squared error, and saved step for its
 gamma, approximately $0.5/L_\gamma$. The tolerance is 1% relative residual.
@@ -479,7 +479,7 @@ approximation margin and the target-action refinement are combined as
 described in the technical proof. Harmonic resolutions are selected from
 the calculated bounds, without fitting endpoints to executed GD hits.
 
-The verification column describes the numerical evidence for each interval:
+The panel labels distinguish the numerical evidence for each interval:
 
 - **Interval-certified:** an independent 192-bit interval-arithmetic audit
   certifies the excluded and sufficient iterates for nominal-real tanh on
@@ -490,37 +490,14 @@ The verification column describes the numerical evidence for each interval:
   certificate was computed for these targets. A zero-width numerical
   interval alone does not establish a certified exact first hit.
 
-**Table 4. All twenty target–gamma predictions and their executed checks.**
-Times count ordinary readout GD updates to 1% training residual. All 19
-available first hits lie inside the selected intervals. The quadratic at
-gamma 12 is censored and is not counted as an executed crossing.
-
-| Target | Gamma | Predicted interval | Executed first hit | Verification |
-|---|---:|---:|---:|---|
-| Sine mixture | 8 | 15,784,048–15,812,623 | 15,798,313 | Interval-certified |
-| Sine mixture | 12 | 186,057–186,058 | 186,057 | Interval-certified |
-| Sine mixture | 16 | 61,792–61,792 | 61,792 | Interval-certified |
-| Sine mixture | 64 | 16,013–16,013 | 16,013 | Interval-certified |
-| Exponential of sine | 8 | 426,231–426,249 | 426,240 | FP64-checked |
-| Exponential of sine | 12 | 34,752–34,753 | 34,753 | FP64-checked |
-| Exponential of sine | 16 | 11,961–11,961 | 11,961 | FP64-checked |
-| Exponential of sine | 64 | 2,394–2,394 | 2,394 | FP64-checked |
-| Runge | 8 | 26,104–26,104 | 26,104 | FP64-checked |
-| Runge | 12 | 3,566–3,566 | 3,566 | FP64-checked |
-| Runge | 16 | 1,606–1,606 | 1,606 | FP64-checked |
-| Runge | 64 | 578–578 | 578 | FP64-checked |
-| Quadratic | 8 | 879,431–879,555 | 879,493 | FP64-checked |
-| Quadratic | 12 | 269,286–269,299 | Censored at 200,000 | FP64-checked |
-| Quadratic | 16 | 119,631–119,633 | 119,632 | FP64-checked |
-| Quadratic | 64 | 15,119–15,119 | 15,119 | FP64-checked |
-| Single sine | 8 | 7,466–7,466 | 7,466 | FP64-checked |
-| Single sine | 12 | 5,263–5,264 | 5,263 | FP64-checked |
-| Single sine | 16 | 4,289–4,289 | 4,289 | FP64-checked |
-| Single sine | 64 | 2,233–2,233 | 2,233 | FP64-checked |
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/target_acquisition.png" alt="Five acquisition-time plots compare predicted intervals with executed GD at four gammas; a sixth panel magnifies relative interval endpoints for the nineteen completed cases" style="max-width: 100%;">
+  <figcaption><strong>Figure 3. All twenty acquisition predictions and their executed checks.</strong> A–E: colored lines and whiskers show predicted first-hit intervals; black dots show executed crossings of 1% residual. Vertical ranges differ between targets; connecting lines guide the eye. The open triangle marks the quadratic run stopped at 200,000 updates, below its predicted crossing, and is not an observed hit. F: each interval endpoint is divided by its executed hit, shifted by one, and multiplied by 100. This symmetric-log axis expands small deviations; all 19 intervals contain zero, with the censored case excluded. Marker shapes distinguish gamma values, and colors match the target panels. The largest total relative interval width is 0.181%, for the sine mixture at gamma 8. Only panel A's intervals have independent interval-arithmetic certificates.</figcaption>
+</figure>
 
 The censored run stopped before acquisition. Its separate original-kernel
 spectral forecast is 269,292 updates, inside the filter-derived interval,
-but neither forecast is an executed hit. The other nineteen rows compare
+but neither forecast is an executed hit. The other nineteen cases compare
 predictions against actual GD crossings. These checks assess the
 target-dependent timing calculation on the archived training problems;
 they do not extend the theorem to a universal learning-time ordering over

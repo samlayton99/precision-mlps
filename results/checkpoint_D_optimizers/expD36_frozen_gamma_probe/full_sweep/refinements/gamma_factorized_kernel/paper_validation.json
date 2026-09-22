@@ -49,10 +49,18 @@
   "artifact_sha256": {
     "experiments/expD36_frozen_gamma_probe/paper_figure.py": "cd3400c6f2daf49ca81b787bdfcd89bc04584550a5d9b716f976de6bc53e8da1",
     "docs/gamma_readout_paper_note.md": "9ec4a299716c19dfb2f0a6abe0eef2bf9748ef9326157bc1304304c4233f3fd5",
-    "docs/gamma_optimization_paper_note.md": "2baf5f2cbe69049be3c172ef979dc266a7706d15eb6e796412dcec5ec00fc803",
+    "docs/gamma_optimization_paper_note.md": "9d0000b21e34c3548632a44ea5eaa362b2f3c5ff5df297898fa65c6433640703",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_figure_data.json": "bb24d0f03f6a3e404055e23d463b390757b58e846b7922ef8407a17d03969e46",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.png": "bf420e68468d3b455134892201dd3f243cd62b2564f47ca8cbc42b73c16a273e",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.pdf": "ee23eba5e86b0d8a5cd04c0aaff51f703834370e3c3b9904b72a35649046388a"
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.pdf": "ee23eba5e86b0d8a5cd04c0aaff51f703834370e3c3b9904b72a35649046388a",
+    "docs/gamma_optimization_paper_note.tex": "e4a726d17895c5d0a6fd78dc5583da8b87410706df9d634a6d8038695f5e02f9",
+    "docs/gamma_optimization_paper_note.pdf": "68fdded912714727e239e945e0a562c761f132b52d25c9c16f1bb5669e6b9aa3",
+    "experiments/expD36_frozen_gamma_probe/review_figures.py": "eb64ed6a1e717942b6a17661fae76692b28d3cb0580152a0dac5c50d6cdbf692",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/review_figure_data.json": "cb5af5da75ba2d2d3b3d71e194b43960c7fe6da2d55e6920da881e2c42d6ed4c",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/target_slowdown.png": "7ecd67a14623389b50ed7ff46803626ebef98b471f9d2e7d0695e60bab031da7",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/target_slowdown.pdf": "9b1f220bfed68e82f2f90061138b2af0fce794abe14adae7f24dfebeef77e8c4",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/target_acquisition.png": "9ef0a96dcc72f3d5b6c861977d0f5ac153ddd9ab7e53095151131ba217dcc3f9",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/target_acquisition.pdf": "b1c3d8f8a5d52c5aa0cbc4fd44f8778d8a899503e8340b78e5b15fdd7d9ebd01"
   },
   "documentation_revision": {
     "base_commit": "9688541",
@@ -166,7 +174,10 @@
     "archived_source_files_checked": 23,
     "feature_quadrature_max_error": 6.217248937900877e-15,
     "transform_quadrature_max_error": 1.2837217781978624e-13,
-    "toy_executed_hits": [925, 14],
+    "toy_executed_hits": [
+      925,
+      14
+    ],
     "training_archive_unchanged": true,
     "full_suite_rerun": false,
     "validation_scope": "Documentation and source-evidence checks; existing implementation-test results above were not rerun.",
@@ -203,8 +214,19 @@
       "sine_2pi": 3.343484102104792
     },
     "quadrature_decimal_precision": 40,
-    "transform_checked_frequencies": [-3, -1, 0, 0.25, 1, 3],
-    "contour_checked_frequencies": [0.25, 1, 3],
+    "transform_checked_frequencies": [
+      -3,
+      -1,
+      0,
+      0.25,
+      1,
+      3
+    ],
+    "contour_checked_frequencies": [
+      0.25,
+      1,
+      3
+    ],
     "max_transform_abs_error": 2.2958874039497803e-41,
     "max_contour_relative_error": 2.24086082262848e-41,
     "links_checked": 11,
@@ -212,6 +234,61 @@
     "training_archive_unchanged": true,
     "full_suite_rerun": false,
     "validation_scope": "Documentation, proof-calculation spot checks, and archived evidence reconciliation; no new experimental predictions or training.",
+    "gpu_hours": 0
+  },
+  "pdf_review_revision": {
+    "base_commit": "482c3f5",
+    "pdf": "docs/gamma_optimization_paper_note.pdf",
+    "latex_source": "docs/gamma_optimization_paper_note.tex",
+    "pages": 8,
+    "pdf_bytes": 431913,
+    "figure_count": 3,
+    "new_figure_count": 2,
+    "build_command": "latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=/tmp/gamma-review-latex docs/gamma_optimization_paper_note.tex",
+    "latex_warnings": 0,
+    "all_fonts_embedded": true,
+    "visual_review": "All eight pages rendered with Poppler and individually inspected; figures, labels, equations, page numbers, and captions legible with no clipping or overlap.",
+    "text_checks": "Expected proof and numerical claims extracted; no unresolved references; all extracted word boxes lie inside page boundaries.",
+    "markdown_tables_remaining": 0,
+    "relative_links_checked": 17,
+    "figure_cases_checked": 20,
+    "executed_hits_enclosed": 19,
+    "censored_cases": 1,
+    "interval_certified_cases": 4,
+    "numerically_checked_control_cases": 16,
+    "primary_figure_source_files_preserved": 23,
+    "new_figure_source_files_checked": 2,
+    "maximum_relative_interval_width_percent": 0.18087374265847245,
+    "full_suite": {
+      "command": "python -m pytest -q -p no:cacheprovider -m 'not slow'",
+      "passed": 768,
+      "failed": 17,
+      "skipped": 9,
+      "deselected": 4,
+      "seconds": 309.03,
+      "baseline_failure_match": true,
+      "failures": [
+        "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+        "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+        "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+        "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+        "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+        "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+        "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+        "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+        "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+        "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+        "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+        "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+        "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+        "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+        "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+        "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+        "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+      ],
+      "log_sha256": "26524f1043380821c2ed1b61f0e01ccadb1fa2566e9e2395eb1a5c55e07d1159"
+    },
+    "training_archive_unchanged": true,
     "gpu_hours": 0
   }
 }
