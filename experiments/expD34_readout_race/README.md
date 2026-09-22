@@ -69,6 +69,24 @@ is a scientific outcome, not a reason to change the validation set. No
 conditional inequality is promoted to a predictive theorem without independent
 control of its future assumptions.
 
+`plateau_stage.sbatch` launches the discovery probes, independent continuations,
+independent probes, or numerical controls. The controls repeat both seed-0
+forks with half the GD step at matched physical time and with 4096 training
+midpoints while preserving the original target function and normalization.
+`plateau_gate` rejects incomplete or unresolved source bundles before dependent
+GPU stages. The initial allocation caps are 2 GPU-hours for long runs, 3 for
+discovery probes, 1 for independent continuations, 1 for independent probes,
+and 4/3 for numerical controls: 8 1/3 GPU-hours, leaving 1 2/3 hours unallocated.
+There are no automatic retries; partial checkpoints are retained.
+
+`plateau_results --root <campaign> --output <analysis>` evaluates available
+endpoints on the original and 8192-point independent grids, audits signed
+motion, compares matched intervention arms, and scores the issued forecasts.
+It retains incomplete and failed cases explicitly. The numerical controls
+compare the same arm at the same physical horizon; they do not silently compare
+different amounts of training. Its output is data, not an automatically written
+scientific conclusion.
+
 Training uses the original 2048 midpoints, fixed target definitions, width
 177, FP64, and physical rate 0.002. Independent-grid errors check deterministic
 approximation, not statistical generalization. No held-out model-selection

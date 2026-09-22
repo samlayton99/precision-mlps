@@ -460,6 +460,200 @@ $$
 
 Indeed, a particle starting at or below $\gamma_0$ must accumulate at least $\Gamma-\gamma_0$ of outward travel to reach $\Gamma$. The same bound holds for the mass that reaches $\Gamma$ at any time in the interval. For GD, use the exact sum $P_+=\sum_n[|a_{n+1}|-|a_n|]_+$; no gradient-flow approximation or assumption about sign crossings is needed. This is the link from the direction mechanism to a conditional acquisition barrier: inward average motion describes the bulk, while an independently measured outward-travel budget controls the possible escaping population.
 
+## 9. From a force decomposition to a persistence prediction
+
+An inward force at one state does not explain its duration. The next reduction
+asks whether the errors carrying that force relax slowly under an approximately
+fixed sensitivity map, or whether changing parameters continually maintain the
+force. These are different mechanisms. A nearly constant fine-residual norm
+does not distinguish them: the large unresolved ninth-degree component can
+dominate that norm while much smaller generated errors supply nearly all the
+parameter motion.
+
+With the complete fine complement and equal rates, write $F_a=T_ae_H$. The exact
+flow identities give
+
+$$
+\dot F_a=\dot T_ae_H-T_aSe_H-T_aK_{HC}z_C.
+\tag{P1}
+$$
+
+The first term changes sensitivity, the second changes the driving error, and
+the third accounts for coarse tracking. Splitting the generated modes $G$ from
+the hard mode gives, with the other fine modes included in the remainder,
+
+$$
+\dot e_G=-S_{GG}e_G-S_{G9}e_9+\text{remaining fine and tracking terms}.
+\tag{P2}
+$$
+
+The first term relaxes the generated errors; the second can replenish or oppose
+them. Their signed contributions must be measured separately. Assuming that
+generated errors sit at a replenished equilibrium would introduce a new
+timescale-separation hypothesis that has not followed from coarse balance.
+
+### A frozen tangent retains coupling, but fixes its coefficients
+
+Let $\theta_s$ contain all raw parameters at a starting checkpoint, let
+$J_s$ be the sample-output Jacobian, and set
+$H_s=J_s^TJ_s/m$, $g_s=J_s^Tr_s/m$. Linearizing the whole output gives
+
+$$
+\widehat f(\theta)=f(\theta_s)+J_s(\theta-\theta_s),\qquad
+\widehat g_n=(I-\eta H_s)^n g_s.
+\tag{P3}
+$$
+
+This is simultaneous GD on a fixed quadratic loss. Its off-diagonal kernel
+blocks still couple the readouts, geometry, and residual modes. A successful
+prediction therefore says that their *changing* sensitivities are a small
+correction over the tested interval; it does not say that readouts are absent
+from the mechanism.
+
+For orthonormal eigenvectors $u_i$ of $H_s$, eigenvalues $\lambda_i\ge0$, and
+$d_i=u_i^Tg_s$, define
+
+$$
+\Phi_N(\lambda)=
+\begin{cases}
+\bigl[1-(1-\eta\lambda)^N\bigr]/\lambda,&\lambda>0,\\
+\eta N,&\lambda=0.
+\end{cases}
+$$
+
+Then the exact finite-step prediction is
+
+$$
+\widehat\theta_N-\theta_s=-\sum_i d_i\Phi_N(\lambda_i)u_i.
+\tag{P4}
+$$
+
+The relevant relaxation times belong to eigenvectors that actually carry the
+initial force. A tiny eigenvalue with negligible loading does not determine
+the observed motion. For $0\le\eta\lambda_i\le1$, the total slope path obeys
+
+$$
+\sum_{n<N}\|\widehat a_{n+1}-\widehat a_n\|_2
+\le\sum_i |d_i|\,\|u_{i,a}\|_2\,\Phi_N(\lambda_i).
+\tag{P5}
+$$
+
+This follows by applying the triangle inequality at each update and summing
+the nonnegative geometric series. It is a finite-time result for the frozen
+model, including directions that are extremely slow but not exactly null.
+Replacing their finite-time factors by infinite-time inverses would answer a
+different question and can grossly overstate the available motion.
+
+An intermediate model distinguishes evolving readout interaction from feature
+curvature. Replace each tanh feature by
+$h_{j,s}+h'_{j,s}[x(a_j-a_{j,s})+(b_j-b_{j,s})]$, while continuing to train $c_j$
+and $d$. Its output is bilinear in the readout and geometry increments. Thus
+constant forcing, a frozen full tangent, linearized features with evolving
+readouts, and exact tanh form distinct autonomous predictions. None receives
+future true parameters or a readout equilibrium solve.
+
+### Transferring a forecast to actual GD
+
+Define $G(\theta)=\theta-\eta\nabla L(\theta)$. For any autonomous predictor,
+suppose $\|\theta_n-\widehat\theta_n\|\le R_n$ and the derivative of $G$ is
+bounded by $\beta_n$ on the segment joining these states. Then
+
+$$
+R_{n+1}=\beta_nR_n+
+\|G(\widehat\theta_n)-\widehat\theta_{n+1}\|
+\tag{P6}
+$$
+
+is a valid next error radius. The proof adds and subtracts
+$G(\widehat\theta_n)$ and applies the fundamental theorem of calculus. To make
+this predictive, the segment bound must follow from an independently enclosed
+neighborhood. Sampling the actual future Hessian does not supply it.
+
+There is a useful structural bound for this loss. Its Hessian is
+$\nabla^2L=J^TJ/m+\mathcal R$, where
+$\mathcal R=m^{-1}\sum_i r_i\nabla^2f_i$ is block diagonal across neurons.
+The Gram term is positive semidefinite. If on a neighborhood
+$-\kappa I\preceq\nabla^2L\preceq LI$, then
+$\beta=\max(1+\eta\kappa,|1-\eta L|)$ bounds the GD-map derivative. In the
+nonoscillating regime, negative curvature controls possible error growth;
+using the whole positive curvature as an exponential growth rate would lose
+the stabilizing part of GD.
+
+The following explicit neighborhood constants make one conservative attempt
+possible. At a center $\bar\theta$, let $r$ be a parameter-ball radius,
+$C_r=\max_j|\bar c_j|+r$, $J_0=\|J(\bar\theta)\|_F/\sqrt m$, and
+$R_0=\|f(\bar\theta)-y\|_m$. For $|x|\le1$, bounds on tanh's first three
+derivatives give uniform output-Hessian and third-derivative bounds
+
+$$
+M_2=\sqrt2+\frac{8C_r}{3\sqrt3},\qquad
+M_3=4\sqrt2 C_r+\frac8{\sqrt3}.
+$$
+
+The block structure avoids multiplying these bounds by the width. Put
+$D_r=J_0r+M_2r^2/2$ and
+$E_r=M_2D_r+M_3R_0r$. If $\kappa_0$ is the magnitude of the most negative
+eigenvalue of $\mathcal R(\bar\theta)$, clipped below at zero, and
+$Q_0=\|\mathcal R(\bar\theta)\|_2$, valid constants are
+
+$$
+\kappa=\kappa_0+E_r,\qquad
+L=(J_0+M_2r)^2+Q_0+E_r,
+\qquad
+L_3=3(J_0+M_2r)M_2+(R_0+D_r)M_3.
+\tag{P7}
+$$
+
+Here $L_3$ bounds the variation of the loss Hessian per unit parameter distance.
+To verify (P7), use the output Taylor bound $D_r$ for residual change, then
+bound the change in $\mathcal R$ by a changed residual times $M_2$ plus the
+original residual times the output-Hessian change $M_3r$. Differentiating the
+Gram term and the residual-curvature term gives the three $JM_2$ contributions
+in $L_3$.
+
+For a block of $b$ frozen-model updates starting at $\widehat\theta_n$, all
+predicted states lie within $D=\eta b\|\widehat g_n\|$ of that point. With
+$\epsilon_0=\|\nabla L(\widehat\theta_n)-\widehat g_n\|$ and
+$A=\|\nabla^2L(\widehat\theta_n)-H_s\|_2$, Taylor's theorem bounds every
+gradient defect in the block by
+$\epsilon_*=\epsilon_0+AD+L_3D^2/2$. A candidate neighborhood closes if
+
+$$
+R_{n+b}=\beta^bR_n+\eta\epsilon_*\sum_{j=0}^{b-1}\beta^j,
+\qquad D+R_{n+b}\le r.
+\tag{P8}
+$$
+
+Since $\beta\ge1$, this also controls each prefix of the block. Induction
+therefore justifies the very neighborhood used to obtain its constants. The
+implementation conservatively uses the Frobenius norm for $A$. It stops at the
+first block that cannot be enclosed. Failure to close this bound is not an
+escape event or evidence that the forecast itself failed.
+
+A simpler starting-state bound provides a useful comparison. On the same ball,
+successive actual gradients satisfy $\|g_{n+1}\|\le\beta\|g_n\|$ whenever the
+step segment remains inside. Hence the parameter path is at most
+$\eta\|g_s\|\sum_{j<N}\beta^j$. If this quantity is strictly below $r$,
+induction closes the ball without a surrogate. Comparing its horizon with (P8)
+measures the gain from resolving the slow motion in the predictor.
+
+Finally, let $D_{p,\Gamma}(a)$ be the Euclidean distance from $a$ to a vector
+having at least $\lceil pW\rceil$ entries with magnitude at least $\Gamma$.
+Its square is the sum of the smallest $\lceil pW\rceil$ values among
+$[\Gamma-|a_j|]_+^2$. Distance to a set is 1-Lipschitz. Thus
+
+$$
+D+R_{n+b}<D_{p,\Gamma}(\widehat a_n)
+\tag{P9}
+$$
+
+excludes that acquisition event throughout the block. This implication is
+about actual discrete GD, conditional on a closed enclosure. It uses neither
+mean contraction nor a noise model. The formulas are real-arithmetic bounds;
+their ordinary FP64 evaluations and numerical checks are not directed-rounding
+interval certificates. Their useful horizon must be reported separately from
+the much longer interval over which a surrogate may predict motion accurately.
+
 ## Derivation checks and evidence scope
 
 The formulas and propositions in this note are derived above. Bounded numerical checks verified 500 symmetric force decompositions and constrained-loss derivatives, 300 heterogeneous layer-energy identities with their exact GD increments, 400 readout-force transfer inequalities, and 300 phase boundaries with 600 perturbed GD contraction steps. The exact-tanh effective-force and metric identities were also checked on 257 symmetric midpoints at $a=0.2,0.1,0.05,0.025$, with $W=7$, $\beta=0.7$, and $Y_9=0.866$; the normalized loss derivative approached its positive leading coefficient as predicted. These checks support transcription and algebra. Sections 6–7 provide the separate empirical test in heterogeneous D34 states.

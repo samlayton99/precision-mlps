@@ -87,22 +87,23 @@ def cases_for(seed,start,half=False):
 
 
 def run(args):
+    if not jax.config.x64_enabled: raise ValueError('FP64 is required')
     seed=args.seed;start=args.start
     folder=args.source/f'primary_{seed}'
     manifest=json.loads((folder/'manifest.json').read_text()); f=np.load(folder/'snapshots.npz')
     si=int(np.flatnonzero(f['steps']==start)[0]); cases=cases_for(seed,start,args.half)
-    x=targets.grid(2048); q=np.polynomial.legendre.legvander(x,9) @ targets.polynomial_map(x)
+    x=targets.grid(args.samples); q=np.polynomial.legendre.legvander(x,9) @ targets.polynomial_map(x)
     pp=[]; yy=[]; ff=[]; settings=[]
     for c in cases:
         i=next(i for i,v in enumerate(manifest['cases']) if v['target']==c['target'] and v['optimizer']=='gd')
-        p=f['p'][i,si]; y=af.data(c['target'])[1]
+        p=f['p'][i,si]; y=af.data(c['target'],args.samples)[1]
         (a,b,readout),d=af.unpack(p);r=np.tanh(x[:,None]*a+b) @ readout+d-y
         fine=r-q[:,:2] @ (q[:,:2].T @ r/len(x))
         degree=int(c['target'][6:]) if c['target'].startswith('moment') else 0
         pp.append(p); yy.append(y);ff.append(fine);settings.append([ARMS.index(c['arm']),c['weight'],degree,c['eta']])
     pp=np.array(pp);yy=np.array(yy);ff=np.array(ff);settings=np.array(settings)
     out=args.output;out.mkdir(parents=True,exist_ok=True);verify_gpu(out)
-    protocol=dict(cases=cases,reference_updates=args.horizon,source_commit=os.environ.get('RACE_SOURCE_COMMIT'),
+    protocol=dict(cases=cases,reference_updates=args.horizon,samples=args.samples,source_commit=os.environ.get('RACE_SOURCE_COMMIT'),
         input_sha256=hashlib.sha256((folder/'snapshots.npz').read_bytes()).hexdigest(),metrics=METRICS,
         fine_clamp='Replace only slope effective force residual with the fork fine residual; current reference tracking retained',
         weighted_loss='Half mean squared residual plus (weight-1)/2 times squared residual in degrees 2 through k-1')
@@ -126,7 +127,7 @@ def run(args):
             motion_identity=float(np.max(abs(host['positive']-host['negative']-(abs(host['p'][:,:177])-abs(pp[:,:177]))))),
             channel_identity=float(np.max(abs(np.mean(abs(host['p'][:,:177])-abs(pp[:,:177]),axis=1)-host['signed'].sum(axis=1)-host['crossing']))),
             seconds=time.monotonic()-begun))
-    schedule=sorted({1,2,5,10,20,50,100,200,500,1000,*range(2000,args.horizon+1,2000),args.horizon})
+    schedule=sorted(s for s in {1,2,5,10,20,50,100,200,500,1000,*range(2000,args.horizon+1,2000),args.horizon} if s<=args.horizon)
     for end in schedule:
         if end<=offset:continue
         state,row,lo,hi=jax.device_get(advance(state,jnp.asarray(yy),jnp.asarray(ff),jnp.asarray(settings),(end-offset)*(2 if args.half else 1)))
@@ -141,4 +142,5 @@ if __name__=='__main__':
     p.add_argument('--source',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--seed',type=int,required=True);p.add_argument('--start',type=int,required=True)
     p.add_argument('--horizon',type=int,default=500000);p.add_argument('--half',action='store_true')
+    p.add_argument('--samples',type=int,default=2048)
     p.add_argument('--max-seconds',type=float,default=1650);run(p.parse_args())
