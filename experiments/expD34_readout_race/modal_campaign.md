@@ -115,3 +115,14 @@ Disable requeues, retain exclusive bundle owners, and record every submission
 in the combined accounting before allocating GPUs. The campaign root contains
 the pinned `code`, immutable downloaded `modal` bundles and their
 `transfer_hashes.json`, separate `late` inputs/outputs, and job logs.
+
+The CPU-only `plateau_campaign_analysis` entrypoint has `summary`, `figures`,
+`dense`, and `late` phases. Supply `--analysis` for existing endpoint CSVs,
+`--source` for the relevant campaign root, and `--output` for new artifacts.
+The dense phase retains all 13 targets, both optimizers, and seeds 0–2 at 600k,
+1.1m, 3m, and 6m, using the original 512-update observer and complete optimizer
+states. `plateau_dense --starts ...` also accepts explicit checkpoint steps;
+its default remains 100k and 600k. The late phase evaluates available bundles
+and scores the immutable 6m forecasts only when the 6.5m endpoint is complete.
+Half-step and grid controls remain separate in summary tables. These commands
+produce evidence artifacts only; reports are authored directly in Markdown.
