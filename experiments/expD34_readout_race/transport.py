@@ -119,10 +119,11 @@ def measure_factory(m, width, degree, kappa, n=128):
     return jax.jit(jax.vmap(one, in_axes=(0, 0, 0, 0)))
 
 
-def modal_diagnostics(z, d, x, y, weights, width, degree=65, kappa=1.):
+def modal_diagnostics(z, d, x, y, weights, width, degree=65, kappa=1., *, rates=None, modes=None):
     """Exact projected kernel blocks and full-field omitted-mode accounting."""
     a, b, c = np.asarray(z)
-    q = basis(x, degree)
+    q = basis(x, degree) if modes is None else modes
+    ra, rb, rc, rd = (1., 1., kappa, kappa) if rates is None else rates
     u = x[:, None]*a+b
     h = np.tanh(u)
     exp = np.exp(-2*np.abs(u)); s = 4*exp/(1+exp)**2
@@ -133,7 +134,7 @@ def modal_diagnostics(z, d, x, y, weights, width, degree=65, kappa=1.):
     jb = (q.T @ s/len(x))*(root*c)
     jc = (q.T @ h/len(x))*root
     jd = q.mean(axis=0)
-    kernels = dict(a=ja @ ja.T, b=jb @ jb.T, c=kappa*(jc @ jc.T), d=kappa*np.outer(jd, jd))
+    kernels = dict(a=ra*(ja @ ja.T), b=rb*(jb @ jb.T), c=rc*(jc @ jc.T), d=rd*np.outer(jd, jd))
     K = sum(kernels.values())
     rtail = r-q @ e
     ga = c*(x @ (r[:, None]*s))/len(x)
@@ -144,13 +145,13 @@ def modal_diagnostics(z, d, x, y, weights, width, degree=65, kappa=1.):
     cc, ch = K[:2, :2], K[:2, 2:]
     eigen = np.linalg.eigvalsh(cc)
     resolved = eigen[0] > 64*np.finfo(float).eps*max(1., eigen[-1])
-    udot = -x[:, None]*ga-gb
+    udot = -ra*x[:, None]*ga-rb*gb
     sdot = -2*h*s*udot
-    jadot = (q.T @ (x[:, None]*sdot)/len(x))*(root*c)-(q.T @ (x[:, None]*s)/len(x))*(root*kappa*gc)
-    jbdot = (q.T @ sdot/len(x))*(root*c)-(q.T @ s/len(x))*(root*kappa*gc)
+    jadot = (q.T @ (x[:, None]*sdot)/len(x))*(root*c)-(q.T @ (x[:, None]*s)/len(x))*(root*rc*gc)
+    jbdot = (q.T @ sdot/len(x))*(root*c)-(q.T @ s/len(x))*(root*rc*gc)
     jcdot = (q.T @ (s*udot)/len(x))*root
-    Kdot = jadot @ ja.T+ja @ jadot.T+jbdot @ jb.T+jb @ jbdot.T+kappa*(jcdot @ jc.T+jc @ jcdot.T)
-    edot = -ja @ (root*ga)-jb @ (root*gb)-kappa*jc @ (root*gc)-kappa*jd*np.mean(r)
+    Kdot = ra*(jadot @ ja.T+ja @ jadot.T)+rb*(jbdot @ jb.T+jb @ jbdot.T)+rc*(jcdot @ jc.T+jc @ jcdot.T)
+    edot = -ra*ja @ (root*ga)-rb*jb @ (root*gb)-rc*jc @ (root*gc)-rd*jd*np.mean(r)
     scalar = dict(full_slope_norm=float(np.linalg.norm(full_ga)),
         modal_slope_norm=float(np.linalg.norm(ja.T @ e)),
         omitted_slope_norm=float(np.linalg.norm(tail_ga)),
@@ -176,4 +177,5 @@ def modal_diagnostics(z, d, x, y, weights, width, degree=65, kappa=1.):
             slow_transient_alignment=float(slow @ transient/(np.linalg.norm(slow)*np.linalg.norm(transient)+1e-300)),
             decomposition_error=float(np.linalg.norm(ja.T @ e-slow-transient)))
     return scalar, dict(**{"K_"+key: value for key, value in kernels.items()}, residual_modes=e,
-                       J_a=ja, J_b=jb, J_c=jc, J_d=jd, K_dot=Kdot, residual_velocity=edot)
+                       J_a=ja, J_b=jb, J_c=jc, J_d=jd, K_dot=Kdot, residual_velocity=edot,
+                       J_a_dot=jadot, gradient=np.stack((ga, gb, gc)), residual=r)
