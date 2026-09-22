@@ -374,29 +374,7 @@ $$
 
 Interpret the norm inequality by a limiting argument at $\tau=0$. A uniformly positive $\alpha_C$ means that relaxation beats metric drift; the forcing then sets a tracking floor. This is a conditional estimate derived from explicit kernel quantities, not a statement that the tracking error always decays to zero.
 
-### Actual GD has an exact discrete tracking equation
-
-The flow argument explains relaxation versus forcing, but D34 uses finite GD updates. We therefore need a tracking bound that accounts for the complete update and its change to the balance map. Use a prime for the next GD state, not the next saved checkpoint. Define the exact modal step defect $R^\Delta=e'-e+\eta Ke$. It includes the nonlinear finite-step remainder and omitted modes. Substitution into $z_C'=e_C'+B'e_H'$ gives
-
-$$
-z_C'=M^\Delta z_C+h^\Delta,
-\quad M^\Delta=I-\eta(C+B'Q^T),
-$$
-
-$$
-h^\Delta=(B'-B-\eta B'S)e_H+R_C^\Delta+B'R_H^\Delta.
-\tag{8}
-$$
-
-Therefore
-
-$$
-\tau_{n+1}\le\beta_n\tau_n+\|h_n^\Delta\|_{C_{n+1}},\qquad
-\beta_n=\|C_{n+1}^{1/2}M_n^\Delta C_n^{-1/2}\|_2.
-\tag{9}
-$$
-
-There is no discarded step-size term. Products of the $\beta_n$ and accumulated forcing bound tracking; a constant bound below one gives the simpler corollary below. Sampled factors below one do not prove that every intervening factor is below one.
+The same relaxation-with-forcing structure has an exact GD counterpart, derived in [Appendix A](#appendix-a-exact-tracking-for-gd). The population bound below uses the actual GD updates directly.
 
 ### Theorem: a sufficient finite-time population barrier for GD
 
@@ -443,17 +421,16 @@ $$
 \tag{11}
 $$
 
-Suppose on all required updates that
+For GD, express the tracking estimate as a per-update contraction factor $\bar\beta$ and forcing allowance $\eta F_0$. Suppose on all required updates that
 
 $$
-\beta_n\le\bar\beta<1,\quad
-\|h_n^\Delta\|_{C_{n+1}}\le\eta F_0,\quad
+\tau_{n+1}\le\bar\beta\tau_n+\eta F_0,\quad
 \|T_{a,n}e_{H,n}\|\le\epsilon,\quad
 \|g_{a,\perp,n}\|\le\delta,
 \qquad 0\le\bar\beta<1.
 $$
 
-For $M=N-s$ and $A_M=\sum_{j=0}^{M-1}\bar\beta^j=(1-\bar\beta^M)/(1-\bar\beta)$, iteration of (9) gives
+Here $F_0,\epsilon,\delta$ are nonnegative bounds. [Appendix A](#appendix-a-exact-tracking-for-gd) gives sufficient conditions for this scalar tracking recurrence in terms of the exact update. For $M=N-s$ and $A_M=\sum_{j=0}^{M-1}\bar\beta^j=(1-\bar\beta^M)/(1-\bar\beta)$, iterating the recurrence gives
 
 $$
 \tau_{s+j}\le\bar\beta^j\tau_s+
@@ -543,7 +520,7 @@ The along-full projections can be negative or exceed one; they are signed contri
 | $\Vert z_C\Vert$, $\tau=\sqrt{z_C^TCz_C}$, $\Vert J_{a,C}^Tz_C\Vert$ | Euclidean tracking, theorem's metric tracking, and its actual slope contribution. They have different normalizations. | T `tracking_error` is Euclidean; $\tau$ is derived; `transient_slope_norm` is the contribution. |
 | $\lambda_{\min}(C)$, $\lambda_{\max}(C)$ | Resolution and conditioning of the coarse inverse. | T `coarse_min_eigenvalue`, `coarse_max_eigenvalue`, `coarse_inverse_resolved`. |
 | $\alpha_C$; $\Vert\dot C\Vert_F/\lambda_{\min}(C)^2$ | Signed flow-contraction lower bound; conservative sufficient drift check. A ratio below 2 suffices for positive $\alpha_C$. | T `tracking_metric_decay_lower`, `coarse_drift_ratio`. |
-| $\Vert f_z\Vert_C$; $\beta_n$, $\Vert h_n^\Delta\Vert_{C_{n+1}}/\eta$ | Regeneration floor and exact GD tracking ingredients. | Flow metric norm is derived: `tracking_forcing_norm` is Euclidean. Discrete fields are `discrete_tracking_factor`, `discrete_tracking_forcing_per_time`. |
+| $\Vert f_z\Vert_C$; $\beta_n$, $\Vert h_n^\Delta\Vert_{C_{n+1}}/\eta$ | Regeneration floor and exact GD tracking ingredients, defined in [Appendix A](#appendix-a-exact-tracking-for-gd). | Flow metric norm is derived: `tracking_forcing_norm` is Euclidean. Discrete fields are `discrete_tracking_factor`, `discrete_tracking_forcing_per_time`. |
 | $\Vert g_{a,\perp}\Vert$; projection error | Whether the retained modes explain the slope force. Report absolute error when the force is tiny. | T `omitted_slope_norm`, `projection{9,17,33,65}_relative_error`; trace `slope_defect_norm` uses the run's training projection. |
 | Cosine between effective and tracking slope forces | Whether these two vector contributions reinforce or cancel; unrelated to outward alignment with slope signs. | T `slow_transient_alignment`. |
 
@@ -759,3 +736,36 @@ An invariant-region argument would bound the velocity normal to the boundary of 
 Transport stability estimates offer another route: transfer a tail bound for a tractable approximate distribution to the actual trajectory using an independently controlled error radius, as in Section 5. Moment inequalities or preserved symmetries may help construct the needed estimates. A continuous initialization law and a particular random finite network have different symmetries and fluctuations, so that transfer requires its own control. Nonlinear moment evolution also remains unclosed unless further structure is established.
 
 These directions use residual coordinates to bound the driving force and transport methods to convert those bounds into population statements. The present campaign has not established the required leakage envelopes, invariant regions, or certified future transport errors. A useful next result would derive one of them from conditions on the residual and joint parameter distribution that can be checked before the proposed barrier interval, while retaining nonlinear regeneration and the actual equal-rate GD update.
+
+## Appendix A. Exact tracking for GD
+
+This appendix supplies the discrete tracking calculation used to justify the scalar recurrence in Section 4's corollary. The flow argument explains relaxation versus forcing; the calculation here accounts for the complete GD update and its change to the balance map.
+
+Use a prime for the next GD state, not the next saved checkpoint. Define the exact modal step defect $R^\Delta=e'-e+\eta Ke$. It includes the nonlinear finite-step remainder and omitted modes. Substitution into $z_C'=e_C'+B'e_H'$ gives
+
+$$
+z_C'=M^\Delta z_C+h^\Delta,
+\quad M^\Delta=I-\eta(C+B'Q^T),
+$$
+
+$$
+h^\Delta=(B'-B-\eta B'S)e_H+R_C^\Delta+B'R_H^\Delta.
+\tag{8}
+$$
+
+Therefore
+
+$$
+\tau_{n+1}\le\beta_n\tau_n+\|h_n^\Delta\|_{C_{n+1}},\qquad
+\beta_n=\|C_{n+1}^{1/2}M_n^\Delta C_n^{-1/2}\|_2.
+\tag{9}
+$$
+
+There is no discarded step-size term. Products of the $\beta_n$ and accumulated forcing bound tracking. In particular, bounds
+
+$$
+\beta_n\le\bar\beta<1,\qquad
+\|h_n^\Delta\|_{C_{n+1}}\le\eta F_0
+$$
+
+at every required update imply $\tau_{n+1}\le\bar\beta\tau_n+\eta F_0$, the scalar recurrence used in the corollary. Sampled factors below one do not prove that every intervening factor is below one.
