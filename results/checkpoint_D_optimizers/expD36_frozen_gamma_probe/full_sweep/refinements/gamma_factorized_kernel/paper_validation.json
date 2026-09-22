@@ -48,9 +48,47 @@
   "gpu_hours": 0,
   "artifact_sha256": {
     "experiments/expD36_frozen_gamma_probe/paper_figure.py": "cd3400c6f2daf49ca81b787bdfcd89bc04584550a5d9b716f976de6bc53e8da1",
-    "docs/gamma_readout_paper_note.md": "caae45ed1f803f0a0c5f466d5f9d6a14850813e43865cf9792fc7d42302021af",
+    "docs/gamma_readout_paper_note.md": "75a0729667d8bc2ba891109872b055465adcc7aab84eaa85669e998162b52691",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_figure_data.json": "bb24d0f03f6a3e404055e23d463b390757b58e846b7922ef8407a17d03969e46",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.png": "bf420e68468d3b455134892201dd3f243cd62b2564f47ca8cbc42b73c16a273e",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.pdf": "ee23eba5e86b0d8a5cd04c0aaff51f703834370e3c3b9904b72a35649046388a"
+  },
+  "documentation_revision": {
+    "base_commit": "9688541",
+    "checks": [
+      "relative links and equation numbering",
+      "math delimiters",
+      "toy exact representation and kernel eigenpairs",
+      "toy residual formula versus direct GD at every iterate through acquisition",
+      "archived timing table unchanged",
+      "non-document artifact hashes unchanged"
+    ],
+    "two_point_example": [
+      {
+        "gamma_times_half_spacing": 0.1,
+        "eta": 0.5,
+        "epsilon": 0.01,
+        "predicted_hit": 925,
+        "executed_hit": 925,
+        "max_residual_formula_error": 1.0547118733938987e-15,
+        "contrast_eigenvalue": 0.009933709152560222,
+        "largest_eigenvalue": 1.0,
+        "exact_readout_weight": 10.03331113225399
+      },
+      {
+        "gamma_times_half_spacing": 1.0,
+        "eta": 0.5,
+        "epsilon": 0.01,
+        "predicted_hit": 14,
+        "executed_hit": 14,
+        "max_residual_formula_error": 1.3183898417423734e-16,
+        "contrast_eigenvalue": 0.5800256583859739,
+        "largest_eigenvalue": 1.0,
+        "exact_readout_weight": 1.3130352854993315
+      }
+    ],
+    "full_suite_rerun": false,
+    "experiment_code_changed": false,
+    "gpu_hours": 0
   }
 }
