@@ -1,48 +1,35 @@
 {
-  "base_commit": "7aa7e9c72fe09d91b51bc1056d0ee123758e3e21",
+  "base_commit": "5c2685db2c9d3375d2af877052c79c4a258602f9",
   "pdf": {
     "pages": 2,
-    "bytes": 253066,
+    "bytes": 210256,
     "latex_warnings": 0,
     "all_fonts_embedded": true,
-    "visual_review": "Both final pages inspected; equations, labels, legends, and captions readable without overlap",
+    "visual_review": "Both final pages inspected; shared gamma colors, uncluttered axes, no overlapping or clipped labels",
     "text_bounds_checked": true,
-    "relative_links_checked": 6,
+    "relative_links_checked": 7,
     "build_command": "latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=/tmp/gamma-pi-latex docs/gamma_optimization_pi_brief.tex"
   },
   "evidence": {
-    "tracked_source_files": 10,
-    "endpoint_residuals_checked": 30,
-    "primary_certified_intervals_checked": 4,
-    "targets": 5,
-    "methods": [
-      "gd",
-      "adam_common",
-      "adam_selected"
-    ],
-    "gammas_for_endpoint_comparison": [
+    "source_files": 13,
+    "previously_tracked_sources": 9,
+    "archived_model_files_added": 4,
+    "gammas": [
       8,
+      12,
+      16,
       64
     ],
-    "endpoint_updates": 200000,
+    "target": "sine_mix_2_6_10",
+    "primary_certified_crossings_checked": 4,
+    "adam_checkpoints_checked": 48,
+    "pilot_continuation_boundary_matches": 4,
+    "common_adam_initial_rate": 0.001,
+    "common_adam_epsilon": 1e-12,
+    "gd_forecast": "Archived gamma-factorized kernel, Q=2048; no fitting to optimizer data",
+    "maximum_gd_final_residual_gap": 8.919080751734754e-15,
+    "adam_line_convention": "Straight segments connect saved checkpoints; no resampling or smoothing.",
     "figure_reproduction": "PNG, PDF, and data JSON byte-identical",
-    "beta_transform_checks": {
-      "decimal_digits": 45,
-      "a_values": [
-        -3,
-        -1,
-        -0.25,
-        0,
-        0.25,
-        1,
-        3
-      ],
-      "max_absolute_error": "3.70703e-44",
-      "methods": [
-        "Euler gamma product",
-        "direct Fourier quadrature"
-      ]
-    },
     "previous_review_artifact_hashes_unchanged": 14
   },
   "full_suite": {
@@ -52,7 +39,7 @@
     "skipped": 9,
     "deselected": 4,
     "warnings": 10,
-    "seconds": 285.04,
+    "seconds": 274.55,
     "baseline_failure_match": true,
     "failures": [
       "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
@@ -73,16 +60,16 @@
       "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
       "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
     ],
-    "log_sha256": "feb551bf74b54c77969676e129b406395d1048bc602735ca94d7be1d952a6ecc"
+    "log_sha256": "7cf5b15eaff36b9638455c74064a0ba9e869c8235f9696eb920657daa6933b98"
   },
   "artifact_sha256": {
-    "docs/gamma_optimization_pi_brief.md": "bc8832dedb92d58d0f92ccd3e5ac82147154784904a49c8f555fcb29527d3591",
-    "docs/gamma_optimization_pi_brief.tex": "276f4a1592f5da92e49132603e615e756f0e4ebe68d40e1bccb52005b2cf35da",
-    "docs/gamma_optimization_pi_brief.pdf": "55def2799dae7e4381931b695bac2efe6900e28ef507b72db5d85a74dee8624c",
-    "experiments/expD36_frozen_gamma_probe/pi_brief_figure.py": "932f4a592b94e4f53d8acad9c1170125e9deced4d6caf3af9aaa440b4d0a1ec5",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.png": "50b3edfdd08eadfd7ff0e416f91778b1262618fa621291b5715bf02c1e4930af",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.pdf": "0fcd93aa2ec62d40ecd4a531c5d7a5de9aaccef12e70d68e9bab9c2c968f53da",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_figure_data.json": "0a1e68feefda806895cc9c73d1fbfd36dc89a5a00a171db0633b092acc5c6baf"
+    "docs/gamma_optimization_pi_brief.md": "cd89e6ef2b8be2cc5d8dfcb50ddd1e2093dc588eb57b43bcf2515a572460fa26",
+    "docs/gamma_optimization_pi_brief.tex": "3ac7149550857c0c77be41aa6c90144acb246246de98debd810d71ec3472a13f",
+    "docs/gamma_optimization_pi_brief.pdf": "8f4642eafe0f68d827f7aefe1b178598c61564d8c11a1a62c3b562cfa7a48cc2",
+    "experiments/expD36_frozen_gamma_probe/pi_brief_figure.py": "268614e9a17d159db7ba3262b637641294c664a08e38d451b5ea9e3e81523744",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.png": "84070800914f2945654267f7ed954a2aff0ec858dd8d0479ddd0373fa9d5f8b4",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.pdf": "4eba5bf8911af49106d5bc11becc2bd844a744280bf8fdb8b5b4e0c38e2e6a86",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_figure_data.json": "6480e2540226fbdecb3fb06d09b397dd6e28ab1dac3b6238ecbf7757ad46bfc5"
   },
   "gpu_hours": 0
 }

@@ -1,5 +1,4 @@
-% Authored directly alongside the Markdown companion; no generated prose.
-% From the repository root:
+% Directly authored alongside the Markdown companion.
 % latexmk -pdf -outdir=/tmp/gamma-pi-latex docs/gamma_optimization_pi_brief.tex
 \documentclass[10pt]{article}
 \usepackage[T1]{fontenc}
@@ -8,14 +7,14 @@
 \usepackage[letterpaper,margin=0.65in]{geometry}
 \usepackage{graphicx,microtype,xcolor,caption,fancyhdr}
 \usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!55!black]{hyperref}
-\definecolor{ink}{HTML}{17334A}
+\definecolor{ink}{HTML}{263442}
 \DeclareMathOperator{\sech}{sech}
 \DeclareMathOperator{\sign}{sign}
 \newcommand{\repo}{https://github.com/samlayton99/precision-mlps/blob/experiment/frozen-gamma-probe}
 \newcommand{\evidence}{\repo/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel}
 \graphicspath{{results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/}}
-\hypersetup{pdftitle={Gamma controls optimization access},
-  pdfsubject={PI brief: complete mechanism proof and GD/Adam evidence across five targets}}
+\hypersetup{pdftitle={Gamma controls readout learning speed},
+  pdfsubject={Gamma attenuation, kernel predictions, and measured GD/Adam learning curves}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt plus 1pt}
 \setlength{\emergencystretch}{2em}
@@ -23,149 +22,130 @@
 \captionsetup{font=small,labelfont=bf,justification=raggedright,singlelinecheck=false}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\color{ink}Gamma controls optimization access}
+\fancyhead[L]{\small\color{ink}Gamma controls readout learning speed}
 \fancyhead[R]{\small PI research brief}
 \fancyfoot[C]{\small\thepage}
 \renewcommand{\headrulewidth}{0.3pt}
 
 \begin{document}
 \thispagestyle{plain}
-{\color{ink}\fontsize{22}{25}\selectfont\bfseries Gamma controls optimization access\par}
+{\color{ink}\fontsize{22}{25}\selectfont\bfseries Gamma controls readout learning speed\par}
 \vspace{3pt}
-\textbf{Large slopes can be needed to acquire an attainable target within a practical
-training budget.} Changing the common tanh slope from 8 to 64 reduces the updates
-needed for 1\% relative residual from \textbf{15,798,313 to 16,013}. Both models
-reach that accuracy. We derive gamma's explicit frequency filter, carry it through
-the finite learning kernel, and predict a \textbf{985.70--987.49-fold delay}, enclosing
-the measured \textbf{986.59-fold delay}. The finite-budget benefit also appears
-with Adam across five targets.
+\textbf{A small-gamma network can represent a target and still take far longer to learn it.}
+Gamma smooths the features, suppressing fine spatial variation. This changes the
+readout kernel. Once we calculate that kernel, classical gradient-descent theory
+predicts the learning curve and its crossing of an accuracy threshold.
 
-\medskip
-{\color{ink}\large\bfseries Mechanism and complete proof}\par
-Fix centers $c_j$, inputs $x_i$, and nonzero target vector $y=(y_i)$, with $j=1,\ldots,W$ and
-$i=1,\ldots,m$. Train only the raw readout coefficients
-$\theta=(b,w_1,\ldots,w_W)$ from zero on half mean squared error:
+Freeze the centers $c_j$ and common slope $\gamma>0$, and train only the readout from zero:
 \begin{equation*}
- f_{\gamma,\theta}(x)=b+\sum_{j=1}^W w_j\tanh(\gamma(x-c_j)),\qquad \gamma>0.
+ f_{\gamma,\theta}(x)=b+\sum_{j=1}^W w_j\tanh(\gamma(x-c_j)).
 \end{equation*}
-\textbf{Proposition.} Gamma smooths a fixed dictionary of steps, and hence both
-arguments of its kernel, with frequency multiplier
+\textbf{Where gamma enters.} Each tanh is a sharp step smoothed over a distance
+proportional to $1/\gamma$. We show on page 2 that this smoothing multiplies frequency
+$\omega$ by
 \begin{equation}\label{eq:filter}
- \boxed{M_\gamma(\omega)=\frac{z}{\sinh z},\qquad
- z=\frac{\pi|\omega|}{2\gamma},\qquad M_\gamma(0)=1.}
+ M_\gamma(\omega)=\frac{z}{\sinh z},\qquad
+ z=\frac{\pi|\omega|}{2\gamma},\qquad M_\gamma(0)=1.
 \end{equation}
-A cap $\gamma\le\bar\gamma$ implies $M_\gamma(\omega)\le M_{\bar\gamma}(\omega)$.
-Fine scales, $|\omega|\gg\gamma$, are exponentially attenuated:
-$M_\gamma(\omega)\sim2ze^{-z}$.
+For $|\omega|\gg\gamma$, the multiplier is exponentially small. Applying the
+smoothing to both factors of a feature inner product gives the gamma-dependent
+kernel exactly.
 
-\textit{Proof.} Let $\rho_\gamma(t)=\gamma\sech^2(\gamma t)/2$. Its integral is one,
-so splitting at a step's center gives
+\textbf{Where the learning-time prediction comes from.}
+Let $\Phi_\gamma$ be these features, including the bias, evaluated at $m$ training
+inputs, and set $K_\gamma=\Phi_\gamma\Phi_\gamma^T/m$.
+For target vector $y\ne0$, half mean squared error, and step
+$0<\eta_\gamma\le1/\|K_\gamma\|_2$, classical GD theory [1] gives the relative residual
+\begin{equation}\label{eq:training}
+ E_\gamma(n)=\frac{\|(I-\eta_\gamma K_\gamma)^ny\|_2}{\|y\|_2}.
+\end{equation}
+The predicted time to 1\% error is simply the first $n$ for which this curve falls
+below $0.01$. This calculation uses the kernel and target, without fitting a
+training trajectory. The finite center and sample geometry is retained;
+Fourier frequencies need not be kernel eigenvectors.
+
+\begin{figure}[h!]
+ \centering
+ \includegraphics[width=\linewidth]{pi_brief_three_panel.pdf}
+ \caption{\textbf{Same target, different access during optimization.}
+ The target is $\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x)$,
+ with 559 fixed-center features and 8193 training inputs on $[-1,1]$.
+ \textbf{A:} The exact gamma filter; vertical guides mark the target frequencies.
+ \textbf{B:} Solid curves are kernel predictions; open circles mark executed GD
+ first hits of 1\%. Dotted verticals project predicted crossings onto update time.
+ \textbf{C:} Adam learning curves join saved checkpoints, with identical optimizer
+ settings across gammas. Dashed horizontals mark 1\%. Both optimizers start at zero;
+ GD uses $\eta_\gamma\simeq0.5/\|K_\gamma\|_2$.}
+\end{figure}
+
+For this target, gamma 8 takes \textbf{15,798,313 GD updates} to reach 1\%, versus
+\textbf{16,013} at gamma 64. The predicted delay ratio is \textbf{985.70--987.49};
+the measured ratio is \textbf{986.59}. The approximation bounds certify the
+threshold crossings shown in B. Both models reach 1\%, so this is an optimization
+delay at attainable accuracy. Adam also shows a substantial separation with the
+same features (C); its curves are empirical, while \eqref{eq:training} applies to GD.
+
+\clearpage
+{\color{ink}\large\bfseries Proof of the gamma-to-kernel statement}\par
+Let $\rho_\gamma(t)=\gamma\sech^2(\gamma t)/2$. This density has unit mass.
+Splitting at a step's center gives
 \begin{equation*}
  \int_{\mathbb R}\rho_\gamma(x-t)\sign(t-c)\,dt
  =2\int_{-\infty}^{x-c}\rho_\gamma(u)\,du-1
  =\tanh(\gamma(x-c)).
 \end{equation*}
-Define the fixed reference
-$k_{\rm step}(t,s)=1+\sum_j\sign(t-c_j)\sign(s-c_j)$.
-Taking feature inner products gives the exact tanh kernel
-\begin{equation}\label{eq:kernel}
+Define the step kernel using the same centers,
+\begin{equation*}
+ k_{\rm step}(t,s)=1+\sum_j\sign(t-c_j)\sign(s-c_j).
+\end{equation*}
+Taking feature inner products gives
+\begin{equation*}
 \begin{split}
  k_\gamma(x,x')&=1+\sum_j\tanh(\gamma(x-c_j))\tanh(\gamma(x'-c_j))\\
  &=\iint\rho_\gamma(x-t)\rho_\gamma(x'-s)k_{\rm step}(t,s)\,dt\,ds.
 \end{split}
-\end{equation}
-The bias is preserved by unit mass; bounded features justify exchanging the finite
-sum and integrals. For the Fourier transform, set $a=\omega/(2\gamma)$ and
-$v=e^{2\gamma t}$. The beta integral and Euler's gamma reflection identity give
+\end{equation*}
+The bias is preserved by unit mass. Bounded features justify exchanging the
+finite sum and integrals. Sampling this identity yields
+$(K_\gamma)_{i\ell}=k_\gamma(x_i,x_\ell)/m$.
+
+For the Fourier convention $\widehat\rho(\omega)=\int\rho(t)e^{-i\omega t}\,dt$,
+set $a=\omega/(2\gamma)$ and $v=e^{2\gamma t}$. The beta integral gives
 \begin{equation*}
  \widehat\rho_\gamma(\omega)=\int_0^\infty\frac{v^{-ia}}{(1+v)^2}\,dv
- =\Gamma(1-ia)\Gamma(1+ia)=\frac{\pi a}{\sinh(\pi a)}=M_\gamma(\omega),
+ =\Gamma(1-ia)\Gamma(1+ia)=\frac{\pi a}{\sinh(\pi a)}=M_\gamma(\omega).
 \end{equation*}
-with the value at zero given by continuity; $\Gamma$ here is Euler's gamma function.
-Indeed, $\Gamma(1+ia)=ia\Gamma(ia)$ and
-$\Gamma(ia)\Gamma(1-ia)=\pi/\sin(\pi ia)$ give the last equality.
-Convolving a wave $e^{i\omega x}$ multiplies it by this transform. For $z>0$, the
-derivative of $z/\sinh z$ has numerator $\sinh z-z\cosh z<0$: this numerator starts
-at zero and has derivative $-z\sinh z<0$. This proves the cap inequality;
-$\sinh z\sim e^z/2$ proves the asymptotic. No periodic geometry is assumed.
-\hfill$\square$
+Here $\Gamma$ is Euler's gamma function. The final equality follows from
+$\Gamma(1+ia)=ia\Gamma(ia)$ and the reflection identity
+$\Gamma(ia)\Gamma(1-ia)=\pi/\sin(\pi ia)$; the value at zero is one by continuity.
+Convolution therefore multiplies the wave $e^{i\omega x}$ by $M_\gamma(\omega)$
+in either kernel argument.
 
-\textbf{From the mechanism to training.} Sample the kernel:
-$(K_\gamma)_{i\ell}=k_\gamma(x_i,x_\ell)/m$.
-With residual $r_n=y-(f_{\gamma,\theta_n}(x_i))_{i=1}^m$ and
-$0<\eta_\gamma\le1/\|K_\gamma\|_2$, ordinary least-squares GD gives
-\begin{equation}\label{eq:training}
- r_{n+1}=(I-\eta_\gamma K_\gamma)r_n,\qquad
- E_\gamma(n)=\frac{\|(I-\eta_\gamma K_\gamma)^ny\|_2}{\|y\|_2}.
-\end{equation}
-This is standard kernel-gradient dynamics [1]. An eigenmode of eigenvalue $\lambda$
-decays by $(1-\eta_\gamma\lambda)^n$; the target determines how much residual lies
-in it. The contribution is the explicit gamma-to-kernel mechanism. We retain the
-actual center and sample couplings when calculating $E_\gamma$, without fitting
-a training curve. The first $n$ with $E_\gamma(n)\le\epsilon$ is the acquisition time;
-bounding the finite expansion's error brackets this crossing.
-Fourier multipliers are not generally finite-kernel eigenvalues.
+For $z>0$, the derivative of $z/\sinh z$ has numerator $\sinh z-z\cosh z<0$:
+it starts at zero and its derivative is $-z\sinh z<0$. Consequently, a cap
+$\gamma\le\bar\gamma$ bounds the multiplier by $M_{\bar\gamma}(\omega)$.
+Also, $\sinh z\sim e^z/2$ gives $M_\gamma(\omega)\sim2ze^{-z}$.
+This proves the explicit attenuation and its dependence on gamma, with no
+periodic assumption.\hfill$\square$
 
-\clearpage
-{\color{ink}\large\bfseries Measured consequences}\par
-\begin{figure}[h!]
- \centering
- \includegraphics[width=\linewidth]{pi_brief_three_panel.pdf}
- \caption{\textbf{Gamma changes the corrections available to training.}
- \textbf{A:} Exact filter; marked frequencies are the three sine-mixture components.
- \textbf{B:} Executed first hits of 1\% relative training residual versus certified
- necessary--sufficient intervals; intervals are narrower than the markers, not
- statistical confidence intervals.
- \textbf{C:} Relative training residual at gamma 8 divided by that at gamma 64
- after 200,000 updates. Values above one favor gamma 64; these are error ratios,
- not timing ratios. All empirical panels use the same fixed equispaced centers
- with a boundary halo, $W=559$, $m=8193$ equally spaced inputs on $[-1,1]$,
- raw coordinates, and zero initialization.
- GD uses $\eta_\gamma\simeq0.5/\|K_\gamma\|_2$.
- Adam's common initial rate/epsilon are $10^{-3}/10^{-12}$; selected settings use
- the predeclared validation protocol below. All are archived deterministic
- training results.}
-\end{figure}
+Writing the residual as $r_n=y-\Phi_\gamma\theta_n$, the standard GD identity
+follows from $r_{n+1}=(I-\eta_\gamma K_\gamma)r_n$ and
+$r_0=y$. Diagonalization gives a factor $(1-\eta_\gamma\lambda)^n$ in each
+eigenmode of eigenvalue $\lambda$. Thus gamma changes the learning rates through
+the kernel, and the target's energy in those directions determines the delay.
+The cap bounds attenuation; the numerical delay is specific to the target and geometry.
 
-\textbf{Why the delay is mechanistic.}
-The primary target is $\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x)$.
-At its finest component, changing gamma from 64 to 8 reduces $M_\gamma(10\pi)$
-from 0.9074 to 0.02584, about 35-fold. Carrying the whole filtered kernel through
-\eqref{eq:training} predicts the observed 986.59-fold GD delay. A control that changes
-only the kernel's overall magnitude predicts 16,013 updates at every gamma under
-the normalized step rule. The gamma-8 interval has total width 0.181\% of its
-executed hit; the gamma-64 count is exact. Thus the strong effect survives
-normalization for largest curvature and occurs at an accuracy both models attain.
-
-\textbf{Across targets and Adam.}
-Alongside the mixture, panel C includes $\exp(\sin(3\pi x))$, $1/(1+25x^2)$,
-$\sqrt5x^2$, and $\sqrt2\sin(2\pi x)$.
-Raising gamma from 8 to 64 reduces the 200k residual for all five:
-\textbf{2.31--83.06-fold for GD}, \textbf{1.35--61.97-fold for common-settings Adam},
-and \textbf{12.89--770.22-fold for selected Adam}.
-For the mixture, common Adam leaves 1.213\% residual at gamma 8 versus 0.0196\%
-at 64. The benefit therefore extends empirically beyond GD. It is target- and
-protocol-dependent; the GD timing formula is not an Adam theorem, and neither
-monotone improvement nor a universal necessary gamma threshold is claimed.
-
-\textbf{Adam protocol.}
-Both Adam variants hold their initial rate through 20k updates, cosine-decay to
-$10^{-3}$ of it at 50k, then hold that terminal rate through 200k. Selection crosses
-five initial rates $10^{-5},\ldots,10^{-1}$ with epsilons $10^{-8},10^{-12}$ and
-minimizes median validation residual over five checkpoints at 40k--50k on 4096
-offset inputs. Moments and counters persist into continuation. Selection never
-uses the plotted 200k endpoint. These comparisons assess optimization on the
-training samples, not held-out generalization.
-
-\smallskip
+\bigskip
 {\small
 \textbf{[1]} Y.~Yao, L.~Rosasco, A.~Caponnetto.
 \href{https://yao-lab.github.io/publications/YaoCapRos07_EarlyStop.pdf}{On Early
 Stopping in Gradient Descent Learning}. \textit{Constructive Approximation}
-26:289--315, 2007, \S3.3. DOI: 10.1007/s00365-006-0663-2.\par
-\textbf{Supporting material:}
-\href{\repo/docs/gamma_optimization_paper_note.pdf}{Full review and numerical certification};
-\href{\repo/docs/gamma_factorized_readout.md}{finite-kernel construction};
-\href{\evidence/pi_brief_figure_data.json}{plotted values and source hashes}.
-No additional training was run for this brief.}
+26:289--315, 2007, \S3.3.\par
+\href{\repo/docs/gamma_optimization_paper_note.pdf}{Full study and additional targets}
+\enspace$\cdot$\enspace
+\href{\repo/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/REPORT.md}{Experiment protocol}
+\enspace$\cdot$\enspace
+\href{\repo/docs/gamma_factorized_readout.md}{Finite-kernel construction and certification}
+\enspace$\cdot$\enspace
+\href{\evidence/pi_brief_figure_data.json}{Figure data and provenance}}
 \end{document}
