@@ -1,16 +1,16 @@
 # How gamma changes the time needed to learn an attainable target
 
-**The claim is that gamma can change readout optimization difficulty even
-when the requested accuracy is attainable.** Small gamma makes hidden
-features vary less sharply across the input. The readout can still combine
-them to fit a target, but gradient descent may acquire the required
-corrections very slowly. We quantify this effect for fixed centers and a
-common slope: an explicit gamma-dependent filter determines the matrix
-governing readout updates, and that same matrix predicts acquisition time.
-In the measured example, gamma 8 takes 986.59 times as many updates as gamma
-64; the predicted ratio is 985.70–987.49. This is a target-dependent result
-for the prescribed finite geometry, not a claim that smaller gamma slows
-every target in every dictionary.
+**Changing gamma changes how quickly the readout acquires an attainable
+target, through a known frequency-dependent attenuation of its features.**
+The quantitative question is how much the acquisition time changes when
+gamma changes while the centers, samples, target, and readout metric remain
+fixed. Our theorem follows the explicit attenuation through that fixed
+geometry and bounds the resulting ratio of learning times. In the measured
+example, reducing gamma from 64 to 8 makes the same 1% accuracy require
+985.70–987.49 times as many updates; the executed ratio is 986.59. This is a
+target-dependent comparison for the prescribed geometry. The standard GD
+decay formula and approximation-error transfer justify the comparison;
+the scientific statement is the gamma-induced change in acquisition time.
 
 **Table 1. Notation.** Gamma is displayed explicitly in every learning
 quantity. Eigenvalues and dimensionless bandwidth have different symbols.
@@ -21,6 +21,7 @@ quantity. Eigenvalues and dimensionless bandwidth have different symbols.
 | $E_\gamma(n)$ | Relative training residual after $n$ readout GD updates at this gamma. |
 | $E_{\mathrm{floor}}(\gamma)$ | Smallest relative residual attainable by this same tanh dictionary. |
 | $n_\epsilon(\gamma)$ | First update at which $E_\gamma(n)\le\epsilon$. |
+| $\underline n_\epsilon(\gamma),\overline n_\epsilon(\gamma)$ | Certified necessary and sufficient update counts at that gamma. |
 | $K_\gamma,\lambda_i(\gamma),p_i(\gamma)$ | Readout update matrix, its positive eigenvalues, and target energy in their modes. |
 | $\eta_\gamma,L_\gamma$ | GD step and largest eigenvalue $L_\gamma=\|K_\gamma\|$. |
 | $M_\gamma(\omega)$ | Explicit gamma-dependent attenuation at physical frequency $\omega$. |
@@ -382,14 +383,96 @@ them by a universal scalar formula in gamma. The two-point example admits
 that simplification; the measured dictionary retains the couplings needed
 for accurate prediction.
 
-## 5. The theorem turns this gamma-dependent curve into a training-time interval
+## 5. The theorem quantifies how changing gamma changes acquisition time
 
-**Theorem (gamma-dependent acquisition bounds).** Fix the samples, centers,
-nonzero target, and raw readout metric. For each common slope $\gamma>0$,
-initialize the readout at zero and use a prescribed step
+The quantity of interest is the acquisition-time ratio between two gamma
+values. It is predicted by their explicit attenuation filters acting on the
+same geometry and target.
+
+**Theorem (gamma attenuation and relative acquisition time).** Fix the
+samples, centers, nonzero target, tolerance $0<\epsilon<1$, and raw readout
+metric. Compare slopes $0<\gamma_{\mathrm{low}}<\gamma_{\mathrm{high}}$, starting each readout
+at zero and using a prescribed step-size rule satisfying the contraction
+condition below. At each approximation resolution $Q$, construct the same
+gamma-independent matrices $F_Q,C_Q$ for both models. Changing gamma changes
+the retained feature kernel through the diagonal
+filter $D_{\gamma,Q}$, whose frequency entries are explicitly
+
+$$
+\boxed{
+M_\gamma(\omega)=\frac{z_\gamma}{\sinh z_\gamma},\qquad
+z_\gamma=\frac{\pi|\omega|}{2\gamma},\qquad M_\gamma(0)=1.
+}
+$$
+
+Applying these multipliers to the fixed geometry gives the predicted curve
+
+$$
+\boxed{
+\widetilde E_\gamma(n)=
+\frac{\left\|
+\left[I-\eta_\gamma F_QD_{\gamma,Q}C_QC_Q^TD_{\gamma,Q}F_Q^T\right]^n y
+\right\|}{\|y\|}.
+}
+$$
+
+With the controlled approximation margin described below, this curve gives
+necessary and sufficient counts
+$\underline n_\epsilon(\gamma)\le n_\epsilon(\gamma)\le\overline n_\epsilon(\gamma)$.
+For positive finite certified counts, **the change in learning time caused
+by changing gamma** satisfies
+
+$$
+\boxed{
+\frac{\underline n_\epsilon(\gamma_{\mathrm{low}})}
+     {\overline n_\epsilon(\gamma_{\mathrm{high}})}
+\;\le\;
+\frac{n_\epsilon(\gamma_{\mathrm{low}})}
+     {n_\epsilon(\gamma_{\mathrm{high}})}
+\;\le\;
+\frac{\overline n_\epsilon(\gamma_{\mathrm{low}})}
+     {\underline n_\epsilon(\gamma_{\mathrm{high}})}.
+}
+$$
+
+If the left endpoint exceeds one, the theorem certifies that lowering gamma
+slows acquisition for this target, and states by how much. All ingredients
+come from the two slopes, fixed geometry, target, and step-size rule; no
+optimization trajectory is required. The ratio is target-dependent because
+attenuation changes both the rates and the target energy assigned to them.
+Lower gamma need not slow every possible target.
+
+**Quantitative consequence in the measured problem.** Holding the target and
+geometry fixed and reducing gamma eightfold gives
+
+$$
+\boxed{
+985.7021\;\le\;
+\frac{n_{0.01}(8)}{n_{0.01}(64)}
+\;\le\;987.4867,
+\qquad\text{executed ratio }986.5930.
+}
+$$
+
+The displayed ratio endpoints are rounded outward. Both models attain 1%.
+The normalized steps are approximately $\eta_\gamma L_\gamma=0.5$, so the
+comparison includes the same curvature-based step rule. This is a
+quantitative optimization effect at an attainable tolerance.
+
+The attenuation itself is also measurable. At the target's finest frequency,
+$\omega=10\pi$, reducing gamma from 64 to 8 changes $M_\gamma(\omega)$ from
+0.9074 to 0.02584: that frequency's multiplier is about 35.1 times smaller.
+At its coarsest frequency, $\omega=2\pi$, the change is only from 0.9960 to
+0.7851. The effect is strongly frequency-dependent. These are feature-filter
+amplitudes, not finite-kernel eigenvalues. Carrying them through the full
+matrix product and this target gives the acquisition-time ratio above.
+
+### How the necessary and sufficient counts are certified
+
+For each common slope $\gamma>0$, use a prescribed step
 $0<\eta_\gamma\le1/\max\{\|K_\gamma\|,\|\widetilde K_{\gamma,Q}\|\}$,
-so both kernels contract. Calculate
-$\widetilde E_\gamma(n)$ using (4) with the spectrum and target weights of
+so both kernels contract. The matrix-power expression in the theorem is
+equivalently evaluated by the eigenmode formula (4) for the filtered kernel
 (8). The controlled feature approximation supplies an error margin
 $d_{\gamma,Q}(n)$ such that
 
@@ -412,14 +495,20 @@ $$
 then
 
 $$
-\boxed{a+1\le n_\epsilon(\gamma)\le b.}
+\boxed{
+\underline n_\epsilon(\gamma):=a+1
+\;\le\;n_\epsilon(\gamma)\;\le\;
+b=: \overline n_\epsilon(\gamma).
+}
 \tag{10}
 $$
 
-This is the training-time bound: the target cannot have been acquired by
-update $a$, and must have been acquired by update $b$. Both times are
-computed from the gamma filter, fixed geometry, target, and chosen step;
-observed GD trajectories are used afterward to test the prediction.
+The target cannot have been acquired by update $a$, and must have been
+acquired by update $b$. Valid endpoints may be selected across resolutions
+$Q$; the physical samples and centers remain fixed. The ratio bound in the
+theorem follows by dividing a necessary count for one slope by a sufficient
+count for the other, and conversely. Observed GD trajectories test these
+predictions afterward.
 
 **Proof and the role of the margin.** The explicit tanh approximation bounds
 the discrepancy $\Delta_{\gamma,Q}\ge\|K_\gamma-\widetilde K_{\gamma,Q}\|$.
@@ -450,8 +539,6 @@ For example, at gamma 8 the lower error envelope at update **15,784,047**
 is still above 1%, while the upper envelope at **15,812,623** is at or below
 1%. Equation (10) therefore gives the first row. The executed hit falls
 inside that interval. Its total width is 0.181% of the observed time.
-Dividing the gamma-8 bounds by the exact gamma-64 time predicts a delay of
-**985.70–987.49 times**, compared with **986.59** observed.
 
 All four models actually reach 1%, so lack of capacity at that tolerance
 cannot explain their different times. Changing only overall kernel
@@ -567,7 +654,8 @@ selected or excluded. The figure was inspected at 7.2-inch two-column width.
 The existing numerical validation has 20 focused tests passing and 768
 full-suite passes, with 17 previously recorded failures. This exposition
 revision separately checks the two-point example against direct GD and the
-matrix factors against explicit harmonic sums; no
+matrix factors against explicit harmonic sums. It also checks the relative
+acquisition bound and the quoted frequency multipliers. No
 experiment code, archived figures, or training runs were changed. The
 [validation record](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_validation.json)
 records the example check and document hash alongside the existing evidence.
