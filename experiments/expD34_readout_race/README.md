@@ -2,6 +2,9 @@
 
 ## Effective-force plateau investigation
 
+The [interim evidence report](../../results/checkpoint_D_optimizers/expD34_readout_race/force_plateaus/README.md)
+walks through the four completed audit figures and records the queued stages.
+
 The new exploration has a 10 GPU-hour ceiling, including verification and
 interventions, with at most two concurrent Runpod GPUs. All numerical work,
 tests, and plotting run through Slurm; local work is editing and inspection.
