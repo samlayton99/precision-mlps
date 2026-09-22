@@ -233,10 +233,117 @@ the product of two tanh responses, and unit mass preserves the bias term.
 Sampling (7) and dividing by $m$ gives
 exactly the update matrix $K_\gamma$ in (3).
 
-To calculate with this identity, the technical construction uses an auxiliary
-periodic step expansion and retains $Q$ harmonics. It bounds both the omitted
-harmonics and the distant extra transitions relative to the original tanh
-features. The resulting feature matrix and kernel have the form
+### Turning the smoothing identity into a matrix we can calculate
+
+The purpose of the next construction is to express each tanh feature as a
+sum of known waves, with **gamma appearing only in their amplitudes**.
+The finite sum approximates the same tanh network used above. The original
+samples, centers, and readout coefficients stay in place.
+
+Start with one feature and write its sample-center displacement as $t=x-c$.
+All displacements used in the experiment lie in $[-R,R]$, where
+$R=\max_{i,j}|x_i-c_j|$. Choose an auxiliary number $T>R$; the study uses
+$T=8$. Inside $(-T,T)$, the step $\operatorname{sign}(t)$ agrees with the
+repeating square wave $\operatorname{sign}(\sin(\pi t/T))$. The latter has
+period $2T$ and a sine expansion with known frequencies and amplitudes:
+
+$$
+\omega_\ell=\frac{(2\ell-1)\pi}{T},\qquad
+a_\ell=\frac{4}{\pi(2\ell-1)},\qquad \ell=1,2,\ldots.
+$$
+
+These are the first, third, fifth, and subsequent odd multiples of the base
+frequency $\pi/T$. Each frequency is called a harmonic. Smoothing multiplies
+the amplitude of harmonic $\ell$ by the already-defined
+$M_\gamma(\omega_\ell)$. Keeping the first $Q$ such frequencies gives
+
+$$
+\boxed{
+\tanh\!\bigl(\gamma(x-c)\bigr)
+\;\approx\;
+\sum_{\ell=1}^Q a_\ell M_\gamma(\omega_\ell)
+\sin\!\bigl(\omega_\ell(x-c)\bigr).
+}
+$$
+
+$Q$ is the number of frequencies retained for this numerical approximation;
+it is independent of the number $W$ of hidden neurons. For fixed $T$ and $Q$,
+the frequencies and $a_\ell$ are fixed. Changing gamma changes only the
+multipliers $M_\gamma(\omega_\ell)$.
+
+There are two approximation errors to control. The repeating square wave
+introduces additional jumps at $\pm T,\pm2T,\ldots$, whereas the original
+step has only its central jump. Smoothing has tails, so those distant jumps
+can influence values even inside $[-R,R]$; the bound depends on the margin
+$T-R$ and gamma. Separately, keeping only $Q$ frequencies discards the
+remaining smoothed harmonics. The technical proof bounds both contributions.
+The periodic function is an approximation device; the original training
+problem has no periodic boundary condition.
+
+The matrix product follows from the elementary identity
+
+$$
+\sin\!\bigl(\omega_\ell(x_i-c_j)\bigr)
+=\sin(\omega_\ell x_i)\cos(\omega_\ell c_j)
+-\cos(\omega_\ell x_i)\sin(\omega_\ell c_j).
+$$
+
+This separates a sample's location $x_i$, a neuron's center $c_j$, and the
+gamma multiplier. There are $m$ samples, $W$ hidden neurons, and one bias
+coefficient. Define the three matrices as follows:
+
+- **$F_Q$, size $m\times(2Q+1)$:** evaluate the constant, sine, and cosine
+  functions at every sample. Row $i$ is
+
+  $$
+  (F_Q)_{i,:}=\frac1{\sqrt m}
+  [1,\sin(\omega_1x_i),\cos(\omega_1x_i),\ldots,
+  \sin(\omega_Qx_i),\cos(\omega_Qx_i)].
+  $$
+
+- **$D_{\gamma,Q}$, size $(2Q+1)\times(2Q+1)$:** multiply each wave by
+  its gamma-dependent attenuation. The constant is preserved:
+
+  $$
+  D_{\gamma,Q}=\operatorname{diag}
+  [1,M_\gamma(\omega_1),M_\gamma(\omega_1),\ldots,
+  M_\gamma(\omega_Q),M_\gamma(\omega_Q)].
+  $$
+
+- **$C_Q$, size $(2Q+1)\times(W+1)$:** encode the center of each neuron
+  and the fixed amplitudes $a_\ell$. Hidden column $j$ is
+
+  $$
+  (C_Q)_{:,j}=
+  [0,a_1\cos(\omega_1c_j),-a_1\sin(\omega_1c_j),\ldots,
+  a_Q\cos(\omega_Qc_j),-a_Q\sin(\omega_Qc_j)]^T.
+  $$
+
+  Its bias column is $[1,0,\ldots,0]^T$.
+
+For example, with just one retained harmonic ($Q=1$), multiplying row $i$
+of $F_1$, the diagonal filter, and hidden column $j$ of $C_1$ gives
+
+$$
+\begin{aligned}
+(F_1D_{\gamma,1}C_1)_{ij}
+&=\frac{a_1M_\gamma(\omega_1)}{\sqrt m}
+\bigl[\sin(\omega_1x_i)\cos(\omega_1c_j)
+-\cos(\omega_1x_i)\sin(\omega_1c_j)\bigr]\\
+&=\frac{a_1M_\gamma(\omega_1)}{\sqrt m}
+\sin\!\bigl(\omega_1(x_i-c_j)\bigr).
+\end{aligned}
+$$
+
+That is exactly the first term of the feature approximation, with the same
+$1/\sqrt m$ normalization as $J_\gamma$. More harmonics add the remaining
+terms. One harmonic illustrates the multiplication; accurate prediction
+uses enough harmonics to control the approximation error.
+
+Consequently, define the approximate feature matrix
+$\widetilde J_{\gamma,Q}=F_QD_{\gamma,Q}C_Q$. Its kernel is obtained in
+exactly the same way as the original kernel: multiply the feature matrix
+by its transpose. Since $D_{\gamma,Q}$ is diagonal, this gives
 
 $$
 \boxed{
@@ -247,13 +354,13 @@ $$
 \tag{8}
 $$
 
-$F_Q$ evaluates the harmonics at the samples. $C_Q$ encodes the centers and
-step coefficients. These two matrices stay fixed as gamma varies. The
-diagonal matrix $D_{\gamma,Q}$ has bias entry one and entries
-$M_\gamma(\omega_\ell)$ for the retained sine/cosine pairs. **All gamma
-dependence of this retained kernel enters through the explicit diagonal filter.**
-The full products preserve the finite geometry; Fourier components need
-not be eigenvectors of $K_\gamma$.
+The tilde means an approximation to the original tanh features or kernel;
+$Q$ records its harmonic resolution. The trained parameter vector still has
+$W+1$ entries, with predictions $\widetilde J_{\gamma,Q}\theta$.
+**The samples and centers determine $F_Q,C_Q$; gamma changes
+$D_{\gamma,Q}$.** This is how we isolate gamma's action without discarding
+the finite geometry. The full products are retained, and these sine/cosine
+functions need not be eigenvectors of the sampled kernel.
 
 The explanatory chain is now explicit:
 
@@ -459,7 +566,8 @@ contains all plotted values and source hashes. Seeds are 0–4; none is
 selected or excluded. The figure was inspected at 7.2-inch two-column width.
 The existing numerical validation has 20 focused tests passing and 768
 full-suite passes, with 17 previously recorded failures. This exposition
-revision separately checks the two-point example against direct GD; no
+revision separately checks the two-point example against direct GD and the
+matrix factors against explicit harmonic sums; no
 experiment code, archived figures, or training runs were changed. The
 [validation record](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_validation.json)
 records the example check and document hash alongside the existing evidence.

@@ -48,7 +48,7 @@
   "gpu_hours": 0,
   "artifact_sha256": {
     "experiments/expD36_frozen_gamma_probe/paper_figure.py": "cd3400c6f2daf49ca81b787bdfcd89bc04584550a5d9b716f976de6bc53e8da1",
-    "docs/gamma_readout_paper_note.md": "75a0729667d8bc2ba891109872b055465adcc7aab84eaa85669e998162b52691",
+    "docs/gamma_readout_paper_note.md": "d1bf70c33f651ce34fad78fd7fc60fb0318854b1cfa2a148c0cf8090dbe541e3",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_figure_data.json": "bb24d0f03f6a3e404055e23d463b390757b58e846b7922ef8407a17d03969e46",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.png": "bf420e68468d3b455134892201dd3f243cd62b2564f47ca8cbc42b73c16a273e",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/paper_three_panel.pdf": "ee23eba5e86b0d8a5cd04c0aaff51f703834370e3c3b9904b72a35649046388a"
@@ -90,5 +90,32 @@
     "full_suite_rerun": false,
     "experiment_code_changed": false,
     "gpu_hours": 0
+  },
+  "fourier_exposition_revision": {
+    "base_commit": "d29f5f8",
+    "samples": [
+      -0.7,
+      0.0,
+      0.4
+    ],
+    "centers": [
+      -0.3,
+      0.6
+    ],
+    "half_period": 8.0,
+    "harmonics": [
+      1,
+      4,
+      16
+    ],
+    "gammas": [
+      2.0,
+      8.0
+    ],
+    "checked_cases": 6,
+    "max_matrix_identity_error": 2.220446049250313e-16,
+    "feature_remainder_checks_passed": true,
+    "links_and_equation_numbers_passed": true,
+    "full_suite_rerun": false
   }
 }
