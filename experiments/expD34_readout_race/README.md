@@ -381,3 +381,31 @@ Local CPU execution uses the same `stagnation_run.run` function with
 `require_gpu=False` and `JAX_PLATFORMS=cpu`; the CLI retains the established
 Slurm GPU allocation check. The evidence records the backend and source
 revision, and the matched half-step comparisons use the same backend.
+
+## Persistence and evolving sensitivities
+
+`persistence` compares degree-nine GD with exact-tanh five- and ten-mode losses
+and a model whose tanh features are linearized at the starting slopes and biases.
+The latter continues to train the readouts, preserving their bilinear interaction
+with geometry. It is distinct from freezing the entire tangent map. All four
+parameter blocks use simultaneous updates and the original rate and grid.
+
+The source is the full `adam_force_extension/raw` archive. Default seeds are
+0–4; `--start 100000 --end 600000` tests against retained trajectories, while
+`--start 600000 --end 6000000` specifies the prospective continuation. Select
+`--model full`, `five_mode`, `ten_mode`, or `linear_features`. Each output
+directory has a fixed manifest, resumable sampled states, exact per-update
+positive/negative gamma travel, and coarse-projection tracking accounting.
+The projection diagnoses the active model and never changes its updates.
+
+Run the module with `--source`, `--output`, and `--model`. The default GPU
+backend verifies a Slurm allocation. `--backend cpu` with `JAX_PLATFORMS=cpu`
+supports the same protocol locally when remote source transfer is unavailable;
+CPU runs on Runpod still use CPU-only Slurm steps. Set `JAX_ENABLE_X64=true`.
+Use `--eta .001 --seeds 0` for matched-time half-step controls. Wall-clock
+limits retain completed prefixes; missing horizons are not marked complete.
+
+These comparisons test how much evolving sensitivity is needed to predict
+stagnation. A successful forecast alone is not a uniform error certificate or
+evidence of useful geometry. The theory must distinguish measured travel from
+a bound obtained without the future true trajectory.
