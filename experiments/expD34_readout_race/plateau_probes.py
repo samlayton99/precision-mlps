@@ -10,7 +10,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from . import adam_forces as af, adam_run as ar, targets
-from .run import verify_gpu, write_json
+from .run import write_json
+from .plateau_runtime import verify_gpu, commit_checkpoint
 
 ANCHORS=('moment3','moment4','moment5','moment9','mixed_sine','localized_sine','chirp')
 ARMS=('joint','freeze_readout','clamp_fine','no_slope_tracking','weighted_lower')
@@ -88,6 +89,7 @@ def cases_for(seed,start,half=False):
 
 def run(args):
     if not jax.config.x64_enabled: raise ValueError('FP64 is required')
+    out=args.output;out.mkdir(parents=True,exist_ok=True);verify_gpu(out,args.runtime)
     seed=args.seed;start=args.start
     folder=args.source/f'primary_{seed}'
     manifest=json.loads((folder/'manifest.json').read_text()); f=np.load(folder/'snapshots.npz')
@@ -102,7 +104,6 @@ def run(args):
         degree=int(c['target'][6:]) if c['target'].startswith('moment') else 0
         pp.append(p); yy.append(y);ff.append(fine);settings.append([ARMS.index(c['arm']),c['weight'],degree,c['eta']])
     pp=np.array(pp);yy=np.array(yy);ff=np.array(ff);settings=np.array(settings)
-    out=args.output;out.mkdir(parents=True,exist_ok=True);verify_gpu(out)
     protocol=dict(cases=cases,reference_updates=args.horizon,samples=args.samples,source_commit=os.environ.get('RACE_SOURCE_COMMIT'),
         input_sha256=hashlib.sha256((folder/'snapshots.npz').read_bytes()).hexdigest(),metrics=METRICS,
         fine_clamp='Replace only slope effective force residual with the fork fine residual; current reference tracking retained',
@@ -127,6 +128,7 @@ def run(args):
             motion_identity=float(np.max(abs(host['positive']-host['negative']-(abs(host['p'][:,:177])-abs(pp[:,:177]))))),
             channel_identity=float(np.max(abs(np.mean(abs(host['p'][:,:177])-abs(pp[:,:177]),axis=1)-host['signed'].sum(axis=1)-host['crossing']))),
             seconds=time.monotonic()-begun))
+        commit_checkpoint(args.runtime)
     schedule=sorted(s for s in {1,2,5,10,20,50,100,200,500,1000,*range(2000,args.horizon+1,2000),args.horizon} if s<=args.horizon)
     for end in schedule:
         if end<=offset:continue
@@ -139,6 +141,7 @@ def run(args):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--runtime',choices=('slurm','modal'),default='slurm')
     p.add_argument('--source',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--seed',type=int,required=True);p.add_argument('--start',type=int,required=True)
     p.add_argument('--horizon',type=int,default=500000);p.add_argument('--half',action='store_true')

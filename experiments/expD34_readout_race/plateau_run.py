@@ -10,7 +10,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from . import adam_forces as af, adam_run as ar, plateau, plateau_probes, targets
-from .run import verify_gpu, write_json
+from .run import write_json
+from .plateau_runtime import verify_gpu, commit_checkpoint
 
 
 def confirmation_cases(seed):
@@ -47,7 +48,7 @@ def run(args):
     confirm=args.optimizer=='confirm'
     if confirm and args.confirm_seed not in range(20,25): raise ValueError('Confirmation seeds are 20–24')
     output=args.output/(f'primary_{args.confirm_seed}' if confirm else args.optimizer)
-    output.mkdir(parents=True, exist_ok=True); verify_gpu(output)
+    output.mkdir(parents=True, exist_ok=True); verify_gpu(output,args.runtime)
     states=[]; cases=[]; hashes={}
     for seed in (() if confirm else range(3)):
         folder=args.root/'curated'/f'primary_{seed}'
@@ -86,8 +87,11 @@ def run(args):
         ar.atomic_npz(output/'state.npz',cursor=np.array(step),**host)
         write_json(output/'status.json',dict(cursor=step,complete=step==args.end_step,failed=host['failed'].tolist(),
             unresolved=host['unresolved_steps'].tolist(),identity_max=host['identity_max'].max(axis=0).tolist(),seconds=time.monotonic()-begun))
+        commit_checkpoint(args.runtime)
     for end in range(step+10000,args.end_step+1,10000):
-        if confirm and step in (100000,600000): issue_forecast(output,state,cases,step)
+        if confirm and step in (100000,600000):
+            issue_forecast(output,state,cases,step)
+            commit_checkpoint(args.runtime)
         state,row,lo,hi=jax.device_get(advance(state,yy,settings,end-step))
         starts.append(step);ends.append(end);rows.append(row);lows.append(lo);highs.append(hi);step=end
         if step%100000==0 or step==args.end_step or time.monotonic()-begun>args.max_seconds:
@@ -97,6 +101,7 @@ def run(args):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--runtime',choices=('slurm','modal'),default='slurm')
     parser.add_argument('--root',type=Path); parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--optimizer',choices=('gd','adam','confirm'),required=True)
     parser.add_argument('--confirm-seed',type=int)
