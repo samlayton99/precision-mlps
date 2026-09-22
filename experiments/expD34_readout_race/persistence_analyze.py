@@ -14,7 +14,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from . import persistence as pe, persistence_theory as pt, plateau, targets, transport
+from . import persistence as pe, persistence_theory as pt, persistence_reduction as pr, plateau, targets, transport
 
 
 def table(path, rows):
@@ -82,14 +82,25 @@ def audit(source, root):
 
 
 def predict(source, root):
-    spectra_rows = []; summaries = []; budgets = []
+    spectra_rows = []; summaries = []; budgets = []; physical_budgets = []
     for start, ends in ((100000, np.arange(100000, 600001, 10000)),
                         (600000, np.arange(600000, 6000001, 100000))):
         pp, x, y, hashes = pe.load_inputs(source, start, range(5))
         predicted = []; gradients = []; effective = []; constants = []; paths = []
         two = []; two_forces = []; truncation = []
+        physical = []; physical_forces = []; driven = []; driven_forces = []
         for seed, p in enumerate(pp):
             spectrum = pt.frozen_spectrum(p, x, y)
+            reduced_physical = pr.reduced_state(p, x, y, transport.basis(x, 9))
+            for is_driven, parameters, forces in ((False, physical, physical_forces), (True, driven, driven_forces)):
+                values = [pr.reduced_at(reduced_physical, int(end-start), driven=is_driven) for end in ends]
+                parameters.append(np.stack([v['p'] for v in values])); forces.append(np.stack([v['force'][:177] for v in values]))
+                physical_budgets.append(dict(seed=seed, start=start, driven=is_driven,
+                    transient_slope_budget=values[-1]['transient_budget'], slope_force_floor=values[-1]['force_floor'],
+                    finite_slope_path_bound=values[-1]['slope_path_bound'],
+                    initial_generated_norm=np.linalg.norm(reduced_physical['initial']),
+                    generated_equilibrium_norm=np.linalg.norm(reduced_physical['equilibrium']) if is_driven else 0.,
+                    lambda_min=reduced_physical['values'].min(), lambda_max=reduced_physical['values'].max()))
             w = (len(p)-1)//3
             component = spectrum['projected'][:w]*spectrum['loading']
             score = np.linalg.norm(component, axis=0); ranking = np.argsort(score)[::-1]
@@ -126,9 +137,12 @@ def predict(source, root):
         np.savez_compressed(root/f'predictions_{start}.npz', steps=ends, seeds=np.arange(5),
             p0=pp, frozen=np.stack(predicted), gradient=np.stack(gradients), effective=np.stack(effective),
             constant=np.stack(constants), slope_path_bound=np.stack(paths),
+            physical=np.stack(physical), physical_effective=np.stack(physical_forces),
+            driven=np.stack(driven), driven_effective=np.stack(driven_forces),
             two_mode=np.stack(two), two_effective=np.stack(two_forces), spectral_parameter_error=np.stack(truncation))
     table(root/'spectrum.csv.gz', spectra_rows); table(root/'spectral_reconstruction.csv', summaries)
     table(root/'two_mode_budgets.csv', budgets)
+    table(root/'physical_mode_budgets.csv', physical_budgets)
 
 
 def bounds(source, root):
@@ -203,6 +217,9 @@ def compare(source, root):
                     add(seed, start, int(end), 'constant_gradient', f['constant'][seed, j], f['p0'][seed], f['effective'][seed, 0])
                     if 'two_mode' in f:
                         add(seed, start, int(end), 'two_mode', f['two_mode'][seed, j], f['p0'][seed], f['two_effective'][seed, j])
+                    for key in ('physical', 'driven'):
+                        if key in f:
+                            add(seed, start, int(end), key+'_two_mode', f[key][seed, j], f['p0'][seed], f[key+'_effective'][seed, j])
     for folder in sorted((root/'runs').iterdir()):
         if not (folder/'snapshots.npz').exists(): continue
         manifest = json.loads((folder/'manifest.json').read_text()); start = manifest['start']; model = manifest['model']

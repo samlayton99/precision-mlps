@@ -496,6 +496,64 @@ them. Their signed contributions must be measured separately. Assuming that
 generated errors sit at a replenished equilibrium would introduce a new
 timescale-separation hypothesis that has not followed from coarse balance.
 
+### Two generated errors and a weak persistent drive
+
+There is a particularly transparent conditional reduction of (P2). Retain the
+quadratic and cubic residuals in $u=(e_2,e_3)^T$, fix their effective parameter
+tangents $T_G=(T_2,T_3)$ at the starting state, and hold the hard residual $e_9$
+and its tangent $t_9$ fixed. Here the columns include slopes, biases, readouts,
+and output bias after the coarse projection. Set
+$A_G=T_G^TT_G$ and $h=t_9e_9$. Perfect coarse balance and these fixed
+sensitivities give the autonomous discrete system
+
+$$
+u_{n+1}=u_n-\eta(A_Gu_n+T_G^Th),\qquad
+\widehat\theta_{n+1}=\widehat\theta_n-\eta(T_Gu_n+h).
+\tag{P2a}
+$$
+
+This retains the coupling that determines how correcting an output error
+moves each parameter. It assumes that the coupling coefficients vary little,
+and that the hard residual varies little, on the interval. Those are additional
+approximations to test, not consequences of small coarse disequilibrium alone.
+
+If $A_G$ is positive definite, put
+$u_*=-A_G^{-1}T_G^Th$ and $f_\infty=T_Gu_*+h$. For its orthonormal eigenvectors
+$v_i$, eigenvalues $\nu_i$, and $b_i=v_i^T(u_0-u_*)$, direct solution gives
+
+$$
+u_n=u_*+\sum_{i=1}^2 b_i(1-\eta\nu_i)^n v_i,\qquad
+\widehat g_n=f_\infty+
+\sum_{i=1}^2 b_i(1-\eta\nu_i)^n T_Gv_i.
+\tag{P2b}
+$$
+
+The generated errors relax toward a small forced equilibrium. The force left
+after that relaxation is the component of $h$ orthogonal to the two generated
+tangents, because $T_G^Tf_\infty=0$. A large hard residual can therefore
+coexist with a very small remaining parameter force. Whether the observed
+force is already near this floor or is still slowly relaxing is an empirical
+question; the derivative and replenishment audit answers it below.
+
+For $0<\eta\nu_i\le1$, summing the update norms gives the finite-time bound
+
+$$
+\sum_{n<N}\|\widehat a_{n+1}-\widehat a_n\|_2
+\le
+\sum_{i=1}^2 |b_i|\|(T_Gv_i)_a\|_2
+\frac{1-(1-\eta\nu_i)^N}{\nu_i}
++\eta N\|(f_\infty)_a\|_2.
+\tag{P2c}
+$$
+
+The first contribution has a finite total budget; the second grows with the
+horizon. This is a useful form of the conditional barrier: slow correction of
+generated error supplies limited motion, while a weak hard drive takes a long
+time to supply the rest. It permits eventual escape. Transferring this bound
+to full GD still requires control of changing tangents, omitted modes, coarse
+tracking, and hard-residual drift. The enclosure below handles these errors
+together for a closely related frozen full-tangent predictor.
+
 ### A frozen tangent retains coupling, but fixes its coefficients
 
 Let $\theta_s$ contain all raw parameters at a starting checkpoint, let

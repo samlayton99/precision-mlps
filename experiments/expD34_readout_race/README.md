@@ -450,6 +450,16 @@ evaluates the analytical neighborhood enclosures without future true states;
 `--root`. The exact spectral remainder is separate from nonlinear prediction
 error. Infinite-time two-mode budgets apply only to that restricted model.
 
+The additional `persistence_reduction` calculation retains the physical
+quadratic/cubic residuals and freezes their coarse-projected tangents. It tests
+both zero hard forcing and a fixed ninth-degree residual. The resulting
+two-by-two residual system has an explicit discrete solution: a decaying
+generated-error contribution plus a weak persistent force. Its finite-time
+path bound separates a bounded transient budget from a term linear in the
+horizon. `physical_mode_budgets.csv` records both contributions. This reduction
+was added after the two dominant spectral modes were identified; it is a
+mechanistic check, not an independently selected model.
+
 `persistence_verify --source ... --root ...` checks starting states, accumulated
 travel, matched numerical controls, empirical quadrature, modal reconstruction,
 and independent sampled errors against the predictive radii. Its JSON explicitly
