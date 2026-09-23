@@ -39,3 +39,17 @@ def test_unresolved_values_are_counted_and_json_has_no_nan():
     empty = audit.stats([np.nan])
     assert empty['mean'] is None
     json.dumps(empty, allow_nan=False)
+
+
+def test_regime_ratios_distinguish_vector_cancellation_and_zero_denominator():
+    snapshot = dict(metric_effective_a=np.array([[3., 4.]]),
+                    metric_tracking_a=np.array([[1., 0.]]),
+                    metric_omitted_a=np.array([[-1., 0.]]),
+                    metric_participation=np.array([.3]),
+                    effective=np.array([[0., 0.]]),
+                    tracking=np.array([[1., 2.]]), omitted=np.array([[-1., -2.]]))
+    result = audit.regime_metrics(snapshot, 0)
+    assert result['actual_endpoint_tracking_to_effective_norm_ratio'] == .2
+    assert result['actual_endpoint_remainder_to_effective_norm_ratio'] == 0
+    assert np.isnan(result['actual_integrated_signed_remainder_to_effective_vector_norm_ratio'])
+    assert result['actual_endpoint_participation'] == .3

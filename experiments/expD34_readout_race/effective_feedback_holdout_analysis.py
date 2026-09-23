@@ -87,6 +87,28 @@ def score(prediction, actual):
                 zero_predicted_change=predicted_norm == 0)
 
 
+def regime_metrics(snapshot, i):
+    """Endpoint force ratios and accumulated signed-vector ratios, not bounds."""
+    result = {f'actual_endpoint_{k[7:]}': float(value[i])
+              for k, value in snapshot.items()
+              if k.startswith('metric_') and value.ndim == 1}
+    force = snapshot['metric_effective_a'][i]
+    tracking = snapshot['metric_tracking_a'][i]
+    omitted = snapshot['metric_omitted_a'][i]
+    denominator = np.linalg.norm(force)
+    travel_denominator = np.linalg.norm(snapshot['effective'][i])
+    for name, value in [('tracking', tracking), ('omitted', omitted),
+                        ('remainder', tracking+omitted)]:
+        result[f'actual_endpoint_{name}_to_effective_norm_ratio'] = analysis._ratio(
+            np.linalg.norm(value), denominator)
+    for name, value in [('tracking', snapshot['tracking'][i]),
+                        ('omitted', snapshot['omitted'][i]),
+                        ('remainder', snapshot['tracking'][i]+snapshot['omitted'][i])]:
+        result[f'actual_integrated_signed_{name}_to_effective_vector_norm_ratio'] = analysis._ratio(
+            np.linalg.norm(value), travel_denominator)
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--raw', type=Path, default=ROOT/'raw/heldout')
@@ -115,7 +137,7 @@ def main():
                             float(np.mean(target_y**2)))
     analysis.HEADLINES = HORIZONS
     rows, contrasts = analysis.collect(args.raw, [args.predictions])
-    manifests, snapshots, predictions = {}, {}, {}
+    manifests, snapshots, predictions, initial_diagnostics = {}, {}, {}, {}
     modal_rows, modal_vectors, coefficient_rows = [], [], []
     e0_defects = []
     for row in rows:
@@ -127,17 +149,24 @@ def main():
         if run not in manifests:
             manifest = json.loads((run/'manifest.json').read_text())
             manifests[run] = (manifest, {key(c): i for i, c in enumerate(manifest['cases'])})
+            with np.load(run/'snapshots'/'000000000.npz') as data:
+                initial_diagnostics[run] = {k: data[k].copy() for k in data.files
+                    if k in ('tracking', 'omitted', 'effective') or k.startswith('metric_')}
         manifest, indices = manifests[run]
         i = indices[key(row)]
         snapshot_key = (run, row['offset'])
         if snapshot_key not in snapshots:
             with np.load(run/'snapshots'/f'{row["offset"]:09d}.npz') as data:
-                snapshots[snapshot_key] = {k: data[k].copy() for k in
-                    ('p', 'metric_eH', 'metric_relative_mse')}
+                snapshots[snapshot_key] = {k: data[k].copy() for k in data.files
+                    if k in ('p', 'tracking', 'omitted', 'effective') or k.startswith('metric_')}
         snapshot = snapshots[snapshot_key]
         p0, jh, e0, target_energy = forks[key(row)]
         row['actual_train_relative_mse'] = float(snapshot['metric_relative_mse'][i])
         row['actual_train_loss'] = .5*target_energy*row['actual_train_relative_mse']
+        row.update(regime_metrics(snapshot, i))
+        row.update({k.replace('actual_endpoint_', 'actual_initial_'): v
+                    for k, v in regime_metrics(initial_diagnostics[run], i).items()
+                    if k.startswith('actual_endpoint_')})
         if not row['failed']:
             np.testing.assert_allclose(row['updates']*row['eta'], row['time'], rtol=2e-15, atol=0)
         if not row.get('forecast_supported', False):
@@ -216,6 +245,9 @@ def main():
         sign_count_caveat='Raw nonzero coefficient signs only; no numerical confidence threshold. '
             'Coefficient magnitudes are retained; sign counts are not numerically certified.',
         denominator_rule='Exact zero actual-change norm gives unresolved relative error and skill; no floor.',
+        regime_rule='Endpoint force ratios are sampled diagnostics, not all-step bounds. '
+            'Integrated ratios divide norms of accumulated signed per-neuron travel vectors; '
+            'they may contain temporal cancellation and are not integrals of force norms.',
         family_rule='Macro summaries of per-function statistics; stages/seeds are not independent functions.',
         slope=summaries(rows, slope_metrics),
         contrasts=summaries(contrasts, contrast_metrics, extra=('arm',)),
