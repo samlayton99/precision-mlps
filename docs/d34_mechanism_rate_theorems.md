@@ -364,6 +364,14 @@ about later acquisition: altered states change both future moments. A valid
 mechanism test forecasts that coupled continuation or explicitly limits its
 claim to the immediate mobility response.
 
+**Completed test.** The [moment-intervention campaign](d34_adam_moment_results.md)
+rejects persistent checkpoint phases as a quantitative explanation over its
+20k window: both imposed-driver models lose to predicting zero intervention
+effect on all 39 vector contrasts in each cohort. Equations (14)–(16) remain
+exact for their prescribed driver, but that driver is not a validated closure
+for the trained network. A subsequent Adam model must allow force and moment
+feedback to evolve together.
+
 ## 6. Turn a mechanism forecast into normalized acquisition rates
 
 **Example.** Positive mean outward motion does not mean a population reaches
