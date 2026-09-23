@@ -27,12 +27,12 @@ transferred to the longer FP64 calculation or to the other targets.
 
 The distant threshold alone is a weak test of mechanism. The
 [elementary energy baseline](../../../../../docs/d34_energy_baseline.md)
-can already exclude it for 20,000 updates under explicit initial norm and
-loss bounds, without identifying the effective fine force. Those initial
-conditions have not been checked for every state here. The moving-reference
-gain is its much tighter trajectory enclosure and the rate information it
-can support; a failed moving tube need not imply failure of a generic
-threshold bound.
+already excludes it for 50,000 additional updates in all 18 fresh width-panel
+states, using Arb-verified initial norm and loss bounds and no effective-force
+assumption. Those initial conditions have not been checked for the separate
+23-state late panel. The moving-reference gain is its much tighter trajectory
+enclosure and the rate information it can support; a failed moving tube need
+not imply failure of a generic threshold bound.
 
 ## Example: a longer bound for the same two starting states
 
@@ -150,8 +150,11 @@ at the requested horizon, not a claim that the bound remains useful afterward.
 
 The [machine-readable table](development_panel_summary.csv) gives the exact
 censor indices. This column records the first update when the bound allows
-every neuron; it does not assert that every neuron was excluded immediately
-before it. Each case's [summary](development_all_20k/summary.json) and
+every neuron. A separate [full-count trace audit](development_panel_count_audit.json)
+confirms that this panel has no intermediate partial exclusions: its ten
+failed cases really change from 177 excluded neurons to zero in one update.
+This also verifies the CSV's `last_all_excluded` field directly, rather than
+inferring it from the censor index. Each case's [summary](development_all_20k/summary.json) and
 NPZ distinguish finite evaluated bounds from later censored entries. These
 are repeated parameter bounds on a fixed function panel, not estimates of a
 probability over functions.
@@ -202,13 +205,61 @@ and bounds its amplification, so its success tests more than a small initial
 normalized slope. All of these numbers still evaluate sufficient formulas
 in FP64; this table supplies no directed-rounding certificate.
 
+For these same 18 initial states, the verified energy baseline bounds total
+parameter travel by eight through 50,000 additional updates, or nominal
+update 70,000. It excludes the distant threshold even in the four cases whose
+moving tube fails before 20,000. Its positions are much less precise. The
+two methods therefore answer different questions: the baseline certifies
+the threshold exclusion, while this table tests how tightly the
+effective-model path can enclose ordinary GD.
+
 The experiment is consistent with a slower small-parameter clock at larger
 width. It does not determine an asymptotic rate: there is one independently
 initialized seed per width, the initial states differ, and the fixed physical
 time $\eta N=40$ corresponds to rescaled time $40/W$. Separate longer
 calculations for `mixed_sine` and `step_right` at 512 and 1024 were requested
-to find where the bound loses usefulness. Their outcomes are not included
-in this fixed-window comparison.
+to find where the bound loses usefulness. The next section reports those
+separate refinements; they do not alter this fixed-window comparison.
+
+## Longer reference windows depend on the function
+
+The four refinements use the same seed-30, update-20k checkpoints and request
+200,000 additional updates, with the existing early-censor rule. All four
+calculations stop before that requested endpoint. `mixed_sine` nevertheless
+retains a tight enclosure through the +50k checkpoint at resolution 512 and
+the +100k checkpoint at 1024. `step_right` loses this particular enclosure
+substantially earlier at both widths.
+
+| $N_{\rm ref}$ | Target | Largest retained test horizon | Radius there | Maximum prefix $\lambda$ bound there | Enclosure censor update |
+|---:|---|---:|---:|---:|---:|
+| 512 | `mixed_sine` | +50k | 0.00201718 | 0.000406433 | +72,072 |
+| 512 | `step_right` | +20k | 0.0109267 | 0.000588744 | +25,095 |
+| 1024 | `mixed_sine` | +100k | 0.00547027 | 0.000151910 | +110,042 |
+| 1024 | `step_right` | +20k | 0.00142510 | 0.000185063 | +39,096 |
+
+Every neuron is excluded at each retained test horizon: 705 neurons at 512
+and 1409 at 1024. The +50k and +100k horizons end at nominal total updates
+70k and 120k, respectively. “Largest retained test horizon” refers to the
+prescribed checkpoint grid, not the exact last update with all-neuron
+exclusion. The censor column records the helper's stop for loss of exclusion
+or a nonfinite bound. Later entries are explicitly unevaluated, with null
+radius and upper-bound fields; they are not completed predictions.
+
+The individual records are
+[512 mixed sine](width512_mixed_sine_limit/summary.json),
+[512 step](width512_step_right_limit/summary.json),
+[1024 mixed sine](width1024_mixed_sine_limit/summary.json), and
+[1024 step](width1024_step_right_limit_parallel/summary.json).
+Their input hashes and helper source match the corresponding 20k checks.
+All numbers in this table are **FP64-evaluated sufficient enclosures**,
+not directed-rounding certificates or observed acquisition times.
+
+The two step cases illustrate why that distinction matters. Their moving
+tubes stop before +50k, yet the independently verified energy baseline still
+excludes the threshold through +50k in both. The failure concerns precision
+around this frozen effective reference. It does not establish that ordinary
+GD leaves the small-scale regime, or that the effective fine force ceases
+to drive its motion.
 
 ## Which correction matters, and what this does not establish
 
@@ -255,5 +306,14 @@ command uses `--target all --steps 20000`; the two longer checks use
 `--target moment9 --steps 200000`. The current table covers the completed
 600k-start panel. The independently initialized width panel uses the same
 helper with the exact $h=2/N_{\rm ref}$ and completed in CPU jobs 1267 and
-1277. Longer `moment9` and width-specific sufficient horizons are subsequent,
-separately identified checks; their pending outcomes are not included above.
+1277. The optional one-million-update `moment9` extension was stopped for
+scientific prioritization after 30m07s in CPU job 1289. It had saved no
+completed case, so it contributes no result or partial-prefix claim; this
+was not a numerical failure. The independently preserved 200k results are
+unaffected. Longer width-specific sufficient horizons are separately
+identified checks. CPU job 1292 saved the first three results in the longer
+table and was stopped after 49m48s to avoid duplicating the final case,
+which was already running concurrently. That last case completed in CPU
+job 1299 in 11m31s with exit code zero. Its `parallel` directory is the
+retained record; the original duplicate directory contains no completed
+evidence. No new training or GPU computation was used for these refinements.
