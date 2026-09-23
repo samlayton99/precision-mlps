@@ -13,10 +13,26 @@ all 23 functions, through 10,000 on 20 functions, and through 20,000 on 13.
 The other ten enclosures become uninformative. That is a failure of the bound,
 not an observation that those networks acquire scale.
 
+Fresh wider checkpoints give a more favorable short-window result. At
+construction resolutions 512 and 1024, all six tested functions retain
+exclusion of every neuron through 20,000 additional updates. At resolution
+128, only two of those six enclosures reach that horizon. The comparison
+holds the normalized threshold fixed and includes the four failed smaller
+width bounds below.
+
 A separate [Arb calculation](../../../../../docs/d34_certified_instance.md)
 does certify the entire 20,000-update window for the development `moment9`
 instance with rounding control. Its stronger numerical status must not be
 transferred to the longer FP64 calculation or to the other targets.
+
+The distant threshold alone is a weak test of mechanism. The
+[elementary energy baseline](../../../../../docs/d34_energy_baseline.md)
+can already exclude it for 20,000 updates under explicit initial norm and
+loss bounds, without identifying the effective fine force. Those initial
+conditions have not been checked for every state here. The moving-reference
+gain is its much tighter trajectory enclosure and the rate information it
+can support; a failed moving tube need not imply failure of a generic
+threshold bound.
 
 ## Example: a longer bound for the same two starting states
 
@@ -106,26 +122,26 @@ Every row uses its prescribed 600k checkpoint: seed 0 for the original
 all functions, including the early failures. “Through 20k” is right-censored
 at the requested horizon, not a claim that the bound remains useful afterward.
 
-| Function | Last additional update excluding all 177 neurons | Excluded at +10k | Excluded at +20k |
+| Function | Additional update at all-allowed censor | Excluded at +10k | Excluded at +20k |
 |---|---:|---:|---:|
-| sine | 3,658 | 0 | 0 |
-| runge | 16,341 | 177 | 0 |
-| moment3 | 18,274 | 177 | 0 |
+| sine | 3,659 | 0 | 0 |
+| runge | 16,342 | 177 | 0 |
+| moment3 | 18,275 | 177 | 0 |
 | moment5 | Through 20k | 177 | 177 |
 | moment9 | Through 20k | 177 | 177 |
-| mixed_sine | 12,842 | 177 | 0 |
-| localized_sine | 12,966 | 177 | 0 |
-| chirp | 5,411 | 0 | 0 |
+| mixed_sine | 12,843 | 177 | 0 |
+| localized_sine | 12,967 | 177 | 0 |
+| chirp | 5,412 | 0 | 0 |
 | moment4 | Through 20k | 177 | 177 |
 | blend_m010 | Through 20k | 177 | 177 |
 | blend_p001 | Through 20k | 177 | 177 |
 | blend_p010 | Through 20k | 177 | 177 |
-| blend_p030 | 11,476 | 177 | 0 |
+| blend_p030 | 11,477 | 177 | 0 |
 | exp_right | Through 20k | 177 | 177 |
 | exp_left | Through 20k | 177 | 177 |
-| gauss_left | 13,649 | 177 | 0 |
-| gauss_right | 5,772 | 0 | 0 |
-| bump_left | 16,076 | 177 | 0 |
+| gauss_left | 13,650 | 177 | 0 |
+| gauss_right | 5,773 | 0 | 0 |
+| bump_left | 16,077 | 177 | 0 |
 | bump_right | Through 20k | 177 | 177 |
 | step_left | Through 20k | 177 | 177 |
 | step_right | Through 20k | 177 | 177 |
@@ -133,7 +149,9 @@ at the requested horizon, not a claim that the bound remains useful afterward.
 | kink_relu | Through 20k | 177 | 177 |
 
 The [machine-readable table](development_panel_summary.csv) gives the exact
-censor indices. Each case's [summary](development_all_20k/summary.json) and
+censor indices. This column records the first update when the bound allows
+every neuron; it does not assert that every neuron was excluded immediately
+before it. Each case's [summary](development_all_20k/summary.json) and
 NPZ distinguish finite evaluated bounds from later censored entries. These
 are repeated parameter bounds on a fixed function panel, not estimates of a
 probability over functions.
@@ -144,6 +162,53 @@ also prevents a universal long-window conclusion. A large bound radius can
 come from conservative neighborhood amplification even when the actual
 reference prediction is accurate. No true continuation was used to decide
 which cases to retain.
+
+## Fresh wider states: the correction radius also becomes smaller
+
+These are separately initialized seed-30 networks at 20,000 updates, followed
+by a 20,000-update reference calculation. Their nominal endpoint is therefore
+40,000 updates. Construction resolution $N_{\rm ref}$ and physical width $W$
+are different: the three pairs are $(128,177)$, $(512,705)$ and $(1024,1409)$.
+We use $h=2/N_{\rm ref}$ throughout. The fixed threshold $\lambda_*=0.25$
+therefore means physical slopes $|a|=16$, $64$ and $128$, respectively.
+No starting neuron already occupies its corresponding threshold.
+
+Every neuron remains excluded through the full window in all six cases at
+512 and all six at 1024. The bounds include the entire prefix, not just its
+endpoint. The table gives the censor update at 128 and the
+20,000-update results at the two larger resolutions.
+
+| Target | Censor update at 128 | Radius at 512 | Radius at 1024 | Maximum prefix $\lambda$ bound at 512 | Maximum prefix $\lambda$ bound at 1024 |
+|---|---:|---:|---:|---:|---:|
+| `moment5` | Through 20k | $5.018\times10^{-9}$ | $3.708\times10^{-10}$ | 0.000422330 | 0.000146696 |
+| `mixed_sine` | Through 20k | 0.000234940 | 0.0000636934 | 0.000406433 | 0.000149610 |
+| `gauss_left` | 11,395 | 0.00496653 | 0.00105419 | 0.000487894 | 0.000155849 |
+| `bump_right` | 11,437 | 0.00297110 | 0.000560635 | 0.000460692 | 0.000147302 |
+| `step_right` | 8,413 | 0.0109267 | 0.00142510 | 0.000588744 | 0.000185063 |
+| `kink_abs` | 11,253 | 0.00453385 | 0.00101618 | 0.000450077 | 0.000149068 |
+
+The [128](width128_seed30_20k/summary.json),
+[512](width512_seed30_20k/summary.json) and
+[1024](width1024_seed30_20k/summary.json) records retain all cases and their
+input hashes. At 128, the two successful maximum prefix bounds are 0.00353834
+for `moment5` and 0.00296032 for `mixed_sine`. The other four calculations
+stop when their bound permits every neuron; this is not observed acquisition.
+
+The improvement is not just the smaller conversion factor $h$. The
+full-parameter correction radii also decrease. For example, `mixed_sine`
+has radii 0.00324694, 0.000234940 and 0.0000636934 at the same additional
+20,000-update horizon. The calculation charges the actual reference defect
+and bounds its amplification, so its success tests more than a small initial
+normalized slope. All of these numbers still evaluate sufficient formulas
+in FP64; this table supplies no directed-rounding certificate.
+
+The experiment is consistent with a slower small-parameter clock at larger
+width. It does not determine an asymptotic rate: there is one independently
+initialized seed per width, the initial states differ, and the fixed physical
+time $\eta N=40$ corresponds to rescaled time $40/W$. Separate longer
+calculations for `mixed_sine` and `step_right` at 512 and 1024 were requested
+to find where the bound loses usefulness. Their outcomes are not included
+in this fixed-window comparison.
 
 ## Which correction matters, and what this does not establish
 
@@ -188,6 +253,7 @@ runs. Slurm jobs 1244 and 1245 completed with exit code zero in 26m09s and
 Each summary records its exact input and source hashes. The all-function
 command uses `--target all --steps 20000`; the two longer checks use
 `--target moment9 --steps 200000`. The current table covers the completed
-600k-start panel. Independently initialized wider 20k-start states and longer
-`moment9` sufficient horizons are subsequent, separately identified checks;
-their pending outcomes are not included above.
+600k-start panel. The independently initialized width panel uses the same
+helper with the exact $h=2/N_{\rm ref}$ and completed in CPU jobs 1267 and
+1277. Longer `moment9` and width-specific sufficient horizons are subsequent,
+separately identified checks; their pending outcomes are not included above.
