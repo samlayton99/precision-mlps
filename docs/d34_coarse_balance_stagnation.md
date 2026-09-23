@@ -525,6 +525,11 @@ and 1409. Its correction radius decreases as width increases, in addition to
 the smaller normalization factor $h$. This supports an informative
 small-parameter regime, but does not establish an asymptotic law from three
 widths or certify the arithmetic of that panel.
+Selected longer checks show the remaining target dependence: mixed sine
+retains exclusion through 50k additional updates at width 705 and 100k at
+width 1409. The smooth-step bounds instead become uninformative at updates
+25,095 and 39,096. These are limits of this FP64 enclosure, not measured
+acquisition times. The full report retains all four attempted extensions.
 
 There are now two rounding-controlled moving-reference instances. Starting from the
 archived degree-nine checkpoint, all 177 neurons satisfy

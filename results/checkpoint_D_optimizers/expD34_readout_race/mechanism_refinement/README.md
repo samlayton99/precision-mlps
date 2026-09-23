@@ -306,8 +306,15 @@ constants at a finite width; the acquisition envelope still needs uniform
 tracking, conditioning and approximation allowances.
 
 The wider FP64 panel encloses all six seed-30 functions at widths 705 and
-1409 through the next 20k updates. The distant threshold itself is an easy
-test: a [generic energy baseline](../../../../docs/d34_energy_baseline.md)
+1409 through the next 20k updates. Selected extensions retain exclusion for
+mixed sine through 50k and 100k additional updates at those widths,
+respectively. The smooth-step enclosures become uninformative at 25,095 and
+39,096; their requested later milestones are unevaluated. These differences
+concern the sufficient bound, not observed acquisition. All four outcomes
+are retained in the [enclosure report](moving_tube/README.md).
+
+The distant threshold itself is an easy test: a
+[generic energy baseline](../../../../docs/d34_energy_baseline.md)
 also excludes it over 20k under explicit initial norm and loss conditions.
 Those conditions have now been checked with outward rounding for all 18
 seed-30 starting states, covering six functions at all three widths.
