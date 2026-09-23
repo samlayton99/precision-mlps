@@ -132,7 +132,7 @@ target and conditioning bounds. Every $a,b,c$ coordinate has the sharper
 error $O(W^{-\alpha-1/2})$; the output-bias coordinate need not share that
 sharper order. To see the coordinate improvement, write
 $F_i=(J_H)_i^Te_H-(J_C)_i^Tz$, where
-$z=(J_CJ_C^T)^{-1}J_CJ_H^Te_H$. Each coarse column is $O(W^{-1/2})$,
+$z=(J_CJ_C^T)^{-1}J_CJ_H^Te_H$. Each $a,b,c$ coarse column is $O(W^{-1/2})$,
 $z=O(W^{-1})$, its polynomial difference is $O(W^{-\alpha})$, and the
 direct fine-column remainder has order $W^{-\alpha-1/2}$.
 
