@@ -13,7 +13,7 @@ The distinction between this statement and a precise acquisition-time prediction
 | $\lambda=\gamma h$ | Dimensionless bandwidth; never an eigenvalue |
 | $J_\gamma,K_\gamma=J_\gamma J_\gamma^*$ | Sample-normalized feature matrix and raw-readout learning kernel |
 | $\mu,\eta\mu$ | Kernel eigenvalue and per-update rate |
-| $v,y$ | A sample-space test direction and the normalized training target |
+| $v=(v_i),y$ | A chosen pattern's values at the observed inputs, and the normalized training target |
 | $\mathcal Q_\Gamma(v)$ | Explicit cap-dependent Fourier upper bound on $v^*K_\gamma v$ |
 | $E_\gamma(n)$ | Relative residual norm after $n$ GD updates from zero |
 
@@ -28,15 +28,23 @@ $$
 
 This includes the finite interval, endpoint sample, and uniform halo centers used in the experiments. The normalization preserves the Euclidean metric of the original readout coefficients. With $y_i=y_i^{\rm phys}/\sqrt m$, the relative training residual from zero initialization is $E_\gamma(n)=\|(I-\eta K_\gamma)^ny\|/\|y\|$.
 
-For a sample vector $v$, put $v_i=0$ at unobserved fine-grid indices. Define its $q$ phase polynomials and their alias combinations by
+A sample vector $v=(v_i)$ specifies one amplitude at each observed input $x_i$. It can describe the training target, a residual pattern, or a chosen oscillation. For example, given a function $f$, choose $v_i=f(x_i)-m^{-1}\sum_r f(x_r)$ and, if desired, divide by $\|v\|$. Subtracting the sample mean puts the vector in the theorem's domain. Its entries are sample values, not readout weights or eigenvalues; no kernel eigenvector is needed to choose it.
+
+Put $v_i=0$ at unobserved fine-grid indices. Define its $q$ phase polynomials and their alias combinations, keeping their dependence on $v$ explicit:
 
 $$
-V_s(\theta)=\sum_{\ell\in\mathbb Z}v_{q\ell+s}e^{-i\ell\theta},
+V_{v,s}(\theta)=\sum_{\ell\in\mathbb Z}v_{q\ell+s}e^{-i\ell\theta},
 \qquad
-B_k(\theta)=\sum_{s=0}^{q-1}V_s(\theta)e^{-i(\theta+2\pi k)s/q}.
+B_{v,k}(\theta)=\sum_{s=0}^{q-1}V_{v,s}(\theta)e^{-i(\theta+2\pi k)s/q}.
 $$
 
-All sums over sample indices are finite. The index $k$ labels frequencies that are indistinguishable when sampled at the center spacing. Let
+Combining these sums gives the exact identity
+
+$$
+B_{v,k}(\theta)=\sum_{r\in\mathrm{observed}}v_r e^{-i(\theta+2\pi k)r/q}.
+$$
+
+This is the chosen vector's Fourier amplitude at the indicated sampled frequency. All sums over sample indices are finite. The index $k$ labels frequencies that are indistinguishable when sampled at the center spacing. Let
 
 $$
 M_\Gamma(\omega)=\frac{z}{\sinh z},\qquad
@@ -50,11 +58,13 @@ $$
 \left[
 \sum_{k\in\mathbb Z}
 \frac{2M_\Gamma((\theta+2\pi k)/h)}{|\theta+2\pi k|}
-|B_k(\theta)|
+\underbrace{\left|\sum_{r\in\mathrm{observed}}v_r e^{-i(\theta+2\pi k)r/q}\right|}_{|B_{v,k}(\theta)|\text{: sample-vector dependence}}
 \right]^2d\theta.
 $$
 
-For a mean-zero vector, $B_0(0)=\sum_i v_i=0$, so the apparent singularity in the $k=0$ term has a finite limiting magnitude. The remaining alias series is exponentially convergent. This expression uses the prescribed geometry, target or test vector, and gamma cap. It uses no trained coefficients or kernel eigenvectors.
+This is the full oversampled formula, including all aliases; the experiment has $q=16$. Gamma weights the Fourier content of the specified vector. Changing $v$ changes the bound even when gamma and the dictionary geometry stay fixed. Scaling $v$ by a constant scales both the kernel quadratic form and its bound by the squared magnitude of that constant.
+
+For a mean-zero vector, $B_{v,0}(0)=\sum_i v_i=0$, so the apparent singularity in the $k=0$ term has a finite limiting magnitude. The remaining alias series is exponentially convergent. This expression uses the prescribed geometry, target or test vector, and gamma cap. It uses no trained coefficients or kernel eigenvectors.
 
 > **Theorem: A common gamma cap limits access to resolved sample directions.**
 >
@@ -75,6 +85,28 @@ For a mean-zero vector, $B_0(0)=\sum_i v_i=0$, so the apparent singularity in th
 > updates. For $r_\Gamma=0$, a nonzero target cannot be learned. The sufficient stable step $\eta\le1/(W+1)$ is available without computing a spectrum.
 
 The target condition is explicit, rather than an assumption about unknown kernel eigenvectors: its sampled Fourier content is inserted into $\mathcal Q_\Gamma$. A high nominal oscillation frequency alone is insufficient. Finite-window leakage into low frequencies can dominate the integral. The theorem also does not assert that every target learns faster when gamma increases. It gives a cap-dependent obstruction for a specified target.
+
+### What the directional bound says about eigenvalues
+
+Let $u_i$ be orthonormal eigenvectors of $K_\gamma$, with eigenvalues $\mu_i\ge0$. For a unit mean-zero sample vector $v$,
+
+$$
+v^*K_\gamma v=\sum_i\mu_i|\langle u_i,v\rangle|^2\le\mathcal Q_\Gamma(v).
+$$
+
+Each direction therefore gives a different weighted average of the same eigenvalues. A large eigenvalue is compatible with a small bound for a vector that barely overlaps its eigenvector. The theorem controls the quadratic form $v^*K_\gamma v$, not every component of the response vector $K_\gamma v$ or the norm $\|K_\gamma v\|$.
+
+If a unit eigenvector $u_j$ is itself mean-zero, choosing $v=u_j$ isolates its eigenvalue and gives $\mu_j\le\mathcal Q_\Gamma(u_j)$. This requires knowing $u_j$, which can itself change with gamma. The finite kernel need not preserve the mean-zero subspace, so not all of its eigenvectors are admissible in this theorem. Centering an eigenvector generally destroys the eigenvector identity. Thus the directional formula does not independently identify every eigenvalue or eigenvector.
+
+One useful consequence does not require knowing eigenvectors: for $t>0$,
+
+$$
+\sum_{\mu_i>t}|\langle u_i,v\rangle|^2\le\frac{\mathcal Q_\Gamma(v)}{t}.
+$$
+
+The inequality follows by retaining only these nonnegative terms in the weighted average. A small cap bound therefore limits the amount of this particular pattern that can occupy fast modes. The complementary slow energy can include a nullspace component; Section 4 separately excludes that possibility when bounding positive slow energy.
+
+To guarantee many small eigenvalues, one would instead establish $\mathcal Q_\Gamma(v)\le a\|v\|^2$ for every vector in a specified $r$-dimensional mean-zero subspace. The min–max principle would then give at least $r$ eigenvalues of $K_\gamma$ at most $a$, possibly including zeros. The 17 empirical direction checks are not such a uniform subspace proof, and their observed 0.15% tightness is not a universal relative-error guarantee.
 
 ### A simpler formula when inputs and centers have the same spacing
 
@@ -137,7 +169,7 @@ The sum converges: outside the sample interval, the constant $+1$ or $-1$ parts 
 
 $$
 \frac1{2\pi m}\int_{-\pi}^{\pi}
-\left|\sum_{s=0}^{q-1}\overline{T_{\gamma,s}(\theta)}V_s(\theta)\right|^2d\theta.
+\left|\sum_{s=0}^{q-1}\overline{T_{\gamma,s}(\theta)}V_{v,s}(\theta)\right|^2d\theta.
 $$
 
 Apply the triangle inequality to the alias sum. At each fixed frequency, $M_\gamma(\omega)\le M_\Gamma(\omega)$ when $\gamma\le\Gamma$. This proves the stated cap bound. It also proves monotonicity of the bound in the cap, without asserting a Loewner ordering between the original finite kernels at two slopes.
@@ -180,10 +212,10 @@ whose hidden block is tridiagonal, with diagonal $2,\ldots,2,1$ and off-diagonal
 
 $$
 K_\gamma=Z_\gamma T^{-1}Z_\gamma^*,\qquad
-Z_\gamma^*Z_\gamma v=\mu T v.
+Z_\gamma^*Z_\gamma w=\mu T w.
 $$
 
-GD in these coordinates uses $T^{-1}$ on its gradient. Using the identity metric would change the optimizer. Likewise, dropping the terminal feature or restricting to zero-sum weights would change the problem; that coefficient subspace is not generally invariant under raw GD.
+Here $w$ is a coefficient-space vector, whereas the theorem's $v$ has one entry per observed sample. The generalized problem recovers the same positive kernel eigenvalues. GD in these coordinates uses $T^{-1}$ on its gradient. Using the identity metric would change the optimizer. Likewise, dropping the terminal feature or restricting to zero-sum weights would change the problem; that coefficient subspace is not generally invariant under raw GD.
 
 For localized columns alone, summing their products over the infinite input lattice gives a Toeplitz Gram matrix. Subtracting the left and right unobserved-row Grams gives the observed finite matrix exactly. The outside-row matrices have Hankel structure after reversing the appropriate index. The terminal and bias cross terms remain. The discrete Toeplitz symbol is the sum of the squared magnitudes of the $q$ sampled difference responses, divided by $m$.
 

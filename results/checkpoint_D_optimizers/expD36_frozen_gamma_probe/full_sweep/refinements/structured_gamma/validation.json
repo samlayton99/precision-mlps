@@ -62,7 +62,7 @@
   },
   "markdown_math_and_relative_links": "passed",
   "pdf": {
-    "pages": 9,
+    "pages": 10,
     "compile_warnings": 0,
     "overflow_warnings": 0,
     "all_fonts_embedded": true,
@@ -70,13 +70,19 @@
     "independent_root_review": true
   },
   "artifact_sha256": {
-    "docs/gamma_structured_kernel_note.md": "946d1fdf528aafd52ad33a343c6ff2997c253f9f2229dd10149fffc2dbadd7b9",
-    "docs/gamma_structured_kernel_note.pdf": "047f149b382d4f819914038a334d977fc536461856a32a429809de820edde5a4",
-    "docs/gamma_structured_kernel_note.tex": "13974b896f9c5aa3f53fbdba9c017885b87777161d60cbda5af236f712dc92fd",
+    "docs/gamma_structured_kernel_note.md": "9a73becfb68bc5117a6a3d77508e7eb22038d2da24a60a81b9cbbc61458de381",
+    "docs/gamma_structured_kernel_note.pdf": "bea95de2d3d2a89c0fdbd01164459965b086cffe01fdfb03e49a65cab6a85782",
+    "docs/gamma_structured_kernel_note.tex": "490fd4329563ff5d6b3f2c4b5e9920bc9444208c2c614bcb429bfd73a331a3b4",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/structured_gamma_three_panel.pdf": "04ce7a653ae91087183e74ba9a56b3c88d7df1b00a581da4cc184ede35811350",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/structured_gamma_three_panel.png": "bddeffc2e015b02591fa03edc8de3f68096d906681de87237531ff4fcdb8fc39"
   },
   "new_gpu_hours": 0,
   "independent_mathematical_review": "passed; retained versus infinite alias-sum distinction clarified",
-  "independent_numerical_claim_review": "all Section5 claims match evidence; no discrepancies"
+  "independent_numerical_claim_review": "all Section5 claims match evidence; no discrepancies",
+  "sample_vector_clarification": {
+    "grouped_and_expanded_fourier_checks": 60,
+    "maximum_absolute_difference": 7.463522651285787e-13,
+    "mathematical_review": "passed: full alias formula, mean-zero eigenvector eligibility, fast-mode energy inequality, uniform-subspace min-max condition",
+    "code_and_experiment_data_changed": false
+  }
 }
