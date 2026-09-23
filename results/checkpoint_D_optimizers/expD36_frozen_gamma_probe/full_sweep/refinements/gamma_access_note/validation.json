@@ -1,0 +1,102 @@
+{
+  "base_commit": "6bb4b2d8b1f6ee3c43aac978be4dd6f013c1d677",
+  "source_files_verified": 24,
+  "previous_uniform_artifacts_unchanged": 26,
+  "reproduced_byte_identical": [
+    "gamma_access_three_panel.png",
+    "gamma_access_three_panel.pdf",
+    "gamma_access_data.json"
+  ],
+  "gd_checkpoints": 1796,
+  "maximum_checkpoint_gap": 4.55130724774655e-14,
+  "positive_band": [
+    1e-09,
+    1e-06
+  ],
+  "gamma8_positive_energy_lower": 0.04332247241737147,
+  "gamma8_single_band_necessary_updates": 3035627,
+  "independently_certified_primary_intervals_contained": 4,
+  "numerical_status": "FP64 spectral diagnostics with a heuristic arithmetic allowance. Primary timing intervals contain existing independently certified Arb intervals. Spectral values and the arithmetic allowance are not interval certified.",
+  "positive_band_checks": {
+    "cases": 200,
+    "seed": 923,
+    "nonzero_lower_bounds": 176,
+    "dimensions": 14,
+    "true_null_modes": 4,
+    "positive_rate_band": [
+      0.0002,
+      0.07
+    ],
+    "steps_checked": [
+      0,
+      1,
+      10,
+      100
+    ],
+    "checks": [
+      "positive-band target mass lower bound",
+      "representability via least-squares reconstruction",
+      "residual lower bound",
+      "pure-nullspace target yields no positive mass"
+    ],
+    "precision": "FP64 consistency checks, not proof or interval certification",
+    "protocol": [
+      "Continuous numpy default_rng(923) stream over 200 cases.",
+      "True eigenvalues: four zeros followed by geomspace(.001,.4,10); eigenvectors QR(normal(14,14)).",
+      "V=normal(14,3)*10**uniform(-5,-3); approximate kernel=true kernel+V@V.T.",
+      "Target=normalized normal(14); buffers=.1*cutoff; band(.0002,.07].",
+      "Use spectral norm of exact matrix difference for the transfer allowance.",
+      "Check lower mass against original eigendecomposition and represent component with true positive-eigenvalue square-root features.",
+      "Check residual lower bound at n=0,1,10,100; repeat mass bound with target equal to first null eigenvector."
+    ]
+  },
+  "full_suite": {
+    "command": "python -m pytest -q -p no:cacheprovider -m 'not slow'",
+    "passed": 785,
+    "failed": 17,
+    "skipped": 9,
+    "deselected": 4,
+    "warnings": 10,
+    "seconds": 284.09,
+    "baseline_failure_match": true,
+    "failures": [
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+      "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+      "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+      "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+      "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+      "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+      "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+      "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+      "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+      "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+      "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+      "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+    ],
+    "log_sha256": "aa3ae81aa3f4f95350f13bddcdc20861d198e32b13a3f0de869b6afcbb6b8326"
+  },
+  "pdf": {
+    "pages": 6,
+    "bytes": 248104,
+    "warnings": 0,
+    "all_fonts_embedded": true,
+    "words_within_page": 3213,
+    "visual_review": "All six final pages inspected, including theorem page2 and enlarged figure labels on page4; no clipping or collisions.",
+    "relative_links_checked": 7
+  },
+  "artifact_sha256": {
+    "docs/gamma_access_collaborator_note.md": "b539b35aec9223aa9245b283c0a3c5512041059e041cd89d8ffeacbf9b1a414c",
+    "docs/gamma_access_collaborator_note.tex": "3f102986bc92e0532f7382ea59f8b2570a1fb7b3959f85308eb93f80eed2d8c5",
+    "docs/gamma_access_collaborator_note.pdf": "2d9f696ddb49236b8aac4b85253b6d9bf27e20d6d5cccfadbaeb2903f52e3d78",
+    "experiments/expD36_frozen_gamma_probe/gamma_access_figure.py": "67f1c31b3369eba7e28a2e876943a6a424d33d0ab8ab0856ea6af1227288805e",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_access_note/gamma_access_three_panel.png": "a05deacc82d15c7fbb498747bea772a95f1217f59b596deed59a654f27a6fe0a",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_access_note/gamma_access_three_panel.pdf": "74dc738fb659f0def83bec6d69767a40b58fab15cf87f02e62887c143a3473be",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_access_note/gamma_access_data.json": "1519bfa8019a83c5ae2b01c3ef8e9e85f32b8ee5e4b55ad128caeada6b6c4493"
+  },
+  "gpu_hours": 0
+}

@@ -1,0 +1,59 @@
+DIAGNOSTICS N1024_collective_neighbor_adam_continue
+DIAGNOSTICS N1024_collective_neighbor_adam_pilot
+DIAGNOSTICS N1024_collective_neighbor_gd
+DIAGNOSTICS N1024_raw_adam_continue
+DIAGNOSTICS N1024_raw_adam_pilot
+DIAGNOSTICS N1024_raw_gd
+DIAGNOSTICS N128_collective_neighbor_adam_continue
+DIAGNOSTICS N128_collective_neighbor_adam_pilot
+DIAGNOSTICS N128_collective_neighbor_gd
+DIAGNOSTICS N128_raw_adam_continue
+DIAGNOSTICS N128_raw_adam_pilot
+DIAGNOSTICS N128_raw_gd
+DIAGNOSTICS N256_collective_neighbor_adam_continue
+DIAGNOSTICS N256_collective_neighbor_adam_pilot
+DIAGNOSTICS N256_collective_neighbor_gd
+DIAGNOSTICS N256_raw_adam_continue
+DIAGNOSTICS N256_raw_adam_pilot
+DIAGNOSTICS N256_raw_gd
+DIAGNOSTICS N512_collective_adam_continue
+DIAGNOSTICS N512_collective_adam_pilot
+DIAGNOSTICS N512_collective_gd
+DIAGNOSTICS N512_collective_initialization_adam
+DIAGNOSTICS N512_collective_initialization_gd
+DIAGNOSTICS N512_collective_neighbor_adam_continue
+DIAGNOSTICS N512_collective_neighbor_adam_pilot
+DIAGNOSTICS N512_collective_neighbor_gd
+DIAGNOSTICS N512_collective_neighbor_initialization_adam
+DIAGNOSTICS N512_collective_neighbor_initialization_gd
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/dev/shm/junmiaoh-gamma-full-v1/post-v3-code/experiments/expD36_frozen_gamma_probe/full_diagnostics.py", line 271, in <module>
+    main()
+  File "/dev/shm/junmiaoh-gamma-full-v1/post-v3-code/experiments/expD36_frozen_gamma_probe/full_diagnostics.py", line 261, in main
+    case_certificates(args.root,path.parent,cfg,deadline)
+  File "/dev/shm/junmiaoh-gamma-full-v1/post-v3-code/experiments/expD36_frozen_gamma_probe/full_diagnostics.py", line 105, in case_certificates
+    core.write_json(destination/'certificates.json',train.safe_json(out))
+  File "/dev/shm/junmiaoh-gamma-full-v1/post-v3-code/experiments/expD36_frozen_gamma_probe/core.py", line 30, in write_json
+    temporary.write_text(json.dumps(value, indent=2, allow_nan=False) + '\n')
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/encoder.py", line 430, in _iterencode
+    yield from _iterencode_list(o, _current_indent_level)
+  File "/usr/lib/python3.11/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/usr/lib/python3.11/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/usr/lib/python3.11/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type bool is not JSON serializable
+srun: error: 1212ac4ba094: task 0: Exited with exit code 1

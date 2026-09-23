@@ -1,0 +1,60 @@
+{
+  "tag": "N512_uniform_sqrt_h_coordinate_adam",
+  "n": 512,
+  "map": "uniform_sqrt_h",
+  "gammas": [
+    4,
+    16,
+    64
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "chi": 0.5
+    }
+  ],
+  "rates": [
+    [
+      0.001
+    ],
+    [
+      0.001
+    ],
+    [
+      0.001
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-12
+    ],
+    [
+      1e-12
+    ],
+    [
+      1e-12
+    ]
+  ],
+  "matrix_hashes": [
+    "38b2b64db20c57ec67037edf81e3d6fd2a48959793a2f6719a32c7c17d40ec45",
+    "1ade5f59f141238d520fc77f755d6ac43abaababcb7fa5edeb331b1a928c88d4",
+    "5136e0478b4c2572eb93109bd79138593196708f7b2172f4f85a25e562cac456"
+  ],
+  "initial_hash": "9e8e4d1848b6146e3a4ad37c38a8de9ea2dcc5cfec426df9bc9136268477c3dc",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

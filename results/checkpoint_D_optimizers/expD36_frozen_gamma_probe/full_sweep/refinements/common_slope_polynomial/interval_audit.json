@@ -1,0 +1,180 @@
+{
+  "results": [
+    {
+      "gamma": 8,
+      "target": "sine_mix_2_6_10",
+      "precision_bits": 192,
+      "eta": 0.002068412912130894,
+      "eta_L_gershgorin_upper": 0.6228315224560854,
+      "methods": {
+        "analytic": {
+          "necessary": 15561690,
+          "lower_degree": 256,
+          "sufficient": 16048061,
+          "upper_degree": 256,
+          "excluded_step": 15561689,
+          "excluded_error_squared": [
+            0.00010167699904957863,
+            0.00010167699904957865
+          ],
+          "sufficient_error_squared": [
+            9.828519656333516e-05,
+            9.828519656333519e-05
+          ],
+          "status": "interval_certified_endpoints"
+        },
+        "combined": {
+          "necessary": 15732978,
+          "lower_degree": 64,
+          "sufficient": 15864610,
+          "upper_degree": 64,
+          "excluded_step": 15732977,
+          "excluded_error_squared": [
+            0.00010045785617535787,
+            0.0001004578561753579
+          ],
+          "sufficient_error_squared": [
+            9.953937135991634e-05,
+            9.953937135991637e-05
+          ],
+          "status": "interval_certified_endpoints"
+        }
+      },
+      "seconds": 131.7854541251436,
+      "statement": "Nominal real tanh; exact archived binary grid, centers, target, and step",
+      "computation": "Common-slope Gram identity and Arb integer matrix powers; no GD or SVD"
+    },
+    {
+      "gamma": 12,
+      "target": "sine_mix_2_6_10",
+      "precision_bits": 192,
+      "eta": 0.0020399951089001152,
+      "eta_L_gershgorin_upper": 0.6173064827806345,
+      "methods": {
+        "analytic": {
+          "necessary": 186043,
+          "lower_degree": 512,
+          "sufficient": 186072,
+          "upper_degree": 512,
+          "excluded_step": 186042,
+          "excluded_error_squared": [
+            0.00010004131592919455,
+            0.00010004131592919458
+          ],
+          "sufficient_error_squared": [
+            9.995849038978943e-05,
+            9.995849038978945e-05
+          ],
+          "status": "interval_certified_endpoints"
+        },
+        "combined": {
+          "necessary": 186054,
+          "lower_degree": 128,
+          "sufficient": 186061,
+          "upper_degree": 128,
+          "excluded_step": 186053,
+          "excluded_error_squared": [
+            0.00010001093717916309,
+            0.00010001093717916312
+          ],
+          "sufficient_error_squared": [
+            9.998885036949447e-05,
+            9.99888503694945e-05
+          ],
+          "status": "interval_certified_endpoints"
+        }
+      },
+      "seconds": 100.5486458754167,
+      "statement": "Nominal real tanh; exact archived binary grid, centers, target, and step",
+      "computation": "Common-slope Gram identity and Arb integer matrix powers; no GD or SVD"
+    },
+    {
+      "gamma": 16,
+      "target": "sine_mix_2_6_10",
+      "precision_bits": 192,
+      "eta": 0.0020298167987789703,
+      "eta_L_gershgorin_upper": 0.6153835595999064,
+      "methods": {
+        "analytic": {
+          "necessary": 61789,
+          "lower_degree": 512,
+          "sufficient": 61796,
+          "upper_degree": 512,
+          "excluded_step": 61788,
+          "excluded_error_squared": [
+            0.00010001462048725439,
+            0.00010001462048725441
+          ],
+          "sufficient_error_squared": [
+            9.998280239908975e-05,
+            9.998280239908978e-05
+          ],
+          "status": "interval_certified_endpoints"
+        },
+        "combined": {
+          "necessary": 61791,
+          "lower_degree": 128,
+          "sufficient": 61793,
+          "upper_degree": 128,
+          "excluded_step": 61790,
+          "excluded_error_squared": [
+            0.00010000666433070422,
+            0.00010000666433070425
+          ],
+          "sufficient_error_squared": [
+            9.999473213921288e-05,
+            9.999473213921291e-05
+          ],
+          "status": "interval_certified_endpoints"
+        }
+      },
+      "seconds": 102.0848187096417,
+      "statement": "Nominal real tanh; exact archived binary grid, centers, target, and step",
+      "computation": "Common-slope Gram identity and Arb integer matrix powers; no GD or SVD"
+    },
+    {
+      "gamma": 64,
+      "target": "sine_mix_2_6_10",
+      "precision_bits": 192,
+      "eta": 0.0020173468150207307,
+      "eta_L_gershgorin_upper": 0.6131053921055758,
+      "methods": {
+        "analytic": {
+          "necessary": 16011,
+          "lower_degree": 2048,
+          "sufficient": 16015,
+          "upper_degree": 2048,
+          "excluded_step": 16010,
+          "excluded_error_squared": [
+            0.00010002027867063055,
+            0.00010002027867063058
+          ],
+          "sufficient_error_squared": [
+            9.997978695179141e-05,
+            9.997978695179144e-05
+          ],
+          "status": "interval_certified_endpoints"
+        },
+        "combined": {
+          "necessary": 16013,
+          "lower_degree": 256,
+          "sufficient": 16013,
+          "upper_degree": 256,
+          "excluded_step": 16012,
+          "excluded_error_squared": [
+            0.00010000407837284528,
+            0.00010000407837284531
+          ],
+          "sufficient_error_squared": [
+            9.999598002933718e-05,
+            9.99959800293372e-05
+          ],
+          "status": "interval_certified_endpoints"
+        }
+      },
+      "seconds": 103.69361662492156,
+      "statement": "Nominal real tanh; exact archived binary grid, centers, target, and step",
+      "computation": "Common-slope Gram identity and Arb integer matrix powers; no GD or SVD"
+    }
+  ]
+}

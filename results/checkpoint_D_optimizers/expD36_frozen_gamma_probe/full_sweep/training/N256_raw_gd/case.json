@@ -1,0 +1,70 @@
+{
+  "tag": "N256_raw_gd",
+  "n": 256,
+  "map": "raw",
+  "gammas": [
+    1,
+    4,
+    32.0
+  ],
+  "optimizer": "gd",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero"
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero"
+    }
+  ],
+  "rates": [
+    [
+      0.008312375386749539,
+      0.008312375386749539
+    ],
+    [
+      0.004114807882552907,
+      0.004114807882552907
+    ],
+    [
+      0.0037718764416024906,
+      0.0037718764416024906
+    ]
+  ],
+  "epsilons": [
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ]
+  ],
+  "matrix_hashes": [
+    "3fe1cdf83bf08a0c6b87afde0825ba14c0102202638cc96fdebee62ad06341bb",
+    "6d476ed3a019aa4bce61e9e845caf24d625b0158a9ff082bca1fd8d9c0bd140e",
+    "77635e7677fd643f3ec42e004c75446163435f29aa6332fed7c6660f5895d2d6"
+  ],
+  "initial_hash": "8f32ba413bdd67d1f2b465d9bd6eca86f29fc91b950d476673bb742fbe0dede2",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

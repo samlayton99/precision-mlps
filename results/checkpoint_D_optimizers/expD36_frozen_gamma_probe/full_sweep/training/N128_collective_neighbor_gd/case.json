@@ -1,0 +1,70 @@
+{
+  "tag": "N128_collective_neighbor_gd",
+  "n": 128,
+  "map": "collective_neighbor",
+  "gammas": [
+    1,
+    4,
+    16.0
+  ],
+  "optimizer": "gd",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero"
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero"
+    }
+  ],
+  "rates": [
+    [
+      0.013693399482790544,
+      0.013693399482790544
+    ],
+    [
+      0.011064199528858416,
+      0.011064199528858416
+    ],
+    [
+      0.010799810025045249,
+      0.010799810025045249
+    ]
+  ],
+  "epsilons": [
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ]
+  ],
+  "matrix_hashes": [
+    "97945a8e757c64ffabe401a1490ded49f9552c512a1f4191aa6df60eea4a111a",
+    "7bef44b980a7b6d3a84041c35610d8e22ec666de1cb075a11c59ba84468bc32c",
+    "9092519e2cbd604c4d4af248616c855631e3d0acf002129981471c7b3c68f29f"
+  ],
+  "initial_hash": "7fbc8a14ce85602f91a88597a6e3069939db834081c072541b13edd57ce52371",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

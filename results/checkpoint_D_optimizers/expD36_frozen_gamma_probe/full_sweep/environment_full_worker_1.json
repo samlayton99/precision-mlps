@@ -1,0 +1,11 @@
+{
+  "job": "JobId=685 JobName=gamma-full\n   UserId=junmiaoh(1003) GroupId=junmiaoh(1006) MCS_label=N/A\n   Priority=4294901221 Nice=0 Account=lab QOS=lab-gpu2\n   JobState=RUNNING Reason=None Dependency=(null)\n   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0\n   RunTime=00:00:02 TimeLimit=00:55:00 TimeMin=N/A\n   SubmitTime=2026-09-20T23:29:20 EligibleTime=2026-09-20T23:31:09\n   AccrueTime=Unknown\n   StartTime=2026-09-20T23:31:09 EndTime=2026-09-21T00:26:09 Deadline=N/A\n   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-20T23:31:09 Scheduler=Main\n   Partition=gpu AllocNode:Sid=1212ac4ba094:1768685\n   ReqNodeList=(null) ExcNodeList=(null)\n   NodeList=1212ac4ba094\n   BatchHost=1212ac4ba094\n   NumNodes=1 NumCPUs=8 NumTasks=1 CPUs/Task=8 ReqB:S:C:T=0:0:*:*\n   TRES=cpu=8,mem=128G,node=1,billing=8,gres/gpu=1\n   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*\n   MinCPUsNode=8 MinMemoryNode=128G MinTmpDiskNode=0\n   Features=(null) DelayBoot=00:00:00\n   OverSubscribe=OK Contiguous=0 Licenses=(null) Network=(null)\n   Command=/dev/shm/junmiaoh-gamma-full-v1/code/experiments/expD36_frozen_gamma_probe/full_run.sbatch\n   WorkDir=/home/junmiaoh\n   StdErr=/tmp/gamma-full-worker1-685.log\n   StdIn=/dev/null\n   StdOut=/tmp/gamma-full-worker1-685.log\n   Power=\n   KillOInInvalidDependent=Yes\n   TresPerNode=gres:gpu:1\n   \n\n",
+  "step": "StepId=685.0 UserId=1003 StartTime=2026-09-20T23:31:10 TimeLimit=UNLIMITED\n   State=RUNNING Partition=gpu NodeList=1212ac4ba094\n   Nodes=1 CPUs=8 Tasks=1 Name=python Network=(null)\n   TRES=cpu=8,gres/gpu=1,mem=128G,node=1\n   ResvPorts=(null)\n   CPUFreqReq=Default Dist=Cyclic\n   SrunHost:Pid=1212ac4ba094:1768815\n   TresPerNode=gres:gpu:1\n\n",
+  "cuda_mask": "1",
+  "devices": [
+    "cuda:0"
+  ],
+  "jax": "0.10.2",
+  "optax": "0.2.8",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

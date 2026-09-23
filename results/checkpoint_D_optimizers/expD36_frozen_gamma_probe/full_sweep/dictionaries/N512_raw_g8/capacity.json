@@ -1,0 +1,872 @@
+[
+  {
+    "target": "sine_mix_2_6_10",
+    "cutoff": 1e-10,
+    "retained_rank": 78,
+    "projection_error": 5.53515158646873e-09,
+    "train_refit": 5.535153127850901e-09,
+    "eval_refit": 5.472904492950032e-09,
+    "norms": {
+      "native": {
+        "l1": 232.71585029890366,
+        "l2": 11.195894787485788,
+        "linf": 1.0527257090946742
+      },
+      "physical": {
+        "l1": 232.71585029890366,
+        "l2": 11.195894787485788,
+        "linf": 1.0527257090946742
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 15798313.0,
+        "log10_steps": 7.198610713922314,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 46121159249.0,
+        "log10_steps": 10.663900214691973,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 107777045667420.0,
+        "log10_steps": 14.032526274751543,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 18.995488187263373,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "exp_sin_3pi",
+    "cutoff": 1e-10,
+    "retained_rank": 78,
+    "projection_error": 1.1620558657773574e-09,
+    "train_refit": 1.1620557315756604e-09,
+    "eval_refit": 1.1488601141333512e-09,
+    "norms": {
+      "native": {
+        "l1": 36.250428512393846,
+        "l2": 2.905716969233943,
+        "linf": 2.0096320986300045
+      },
+      "physical": {
+        "l1": 36.250428512393846,
+        "l2": 2.905716969233943,
+        "linf": 2.0096320986300045
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 426240.0,
+        "log10_steps": 5.629654203154188,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 4204750366.0,
+        "log10_steps": 9.62374021704549,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 10763416165331.0,
+        "log10_steps": 13.031950132509431,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.147409170218186,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "runge_25",
+    "cutoff": 1e-10,
+    "retained_rank": 78,
+    "projection_error": 1.636179548350186e-10,
+    "train_refit": 1.636180005403929e-10,
+    "eval_refit": 1.633952253162535e-10,
+    "norms": {
+      "native": {
+        "l1": 2.178852475428513,
+        "l2": 0.24268078350899816,
+        "linf": 0.06342180268157888
+      },
+      "physical": {
+        "l1": 2.178852475428513,
+        "l2": 0.24268078350899816,
+        "linf": 0.06342180268157888
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 26104.0,
+        "log10_steps": 4.416707060779818,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 222368124.0,
+        "log10_steps": 8.347072532176742,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 1841940334747.0,
+        "log10_steps": 12.265275558157345,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.19922833797779,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "quadratic",
+    "cutoff": 1e-10,
+    "retained_rank": 78,
+    "projection_error": 1.49862158579615e-09,
+    "train_refit": 1.4986216555046997e-09,
+    "eval_refit": 1.4853545373117542e-09,
+    "norms": {
+      "native": {
+        "l1": 21.726867004001086,
+        "l2": 3.4658147252462848,
+        "linf": 3.2248441350956023
+      },
+      "physical": {
+        "l1": 21.726867004001086,
+        "l2": 3.4658147252462848,
+        "linf": 3.2248441350956023
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 879493.0,
+        "log10_steps": 5.944232387200562,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 12618478011.0,
+        "log10_steps": 10.101006975249982,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 37547531780146.0,
+        "log10_steps": 13.574581393550728,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 17.694051814583794,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "sine_2pi",
+    "cutoff": 1e-10,
+    "retained_rank": 78,
+    "projection_error": 5.633332779013541e-10,
+    "train_refit": 5.633332745286008e-10,
+    "eval_refit": 5.584277748521897e-10,
+    "norms": {
+      "native": {
+        "l1": 13.161620739197806,
+        "l2": 0.882465916429043,
+        "linf": 0.3049359405837714
+      },
+      "physical": {
+        "l1": 13.161620739197806,
+        "l2": 0.882465916429043,
+        "linf": 0.3049359405837714
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 7466.0,
+        "log10_steps": 3.8730879855902858,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 38037342.0,
+        "log10_steps": 7.58021016139197,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 1266622649684.0,
+        "log10_steps": 12.102647249793328,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.927933983031917,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "sine_mix_2_6_10",
+    "cutoff": 1e-12,
+    "retained_rank": 95,
+    "projection_error": 2.7878385189553517e-10,
+    "train_refit": 2.7878522143569875e-10,
+    "eval_refit": 2.755936196951839e-10,
+    "norms": {
+      "native": {
+        "l1": 391.78628139122617,
+        "l2": 23.206095455382837,
+        "linf": 4.091655271040862
+      },
+      "physical": {
+        "l1": 391.78628139122617,
+        "l2": 23.206095455382837,
+        "linf": 4.091655271040862
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 15798313.0,
+        "log10_steps": 7.198610713922314,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 46121159249.0,
+        "log10_steps": 10.663900214691973,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 107777045666556.0,
+        "log10_steps": 14.032526274748061,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 18.9870693388971,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "exp_sin_3pi",
+    "cutoff": 1e-12,
+    "retained_rank": 95,
+    "projection_error": 5.234687924655915e-11,
+    "train_refit": 5.234713928755995e-11,
+    "eval_refit": 5.1738218374175996e-11,
+    "norms": {
+      "native": {
+        "l1": 115.35128865718863,
+        "l2": 8.390712530409855,
+        "linf": 2.6944569811743038
+      },
+      "physical": {
+        "l1": 115.35128865718863,
+        "l2": 8.390712530409855,
+        "linf": 2.6944569811743038
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 426240.0,
+        "log10_steps": 5.629654203154188,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 4204750366.0,
+        "log10_steps": 9.62374021704549,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 10763416165333.0,
+        "log10_steps": 13.031950132509511,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.14740884736207,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 23.209151876176435,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "runge_25",
+    "cutoff": 1e-12,
+    "retained_rank": 95,
+    "projection_error": 7.102964651825464e-13,
+    "train_refit": 7.103268675450766e-13,
+    "eval_refit": 7.08399744983153e-13,
+    "norms": {
+      "native": {
+        "l1": 2.50847320307368,
+        "l2": 0.2624397380845745,
+        "linf": 0.07440160768261832
+      },
+      "physical": {
+        "l1": 2.50847320307368,
+        "l2": 0.2624397380845745,
+        "linf": 0.07440160768261832
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 26104.0,
+        "log10_steps": 4.416707060779818,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 222368124.0,
+        "log10_steps": 8.347072532176742,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 1841940334747.0,
+        "log10_steps": 12.265275558157345,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.199228323141305,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 20.152572019370485,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": 24.267846696102794,
+        "status": "spectral_extrapolation"
+      }
+    ]
+  },
+  {
+    "target": "quadratic",
+    "cutoff": 1e-12,
+    "retained_rank": 95,
+    "projection_error": 2.939601650865908e-11,
+    "train_refit": 2.93963422947621e-11,
+    "eval_refit": 2.908834944567207e-11,
+    "norms": {
+      "native": {
+        "l1": 66.49524796427106,
+        "l2": 5.501320921427233,
+        "linf": 3.2973954856087557
+      },
+      "physical": {
+        "l1": 66.49524796427106,
+        "l2": 5.501320921427233,
+        "linf": 3.2973954856087557
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 879493.0,
+        "log10_steps": 5.944232387200562,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 12618478011.0,
+        "log10_steps": 10.101006975249982,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 37547531780120.0,
+        "log10_steps": 13.574581393550426,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 17.694013066404136,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 22.801250440697093,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "sine_2pi",
+    "cutoff": 1e-12,
+    "retained_rank": 95,
+    "projection_error": 1.3353886503270915e-11,
+    "train_refit": 1.3353864671080214e-11,
+    "eval_refit": 1.3222950881113507e-11,
+    "norms": {
+      "native": {
+        "l1": 25.036938643865653,
+        "l2": 1.8666752217865312,
+        "linf": 0.722932733991814
+      },
+      "physical": {
+        "l1": 25.036938643865653,
+        "l2": 1.8666752217865312,
+        "linf": 0.722932733991814
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 7466.0,
+        "log10_steps": 3.8730879855902858,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 38037342.0,
+        "log10_steps": 7.58021016139197,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 1266622649685.0,
+        "log10_steps": 12.102647249793671,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.927933426573915,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 21.829694292175564,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "sine_mix_2_6_10",
+    "cutoff": 1e-14,
+    "retained_rank": 111,
+    "projection_error": 1.0895631611944006e-11,
+    "train_refit": 1.0907250526981868e-11,
+    "eval_refit": 1.0774619197371491e-11,
+    "norms": {
+      "native": {
+        "l1": 1351.735039486588,
+        "l2": 88.75121913044866,
+        "linf": 24.160724054872418
+      },
+      "physical": {
+        "l1": 1351.735039486588,
+        "l2": 88.75121913044866,
+        "linf": 24.160724054872418
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 15798313.0,
+        "log10_steps": 7.198610713922314,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 46121159249.0,
+        "log10_steps": 10.663900214691973,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 107777045666558.0,
+        "log10_steps": 14.032526274748069,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 18.987069336752995,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 25.232026915284006,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "exp_sin_3pi",
+    "cutoff": 1e-14,
+    "retained_rank": 111,
+    "projection_error": 2.1660353391848737e-12,
+    "train_refit": 2.16751797655179e-12,
+    "eval_refit": 2.141273044938655e-12,
+    "norms": {
+      "native": {
+        "l1": 456.752593064478,
+        "l2": 35.59437760303921,
+        "linf": 14.052742392704214
+      },
+      "physical": {
+        "l1": 456.752593064478,
+        "l2": 35.59437760303921,
+        "linf": 14.052742392704214
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 426240.0,
+        "log10_steps": 5.629654203154188,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 4204750366.0,
+        "log10_steps": 9.62374021704549,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 10763416165333.0,
+        "log10_steps": 13.031950132509511,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.14740884740531,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 23.200468892846693,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": null,
+        "status": "retained_model_unattainable"
+      }
+    ]
+  },
+  {
+    "target": "runge_25",
+    "cutoff": 1e-14,
+    "retained_rank": 111,
+    "projection_error": 1.5491692384559973e-14,
+    "train_refit": 1.6310292016674162e-14,
+    "eval_refit": 1.6109872900866865e-14,
+    "norms": {
+      "native": {
+        "l1": 3.342572643100441,
+        "l2": 0.29195896938003857,
+        "linf": 0.08433338473967057
+      },
+      "physical": {
+        "l1": 3.342572643100441,
+        "l2": 0.29195896938003857,
+        "linf": 0.08433338473967057
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 26104.0,
+        "log10_steps": 4.416707060779818,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 222368124.0,
+        "log10_steps": 8.347072532176742,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 1841940334747.0,
+        "log10_steps": 12.265275558157345,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.199228323141874,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 20.15257202464903,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": 24.230187912505038,
+        "status": "spectral_extrapolation"
+      }
+    ]
+  },
+  {
+    "target": "quadratic",
+    "cutoff": 1e-14,
+    "retained_rank": 111,
+    "projection_error": 9.552739743830363e-13,
+    "train_refit": 9.546453038737907e-13,
+    "eval_refit": 9.43593561934151e-13,
+    "norms": {
+      "native": {
+        "l1": 205.54125102023514,
+        "l2": 14.343833763438584,
+        "linf": 4.668172874289575
+      },
+      "physical": {
+        "l1": 205.54125102023514,
+        "l2": 14.343833763438584,
+        "linf": 4.668172874289575
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 879493.0,
+        "log10_steps": 5.944232387200562,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 12618478011.0,
+        "log10_steps": 10.101006975249982,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 37547531780120.0,
+        "log10_steps": 13.574581393550426,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 17.69401306639011,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 22.800580958219605,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": 28.409492905578777,
+        "status": "spectral_extrapolation"
+      }
+    ]
+  },
+  {
+    "target": "sine_2pi",
+    "cutoff": 1e-14,
+    "retained_rank": 111,
+    "projection_error": 3.110822858545124e-13,
+    "train_refit": 3.118438450332454e-13,
+    "eval_refit": 3.0855403319213807e-13,
+    "norms": {
+      "native": {
+        "l1": 56.51248659362931,
+        "l2": 4.271891648368276,
+        "linf": 1.6630113992310467
+      },
+      "physical": {
+        "l1": 56.51248659362931,
+        "l2": 4.271891648368276,
+        "linf": 1.6630113992310467
+      }
+    },
+    "predictions": [
+      {
+        "epsilon": 0.01,
+        "steps": 7466.0,
+        "log10_steps": 3.8730879855902858,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 0.0001,
+        "steps": 38037342.0,
+        "log10_steps": 7.58021016139197,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-06,
+        "steps": 1266622649685.0,
+        "log10_steps": 12.102647249793671,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-08,
+        "steps": null,
+        "log10_steps": 16.927933426572537,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-10,
+        "steps": null,
+        "log10_steps": 21.82966891109793,
+        "status": "spectral_extrapolation"
+      },
+      {
+        "epsilon": 1e-12,
+        "steps": null,
+        "log10_steps": 26.735919214837267,
+        "status": "spectral_extrapolation"
+      }
+    ]
+  }
+]

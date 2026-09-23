@@ -1,0 +1,33 @@
+{
+  "full_suite": {
+    "command": "pytest -q -p no:cacheprovider -m 'not slow'",
+    "passed": 748,
+    "failed": 17,
+    "skipped": 9,
+    "deselected": 4,
+    "baseline_failure_match": true,
+    "failures": [
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+      "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+      "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+      "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+      "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+      "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+      "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+      "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+      "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+      "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+      "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+      "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+    ],
+    "log_sha256": "675ef9a5424af972bff2246fbd329b0d8d1b0108b8f0cc12b1cc7f0f5d59fb5a",
+    "source_commit": "6874a16",
+    "baseline_log_sha256": "522f58fc0579d85ef4af3d0116a88d4cc4f810e8bce3072b6bb13a0dbc405d5a"
+  },
+  "after_full_suite": {}
+}
