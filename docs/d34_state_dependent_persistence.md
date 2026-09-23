@@ -549,3 +549,201 @@ means the proposed local closure misses important state evolution. Success
 there motivates the third stage but cannot substitute for it. A persistence
 theorem for ordinary GD requires the regional feedback and correction
 allowances explicitly stated above.
+
+## 7. Width can slow reinforcement without providing strong damping
+
+There is a useful width law even when the signed feedback is not damping.
+If slopes, hidden biases and readouts remain bounded after multiplication
+by $\sqrt W$, then the effective force is $O(W^{-1})$ and its possible
+relative amplification rate is $O(W^{-1})$. Residual relaxation contributes
+only $O(W^{-2})$ to the relative rate. Thus a wide network can move slowly
+because it cannot rapidly reinforce its current force, even when that force
+is growing. The following bounds make this statement conditional and
+target-general, without dividing by a possibly zero force.
+
+Use the exact tanh network, the full empirical fine complement, $|x_i|\le1$,
+and the parameter bounds
+
+$$
+|a_j|\le A_a/\sqrt W,\qquad |b_j|\le A_b/\sqrt W,\qquad
+|c_j|\le A_c/\sqrt W,\qquad K\succeq\kappa I.
+\tag{27}
+$$
+
+No bound on the output bias is needed. Following
+[Section 8 of the rate note](d34_mechanism_rate_theorems.md#8-a-width-dependent-rate-without-freezing-the-effective-map),
+put
+
+$$
+\begin{aligned}
+U&=A_a+A_b,&
+J_*&=\sqrt{2A_c^2U^4+U^6/9},\\
+E_*&=\|P_Hy\|_m+A_cU^3/(3W),&
+H_*&=4A_cU+\sqrt2U^2,\\
+M_*&=\sqrt2+4A_cU/W,&
+C_*&=E_*\left(H_*+\frac{J_*M_*}{\sqrt\kappa}\right),\\
+L_*&=E_*\left(H_*+\frac{2J_*M_*}{\sqrt\kappa}\right)+\frac{J_*^2}{W}.
+\end{aligned}
+\tag{28}
+$$
+
+**Proposition 4 (uniform width bounds).** On this regime, with
+$s(\theta)=\|F(\theta)\|$,
+
+$$
+s\le\frac{J_*E_*}{W},\qquad
+0\le\mathcal D\le\frac{J_*^2}{W^2}s^2,\qquad
+|\mathcal C|\le\frac{C_*}{W}s^2,\qquad
+\|DF\|_{\rm op}\le\frac{L_*}{W}.
+\tag{29}
+$$
+
+These inequalities hold also at $F=0$. Their constants remain bounded across
+widths if the rescaled parameter bounds, fine target norm and
+$\kappa^{-1}$ do. They are analytic bounds, not numerical evaluations or
+certificates for the archived checkpoints.
+
+**Proof.** Section 8 supplies
+$\|J_H\|\le J_*/W$, $\|e_H\|\le E_*$ and
+$\|D^2e_H[v,w]\|\le(H_*/W)\|v\|\|w\|$.
+The last bound uses the fine projection to remove the affine part of tanh
+before differentiating. For the coarse Hessian, no such removal is available,
+but a width-independent bound suffices. At each input, one neuron's
+geometry–geometry Hessian block has norm at most $4A_cU/W$, using
+$|\tanh''u|\le2|u|$. Its mixed readout–geometry block has norm at most
+$\sqrt2$, using $|\tanh' u|\le1$. The full Hessian is block diagonal in
+neurons and has a zero output-bias row and column. Taking the empirical
+mean norm and projecting onto the coarse modes therefore gives
+
+$$
+\|D^2e_C[v,w]\|\le M_*\|v\|\|w\|,
+\qquad \|\ell\|\le\frac{J_*E_*}{\sqrt\kappa W}.
+$$
+
+Consequently the loaded Hessian in (24) has operator norm at most $C_*/W$.
+This proves the curvature bound in (29); the force and relaxation bounds
+follow directly from the fine Jacobian estimate. Finally the projector
+derivative obeys
+
+$$
+\|D\Pi[v]\|\le\frac{2\|DJ_C[v]\|}{\sqrt\kappa}
+\le\frac{2M_*}{\sqrt\kappa}\|v\|.
+$$
+
+Differentiating $F=\Pi J_H^Te_H$ now gives the stated $L_*/W$ bound.
+This calculation includes the output-bias coordinate of $F$ and the full
+coarse compensation; neither was dropped to obtain the width orders.
+
+For effective continuous flow, (8) and (29) imply
+
+$$
+V(t)\le V(0)e^{2C_*t/W},\qquad
+s(t)\le s(0)e^{C_*t/W}
+\tag{30}
+$$
+
+while the region remains valid. This proves an amplification clock of order
+$W$ in GD time. It does not prove amplification actually occurs, nor does
+it claim the larger residual-relaxation clock alone determines acquisition.
+
+### Discrete GD and an explicit closure of the parameter region
+
+For ordinary GD, condition on the following absolute component tracking
+allowances at its actual iterates $0\le n<N$:
+$|R_{a,j}|\le\delta_a/W^{3/2}$,
+$|R_{b,j}|\le\delta_b/W^{3/2}$, and
+$|R_{c,j}|\le\delta_c/W^{3/2}$; set
+$\delta_2=(\delta_a^2+\delta_b^2+\delta_c^2)^{1/2}$.
+Persistent low tracking is a separate premise here, not a conclusion of
+the geometric first-exit argument below. These allowances are not asserted
+uniformly over arbitrary output biases: $R$ depends on $d$, although $F$
+does not.
+The field $F$ is independent of $d$, so its change along an update depends
+only on these three blocks. On a connecting segment satisfying (27), (29)
+gives the discrete comparison
+
+$$
+s_{n+1}\le\left(1+\frac{\eta L_*}{W}\right)s_n
++\frac{\eta L_*\delta_2}{W^2}.
+\tag{31}
+$$
+
+Equivalently, $Q_n=Ws_n$ satisfies
+
+$$
+Q_n\le (Q_0+\delta_2)
+\left(1+\frac{\eta L_*}{W}\right)^n-\delta_2
+\le (Q_0+\delta_2)e^{L_*\eta n/W}-\delta_2.
+\tag{32}
+$$
+
+This conservative discrete bound uses the full derivative estimate; it does
+not retain the signed improvement available from (13). It nevertheless
+proves the same width-dependent amplification clock for any $\eta>0$ for
+which the region can be closed. At zero initial force it remains meaningful.
+The second tracking channel satisfies
+$\|J_HR\|\le J_*\delta_2/W^2$, and the loaded map response satisfies
+$\|DF[R]\|\le L_*\delta_2/W^2$. An unconstrained $R_d$ affects neither
+bound, because both $e_H$ and $F$ are independent of $d$.
+
+Here is a sufficient first-exit test that also checks coarse conditioning.
+Let the initial rescaled bounds be $A_{\ell,0}<A_\ell$ for
+$\ell\in\{a,b,c\}$ and let
+$\lambda_{\min}(K(\theta_0))\ge\kappa_0>\kappa$. Define
+
+$$
+\begin{aligned}
+K_a=K_b&=E_*A_c\left(U^2+J_*/\sqrt\kappa\right),\\
+K_c&=E_*\left(U^3/3+UJ_*/\sqrt\kappa\right),\\
+G&=\left[\sum_{\ell=a,b,c}(K_\ell+\delta_\ell)^2\right]^{1/2},
+\qquad J_{C,*}=\sqrt{1+2A_c^2+U^2}.
+\end{aligned}
+$$
+
+Define the initial-state neighborhood by
+$\|\theta_{a,b,c}-\theta_{0,a,b,c}\|\le\eta NG/W$, with unrestricted
+output bias $d$. It is a three-block ball times the output-bias line, hence
+a cylinder in the full parameter space. Use the analytic fine-force and
+conditioning estimates on its intersection with the outer parameter box;
+the tracking premise concerns only the actual iterates as stated above.
+The fine-force coordinate bounds
+from Section 8 and the elementary bound
+$\|DK[v]\|\le2J_{C,*}M_*\|v_{a,b,c}\|$ show that it suffices to require
+
+$$
+\frac{\eta N}{W}(K_\ell+\delta_\ell)<A_\ell-A_{\ell,0}
+\quad(\ell=a,b,c),\qquad
+2J_{C,*}M_*\frac{\eta NG}{W}<\kappa_0-\kappa.
+\tag{33}
+$$
+
+Indeed, each parameter coordinate moves by at most
+$\eta N(K_\ell+\delta_\ell)/W^{3/2}$ and the three-block vector moves
+by at most $\eta NG/W$. Every connecting segment remains in the convex
+outer parameter box and in this initial-state cylinder. The coarse derivative
+bound then preserves $K\succeq\kappa I$ there, without assuming the entire
+centered small-parameter box is conditioned. Induction closes the states
+and the segments required by (31), conditional on the stated tracking
+allowances. Thus (33) closes the geometric and conditioning requirements;
+it proves neither entry into low tracking nor persistence of low tracking.
+
+On the resulting interval the normalized per-neuron acquisition rate obeys
+$|\lambda_{j,n+1}-\lambda_{j,n}|\le
+\eta h(K_a+\delta_a)/W^{3/2}$. The path-length proof of (20) also applies
+with $\bar s_n$ given by the right side of (32) divided by $W$ and
+$\rho_a=\delta_a/W$; no output-bias tracking bound is needed for this
+slope-only conclusion once (33) has closed the three-block region.
+If $h$ is proportional to $W^{-1}$, the component rate is
+$O(\eta W^{-5/2})$; the constants and the construction-to-width relation
+are part of that statement. This is a conditional mechanism for slow
+acquisition, not an inference from width alone.
+
+**Prediction.** Comparable bounded rescaled states can show geometry
+feedback on the clock $\eta n/W$ while their fine residual changes little.
+This is consistent with the nonlinear transport model, whose coefficients
+depend on the evolving particle distribution even under nearly fixed target
+loading. When the relevant quadratic and cubic target loadings vanish,
+the leading transport field can vanish and a longer clock can emerge, as
+described in the linked transport note. The $W$ clock proved here is a
+target-general upper bound on reinforcement; it is not a universal lower
+bound on the rate of change, and does not replace those higher-order cases.
