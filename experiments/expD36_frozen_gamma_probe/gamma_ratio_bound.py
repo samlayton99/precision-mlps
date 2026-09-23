@@ -158,8 +158,10 @@ def main():
         results.append(evaluate_ratios(x, centers, old, design(x, centers, gamma),
                                       8., gamma, old_svd=old_svd))
         print(gamma, [(r['rank'], r['status']) for r in results[-1]['records']], flush=True)
-    paths = [args.source, Path(__file__), Path(__file__).with_name('core.py'),
-             ROOT/'docs/gamma_slow_learning_alt_view.pdf']
+    paths = [args.source, Path(__file__), Path(__file__).with_name('core.py')]
+    supplied_note = ROOT/'docs/gamma_slow_learning_alt_view.pdf'
+    if supplied_note.exists():
+        paths.append(supplied_note)
     output = dict(reference_gamma=8, prescribed_ranks=[8, 16, 32, 64], cases=results,
         source_sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
         theorem='Collaborator Theorem 1: lower new eigenvalue ratio from old trial space, explicit gamma gain, and relative finite correction.',
