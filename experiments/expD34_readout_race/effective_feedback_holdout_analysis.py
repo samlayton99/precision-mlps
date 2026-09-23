@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 from experiments.expD34_readout_race import effective_feedback_analysis as analysis
+from experiments.expD34_readout_race.effective_feedback import load_inputs
 from experiments.expD34_readout_race import effective_feedback_holdout as heldout
 from experiments.expD34_readout_race import transport
 
@@ -118,9 +119,7 @@ def main():
     args = parser.parse_args()
     started = datetime.now(timezone.utc).isoformat()
     args.out.mkdir(parents=True, exist_ok=True)
-    with np.load(args.inputs) as data:
-        cases = [json.loads(str(c)) for c in data['cases']]
-        x, y, parameters = data['x'].copy(), data['y'].copy(), data['p'].copy()
+    parameters, x, y, cases = load_inputs(args.inputs)
     qh = np.asarray(transport.basis(x, 65))[:, 2:]
     forks = {}
     for case, p, target_y in zip(cases, parameters, y):
