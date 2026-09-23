@@ -95,6 +95,13 @@ retains all functions and the measurements; the
 [derivation](d34_coarse_balance_stagnation_details.md#1-what-small-readout-disequilibrium-actually-controls)
 constructs the map explicitly.
 
+The cross-function audit also checks how coarse tracking changes the fine
+errors that drive later motion. Across 1,665 saved states from 333 starts,
+its forcing is below 0.70% of the effective residual forcing; its direct
+slope-force ratio is below 1.24%. These are two distinct small corrections.
+The [theorem note](d34_effective_force_acquisition_theorems.md#1-which-empirical-findings-should-the-theorem-use)
+records the evidence and explains why both need interval-wide bounds.
+
 **What this lets us ask next.** A small correction does not imply a small
 effective force. To explain stagnation, we must determine the direction,
 distribution across neurons, and persistence of the force that remains.
@@ -288,12 +295,29 @@ the remaining error is large. This does not imply small eventual displacement.
 The [spectral calculation](d34_coarse_balance_stagnation_details.md#122-the-fixed-effective-map-gives-a-finite-movement-budget)
 derives that budget.
 
-Transferring the budget to GD requires an allowance for map drift, imperfect
-residual evolution, and $R_a$. Those corrections must be controlled throughout
-the interval. A small observed endpoint forecast error does not supply that
-control. Nor does summing travel after a run make it a prospective bound.
-The [correction argument](d34_coarse_balance_stagnation_details.md#123-corrections-need-a-cumulative-bound-not-just-a-small-initial-value)
-states what must be bounded.
+**The ordinary-GD theorem uses the measured mechanism.** Small coarse tracking
+reduces two explicit allowances: its direct slope displacement and its later
+effect through the fine errors. Omitted modes receive their own allowances.
+Sensitivity evolution remains in the model: its direct effect and the residual
+response it induces are combined with their signs before bounding uncertainty.
+This permits appreciable map drift while retaining signed cancellation.
+
+The [conditional acquisition theorem and proof](d34_effective_force_acquisition_theorems.md#4-theorem-2-ordinary-gd-acquisition-with-explicit-mechanism-corrections)
+give a corrected forecast $\widehat a_{j,n}+\overline D_{a,j}(n)$ and
+uncertainty $E_{a,j}(n)$. If
+
+$$
+\max_{n\le N}
+\left(|\widehat a_{j,n}+\overline D_{a,j}(n)|+E_{a,j}(n)\right)<\Gamma,
+$$
+
+that neuron stays below the threshold at every update through $N$. Counting
+the remaining neurons bounds how many can ever acquire the scale, even at
+different times. This tests the whole enclosed path directly. The note also
+proves a sufficient neighborhood condition for establishing the allowances
+without knowing the future trajectory, and a separate lemma for persistence
+of small coarse tracking. A small observed endpoint error alone proves none
+of those conditions.
 
 This is also the connection to the transport PDE. The parameter distribution
 moves with a velocity determined by the same coupled gradient. Acquiring scale
@@ -303,12 +327,14 @@ or assuming stochastic updates. The
 [transport walkthrough](d34_barrier_theorem_walkthrough.md#how-the-transport-pde-fits-into-this-description)
 gives the continuous formulation.
 
-**What is established, and what remains conditional.** We have the analytical
-route from a controlled travel budget to limited acquisition. The new-function
-numerical enclosure audit establishes sufficient trajectory-control conditions
+**What is established, and what remains conditional.** The new theorems prove
+acquisition bounds under explicit conditions on the effective dynamics and
+their corrections. Their useful numerical allowances remain to be established.
+The earlier new-function numerical enclosure audit establishes sufficient
+trajectory-control conditions
 only through sampled horizons of 100–1k updates, evaluated in FP64 rather than
 directed rounding. It is a separate geometric bound, not a computed certificate
-for the spectral budget above. Accurate longer forecasts are empirical evidence.
+for the new theorem. Accurate longer forecasts are empirical evidence.
 
 There is no privileged 200k barrier to prove. A useful exclusion time should
 follow from the starting state, the evolving force, the learning rate, and

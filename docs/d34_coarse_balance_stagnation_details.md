@@ -1474,6 +1474,14 @@ The second term has no general favorable sign or magnitude bound, and a discrete
 
 This section connects the revised [experiment protocol](../experiments/expD34_readout_race/README.md#proposed-effective-force-perturbations) to a specific theoretical question: how much motion can correction of the present fine errors supply before changing sensitivities becomes essential? Section 9 answers this for a two-error approximation and for the full sample-Jacobian model. Here we keep **all retained fine modes**, remove the coarse directions through their effective map, and distinguish the exact budget of that model from the additional estimates needed for ordinary GD. No ninth-degree target assumption enters these identities.
 
+The [acquisition theorem note](d34_effective_force_acquisition_theorems.md)
+develops (M4)–(M7) into explicit conditional ordinary-GD theorems. It separates
+small coarse tracking in the slope and residual equations, preserves the
+signed response to sensitivity evolution, and proves a sufficient domain
+closure condition. It also states which assumptions the cross-function audit
+supports and which remain to be certified. The formulas here remain the
+underlying model and comparison identities.
+
 ### 12.1 Match the initial signal, then alter its feedback
 
 **Example.** The degree-9 evidence supports an approximately fixed coupling over a long interval; the corresponding approximation fails for sine. Deleting a force component changes the initial signal as well as its subsequent feedback. The new comparison instead starts three branches with the same complete update.
