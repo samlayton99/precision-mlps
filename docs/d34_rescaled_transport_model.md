@@ -232,27 +232,29 @@ put $u=\alpha x+\beta$, and assume $y_H$ is orthogonal to all polynomials
 through degree three. Define two output functions and a potential:
 
 $$
-q_3=-\frac13P_H\mathbb E_\rho[\zeta u^3],\qquad
-q_5=\frac{2}{15}P_H\mathbb E_\rho[\zeta u^5],\qquad
-\mathcal E(\rho)=\frac12\|q_3\|_m^2-\langle y_H,q_5\rangle_m.
+\psi_3=-\frac13P_H\mathbb E_\rho[\zeta u^3],\qquad
+\psi_5=\frac{2}{15}P_H\mathbb E_\rho[\zeta u^5],\qquad
+\mathcal E(\rho)=\frac12\|\psi_3\|_m^2-\langle y_H,\psi_5\rangle_m.
 \tag{8}
 $$
 
-Indeed $P_Hf=W^{-1}q_3+W^{-2}q_5+O(W^{-3})$ on a bounded rescaled
+These functions include all fine polynomial components contributed by the
+corresponding Taylor order; they are not single orthonormal modes $q_k$.
+Indeed $P_Hf=W^{-1}\psi_3+W^{-2}\psi_5+O(W^{-3})$ on a bounded rescaled
 parameter domain. The first nonconstant term in the fine loss is
 $W^{-2}\mathcal E$: the $W^{-1}$ target pairing vanishes by orthogonality.
 The raw particle force is the spatial gradient of its functional derivative,
 
 $$
 G_2(X;\rho)=\nabla_X\left[
--\frac13\langle q_3,\zeta u^3\rangle_m
+-\frac13\langle \psi_3,\zeta u^3\rangle_m
 -\frac{2}{15}\langle y_H,\zeta u^5\rangle_m\right].
 \tag{9}
 $$
 
-Here $q_3$ is held fixed in the displayed particle derivative; its dependence
+Here $\psi_3$ is held fixed in the displayed particle derivative; its dependence
 on the distribution has already been accounted for by differentiating
-$\frac12\|q_3\|^2$. Repeating the coarse projection from (2), replace
+$\frac12\|\psi_3\|^2$. Repeating the coarse projection from (2), replace
 $G$ by $G_2$ in $s$, set $\ell^{(2)}=K^{-1}s_2$, and define
 
 $$
@@ -300,7 +302,7 @@ norm; the target pairing has geometry degree five and readout degree one.
 Euler's homogeneous-function identity therefore gives
 
 $$
-\mathcal Q'=-2\|q_3\|_m^2+4\langle y_H,q_5\rangle_m.
+\mathcal Q'=-2\|\psi_3\|_m^2+4\langle y_H,\psi_5\rangle_m.
 \tag{12a}
 $$
 
@@ -315,7 +317,7 @@ $C_0=d+B$, where $C_0,C_1$ are conserved. Homogeneity of the degree-four
 cubic output and degree-six fifth-order output gives
 
 $$
-\mathbb E[X\cdot G_2]=4\|q_3\|_m^2-6\langle y_H,q_5\rangle_m.
+\mathbb E[X\cdot G_2]=4\|\psi_3\|_m^2-6\langle y_H,\psi_5\rangle_m.
 $$
 
 Consequently the adjusted parameter energy
@@ -323,7 +325,7 @@ $\mathcal R=\frac12\mathbb E|X|^2+(d-C_0)^2
 =\frac12\mathbb E|X|^2+B^2$ satisfies the exact identity
 
 $$
-\mathcal R'=-4\|q_3\|_m^2+6\langle y_H,q_5\rangle_m
+\mathcal R'=-4\|\psi_3\|_m^2+6\langle y_H,\psi_5\rangle_m
 +2\sqrt v\,C_1\ell^{(2)}_1.
 \tag{12}
 $$
@@ -331,8 +333,8 @@ $$
 Thus if the target is orthogonal through degree five and the conserved
 affine slope is zero, $\mathcal R$ is nonincreasing. The constant coarse
 output may be nonzero. More generally the sufficient condition is
-$6\langle y_H,q_5\rangle_m+2\sqrt v C_1\ell^{(2)}_1
-\le4\|q_3\|_m^2$. A changing output bias is why contraction of the
+$6\langle y_H,\psi_5\rangle_m+2\sqrt v C_1\ell^{(2)}_1
+\le4\|\psi_3\|_m^2$. A changing output bias is why contraction of the
 unadjusted energy $\frac12\mathbb E|X|^2$ does not follow automatically.
 
 The affine-slope condition matters too. For a single-atom distribution with
