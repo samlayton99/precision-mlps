@@ -17,9 +17,10 @@ The refined hypothesis is that **acquisition is slow when the remaining errors
 couple weakly to outward geometry motion, and the subsequent feedback does not
 increase that coupling fast enough**. Correcting generated error can contract
 slopes, while other errors can drive expansion. At later checkpoints, evolving
-errors improve motion forecasts. At wider, nearly affine states, the errors
-barely change and evolving sensitivities matter more. We have conditional
-theorems for these regimes, plus one numerically certified finite window;
+errors improve motion forecasts. At wider, nearly affine states, explicitly
+evolving the geometry substantially improves forecasts even while the total
+fine residual changes little. We have conditional
+theorems for these regimes and numerically certified finite windows;
 we do not have a universal stagnation theorem.
 
 This is the main reading note. Sections 1–2 explain the force and its direction;
@@ -119,6 +120,16 @@ can favor smaller slopes. Readouts can grow at the same time to preserve the
 linear fit. In the observed stalled states, these generated errors drive most
 of the small contraction; the large ninth-degree error supplies little opposing
 force because the current features respond weakly to it.
+
+The [reduced transport model](d34_rescaled_transport_model.md#5-the-next-clock-generated-error-competes-with-fourth--and-fifth-degree-target-load)
+now makes this mechanism explicit. In a simple example, the slope decreases
+and its readout increases while their product, which supplies the linear
+fit, stays fixed. More generally, correcting generated lower-mode error
+decreases geometry energy relative to readout energy. Fourth- and
+fifth-degree target components add a competing term. These are proved
+identities in the reduced model; transferring them to tanh GD requires
+controlling the stated approximation and tracking errors. They do not imply
+that every neuron contracts.
 
 This example explains how learning can actively favor contraction. It is not
 the template that every other target must follow. In sine, the cubic target
@@ -319,8 +330,9 @@ $$
 This is a conditional rate bound for the exact network. It permits changing
 sensitivities and arbitrary empirical target values. The
 [theorem and first-exit proof](d34_mechanism_rate_theorems.md#8-a-width-dependent-rate-without-freezing-the-effective-map)
-give explicit constants and an interval on which the small-parameter regime
-closes. They also show that rescaled parameters can change appreciably while
+give explicit constants and sufficient conditions for an interval on which
+the small-parameter regime closes. They also show that rescaled parameters
+can change appreciably while
 the fine error changes only a little. We cannot extrapolate the rate beyond
 that regime to claim a much longer acquisition time.
 
@@ -333,6 +345,75 @@ the interval-wide assumptions. None of the 36 runs reaches $\lambda=0.25$
 through 40k updates. Their targets include mixed sine, degree five, a Gaussian,
 a compact bump, a smooth step and a kink; the result does not rely on degree
 nine's missing lower target modes.
+
+### 4.3 A simpler evolving model predicts the missing response
+
+**Example: match the initial force, then predict how it changes.** At the
+widest fresh-seed checkpoints, holding the exact initial effective force
+constant predicts the following slope motion with about 2.26% median error.
+A model that evolves the polynomial feature geometry reduces that error to
+0.026%. Both start from the same parameters and effective force. Their
+different predictions test the feedback after the starting state.
+
+**Model: keep the particle coupling, approximate the activation.** Replace
+tanh by its cubic or quintic Taylor polynomial. At every predicted state,
+recompute the fine errors, their sensitivities, and the coarse compensation.
+Slopes, biases and readouts all evolve. In the cubic model, the generated
+quadratic and cubic outputs depend on $\sum_jc_ja_j^2b_j$ and
+$\sum_jc_ja_j^3$. These changing correlations determine how the target error
+moves each neuron. This retains a concrete nonlinear mechanism; it is not
+a two-variable closure or a Jacobian fixed at the checkpoint.
+
+The pure quintic model works well for five of the six targets, but its
+degree-five error already appears in its approximation of the initial force.
+We therefore also test a fixed correction that makes the initial effective
+force exact. If $F_5$ is the quintic field, this model uses
+
+$$
+\widetilde F_5(\theta)
+=F_5(\theta)+\bigl[F(\theta_s)-F_5(\theta_s)\bigr].
+$$
+
+Only the bracket is fixed. The polynomial field continues to evolve with
+its own parameters. No future trajectory is used to choose that correction.
+It does not enforce exact coarse balance away from the fork; that mismatch
+belongs in its approximation error.
+Here the checkpoint force uses tanh with retained degrees 2–65. An audit with
+degrees 2–129 agrees to numerical precision; “exact initial force” does not
+claim an interval certificate for the full orthogonal complement.
+
+**Prediction and confirmation.** After developing the model on seeds 30 and
+31, we issue all forecasts for fresh seeds 32 and 33 before continuing their
+ordinary GD runs from 20k to 40k updates. Each width has the same six targets
+and two seeds. Median slope-displacement errors are:
+
+| Actual width | Constant exact effective force | Pure quintic | Quintic with exact initial force |
+|---:|---:|---:|---:|
+| 177 | 20.0% | 2.86% | 0.876% |
+| 705 | 4.71% | 0.0834% | 0.0547% |
+| 1409 | 2.26% | 0.0324% | 0.0260% |
+
+The corrected quintic model improves on constant force in all 36 confirmation
+cases. The pure quintic improves in 30; degree five remains its exception.
+At the smallest width, the corrected model's worst error is still 12.6%;
+the median does not describe every target equally well.
+This is confirmation across seeds of six fixed functions, not a claim over
+all targets. The [approximation theorem](d34_polynomial_surrogate_theorem.md)
+explains why such a model can be accurate in the small-parameter regime and
+why small absolute truncation error can still be a large fraction of a weak
+degree-five force. Its uniform error bounds remain conditional. Observed
+forecast precision is evidence for the mechanism, not a numerical proof of
+those conditions.
+
+A secondary test asks how much error evolution is needed inside this model.
+At widths 705 and 1409, the actual total fine-residual change is below 0.075%
+over the development window. Holding the supplied polynomial error fixed
+while evolving its sensitivities still predicts the generic-target motion
+well. Degree five is more delicate: tiny changes in generated lower-mode
+errors materially improve an already small forecast error. A nearly unchanged
+total residual norm therefore does not justify discarding every error's
+evolution. This secondary comparison was analyzed retrospectively; it was
+not part of the fresh-seed confirmation.
 
 ## 5. From a motion mechanism to an acquisition bound
 
@@ -406,6 +487,13 @@ or assuming stochastic updates. The
 [transport walkthrough](d34_barrier_theorem_walkthrough.md#how-the-transport-pde-fits-into-this-description)
 gives the continuous formulation.
 
+The [rescaled transport model](d34_rescaled_transport_model.md) makes that
+velocity more explicit: each particle
+responds through products of its slope, bias and readout, with coefficients
+set by the shared residual moments. The transport remains self-consistent
+and deterministic. Weak velocity, changing correlations, and cancellation
+can limit outward movement without diffusion or a stationary trapping state.
+
 **What is established, and what remains conditional.** The theorems prove
 acquisition bounds under explicit conditions on effective dynamics and their
 corrections. A moving neighborhood around the predicted trajectory lets us
@@ -413,15 +501,42 @@ check containment by induction, rather than assume that an observed future
 path stays nearby. Numerical evaluation of this bound remains conservative
 for several targets; accurate forecasts alone do not close it.
 
-There is now one rounding-controlled ordinary-GD instance. Starting from the
+At the later checkpoints, the current formula evaluated in ordinary FP64
+excludes every neuron through 20k further updates for 13 of 23 functions,
+and through 200k for both tested degree-nine seeds. The other ten 20k bounds
+become uninformative; this is not observed acquisition. The
+[full enclosure report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/moving_tube/README.md)
+retains those failures. These longer computations do not control numerical
+rounding and are distinct from the certificate below.
+
+At independently initialized wider states, the same FP64 formula encloses
+all six tested functions through 20k additional updates at actual widths 705
+and 1409. Its correction radius decreases as width increases, in addition to
+the smaller normalization factor $h$. This supports an informative
+small-parameter regime, but does not establish an asymptotic law from three
+widths or certify the arithmetic of that panel.
+
+There are now two rounding-controlled moving-reference instances. Starting from the
 archived degree-nine checkpoint, all 177 neurons satisfy
 $\lambda_j<0.002973994$ throughout the next 20,000 updates, well below 0.25.
+For mixed sine at width 705, all neurons satisfy $\lambda_j<0.002$ through
+13,000 additional updates from its 20k checkpoint. Its attempted 20k
+enclosure becomes uninformative after that prefix; the failure is retained.
 The [certificate and proof](d34_certified_instance.md) bound every intervening
-state using interval arithmetic. They apply to exact GD on the archived
-empirical dataset, initialized at the checkpoint. They do not certify its
-earlier training history, floating-point training roundoff, other targets,
-or a population loss. This establishes a concrete finite exclusion result;
-extending informative bounds across targets remains a separate task.
+state using interval arithmetic. They apply to exact GD on the respective
+archived empirical dataset, initialized at its checkpoint. They do not
+certify earlier training history, floating-point training roundoff, the other
+moving tubes, or a population loss.
+
+A useful baseline prevents us from overstating this gain. A
+[generic GD energy argument](d34_energy_baseline.md) already excludes
+$\lambda=0.25$ for 20k updates when the initial combined $(a,b,c)$ norm is
+at most 3 and the half-MSE is at most 1, at our step size. It says little
+about the small motion inside that allowance. Those initial conditions are
+now verified with rounding control for all 18 seed-30 width-panel states:
+six functions at each of three widths. The effective-force theory
+adds direction, target dependence, and a much tighter trajectory prediction.
+Its value must be judged on those quantities as well as the distant threshold.
 
 There is no privileged 200k barrier to prove. A useful exclusion time should
 follow from the starting state, the evolving force, the learning rate, and
@@ -456,15 +571,16 @@ errors can point in different scale directions. The shared explanation is
 weak or insufficiently sustained outward coupling, not one universal sign,
 one dominant parameter block, or rapid return to a fixed small-scale geometry.
 
-**The next theoretical requirement.** Determine from a checkpoint which
-aspects of sensitivity evolution must be retained, then control their effect
-on outward travel. The question is how long the resulting budget stays below
-the acquisition distance. The duration should emerge from the mechanism,
-rather than being imposed by the experiment schedule.
+**The next theoretical requirement.** The coupled quintic model now retains
+enough sensitivity evolution to predict these fresh-seed motions well.
+The next step is to control its error and the duration of its small-parameter
+regime sharply enough to bound outward travel. That duration should emerge
+from the starting state and mechanism, rather than being imposed by the
+experiment schedule.
 
 The force reduction and coupled forecasts have evidence across functions;
-the width-dependent rate has a conditional proof; one empirical instance has
-a finite rounding-controlled certificate. A broadly useful theorem still
+the width-dependent rate has a conditional proof; selected empirical instances
+have finite rounding-controlled certificates. A broadly useful theorem still
 needs its future-error and regime-persistence assumptions verified more
 sharply. None of these claims requires permanent trapping or establishes entry
 into the post-transient regime from initialization.
@@ -483,5 +599,6 @@ apply to Adam.
 
 For proofs, use the [technical companion](d34_coarse_balance_stagnation_details.md).
 For complete measurements, use the
-[campaign report](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/README.md).
+[mechanism campaign report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/README.md)
+and the earlier [force audit](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/README.md).
 They support this argument; following it does not require reading either first.
