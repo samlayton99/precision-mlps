@@ -398,6 +398,15 @@ identity for generated-error correction. The next numerical proof should
 control this evolving reference and its approximation allowances rather
 than infer future persistence from a successful endpoint forecast.
 
+Two further analytic results make that program more specific. An
+[exact GD identity](../../../../docs/d34_rescaled_transport_model.md#6-an-exact-gd-diagnostic-connects-the-reduced-identity-to-the-network)
+separates relative geometry/readout-energy change into fine, coarse, and
+finite-step terms. A [transport action theorem](../../../../docs/d34_transport_action_bound.md)
+bounds the fraction ever acquiring scale in the reduced high-mode regime
+using generated-error energy. Their new diagnostic and transfer allowances
+have not been numerically evaluated; neither is counted as an additional
+successful experiment.
+
 Adam remains less resolved. The second-moment intervention has a small,
 frequent effect, but the imposed phases fail. Its next model must predict
 force and moment evolution together. That is a specific missing closure,

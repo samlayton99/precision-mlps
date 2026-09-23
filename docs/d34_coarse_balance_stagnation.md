@@ -494,6 +494,16 @@ set by the shared residual moments. The transport remains self-consistent
 and deterministic. Weak velocity, changing correlations, and cancellation
 can limit outward movement without diffusion or a stationary trapping state.
 
+For a fine target orthogonal through degree five, the higher-order reduced
+model has an additional [transport energy bound](d34_transport_action_bound.md).
+Its generated-error energy pays for squared particle travel, so it limits
+the fraction that can ever acquire a specified scale during a finite window.
+The large unresolved target error contributes no energy at this order.
+This is a special-case result; sine and other targets with lower-mode loading
+still use the general coupled model. Transfer to actual GD requires the
+stated trajectory-error allowance, which has not been numerically evaluated
+for this new bound.
+
 **What is established, and what remains conditional.** The theorems prove
 acquisition bounds under explicit conditions on effective dynamics and their
 corrections. A moving neighborhood around the predicted trajectory lets us

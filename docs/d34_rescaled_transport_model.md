@@ -395,6 +395,11 @@ ordinary GD requires the conditional errors in (11) and the tracking
 allowances to fit the desired margins. No archived numerical accuracy or
 unconditional persistence claim is made here.
 
+A separate [transport action bound](d34_transport_action_bound.md) uses
+dissipation to control distinct particles that ever cross a threshold.
+It supplies the extra path argument absent from the instantaneous population
+bound above, and states its conditional transfer to ordinary GD explicitly.
+
 ## 6. An exact GD diagnostic connects the reduced identity to the network
 
 **Example and purpose.** Readout growth accompanied by slope contraction is
@@ -472,8 +477,9 @@ $$
 z_C=e_C+K_C^{-1}J_CJ_H^Te_H,\qquad r_C=J_C^Tz_C.
 $$
 
-If $y_H$ is orthogonal through degree three, the existing raw-fine-force
-bound $\|J_H^Te_H\|\le G_*/W^2$ yields
+If $y_H$ is orthogonal through degree three, let $G_*$ be the constant in
+the [high-mode force bound](d34_polynomial_surrogate_theorem.md#4-a-slower-conditional-clock-when-the-target-has-no-quadratic-or-cubic-load).
+Its inequality $\|J_H^Te_H\|\le G_*/W^2$ yields
 
 $$
 |e_C^TH_C|
