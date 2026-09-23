@@ -24,6 +24,13 @@ for a heterogeneous tanh-GD population. The role of the present note is to
 turn a justified persistence condition into discrete motion and acquisition
 bounds.
 
+The [population persistence theorem](d34_population_persistence_theorem.md)
+now proves a preserved alignment and loading condition in a heterogeneous
+reduced system. It also derives future tracking control from its exact
+evolution equation and gives a finite-time transfer to ordinary GD. Its
+sector hypotheses are explicit sufficient conditions, not yet verified for
+the archived target panel.
+
 **Notation.** All norms below are Euclidean norms in orthonormal empirical
 coordinates; the loss uses the empirical mean normalization.
 

@@ -16,6 +16,13 @@ does not establish all of them for the trained networks. In particular, a
 single balanced channel is an illustrative sector, not an established
 reduction of a heterogeneous network.
 
+The follow-on [population persistence theorem](d34_population_persistence_theorem.md)
+derives a heterogeneous maximum principle from preserved readout–slope
+alignment. It bounds the time for which generated correction withstands a
+competing target load and couples that result to tracking and ordinary-GD
+transfer. This supplies one explicit structural persistence proof; its
+alignment and loading conditions remain to be audited on trained states.
+
 **Notation.** Scalar physical coordinates and rescaled particle coordinates
 are kept distinct, including their time variables.
 
@@ -818,6 +825,15 @@ its generated channels satisfy a regional conditioning or amplitude-dependent
 sensitivity law for the third? A negative answer narrows the mechanism. It is not repaired by
 assuming the observed small force persists.
 
+The [population theorem](d34_population_persistence_theorem.md#3-theorem-1-two-mechanisms-discharge-the-structural-conditions)
+answers the preservation question in one explicit sector. Its coupled
+moment inequality bounds generated cubic strength from below using the
+conserved coarse contribution and an evolving readout bound. Together with
+a maximum principle, this prevents the largest slope from advancing for a
+derived interval, even though some smaller slopes may grow. The initial
+sector is more restrictive than the empirical statement that fine force
+dominates; the proof does not turn the latter observation into alignment.
+
 For ordinary tanh GD, the transfer obligations are separate:
 
 1. The chosen reduced model must remain valid on the region used in its
@@ -842,6 +858,11 @@ present note is to identify structural reasons its small-motion regime might
 last. The generic small-parameter width law remains a conditional delay of
 order $W/\eta$ updates on a closed interval; it is not upgraded to a
 $W^{5/2}/\eta$ acquisition lower bound by these scalar examples.
+The follow-on population note additionally derives the tracking bound itself
+on a specified neighborhood and closes a comparison to its persistent
+reference. Its conditional width clocks are $W/\eta$ and, with the stated
+target cancellations, $W^2/\eta$. Practical horizons still require regional
+constants and initial conditions to be verified.
 
 No new claim about Adam follows from Euclidean constrained-gradient flow.
 Its effective metric and moment history change the movement cost; the

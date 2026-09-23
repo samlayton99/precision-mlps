@@ -27,6 +27,10 @@ The newer [coupled-ODE results](d34_coupled_ode_mechanisms.md) derive examples
 of persistent rate suppression without assuming an equilibrium or a small
 future force. They identify structural conditions to test on the trained
 population; they do not establish those conditions across the target panel.
+The [population persistence theorem](d34_population_persistence_theorem.md)
+now proves preservation of one such structure in a heterogeneous ODE and
+states an explicit transfer to ordinary GD. Its initial alignment condition
+still needs to be checked against the observed states.
 
 This is the main reading note. Sections 1–2 explain the force and its direction;
 Sections 3–4 test its coupled evolution and develop a surrogate; Section 5
@@ -678,14 +682,31 @@ population theorem shows that where this relation holds, the full-parameter
 path allowance grows only as $T^{1/6}$ in reduced time on the established interval. An attracting
 equilibrium is treated only as a separate contrast case.
 
-These statements make the next assumptions concrete. A heterogeneous
-population can redistribute coarse fit and bypass a scalar readout
-bottleneck, so alignment and redistribution must be studied explicitly.
-Generated-error correction can also become progressively less conditioned;
-assuming a fixed restoring rate would miss the algebraic example. The existing
-perturbations support an evolving coupled description, but do not yet prove
-either of these regional structures. The note's assumption ledger records
-supporting and contrary evidence, including the late-sine limitations.
+**One heterogeneous persistence mechanism now has a proof.** The
+[population theorem](d34_population_persistence_theorem.md) starts with an
+aligned readout–slope sector and retains the full coupled moments. The common
+compensation preserving the coarse fit is a weighted average of local fine
+penalties. Under a specified ordering of the target and generated-error
+loads, this average cannot push the largest slope outward. Smaller slopes
+can still grow. The equations preserve the alignment, bound readout growth,
+and keep the coarse projection conditioned.
+
+When a fifth-order target load pushes outward, the same proof gives an
+explicit finite persistence horizon from initial moments. It derives how
+long correction retains its advantage, rather than assuming that a future
+fine-force bound holds. A second result derives tracking control and converts
+the reduced persistence into a bound on the fraction of neurons that ever
+acquire a chosen normalized scale. The note includes the discretization and
+containment conditions for ordinary GD.
+
+This is a sufficient structural mechanism, not an established description
+of all the archived states. Mixed readout–slope signs can defeat its maximum
+principle; the opposite cubic loading sign can support outward motion. The
+initial sector and transfer constants therefore need an audit. The existing
+perturbations support an evolving coupled description but do not establish
+those conditions. Generated-error correction can also lose sensitivity,
+so the separate algebraic-slowing mechanism remains relevant. Neither result
+justifies assuming strong restoration in the wide panel.
 
 Generic parameter-maxima bounds currently support at most eighteen updates
 in the recent first-exit audit, even with tracking set to zero. That is a
@@ -698,8 +719,10 @@ retains the numerical limitations alongside the successful comparisons.
 The force reduction and coupled forecasts have evidence across functions;
 the width-dependent rate has a conditional proof; selected empirical instances
 have finite rounding-controlled certificates. A broadly useful theorem still
-needs a structural persistence condition established for the heterogeneous
-dynamics and its transfer errors controlled. None of these claims requires
+needs a preserved structural condition shown to cover the observed
+heterogeneous states, with its transfer errors controlled. The new theorem
+proves preservation in an explicit sector; it does not yet verify that
+empirical coverage. None of these claims requires
 permanent trapping or establishes entry into the post-transient regime from
 initialization.
 
