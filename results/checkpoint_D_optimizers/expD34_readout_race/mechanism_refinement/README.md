@@ -446,13 +446,25 @@ allocations, separately from that GPU accounting.
 The combined [verification run](integration-1286.out) passes all **42 focused
 tests** across the pulse, splitting, width, Adam, envelope, moving-tube, and
 polynomial modules. These checks cover the changed numerical behavior;
-the entire unrelated repository test suite was not rerun. Later changes
-are proof exposition and evidence summaries.
+the entire unrelated repository test suite was not rerun. Separately dated
+follow-up helper verification is recorded below.
 
 Input hashes, issued forecasts, sparse states, motion accumulators, and final
 analysis are retained. Dense diagnostics cover short windows; redundant
 transfer archives were removed. No unique evidence was deleted for storage.
-Three optional follow-ups remain unrun after automatic approval review
-rejected their source uploads: an evolving Adam feedback model, a sharper
-directional interval calculation, and finite-width evaluation of the analytic
-rate constants. No result above depends on those extensions.
+Three optional follow-ups were left unrun when the campaign concluded:
+an evolving Adam feedback model, a sharper directional interval calculation,
+and finite-width evaluation of the analytic rate constants. Their source
+uploads were initially rejected by automatic approval review. The user
+subsequently approved all four helper/test files explicitly, and their
+uploads and SHA-256 matches were verified on September 23 at approximately
+18:10 UTC, after the original eight-hour window.
+
+The [follow-up verification record](upload_verification/manifest.json)
+distinguishes deployment from experimental evidence. CPU job 1302 found
+an extra closing parenthesis in the previously unrun Adam draft; after that
+one-character fix, [job 1303](upload_verification/upload-check-1303.out)
+passed its derivative test and both standalone analysis helpers' import and
+command-line checks. The original certificate helper remains unchanged.
+These checks used no GPU time. The three scientific extensions remain
+unevaluated, and no result above depends on them.
