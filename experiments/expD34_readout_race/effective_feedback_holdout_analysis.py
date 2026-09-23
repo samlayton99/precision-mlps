@@ -116,6 +116,8 @@ def main():
     parser.add_argument('--predictions', type=Path, default=ROOT/'predictions/heldout_all')
     parser.add_argument('--inputs', type=Path, default=ROOT/'inputs/heldout_all.npz')
     parser.add_argument('--out', type=Path, default=ROOT/'analysis/heldout')
+    parser.add_argument('--max-offset', type=int, choices=HORIZONS, default=200000,
+                        help='Assess the locked horizons up to this completed tier.')
     args = parser.parse_args()
     started = datetime.now(timezone.utc).isoformat()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -133,8 +135,10 @@ def main():
         assert key(case) not in forks
         forks[key(case)] = (p, qh.T@jacobian/len(x),
                             qh.T@(h@c+p[-1]-target_y)/len(x),
-                            float(np.mean(target_y**2)))
-    analysis.HEADLINES = HORIZONS
+                            float(np.mean(target_y**2)),
+                            analysis.evaluation_mse(p, case['target']))
+    horizons = tuple(h for h in HORIZONS if h <= args.max_offset)
+    analysis.HEADLINES = horizons
     rows, contrasts = analysis.collect(args.raw, [args.predictions])
     manifests, snapshots, predictions, initial_diagnostics = {}, {}, {}, {}
     modal_rows, modal_vectors, coefficient_rows = [], [], []
@@ -159,13 +163,15 @@ def main():
                 snapshots[snapshot_key] = {k: data[k].copy() for k in data.files
                     if k in ('p', 'tracking', 'omitted', 'effective') or k.startswith('metric_')}
         snapshot = snapshots[snapshot_key]
-        p0, jh, e0, target_energy = forks[key(row)]
+        p0, jh, e0, target_energy, initial_eval_mse = forks[key(row)]
+        row['actual_initial_eval_relative_mse'] = initial_eval_mse
         row['actual_train_relative_mse'] = float(snapshot['metric_relative_mse'][i])
         row['actual_train_loss'] = .5*target_energy*row['actual_train_relative_mse']
         row.update(regime_metrics(snapshot, i))
         row.update({k.replace('actual_endpoint_', 'actual_initial_'): v
                     for k, v in regime_metrics(initial_diagnostics[run], i).items()
                     if k.startswith('actual_endpoint_')})
+        row['actual_initial_train_loss'] = .5*target_energy*row['actual_initial_relative_mse']
         if not row['failed']:
             np.testing.assert_allclose(row['updates']*row['eta'], row['time'], rtol=2e-15, atol=0)
         if not row.get('forecast_supported', False):
@@ -232,11 +238,11 @@ def main():
     metadata = dict(specification_started_utc='2026-09-23T01:03:41Z',
         executed_utc=started, script_sha256=digest(__file__), input_sha256=digest(args.inputs),
         prediction_manifest_sha256=digest(args.predictions/'manifest.json'),
-        horizons=HORIZONS, expected_forks=60, input_forks=len(forks),
+        horizons=horizons, expected_forks=60, input_forks=len(forks),
         update_convention='Primary horizons are additional updates after starts100000/400000/600000; '
             'total_reference_updates=start+offset. At eta0.002 these equal total actual updates. '
             'Million-step forecasts are outside this primary assessment.',
-        expected_arm_horizon_rows=60*3*len(HORIZONS),
+        expected_arm_horizon_rows=60*3*len(horizons),
         observed_arm_horizon_rows=sum(r['model'] == 'affine' for r in rows),
         failed_arm_horizon_rows=sum(r['model'] == 'affine' and bool(r['failed']) for r in rows),
         unsupported_forecast_rows=sum(not r.get('forecast_supported', False) for r in rows),
