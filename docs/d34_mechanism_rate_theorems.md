@@ -16,8 +16,20 @@ models, but do not establish uniform bounds between those states.
 The [existing acquisition theorem](d34_effective_force_acquisition_theorems.md)
 already supplies the exact signed defect convolution and a neighborhood-based
 transfer to ordinary GD. This companion develops mechanisms that can supply
-its leading forecast and improve its error allowances. No new experimental
-outcomes are asserted here.
+its leading forecast and improve its error allowances. The
+[intervention report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/README.md)
+distinguishes the conditional models that predict well from those whose
+closure assumptions fail. In particular, the two-observable restoration
+model and persistent two-phase Adam model are not validated general closures.
+
+Section 8 gives an exact-network rate bound in the small-parameter regime.
+The [polynomial companion](d34_polynomial_surrogate_theorem.md) then retains
+evolving geometry and readouts, proves approximation bounds, and refines the
+rate when the target has little lower-mode load. The
+[certified instance](d34_certified_instance.md) separately establishes one
+finite ordinary-GD exclusion with rounding control. Conditional theorems,
+empirical forecasts and numerical certificates have different assumptions;
+none inherits the other's scope automatically.
 
 **Table 1. The quantities whose coupled evolution determines acquisition.**
 
