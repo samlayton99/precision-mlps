@@ -5,8 +5,9 @@ ordinary GD descent alone. It need not identify the effective-force mechanism.
 The argument below makes this baseline explicit before interpreting the
 [much tighter moving-reference certificate](d34_certified_instance.md).
 It proves a statement for initial states satisfying stated norm and loss
-bounds; this note does not assert that a particular archived state satisfies
-those bounds.
+bounds. Outward-rounded checks now verify those assumptions for all 18
+seed-30 independent-width checkpoints listed in Section 4, so their entire
+next 20,000-update windows admit this generic exclusion.
 
 **Notation.**
 
@@ -170,5 +171,44 @@ less than $0.000373$ through 20,000 updates. That is a much sharper
 trajectory statement than a travel budget of eight, and checks a specified
 empirical instance with rounding control. Its distant-threshold exclusion
 alone should not be presented as evidence that only the proposed mechanism
-could establish that horizon: wherever the initial assumptions above are
-verified, the elementary baseline already supplies that exclusion.
+could establish that horizon: for the 18 states below, the elementary
+baseline already supplies that exclusion.
+
+## 4. Verified empirical instances
+
+The six targets `moment5`, `mixed_sine`, `gauss_left`, `bump_right`,
+`step_right`, and `kink_abs` were checked at seed 30 and the archived
+20,000-update checkpoint, at each of three independent widths. Every case
+satisfies $M_0\le3$, $L(\theta_0)\le1$, and
+$\eta\le1/490$. The table displays maxima across all six targets at each
+width, rounded **upward** from the retained Arb bounds.
+
+| $N_{\rm ref}$ | Physical width $W$ | Verified states | Upper bound on $M_0$ | Upper bound on $L(\theta_0)$ |
+|---:|---:|---:|---:|---:|
+| 128 | 177 | 6 | 2.681334 | 0.416601 |
+| 512 | 705 | 6 | 2.607185 | 0.416404 |
+| 1024 | 1409 | 6 | 2.631417 | 0.416352 |
+
+The unchanged [Arb helper](../experiments/expD34_readout_race/mechanism_arb_certificate.py)
+evaluates an outward-rounded upper bound $s_0\ge\|f_{\theta_0}-y\|_m$.
+The loss bound is the outward-rounded upper endpoint of $s_0^2/2$;
+$s_0$ is nonnegative. The norm check uses exactly the first $3W$ archived
+parameters, $(a,b,c)$, excluding the output bias. Arb also verifies that the
+exact binary64 number represented by `0.002` is at most $1/490$.
+No fine-force or coarse-tracking assumptions enter these checks.
+
+The [18 per-state records](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/energy_baseline_arb/conditions.json),
+[summary](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/energy_baseline_arb/summary.json),
+and [executed command](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/energy_baseline_arb/verification.sbatch)
+preserve enclosing interval strings, input hashes, and the original source
+hash. Job 1295 used 100-bit Arb arithmetic and 103 seconds on one CPU.
+
+Applying Section 1 therefore proves, for **every one of these 18 empirical
+instances**, that no neuron reaches $\lambda=0.25$ at any prefix of the next
+20,000 updates, from the archived update-20,000 state through nominal
+update 40,000. The statement is for exact real-arithmetic GD on the archived
+binary64 empirical data and initial state; it does not certify preceding
+training or floating-point training roundoff. It establishes a coarse
+finite-time exclusion. The much sharper predictions of signed slope motion
+and the evolving effective-force geometry still require the mechanism
+analysis.

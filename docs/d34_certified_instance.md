@@ -1,13 +1,16 @@
-# A certified finite window for one stalled instance
+# Rounding-controlled finite windows for stalled instances
 
 The effective-force reference can now be transferred to ordinary GD with
-rounding-controlled arithmetic for one empirical problem. Starting from the
+rounding-controlled arithmetic for specified empirical problems. Starting from the
 `moment9` development checkpoint, all 177 neurons satisfy
 $\lambda_j<0.002973994$ throughout the next 20,000 updates. This excludes the
 threshold $\lambda_*=0.25$ over that window. It does not establish a longer
 window, a statement across initializations, or a population-loss theorem.
+A second, non-moment `mixed_sine` instance at width 705 is certified for
+13,000 additional updates; its attempted 20,000-update enclosure becomes
+vacuous. Section 4 reports both the valid prefix and that failure.
 
-**Notation for this certificate.**
+**Notation for the degree-nine certificate in Sections 1–3.**
 
 | Symbol | Meaning |
 |---|---|
@@ -177,3 +180,59 @@ No longer certified window is reported here. The gain over the earlier FP64
 diagnostic is that numerical rounding and all intermediate states now enter
 the proof; the remaining scientific task is to extend useful certified
 windows and determine how broadly the effective-force mechanism applies.
+
+## 4. A wider non-moment instance: a certified prefix and a failed horizon
+
+At the `mixed_sine`, seed-30 checkpoint after 20,000 updates, with
+$N_{\rm ref}=512$ and physical width $W=705$, the same unchanged Arb helper
+certifies
+
+$$
+\max_{j,\,0\le n\le13{,}000}\lambda_j(n)<0.002,
+\qquad \lambda_j=|a_j|/256.
+$$
+
+The checkpoint is the start of this statement, so it covers nominal total
+updates 20,000–33,000. The requested window was 20,000 additional updates.
+That longer certificate failed: the radius became vacuous in the block
+13,001–13,100. There is no assertion that GD acquired scale in that block.
+
+The helper hardcodes $h=1/64$. It was **not** changed to $1/256$ for this
+experiment. Its final completed prefix bound was below $0.007519293$;
+rescaling the original interval by the exact factor $1/4$ gives an upper
+endpoint approximately $0.001879823199222$, strictly below $0.002$ in the
+actual width-512 normalization. All earlier prefixes are included.
+
+| Chord length | Last certified additional update | Radius upper bound | Next failed block | CPU seconds |
+|---:|---:|---:|---:|---:|
+| 1,000 | 3,000 | 0.044669 | 3,001–4,000 | 23 |
+| 100 | 13,000 | 0.378329 | 13,001–13,100 | 697 |
+
+The displayed radius bounds are rounded upward. The helper does not record
+the exact failing iteration inside a block. Both original stdout logs and
+every completed interval row are retained in the
+[case report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/arb_width512_mixed_sine_seed30/README.md).
+The [rescaled outcome](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/arb_width512_mixed_sine_seed30/outcome.json)
+explicitly marks the requested full horizon as uncertified.
+
+This instance was selected for certificate feasibility: among the five
+generic targets in the completed width-512 seed-30 FP64 panel, it had the
+smallest 20,000-update radius. The reference endpoints were regenerated
+from its fork with the existing frozen-effective predictor, archived at
+100-step intervals, and treated as exact binary64 endpoints for the Arb
+chords. This is a new prescribed reference, not the earlier FP64 recurrence
+reference and not an unbiased cross-target success rate.
+
+The failure has an identifiable numerical source. In the first 1,000-step
+block, the point defect is approximately $1.82\times10^{-10}$, but the
+uniform chord bound is $7.78\times10^{-6}$. Finer chords reduce this
+inflation and extend the certified prefix; the growing-ball recurrence
+eventually remains too conservative. A small point defect alone does not
+close this particular uniform neighborhood argument.
+
+Finally, [the generic energy baseline](d34_energy_baseline.md#4-verified-empirical-instances)
+already excludes the distant threshold $\lambda=0.25$ for the full next
+20,000 updates on this and all 17 other checked width-panel states. The
+moving-reference certificate supplies a sharper trajectory bound where it
+closes. Its shorter certified horizon must not be presented as evidence
+that ordinary GD can escape the coarser energy exclusion.

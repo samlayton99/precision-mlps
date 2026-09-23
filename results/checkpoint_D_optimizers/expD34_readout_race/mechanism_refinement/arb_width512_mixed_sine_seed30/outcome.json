@@ -1,0 +1,45 @@
+{
+  "attempts": [
+    {
+      "job": 1291,
+      "chunk": 1000,
+      "one_cpu_wall_seconds": 23,
+      "requested_updates": 20000,
+      "completed_certified_prefix": 3000,
+      "first_uncompleted_block": [
+        3001,
+        4000
+      ],
+      "full_requested_horizon_certified": false,
+      "termination": "original helper raised Vacuous growing radius",
+      "original_helper_h": "1/64",
+      "actual_h": "1/256",
+      "actual_normalized_prefix_upper": "[0.00058022947228870496158656822005 +/- 2.33e-33]",
+      "actual_lambda_below_0_002": true,
+      "scope": "Exact real-arithmetic GD on archived binary64 inputs and initial state, with exact binary64 eta; extracted original stdout bounds before failure",
+      "log_sha256": "fdaf44c63f8ad0e0c65c618dd6a769060c58af68a33cdb66f89187c0dd94585c"
+    },
+    {
+      "job": 1293,
+      "chunk": 100,
+      "one_cpu_wall_seconds": 697,
+      "requested_updates": 20000,
+      "completed_certified_prefix": 13000,
+      "first_uncompleted_block": [
+        13001,
+        13100
+      ],
+      "full_requested_horizon_certified": false,
+      "termination": "original helper raised Vacuous growing radius",
+      "original_helper_h": "1/64",
+      "actual_h": "1/256",
+      "actual_normalized_prefix_upper": "[0.0018798231992216765379508252968 +/- 5.61e-33]",
+      "actual_lambda_below_0_002": true,
+      "scope": "Exact real-arithmetic GD on archived binary64 inputs and initial state, with exact binary64 eta; extracted original stdout bounds before failure",
+      "log_sha256": "4b76832b21efde7ff1c79e7c9bc968630ebac30d9c716d65ee45e3f9dfde09a1"
+    }
+  ],
+  "certificate_source_sha256": "8ce86d75c5bc57035a8402d00e2add13b4d4faf6444f1e07a5968d925094788d",
+  "source_unchanged": true,
+  "postprocessing": "Only parse original completed stdout rows and rescale their interval bounds by exact factor1/4; no new enclosure algorithm"
+}
