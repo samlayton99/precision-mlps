@@ -28,6 +28,12 @@ def _alignment(a, b):
     return _ratio(a @ b, np.linalg.norm(a)*np.linalg.norm(b))
 
 
+def _skill(relative_error):
+    """Squared-error skill against zero motion; preserve unresolved/overflow."""
+    with np.errstate(over='ignore', invalid='ignore'):
+        return float(1-np.square(relative_error))
+
+
 def prediction_index(roots):
     """Index immutable per-case archives, checking their issued hashes."""
     index = {}
@@ -70,7 +76,11 @@ def _matched_prediction(index, case, manifest, p0):
 
 def evaluation_mse(p, target, samples=8192):
     """Evaluate with the original 2048-grid target mapping and normalization."""
-    x, y, _, _ = af.data(target, samples)
+    if target in af.TARGETS:
+        x, y, _, _ = af.data(target, samples)
+    else:
+        from . import effective_feedback_holdout as holdout
+        x, y, _, _ = holdout.data(target, samples)
     a, b, c = np.asarray(p[:-1]).reshape(3, -1)
     prediction = np.tanh(x[:, None]*a+b) @ c+p[-1]
     return float(np.mean((prediction-y)**2)/np.mean(y*y))
@@ -107,10 +117,13 @@ def forecast_metrics(p, p0, effective, forecast_p, forecast_force):
     movement = p[:width]-p0[:width]
     gamma = np.abs(forecast_p[:width])
     force_error = np.linalg.norm(forecast_force-effective)
+    relative_error = _ratio(np.linalg.norm(difference), np.linalg.norm(movement))
     return dict(predicted_mean_gamma=float(gamma.mean()), predicted_max_gamma=float(gamma.max()),
         predicted_signed_mean_gamma_change=float(np.mean(gamma-np.abs(p0[:width]))),
         slope_motion_absolute_error=float(np.linalg.norm(difference)),
-        slope_motion_relative_error=_ratio(np.linalg.norm(difference), np.linalg.norm(movement)),
+        slope_motion_relative_error=relative_error,
+        slope_motion_skill=_skill(relative_error),
+        slope_motion_alignment=_alignment(forecast_p[:width]-p0[:width], movement),
         effective_force_absolute_error=float(force_error),
         effective_force_relative_error=_ratio(force_error, np.linalg.norm(effective)),
         effective_force_alignment=_alignment(forecast_force, effective))
@@ -198,9 +211,13 @@ def collect(source, predictions, eval_samples=8192):
         if row['contrast_supported']:
             predicted = branch['predicted'][:width]-joint['predicted'][:width]
             predicted_mean = float(np.mean(abs(branch['predicted'][:width])-abs(joint['predicted'][:width])))
+            absolute_error = float(np.linalg.norm(predicted-delta))
+            relative_error = _ratio(absolute_error, np.linalg.norm(delta))
             row.update(predicted_contrast_norm=float(np.linalg.norm(predicted)),
                        contrast_alignment=_alignment(predicted, delta),
-                       contrast_relative_error=_ratio(np.linalg.norm(predicted-delta), np.linalg.norm(delta)),
+                       contrast_absolute_error=absolute_error,
+                       contrast_relative_error=relative_error,
+                       contrast_skill=_skill(relative_error),
                        predicted_mean_gamma_contrast=predicted_mean,
                        mean_gamma_contrast_sign_agrees=bool(np.sign(predicted_mean) == np.sign(mean_change)))
         contrasts.append(row)
@@ -318,8 +335,9 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     write_csv(args.output/'actual_vs_forecast.csv', rows)
     write_csv(args.output/'branch_contrasts.csv', contrasts)
-    plot_comparison(rows, args.output)
-    plot_contrasts(contrasts, args.output)
+    if any(row['target'] in ('moment9', 'sine') for row in rows):
+        plot_comparison(rows, args.output)
+        plot_contrasts(contrasts, args.output)
     print(json.dumps(dict(rows=len(rows), contrasts=len(contrasts), output=str(args.output))))
 
 

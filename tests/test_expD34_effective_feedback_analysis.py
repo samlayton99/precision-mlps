@@ -49,12 +49,16 @@ def test_forecast_errors_and_branch_contrasts_match_hand_values(tmp_path):
     assert row['actual_mean_gamma'] == pytest.approx(.7)
     assert row['predicted_mean_gamma'] == pytest.approx(.72)
     assert row['slope_motion_relative_error'] == pytest.approx(.1)
+    assert row['slope_motion_skill'] == pytest.approx(.99)
+    assert row['slope_motion_alignment'] == pytest.approx(1.)
     assert row['effective_force_relative_error'] == 0
     assert row['motion_identity'] == 0 and row['signed_identity'] == 0
     contrast = next(r for r in contrasts if r['arm'] == 'freeze_map' and r['offset'] == 2)
     assert contrast['actual_mean_gamma_contrast'] == pytest.approx(.1)
     assert contrast['predicted_mean_gamma_contrast'] == pytest.approx(.12)
     assert contrast['contrast_relative_error'] == pytest.approx(.2)
+    assert contrast['contrast_absolute_error'] == pytest.approx(.02)
+    assert contrast['contrast_skill'] == pytest.approx(.96)
     assert contrast['contrast_alignment'] == pytest.approx(1.)
     assert contrast['mean_gamma_contrast_sign_agrees']
     unsupported = next(r for r in rows if r['arm'] == 'clamp_residual' and r['offset'] == 2)
@@ -62,6 +66,7 @@ def test_forecast_errors_and_branch_contrasts_match_hand_values(tmp_path):
     assert 'predicted_mean_gamma' not in unsupported
     initial = next(r for r in rows if r['arm'] == 'joint' and r['offset'] == 0 and r['model'] == 'affine')
     assert np.isnan(initial['slope_motion_relative_error'])
+    assert np.isnan(initial['slope_motion_skill'])
     assert all('predicted_positive_travel' not in r for r in rows)
 
 
@@ -106,3 +111,10 @@ def test_initial_tail_and_new_visits_are_separate():
     assert row['new_ever_fraction_1'] == .5
     assert row['ever_fraction_1'] == 1.
     assert row['current_fraction_1'] == .5
+
+
+def test_heldout_exact_step_uses_the_training_normalization():
+    from experiments.expD34_readout_race import effective_feedback_holdout as holdout
+    _, _, _, scale = holdout.data('step_right')
+    p = np.array([14., -14.*.31, 1./scale, 0.])
+    assert analysis.evaluation_mse(p, 'step_right', 8192) < 1e-28
