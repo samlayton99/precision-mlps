@@ -2,6 +2,9 @@
 import os
 os.environ.setdefault('JAX_ENABLE_X64', 'true')
 
+import csv
+import json
+from types import SimpleNamespace
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -9,6 +12,9 @@ import pytest
 
 from experiments.expD34_readout_race import adam_forces as af
 from experiments.expD34_readout_race import mechanism_splitting as ms
+from experiments.expD34_readout_race import mechanism_splitting_analysis as analysis
+from experiments.expD34_readout_race import mechanism_splitting_baselines as baselines
+from experiments.expD34_readout_race import transport
 from experiments.expD34_readout_race import targets
 
 
@@ -85,3 +91,40 @@ def test_full_complement_residual_forcing_matches_jvp():
         expected.append(np.sqrt(np.mean(fine*fine)))
     np.testing.assert_allclose(measured, expected, atol=2e-16, rtol=2e-12)
     np.testing.assert_allclose(ratio, expected[1]/expected[0], rtol=2e-12)
+
+
+def test_analysis_accepts_mixed_target_metadata(tmp_path):
+    p, x, y = example()
+    pp = np.stack([np.asarray(p)]*2)
+    cases = [dict(target='sine', seed=0, start=600000),
+             dict(target='gauss_left', seed=22, start=600000, family='gaussian')]
+    inputs = tmp_path/'inputs.npz'
+    np.savez(inputs, p=pp, x=x, y=np.stack([y, y]), cases=np.array(json.dumps(cases)))
+    predictions = tmp_path/'predictions'; predictions.mkdir()
+    (predictions/'manifest.json').write_text('{}')
+    predicted = np.broadcast_to(pp[None, :, None, :], (len(ms.ARMS), 2, 1, len(p)))
+    np.savez(predictions/'predictions.npz', horizons=[1], p=predicted,
+             effective_pure_p=predicted, effective_remainder_p=predicted)
+    source = tmp_path/'runs'; folder = source/'original'/'snapshots'; folder.mkdir(parents=True)
+    zeros = np.zeros((2, 4))
+    np.savez(folder/'000000001.npz', p=pp, failed=np.zeros(2), relative_mse=np.ones(2),
+             positive=zeros, negative=zeros, effective=zeros, tracking=zeros)
+    output = tmp_path/'analysis.csv'
+    analysis.analyze(SimpleNamespace(predictions=predictions, inputs=inputs, source=source, output=output))
+    with output.open() as stream:
+        rows = list(csv.DictReader(stream))
+    assert len(rows) == 2
+    assert rows[0]['family'] == '' and rows[1]['family'] == 'gaussian'
+
+
+def test_checkpoint_baselines_use_metric_balance_and_true_initial_gradient():
+    p, x, y = example()
+    d = ms.mobility(4, 'k4_none')
+    q = transport.basis(np.asarray(x), 9)
+    g, T, JH, _ = baselines.matrices(np.asarray(p), np.asarray(x), np.asarray(y), d, q)
+    reference, _, JC, _ = af.field(p, x, y)
+    np.testing.assert_allclose(g, d*np.asarray(reference), atol=3e-16)
+    np.testing.assert_allclose(np.asarray(JC)@T, 0, atol=2e-16)
+    S = JH@T
+    np.testing.assert_allclose(S, S.T, atol=2e-16)
+    assert np.linalg.eigvalsh(S).min() >= -1e-16
