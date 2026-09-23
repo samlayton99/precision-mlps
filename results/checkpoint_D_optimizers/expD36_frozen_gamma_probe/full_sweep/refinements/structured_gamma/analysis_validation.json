@@ -1,0 +1,100 @@
+{
+  "status": "passed FP64 verification and independent reproduction; not interval certification",
+  "target_cases": 90,
+  "dictionaries": 18,
+  "finite_reference_crossings": 88,
+  "reference_unresolved_by_1e18_cap": 2,
+  "nonzero_necessary_bounds_all_sensitivity_levels": true,
+  "executed_crossings_checked": 19,
+  "executed_crossings_equal_full_constructed_forecast": true,
+  "all_compact_bounds_below_executed_hits": true,
+  "maximum_checkpoint_forecast_gap": 4.55130724774655e-14,
+  "spectral_checks": 54,
+  "scaled_spectral_containment_by_level": [
+    54,
+    54,
+    54
+  ],
+  "initial_unscaled_containment_by_level": [
+    5,
+    34,
+    46
+  ],
+  "inertia_refinement_stopped_for_uncertainty": 53,
+  "spectral_intervals_with_zero_lower_endpoint_by_level": [
+    11,
+    11,
+    11
+  ],
+  "setup_dimension_range": [
+    90,
+    306
+  ],
+  "repeated_solve_dimension_range": [
+    15,
+    26
+  ],
+  "reproduction": {
+    "path": "/private/tmp/structured-gamma-reproduction",
+    "case_json_equal_except_elapsed_seconds": 18,
+    "npz_all_arrays_exact": 18,
+    "figure_png_pdf_byte_identical": true
+  },
+  "all_case_source_hashes_verified": true,
+  "capacity_witness_floor_reference_checks_pass": true,
+  "git_diff_check": "passed",
+  "new_gpu_hours": 0,
+  "artifact_sha256": {
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g12.json": "4a2483570dc5e53e7b65a02a563e4e8ad0b2757ff0a382060068ebd89b4b7021",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g12.npz": "57d26a1f91dca66263c54f422242bf8a8d1363b440d5436f7228630ae730debe",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g16.json": "8b8f009d4d56b167714403ebc340c8b33a9d7e95b32f6c77fbb96fa9a76c8cf6",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g16.npz": "a359a7b8cac80e2670bfdd716e44c20bcf7ee931658bb9a053538ad415ea9180",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g2.json": "3d0c7e90c6edef9e3ea1d3d5a4aad69ef53bbbca87e4c3a67606ce726257b5ae",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g2.npz": "bcb7e9718da6a35d9e1b7173701d92aa971a8c2b1696568bdf9b13baf8d145b3",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g64.json": "7756ac9e72e1072db8b50e41afbb64ec6e0a3cdd1822eabf96f2b3ce1a0994f2",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g64.npz": "d95205bd0d9cabcd17557431ae158390fe862c0cd504c979c4f55e288193b7ef",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g8.json": "fd505b960e34440497975b068f97c7487c397186377ea758e772b01ce6b408c1",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N128_g8.npz": "2d3cfb53999fc737467694e0f3b2dcc64ce7ddba5b6ad7874b39316c94c36c2c",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g12.json": "08c6247c0d23105c4dfa70df6a585d385e59f4f39fdadd15fe2b05dd49ab5cb9",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g12.npz": "d47a9a669d69b0ba1c7e0921f844732cec7461aa66c4b2b68d40810accd86898",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g16.json": "bb85af6aecb02cc5bc1b242b0efe498b58002cac2a840f189368f871920038ab",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g16.npz": "1c4d4aa5d10776953d853886fcbb9231f2236d6074942ea1d37457076b871365",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g32.json": "cda53364621625582ac41209e82c41bccade006d633d4398a1721e85648e1541",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g32.npz": "317da5541890511cc78442b7432b13a06f9303d121c6f699836a0256dd601794",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g4.json": "6c8f418bc1a108f9525646ee8bc41a0fcf35dca037d38007d6df6b3833548783",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g4.npz": "f200624b6278b3daaea4f34545943772608cbf5296590ba1b9c64c5a19fdf061",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g64.json": "cab626413d858641cf8f646ffd18ee9e38ce1b6bc3a2abfaec43ada7f8e93b1e",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g64.npz": "be8b9c73cf96786e4e6f5c00fc4247d0e98ac2dcc9b6fa754413de16f26cd6ab",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g8.json": "f274c72ecc8d1f2d2dfd09cfeb4c6f75e1b5a1a5f21b019cc8283e4fab6f4ac6",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N256_g8.npz": "08d94dc3a6ac4423cd7561229539fc59df9b21e36d434d5ff6b4bf2d39fbb930",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g10.json": "4e3b147106cc97b47108ab4bde9e91e51a1c1fe98e349f8c0423e8d87a41944e",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g10.npz": "257f0380fc41cca6850547ce33a56dc378bd813b33cba44399daca54336fb60e",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g12.json": "8a44e8e6616d81e6de517fccd708609389449db7c8c1b91beeac36e7270acac7",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g12.npz": "a80bbf0c42d95d0b3f731860b616a666d5c5686767cf622ca4e69309804d03bb",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g16.json": "9ea2bfd7f119623a65eb3186c6257f2517063c5e091063ad0274c9ef93f0dd99",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g16.npz": "f805bd13a89564b5ac420d1ced526e929d873b8b5082bf7c9982ecebfdc173c9",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g24.json": "cf9b35d700b1a5d6a5a14e3a4cce150d7fbef02c20c22132f67218457ef57b4c",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g24.npz": "d4dd38b53ba8ae2c4026a89b64e6fbe7699f599785b3365208621c01488e4e2a",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g48.json": "d98bb20554566eeb5a32f512359e1562a20c9525e8f7d5bb300f3616d9222a18",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g48.npz": "50e147c330db35acfb446727248d9705c905098337bedc2adad3ec887adf8532",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g64.json": "d04045d19188af9bf09295558e164357d2a01e5d1ec27c54f9e7d43c715056d9",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g64.npz": "7b45f3a4e67a1427c5464468c6741baf761c42bca36ae92d30d2061bbf4bfe00",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g8.json": "2870edde60556793687782d31d8e5b82e74d9dce037542b04210c0f7998e5cbd",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/N512_g8.npz": "fd2e6195489ac8b77d0273a188e4a3d7bdfbda11feb3c45d4609603bc7ea23a1",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/inertia_initial_audit.json": "ec020dbd27a97580094c47411d4a9cb3cfe5e09473ca95a1ed35d2aad1dc49da",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/structured_gamma_three_panel.pdf": "04ce7a653ae91087183e74ba9a56b3c88d7df1b00a581da4cc184ede35811350",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/structured_gamma_three_panel.png": "bddeffc2e015b02591fa03edc8de3f68096d906681de87237531ff4fcdb8fc39",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/summary.json": "54ae1422b3f4d11360978f1f0f3e159a244e7b2d77bbb029dcb90fa353018c81"
+  },
+  "code_sha256": {
+    "structured_gamma_analysis.py": "2c03a12d4ca681ebdf72935885be51d05864682b4348e2e581e26d74e4c6a10a",
+    "structured_resolvent.py": "5517b0b237123405f5aa22100b48d5f3a2c12e79b57ff55b8e8734b4b4fe44aa",
+    "structured_gamma.py": "4dca809b3968fec024adfb45afbd874711992c0edfa31c6f3b82746eaa4b267a",
+    "uniform_grid_spectrum.py": "c2069ce3cb035b1b7769a16c17059bc9eed13928edbc35eb5f5c12457b98dac6",
+    "core.py": "c9bcb5efef3f615cab0e13fd2d1971ff063639e0ef32853c6369dabd75206000",
+    "finite_gamma_gram.py": "dd10b6d83134f8e35e2f07202d7f9536392578aade1b1c74af11373ad6e9ea70",
+    "uniform_grid_analysis.py": "44137848f9d53e032e7da2a23ca04d2c84f2a1807e41fd4d54faacaf7cc6ee5e",
+    "review_figures.py": "eb64ed6a1e717942b6a17661fae76692b28d3cb0580152a0dac5c50d6cdbf692",
+    "pi_brief_figure.py": "7fd7cfb3f75324e85a8c73155ca94e5a83d098c1c3fdb9ad5ae5d93ff8420b85"
+  }
+}

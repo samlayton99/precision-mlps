@@ -1,0 +1,2015 @@
+{
+  "method": "Initial unscaled reciprocal-signed-eigenvalue FP64 secular bisection, 60 iterations; numerical failure audit, not a theorem counterexample.",
+  "code_sha256": {
+    "structured_gamma_analysis.py": "d8c90fab95fb1d2133308ed40aab6f02ac896b2defc6a7c0e0259dba494aa4e2",
+    "structured_resolvent.py": "5517b0b237123405f5aa22100b48d5f3a2c12e79b57ff55b8e8734b4b4fe44aa",
+    "structured_gamma.py": "4dca809b3968fec024adfb45afbd874711992c0edfa31c6f3b82746eaa4b267a",
+    "uniform_grid_spectrum.py": "c2069ce3cb035b1b7769a16c17059bc9eed13928edbc35eb5f5c12457b98dac6"
+  },
+  "containment_counts": [
+    5,
+    34,
+    46
+  ],
+  "total": 54,
+  "rows": [
+    {
+      "n": 512,
+      "gamma": 8,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.38242331039888555,
+            0.38242331039888605
+          ],
+          "intervals": [
+            [
+              0.38242331039753136,
+              0.38242331040024025
+            ],
+            [
+              0.38242330998371127,
+              0.38242331081406034
+            ],
+            [
+              0.38242330625933046,
+              0.38242331453844114
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 1.6498920391093314e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.3824233039041604,
+          "reference_contained": [
+            false,
+            false,
+            false
+          ],
+          "relative_width": [
+            7.083482207488665e-12,
+            2.1712826043948246e-09,
+            2.1649074704080846e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            3.936248753846905e-05,
+            3.936248753895477e-05
+          ],
+          "intervals": [
+            [
+              3.936248618425355e-05,
+              3.936248889317027e-05
+            ],
+            [
+              3.936207236416424e-05,
+              3.936290271325958e-05
+            ],
+            [
+              3.935834798336047e-05,
+              3.936662709406335e-05
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 1.6622107442066184e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 3.936248841350248e-05,
+          "reference_contained": [
+            true,
+            true,
+            true
+          ],
+          "relative_width": [
+            6.88197528115658e-08,
+            2.1094934004507604e-05,
+            0.00021032996227046056
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            1.2223584991422065e-08,
+            1.2223585477144638e-08
+          ],
+          "intervals": [
+            [
+              1.2222230775918775e-08,
+              1.2224939692647929e-08
+            ],
+            [
+              1.1808410686612016e-08,
+              1.2638759781954687e-08
+            ],
+            [
+              8.084029882844307e-09,
+              1.6363140585722397e-08
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 5.569607741131776e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 1.2797431751908036e-08,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            0.00021167659118399924,
+            0.0648840416921051,
+            0.6469353276014709
+          ]
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "gamma": 64,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            2.462881162090562,
+            2.4628811620905626
+          ],
+          "intervals": [
+            [
+              2.4628811620895603,
+              2.4628811620915645
+            ],
+            [
+              2.4628811598931306,
+              2.462881164287994
+            ],
+            [
+              2.4628811401252633,
+              2.4628811840558615
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 1.8782344119599883e-07,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 2.4628811602523877,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            8.137520544628924e-13,
+            1.784439970183915e-09,
+            1.7837075933348983e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.24676565975565634,
+            0.2467656597556568
+          ],
+          "intervals": [
+            [
+              0.24676565975465448,
+              0.24676565975665868
+            ],
+            [
+              0.24676565755822477,
+              0.24676566195308838
+            ],
+            [
+              0.24676563779035743,
+              0.24676568172095573
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 1.734096613011131e-08,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.24676565213364246,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            8.121885450020085e-12,
+            1.7809867677786526e-08,
+            1.7802557980881508e-07
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            0.06812804524213255,
+            0.06812804524213303
+          ],
+          "intervals": [
+            [
+              0.06812804524113067,
+              0.06812804524313491
+            ],
+            [
+              0.06812804304470096,
+              0.06812804743956462
+            ],
+            [
+              0.06812802327683362,
+              0.06812806720743196
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 7.96384236238356e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.06812804491349878,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            2.9418780408818896e-11,
+            6.450887676486728e-08,
+            6.448239986249935e-07
+          ]
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "gamma": 8,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.09617762491661,
+            0.09617762491661014
+          ],
+          "intervals": [
+            [
+              0.09617762491570712,
+              0.09617762491751301
+            ],
+            [
+              0.09617762481066049,
+              0.09617762502255965
+            ],
+            [
+              0.09617762386524074,
+              0.0961776259679794
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 3.895409000056906e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.09617762476641982,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            1.877659981977223e-11,
+            2.203206467159353e-09,
+            2.186307527321558e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            1.0430840759446947e-05,
+            1.043084075958052e-05
+          ],
+          "intervals": [
+            [
+              1.0430839856569546e-05,
+              1.0430841662457921e-05
+            ],
+            [
+              1.0430734809931491e-05,
+              1.0430946709095976e-05
+            ],
+            [
+              1.0429789390188996e-05,
+              1.043189212883847e-05
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 4.333889785825248e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 1.0430846991303137e-05,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.7312960078405374e-07,
+            2.031466520999341e-05,
+            0.00020158848569320245
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            3.807513193621048e-09,
+            3.807513327194756e-09
+          ],
+          "intervals": [
+            [
+              3.8066103162195515e-09,
+              3.808416204596253e-09
+            ],
+            [
+              3.7015636781647605e-09,
+              3.913462842651044e-09
+            ],
+            [
+              2.7561439356700277e-09,
+              4.8588825851457764e-09
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 4.920580636742738e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 3.646311907083692e-09,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            0.0004952643719789507,
+            0.05811328539246107,
+            0.5766754745776842
+          ]
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "gamma": 12,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.24481734950332185,
+            0.24481734950332196
+          ],
+          "intervals": [
+            [
+              0.24481734950175388,
+              0.24481734950488993
+            ],
+            [
+              0.2448173493616917,
+              0.2448173496449521
+            ],
+            [
+              0.24481734810113204,
+              0.24481735090551177
+            ]
+          ],
+          "small_dimension": 23,
+          "minimum_inertia_pivot": 2.4601399251623096e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.24481734948525832,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.2809741565507459e-11,
+            1.1570275379555039e-09,
+            1.1454987705465472e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.0004447522735521979,
+            0.0004447522735523315
+          ],
+          "intervals": [
+            [
+              0.0004447522719842181,
+              0.00044475227512031127
+            ],
+            [
+              0.00044475213192203403,
+              0.00044475241518249534
+            ],
+            [
+              0.0004447508713623774,
+              0.000444753675742152
+            ]
+          ],
+          "small_dimension": 23,
+          "minimum_inertia_pivot": 7.26270294445323e-13,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.0004447522706709127,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            7.051325808725841e-09,
+            6.368949187902565e-07,
+            6.305487255624033e-06
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            1.914614996786565e-06,
+            1.9146149969201387e-06
+          ],
+          "intervals": [
+            [
+              1.914613428806767e-06,
+              1.9146165648999367e-06
+            ],
+            [
+              1.914473366622694e-06,
+              1.9147566270840098e-06
+            ],
+            [
+              1.9132128069660333e-06,
+              1.9160171867406704e-06
+            ]
+          ],
+          "small_dimension": 23,
+          "minimum_inertia_pivot": 1.165957975413796e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 1.914678344435044e-06,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.637921679570037e-06,
+            0.0001479415391828625,
+            0.0014646740967160336
+          ]
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "gamma": 16,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.36080814579730847,
+            0.36080814579730863
+          ],
+          "intervals": [
+            [
+              0.36080814579607473,
+              0.36080814579854237
+            ],
+            [
+              0.360808145620997,
+              0.3608081459736201
+            ],
+            [
+              0.36080814404529743,
+              0.36080814754931967
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 9.714738460846159e-09,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.36080815077170886,
+          "reference_contained": [
+            false,
+            false,
+            false
+          ],
+          "relative_width": [
+            6.839194736607909e-12,
+            9.773146660740843e-10,
+            9.71159390811137e-09
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.002692062888108344,
+            0.0026920628881084777
+          ],
+          "intervals": [
+            [
+              0.00269206288687462,
+              0.0026920628893422017
+            ],
+            [
+              0.00269206271179689,
+              0.002692063064419932
+            ],
+            [
+              0.002692061136097319,
+              0.0026920646401195026
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 5.037519446733688e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.0026920628295054047,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            9.16613708820914e-10,
+            1.309861857651719e-07,
+            1.3016123342723308e-06
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            4.263303579532529e-05,
+            4.2633035795458865e-05
+          ],
+          "intervals": [
+            [
+              4.2633034561601136e-05,
+              4.263303702918302e-05
+            ],
+            [
+              4.2632859483871045e-05,
+              4.263321210691311e-05
+            ],
+            [
+              4.2631283784300216e-05,
+              4.263478780648394e-05
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 3.123032608481076e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 4.263304716447594e-05,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            5.787955701940465e-08,
+            8.271119835897359e-06,
+            8.219028234611683e-05
+          ]
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "gamma": 64,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.6159632995235721,
+            0.6159632995235722
+          ],
+          "intervals": [
+            [
+              0.615963299521956,
+              0.6159632995251882
+            ],
+            [
+              0.6159632989266918,
+              0.6159633001204525
+            ],
+            [
+              0.6159632935693132,
+              0.6159633054778311
+            ]
+          ],
+          "small_dimension": 15,
+          "minimum_inertia_pivot": 6.367238051210996e-09,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.6159632999684919,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            5.24737803657548e-12,
+            1.9380387710979182e-09,
+            1.933316130865e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.06172686998120089,
+            0.06172686998120102
+          ],
+          "intervals": [
+            [
+              0.061726869979584834,
+              0.061726869982817074
+            ],
+            [
+              0.06172686938432055,
+              0.06172687057808136
+            ],
+            [
+              0.06172686402694201,
+              0.0617268759354599
+            ]
+          ],
+          "small_dimension": 15,
+          "minimum_inertia_pivot": 7.345209177599197e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.06172687031553053,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            5.236359542167346e-11,
+            1.9339402749279847e-08,
+            1.929227551340034e-07
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            0.017046253230703974,
+            0.017046253230704106
+          ],
+          "intervals": [
+            [
+              0.017046253229087923,
+              0.017046253232320157
+            ],
+            [
+              0.01704625263382364,
+              0.01704625382758444
+            ],
+            [
+              0.0170462472764451,
+              0.01704625918496298
+            ]
+          ],
+          "small_dimension": 15,
+          "minimum_inertia_pivot": 1.6476758786430022e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.017046253283308603,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.8961550501655335e-10,
+            7.003068526000536e-08,
+            6.986003130549046e-07
+          ]
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "gamma": 8,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.1919009593223264,
+            0.19190095932232665
+          ],
+          "intervals": [
+            [
+              0.1919009593216677,
+              0.19190095932298534
+            ],
+            [
+              0.1919009591156103,
+              0.19190095952904274
+            ],
+            [
+              0.19190095726109377,
+              0.19190096138355928
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 8.206019343949292e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.19190096247597702,
+          "reference_contained": [
+            false,
+            false,
+            false
+          ],
+          "relative_width": [
+            6.866252384563727e-12,
+            2.1544051777948434e-09,
+            2.1482255506487363e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            2.0401277327948553e-05,
+            2.0401277328200088e-05
+          ],
+          "intervals": [
+            [
+              2.040127666925669e-05,
+              2.040127798689195e-05
+            ],
+            [
+              2.040107061186332e-05,
+              2.040148404428532e-05
+            ],
+            [
+              2.0399216095322984e-05,
+              2.0403338560825656e-05
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 9.528478061047607e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 2.0401293364092957e-05,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            6.458586883899243e-08,
+            2.0265010390266423e-05,
+            0.00020206883108344546
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            8.1348553674504e-09,
+            8.134855618985304e-09
+          ],
+          "intervals": [
+            [
+              8.13419667559026e-09,
+              8.135514310845444e-09
+            ],
+            [
+              7.928139282219794e-09,
+              8.34157170421591e-09
+            ],
+            [
+              6.0736227418823076e-09,
+              1.0196088244553396e-08
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 6.086235320621307e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 6.910660652019742e-09,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            0.00019066704639883965,
+            0.05982531089488304,
+            0.5965371055321951
+          ]
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "gamma": 12,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.48929112413997394,
+            0.4892911241399742
+          ],
+          "intervals": [
+            [
+              0.4892911241384517,
+              0.48929112414149645
+            ],
+            [
+              0.48929112386645596,
+              0.4892911244134922
+            ],
+            [
+              0.4892911214184941,
+              0.48929112686145404
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 1.0738215678406632e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.4892911242338657,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            6.222739353080877e-12,
+            1.118017929485984e-09,
+            1.1124174640682113e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.0008869525406554352,
+            0.0008869525406556868
+          ],
+          "intervals": [
+            [
+              0.0008869525391331831,
+              0.0008869525421779389
+            ],
+            [
+              0.0008869522671374238,
+              0.0008869528141736982
+            ],
+            [
+              0.0008869498191755906,
+              0.0008869552621355314
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 1.2531498327092729e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.0008869525388167485,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            3.4328283875873368e-09,
+            6.167593534163699e-07,
+            6.136698078675413e-06
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            3.806127324423869e-06,
+            3.806127324675404e-06
+          ],
+          "intervals": [
+            [
+              3.806125802171764e-06,
+              3.8061288469275092e-06
+            ],
+            [
+              3.805853806412515e-06,
+              3.806400842686758e-06
+            ],
+            [
+              3.803405844579268e-06,
+              3.8088488045200052e-06
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 5.4149890445734554e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 3.806082248529677e-06,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            7.999710848205637e-07,
+            0.0001437268662427172,
+            0.0014300689226671253
+          ]
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "gamma": 16,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.7212539129316231,
+            0.7212539129316233
+          ],
+          "intervals": [
+            [
+              0.7212539129306749,
+              0.7212539129325716
+            ],
+            [
+              0.7212539125927407,
+              0.7212539132705057
+            ],
+            [
+              0.7212539095513336,
+              0.7212539163119128
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 6.440629968688896e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.7212539123548446,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            2.6297327234967857e-12,
+            9.397036794676382e-10,
+            9.373369200164911e-09
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.005375829242173719,
+            0.0053758292421739705
+          ],
+          "intervals": [
+            [
+              0.005375829241225478,
+              0.005375829243122211
+            ],
+            [
+              0.005375828903291353,
+              0.005375829581056336
+            ],
+            [
+              0.005375825861884227,
+              0.005375832622463462
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 5.276717105796878e-13,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.00537582920725911,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            3.5282608463156336e-10,
+            1.2607636085436834e-07,
+            1.2575881737819995e-06
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            8.504793422623065e-05,
+            8.504793422648219e-05
+          ],
+          "intervals": [
+            [
+              8.504793327798967e-05,
+              8.504793517472317e-05
+            ],
+            [
+              8.504759534386454e-05,
+              8.50482731088483e-05
+            ],
+            [
+              8.504455393673838e-05,
+              8.505131451597446e-05
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 6.171667619978851e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 8.504793479789491e-05,
+          "reference_contained": [
+            true,
+            true,
+            true
+          ],
+          "relative_width": [
+            2.2301934869894657e-08,
+            7.969211543681892e-06,
+            7.949139802330857e-05
+          ]
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "gamma": 64,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            1.231602583707172,
+            1.2316025837071722
+          ],
+          "intervals": [
+            [
+              1.2316025837061617,
+              1.2316025837081825
+            ],
+            [
+              1.2316025825769672,
+              1.231602584837377
+            ],
+            [
+              1.2316025724142166,
+              1.2316025950001277
+            ]
+          ],
+          "small_dimension": 19,
+          "minimum_inertia_pivot": 1.0268744355494368e-07,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 1.2316025801252648,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            1.640811721275522e-12,
+            1.8353403084454577e-09,
+            1.83386357789631e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.12340645400977793,
+            0.12340645400977818
+          ],
+          "intervals": [
+            [
+              0.12340645400876755,
+              0.12340645401078855
+            ],
+            [
+              0.12340645287957304,
+              0.12340645513998307
+            ],
+            [
+              0.1234064427168224,
+              0.1234064653027337
+            ]
+          ],
+          "small_dimension": 19,
+          "minimum_inertia_pivot": 8.11445743676677e-09,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.12340645373216977,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.6376732510785763e-11,
+            1.8316789417906528e-08,
+            1.830205035864682e-07
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            0.03407350508192751,
+            0.03407350508192776
+          ],
+          "intervals": [
+            [
+              0.03407350508091714,
+              0.03407350508293813
+            ],
+            [
+              0.03407350395172262,
+              0.03407350621213265
+            ],
+            [
+              0.03407349378897198,
+              0.03407351637488329
+            ]
+          ],
+          "small_dimension": 19,
+          "minimum_inertia_pivot": 5.892182941952282e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.03407350501032784,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            5.93127851761605e-11,
+            6.633922824017188e-08,
+            6.628584673351334e-07
+          ]
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "gamma": 12,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.978032337623221,
+            0.9780323376232215
+          ],
+          "intervals": [
+            [
+              0.9780323376215108,
+              0.9780323376249317
+            ],
+            [
+              0.9780323370803614,
+              0.978032338166081
+            ],
+            [
+              0.9780323322100173,
+              0.9780323430364252
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 2.3130841311921522e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.9780323426767346,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            3.497767974027217e-12,
+            1.1101060547180914e-09,
+            1.1069580635414669e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.001765424844961186,
+            0.0017654248449616716
+          ],
+          "intervals": [
+            [
+              0.0017654248432510118,
+              0.0017654248466718457
+            ],
+            [
+              0.0017654243021016642,
+              0.0017654253878211933
+            ],
+            [
+              0.0017654194317575362,
+              0.0017654302581653213
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 2.479917484009154e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.0017654256154689982,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            1.937682278228306e-09,
+            6.149902434433523e-07,
+            6.132463293929468e-06
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            7.5141690320662535e-06,
+            7.514169032551976e-06
+          ],
+          "intervals": [
+            [
+              7.514167321892243e-06,
+              7.514170742725987e-06
+            ],
+            [
+              7.513626172544687e-06,
+              7.5147118920735425e-06
+            ],
+            [
+              7.50875582841668e-06,
+              7.519582236201549e-06
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 8.499570471732903e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 7.514218529947995e-06,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            4.5524810468814927e-07,
+            0.0001444886816278105,
+            0.0014407895833372644
+          ]
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "gamma": 16,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            1.442114467652308,
+            1.4421144676523086
+          ],
+          "intervals": [
+            [
+              1.4421144676507323,
+              1.4421144676538844
+            ],
+            [
+              1.4421144669822537,
+              1.442114468322363
+            ],
+            [
+              1.4421144609659462,
+              1.4421144743386705
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 3.177029433378093e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 1.4421144760295361,
+          "reference_contained": [
+            false,
+            false,
+            false
+          ],
+          "relative_width": [
+            2.1857801609441614e-12,
+            9.292669750513435e-10,
+            9.272997729064937e-09
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.010739468050386392,
+            0.010739468050386877
+          ],
+          "intervals": [
+            [
+              0.01073946804881062,
+              0.010739468051962648
+            ],
+            [
+              0.010739467380332015,
+              0.010739468720441254
+            ],
+            [
+              0.010739461364024563,
+              0.010739474736748706
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 4.248842258385531e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.010739468074421813,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            2.934993826953646e-10,
+            1.2478357676282513e-07,
+            1.245194273183993e-06
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            0.00016966445401826735,
+            0.00016966445401875307
+          ],
+          "intervals": [
+            [
+              0.00016966445244249737,
+              0.00016966445559452305
+            ],
+            [
+              0.00016966378396389157,
+              0.00016966512407312886
+            ],
+            [
+              0.00016965776765643932,
+              0.0001696711403805811
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 1.2968333282508283e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.00016966438560977914,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.8578004257627484e-08,
+            7.898588925825747e-06,
+            7.881868722025834e-05
+          ]
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "gamma": 10,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.6859956264173783,
+            0.6859956264173789
+          ],
+          "intervals": [
+            [
+              0.6859956264157857,
+              0.6859956264189715
+            ],
+            [
+              0.685995625938301,
+              0.6859956268964562
+            ],
+            [
+              0.6859956216409385,
+              0.6859956311938187
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 1.7451477698275177e-09,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.6859957005477324,
+          "reference_contained": [
+            false,
+            false,
+            false
+          ],
+          "relative_width": [
+            4.644030518876723e-12,
+            1.3967364825547723e-09,
+            1.3925568550877831e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.0003934356419749846,
+            0.0003934356419754703
+          ],
+          "intervals": [
+            [
+              0.0003934356403823579,
+              0.000393435643568097
+            ],
+            [
+              0.00039343516289763947,
+              0.00039343612105281544
+            ],
+            [
+              0.0003934308655351736,
+              0.0003934404184152813
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 7.2971489554628e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.00039343559384543233,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            8.097231560247598e-09,
+            2.435354581429691e-06,
+            2.4280670730254677e-05
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            6.031359883057474e-07,
+            6.0313598879147e-07
+          ],
+          "intervals": [
+            [
+              6.031343956790706e-07,
+              6.031375814181469e-07
+            ],
+            [
+              6.026569109606397e-07,
+              6.036150661365778e-07
+            ],
+            [
+              5.983595484947525e-07,
+              6.079124286024649e-07
+            ]
+          ],
+          "small_dimension": 26,
+          "minimum_inertia_pivot": 4.252528142441362e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 5.94109184029475e-07,
+          "reference_contained": [
+            false,
+            false,
+            false
+          ],
+          "relative_width": [
+            5.362211461998673e-06,
+            0.0016127594080258014,
+            0.01607933417713068
+          ]
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "gamma": 24,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            1.9585879800070578,
+            1.9585879800070582
+          ],
+          "intervals": [
+            [
+              1.9585879800050956,
+              1.9585879800090205
+            ],
+            [
+              1.9585879790819585,
+              1.9585879809321576
+            ],
+            [
+              1.9585879707737244,
+              1.9585879892403917
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 3.0961639940949085e-08,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 1.9585879992293367,
+          "reference_contained": [
+            false,
+            false,
+            false
+          ],
+          "relative_width": [
+            2.0039234582256215e-12,
+            9.446596761359275e-10,
+            9.428561450235243e-09
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.05557483840107222,
+            0.055574838401072704
+          ],
+          "intervals": [
+            [
+              0.055574838399110066,
+              0.05557483840303486
+            ],
+            [
+              0.055574837475972944,
+              0.05557483932617198
+            ],
+            [
+              0.05557482916773884,
+              0.05557484763440608
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 3.1052601440555523e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.05557483838531612,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            7.06217266976851e-11,
+            3.329202728074179e-08,
+            3.322846772671387e-07
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            0.0033208297871779174,
+            0.003320829787178403
+          ],
+          "intervals": [
+            [
+              0.0033208297852157674,
+              0.0033208297891405532
+            ],
+            [
+              0.003320828862078645,
+              0.0033208307122776755
+            ],
+            [
+              0.0033208205538445444,
+              0.003320839020511776
+            ]
+          ],
+          "small_dimension": 24,
+          "minimum_inertia_pivot": 1.3942274797781179e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.0033208297968216113,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.1818690157808827e-09,
+            5.571496112849348e-07,
+            5.56085929170732e-06
+          ]
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "gamma": 48,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            2.3895530023642673,
+            2.3895530023642677
+          ],
+          "intervals": [
+            [
+              2.3895530023626788,
+              2.389553002365856
+            ],
+            [
+              2.389553000675566,
+              2.389553004052969
+            ],
+            [
+              2.389552985491552,
+              2.389553019236983
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 1.1023251635768009e-08,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 2.38955299793026,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            1.3297291582272466e-12,
+            1.4134035967393982e-09,
+            1.4122068404969937e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.1985800882048095,
+            0.19858008820481
+          ],
+          "intervals": [
+            [
+              0.1985800882032209,
+              0.19858008820639858
+            ],
+            [
+              0.19858008651610823,
+              0.19858008989351125
+            ],
+            [
+              0.19858007133209418,
+              0.1985801050775253
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 6.650016561025085e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.19858008704702457,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.6002009004707685e-11,
+            1.7007762833334157e-08,
+            1.699336102522992e-07
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            0.042176229516091845,
+            0.04217622951609233
+          ],
+          "intervals": [
+            [
+              0.04217622951450326,
+              0.042176229517680915
+            ],
+            [
+              0.04217622782739059,
+              0.042176231204793586
+            ],
+            [
+              0.042176212643376544,
+              0.04217624638880763
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 1.033959862196111e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.04217622949657805,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            7.534226324722376e-11,
+            8.007835305517518e-08,
+            8.001054501825268e-07
+          ]
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "gamma": 2,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            4.670262608842679e-06,
+            4.670262608976253e-06
+          ],
+          "intervals": [
+            [
+              4.670262306552786e-06,
+              4.670262911266146e-06
+            ],
+            [
+              4.6702097832337584e-06,
+              4.670315434585173e-06
+            ],
+            [
+              4.669737073362512e-06,
+              4.67078814445642e-06
+            ]
+          ],
+          "small_dimension": 21,
+          "minimum_inertia_pivot": 4.022520571708537e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 4.670266785756541e-06,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.294815452629897e-07,
+            2.262212337359413e-05,
+            0.0002250558998285744
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.0,
+            1.3357370765021415e-16
+          ],
+          "intervals": [
+            [
+              0.0,
+              3.0242346665369423e-13
+            ],
+            [
+              0.0,
+              5.2825742494044786e-11
+            ],
+            [
+              0.0,
+              5.255356137409677e-10
+            ]
+          ],
+          "small_dimension": 21,
+          "minimum_inertia_pivot": 8.496782311424588e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 9.870776234990175e-20,
+          "reference_contained": [
+            true,
+            true,
+            true
+          ],
+          "relative_width": [
+            3063826.58723086,
+            535173133.6669022,
+            5324156897.388027
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            0.0,
+            1.3357370765021415e-16
+          ],
+          "intervals": [
+            [
+              0.0,
+              3.0242346665369423e-13
+            ],
+            [
+              0.0,
+              5.2825742494044786e-11
+            ],
+            [
+              0.0,
+              5.255356137409677e-10
+            ]
+          ],
+          "small_dimension": 21,
+          "minimum_inertia_pivot": 8.496782311424588e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 2.5129627028610039e-29,
+          "reference_contained": [
+            true,
+            true,
+            true
+          ],
+          "relative_width": [
+            1.2034538606935376e+16,
+            2.1021299852123855e+18,
+            2.0912989004677476e+19
+          ]
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "gamma": 4,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            0.007011761165768024,
+            0.007011761165768276
+          ],
+          "intervals": [
+            [
+              0.007011761164814631,
+              0.0070117611667216695
+            ],
+            [
+              0.007011761024695603,
+              0.007011761306840697
+            ],
+            [
+              0.007011759763624356,
+              0.007011762567911944
+            ]
+          ],
+          "small_dimension": 25,
+          "minimum_inertia_pivot": 3.3610494331488977e-12,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.0070117607348012525,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            2.719771588255808e-10,
+            4.0238836494582255e-08,
+            3.9994057051639234e-07
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            6.357207642249119e-10,
+            6.357210157598159e-10
+          ],
+          "intervals": [
+            [
+              6.347673709063332e-10,
+              6.366744090783946e-10
+            ],
+            [
+              4.946483434144244e-10,
+              7.767934365703033e-10
+            ],
+            [
+              0.0,
+              2.037864683999005e-09
+            ]
+          ],
+          "small_dimension": 25,
+          "minimum_inertia_pivot": 4.199797110752293e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 2.0727750460508294e-10,
+          "reference_contained": [
+            false,
+            false,
+            true
+          ],
+          "relative_width": [
+            0.009200410703973065,
+            1.361194953082043,
+            9.831576696572368
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            1.5092094240998222e-15,
+            1.7607443281164592e-15
+          ],
+          "intervals": [
+            [
+              0.0,
+              9.551540629068e-13
+            ],
+            [
+              0.0,
+              1.410741815548155e-10
+            ],
+            [
+              0.0,
+              1.4021454289835173e-09
+            ]
+          ],
+          "small_dimension": 25,
+          "minimum_inertia_pivot": 4.199797110752293e-10,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 5.1547008972930456e-17,
+          "reference_contained": [
+            true,
+            true,
+            true
+          ],
+          "relative_width": [
+            18529.766943575567,
+            2736806.3514393168,
+            27201295.611930538
+          ]
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "gamma": 32,
+      "spectral_brackets": [
+        {
+          "index": 10,
+          "compressed_bracket": [
+            1.098129444922719,
+            1.0981294449227192
+          ],
+          "intervals": [
+            [
+              1.0981294449219767,
+              1.0981294449234615
+            ],
+            [
+              1.0981294443202891,
+              1.0981294455251491
+            ],
+            [
+              1.0981294389051008,
+              1.0981294509403374
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 5.579999216117453e-09,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 1.0981294537463466,
+          "reference_contained": [
+            false,
+            false,
+            false
+          ],
+          "relative_width": [
+            1.352128629341597e-12,
+            1.0971930362544907e-09,
+            1.0959761204880832e-08
+          ]
+        },
+        {
+          "index": 26,
+          "compressed_bracket": [
+            0.05617857603540558,
+            0.05617857603540584
+          ],
+          "intervals": [
+            [
+              0.05617857603466337,
+              0.05617857603614805
+            ],
+            [
+              0.05617857543297578,
+              0.05617857663783564
+            ],
+            [
+              0.056178570017787484,
+              0.05617858205302394
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 5.236878515172017e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.056178576041104045,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            2.6427875869677037e-11,
+            2.144696328429361e-08,
+            2.1423178196010902e-07
+          ]
+        },
+        {
+          "index": 40,
+          "compressed_bracket": [
+            0.006478963315536849,
+            0.006478963315537101
+          ],
+          "intervals": [
+            [
+              0.006478963314794639,
+              0.006478963316279311
+            ],
+            [
+              0.00647896271310705,
+              0.0064789639179668995
+            ],
+            [
+              0.006478957297918753,
+              0.006478969333155197
+            ]
+          ],
+          "small_dimension": 22,
+          "minimum_inertia_pivot": 1.1447197675127515e-11,
+          "numerical_status": "FP64 signed-inertia bisection and measured Gram-reconstruction allowance; not an interval certificate.",
+          "reference_eigenvalue": 0.00647896339145357,
+          "reference_contained": [
+            false,
+            true,
+            true
+          ],
+          "relative_width": [
+            2.2915267008462612e-10,
+            1.8596491078081625e-07,
+            1.8575867337774008e-06
+          ]
+        }
+      ]
+    }
+  ]
+}
