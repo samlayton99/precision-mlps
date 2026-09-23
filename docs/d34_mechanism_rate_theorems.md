@@ -671,3 +671,196 @@ finite-step terms, or the loaded-response neighborhood gain. This separates
 a mechanism that actually predicts acquisition from an error bound that is
 too loose to decide. It also states precisely what must improve before the
 strong frozen-model exclusion can become an ordinary-GD theorem.
+
+## 8. A width-dependent rate without freezing the effective map
+
+**Example.** In the independent-width experiment, the slopes, hidden biases,
+and readouts all remain comparable to $W^{-1/2}$ at the 20k forks. Increasing
+width then makes the normalized slope motion much slower, even though a
+constant-force forecast works about as well as evolving the fine residual.
+This suggests a different question from depletion: can the remaining force
+already be small because the features are almost affine?
+
+The following result answers that question conditionally. It uses the exact
+tanh model, permits any target values on the empirical training grid, and
+does not freeze $T$. Its width orders are bounds within a stated parameter
+regime, not a claim that all training trajectories enter or stay there.
+
+### Proposition: small parameters suppress the balanced fine force
+
+Assume $|x_i|\le1$. In this section only, let $H$ be the **entire** empirical
+orthogonal complement of $\operatorname{span}\{1,x\}$, so $g_\perp=0$.
+The inner product is still the empirical mean. Use any orthonormal coordinates
+for this complement; the bounds do not depend on that choice. Suppose
+
+$$
+|a_j|\le\frac{A_a}{\sqrt W},\qquad
+|b_j|\le\frac{A_b}{\sqrt W},\qquad
+|c_j|\le\frac{A_c}{\sqrt W},\qquad
+\lambda_{\min}(J_CJ_C^T)\ge\kappa_C>0.
+\tag{33}
+$$
+
+There is no smallness requirement on the output bias $d$. Define
+
+$$
+\begin{aligned}
+U&=A_a+A_b,\qquad
+L_H=\sqrt{2A_c^2U^4+U^6/9},\\
+Y_H&=\|P_Hy\|_m,\qquad
+E_W=Y_H+\frac{A_cU^3}{3W},\\
+K_a=K_b&=E_W A_c\left(U^2+\frac{L_H}{\sqrt{\kappa_C}}\right),\\
+K_c&=E_W\left(\frac{U^3}{3}
+                  +\frac{U L_H}{\sqrt{\kappa_C}}\right).
+\end{aligned}\tag{34}
+$$
+
+Then the exact balanced force obeys, for every neuron,
+
+$$
+|(Te_H)_{a,j}|\le\frac{K_a}{W^{3/2}},\quad
+|(Te_H)_{b,j}|\le\frac{K_b}{W^{3/2}},\quad
+|(Te_H)_{c,j}|\le\frac{K_c}{W^{3/2}}.
+\tag{35}
+$$
+
+Moreover,
+
+$$
+\|J_H\|_F\le\frac{L_H}{W},\qquad
+\|e_H\|\le E_W,\qquad
+\|S\|\le\frac{L_H^2}{W^2}.
+\tag{36}
+$$
+
+**Proof.** Write $u_j=a_jx+b_j$, so $|u_j|\le U/\sqrt W$.
+The exact inequalities
+
+$$
+|\tanh u-u|\le |u|^3/3,\qquad
+|\operatorname{sech}^2u-1|=\tanh^2u\le u^2
+\tag{37}
+$$
+
+follow by integrating $\tanh'(u)-1=-\tanh^2u$ and using
+$|\tanh u|\le|u|$. Thus this argument is a remainder bound, not an
+uncontrolled replacement of tanh by its cubic Taylor polynomial.
+
+The projection $P_H$ annihilates $1,x,u_j$. The fine parts of the slope,
+bias, and readout Jacobian columns consequently have norms at most
+$A_cU^2/W^{3/2}$, $A_cU^2/W^{3/2}$, and $U^3/(3W^{3/2})$, respectively.
+The output-bias column has no fine component. Summing their squared norms
+proves the first part of (36). Applying (37) to
+$P_Hf=\sum_j c_jP_H(\tanh u_j-u_j)$ proves its residual bound.
+
+For the coarse correction, the slope and bias columns of $J_C$ have norm
+at most $A_c/\sqrt W$, and its readout columns have norm at most
+$U/\sqrt W$. Since
+
+$$
+\|(J_CJ_C^T)^{-1}J_C\|\le\kappa_C^{-1/2},\qquad
+\|Be_H\|\le\frac{L_HE_W}{\sqrt{\kappa_C}W},
+$$
+
+bounding each column of $J_H^Te_H-J_C^TBe_H$ proves (35). This explicitly
+retains the balanced coarse contribution. Finally,
+$T=(I-J_C^T(J_CJ_C^T)^{-1}J_C)J_H^T$ is an orthogonal projection of
+$J_H^T$, so $\|S\|=\|T^TT\|\le\|J_H\|^2\le L_H^2/W^2$.
+
+### Corollary: conditional slow acquisition and a regime that can be closed
+
+Suppose coarse tracking satisfies the absolute component bounds
+
+$$
+|(r_C)_{\ell,j}|\le\frac{\delta_\ell}{W^{3/2}},
+\qquad \ell\in\{a,b,c\}.
+\tag{38}
+$$
+
+For every update in this regime, including slope sign crossings,
+
+$$
+|\lambda_{j,n+1}-\lambda_{j,n}|
+\le\frac{\eta h(K_a+\delta_a)}{W^{3/2}}.
+\tag{39}
+$$
+
+This follows directly from $||a-\eta g_a|-|a||\le\eta|g_a|$.
+When $N_{\rm ref}$ is proportional to $W$, $h$ is proportional to $W^{-1}$,
+so the conditional normalized rate is $O(\eta W^{-5/2})$ per update.
+This order requires $A_a,A_b,A_c,\kappa_C^{-1},\delta_a,\delta_b,\delta_c$
+and $Y_H$ bounded uniformly across widths. Without those uniform hypotheses
+and the stated width convention, the precise statement is (39).
+
+There is also a first-exit version. Suppose the initial bounds in (33) hold
+with smaller constants $A_{a,0},A_{b,0},A_{c,0}$. Assume the coarse
+conditioning and tracking hypotheses continue to hold through the proposed
+interval whenever the three parameter blocks satisfy the outer bounds (33).
+If
+
+$$
+\frac{\eta N}{W}(K_\ell+\delta_\ell)
+\le A_\ell-A_{\ell,0}
+\quad\text{for }\ell=a,b,c,
+\tag{40}
+$$
+
+the outer parameter bounds hold through $N$ updates. Indeed, assuming them
+at preceding states, summing (35) and (38) bounds each coordinate's movement
+by $\eta N(K_\ell+\delta_\ell)/W^{3/2}$, which fits its available margin.
+Induction closes the three blocks. Every slope then has
+$\lambda_{j,n}\le hA_a/\sqrt W$ for $n\le N$. If that value is below
+$\lambda_*$, none can acquire the specified normalized scale during the
+interval. The constants in this sufficient bound can be conservative; it is
+not a numerical claim about a particular width until evaluated there.
+
+These assumptions also address the second tracking channel. For
+$\delta=\max_\ell\delta_\ell$, the non-output-bias tracking vector has
+norm at most $\sqrt3\delta/W$. Because the fine Jacobian annihilates the
+output-bias direction,
+$\|J_Hr_C\|\le\sqrt3L_H\delta/W^2$.
+Small slope tracking alone would not give this conclusion.
+
+### Why geometry can evolve before the fine error appreciably relaxes
+
+The same assumptions distinguish two timescales. Put
+$G^2=\sum_{\ell=a,b,c}(K_\ell+\delta_\ell)^2$,
+$\delta_2=(\delta_a^2+\delta_b^2+\delta_c^2)^{1/2}$, and
+$L_2=4A_cU+\sqrt2U^2$. Through a closed interval from (40),
+
+$$
+\|e_{H,n}-e_{H,0}\|
+\le\frac{\eta n}{W^2}
+ \left(L_H^2E_W+L_H\delta_2+\frac{\eta L_2G^2}{2W}\right).
+\tag{41}
+$$
+
+To prove the finite-step term, subtract
+$\sum_j c_j(a_jx+b_j)$ before differentiating the fine output. Its fine
+projection is zero. The slope/bias Hessian block of the remainder has norm
+at most $4A_cU/W$, and its mixed readout–geometry block has norm at most
+$\sqrt2U^2/W$. The block-diagonal neuron structure therefore gives
+$\|D^2 e_H\|\le L_2/W$ on the convex parameter box. The output bias has
+no fine derivative, so its movement does not enter this estimate. The other
+three blocks move by at most $\eta G/W$ in Euclidean norm per update.
+Consequently $\|\tau_n\|\le\eta^2L_2G^2/(2W^3)$. Sum the exact residual
+equation (2), using (36) and
+$\|J_Hr_C\|\le L_H\delta_2/W^2$, to obtain (41).
+
+On a window with $\eta n$ proportional to $W$, the permitted parameter
+motion is an order-one fraction of the initial $W^{-1/2}$ parameter scale,
+whereas the fine residual changes by at most $O(W^{-1})$. Thus changing
+geometry and readout correlations can matter before the driving error has
+substantially depleted. This is a conditional separation of timescales; it
+does not assert that parameters actually move by their upper bounds or that
+the same box remains valid for times proportional to $W^2$.
+
+**Prediction and scope.** At comparable states with bounded rescaled
+parameters and coarse conditioning, $W^{3/2}$ times the per-neuron effective
+force and $W\|J_H\|_F$ should remain comparable across widths. The fixed-map
+residual clock is at most $\eta N L_H^2/W^2$, so short windows at large width
+need not exhibit appreciable depletion. Those predictions are distinct from
+the later-checkpoint evidence that residual evolution improves forecasts.
+Neither requires readouts to dominate dissipation, and neither implies that
+the network can never leave the small-parameter regime. The hypothesis about
+coarse tracking and its persistence remains explicit in (38)–(40).
