@@ -544,7 +544,9 @@ $\lambda=0.25$ for 20k updates when the initial combined $(a,b,c)$ norm is
 at most 3 and the half-MSE is at most 1, at our step size. It says little
 about the small motion inside that allowance. Those initial conditions are
 now verified with rounding control for all 18 seed-30 width-panel states:
-six functions at each of three widths. The effective-force theory
+six functions at each of three widths. Their tighter verified initial loss
+bound extends this generic exclusion to 50k additional updates, by the same
+proof and without running a longer trajectory. The effective-force theory
 adds direction, target dependence, and a much tighter trajectory prediction.
 Its value must be judged on those quantities as well as the distant threshold.
 

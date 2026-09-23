@@ -311,6 +311,8 @@ test: a [generic energy baseline](../../../../docs/d34_energy_baseline.md)
 also excludes it over 20k under explicit initial norm and loss conditions.
 Those conditions have now been checked with outward rounding for all 18
 seed-30 starting states, covering six functions at all three widths.
+Their verified loss bounds strengthen the generic exclusion to 50k
+additional updates; this is an analytic extension, not new training data.
 Mechanism-specific progress is the accurate small-motion forecast and tight
 trajectory enclosure, beyond that generic allowance. A failed moving tube
 does not imply that every threshold argument fails.
