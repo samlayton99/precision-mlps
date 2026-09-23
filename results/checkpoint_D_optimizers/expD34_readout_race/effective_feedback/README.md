@@ -6,7 +6,9 @@ The primary tests span 1k, 10k, 50k, and 200k additional GD updates. Predicting
 millions of updates is not a requirement. The completed original panel contains
 13 targets, seven seeds, three forks, and 819 matched branches. Fresh seeds
 test initialization dependence; they do not test transfer to new functions.
-A separate, prospectively locked panel adds ten functions in five new families.
+A separate, prospectively locked panel adds ten functions in five additional
+families. Both panels are complete through 200k: **23 function instances,
+333 starts, and 999 primary branches**, with no failed primary states.
 
 The original panel gives a useful short-window result: a model that retains
 local sensitivity and error feedback predicts ordinary slope displacement at
@@ -69,6 +71,11 @@ existing constant-plus-linear-plus-ninth-polynomial target, not the monomial
 $x^9$. Existing seeds 0–4 are discovery cases. Seeds 20 and 21 provide fresh
 initializations under the unchanged protocol; two new seeds are a limited
 validation set, not a population-level statistical guarantee.
+Some existing-seed ordinary continuation intervals overlap histories already
+available in the repository. Issuing a forecast before rerunning those
+intervals does not make that cohort an outcome-held-out test. The new-function
+panel provides the prospective transfer test, with each fork's forecasts
+issued before its backbone advanced.
 
 | Cohort | Starts | Branches | Completed common additional horizon |
 |---|---:|---:|---:|
@@ -77,7 +84,7 @@ validation set, not a population-level statistical guarantee.
 | Degree-129 control: 5 targets, seed 0, 2 forks | 10 | 30 | 200k |
 | Half-step control: same starts, matched physical time | 10 | 30 | 400k actual updates, equivalent to 200k primary |
 | Posthoc checks of all three 10k sign misses | 3 per control | 18 total | 10k primary-equivalent |
-| New functions: 10 targets, seeds 22 and 23, 3 forks | 60 | 180 | In progress |
+| New functions: 10 targets, seeds 22 and 23, 3 forks | 60 | 180 | 200k |
 | Optional stress test: 5 targets, seeds 0 and 20, 2 forks | 20 | 60 existing branches extended | 500k and 2m |
 
 The three primary forks are 100k, 400k, and 600k. The long panel uses sine,
@@ -97,12 +104,11 @@ cases remain in the assessment, including good learners and departures from
 the small-remainder regime. Functions and then families receive equal weight;
 repeated forks are not counted as independent target functions.
 
-At this report revision, all twenty new-function backbones and all sixty
-fork forecasts are complete. Numerical controls are running. The 180 primary
-continuations await approval review's required confirmation for uploading
-their combined synthetic checkpoint pack to the existing Runpod destination.
-Prepared forecasts and selected targets have not changed in response to this
-execution block; no primary new-function outcome is claimed here.
+All twenty new-function backbones, sixty fork forecasts, and 180 primary
+continuations are complete. Their
+[full report](analysis/heldout/README.md) presents all ten functions, their
+five family summaries, and the earliest forks separately from later states.
+Prepared forecasts and selected targets were unchanged throughout execution.
 
 ## What works within the primary training window
 
@@ -176,6 +182,62 @@ entry theorem from initialization. The optional
 [500k/2m stress test](analysis/long_2m/README.md) is reported separately. Its
 5.4m extension was stopped after the horizon clarification. Failure at those
 much later times does not overturn a successful shorter-window forecast.
+
+## New functions test the driver and its usable forecast horizon
+
+**Example.** The narrower Gaussian and increasing exponential give different
+learning behavior. Across their six ordinary starts, median relative
+evaluation MSE changes from 0.198 to 0.0396 for `gauss_right` over 200k
+additional updates, and from 0.000229 to 0.000154 for `exp_right`. The
+Gaussian has thirteen new neuron–fork crossings of gamma 1; the exponential
+has none. Neither positive slope motion nor these fitting improvements alone
+establish the constructive geometry or precision regime.
+
+**Theory.** Both still have motion driven primarily by $F_a=T_ae_H$. Across
+all sixty new-function ordinary endpoints at 200k, the median ratio
+$\|R_a\|/\|F_a\|$ is 0.0103% and the maximum is 0.0958%. The largest ratio
+of accumulated signed remainder-travel vectors to effective-travel vectors
+is 0.389%. These measurements support the force reduction across different
+functions. They are endpoint and accumulated signed-vector diagnostics, not
+an all-step force bound. They do not imply that the force contracts every
+target or stays approximately constant for every starting state.
+
+**Prediction and result.** The same issued models were used without fitting
+new coefficients. The coupled affine model adds useful short-window accuracy;
+the fixed-map residual model avoids its largest later extrapolation errors.
+Here every row uses the same sixty ordinary starts. Relative errors measure
+the full slope-displacement vector, not just mean gamma.
+
+| Additional updates | Affine median / worst error | Pure fixed-map median / worst error | Cases beating no motion, affine / fixed map |
+|---|---:|---:|---:|
+| 1k | 0.00457% / 0.197% | 0.199% / 3.31% | 60/60 / 60/60 |
+| 10k | 0.123% / 16.2% | 1.55% / 24.4% | 60/60 / 60/60 |
+| 50k | 1.12% / 420% | 7.63% / 67.8% | 57/60 / 60/60 |
+| 200k | 8.22% / 521,451% | 18.1% / 79.8% | 48/60 / 60/60 |
+
+The twelve 200k affine failures against no motion all occur at the 100k
+forks, which end at 300k total updates. Their twenty-case median error is
+280%. At the 400k and 600k forks, all forty forecasts still beat no motion,
+with median errors of 7.18% and 3.70%. Thus the earlier states require more
+care with extrapolation even though the remainder remains small. The failure
+is in the fixed local description of the surviving coupled force, not evidence
+that coarse disequilibrium has become the ordinary-GD driver.
+
+The prospective intervention test tells the same story. At 10k, all 120
+mean-scale contrast signs are correct, and every contrast vector forecast
+beats predicting no intervention effect. At 200k, 116 signs are correct,
+but only 35 of 60 fixed-map and 47 of 60 residual-clamped vector forecasts
+beat that baseline. Some modified branches develop material remainder
+corrections; their later separation cannot be attributed entirely to an
+effective-only model. The full applied-field forecast includes those
+corrections, so its failures remain failures of the stated prediction.
+
+This is substantially broader evidence than degree 9 and sine alone. It
+supports a target-general **force framework and conditional finite-window
+bounds**, with state-dependent forecast accuracy. It does not establish
+uniform stagnation, a universal two-error reduction, or an unrestricted
+function-class guarantee. The function-level tables and all outliers remain
+in the [new-function report](analysis/heldout/README.md).
 
 ## Degree 9 has a useful reduced model; sine needs evolving coupling
 
@@ -288,6 +350,14 @@ not establish an analogous sine theorem. The spectral positive-travel
 transfer is the general conditional framework, not an additional numerically
 closed certificate in this package.
 
+The [preissued new-function audit](analysis/heldout_bound_audit.json) is more
+conservative: 22 starts close only through 100 additional updates and 38
+through 1k; none closes through 10k or later. Thus accurate 10k forecasts on
+these functions remain empirical successes beyond the evaluated enclosure.
+The three ordinary affine failures at 50k were all outside their preissued
+100-update bounds. This avoids a contradiction of the bound, but does not
+excuse the failed empirical predictions at the declared 50k horizon.
+
 Every run accumulates each neuron's positive and negative gamma travel at
 every update, with first hits, signed effective and correction contributions,
 and the exact absolute-value crossing correction. Those measurements audit
@@ -310,7 +380,7 @@ evidence, not certified numerical-error intervals or model-error tolerances.
 The corresponding raw records remain in `analysis/controls_200k/` and
 `analysis/miss_controls/`.
 
-All 30 focused implementation tests pass. The repository's full nonslow
+All 34 focused implementation and analysis tests pass. The repository's full nonslow
 suite reports 783 passed, 17 failed, 9 skipped, and 4 deselected. None of the
 failures is in D34: they involve unavailable dependencies/data and unchanged
 precision, dtype, or generic-module import issues. The full log and failure
@@ -336,3 +406,14 @@ The analysis entry point is
 `experiments.expD34_readout_race.effective_feedback_analysis`; pass one cohort
 at a time with its matching prediction manifest so repeated starts are not
 pooled as new evidence.
+
+Runpod storage was pruned after content verification: 2,247 redundant remote
+snapshot and dense-trace files, totaling **25.7 GiB**, were deleted only after
+matching their retained local copies by SHA256. Current restart states,
+analysis endpoints, early history, selected later milestones, final states,
+traces, and provenance remain available. The exact receipts are
+`execution/cleanup.json` and `execution/cleanup_legacy.json`; retained files
+were checked again after deletion. Unique older stall histories and active
+held-out runs were preserved. These are logical file bytes removed; shared
+filesystem free-space measurements do not give a private quota or exact
+billing change.

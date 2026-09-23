@@ -2,13 +2,15 @@
 
 ## Proposed effective-force perturbations
 
-**Current protocol: matched feedback, with the original 13-target panel complete
-through 200k additional updates.** The
+**Current protocol: matched feedback, with 999 primary branches across 23
+function instances complete through 200k additional updates.** The
 [200k report](../../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/existing_200k/README.md)
 reports all targets and both seed cohorts. A
 [prospectively locked ten-function panel](../../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/heldout_protocol.md)
-tests transfer across five new families; fresh seeds on the original functions
-do not constitute that test.
+tests transfer across five additional families; its
+[completed primary report](../../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/heldout/README.md)
+retains every function and every forecast miss. Fresh seeds on the original
+functions do not constitute a test of new-function transfer.
 
 This specification supersedes the broad mode-deletion proposal retained below.
 The question is now whether evolving errors or evolving sensitivities supplies
