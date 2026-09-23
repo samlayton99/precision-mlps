@@ -83,7 +83,7 @@ entire readout feature span. Small $R_a$ is an audited premise in the regime
 being studied; it does not imply small $F_a$.
 
 The coupling explains why readout growth can accompany contraction. In the
-identical-neuron polynomial surrogate with fixed cubic coefficient $\alpha_3$,
+identical-neuron polynomial surrogate with $a,c>0$ and fixed cubic coefficient $\alpha_3$,
 the coarse output is $\beta=Wac$ and the generated cubic output is
 $\alpha_3\beta a^2$. Decreasing $a$ while increasing $c$ can preserve $\beta$
 and remove cubic error. Its effective slope and readout gradients satisfy
@@ -311,10 +311,12 @@ Two networks can have identical coarse and cubic outputs, hence identical
 errors, yet opposite $A_3$. Their signed readout–slope correlations differ.
 Moreover, with only one fine error, the projected flow obeys
 $\dot e_3=-\|T_3\|^2e_3$, so it cannot overshoot the cubic target.
-The [derivation](d34_coarse_balance_stagnation_details.md#13-a-heterogeneous-cubic-example-explains-what-must-evolve)
-therefore identifies two requirements: retain enough geometry to determine
-the signed sensitivity, and enough fine-mode coupling to permit the observed
-error reversal. Its cubic approximation explains early checkpoint signs but
+Within this projected-flow description, the
+[derivation](d34_coarse_balance_stagnation_details.md#13-a-heterogeneous-cubic-example-explains-what-must-evolve)
+identifies two requirements: retain enough geometry to determine the signed
+sensitivity, and enough fine-mode coupling to permit the observed error
+reversal. Transferring this argument to GD also requires control of the
+finite-step and remainder corrections. The cubic approximation explains early checkpoint signs but
 fails quantitatively at late sine states; it is not yet a long-time predictor.
 
 Adam carries first and second moments, so the GD response equation does not

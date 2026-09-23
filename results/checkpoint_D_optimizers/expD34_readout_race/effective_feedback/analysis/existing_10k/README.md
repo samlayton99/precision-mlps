@@ -86,11 +86,14 @@ from the 600k fork:
 | Moment 3 / 2 | $-4.589\times10^{-5}$ | $+3.917\times10^{-6}$ |
 | Mixed sine / 3 | $-1.876\times10^{-5}$ | $+1.469\times10^{-6}$ |
 
-These are retained as forecast misses. They are not counted as evidence for
-an unspecified feedback explanation. Their magnitudes exceed the pilot's
-floating-point discrepancies, but that comparison alone is not a bound on
-all numerical error. The seed-0 refinement panel below does not directly
-cover these three cases.
+These are retained as forecast misses, rather than evidence for an unspecified
+feedback explanation. Subsequent posthoc degree-129 and half-step checks of
+these exact three cases preserve every negative sign. The smallest ratio of
+the observed contrast magnitude to its change under either control is 6,626.
+The checks strongly separate these misses from the observed numerical
+sensitivity, although refinement differences are not certified error bounds.
+The original predictions remain unchanged; the new records are in
+`../miss_controls/`.
 
 ## Corrections and numerical checks
 

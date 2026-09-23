@@ -6,7 +6,7 @@ This report covers the complete 195-start existing panel and the 78-start fresh-
 
 | Symbol or term | Meaning |
 |---|---|
-| $a$, $\gamma_j=|a_j|$ | Signed slopes and their magnitudes; width is 177. |
+| $a$, $\gamma_j=\lvert a_j\rvert$ | Signed slopes and their magnitudes; width is 177. |
 | $e_H$ | Residual coefficients in retained empirical polynomial modes 2 through 65. |
 | $T_a$ | Map from those residual coefficients to the effective slope gradient after eliminating the coarse response. |
 | $F_a=T_ae_H$ | Effective fine slope gradient. |
@@ -24,7 +24,7 @@ The existing panel uses seeds 0–4 and the fresh panel seeds 20–21, with fork
 
 **Example.** The ninth-degree target remains at relative evaluation MSE approximately 0.75001. Across all seven seeds, three forks, and three arms, no neuron reaches $\gamma=1$; the largest observed terminal slope is below 0.220. The interventions change the already small contraction rather than creating a route to large slopes.
 
-**Theory.** The reduction $g_a=T_ae_H+R_a$ identifies the force, but persistence also requires understanding its evolution. Here the simpler approximation that freezes the effective response map is quantitatively informative. The table compares autonomous forecasts against ordinary GD after 200,000 updates. The affine forecast linearizes the full joint field at the fork; the fixed-map models retain effective residual feedback, with either no remainder or a frozen initial remainder. These are predictions from the initial state, not fits to the future trajectory.
+**Theory.** The reduction $g_a=T_ae_H+R_a$ identifies the force, but persistence also requires understanding its evolution. Here the simpler approximation that freezes the effective response map is quantitatively informative. The table compares forecasts computed from the checkpoint alone against ordinary GD after 200,000 updates. The affine forecast linearizes the full joint field at the fork; the fixed-map models retain effective residual feedback, with either no remainder or a frozen initial remainder. These are predictions from the initial state, not fits to the future trajectory.
 
 | Target / fork | Panel | Affine motion error | Fixed map, no remainder | Fixed map, initial remainder |
 |---|---|---:|---:|---:|
@@ -41,7 +41,7 @@ The existing panel uses seeds 0–4 and the fresh panel seeds 20–21, with fork
 
 ## 2. Sine exposes the coupled feedback and the forecast's limit
 
-**Example.** At the 400k fork, freezing the map reduces the median maximum slope substantially in both panels. Clamping the residual increases it. Yet even the stronger-growth branches remain far from precision: none of the 63 sine branches ever reaches $\gamma=16$ by the endpoint, and their best relative evaluation MSE exceeds 0.20.
+**Example.** At the 400k fork, freezing the map reduces the median maximum slope substantially in both panels. Clamping the residual increases it. Yet even the stronger-growth branches remain far from precision: none of the 63 sine branches ever reaches $\gamma=16$ by the endpoint, and their best endpoint relative evaluation MSE exceeds 0.20.
 
 | Fork | Panel | Arm | Mean $\gamma$ | Maximum $\gamma$ | Relative evaluation MSE |
 |---|---|---|---:|---:|---:|
@@ -124,7 +124,7 @@ The next table counts neuron-run events across each entire panel. A neuron appea
 
 **Theory.** Small $R_a$ on a baseline trajectory does not imply small $R_a$ after changing the slope field. The modified trajectories alter both geometry and readouts. At fresh sine fork 400k, the same tracking/effective ratio rises to 0.241 for freeze map and 0.056 for clamp residual. These are ratios of accumulated signed vectors, not integrals of force norms; cancellation can affect their interpretation. Both the signed and vector diagnostics are retained in the case CSVs.
 
-**Prediction and assessment.** The reduction predicts ordinary motion when its remainder stays controlled. It does not predict that long interventions will preserve coarse balance automatically. Consequently, the cleanest causal test remains the common first step and the exact second-step response; later intervention differences measure the resulting coupled system, including induced tracking corrections.
+**Prediction and assessment.** The reduction predicts ordinary motion when its remainder stays controlled. It does not predict that long interventions will preserve coarse balance automatically. The common first step and exact second-step identities verify the intervention. The separate scientific test is its forecast over a finite interval, interpreted together with measured remainder growth. Later branch differences describe the resulting coupled system, including induced tracking corrections.
 
 Readout size remains a secondary diagnostic. Existing sine fork 400k has median readout RMS 0.177, 0.128, and 0.130 for joint, freeze map, and clamp residual, respectively, although clamp produces the largest slopes. At fork 600k the corresponding values are 0.178, 0.278, and 0.156. A scalar readout-size explanation does not order these outcomes consistently. A single width and these stalled or partially growing geometries also cannot establish the asymptotic $O(h)$ readout law of the constructive approximation.
 
