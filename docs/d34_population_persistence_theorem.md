@@ -14,11 +14,14 @@ The structural conditions are propagated by the equations; future small fine
 force is not an assumption of the reduced-system theorem.
 
 There is an important distinction between a proved mechanism and its empirical
-coverage. The alignment condition below is a **new, unverified condition on
-the archived states**. The perturbations support retaining coupled geometry
-and readouts, but do not establish this condition. Thus the note supplies a
-precise sufficient mechanism and a transfer theorem, not a completed proof
-for every observed plateau, every target, or Adam.
+coverage. The [population audit](../results/checkpoint_D_optimizers/expD34_readout_race/population_coverage/README.md)
+found **zero of 223 archived states in the exact aligned sector**. Mixed
+readout–slope signs and nonzero hidden biases are substantial, not rare
+exceptions. The proof below therefore remains a sufficient mechanism example
+and a conditional transfer theorem; it does not certify the explanation of
+the archived plateaus. The full heterogeneous polynomial force remains
+accurate at the tested wide states, motivating a theorem that retains those
+signs and biases.
 
 ## 1. Example and objective: redistribution without scale acquisition
 
@@ -562,14 +565,14 @@ that ordering to prevent the upper edge from advancing. Tracking is then
 controlled by its own stable equation. This closes a real part of the
 coupled argument missing from a force bound at one checkpoint.
 
-The decisive checks now concern the assumptions, not a new collection of
-generic target removals:
+The assumption audit now separates a failed sector condition from transfer
+conditions that remain to be established:
 
-| Condition | Why it enters | What an archived-state audit would establish |
+| Condition | Why it enters | Empirical status or remaining obligation |
 |---|---|---|
-| Common product sign and $\lvert\zeta_j\rvert\ge\lvert\alpha_j\rvert$ after sign normalization | Preserves the boundary sign and prevents compensating readouts from reversing it. | Whether the exact sector applies, or how far a state is from an aligned reference in the two norms. |
-| Cubic sign $m_3p<0$ | Accessible cubic force removes a wrong-sign contribution. | Whether the first mechanism applies to a target, including an accessible target such as sine. |
-| Cubic cancellation and the fifth-load margin (13) | Makes generated correction dominate an outward target force for a derived horizon. | Whether the second mechanism has a positive, useful $T_*$. |
+| Common product sign and $\lvert\zeta_j\rvert\ge\lvert\alpha_j\rvert$ after sign normalization | Preserves the boundary sign and prevents compensating readouts from reversing it. | Failed in all 223 audited states; at least 23.7% of neurons per state have the wrong product sign. Hidden biases also violate the zero-bias sector. |
+| Cubic sign $m_3p<0$ | Accessible cubic force removes a wrong-sign contribution. | A favorable sign alone does not restore the failed alignment assumption. |
+| Cubic cancellation and the fifth-load margin (13) | Makes generated correction dominate an outward target force for a derived horizon. | A positive computed margin outside the sector does not justify $T_*$; the proof also uses alignment and parity. |
 | Coarse conditioning and bounded support on a padded tube | Makes compensation, Taylor errors, and tracking derivatives controllable. | Numerical constants for (19)–(21), rather than only pointwise fitted rates. |
 | Small initial tracking and a successful first-exit inequality | Transfers reduced persistence to actual training. | A certified finite-time acquisition bound in (24), with ordinary-GD conditions if appropriate. |
 
@@ -578,10 +581,11 @@ nonpositive slopes to be reoriented before checking the sector. A common
 output/target sign reversal normalizes $p>0$. Neither operation removes
 mixed signs of $\alpha_j\zeta_j$. Those violations are substantive.
 
-If the sector is far from the trained states, this theorem remains a
-mechanism example; it would be inappropriate to force the data into it.
-The next theoretical extension would need to control the contribution of
-misaligned particles to the shared compensation. Likewise, the opposite
+The sector is substantially different from the audited states. The median
+negative-product fraction is 44.6%, and the median rescaled hidden-bias RMS
+is 1.465. A rare-exception argument is not supported. The next extension
+must retain mixed signs and slope–bias–readout moments, then derive bounds
+on their contribution to the evolving shared compensation. Likewise, the opposite
 cubic sign requires a slow-passage argument, not this maximum principle.
 The scalar outward-delay result in the
 [coupled-ODE note](d34_coupled_ode_mechanisms.md#2-readout-compensation-can-make-outward-acquisition-slow)
@@ -590,9 +594,9 @@ is a useful starting point, but its heterogeneous extension is still open.
 The broad empirical observation can therefore remain correct even where
 this particular sufficient mechanism does not apply. The note proves a
 nonempty, genuinely coupled class of persistent states, together with an
-explicit path from such a state to a population acquisition theorem. It
-does not yet establish that the entire observed population lies in that
-class.
+explicit path from such a state to a population acquisition theorem. The
+empirical audit shows that this class does not contain the observed states;
+it does not invalidate the broader observation of slow scale acquisition.
 
 ## Appendix: why the tracking estimates are structural
 

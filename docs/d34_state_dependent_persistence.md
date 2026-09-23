@@ -12,7 +12,8 @@ accessible low-order components such as sine. It does not require ninth-degree
 orthogonality, a frozen feature map, or universal contraction. Its substantive
 assumption is a regional bound on **loaded force amplification**. That bound
 must be established separately; a value measured at one checkpoint is not a
-proof of its persistence. No new numerical results are asserted here.
+proof of its persistence. The linked audits report the numerical evidence;
+this note supplies conditional results, not a new regional certificate.
 
 For mechanisms that derive slow rates from a specified coupled ODE, use the
 [companion mechanism note](d34_coupled_ode_mechanisms.md). It proves passage
@@ -28,8 +29,15 @@ The [population persistence theorem](d34_population_persistence_theorem.md)
 now proves a preserved alignment and loading condition in a heterogeneous
 reduced system. It also derives future tracking control from its exact
 evolution equation and gives a finite-time transfer to ordinary GD. Its
-sector hypotheses are explicit sufficient conditions, not yet verified for
-the archived target panel.
+sector hypotheses are explicit sufficient conditions. The subsequent
+[population audit](../results/checkpoint_D_optimizers/expD34_readout_race/population_coverage/README.md)
+found zero of 223 archived states in that sector, with substantial mixed
+signs and hidden biases. It is therefore a mechanism example, not a
+certified explanation for those populations. Accurate full heterogeneous
+polynomial forces at the tested wide states support retaining bias and
+mixed moments. The next task is to derive the amplification bound from
+their coupled evolution; neither rare alignment exceptions nor small future
+amplification can simply be assumed from this audit.
 
 **Notation.** All norms below are Euclidean norms in orthonormal empirical
 coordinates; the loss uses the empirical mean normalization.

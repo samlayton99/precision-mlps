@@ -29,8 +29,13 @@ future force. They identify structural conditions to test on the trained
 population; they do not establish those conditions across the target panel.
 The [population persistence theorem](d34_population_persistence_theorem.md)
 now proves preservation of one such structure in a heterogeneous ODE and
-states an explicit transfer to ordinary GD. Its initial alignment condition
-still needs to be checked against the observed states.
+states an explicit transfer to ordinary GD. The subsequent
+[population audit](../results/checkpoint_D_optimizers/expD34_readout_race/population_coverage/README.md)
+found that none of 223 archived states satisfies its aligned sector: mixed
+signs and hidden biases are substantial. This sufficient example does not
+explain the archived populations. The full heterogeneous polynomial force
+is accurate at the tested wide states, so the next theorem should retain
+those variables rather than perturb away the violations.
 
 This is the main reading note. Sections 1–2 explain the force and its direction;
 Sections 3–4 test its coupled evolution and develop a surrogate; Section 5
@@ -699,12 +704,13 @@ the reduced persistence into a bound on the fraction of neurons that ever
 acquire a chosen normalized scale. The note includes the discretization and
 containment conditions for ordinary GD.
 
-This is a sufficient structural mechanism, not an established description
-of all the archived states. Mixed readout–slope signs can defeat its maximum
-principle; the opposite cubic loading sign can support outward motion. The
-initial sector and transfer constants therefore need an audit. The existing
-perturbations support an evolving coupled description but do not establish
-those conditions. Generated-error correction can also lose sensitivity,
+The [coverage audit](../results/checkpoint_D_optimizers/expD34_readout_race/population_coverage/README.md)
+rules out direct application of this sector theorem to the archived states:
+zero of 223 satisfy the cone, and the median negative-product fraction is
+44.6%. Biases are also non-negligible in rescaled coordinates. These are not
+rare exceptional neurons. The theorem remains a sufficient illustration;
+the next structural argument must keep mixed signs and bias moments in the
+shared compensation. Generated-error correction can also lose sensitivity,
 so the separate algebraic-slowing mechanism remains relevant. Neither result
 justifies assuming strong restoration in the wide panel.
 
@@ -721,8 +727,10 @@ the width-dependent rate has a conditional proof; selected empirical instances
 have finite rounding-controlled certificates. A broadly useful theorem still
 needs a preserved structural condition shown to cover the observed
 heterogeneous states, with its transfer errors controlled. The new theorem
-proves preservation in an explicit sector; it does not yet verify that
-empirical coverage. None of these claims requires
+proves preservation in an explicit sector whose direct empirical coverage
+has now failed. Accurate wide-state polynomial force reconstruction supports
+the fuller coupled model, but does not establish a future feedback bound or
+an autonomous trajectory forecast. None of these claims requires
 permanent trapping or establishes entry into the post-transient regime from
 initialization.
 

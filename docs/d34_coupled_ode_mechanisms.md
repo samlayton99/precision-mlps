@@ -21,7 +21,11 @@ derives a heterogeneous maximum principle from preserved readout–slope
 alignment. It bounds the time for which generated correction withstands a
 competing target load and couples that result to tracking and ordinary-GD
 transfer. This supplies one explicit structural persistence proof; its
-alignment and loading conditions remain to be audited on trained states.
+alignment condition has now failed the
+[population audit](../results/checkpoint_D_optimizers/expD34_readout_race/population_coverage/README.md):
+zero of 223 archived states lies in the exact sector. Substantial mixed
+signs and hidden biases make this a sufficient illustration, not a verified
+explanation of the trained populations.
 
 **Notation.** Scalar physical coordinates and rescaled particle coordinates
 are kept distinct, including their time variables.
@@ -791,7 +795,7 @@ from evidence for a complete theorem's hypotheses.
 |---|---|---|
 | Effective fine dynamics dominate ordinary-GD motion after the transient. | The [cross-function force audit](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/heldout/README.md) measures small direct corrections and signed accumulated correction motion. | Supports the reduced object; sampled or signed diagnostics do not prove every future tracking allowance. |
 | An evolving coupled operator improves physical-response prediction. | The [physical response comparison](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_persistence/README.md#3-physical-perturbations-expose-what-scalar-matching-omits) favors evolving quintic dynamics over frozen operators. | Motivates coupled theorems. It does not establish an invariant scalar sector or a constant coarse contribution per neuron. |
-| Readout-dominated, aligned geometry suppresses radial mobility. | Frozen large-slope [readout fits](../results/checkpoint_D_optimizers/expD34_readout_race/readout_scale/README.md) recover approximately $O(h)$ coefficients for tested sine dictionaries. The [clone interventions](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/README.md) find little change from readout-only mobility compensation and stronger recovery from geometry compensation. | The endpoint scale observation is real, but a universal readout-dominated explanation is unsupported. Persistence of the alignment and limited redistribution required by (10) has not been established. |
+| Readout-dominated, aligned geometry suppresses radial mobility. | Frozen large-slope [readout fits](../results/checkpoint_D_optimizers/expD34_readout_race/readout_scale/README.md) recover approximately $O(h)$ coefficients for tested sine dictionaries. The [clone interventions](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/README.md) find little change from readout-only mobility compensation and stronger recovery from geometry compensation. | The endpoint scale observation is real, but the population audit finds zero of 223 states in the aligned cone. A universal aligned, readout-dominated explanation is unsupported. |
 | Generated lower-mode error can oppose scale expansion. | The [degree-nine signed-force and intervention audit](d34_coarse_balance_stagnation_details.md#7-what-the-audit-and-continuations-establish) attributes contraction to that effective force. | Supports the signed competition in that regime; it does not establish a fixed scalar shape sector throughout Theorem 2's interval. |
 | An observed plateau is an already replenished equilibrium. | The [degree-nine persistence audit](d34_coarse_balance_stagnation_details.md#10-testing-what-keeps-the-force-small) places actual generated error far above the frozen model's forced floor. | This interpretation is unsupported there; slow transient correction is the supported alternative. |
 | Normal correction stays conditioned on a neighborhood. | Late checkpoint audits often show net force decay, but wider feedback interventions show tiny relaxation effects. | Neither observation verifies $JJ^*\succeq\kappa I$ or Theorem 3's path margin. Strong restoration cannot be assumed for the wide panel. |
@@ -818,10 +822,11 @@ proofs do not require an accurate forecast of each neuron's future motion.
 Its algebraic variant also allows sensitivity to weaken with the generated
 error, producing slow continuing motion rather than finite total motion.
 
-The useful remaining questions are consequently specific: does a trained
-population preserve enough alignment for the first mechanism; does its
-signed target/error competition slow outward passage for the second; or do
-its generated channels satisfy a regional conditioning or amplitude-dependent
+The useful remaining questions are consequently specific. The tested
+population does not have the exact alignment required by the first
+mechanism. Does its full, mixed-sign target/error competition slow outward
+passage for the second, or do its generated channels satisfy a regional
+conditioning or amplitude-dependent
 sensitivity law for the third? A negative answer narrows the mechanism. It is not repaired by
 assuming the observed small force persists.
 
@@ -833,6 +838,12 @@ a maximum principle, this prevents the largest slope from advancing for a
 derived interval, even though some smaller slopes may grow. The initial
 sector is more restrictive than the empirical statement that fine force
 dominates; the proof does not turn the latter observation into alignment.
+The audit finds substantial violations rather than a small exceptional
+population. Its accurate wide-state polynomial force reconstruction instead
+supports retaining heterogeneous bias and readout moments. A next theorem
+must derive control of their feedback and shared compensation; force
+accuracy at saved states alone does not prove that control or long-horizon
+forecast accuracy.
 
 For ordinary tanh GD, the transfer obligations are separate:
 
