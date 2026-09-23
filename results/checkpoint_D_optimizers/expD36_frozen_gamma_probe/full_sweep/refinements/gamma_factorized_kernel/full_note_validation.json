@@ -1,13 +1,13 @@
 {
-  "base_commit": "eb779575dcd762577d8fc4e2c3bb5d8b3f5c95af",
+  "base_commit": "4c60056de2cf278de428741bcd626a5cfb463f28",
   "pdf": {
-    "pages": 13,
-    "bytes": 319165,
+    "pages": 15,
+    "bytes": 371718,
     "final_latex_warnings": 0,
     "all_fonts_embedded": true,
     "text_within_page": true,
-    "visual_review": "All thirteen final pages inspected; reader map, inequality explanations, both figures, and captions checked; no clipping or overlap",
-    "relative_links_checked": 10
+    "visual_review": "All fifteen pages inspected; final corrections rechecked on affected pages; three figures and captions readable without clipping or overlap",
+    "relative_links_checked": 12
   },
   "notation": {
     "eigenvalues": "mu_i",
@@ -19,7 +19,29 @@
     "spectrum_cutoff": 1e-06,
     "spectral_mass_status": "FP64 approximate-kernel diagnostic; cutoff bound is for approximate residual and does not evaluate Theorem 1 or subtract a transfer allowance",
     "primary_timing_status": "Existing independent 192-bit interval endpoints checked",
-    "preserved_collaborator_artifacts": 14
+    "preserved_collaborator_artifacts": 14,
+    "theorem1_diagnostic": {
+      "source_files": 10,
+      "slope_subspace_cases": 52,
+      "numerical_status": "FP64 evaluation of simplified Theorem 1, original-tanh restricted action and spectrum; no interval certificate for these new quantities.",
+      "selection": "Exploratory cutoffs k=0..12; action panel uses k=12. Temporal bound maximized on 16385 rate cutoffs; no claim of global optimization.",
+      "necessary_updates": [
+        17,
+        13,
+        12,
+        11
+      ],
+      "executed_updates": [
+        15798313,
+        186057,
+        61792,
+        16013
+      ],
+      "maximum_basis_condition": 1686302.1990965435,
+      "maximum_orthogonal_complement_residual": 1.3951253608288802e-09,
+      "maximum_independent_action_relative_gap": 6.661338147750939e-16,
+      "figure_reproduction": "PNG, PDF, and JSON byte-identical"
+    }
   },
   "proof_consistency_checks": {
     "random_psd_cases": 500,
@@ -54,7 +76,7 @@
     "skipped": 9,
     "deselected": 4,
     "warnings": 10,
-    "seconds": 279.82,
+    "seconds": 278.14,
     "baseline_failure_match": true,
     "failures": [
       "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
@@ -75,28 +97,35 @@
       "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
       "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
     ],
-    "log_sha256": "69c9db8e7b464f3e8c567ccb351d8a8c5d3aec5ec1058ef56c52773cd22a0298",
-    "carried_forward_from": "eb779575dcd762577d8fc4e2c3bb5d8b3f5c95af",
-    "rerun_for_this_revision": false
+    "log_sha256": "2666bd10c298f5d7d9f8923a660f6c6b0241cb0b0df2df80c79dc06f2d21ce08",
+    "rerun_for_this_revision": true
   },
   "artifact_sha256": {
-    "docs/gamma_optimization_full_note.md": "6a1b6bd143de5ca65086f7e96477476aa086278c50202cdb71f5cefa3fcd898c",
-    "docs/gamma_optimization_full_note.tex": "11435e6b01e8b1bb48b875aa3c65adb23669a38a7cbe072829de83f1ae6fe313",
-    "docs/gamma_optimization_full_note.pdf": "adc4fa120b6942e12bd4d16831aeb049b6098992b813050c2dbc2ba32bad5b03",
+    "docs/gamma_optimization_full_note.md": "abe0c27d3ac4cd4af7367928242318ff594553fa257163d921fd12b39156e2cf",
+    "docs/gamma_optimization_full_note.tex": "f40b33832d1168b1f093042070d38ed72983ee2edc49d531f395475e5edbd950",
+    "docs/gamma_optimization_full_note.pdf": "c96273f9e301335ca5bdc357aa36149b7815e12cdeeae20298606d18ef782507",
     "experiments/expD36_frozen_gamma_probe/spectral_bridge_figure.py": "a24b3901794dc162e47d0f6d603ec2fced8bf6455ea445784db859e51a3b49e2",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge.png": "e97e9d5d2a95328d0ef0efae086d2a01549c5a554d9d1c8ed74c66c9ff82964e",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge.pdf": "f4b372a006b3bf96b8e6d0a63767fd4eee98ee29f3341f1a191100f3eddb6115",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge_data.json": "7407f1563773e80c0cb01c6a1ed40a5dbe149e99bf23504742af086934d722b8"
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge_data.json": "7407f1563773e80c0cb01c6a1ed40a5dbe149e99bf23504742af086934d722b8",
+    "experiments/expD36_frozen_gamma_probe/theorem1_spectral_probe.py": "d9c5adb3fddd346ffa544ce7cd4f6c3527e5d882111325c5e9c37acfc2cebac8",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/theorem1_spectral_probe.png": "40ee6344661b78c5f722932c8a1e6a135168c2d7e93153eb0d79e2b308347419",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/theorem1_spectral_probe.pdf": "1e13ab01c5959297fee653ec9e5a6af9c8deac5872c4876ac29beba505619dc3",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/theorem1_spectral_probe.json": "14074f12d3c1256a5e5076f6129c479d5d34b2a1583c4c02922fdb9763c2b987"
   },
   "gpu_hours": 0,
   "revision_checks": {
-    "scope": "Expository revision and figure labels only; no prediction algorithm or numerical result changes",
+    "scope": "Direct evaluation of simplified Theorem 1, spectral min-max consequence, new three-panel diagnostic, and full note revision",
     "latex_warnings": 0,
-    "pdf_words_within_page": 7461,
-    "source_hashes_verified": 6,
+    "pdf_words_within_page": 8920,
+    "source_hashes_verified": 10,
     "figure_reproduction_files": 3,
-    "numerical_arrays_unchanged": true,
+    "existing_experiment_arrays_unchanged": true,
     "independent_proof_and_provenance_review": true,
+    "exact_span_identity_reviewed": true,
+    "minmax_checked_in_all_52_cases": true,
+    "theorem_mass_below_true_mass": true,
+    "necessary_time_exclusion_checked": true,
     "git_diff_check": true
   }
 }

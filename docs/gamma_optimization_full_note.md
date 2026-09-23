@@ -6,7 +6,7 @@ Small gamma smooths the features. Whether that slows readout learning depends on
 
 **We computed the full target-weighted spectrum of the Fourier-constructed kernel for every plotted gamma.** Here "target-weighted spectrum" means the kernel eigenvalues together with the target's squared projections onto their eigenspaces. The predicted curves use all those rates and weights. They do not use Theorem 1's scalar estimate of slow target energy.
 
-**Theorem 1 and the plotted timing predictions are two branches of the argument.** Both start from the same Fourier construction. Theorem 1 replaces detailed matrix and spectral information with inequalities to obtain a compact guarantee. The plotted predictions instead compute the singular value decomposition of the constructed feature matrix and evaluate its complete GD curve. Theorem 2 bounds the difference between that curve and the original tanh model. The measured delay factor of 986.59 tests this second branch; the numerical sharpness of Theorem 1 on that experiment has not been established.
+**Theorem 1 and the full spectral timing predictions are two branches of the argument.** Both start from the same Fourier construction. Theorem 1 replaces detailed matrix and spectral information with inequalities to obtain a compact guarantee. The full forecasts instead compute the singular value decomposition of the constructed feature matrix and evaluate its complete GD curve. Theorem 2 bounds the difference between that curve and the original tanh model. The measured delay factor of 986.59 tests this second branch. Figure 3 now directly evaluates Theorem 1: its spectral upper bound is nontrivial, but its target-energy and timing guarantees are much weaker than the observed behavior on the tested cutoffs.
 
 **Notation.** Throughout this note, $\mu_i$ denotes a kernel eigenvalue. The symbol $\lambda=\gamma h$ is reserved for dimensionless bandwidth when the centers have spacing $h$. The physical slope is $\gamma$. The step size is $\eta_\gamma$, the largest kernel eigenvalue is $L_\gamma$, and $a_i=\eta_\gamma\mu_i$ is a per-update decay rate. Norms are Euclidean for vectors and spectral for matrices. Every additional symbol is defined where it enters. Earlier notes used $\lambda_i$ for eigenvalues and $\beta$ for bandwidth; this note supersedes that notation.
 
@@ -22,7 +22,7 @@ Small gamma smooths the features. Whether that slows readout learning depends on
 
 **Arithmetic error is a third, separate issue (Section 9).** Computer evaluation of waves, multipliers, products, and singular vectors uses finite precision. The analytic Fourier remainder alone does not enclose that rounding. The primary timing endpoints received an independent interval-arithmetic check. The plotted spectral masses are floating-point diagnostics.
 
-The reader should therefore follow a fork, not a single chain: **Fourier construction → Theorem 1's inequality guarantee**, or **Fourier construction → full spectral calculation → Theorem 2's transfer bound → timing intervals**. Figure 1 uses the computed spectrum and its one-cutoff corollary; Figure 2 compares the full spectral forecast with training. Neither figure evaluates Theorem 1's estimate from its target-overlap and geometry constants.
+The reader should therefore follow a fork, not a single chain: **Fourier construction → Theorem 1's inequality guarantee**, or **Fourier construction → full spectral calculation → Theorem 2's transfer bound → timing intervals**. Figure 1 uses the computed spectrum and its one-cutoff corollary; Figure 2 compares the full spectral forecast with training. Figure 3 separately evaluates Theorem 1's geometry and target-overlap bounds, against original-tanh spectral quantities and executed GD.
 
 ## 1. The model and the optimization question
 
@@ -309,6 +309,25 @@ Rearranging proves the slow-mass bound. Corollary 1 proves the residual and time
 
 **Interpretation.** Gamma enters the guarantee through the squared multiplier. The target enters through $\alpha$, the step through $\eta_\gamma$, and the finite geometry through $B_\Omega$ and the approximation error. A positive statement requires $\alpha>\sqrt{A_\gamma/t}+\epsilon$. The mere presence of a tiny high-frequency component does not force a delay to a tolerance larger than that component.
 
+**A spectral consequence before converting to time.** Assume $r:=\operatorname{rank}P_{<\Omega}<m$. Define the maximum normalized kernel action outside the low-frequency span by
+
+$$
+\beta_\gamma(\Omega)
+:=\eta_\gamma\|R_\Omega J_\gamma\|^2
+=\max_{\|v\|=1,\;v\in\operatorname{range}(R_\Omega)}
+v^T(\eta_\gamma K_\gamma)v.
+$$
+
+Proof step 1 gives $\beta_\gamma(\Omega)\le A_\gamma(\Omega)$. Order the normalized eigenvalues as $a_1\ge\cdots\ge a_m$. The min--max characterization gives
+
+$$
+a_{r+1}
+=\min_{\dim V=r}\;\max_{v\perp V,\,\|v\|=1}v^T(\eta_\gamma K_\gamma)v
+\le\beta_\gamma(\Omega)\le A_\gamma(\Omega).
+$$
+
+The inequality follows by choosing $V=\operatorname{range}P_{<\Omega}$ in the minimum. Thus at most $r$ modes can have rates greater than $A_\gamma$. With $\kappa=\eta_\gamma L_\gamma=a_1$ and $0<A_\gamma<\kappa$, the top-to-$(r+1)$-st rate ratio is at least $\kappa/A_\gamma$ (infinite if $a_{r+1}=0$). This is spectral scale separation; it does not assert a gap between adjacent eigenvalues or an ordering between two gammas. The subspace need not be invariant, so $\beta_\gamma$ is a maximum Rayleigh quotient, not the decay rate of every vector in that subspace. Target relevance still requires the overlap condition or a measured target-weighted spectrum.
+
 ### A uniform common-slope cap corollary
 
 For an explicit uniform statement, fix $0<\gamma_-\le\gamma\le\bar\gamma$ and use the same geometry, $T,Q,\Omega$, and rule $\eta_\gamma=\kappa/L_\gamma$ with $0<\kappa\le1$. Let $V_{\bar\gamma,Q}$ be the second term of (6) evaluated at $\bar\gamma$, and define
@@ -360,7 +379,7 @@ It thereby bounds $\|P_{\rm fast}v\|$ by $\sqrt{A_\gamma/t}$ without retaining t
 
 **Inequality 4: replace all slow-mode decays by one rate.** Corollary 1 drops the fast-mode contributions to the residual and replaces each remaining $a_i\le t$ by $t$. This gives $\sqrt{S_\gamma(t)}(1-t)^n$. Modes with $a_i\ll t$ actually persist much longer. This source of slack remains even when $S_\gamma(t)$ is computed exactly from a full spectrum. Figure 1 illustrates this last loss only; it does not evaluate inequalities 1–3.
 
-These steps provide a general lower bound, not an approximate equality. Making the Fourier feature error small does not make their gaps small. We have not measured all of these gaps for the primary experiment, so the note makes no claim that any one is its dominant source of conservatism.
+These steps provide a general lower bound, not an approximate equality. Making the Fourier feature error small does not make their gaps small. Figure 3 measures the combined action-bound slack and the final spectral and temporal guarantees. It does not assign the combined discrepancy separately to every inequality.
 
 There is also no general matrix ordering from increasing the filter entries alone. For an algebraic example, take
 
@@ -469,6 +488,40 @@ The analytic-remainder-only gamma-8 interval is [15,783,830, 15,812,843]; sharpn
 
 The other archived targets are a single sine, an exponential of sine, a Runge function, and a quadratic. Across all five targets and four gammas, all 19 observed hits lie in their computed intervals; the quadratic/gamma-12 run stopped at 200,000 updates and is censored. Only the primary sine-mixture endpoints have the independent interval audit described next. These are retrospective training-optimization comparisons, not held-out generalization results.
 
+### Direct evaluation of simplified Theorem 1
+
+This diagnostic uses the same primary target, fixed geometry, archived steps, $T=8$, and $Q=2048$. For $k=0,\ldots,12$, the low-frequency span contains the bias and the first $k$ sine/cosine pairs, giving $\Omega_k=(2k+1)\pi/8$ and dimension $2k+1$. We evaluate $\alpha$, the geometry factor, the analytic Fourier remainder, and Theorem 1's $A_\gamma$. We also independently calculate $\beta_\gamma$ from the original tanh matrix and $S_\gamma(t)$ from its archived full spectrum. The measured action never replaces $A_\gamma$ inside the theorem prediction.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/theorem1_spectral_probe.png" alt="Direct Theorem 1 evaluation: restricted kernel action versus analytic upper bound, true slow target mass versus theorem lower bound, and weak necessary training times versus full-spectrum predictions and executed GD." style="max-width: 100%;">
+  <figcaption><strong>Figure 3. The simplified theorem evaluated directly.</strong> A uses the fixed $k=12$ subspace: the analytic upper bound $A_\gamma$ is compared with the measured restricted Rayleigh quotient $\beta_\gamma$. B compares true-kernel slow target mass with Theorem 1's lower bound, maximized over $k=0,\ldots,12$ at each rate cutoff. Its zero bounds are explicitly identified because zero cannot appear on a logarithmic axis. C compares the theorem's necessary times, optimized over these 13 subspaces and 16,385 rate cutoffs, with the original-kernel spectral prediction and executed GD. These are exploratory FP64 diagnostics, not newly interval-certified bounds. The choice $k=12$ for panel A illustrates a fixed subspace; the scan is not a global optimization over all possible subspaces.</figcaption>
+</figure>
+
+At $k=12$, $\alpha=0.16829$ and $r=25$. For gamma 8, $A_8\simeq2.6153\times10^{-3}$ while $\beta_8\simeq2.2001\times10^{-6}$: the action upper bound is about 1,189 times the measured action. For gamma 64 these values are $7.6194\times10^{-3}$ and $9.8587\times10^{-4}$. The measured restricted action is about 448 times larger at gamma 64 than at gamma 8; the theorem's two upper bounds alone do not prove that comparison.
+
+The spectral consequence is nevertheless nontrivial. Since the largest normalized rate is approximately $0.5$, the bound forces the 26th and all subsequent rates below a value about 191 times smaller than the largest at gamma 8, and about 65.6 times smaller at gamma 64. The 26th rate is numerically nonzero in both cases; this comparison is not just counting the thousands of nullspace directions created by having more samples than features. These are separate guarantees within each kernel, not a guaranteed cross-gamma ratio. They do not by themselves guarantee that the target loads onto those suppressed modes.
+
+The target-aware part is much weaker at the relevant rates. Across the tested subspaces, the gamma-8 slow-mass lower bound remains zero for $t\le0.07249$, while its measured mass at $t=10^{-6}$ is about 4.33%. The strongest necessary times found on the disclosed scan are only 17, 13, 12, and 11 updates, respectively, versus 15,798,313; 186,057; 61,792; and 16,013 executed updates. The scan therefore supplies a concrete negative result for using this simplified bound as an accurate timing predictor. It also shows that moving the claim to target-weighted spectral mass does not automatically make the bound informative.
+
+**Paper-facing scope supported by this check.** A defensible main statement is that gamma bounds learning strength outside a specified low-frequency span and thereby limits how many modes can be fast. Plot that bound against measured restricted action, and show the target's actual allocation across the true spectrum separately. Standard GD dynamics applied to that spectrum then supply the temporal prediction. The stronger claim that the simplified analytic target-overlap bound quantitatively forces the observed very slow target mass still needs a sharper argument; Figure 3 does not establish it.
+
+### Numerical handling of the theorem's specified subspace
+
+The sampled Fourier columns are badly conditioned on the short training interval. We preserve all $2k+1$ directions, using an algebraically equivalent basis rather than dropping small singular values. Write $\psi=\pi x/T$, $s=\sin(\pi/T)$, $u=\sin\psi/s$, and $z=\sin^2\psi$. Odd sine harmonics span odd polynomials in $u$ through degree $2k-1$; odd cosine harmonics span $\cos\psi$ times even polynomials through degree $2k-2$. We use the corresponding Legendre polynomials. To retain the bias stably, use $1=\cos\psi(1-z)^{-1/2}$ and the binomial identity
+
+$$
+(1-z)^{-1/2}
+=\sum_{j=0}^{k-1}\zeta_jz^j
++\zeta_kz^k\,{}_2F_1(1,k+\tfrac12;k+1;z),
+\qquad \zeta_j=\frac{(1/2)_j}{j!}.
+$$
+
+Here $(a)_j=a(a+1)\cdots(a+j-1)$ and $(a)_0=1$. The hypergeometric factor is the convergent series $\sum_{n\ge0}(k+1/2)_n z^n/(k+1)_n$. Splitting the binomial series after $k$ terms proves the identity. The finite sum already belongs to the cosine span. Removing it and dividing by the nonzero constant $\zeta_ks^{2k}$ replaces the bias by $\cos\psi\,u^{2k}{}_2F_1(1,k+1/2;k+1;z)$ without changing the span. Thus this is a numerical basis change, not a new assumption or a polynomial replacement of the theorem's subspace. The case $k=0$ uses the bias alone.
+
+The column-normalized basis has condition number at most $1.69\times10^6$ on this scan. An independent long-double polynomial/binomial recurrence gives an orthogonal-complement residual between the two computed orthonormal bases of at most $1.40\times10^{-9}$ in Frobenius norm (equivalently, a projector difference of at most $1.98\times10^{-9}$). These are sensitivity checks, not interval enclosures.
+
+For the high-frequency geometry norm, the sample spacing extends to $P=65{,}536$ points over a full period $2T$. Odd harmonics are antiperiodic over $T$, and their sine/cosine columns are orthogonal on its $P/2$-point grid, with squared normalized norm $P/(4m)$. Restriction to our training rows gives $\|F_{\ge\Omega}\|^2\le P/(4m)$. A localized oscillatory test vector attains this upper bound within $10^{-12}$ relative in the numerical check. We use this valid upper bound with the computed $\|C_{\ge\Omega}\|^2$; it adds no appreciable observed slack to the geometry factor. The original theorem, projection checks, measured action, and full spectra are all evaluated in FP64 here, and their new numerical values have not received an independent interval certificate.
+
 ## 9. What exactly was certified numerically?
 
 The analytic proofs above are exact-arithmetic statements. FP64 feature assembly, SVD reconstruction, and action estimates require additional numerical error control. The archived calculation records sensitivity allowances, but these are not automatically interval enclosures of every plotted quantity. In particular, Figure 1's masses and cutoff bounds have not received an independent interval certificate.
@@ -515,7 +568,7 @@ $$
 
 Substitution into (5) proves that fixed $\lambda$ preserves attenuation at a fixed grid-relative frequency. For $h=2/N$ and $W=N+2\lceil\sqrt N\rceil+1$, fixed positive $\lambda$ implies $\gamma=\lambda N/2=\Theta(W)$. This does not imply constant training time across widths: the target's sampled spectrum, geometry, and normalized rates still enter (1).
 
-The shared starting point is gamma's explicit feature multiplier. Theorem 1 converts it to a lower bound through geometry norms, a target-overlap condition, and four sources of inequality slack. The plotted forecast instead constructs a finite Fourier feature matrix for each gamma, computes its SVD, keeps all target weights, and uses Theorem 2 to transfer its curve to the tanh model. Close agreement is expected when that matrix accurately approximates the original one; it validates the quantitative construction and timing calculation, but does not establish sharpness of Theorem 1 or a universal scalar law for a gamma cap. The numerical evaluation of that coarse bound on the primary geometry remains separate, unfinished work.
+The shared starting point is gamma's explicit feature multiplier. Theorem 1 converts it to spectral constraints and temporal lower bounds through geometry norms, a target-overlap condition, and four sources of inequality slack. Its direct evaluation in Figure 3 supports a coarse spectral suppression guarantee, but gives very weak temporal bounds and does not force the observed target mass at very slow rates on this cutoff scan. Full spectral forecasts accurately describe the training because they preserve the relevant rates and target weights. A paper can separate the spectral mechanism from that standard timing calculation, while keeping the unresolved sharpness of the analytic target-mass guarantee visible.
 
 ## Sources and reproduction
 
@@ -523,4 +576,4 @@ The proofs are self-contained apart from standard finite-dimensional spectral th
 
 The [study report](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/REPORT.md), [interval audit](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/interval_audit.json), [spectral figure data](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge_data.json), and [executed-curve provenance](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_figure_data.json) retain the inputs and evidence roles. Earlier detailed constructions remain in [the technical note](gamma_factorized_readout.md); its historical eigenvalue notation differs from this note.
 
-Reproduce Figure 1 with `python -m experiments.expD36_frozen_gamma_probe.spectral_bridge_figure` and Figure 2 with `python -m experiments.expD36_frozen_gamma_probe.pi_brief_figure`. Compile this PDF from the repository root with `latexmk -pdf -outdir=/tmp/gamma-full-latex docs/gamma_optimization_full_note.tex`. This write-up and spectral diagnostic use the existing archive and no additional GPU training.
+Reproduce Figure 1 with `python -m experiments.expD36_frozen_gamma_probe.spectral_bridge_figure`, Figure 2 with `python -m experiments.expD36_frozen_gamma_probe.pi_brief_figure`, and Figure 3 with `python -m experiments.expD36_frozen_gamma_probe.theorem1_spectral_probe`. The [Theorem 1 diagnostic data](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/theorem1_spectral_probe.json) record all cutoffs, numerical checks, and source hashes. Compile this PDF from the repository root with `latexmk -pdf -outdir=/tmp/gamma-full-latex docs/gamma_optimization_full_note.tex`. These diagnostics use the existing archive and no additional GPU training.
