@@ -185,6 +185,7 @@ This model runs forward using the checkpoint alone. It retains all chosen
 fine modes, and applies to sine as well as degree 9. It is a separate
 approximation to the full dynamics: unlike the slope-only experiment above,
 it moves every block with the frozen effective map and omits the remainder.
+With degrees 2–65 retained, its evolving error state has 64 coordinates.
 
 In the nonoscillating regime $0<\eta\lambda_i\le1$ for positive eigenvalues,
 the model has an explicit movement budget. If $v_i$ is an eigenvector of
@@ -206,6 +207,9 @@ To forecast the three actual experimental branches, we also linearize each
 complete update field at the fork. That calculation includes sensitivity
 drift and the full loss curvature. It is richer than the fixed-map residual
 model, but still uses no future trajectory. The
+affine state contains all 532 parameters of the width-177 network. Its success
+supports a local coupled description; it does not establish a universal
+two-variable reduction. The
 [detailed derivation](d34_coarse_balance_stagnation_details.md#12-matched-feedback-tests-and-a-target-general-movement-budget)
 gives both predictors, positive-travel bounds, and the correction terms
 required to transfer a surrogate bound to ordinary GD.
@@ -275,6 +279,12 @@ travel transfer displayed above. Successful forecasts beyond its closed
 horizons remain empirical evidence. The spectral bound is a target-general
 conditional framework. Whether its budget is small enough to be useful
 depends on the target and checkpoint.
+
+An acquisition exclusion can also be easier than an accurate trajectory
+forecast: the allowed travel need only stay below the distance to the chosen
+event. There is no need to predict every small displacement precisely.
+Conversely, a small empirical forecast error does not prove that a future
+travel budget holds. These are different tests of the theory.
 
 ### A stronger degree-9 result is available as a special case
 

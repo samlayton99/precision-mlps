@@ -265,6 +265,13 @@ python -m experiments.expD34_readout_race.effective_feedback run \
   --predictions "$D34_DATA/existing_predictions/manifest.json"
 ```
 
+The runner's `--horizon` is measured in **reference updates at step 0.002**.
+For the half-step control, keep the same horizon and pass `--eta .001`; the
+runner doubles the actual update count internally. For example,
+`--horizon 200000` means 200k actual updates at 0.002 or 400k at 0.001.
+Doubling both the horizon and the update multiplier would run beyond the
+intended matched physical time.
+
 Fresh backbones use ordinary GD. Export each saved fork before issuing its
 three-branch forecasts; the source below is a backbone run directory. Do not
 run modified branches directly from initialization as a substitute for the
@@ -282,6 +289,25 @@ For Modal, `effective_feedback_modal.py` provides the corresponding bounded
 single-GPU invocation. It requires an explicit budget reservation and records
 input, prediction, and source hashes. The same scientific protocol applies
 on either provider; command availability does not authorize extra allocations.
+
+The new-function helper preserves its own target arrays during fork export.
+Its analysis uses the already-issued forecasts and writes evidence arrays,
+tables, and summaries; reports are authored separately in Markdown.
+
+```sh
+JAX_ENABLE_X64=true JAX_PLATFORMS=cpu .venv/bin/python -m experiments.expD34_readout_race.effective_feedback_holdout prepare \
+  --output "$D34_DATA/inputs/heldout_initial.npz"
+JAX_ENABLE_X64=true JAX_PLATFORMS=cpu .venv/bin/python -m experiments.expD34_readout_race.effective_feedback_holdout export \
+  --inputs "$D34_DATA/inputs/heldout_initial.npz" \
+  --source "$D34_DATA/raw/heldout_backbone" --offset 100000 \
+  --output "$D34_DATA/inputs/heldout100k.npz"
+JAX_ENABLE_X64=true JAX_PLATFORMS=cpu OPENBLAS_NUM_THREADS=1 .venv/bin/python -m experiments.expD34_readout_race.effective_feedback_holdout_analysis \
+  --raw "$D34_DATA/raw/heldout" --inputs "$D34_DATA/inputs/heldout_all.npz" \
+  --predictions "$D34_DATA/predictions/heldout_all" --out "$D34_DATA/analysis/heldout"
+```
+
+These preparation commands are for a fresh execution directory. Do not
+overwrite the completed campaign's immutable input packs or forecasts.
 
 <details>
 <summary>Superseded modal-attenuation proposal (historical specification, not the current run matrix)</summary>
