@@ -992,3 +992,46 @@ the total available parameter travel. `energy_bounds.csv` retains the best
 valid candidate from a fixed grid of ball radii; `energy_candidates.csv.gz`
 retains every candidate. No future trajectory enters the bound. This refinement
 was motivated by the persistence analysis rather than fixed before it.
+
+## Cross-function audit of movement budgets and force defects
+
+`cross_function_audit` reads the completed ordinary-GD branches and their
+issued forecasts from `effective_feedback`. It covers existing, fresh-seed,
+and new-function cohorts separately, using the fork and additional horizons
+1k, 10k, 50k, and 200k. It does not train, replay updates, or change forecasts.
+All numerical analysis runs in CPU-only remote Slurm allocations with FP64.
+
+```bash
+python -m experiments.expD34_readout_race.cross_function_audit \
+  --evidence /path/to/effective_feedback --cohort existing \
+  --output /path/to/audit/existing
+python -m experiments.expD34_readout_race.cross_function_summary \
+  --root /path/to/audit --output /path/to/audit/summary
+```
+
+Run the first command for `fresh` and `heldout` as well before summarizing.
+`cross_function_audit.sbatch` supplies the remote CPU environment; its `pilot`
+mode checks the numerical modules and one start per cohort. Completed output
+directories are immutable. Input and forecast hashes, case identities,
+initial arrays, update counts, step sizes, and threshold order are checked.
+
+The spectral calculation retains all singular directions and checks its
+nonoscillating-step assumption. Its displacement and per-neuron travel bounds
+apply to the frozen full effective-map model. They do not enclose ordinary
+GD without an additional forecast-error bound. Initial occupancy,
+simultaneous occupancy, and ever-crossing counts are recorded separately.
+
+The force audit separates direct-fine and balanced-coarse gain changes,
+residual-forecast error, tracking, and omitted-mode forcing. It measures the
+effects on both slopes and residual evolution, and resolves instantaneous
+gain derivatives by parameter block. These are sampled identities along
+existing trajectories, not accumulated defect bounds. Exact signed travel
+comes from the original per-update accumulators, including zero crossings.
+
+`forces.csv`, `budgets.csv`, `modes.csv`, and `vectors.npz` retain individual
+states; `complete.json` records numerical identity checks and provenance.
+The summary produces two figures and descriptive cohort/function/family
+tables. Original and new-function outcomes remain separate. This additional
+audit is retrospective; it does not turn a newly selected explanation into
+an independently validated prediction. The scripts emit evidence artifacts
+only; the scientific synthesis is authored directly in Markdown.
