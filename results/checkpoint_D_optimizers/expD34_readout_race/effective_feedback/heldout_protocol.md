@@ -82,10 +82,10 @@ Use the existing campaign error definitions and report individual cases and
 function- and family-equal summaries at every common endpoint. Additionally score
 vector forecasts against the natural zero-motion baseline:
 $$
-\mathrm{skill}=1-\frac{\|\widehat{\Delta v}-\Delta v\|_2^2}{\|\Delta v\|_2^2}.
+\mathrm{skill}=1-\frac{\|\widehat d_N-d_N\|_2^2}{\|d_N\|_2^2}.
 $$
-Here $v$ is the named predicted quantity; arm contrasts use the zero-effect
-baseline with the same definition. Negative skill means worse than predicting no
+Here $d_N$ is the actual slope-parameter displacement from the fork, or the
+branch-minus-joint slope vector for arm contrasts. Negative skill means worse than predicting no
 motion or no intervention effect. Mathematically zero or empirically unresolved
 denominators receive an explicit unresolved label, not an arbitrary numerical
 floor. Do not fit percentage-accuracy cutoffs. Multiple seeds, forks, and horizons
@@ -94,6 +94,15 @@ Do not choose a winning horizon, target subset, or new model after seeing these
 outcomes. Two seeds probe
 initialization variability; they do not establish population-level probability
 bounds for an unrestricted function class.
+
+The affine modal forecast is defined by the fork Jacobian:
+$$
+\widehat e_H(N)=e_H(0)+J_H(0)(\widehat\theta_N-\theta_0).
+$$
+The fixed-map models use their already-issued `effective_pure_eH` and
+`effective_with_remainder_eH` arrays. Evaluating the nonlinear network at a large
+affine-predicted parameter vector is not a linear modal forecast and must not be
+reported as one. All ten functions remain in the panel without eligibility exclusions.
 
 Audit coarse disequilibrium, omitted force, conditioning, numerical validity,
 actual training/evaluation losses, and signed travel for every case. A large
