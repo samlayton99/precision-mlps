@@ -99,19 +99,17 @@ sensitivities, and where sensitivity changes become indispensable.
 
 ## 2. Give the same initial force two different kinds of feedback
 
-**Example: removing contraction leaves a very weak outward force.** The
-completed degree-9 experiment removes loss penalties on modes 2–8 from every
-parameter block. After coarse rebalancing, the effective mean-gamma velocity
-is positive in every tested starting case, but only
-$2.85\times10^{-12}$ to $7.59\times10^{-12}$. Its mean-travel contribution
-over physical time 40 is $1.14\times10^{-10}$ to $3.04\times10^{-10}$.
-Removing the inward driver does not recover the intended scale. The
-[ablation evidence](d34_coarse_balance_stagnation_details.md#removing-the-generated-error-penalty)
-separates this tiny persistent motion from the initial coarse transient.
+**Example: the same initial sine force develops different motion.** From
+the existing sine 600k checkpoints, ordinary GD increases mean gamma by a
+median $8.46\times10^{-4}$ over the next 10k updates. Keeping the effective
+sensitivities fixed reduces that growth by a paired median
+$3.80\times10^{-4}$; keeping the supplied errors fixed increases it by
+$1.54\times10^{-4}$. Each branch starts with the same force. The
+[matched comparison](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/existing_10k/README.md)
+therefore tests how that force responds during learning.
 
 **Theory: separate the two evolving factors of the identified force.**
-The removal experiment establishes a direction, but also changes the starting
-signal. To isolate feedback, start three branches at the same checkpoint
+To isolate feedback, start three branches at the same checkpoint
 $\theta_s$. Each applies its ordinary remainder $R_a(\theta)$ plus one of
 these effective slope forces:
 
@@ -152,12 +150,14 @@ and approximation error, with forecasts issued before continuation.
 
 ## 3. What a fixed effective map can predict
 
-**Example: degree 9 motivates a reduction that sine can falsify.** The
-two-error degree-9 model retains the changing quadratic and cubic errors
-and predicts long, slow contraction. Sine develops substantial changes in
-sensitivity, so keeping that coupling fixed eventually misses its motion.
-We need a model whose success has a clear meaning and whose failure points
-to a specific missing response.
+**Example: degree 9 supports a reduction that sine falsifies.** At the
+existing 600k forks, a model with fixed effective coupling predicts
+ordinary degree-9 slope displacement over the next 200k updates to a median
+0.315% relative vector error. Its sine error is 46.7%. Retaining the full
+local derivative improves short sine forecasts, but extending that affine
+model to 200k produces a median error of 1,118%. The
+[completed comparison](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/existing_200k/README.md)
+distinguishes a useful reduction from a local approximation used too far.
 
 **Theory: first freeze the map, then let its errors relax.** Freeze the
 full-parameter effective map $T_s$ at the checkpoint. Its induced coupling
