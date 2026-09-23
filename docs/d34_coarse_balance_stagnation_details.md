@@ -1,11 +1,12 @@
 # Conditional scale stagnation: detailed derivations and evidence
 
-The [reader's exposition](d34_coarse_balance_stagnation.md) develops the argument
-as example, theory, and prediction in each section, including the frozen-readout
-scale check and the distinction between sine and degree 9. This companion
-preserves the full contraction proofs, persistence reductions, numerical bounds,
-and experiment records. Its numbered equations and detailed section references
-remain available for checking the shorter argument.
+Start with the [central reading note](d34_coarse_balance_stagnation.md) for the
+current mechanism, evidence across targets, surrogate, and conditional
+acquisition argument. This companion preserves the full contraction proofs,
+persistence reductions, numerical bounds, and experiment records. Its opening
+sections develop the degree-nine special case; Sections 12–13 develop the
+later matched-feedback framework. The degree-nine conclusions below should
+not be read as the mechanism or time scale required of every target.
 
 Why does noiseless GD continue to make so little progress toward larger slope scales after the constant and linear parts of the fit have settled? The explanation developed here is that the remaining gradient mostly corrects small quadratic and cubic errors introduced by the network itself. Correcting those errors contracts the average slope in the observed states. The large unresolved ninth-degree target supplies very little opposing force because the current features barely respond in that direction.
 
@@ -44,7 +45,14 @@ The note answers four questions in order. Each needs a different kind of result.
 3. **Why does the regime last, and for how long can acquisition be excluded?** Sections 9–10 develop and test the two-error predictor, then bound actual GD using the small amount of loss it can remove locally. Small coarse disequilibrium alone supplies neither conclusion.
 4. **What happens when we weaken the identified force?** Section 11 predicts the immediate and coupled response to selective attenuation, then states what additional control turns that response into an acquisition bound. Its proposed interventions have not yet been run.
 
-For the latest explanation, read Section 1, then [Section 9](#9-from-a-force-decomposition-to-a-persistence-prediction) and its evidence in Section 10. [Section 11](#11-perturbing-the-identified-effective-force) develops the next tests. Sections 2–5 explain the sign mechanism in detail. The technical estimates needed to evaluate the finite-time bounds are collected in Appendices A–B. Appendix C preserves the separate optimal-readout hypothesis and its unverified assumptions.
+For the current explanation, read the [central note](d34_coarse_balance_stagnation.md).
+Within this companion, Sections 2–5 prove the contraction mechanism, and
+Sections 9–10 develop the degree-nine persistence result. Section 11 preserves
+the earlier attenuation proposal; the subsequent matched-feedback experiments
+and general movement budget use [Section 12](#12-matched-feedback-tests-and-a-target-general-movement-budget).
+Section 13 examines evolving signed sensitivities. Appendices A–B contain
+neighborhood estimates; Appendix C preserves the separate optimal-readout
+hypothesis and its unverified assumptions.
 
 ## 1. What small readout disequilibrium actually controls
 
