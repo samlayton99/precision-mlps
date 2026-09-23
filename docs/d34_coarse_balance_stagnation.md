@@ -171,7 +171,7 @@ and approximation error, with forecasts issued before continuation.
 
 ## 3. What a fixed effective map can predict
 
-**Example: degree 9 supports a reduction that sine falsifies.** At the
+**Example: accuracy depends on the state and the forecast window.** At the
 existing 600k forks, a model with fixed effective coupling predicts
 ordinary degree-9 slope displacement over the next 200k updates to a median
 0.315% relative vector error. Its sine error is 46.7%. Retaining the full
@@ -179,6 +179,16 @@ local derivative improves short sine forecasts, but extending that affine
 model to 200k produces a median error of 1,118%. The
 [completed comparison](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/existing_200k/README.md)
 distinguishes a useful reduction from a local approximation used too far.
+
+The prospective ten-function panel adds a broader comparison. At 10k
+additional updates, the coupled affine forecast has a median slope-displacement
+error of 0.123%, versus 1.55% for the fixed-map error model. At 200k, the
+fixed-map model still improves on predicting no motion in all sixty starts,
+with median error 18.1%; the affine model does so in only 48, despite its
+smaller median error of 8.22%. All twelve failures are at the earliest forks.
+These observations support a useful reduced error model and a more accurate
+local coupled model, each with explicit limitations. They do not require
+either approximation to remain accurate for millions of updates.
 
 **Theory: first freeze the map, then let its errors relax.** Freeze the
 full-parameter effective map $T_s$ at the checkpoint. Its induced coupling
@@ -461,6 +471,6 @@ not been established for the stalled trajectories.
 **Prediction.** Record coefficient magnitudes alongside their measured
 contribution to the evolution of $F_a$. A role for readout growth or shrinkage
 must predict a signed change in that force or its persistence. The
-[proposed perturbation protocol](../experiments/expD34_readout_race/README.md#proposed-effective-force-perturbations)
+[matched-feedback protocol](../experiments/expD34_readout_race/README.md#proposed-effective-force-perturbations)
 imposes no readout-size constraint and allows readouts and geometry to respond
 together. It specifies how positive and negative outcomes refine the theory.

@@ -85,6 +85,8 @@ issued before its backbone advanced.
 | Half-step control: same starts, matched physical time | 10 | 30 | 400k actual updates, equivalent to 200k primary |
 | Posthoc checks of all three 10k sign misses | 3 per control | 18 total | 10k primary-equivalent |
 | New functions: 10 targets, seeds 22 and 23, 3 forks | 60 | 180 | 200k |
+| New-function degree and half-step controls: seed 22, 400k fork | 10 per control | 60 total | 200k primary-equivalent |
+| Posthoc new-function 50k sign check | 1 per control | 4 total | 50k primary-equivalent |
 | Optional stress test: 5 targets, seeds 0 and 20, 2 forks | 20 | 60 existing branches extended | 500k and 2m |
 
 The three primary forks are 100k, 400k, and 600k. The long panel uses sine,
@@ -369,7 +371,8 @@ reference diagnostics, not universal conditions for precision approximation.
 
 The independent first/second-step audit verifies the matched-force identities
 below $5.6\times10^{-17}$; CPU/Runpod/Modal parameter discrepancies in the
-pilot are below $7\times10^{-18}$. All 80 tested 50k/200k control-contrast
+pilot are below $7\times10^{-18}$. In the original panel, all 80 tested
+50k/200k control-contrast
 signs survive degree and step refinement. At 200k, the largest relative
 vector-contrast changes are $2.64\times10^{-8}$ for degree 129 and
 $1.79\times10^{-4}$ for the half-step run at matched physical time.
@@ -379,6 +382,19 @@ controls. These are model misses. Refinement discrepancies are sensitivity
 evidence, not certified numerical-error intervals or model-error tolerances.
 The corresponding raw records remain in `analysis/controls_200k/` and
 `analysis/miss_controls/`.
+
+The new-function controls preserve all 120 paired contrast signs across
+10k, 50k, and 200k. Maximum relative vector-contrast changes are
+$5.46\times10^{-5}$ under degree refinement and $5.31\times10^{-5}$ under
+step refinement. These locked controls cover seed 22 at the 400k fork;
+they do not test the early-fork forecast outliers. A separate exact-case
+check confirms the 50k residual-clamp sign miss for `gauss_right`, seed 23,
+fork 400k: the issued mean-gamma contrast is $+8.00\times10^{-4}$, while
+the primary and both refined trajectories give $-2.61\times10^{-4}$.
+The largest refinement shift is $7.53\times10^{-9}$. This is a resolved
+forecast failure, retained in the assessment without changing the prediction.
+The [new-function report](analysis/heldout/README.md) retains the comparison
+tables and their exact scope.
 
 All 34 focused implementation and analysis tests pass. The repository's full nonslow
 suite reports 783 passed, 17 failed, 9 skipped, and 4 deselected. None of the
@@ -393,6 +409,10 @@ padding, including queue waits; it is not an exact billing statement.
 The stopped long-panel extension, including its cancelled work, remains in
 the accounting. Its last complete common stress-test tier is 2m updates;
 partially completed later states are not substituted for the primary horizons.
+All reservations are reconciled: the complete campaign accounts for
+**5.204 GPU-hours of the authorized 10**, including pilots, failed or guarded
+attempts, controls, and the stopped extension. This uses the conservative
+Modal accounting just described. No campaign GPU jobs remain active.
 
 Inputs, forecasts, snapshots, source hashes, receipts, and analysis tables
 are retained beneath this directory. Large arrays are ignored by Git.
@@ -401,7 +421,8 @@ without changing the running kernel. Modal volume `d34-effective-feedback`
 retains immutable run capsules and full 1k-spaced histories under
 `d34-feedback-{existing,fresh,long}-{joint,freeze_map,clamp_residual}-dc2804b`.
 Local headline snapshots retain each reported horizon. Runpod artifacts and
-scheduler ledgers are under `raw/{fresh_backbone,controls,miss_controls}`.
+scheduler ledgers are under `raw/{fresh_backbone,controls,miss_controls}`
+and `raw/{heldout,heldout_controls,heldout_miss_controls}`.
 The analysis entry point is
 `experiments.expD34_readout_race.effective_feedback_analysis`; pass one cohort
 at a time with its matching prediction manifest so repeated starts are not
@@ -413,7 +434,7 @@ matching their retained local copies by SHA256. Current restart states,
 analysis endpoints, early history, selected later milestones, final states,
 traces, and provenance remain available. The exact receipts are
 `execution/cleanup.json` and `execution/cleanup_legacy.json`; retained files
-were checked again after deletion. Unique older stall histories and active
-held-out runs were preserved. These are logical file bytes removed; shared
+were checked again after deletion. Unique older stall histories and all
+new-function run data were preserved. These are logical file bytes removed; shared
 filesystem free-space measurements do not give a private quota or exact
 billing change.
