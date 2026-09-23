@@ -61,7 +61,7 @@ def collect(folder):
     return dict(target='sine_mix_2_6_10', cutoff=cutoff, comparison_step=comparison_step,
         steps=steps.tolist(), rows=rows, source_sha256=sources,
         plotting_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        evidence_role='FP64 target-weighted spectra and single-cutoff lower bounds; existing primary timing endpoints independently interval-certified',
+        evidence_role='FP64 Fourier-model spectra and single-cutoff bounds for that approximate model; not Theorem 1 estimates or transferred tanh bounds. Existing primary timing endpoints independently interval-certified.',
         gpu_hours=0)
 
 
@@ -89,7 +89,7 @@ def plot(data, output):
     axes[0].axhline(.01, color=gray, lw=.8, ls=':', zorder=0)
     axes[0].set(title='A  Target energy in slow modes',
         xlabel=r'Per-update rate cutoff $t$ ($a_i=\eta_\gamma\mu_i$)',
-        ylabel=r'Target energy below cutoff, $S_\gamma(t)$ (%)',
+        ylabel=r'Computed slow target energy, $\widetilde S_\gamma(t)$ (%)',
         xscale='log', yscale='log', xlim=(1e-10, .6), ylim=(1e-6, 130))
     axes[0].set_xticks([1e-10, 1e-6, 1e-2])
     axes[0].set_yticks([1e-6, 1e-4, .01, 1, 100])
@@ -100,8 +100,8 @@ def plot(data, output):
         xlim=(1000, 30000000), ylim=(.01, 100))
     axes[1].set_xticks([1e3, 1e5, 1e7])
     axes[1].set_yticks([.01, 1, 100], ['0.01', '1', '100'])
-    axes[1].legend(handles=[Line2D([], [], color=ink, lw=1.6, label='Full spectrum'),
-        Line2D([], [], color=ink, lw=1.2, ls='--', label=r'Lower bound at $t=10^{-6}$')],
+    axes[1].legend(handles=[Line2D([], [], color=ink, lw=1.6, label='Fourier-model prediction'),
+        Line2D([], [], color=ink, lw=1.2, ls='--', label='Bound from computed mass')],
         loc='upper right', fontsize=8, frameon=False, handlelength=2)
     for ax in axes:
         ax.xaxis.set_minor_locator(NullLocator())

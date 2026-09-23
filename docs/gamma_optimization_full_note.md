@@ -2,11 +2,27 @@
 
 [PDF](gamma_optimization_full_note.pdf) · [LaTeX source](gamma_optimization_full_note.tex) · [Short PI brief](gamma_optimization_pi_brief.pdf)
 
-Small gamma smooths the features. To turn this into a statement about optimization, we must show that some part of the target lies in directions on which the resulting kernel acts weakly. This note supplies that missing step, proves the learning-time consequences, and explains how retaining the full kernel yields the sharp predictions in the experiments.
+Small gamma smooths the features. Whether that slows readout learning depends on the fixed dictionary geometry and on which directions the target needs. This note proves an explicit gamma-dependent lower bound and explains a separate, more detailed calculation that accurately predicts the measured training times.
 
-There are two levels of conclusion. An explicit bound on high-frequency kernel action guarantees slow target energy and a learning delay under stated target and geometry conditions. That bound can be conservative. A calculation retaining the whole gamma-filtered kernel gives much sharper, target-specific intervals. The measured factor of 986.59 belongs to the second calculation; it is not the sharpness of the first bound.
+**We computed the full target-weighted spectrum of the Fourier-constructed kernel for every plotted gamma.** Here "target-weighted spectrum" means the kernel eigenvalues together with the target's squared projections onto their eigenspaces. The predicted curves use all those rates and weights. They do not use Theorem 1's scalar estimate of slow target energy.
+
+**Theorem 1 and the plotted timing predictions are two branches of the argument.** Both start from the same Fourier construction. Theorem 1 replaces detailed matrix and spectral information with inequalities to obtain a compact guarantee. The plotted predictions instead compute the singular value decomposition of the constructed feature matrix and evaluate its complete GD curve. Theorem 2 bounds the difference between that curve and the original tanh model. The measured delay factor of 986.59 tests this second branch; the numerical sharpness of Theorem 1 on that experiment has not been established.
 
 **Notation.** Throughout this note, $\mu_i$ denotes a kernel eigenvalue. The symbol $\lambda=\gamma h$ is reserved for dimensionless bandwidth when the centers have spacing $h$. The physical slope is $\gamma$. The step size is $\eta_\gamma$, the largest kernel eigenvalue is $L_\gamma$, and $a_i=\eta_\gamma\mu_i$ is a per-update decay rate. Norms are Euclidean for vectors and spectral for matrices. Every additional symbol is defined where it enters. Earlier notes used $\lambda_i$ for eigenvalues and $\beta$ for bandwidth; this note supersedes that notation.
+
+## Reading map: what is assumed, approximated, and calculated
+
+**The training problem is fixed before any approximation.** Inputs, centers, and one common positive slope specify the frozen tanh features. Only raw readout coefficients and a bias are trained, starting at zero, with squared loss and a fixed GD step satisfying $0<\eta_\gamma L_\gamma\le1$. These are assumptions of the learning-time statements. They do not describe training the hidden features or Adam. Equispaced centers are used in the main experiment but are not required by the finite construction. The finite training grid defines the problem; no continuous-data or infinite-width limit is being approximated here.
+
+**There are two changes to the feature function (Lemma 2).** First, an auxiliary repeating square wave replaces the single step before smoothing; its distant extra transitions introduce an error. Second, we keep only $Q$ of its smoothed Fourier harmonics; the omitted harmonics introduce another error. Their sum bounds the difference from the original tanh feature. Increasing the half-period $T$ controls the distant transitions, while increasing $Q$ at fixed $T$ controls the omitted harmonics. This is the model approximation shared by both branches. Smoothing the original step into tanh is an exact identity (Lemma 1).
+
+**Theorem 1 adds inequality slack (Sections 5–6).** It replaces matrix action by separate operator norms and a worst-case multiplier, bounds how much a weak direction can overlap fast modes, bounds the target's overlap with slow modes, and then treats all slow rates as one cutoff. These are valid inequalities whose gaps need not vanish when the Fourier approximation becomes accurate. They do not arise from failing to compute enough eigenvalues. The theorem deliberately avoids needing the full target-weighted spectrum in its bound.
+
+**The plotted forecasts use the other branch (Section 7).** We assemble the finite Fourier feature matrix, compute its full singular value decomposition, project the target onto the resulting sample-space modes, and sum every mode's exact GD decay for that approximate model. This calculation is repeated for each gamma. In exact arithmetic, diagonalization and the GD sum introduce no further model approximation. Theorem 2 adds an error envelope to transfer the result to the original tanh problem. Its envelope can itself be conservative. A full spectrum of the original tanh matrix was also computed as an independent reference.
+
+**Arithmetic error is a third, separate issue (Section 9).** Computer evaluation of waves, multipliers, products, and singular vectors uses finite precision. The analytic Fourier remainder alone does not enclose that rounding. The primary timing endpoints received an independent interval-arithmetic check. The plotted spectral masses are floating-point diagnostics.
+
+The reader should therefore follow a fork, not a single chain: **Fourier construction → Theorem 1's inequality guarantee**, or **Fourier construction → full spectral calculation → Theorem 2's transfer bound → timing intervals**. Figure 1 uses the computed spectrum and its one-cutoff corollary; Figure 2 compares the full spectral forecast with training. Neither figure evaluates Theorem 1's estimate from its target-overlap and geometry constants.
 
 ## 1. The model and the optimization question
 
@@ -183,11 +199,15 @@ $$
 
 **Proof.** The periodic square wave $\operatorname{sign}(\sin(\pi z/T))$ agrees with $\operatorname{sign}(z)$ on $(-T,T)$. Their difference has magnitude at most two outside. After smoothing, its magnitude is at most $1-\tanh(\gamma(T-z))+1-\tanh(\gamma(T+z))$, bounded by the first term of (6). The square wave has odd sine coefficients $b_\ell$; smoothing multiplies each by (5), giving an absolutely convergent series. For odd $k$, the smoothed coefficient equals $2\pi\operatorname{csch}(dk)/(\gamma T)$. At $k\ge2Q+1$, use $\operatorname{csch}(dk)\le2e^{-dk}/(1-e^{-2u})$ and sum the geometric series with ratio $e^{-2d}$. This proves the second term. $\square$
 
+**Where the approximation enters.** In (6), the first term pays for the artificial transitions at distance at least $T-R_0$ from our evaluation region. The second pays for the frequencies above the last retained harmonic. Even an infinite harmonic sum at fixed $T$ represents a smoothed periodic square wave; increasing $Q$ alone does not remove its distant-transition error. Choosing $T,Q$ changes our mathematical representation, not the original network, center set, or training protocol.
+
 Define three matrices, giving their entries so their roles are explicit:
 
 - $F$ has $m$ rows and $2Q+1$ columns: $1,\sin(\omega_1x),\cos(\omega_1x),\ldots$, sampled at the inputs and divided by $\sqrt m$. It contains only the sample geometry.
 - $C$ has $2Q+1$ rows and $W+1$ columns. Its bias row is $(1,0,\ldots,0)$, and its remaining bias-column entries are zero. For hidden column $j$, $C_{2\ell-1,j}=b_\ell\cos(\omega_\ell c_j)$ and $C_{2\ell,j}=-b_\ell\sin(\omega_\ell c_j)$. It contains only the center geometry and step coefficients.
 - $D_\gamma$ is diagonal with entries $1,M_\gamma(\omega_1),M_\gamma(\omega_1),\ldots$. It contains all the gamma dependence.
+
+The order of action is $\theta\mapsto C\theta\mapsto D_\gamma C\theta\mapsto FD_\gamma C\theta$: neuron coefficients become wave amplitudes, those amplitudes are attenuated, and the resulting function is evaluated at the inputs. $F$ is an evaluation matrix, and $C$ encodes the center-dependent phases. Neither operation assumes an orthogonal projection into or out of Fourier space. The original readout weights remain the parameters; independently training all wave amplitudes would change the problem.
 
 **Proposition 2 (finite factorization and kernel error).**
 
@@ -209,6 +229,8 @@ $$
 **Proof.** Expand $\sin(\omega(x-c))=\sin(\omega x)\cos(\omega c)-\cos(\omega x)\sin(\omega c)$ to obtain (7). The bias is exact, and each normalized hidden column has error norm at most $e_{\gamma,Q}$. Summing squared column errors bounds the Frobenius norm, hence the spectral norm, by $\delta_\gamma$. Set $H=J_\gamma-\widetilde J_\gamma$ and expand $K_\gamma-\widetilde K_\gamma=H\widetilde J_\gamma^T+\widetilde J_\gamma H^T+HH^T$ to obtain (8). $\square$
 
 The sampled waves in $F$ need not be orthogonal, and $CC^T$ need not be diagonal. Therefore $M_\gamma(\omega)^2$ is not generally an individual finite-kernel eigenvalue. Equation (7) retains both effects. It constructs the prediction using fixed geometry and explicit multipliers; it is not a fit to an optimization trajectory.
+
+**Exact operation after the approximation.** Once $\widetilde J_\gamma$ is defined, multiplying it by its transpose gives (7) exactly in real arithmetic. No off-diagonal entries of $CC^T$ are dropped and no waves are declared to be kernel eigenvectors. The discrepancy from the original $K_\gamma$ comes from approximating the features. The bound $\Delta_\gamma$ can overestimate that discrepancy because its proof uses Frobenius and triangle inequalities.
 
 ## 5. The missing implication: attenuation forces slow target energy
 
@@ -309,9 +331,36 @@ in place of $A_\gamma$. For any class of targets with $\alpha\ge\alpha_0$, repla
 
 The positive lower slope endpoint makes this particular periodic approximation uniform. This corollary does not assert a sharp bound over all $0<\gamma\le\bar\gamma$, heterogeneous slopes, or varying center sets. Its constants can be large. We have not established that this new coarse corollary is tight on the reported experiment.
 
-## 6. Why the short argument is not automatically a sharp time law
+## 6. Where Theorem 1 loses information
 
-Theorem 1 loses information by bounding a product with separate operator norms, replacing all high-frequency multipliers by one worst-case value, and converting a single action bound into spectral mass. Corollary 1 then treats every mode below the cutoff as if it decayed at that cutoff. These are valid inequalities; none is generally an equality. Increasing $Q$ controls the approximation error but does not remove these other sources of slack.
+The Fourier remainder and the slack in Theorem 1 are different quantities. The following steps identify the slack even if the approximate kernel were exact, so that $\Delta_\gamma=0$.
+
+**Inequality 1: replace the actual high-frequency action by worst-case amplification.** Write $F_H=F_{\ge\Omega}$ and similarly for $C_H,D_H$. The first proof step uses
+
+$$
+\|C_H^TD_HF_H^Tv\|^2
+\le \|C_H\|^2\|D_H\|^2\|F_H\|^2
+\le B_\Omega M_\gamma(\Omega)^2.
+$$
+
+The first inequality allows the largest amplification of each matrix, even when the corresponding directions do not align. The second replaces every retained high-frequency attenuation by its largest allowed value. Both can overestimate the action on the particular direction $v$. Adding $\eta_\gamma\Delta_\gamma$ then pays for the original-to-Fourier kernel discrepancy, using a worst-case error bound.
+
+**Inequality 2: replace a distribution of fast rates by its cutoff.** With $a_i=\eta_\gamma\mu_i$, the proof uses
+
+$$
+t\|P_{\rm fast}v\|^2
+\le\sum_{a_i>t}a_i|u_i^Tv|^2
+\le v^T(\eta_\gamma K_\gamma)v
+\le A_\gamma.
+$$
+
+It thereby bounds $\|P_{\rm fast}v\|$ by $\sqrt{A_\gamma/t}$ without retaining the individual rates or weights. Fast rates much greater than $t$ can make this estimate loose.
+
+**Inequality 3: discard detailed target alignment.** The proof uses Cauchy--Schwarz and bounds projection norms by one to obtain $\alpha\le\sqrt{S_\gamma(t)}+\sqrt{A_\gamma/t}$. The actual angles between the target and the projected direction $v$ can give a much larger slow mass than this guarantees. If $\alpha\le\sqrt{A_\gamma/t}$, the resulting guarantee is zero, even when the actual target has slow energy.
+
+**Inequality 4: replace all slow-mode decays by one rate.** Corollary 1 drops the fast-mode contributions to the residual and replaces each remaining $a_i\le t$ by $t$. This gives $\sqrt{S_\gamma(t)}(1-t)^n$. Modes with $a_i\ll t$ actually persist much longer. This source of slack remains even when $S_\gamma(t)$ is computed exactly from a full spectrum. Figure 1 illustrates this last loss only; it does not evaluate inequalities 1–3.
+
+These steps provide a general lower bound, not an approximate equality. Making the Fourier feature error small does not make their gaps small. We have not measured all of these gaps for the primary experiment, so the note makes no claim that any one is its dominant source of conservatism.
 
 There is also no general matrix ordering from increasing the filter entries alone. For an algebraic example, take
 
@@ -323,9 +372,21 @@ Although the diagonal entries of $D$ are at most those of the identity, $\det(G-
 
 Under additional simultaneous diagonalization, the simpler statement does hold: if an orthonormal frequency basis diagonalizes both the reference kernel and the smoothing operator, then the filtered kernel eigenvalues are $M_\gamma(\omega)^2\mu_{\rm step}(\omega)$ in that basis. Multiplying the two diagonal operators proves this immediately. Our finite model is not assumed to have this property. Equally spaced centers alone do not remove boundaries, sampling effects, or aliasing.
 
-## 7. Sharp timing by retaining the entire filtered kernel
+## 7. Compute the full spectrum of the Fourier-constructed kernel
 
-We now keep all couplings and all target weights in (7). Let $\widetilde K_\gamma\widetilde u_i=\widetilde\mu_i\widetilde u_i$ denote its positive modes, $\xi_i=\widetilde u_i^Ty$, and $y_\perp=y-\sum_i\xi_i\widetilde u_i$. Set $q_i=1-\eta_\gamma\widetilde\mu_i$ and assume both the true and approximate kernels satisfy the stable-step condition at the prescribed step. Define
+This is the second branch, starting again from Proposition 2 rather than substituting Theorem 1's lower bound. Fix $T,Q$ and build $F,C$ once. For each gamma, calculate $D_\gamma$ and assemble $\widetilde J_\gamma=FD_\gamma C$. Then compute its singular value decomposition,
+
+$$
+\widetilde J_\gamma=U\Sigma V^T,
+\qquad
+\widetilde K_\gamma=U\Sigma^2U^T.
+$$
+
+Thus the squared singular values give all nonzero kernel eigenvalues, and the columns of $U$ give their sample-space eigenvectors. Project the target onto these vectors and retain its perpendicular residual. This is the full target-weighted spectrum. The plotted forecasts were calculated this way for every gamma. The implementation need not materialize the much larger sample-by-sample kernel to obtain its spectrum.
+
+Here "full" means all modes of this finite Fourier-constructed matrix, with all center couplings and sample nonorthogonality included. The finite number of retained harmonics is still an approximation to tanh, controlled by Lemma 2. SVD and the following spectral sum are exact operations on that approximate model in real arithmetic; they do not use inequalities 1–4 from Section 6. Floating-point implementation error is discussed separately in Section 9.
+
+Let $\widetilde K_\gamma\widetilde u_i=\widetilde\mu_i\widetilde u_i$ denote its positive modes, $\xi_i=\widetilde u_i^Ty$, and $y_\perp=y-\sum_i\xi_i\widetilde u_i$. Set $q_i=1-\eta_\gamma\widetilde\mu_i$ and assume both the true and approximate kernels satisfy the stable-step condition at the prescribed step. Define
 
 $$
 \widetilde E_\gamma(n)^2=
@@ -334,6 +395,8 @@ $$
 $$
 
 This is GD in the approximate filtered feature model. It is not a projection of the original GD residual onto a different basis. Proposition 1 proves its formula.
+
+**Which original-model information is used?** The forecast uses the prescribed step, inputs, centers, target, and analytic multipliers. Its spectrum comes from $FD_\gamma C$. A separate SVD of the original tanh feature matrix supplies a reference comparison. The action refinement below also consults the original matrix to estimate the discrepancy; the analytic-remainder route does not require those directional actions. No decay rate is fitted to optimizer checkpoints. Numerically diagonalizing a new matrix for each gamma is part of this calculation, so this is a dictionary-specific prediction, not a closed scalar time law from the gamma cap alone.
 
 **Theorem 2 (transfer of the full curve).** Write $Z=K_\gamma-\widetilde K_\gamma$ and let $\|Z\|\le\Delta_\gamma$. Then
 
@@ -372,7 +435,7 @@ $$
 
 Bounds valid at different $Q$ may be intersected. For positive finite intervals $L_g\le n_\epsilon(g)\le U_g$ and $L_h\le n_\epsilon(h)\le U_h$, division gives $L_g/U_h\le n_\epsilon(g)/n_\epsilon(h)\le U_g/L_h$.
 
-This route preserves the complete target-weighted spectrum. It explains the accurate timing calculation without suggesting that the coarse guarantee in Theorem 1 has the same tightness.
+Theorem 2's transfer envelope can also have slack: its proof uses contractions and triangle inequalities, and the analytic $\Delta_\gamma$ may overestimate the actual discrepancy. The difference from Theorem 1 is that this slack surrounds a fully computed approximate-model curve. If that curve equals the true one and $Z=0$, the transfer error is zero; Theorem 1's inequalities can remain strict even in that situation.
 
 ## 8. The intermediate spectral evidence and the executed training
 
@@ -382,20 +445,22 @@ $$
 f^\star(x)=\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x).
 $$
 
-All readouts start at zero. Gamma is 8, 12, 16, or 64, and the saved GD steps satisfy $\eta_\gamma L_\gamma\simeq0.5$. The Fourier construction uses $T=8$ and up to $Q=2048$ odd harmonics. Its target weights come from a rectangular SVD of $FD_\gamma C$, with no fitted training rates.
+All readouts start at zero. Gamma is 8, 12, 16, or 64, and the saved GD steps satisfy $\eta_\gamma L_\gamma\simeq0.5$. The Fourier construction uses $T=8$ and up to $Q=2048$ odd harmonics. Its target weights come from a rectangular SVD of $FD_\gamma C$, with no fitted training rates. The plotted curves and masses below use $Q=2048$; timing intervals can combine valid bounds from several $Q$ values.
+
+For clarity, write $\widetilde S_\gamma(t)$ for the slow target mass of this approximate kernel. It is computed from its spectrum, including the perpendicular floor. Figure 1's dashed bound is $\sqrt{\widetilde S_\gamma(t)}(1-t)^n$ for the approximate residual $\widetilde E_\gamma(n)$. It is Corollary 1 applied to the approximate model, not Theorem 1's estimate $(\alpha-\sqrt{A_\gamma/t})_+(1-t)^n$. A lower bound for the original residual would additionally subtract the valid transfer error $d_n$ and clip at zero; Figure 1 does not plot that transferred bound.
 
 At rate cutoff $t=10^{-6}$, the numerically computed slow target masses are 4.33333%, 0.00107533%, 0.0000285067%, and 0.000148493%, respectively. These are fractions of squared target norm expressed as percentages, not residual percentages. The cutoff was chosen as an explanatory diagnostic after the experiment, not as a precommitted selection criterion.
 
 <figure>
   <img src="../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge.png" alt="Four gamma values compared by cumulative target energy in slow modes and by full-spectrum residual predictions versus single-cutoff lower bounds." style="max-width: 100%;">
-  <figcaption><strong>Figure 1. The missing link is target energy in slow modes.</strong> A shows $S_\gamma(t)$ from the gamma-filtered finite kernels; dots mark $t=10^{-6}$. The horizontal guide is target energy $10^{-4}$, or 0.01%, corresponding to a 1% residual. B compares the full-spectrum residual predictions with the lower bounds $\sqrt{S_\gamma(10^{-6})}(1-10^{-6})^n$; its horizontal guide is a 1% residual and its vertical guide is 16,013 updates. All curves here are calculations from the archived kernels, not executed trajectories. The spectra and cutoff bounds are FP64 diagnostics, not independently interval-certified spectral masses.</figcaption>
+  <figcaption><strong>Figure 1. Computed spectral mass and the information lost by using one cutoff.</strong> A shows $\widetilde S_\gamma(t)$ calculated from the $Q=2048$ Fourier-constructed kernel; dots mark $t=10^{-6}$. The horizontal guide is target energy $10^{-4}$, or 0.01%, corresponding to a 1% residual. B compares the full spectral prediction $\widetilde E_\gamma(n)$ with $\sqrt{\widetilde S_\gamma(10^{-6})}(1-10^{-6})^n$. This dashed bound uses the computed mass, not Theorem 1's analytic estimate. It bounds the approximate model; the true-kernel transfer error is not subtracted here. The horizontal guide is a 1% residual and the vertical guide is 16,013 updates. All curves are FP64 kernel calculations, not executed trajectories or independently interval-certified spectral masses.</figcaption>
 </figure>
 
-For gamma 8, Corollary 1 evaluated with the computed mass gives $E_8(16013)\gtrsim0.20486$; the full-spectrum prediction is $0.22967$. At gamma 64 the predicted residual is $0.00999980$. The same cutoff gives a gamma-8 necessary time of 3,035,752 updates, versus the full prediction and executed crossing of 15,798,313. This visible looseness is exactly why the final timing calculation retains more spectral information. A single cutoff does not order all intermediate gammas: at this cutoff gamma 16 has less mass than gamma 64, despite taking longer to reach 1%.
+For gamma 8, Corollary 1 evaluated with the computed mass gives $\widetilde E_8(16013)\gtrsim0.20486$; the full-spectrum prediction is $0.22967$. At gamma 64 the predicted residual is $0.00999980$. For the approximate model, the same cutoff gives a gamma-8 necessary time of 3,035,752 updates, versus its full prediction and the executed tanh crossing of 15,798,313. This difference isolates the effect of using one rate cutoff on a spectrum we already computed in full. It is not a measured gap for Theorem 1. A single cutoff does not order all intermediate gammas: at this cutoff gamma 16 has less mass than gamma 64, despite taking longer to reach 1%.
 
 <figure>
   <img src="../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.png" alt="Analytic gamma attenuation, predicted GD curves over actual GD checkpoints, and actual Adam checkpoints for the sine-mixture target." style="max-width: 100%;">
-  <figcaption><strong>Figure 2. Connect the mechanism to executed optimization.</strong> A evaluates the analytic multiplier; frequency guides mark the three target frequencies. B shows kernel-predicted GD curves as lines, actual saved GD residuals as open circles, and measured 1% crossings as diamonds. The dotted verticals locate predicted crossings. C connects actual Adam checkpoints under the same optimizer settings across gammas. The GD proof does not apply to Adam. Both optimizers start at zero. GD measurements are subsampled by update count for visibility, with every saved residual retained in the evidence.</figcaption>
+  <figcaption><strong>Figure 2. Full spectral forecasts compared with executed optimization.</strong> A evaluates the analytic multiplier; frequency guides mark the three target frequencies. B's lines are the complete spectral GD sum for $FD_\gamma C$ at $Q=2048$, not Theorem 1's lower bound or an error envelope. Open circles are actual saved GD residuals; diamonds mark measured 1% crossings. Dotted verticals locate approximate-model crossings. The certified intervals reported in the text additionally account for discrepancy from the tanh model. C connects actual Adam checkpoints under the same optimizer settings across gammas; the GD proof does not apply to Adam. Both optimizers start at zero. GD measurements are subsampled by update count for visibility, with every saved residual retained in the evidence.</figcaption>
 </figure>
 
 The executed GD crossing counts are 15,798,313; 186,057; 61,792; and 16,013. The corresponding independently certified combined intervals are [15,784,048, 15,812,623], [186,057, 186,058], [61,792, 61,792], and [16,013, 16,013]. Their gamma-8/gamma-64 ratio is bounded by 985.70--987.49, versus a measured 986.59. All 1,796 saved GD residuals agree with the $Q=2048$ filtered-model predictions within $8.92\times10^{-15}$ in absolute relative residual. This numerical agreement is distinct from interval certification.
@@ -450,7 +515,7 @@ $$
 
 Substitution into (5) proves that fixed $\lambda$ preserves attenuation at a fixed grid-relative frequency. For $h=2/N$ and $W=N+2\lceil\sqrt N\rceil+1$, fixed positive $\lambda$ implies $\gamma=\lambda N/2=\Theta(W)$. This does not imply constant training time across widths: the target's sampled spectrum, geometry, and normalized rates still enter (1).
 
-The complete logical chain is now explicit. Gamma controls the feature multiplier. Theorem 1 bounds kernel action on a specified subspace and converts target overlap with it into slow spectral mass and a delay. Theorem 2 retains all geometric couplings and target weights, allowing much tighter, case-specific time intervals. The empirical spectral plot checks the intermediate allocation of target energy; the executed curves check its learning consequences. No theorem here states that larger gamma helps every target, that a gamma cap alone guarantees difficulty without a target condition, or that the coarse subspace bound explains the measured factor with the accuracy of the full-kernel calculation.
+The shared starting point is gamma's explicit feature multiplier. Theorem 1 converts it to a lower bound through geometry norms, a target-overlap condition, and four sources of inequality slack. The plotted forecast instead constructs a finite Fourier feature matrix for each gamma, computes its SVD, keeps all target weights, and uses Theorem 2 to transfer its curve to the tanh model. Close agreement is expected when that matrix accurately approximates the original one; it validates the quantitative construction and timing calculation, but does not establish sharpness of Theorem 1 or a universal scalar law for a gamma cap. The numerical evaluation of that coarse bound on the primary geometry remains separate, unfinished work.
 
 ## Sources and reproduction
 
