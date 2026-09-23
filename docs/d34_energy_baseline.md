@@ -6,8 +6,9 @@ The argument below makes this baseline explicit before interpreting the
 [much tighter moving-reference certificate](d34_certified_instance.md).
 It proves a statement for initial states satisfying stated norm and loss
 bounds. Outward-rounded checks now verify those assumptions for all 18
-seed-30 independent-width checkpoints listed in Section 4, so their entire
-next 20,000-update windows admit this generic exclusion.
+seed-30 independent-width checkpoints listed in Section 4. Their sharper
+initial loss bounds extend this generic exclusion to 50,000 additional
+updates.
 
 **Notation.**
 

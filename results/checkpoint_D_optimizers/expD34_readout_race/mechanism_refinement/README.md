@@ -26,8 +26,8 @@ This report records the intervention evidence. The
 explains the argument, the
 [mechanism theorem note](../../../../docs/d34_mechanism_rate_theorems.md)
 gives the conditional results, and the
-[certified instance](../../../../docs/d34_certified_instance.md)
-proves a finite exclusion window for one empirical GD problem.
+[certified instances](../../../../docs/d34_certified_instance.md)
+prove finite exclusion windows for two empirical GD problems.
 
 **Table 1. Notation shared with the acquisition theorem.**
 
