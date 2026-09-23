@@ -1,6 +1,6 @@
 # Gamma controls readout learning speed
 
-[PDF](gamma_optimization_pi_brief.pdf) · [LaTeX source](gamma_optimization_pi_brief.tex)
+[PDF](gamma_optimization_pi_brief.pdf) · [LaTeX source](gamma_optimization_pi_brief.tex) · [Full argument and proofs](gamma_optimization_full_note.pdf)
 
 **A small-gamma network can represent a target and still take far longer to learn it.** Gamma smooths the features, suppressing fine spatial variation. This changes the readout kernel. Once we calculate that kernel, classical gradient-descent theory predicts the learning curve and its crossing of an accuracy threshold.
 
@@ -73,7 +73,7 @@ Here $\Gamma$ is Euler's gamma function. The final equality follows from $\Gamma
 
 For $z>0$, the derivative of $z/\sinh z$ has numerator $\sinh z-z\cosh z<0$: it starts at zero and its derivative is $-z\sinh z<0$. Consequently, a cap $\gamma\le\bar\gamma$ bounds the multiplier by $M_{\bar\gamma}(\omega)$. Also, $\sinh z\sim e^z/2$ gives $M_\gamma(\omega)\sim2ze^{-z}$. This proves the explicit attenuation and its dependence on gamma, with no periodic assumption. $\square$
 
-Writing the residual as $r_n=y-\Phi_\gamma\theta_n$, the standard GD identity follows from $r_{n+1}=(I-\eta_\gamma K_\gamma)r_n$ and $r_0=y$. Diagonalization gives a factor $(1-\eta_\gamma\lambda)^n$ in each eigenmode of eigenvalue $\lambda$. Thus gamma changes the learning rates through the kernel, and the target's energy in those directions determines the delay. The cap bounds attenuation; the numerical delay is specific to the target and geometry.
+Writing the residual as $r_n=y-\Phi_\gamma\theta_n$, the standard GD identity follows from $r_{n+1}=(I-\eta_\gamma K_\gamma)r_n$ and $r_0=y$. Diagonalization gives a factor $(1-\eta_\gamma\mu_i)^n$ in each eigenmode of eigenvalue $\mu_i$. We reserve $\lambda=\gamma h$ for dimensionless bandwidth at center spacing $h$. The [full note](gamma_optimization_full_note.pdf) proves how weak kernel action and target overlap imply slow-mode energy, and distinguishes that potentially conservative guarantee from the sharp finite-kernel timing calculation. The cap bounds attenuation; the numerical delay is specific to the target and geometry.
 
 [1] Y. Yao, L. Rosasco, and A. Caponnetto. [On Early Stopping in Gradient Descent Learning](https://yao-lab.github.io/publications/YaoCapRos07_EarlyStop.pdf). *Constructive Approximation* 26:289–315, 2007, §3.3.
 

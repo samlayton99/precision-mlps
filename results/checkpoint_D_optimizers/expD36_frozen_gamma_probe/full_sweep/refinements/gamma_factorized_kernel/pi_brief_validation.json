@@ -1,13 +1,13 @@
 {
-  "base_commit": "4ccb2c97b4742c0add4991ddada3e13cad4a0745",
+  "base_commit": "766976bdbe86e74dab701f1e330beca78eeb71b5",
   "pdf": {
     "pages": 2,
-    "bytes": 190446,
+    "bytes": 191320,
     "latex_warnings": 0,
     "all_fonts_embedded": true,
-    "visual_review": "Both final pages inspected; enlarged panel B has explicit forecast/measurement legend, measured GD checkpoints, and readable crossing labels; no overlaps or clipping",
+    "visual_review": "Both pages inspected after eigenvalue notation change and full-proof link; no clipping or overlap",
     "text_bounds_checked": true,
-    "relative_links_checked": 8,
+    "relative_links_checked": 10,
     "build_command": "latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=/tmp/gamma-pi-latex docs/gamma_optimization_pi_brief.tex"
   },
   "evidence": {
@@ -45,7 +45,7 @@
     "skipped": 9,
     "deselected": 4,
     "warnings": 10,
-    "seconds": 278.03,
+    "seconds": 279.82,
     "baseline_failure_match": true,
     "failures": [
       "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
@@ -66,12 +66,12 @@
       "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
       "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
     ],
-    "log_sha256": "73de6721458481a2675af4cd5ad6dcd7ebe3536e03e21e8b456b244cea77d22e"
+    "log_sha256": "69c9db8e7b464f3e8c567ccb351d8a8c5d3aec5ec1058ef56c52773cd22a0298"
   },
   "artifact_sha256": {
-    "docs/gamma_optimization_pi_brief.md": "66e8480aafcc6254b0a44b99a2b5aed5b52724077bed5b4b1658451af8f38480",
-    "docs/gamma_optimization_pi_brief.tex": "4f4cbc406240bffe3185923160ee6f0de20fe3aa8fb733e207e9c82151f2b869",
-    "docs/gamma_optimization_pi_brief.pdf": "0e79790d36fc836642209f4d08c58d40a68aef3c66b5cab939081e99cca98429",
+    "docs/gamma_optimization_pi_brief.md": "ebf9f74d90e13c1c9aa33cc1c9da1c5aea7cba292026150f28ece1f5d074401c",
+    "docs/gamma_optimization_pi_brief.tex": "0007319a973caee028f7eeb80d5f53f4d785f7d6d738c7f41abadb9a100dee7c",
+    "docs/gamma_optimization_pi_brief.pdf": "d34553f5f427102a7cf17738dd652447dfd1981c73c74d27ecf21b8640ec747e",
     "experiments/expD36_frozen_gamma_probe/pi_brief_figure.py": "7fd7cfb3f75324e85a8c73155ca94e5a83d098c1c3fdb9ad5ae5d93ff8420b85",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.png": "da26b716930cfa4c9f563ce668d11ea4a23a7ecd0a6844711bcff5998bfae953",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/pi_brief_three_panel.pdf": "00f11d21dd0efe5fcb8c9cf50d80c9071d7dbfbec22282bd951f486223076cfe",

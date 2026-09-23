@@ -132,10 +132,14 @@ periodic assumption.\hfill$\square$
 
 Writing the residual as $r_n=y-\Phi_\gamma\theta_n$, the standard GD identity
 follows from $r_{n+1}=(I-\eta_\gamma K_\gamma)r_n$ and
-$r_0=y$. Diagonalization gives a factor $(1-\eta_\gamma\lambda)^n$ in each
-eigenmode of eigenvalue $\lambda$. Thus gamma changes the learning rates through
-the kernel, and the target's energy in those directions determines the delay.
-The cap bounds attenuation; the numerical delay is specific to the target and geometry.
+$r_0=y$. Diagonalization gives a factor $(1-\eta_\gamma\mu_i)^n$ in each
+eigenmode of eigenvalue $\mu_i$. We reserve $\lambda=\gamma h$ for dimensionless
+bandwidth at center spacing $h$. The
+\href{\repo/docs/gamma_optimization_full_note.pdf}{full argument and proofs}
+show how weak kernel action and target overlap imply slow-mode energy, and
+distinguish that potentially conservative guarantee from the sharp finite-kernel
+timing calculation. The cap bounds attenuation; the numerical delay is specific
+to the target and geometry.
 
 \bigskip
 {\small

@@ -1,0 +1,89 @@
+{
+  "base_commit": "766976bdbe86e74dab701f1e330beca78eeb71b5",
+  "pdf": {
+    "pages": 10,
+    "bytes": 301910,
+    "final_latex_warnings": 0,
+    "all_fonts_embedded": true,
+    "text_within_page": true,
+    "visual_review": "All ten pages inspected, including both figures and every displayed proof; no clipped content or isolated final-page spill",
+    "relative_links_checked": 10
+  },
+  "notation": {
+    "eigenvalues": "mu_i",
+    "dimensionless_bandwidth": "lambda = gamma h"
+  },
+  "evidence": {
+    "spectral_source_files": 6,
+    "figure_reproduction": "PNG, PDF, and JSON byte-identical",
+    "spectrum_cutoff": 1e-06,
+    "spectral_mass_status": "FP64 diagnostic, not interval certified",
+    "primary_timing_status": "Existing independent 192-bit interval endpoints checked",
+    "preserved_collaborator_artifacts": 14
+  },
+  "proof_consistency_checks": {
+    "random_psd_cases": 500,
+    "seed": 391,
+    "nonvacuous_projector_bounds": 249,
+    "residual_steps_checked_per_case": [
+      0,
+      1,
+      1000
+    ],
+    "finite_geometry_gamma_cases": [
+      0.7,
+      1.5,
+      3.0
+    ],
+    "uniform_remainder_gamma_range": [
+      0.7,
+      3.0
+    ],
+    "uniform_remainder_slopes": 11,
+    "exact_two_point_counts": [
+      925,
+      14
+    ],
+    "interpretation": "Numerical consistency checks supplement the written proofs; they do not establish sharpness of Theorem 1"
+  },
+  "full_suite": {
+    "command": "python -m pytest -q -p no:cacheprovider -m 'not slow'",
+    "passed": 768,
+    "failed": 17,
+    "skipped": 9,
+    "deselected": 4,
+    "warnings": 10,
+    "seconds": 279.82,
+    "baseline_failure_match": true,
+    "failures": [
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+      "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+      "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+      "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+      "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+      "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+      "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+      "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+      "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+      "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+      "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+      "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+    ],
+    "log_sha256": "69c9db8e7b464f3e8c567ccb351d8a8c5d3aec5ec1058ef56c52773cd22a0298"
+  },
+  "artifact_sha256": {
+    "docs/gamma_optimization_full_note.md": "829bc7e8ec7f1469e3ae78be07f97c2eebb10ccbef7c0f3b25ff179896ea7ada",
+    "docs/gamma_optimization_full_note.tex": "c72e8972b632f175c35038765ef94213abd5a6273d77f962e78c85b2ae4a7fdd",
+    "docs/gamma_optimization_full_note.pdf": "e14ed251aaac27f867b328bc823b1b803bee23c82c292df3f6d023250b24d6c7",
+    "experiments/expD36_frozen_gamma_probe/spectral_bridge_figure.py": "1d532a40846cca5d2278544be2e0a667667576978c444193dabe27255eeecfbe",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge.png": "4508643d4399de91f4287af73e27ca9048f9d74ac40733123e4d67578cebe392",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge.pdf": "af242d8d0d214420c8875751386eccdf666797437e60efdc7c0dbebafdef3d39",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/spectral_bridge_data.json": "a1ea03c7dcac00685487631f9d52d6eb1fecf1d1ced06cdd24a2c89fafd77960"
+  },
+  "gpu_hours": 0
+}
