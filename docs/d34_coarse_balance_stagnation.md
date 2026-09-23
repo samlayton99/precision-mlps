@@ -13,12 +13,14 @@ the omitted residual are small in the audited regime. The remaining problem
 is therefore inside that force: learning changes both its driving errors and
 the sensitivities that convert those errors into slope movement.
 
-The current hypothesis is that **acquisition stalls when this coupled evolution
-cannot sustain enough outward travel before its drive relaxes or changes
-direction**. Correcting an error can contract slopes; different errors can
-oppose one another; changing readouts and geometry can change those directions.
-We have predictive evidence for parts of this mechanism across different
-targets. We do not have a universal stagnation theorem.
+The refined hypothesis is that **acquisition is slow when the remaining errors
+couple weakly to outward geometry motion, and the subsequent feedback does not
+increase that coupling fast enough**. Correcting generated error can contract
+slopes, while other errors can drive expansion. At later checkpoints, evolving
+errors improve motion forecasts. At wider, nearly affine states, the errors
+barely change and evolving sensitivities matter more. We have conditional
+theorems for these regimes, plus one numerically certified finite window;
+we do not have a universal stagnation theorem.
 
 This is the main reading note. Sections 1–2 explain the force and its direction;
 Sections 3–4 test its coupled evolution and develop a surrogate; Section 5
@@ -32,6 +34,7 @@ when they become useful; lowercase $c$ always denotes readout weights.
 | Symbol | Meaning |
 |---|---|
 | $a_j$, $\gamma_j=\lvert a_j\rvert$ | Signed slope of neuron $j$, and its magnitude or scale. |
+| $\lambda_j=h|a_j|$, $h=2/N_{\rm ref}$ | Scale relative to the construction resolution. We study $\lambda_*=0.25$; actual neuron count $W$ also includes halos. |
 | $c_j$, $\theta$ | A readout weight, and the collection of all network parameters. |
 | $e_H$ | Coefficients describing the remaining error beyond the constant and linear components. |
 | $T_a$, $F_a=T_ae_H$ | Effective sensitivity map for slopes, and the gradient contribution it produces. |
@@ -255,6 +258,82 @@ records the original-function comparisons and execution details. This remains
 evidence in one architecture and optimization setup, not a function-class
 guarantee.
 
+### 4.1 Is this restoration, or a race between readouts and geometry?
+
+**Example: an outward perturbation can survive without continuing to grow.**
+We perturb each checkpoint in a direction that increases scale while leaving
+its coarse output, coarse disequilibrium, and initial slope force unchanged
+to first order. If delayed feedback restores that geometry, the difference
+from an unperturbed run should shrink. Across 23 functions and two seeds,
+the smallest pulses retain between 99.0% and 100.3% of their directional
+offset after 20k additional updates. They show little restoring motion over
+this window. This does not exclude restoration in other directions or later.
+
+**Explanation and second test.** Slow motion can persist without an attracting
+low-scale state. Another candidate explanation is that readouts remove useful
+error before geometry has time to respond. Exact neuron copying lets us alter
+these two learning rates without changing the starting function. With four
+copies, uncompensated GD slows geometry by four and speeds aggregate readout
+learning by four. Compensating both rates recovers the original trajectory
+exactly; compensating them separately identifies their effects.
+
+**Prediction and result.** Most of the immediate slowdown follows the geometry
+rate. Readout feedback changes individual responses but is not a universal
+dominant sink for the driving error. The fixed-map model, which evolves that
+error, predicts 109 of 138 confirmation contrasts more accurately than
+holding the initial effective force constant. It therefore captures useful
+feedback beyond the initial rate change. A much smaller two-observable
+restoration model fails for some targets. The
+[complete intervention report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/README.md)
+preserves those failures and the target-level comparisons.
+
+The conclusion is specific: at these later states, coupled residual evolution
+helps explain motion; rapid restoration and universally readout-dominated
+depletion are not supported as general explanations.
+
+### 4.2 Why increasing width can make acquisition slow before errors relax
+
+**Example: the same error load can produce much less motion.** In a separate
+experiment with fresh initializations, six targets and two seeds are trained
+at actual widths 177, 705 and 1409. At the 20k checkpoints, slopes, hidden
+biases and readouts remain comparable to $W^{-1/2}$. Coarse tracking is small.
+Over the next 20k updates, evolving the errors with a frozen map predicts
+almost the same motion as holding the effective force constant. The later
+checkpoint explanation cannot simply be transplanted to these states.
+
+**Theory: almost affine features have weak fine sensitivity.** For small
+$u=ax+b$, tanh differs from $u$ by at most $|u|^3/3$. The affine part vanishes
+when projected onto fine error shapes. The surviving slope sensitivity
+contains $c\,[\operatorname{sech}^2(u)-1]x$, whose magnitude is at most
+$|c|u^2$. Thus $a,b,c=O(W^{-1/2})$ gives a force of order $W^{-3/2}$ per
+neuron, provided the target load and the coarse-balance conditioning stay
+bounded. The compensating coarse response has the same order; we include it.
+
+Consequently, when tracking satisfies the corresponding small absolute bound,
+
+$$
+|\lambda_{j,n+1}-\lambda_{j,n}|=O(\eta W^{-5/2}),
+\qquad h=O(W^{-1}).
+$$
+
+This is a conditional rate bound for the exact network. It permits changing
+sensitivities and arbitrary empirical target values. The
+[theorem and first-exit proof](d34_mechanism_rate_theorems.md#8-a-width-dependent-rate-without-freezing-the-effective-map)
+give explicit constants and an interval on which the small-parameter regime
+closes. They also show that rescaled parameters can change appreciably while
+the fine error changes only a little. We cannot extrapolate the rate beyond
+that regime to claim a much longer acquisition time.
+
+**Prediction and evidence.** Multiplying the measured per-neuron force by
+$W^{3/2}$ should remove much of its width dependence. Across these three
+widths, the median rescaled slope-force RMS is 0.628, 0.695 and 0.661.
+The corresponding rescaled slope RMS is 1.456, 1.471 and 1.466.
+These checkpoint measurements support the regime, although they do not prove
+the interval-wide assumptions. None of the 36 runs reaches $\lambda=0.25$
+through 40k updates. Their targets include mixed sine, degree five, a Gaussian,
+a compact bump, a smooth step and a kink; the result does not rely on degree
+nine's missing lower target modes.
+
 ## 5. From a motion mechanism to an acquisition bound
 
 **Example: the relevant quantity is the distance still to travel.** A neuron
@@ -327,14 +406,22 @@ or assuming stochastic updates. The
 [transport walkthrough](d34_barrier_theorem_walkthrough.md#how-the-transport-pde-fits-into-this-description)
 gives the continuous formulation.
 
-**What is established, and what remains conditional.** The new theorems prove
-acquisition bounds under explicit conditions on the effective dynamics and
-their corrections. Their useful numerical allowances remain to be established.
-The earlier new-function numerical enclosure audit establishes sufficient
-trajectory-control conditions
-only through sampled horizons of 100–1k updates, evaluated in FP64 rather than
-directed rounding. It is a separate geometric bound, not a computed certificate
-for the new theorem. Accurate longer forecasts are empirical evidence.
+**What is established, and what remains conditional.** The theorems prove
+acquisition bounds under explicit conditions on effective dynamics and their
+corrections. A moving neighborhood around the predicted trajectory lets us
+check containment by induction, rather than assume that an observed future
+path stays nearby. Numerical evaluation of this bound remains conservative
+for several targets; accurate forecasts alone do not close it.
+
+There is now one rounding-controlled ordinary-GD instance. Starting from the
+archived degree-nine checkpoint, all 177 neurons satisfy
+$\lambda_j<0.002973994$ throughout the next 20,000 updates, well below 0.25.
+The [certificate and proof](d34_certified_instance.md) bound every intervening
+state using interval arithmetic. They apply to exact GD on the archived
+empirical dataset, initialized at the checkpoint. They do not certify its
+earlier training history, floating-point training roundoff, other targets,
+or a population loss. This establishes a concrete finite exclusion result;
+extending informative bounds across targets remains a separate task.
 
 There is no privileged 200k barrier to prove. A useful exclusion time should
 follow from the starting state, the evolving force, the learning rate, and
@@ -360,13 +447,14 @@ the degree-nine example in Section 2 contracts slightly while retaining a
 large error. A theory must allow both. Their common description is the
 effective force, not a universal inward direction.
 
-**The refined hypothesis.** After the coarse transient, accessible errors and
-their evolving sensitivities determine how much sustained outward motion GD
-can produce. Correcting generated error can favor contraction. Relaxation,
-sensitivity changes, and competition among errors can weaken or redirect an
-outward drive before sufficient scale is acquired. This is a hypothesis about
-coupled dynamics whose individual pieces have experimental support; identifying
-the force alone does not prove its persistence.
+**The refined hypothesis.** After the coarse transient, the effective fine
+force determines motion. Nearly affine states suppress that force even when
+substantial target error remains. Geometry and readout correlations can evolve
+before that error appreciably relaxes. At later states, residual relaxation
+also improves predictions. Correcting generated errors and competing target
+errors can point in different scale directions. The shared explanation is
+weak or insufficiently sustained outward coupling, not one universal sign,
+one dominant parameter block, or rapid return to a fixed small-scale geometry.
 
 **The next theoretical requirement.** Determine from a checkpoint which
 aspects of sensitivity evolution must be retained, then control their effect
@@ -374,20 +462,24 @@ on outward travel. The question is how long the resulting budget stays below
 the acquisition distance. The duration should emerge from the mechanism,
 rather than being imposed by the experiment schedule.
 
-Three accomplishments should remain distinct: the force reduction is strongly
-supported in the audited GD regime; a useful coupled surrogate transfers to
-new functions; a broadly informative acquisition bound still needs tighter
-control of that surrogate's future error. None requires permanent trapping,
-and none establishes entry into the regime from initialization.
+The force reduction and coupled forecasts have evidence across functions;
+the width-dependent rate has a conditional proof; one empirical instance has
+a finite rounding-controlled certificate. A broadly useful theorem still
+needs its future-error and regime-persistence assumptions verified more
+sharply. None of these claims requires permanent trapping or establishes entry
+into the post-transient regime from initialization.
 
 Two related observations are useful but are not prerequisites for this argument.
 The [frozen-geometry readout study](../results/checkpoint_D_optimizers/expD34_readout_race/readout_scale/README.md)
 finds small, approximately $O(h)$ individual readouts at large fixed slopes,
 where $h$ is center spacing. That supports an available representation; it
 does not make readout size a scalar cause of scale failure. The
-[Adam audit](../results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/README.md)
-requires optimizer moments and their shared scaling. The GD surrogate and
-theorem above do not automatically apply to Adam.
+[Adam moment interventions](d34_adam_moment_results.md) show that changing
+tracking's second-moment input can affect scale despite its cancelling signed
+motion. The effect is small and target-dependent. Repeating the initial force
+phases fails to predict it, so an Adam explanation must also evolve the force
+and moment history. The GD surrogate and theorem above do not automatically
+apply to Adam.
 
 For proofs, use the [technical companion](d34_coarse_balance_stagnation_details.md).
 For complete measurements, use the

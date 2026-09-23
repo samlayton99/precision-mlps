@@ -128,3 +128,5 @@ def test_checkpoint_baselines_use_metric_balance_and_true_initial_gradient():
     S = JH@T
     np.testing.assert_allclose(S, S.T, atol=2e-16)
     assert np.linalg.eigvalsh(S).min() >= -1e-16
+    blocks = [T[lo:hi].T@(T[lo:hi]/d[lo:hi, None]) for lo, hi in ((0, 4), (4, 8), (8, 12), (12, 13))]
+    np.testing.assert_allclose(sum(blocks), S, atol=2e-16)

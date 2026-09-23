@@ -71,6 +71,8 @@ def issue(args):
             if qcheck is not None:
                 _, fineT, _, finee = matrices(p, x, y, d, qcheck)
                 discrepancy = np.linalg.norm((fineT@finee-effective)[:w])
+            # These are signed residual-forcing contributions, not PSD energy
+            # allocations. PSD block forms are T_block.T D_block^-1 T_block.
             blocks = [JH[:, lo:hi]@T[lo:hi] for lo, hi in ((0, w), (w, 2*w), (2*w, 3*w), (3*w, 3*w+1))]
             values = dict(constant_full_p=p-args.eta*horizons[:, None]*g,
                 constant_effective_p=p-args.eta*horizons[:, None]*effective,
@@ -87,7 +89,8 @@ def issue(args):
         sources=sources, source_sha256=ef.digest(__file__),
         issued_utc=datetime.now(timezone.utc).isoformat(), horizons=horizons.tolist(),
         evidence_role=args.role, degree=65, audit_degree=129 if qcheck is not None else None,
-        blocks=['a', 'b', 'c', 'd'], h_by_case=[2/c.get('nref', 128) for c in cases],
+        blocks=['a', 'b', 'c', 'd'], block_meaning='S_blocks are signed J_H,block T_velocity,block contributions, not PSD energy shares',
+        h_by_case=[2/c.get('nref', 128) for c in cases],
         prediction_sha256=ef.digest(args.output/'predictions.npz'),
         statement='All models use only the supplied checkpoint. Constant-driver models expose immediate mobility scaling; Schur models additionally evolve fine residuals.'))
 
