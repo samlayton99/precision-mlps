@@ -179,11 +179,11 @@ $$
 
 Thus proportional slope removes the extra exponential smoothing penalty, but an algebraic $1/W$ factor remains for $n\asymp W$; width-normalized features have $1/W^2$ instead. The update rate is $\eta\mu_n$, so a step-size rule may add another width or gamma dependence. This statement does not claim width-independent acquisition time or finite-alias monotonicity.
 
-## 6. What remains for ordinary tanh on an interval
+## 6. The separate ordinary-tanh interval result
 
 Padding the period can place the extra negative transition far from the observed input-center differences. The periodic feature can then approximate ordinary tanh accurately there. However, the actual samples and centers occupy only part of that padded period. For compatible grids the matrix takes the form $J_{\mathrm{interval}}\approx R_xJ_{\mathrm{periodic}}E_c$, where $R_x$ selects samples and $E_c$ selects centers, with the appropriate sample normalization adjusted explicitly. Its kernel contains the center mask $E_cE_c^*$ as well as the sample restriction. These masks mix frequencies.
 
-The sharp periodic theorem does not establish that these masks are a small perturbation. Controlling their action on relevant frequency bands and target directions is the missing finite-interval result. The present note supplies exact intermediary lemmas and verification code, not that final theorem.
+The sharp periodic theorem does not establish that these masks are a small perturbation. The [finite-interval theorem and full proof](gamma_uniform_grid_theorem.md) instead use an antiperiodic reference on the physical interval and retain explicit boundary corrections. That construction bounds the remaining error, encloses eigenvalues, and transfers target-energy and acquisition-time predictions to ordinary tanh. The present note supplies the periodic intermediary results; it does not replace the boundary analysis or the corrected finite spectral calculation.
 
 ## Verification
 
