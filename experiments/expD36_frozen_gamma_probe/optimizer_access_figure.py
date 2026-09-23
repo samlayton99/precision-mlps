@@ -72,13 +72,23 @@ def main():
     folder = args.source
     paths = [folder/'analysis.json', folder/'projections.npz', folder/'ratio_bounds.json',
         folder/'trace_envelopes.npz', folder.parent/'structured_gamma/summary.json',
-        folder.parent/'gamma_factorized_kernel/summary.json', Path(__file__)]
+        folder.parent/'gamma_factorized_kernel/summary.json', Path(__file__),
+        folder/'ema_analysis.json', folder/'ema_curves.npz', folder/'reverse_bounds.json']
     analysis = json.loads(paths[0].read_text())
     projection = np.load(paths[1])
     ratios = json.loads(paths[2].read_text())
     traces = np.load(paths[3])
     structured = json.loads(paths[4].read_text())
     factorized = json.loads(paths[5].read_text())
+    ema_analysis = json.loads(paths[7].read_text())
+    ema_curves = np.load(paths[8])
+    reverse = json.loads(paths[9].read_text())
+    ema_cases = {(c['gamma'], c['view'], c['target']): c for c in ema_analysis['cases']}
+    half_life = 100
+    ema_index = list(ema_curves['half_lives']).index(half_life)
+    def ema_case(gamma, view, target, window=half_life):
+        return next(c for c in ema_cases[gamma, view, target]['ema']
+                    if c['half_life'] == window)
     cases = {(c['gamma'], c['view'], c['target']): c for c in analysis['cases']}
     targets = analysis['targets']
     first = targets[0]
@@ -89,6 +99,8 @@ def main():
         protocol=dict(geometry='N512, q16, 8193 samples, 559 tanh features plus bias',
             primary_target=first, adam_horizon=200000, gd_horizon='Longer archived runs, up to17000000',
             sustained_definition=analysis['sustained_definition'], schedule=analysis['schedule'],
+            main_adam_metric='First crossing of EMA squared relative error at 1e-4; half-life 100 updates; initialized at actual squared error at update 0.',
+            ema_choice='One common post-hoc visualization window; sensitivity at 10,30,100,300,1000,3000 updates.',
             numerical_status='FP64 diagnostics; Adam residual projections are not GD-theorem predictions.',
             positive_modes='Only retained positive SVD modes; omitted numerical directions excluded.',
             energy_normalization=analysis['normalization'],
@@ -149,30 +161,37 @@ def main():
                       key=lambda r: r['harmonics'])['approximate_hits'][0] for g in GAMMAS]
     gd_lower = [next(r for r in structured['rows'] if r['n'] == 512 and r['gamma'] == g)
                 ['best_necessary'][1][0] for g in GAMMAS]
-    adam = [cases[g, 'common', first]['sustained_hit'] for g in GAMMAS]
+    gd_reverse = [max(a['best']['necessary_updates'] for a in
+                     next(c for c in reverse['cases'] if c['gamma'] == g)['approaches'])
+                  for g in GAMMAS]
+    adam = [ema_case(g, 'common', first)['first_hit'] for g in GAMMAS]
     ax.plot(GAMMAS, gd_forecast, color='#253c51', linewidth=1.6, label='GD spectrum forecast')
     ax.plot(GAMMAS, gd_actual, color='#253c51', linestyle='none', marker='o',
             markerfacecolor='white', markersize=5, label='Executed GD')
-    ax.plot(GAMMAS, gd_lower, color='#668ca1', linestyle='--', marker='v', markersize=4,
-            label='GD necessary bound')
+    ax.plot(GAMMAS, gd_lower, color='#8d9ca6', linestyle=':', linewidth=1.1,
+            label='GD compact bound')
+    ax.plot(GAMMAS, gd_reverse, color='#257f79', linestyle='--', marker='v', markersize=4,
+            label='GD reverse bound')
     ax.plot(GAMMAS[1:], adam[1:], color='#ce7041', marker='s', markersize=4,
-            label='Adam sustained hit')
+            label='Adam first EMA hit')
     ax.scatter([8], [200000], marker='^', color='#ce7041', s=28, zorder=4)
     ax.annotate('', xy=(8, 4.2e5), xytext=(8, 2.05e5),
                 arrowprops=dict(arrowstyle='->', color='#ce7041', lw=1.1))
-    ax.text(8.7, 2.6e5, '>200k', color='#b65d32', fontsize=7.5)
+    ax.text(8, 5e5, '>200k', color='#b65d32', fontsize=7.5)
     gamma_axis(ax)
     ax.set_yscale('log')
-    ax.set_ylim(3000, 4e7)
-    ax.set_ylabel('Updates to 1% relative error')
+    ax.set_ylim(700, 4e7)
+    ax.set_ylabel('Updates to 1% error (Adam: smoothed)')
     ax.set_title('C  Acquisition delay is measurable', loc='left', pad=19)
-    ax.text(0, 1.035, 'GD-only bounds; Adam observed through 200k', transform=ax.transAxes,
+    ax.text(0, 1.035, 'Adam: first loss-EMA crossing, half-life 100', transform=ax.transAxes,
             fontsize=7.3, color='#53616c')
     ax.legend(ncol=2, frameon=False, loc='upper center', bbox_to_anchor=(.45, -.28),
               columnspacing=.8, handlelength=1.7, fontsize=7)
     evidence['figures']['optimizer_access_three_panel'] = dict(ratios=ratio_data,
         energy=energy_data, timings=dict(gamma=GAMMAS, gd_actual=gd_actual,
-        gd_full_forecast=gd_forecast, gd_necessary=gd_lower, adam_sustained=adam,
+        gd_full_forecast=gd_forecast, gd_necessary=gd_lower, gd_reverse_necessary=gd_reverse,
+        adam_first_ema=adam,
+        adam_ema_half_life=half_life,
         adam_censor_horizon=200000), slow_cutoff=2e-6, error_squared_threshold=1e-4)
     save(fig, folder, 'optimizer_access_three_panel', manifest)
 
@@ -216,7 +235,7 @@ def main():
     for ti, (ax, target, label) in enumerate(zip(axes, targets, TARGET_NAMES)):
         entry = dict(target=target, gamma=GAMMAS)
         for view, color, marker in [('common', '#276492', 'o'), ('selected', '#ce7041', 's')]:
-            hits = [cases[g, view, target]['sustained_hit'] for g in GAMMAS]
+            hits = [ema_case(g, view, target)['first_hit'] for g in GAMMAS]
             plotted = np.array(hits, float); plotted[plotted < 0] = np.nan
             ax.plot(GAMMAS, plotted, color=color, marker=marker, markersize=3.6,
                     label='Common setting' if view == 'common' else 'Pilot-selected setting')
@@ -227,11 +246,11 @@ def main():
                                 arrowprops=dict(arrowstyle='->', color=color, lw=1))
             entry[view] = hits
         gamma_axis(ax); clean(ax)
-        ax.set(yscale='log', ylim=(700, 4e5), title=label)
+        ax.set(yscale='log', ylim=(500, 4e5), title=label)
         ax.axhline(200000, color='#b8c0c6', linewidth=.8, linestyle=':')
         target_data.append(entry)
-    axes[0].set_ylabel('Sustained 1% crossing (updates)')
-    fig.suptitle('Adam across five targets: below threshold through update 200,000', y=.99, fontsize=11)
+    axes[0].set_ylabel('First loss-EMA crossing (updates)')
+    fig.suptitle('Adam across five targets: first 1% crossing of smoothed loss (half-life 100)', y=.99, fontsize=11)
     fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center', ncol=2,
                frameon=False, bbox_to_anchor=(.5, -.01))
     evidence['figures']['optimizer_access_targets'] = target_data
@@ -247,35 +266,69 @@ def main():
         xx = np.repeat(edges, 2)[1:-1]
         ax.fill_between(xx, np.repeat(low, 2), np.repeat(high, 2), color=color, alpha=.22,
                         linewidth=0, label='All-update min–max envelope')
-        ax.plot(time, error, color=color, linewidth=1.1, label='Sampled actual residual')
+        ema_steps = ema_curves['steps']
+        smoothed = np.sqrt(ema_curves['ema_squared'][ema_index, :, gi, 5])
+        ax.plot(ema_steps, smoothed, color=color, linewidth=1.4,
+                label='Square root of loss EMA (half-life 100)')
         ax.axhline(.01, color='#777f85', linestyle=':', linewidth=1)
         ax.axvspan(20000, 50000, color='#aeb8c1', alpha=.16)
         case = cases[gamma, 'common', first]
-        for field, linestyle in [('first_hit', '--'), ('sustained_hit', '-')]:
-            hit = case[field]
-            if hit >= 0:
-                ax.axvline(hit, color='#374655', linestyle=linestyle, linewidth=.8)
-        first_text = f"{case['first_hit']:,}" if case['first_hit'] >= 0 else '>200,000'
-        sustained_text = f"{case['sustained_hit']:,}" if case['sustained_hit'] >= 0 else '>200,000'
-        ax.set_title(rf'$\gamma={gamma}$'+'   First '+first_text+'; sustained '+sustained_text,
+        hit = ema_case(gamma, 'common', first)['first_hit']
+        if hit >= 0:
+            ax.axvline(hit, color='#374655', linestyle='--', linewidth=.8)
+            ax.scatter([hit], [.01], color=color, s=22, zorder=5)
+        hit_text = f'{hit:,}' if hit >= 0 else '>200,000'
+        ax.set_title(rf'$\gamma={gamma}$'+'   First EMA crossing: '+hit_text,
                      loc='left', fontsize=9)
         ax.set(xscale='symlog', yscale='log', xlim=(0, 200000), ylim=(1e-6, 2))
         ax.set_xticks([0, 1000, 20000, 200000], labels=['0', '1k', '20k', '200k'])
         clean(ax)
         schedule_data.append(dict(gamma=gamma, bin_edges=edges, bin_min=low, bin_max=high,
                                   steps=time, errors=error, first_hit=case['first_hit'],
-                                  sustained_hit=case['sustained_hit']))
+                                  sustained_hit=case['sustained_hit'], ema_steps=ema_steps,
+                                  ema_relative_error=smoothed, first_ema_hit=hit))
     for ax in axes[-1]:
         ax.set_xlabel('Adam updates')
     for ax in axes[:, 0]:
-        ax.set_ylabel('Relative residual norm')
-    fig.suptitle('First crossing can precede stable acquisition', y=.98, fontsize=12)
+        ax.set_ylabel('Relative error')
+    fig.suptitle('First EMA crossings resolve early acquisition', y=.98, fontsize=12)
     fig.text(.5, .935, 'Sine mixture · common Adam setting · shaded vertical window: learning-rate decay (20k–50k)',
              ha='center', fontsize=8.5, color='#56636e')
     fig.legend(*axes[0, 0].get_legend_handles_labels(), loc='lower center', ncol=2,
                frameon=False, bbox_to_anchor=(.5, .015))
     evidence['figures']['optimizer_access_schedule'] = schedule_data
     save(fig, folder, 'optimizer_access_schedule', manifest)
+
+    fig, axes = plt.subplots(1, 2, figsize=(9.3, 3.65), sharey=True)
+    fig.subplots_adjust(bottom=.26, top=.83, left=.09, right=.98, wspace=.16)
+    sensitivity = []
+    windows = list(ema_curves['half_lives'])
+    memory_floor = np.ceil(np.array(windows)*np.log2(1e4)).astype(int)
+    for ax, view in zip(axes, ('common', 'selected')):
+        for gamma, color in zip(GAMMAS, COLORS):
+            hits = [ema_case(gamma, view, first, int(h))['first_hit'] for h in windows]
+            displayed = np.array(hits, float); displayed[displayed < 0] = np.nan
+            ax.plot(windows, displayed, color=color, marker='o', markersize=3.6,
+                    label=rf'$\gamma={gamma}$')
+            censored = np.array(windows)[np.array(hits) < 0]
+            ax.scatter(censored, np.full(len(censored), 200000), marker='^', color=color, s=24)
+            sensitivity.append(dict(view=view, gamma=gamma, half_lives=windows, first_hits=hits))
+        ax.plot(windows, memory_floor, color='#77838d', linestyle='--', linewidth=1.1,
+                label='Initial-loss memory floor')
+        ax.axvline(half_life, color='#a7afb6', linestyle=':', linewidth=.9)
+        ax.axhline(200000, color='#a7afb6', linestyle=':', linewidth=.8)
+        ax.set(xscale='log', yscale='log', ylim=(100, 3.5e5),
+               xlabel='Loss-EMA half-life (updates)',
+               title='Common Adam setting' if view == 'common' else 'Validation-selected Adam setting')
+        ax.set_xticks(windows, labels=[str(h) for h in windows]); clean(ax)
+    axes[0].set_ylabel('First 1% loss-EMA crossing (updates)')
+    fig.suptitle('Window sensitivity: one shared half-life, no per-gamma tuning', y=.98, fontsize=11)
+    fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center', ncol=5,
+               frameon=False, bbox_to_anchor=(.5, -.005))
+    evidence['figures']['optimizer_access_ema_sensitivity'] = sensitivity
+    evidence['ema_memory_floor'] = dict(half_lives=windows, earliest_possible_crossings=memory_floor,
+        reason='M0=1 and nonnegative later losses imply Mn >= beta^n.')
+    save(fig, folder, 'optimizer_access_ema_sensitivity', manifest)
     evidence['artifact_sha256'] = manifest
     (folder/'figure_data.json').write_text(json.dumps(plain(evidence), indent=2, allow_nan=False)+'\n')
 
