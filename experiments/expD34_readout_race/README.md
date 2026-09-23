@@ -995,6 +995,11 @@ was motivated by the persistence analysis rather than fixed before it.
 
 ## Cross-function audit of movement budgets and force defects
 
+The completed [tutorial synthesis](../../docs/d34_cross_function_audit.md)
+connects the force decomposition to acquisition bounds across all 333 starts.
+The [evidence index](../../results/checkpoint_D_optimizers/expD34_readout_race/cross_function_audit/README.md)
+records its measurements, verification, and provenance.
+
 `cross_function_audit` reads the completed ordinary-GD branches and their
 issued forecasts from `effective_feedback`. It covers existing, fresh-seed,
 and new-function cohorts separately, using the fork and additional horizons

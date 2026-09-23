@@ -1,0 +1,48 @@
+{
+  "starts": 333,
+  "function_instances": 23,
+  "cohorts": {
+    "existing": 195,
+    "fresh": 78,
+    "heldout": 60
+  },
+  "horizons": [
+    0,
+    1000,
+    10000,
+    50000,
+    200000
+  ],
+  "scope": "Repeated-start descriptive audit; no independent-function inference. Frozen-surrogate travel/occupancy bounds are not actual-GD exclusions.",
+  "aggregation": "Cohorts separate. Family/cohort pooled case statistics and equal-function means/medians of function medians are separately labeled. Original family label is a bookkeeping group, not a scientific function family.",
+  "verification_passed": true,
+  "maximum_identity_errors": {
+    "reconstruction": 4.2858535491166964e-16,
+    "defect": 2.418674483248222e-16,
+    "derivative": 1.18534765186528e-17,
+    "schur": 4.903733267324574e-15,
+    "projection": 1.6888136213495456e-14,
+    "issued_spectral": 1.6185781246702778e-11,
+    "signed_travel": 1.6786572132332367e-13,
+    "travel": 3.430589146091734e-14
+  },
+  "input_sha256": {
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/existing/complete.json": "886317bb43775f29b107737e88d90fadc7e345f7c17f41bab103c35e204e246e",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/existing/forces.csv": "20b00bc4cd53618b653816952c254d45d6c4adc4d4ba385a2143d80e65464cda",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/existing/budgets.csv": "dac1b066faadd629024aa9b550a0775c5a78c31364309e1384b5c212a6a63366",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/existing/modes.csv": "0b8525a39eac7f9c7e15f88002f2a61728f4faa4e2b00d056c5221e9a9d2e17f",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/fresh/complete.json": "1b6eb103d72b223d43976d4c8f124471e14996b4b6ffe861587387254e4d7285",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/fresh/forces.csv": "d445602b6309ea7d52cad98fb96bb9e5aa6f316c7ccf158457cb66938471b508",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/fresh/budgets.csv": "483e1d836a5aa52bb165dc82b72b96eda7a3f303a03d8570f0328f470ff209f4",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/fresh/modes.csv": "f113c9c81b9af5f359c2649c9203bdc1c5eed23e8429a128674dcd6f8c6d27c1",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/heldout/complete.json": "2a4dce17685b6cde972a0da946ddfe5b46b87fee729da335fb1704ee3c5d3e87",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/heldout/forces.csv": "55a84a5f1bdb00a43dbba286cc884152015b98f0a65d0697ba7baae307662185",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/heldout/budgets.csv": "2a12aec1eafc561f73dc6be81ff771ef04ea5330feb28c712e287e996da216f5",
+    "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/full/heldout/modes.csv": "8bef13f042187540b9c06c88767aa362478131975ecc9f8bac3337d2b64baf36"
+  },
+  "summary_tables": {
+    "forces": "forces_summary.csv",
+    "budgets": "budgets_summary.csv",
+    "modes": "modes_summary.csv"
+  }
+}

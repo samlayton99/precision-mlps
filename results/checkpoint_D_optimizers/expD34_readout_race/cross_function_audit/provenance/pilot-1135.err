@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/code/experiments/expD34_readout_race/cross_function_audit.py", line 282, in <module>
+    main()
+  File "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/code/experiments/expD34_readout_race/cross_function_audit.py", line 278, in main
+    analyze(args.evidence, args.output, args.cohort, args.limit)
+  File "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/code/experiments/expD34_readout_race/cross_function_audit.py", line 110, in analyze
+    pack, cases, snapshots, pred_root, records, paths = load_cohort(root, cohort)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/code/experiments/expD34_readout_race/cross_function_audit.py", line 62, in load_cohort
+    if manifest['eta'] != .002 or manifest['degree'] != 65:
+       ~~~~~~~~^^^^^^^
+KeyError: 'eta'
+srun: error: 1212ac4ba094: task 0: Exited with exit code 1
