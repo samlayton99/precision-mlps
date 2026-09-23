@@ -203,12 +203,26 @@ and [executed command](../results/checkpoint_D_optimizers/expD34_readout_race/me
 preserve enclosing interval strings, input hashes, and the original source
 hash. Job 1295 used 100-bit Arb arithmetic and 103 seconds on one CPU.
 
-Applying Section 1 therefore proves, for **every one of these 18 empirical
-instances**, that no neuron reaches $\lambda=0.25$ at any prefix of the next
-20,000 updates, from the archived update-20,000 state through nominal
-update 40,000. The statement is for exact real-arithmetic GD on the archived
-binary64 empirical data and initial state; it does not certify preceding
-training or floating-point training roundoff. It establishes a coarse
-finite-time exclusion. The much sharper predictions of signed slope motion
-and the evolving effective-force geometry still require the mechanism
-analysis.
+These verified losses also give a stronger horizon than the generic
+20,000-update example. Every loss upper bound is below $0.417$. Keep the
+radius $R=8$ and the segment bounds $H<288$, $\mu>0.7$ proved using
+$L_\star=1$, but use the sharper initial loss in the summed descent budget:
+
+$$
+Q_{50{,}000}^2
+\le\frac{50{,}000(0.417)}{490(0.7)}
+=\frac{20{,}850}{343}<64.
+$$
+
+The same induction therefore proves, for **every one of these 18 empirical
+instances**, that total parameter travel remains below eight and no neuron
+reaches $|a|=16$ or $\lambda=0.25$ at any prefix of the next **50,000
+updates**. This extends from the archived update-20,000 state through nominal
+update 70,000. It is an analytic extension from verified initial conditions;
+no new training or trajectory comparison is needed or claimed.
+
+The statement concerns exact real-arithmetic GD on the archived binary64
+empirical data and initial state; it does not certify preceding training or
+floating-point training roundoff. It establishes a coarse finite-time
+exclusion. The much sharper predictions of signed slope motion and the
+evolving effective-force geometry still require the mechanism analysis.
