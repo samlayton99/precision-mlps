@@ -542,6 +542,41 @@ reverses it. The perturbation also changes residuals and correlations; its
 specific claim is the predicted loaded-response contrast, not isolation of
 one parameter block as a universal cause.
 
+The first nonzero slope response makes the missing coupling explicit. Let
+$g=\nabla L$, $H=Dg$, and let $\xi(t)$ be the derivative of the full-loss
+gradient-flow trajectory with respect to its initial perturbation
+$\theta_0+\epsilon v$. Then $\dot\xi=-H(\theta(t))\xi$. Although
+$v_a=0$ and $(H_0v)_a=0$ imply $\xi_a(0)=\dot\xi_a(0)=0$, differentiation
+once more gives
+
+$$
+\ddot\xi_a(0)=\bigl[H_0^2v+DH_0[g_0]v\bigr]_a.
+$$
+
+The same distinction holds for discrete GD. If $\xi_n$ denotes its
+initial-condition derivative, the exact two-step response is
+
+$$
+\xi_2=(I-\eta H_1)(I-\eta H_0)v,\qquad
+\theta_1=\theta_0-\eta g_0,\qquad H_1=H(\theta_1),
+$$
+
+and, under the two matching conditions,
+
+$$
+(\xi_2)_a=\eta^2\bigl[H_0^2v+DH_0[g_0]v\bigr]_a+O(\eta^3).
+$$
+
+The virtual first update and its Hessian are computable from the fork;
+this identity needs no fitted future trajectory. Freezing the full Hessian
+retains the $H_0^2v$ coupling but omits the changing-curvature term at the
+same order in $\eta$. Thus even a hidden-bias/readout/output-bias kick
+with matched initial slope update can produce a slope response that its
+scalar force-norm rate does not determine. These are derivatives of the raw
+slopes with respect to infinitesimal pulse amplitude. Derivatives of
+$|a_j|$ additionally require nonzero slopes with fixed signs; sign crossings
+must instead be handled by the actual absolute-scale increments.
+
 This yields a falsifiable progression: verify the local identities, test
 the precomputed finite-window contrasts under release, then seek uniform
 regional bounds for the observed mechanism. Failure at the second stage
@@ -603,7 +638,7 @@ widths if the rescaled parameter bounds, fine target norm and
 $\kappa^{-1}$ do. They are analytic bounds, not numerical evaluations or
 certificates for the archived checkpoints.
 
-**Proof.** Section 8 supplies
+**Proof.** Section 8 of the rate note supplies
 $\|J_H\|\le J_*/W$, $\|e_H\|\le E_*$ and
 $\|D^2e_H[v,w]\|\le(H_*/W)\|v\|\|w\|$.
 The last bound uses the fine projection to remove the affine part of tanh
@@ -707,7 +742,7 @@ a cylinder in the full parameter space. Use the analytic fine-force and
 conditioning estimates on its intersection with the outer parameter box;
 the tracking premise concerns only the actual iterates as stated above.
 The fine-force coordinate bounds
-from Section 8 and the elementary bound
+from Section 8 of the rate note and the elementary bound
 $\|DK[v]\|\le2J_{C,*}M_*\|v_{a,b,c}\|$ show that it suffices to require
 
 $$
@@ -747,3 +782,179 @@ the leading transport field can vanish and a longer clock can emerge, as
 described in the linked transport note. The $W$ clock proved here is a
 target-general upper bound on reinforcement; it is not a universal lower
 bound on the rate of change, and does not replace those higher-order cases.
+
+## 8. A forecast can miss the trajectory and still give a useful upper bound
+
+Suppose a forecast predicts twice the observed force speed. It is inaccurate
+as a trajectory model, but its speed prediction can still be a useful upper
+bound. Even an underprediction by a bounded factor may leave ample distance
+to the acquisition threshold. The relevant question for exclusion is
+therefore one-sided: can we bound the actual speed by a fixed multiple of
+the forecast throughout the interval?
+
+This is a different objective from the vector-forecast tests in Section 5.
+An incorrect force direction or intervention contrast can reject that
+trajectory closure without invalidating a separately proved speed envelope.
+No vector-direction accuracy is required for the path-length bound below.
+Conversely, a small collection of observed speed ratios does not prove a
+uniform envelope: intermediate peaks and future changes still matter.
+
+### Proposition 5: bounded excess amplification relative to a reference
+
+Let $\widehat q_0,\ldots,\widehat q_N>0$ be any preissued reference speeds,
+independent of the actual future trajectory, and put $q_n=\|F(\theta_n)\|$.
+At step $n$, suppose the regional hypotheses of Propositions 2–3 hold with
+constants $m_n,L_{V,n},u_n,\rho_n$, giving
+
+$$
+q_{n+1}\le r_nq_n+\eta u_n,\qquad
+r_n=\sqrt{1-2\eta m_n+\eta^2L_{V,n}}\ge0,
+\qquad \|R(\theta_n)\|\le\rho_n.
+\tag{34}
+$$
+
+The square root is required to be real, $u_n,\rho_n\ge0$, and the
+constants must be valid on declared state regions and the necessary
+outgoing neighborhoods. For example, they can all be bounds on the same
+balls $\mathcal U,\mathcal U^+$ from Section 3. Bounds on distinct
+time-indexed regions require a separate inclusion argument for those
+regions. They are not fitted curvature values from the future iterates.
+More generally, the conclusion below holds for any justified nonnegative
+recurrence multiplier $r_n$ in (34), including the derivative-based
+multiplier $1+\eta L_*/W$ from (31).
+
+Define the excess amplification factors and the propagated tracking allowance
+
+$$
+\alpha_n=r_n\frac{\widehat q_n}{\widehat q_{n+1}},\qquad
+b_0=0,\qquad b_{n+1}=r_nb_n+\eta u_n.
+\tag{35}
+$$
+
+Suppose a finite $M\ge0$ satisfies
+
+$$
+\frac{q_0}{\widehat q_0}\prod_{i=0}^{n-1}\alpha_i\le M
+\qquad\text{for every }0\le n\le N,
+\tag{36}
+$$
+
+where an empty product is one. Then, on the closed interval of validity,
+
+$$
+\boxed{\quad q_n\le M\widehat q_n+b_n\quad(0\le n\le N).\quad}
+\tag{37}
+$$
+
+For the usual reference initialized with $\widehat q_0=q_0>0$, (36)
+starts at one. It bounds accumulated excess amplification; individual
+$\alpha_n$ may exceed one. When all factors are positive, it is equivalent
+to an upper bound on their partial log sums. The product form also handles
+$r_n=0$ without taking a logarithm of zero.
+
+**Proof.** Write $P_{n,k}=\prod_{i=k}^{n-1}r_i$, with $P_{n,n}=1$.
+Unrolling (34) gives
+
+$$
+q_n\le P_{n,0}q_0
++\eta\sum_{k=0}^{n-1}P_{n,k+1}u_k,
+\qquad
+b_n=\eta\sum_{k=0}^{n-1}P_{n,k+1}u_k.
+\tag{38}
+$$
+
+The reference ratios telescope:
+$P_{n,0}q_0/\widehat q_n
+=(q_0/\widehat q_0)\prod_{i<n}\alpha_i$.
+Equation (36) therefore proves (37). If any reference speed is zero,
+retain the absolute formula (38) instead of dividing by that speed or
+introducing a numerical floor.
+
+**Closing the region.** To make this a first-exit theorem rather than a
+bound conditional on unproved containment, use the common balls of Section
+3 and define $Q_n=M\widehat q_n+b_n$. It suffices that
+
+$$
+\eta\max_{0\le k<N}(Q_k+\rho_k)<\delta,
+\qquad
+\eta\sum_{k<N}(Q_k+\rho_k)<d.
+\tag{39}
+$$
+
+At each induction step the first inequality contains the outgoing segments,
+the regional Taylor and loaded-response estimates imply (34), and the
+second inequality places the actual endpoint back inside $\mathcal U$.
+Thus all iterates through $N$ satisfy (37). Coarse conditioning is part of
+the regional hypotheses and must also be established there. In the
+small-parameter setting, Section 7 provides an alternative three-block
+closure, conditional on its explicitly stated persistent-tracking premise.
+Small slope tracking alone cannot close a full-parameter region.
+
+### Consequence: the factor costs linearly in travel, quadratically in population
+
+Suppose also $\|R_a(\theta_n)\|\le\rho_{a,n}$. Define
+
+$$
+\mathcal A_N=\eta\left[
+M\sum_{k<N}\widehat q_k+\sum_{k<N}b_k+\sum_{k<N}\rho_{a,k}
+\right].
+\tag{40}
+$$
+
+The same path-length proof as (20) gives the distinct-ever acquisition bound
+
+$$
+p_{\rm ever}(N)\le\min\left\{1,\;
+p_{\rm init}(\lambda>\lambda_0)
++\frac{h^2\mathcal A_N^2}{W(\lambda_*-\lambda_0)^2}
+\right\},\qquad 0\le\lambda_0<\lambda_*.
+\tag{41}
+$$
+
+Per-neuron bounds follow by replacing $\rho_{a,k}$ by an absolute allowance
+for $|R_{a,j}(\theta_k)|$ in (40) and adding $h\mathcal A_{j,N}$ to
+$\lambda_j(0)$. The $b_k$ terms account for tracking's propagated effect
+on effective speed; the $\rho_{a,k}$ terms account for its direct slope
+motion. Neither can be omitted merely because the other is small.
+
+In the absence of these additive corrections, multiplying a reference by
+$M$ multiplies its travel allowance by $M$ and its additional population
+allowance by $M^2$. Exact trajectory prediction is therefore unnecessary
+when the acquisition margin can absorb this cost. A useful width statement
+requires $M$ and the relevant correction constants to remain bounded
+uniformly across the widths and time windows claimed. Observing modest
+ratios at finitely many endpoints suggests such a bound; it does not prove
+(36), (39), or uniformity in width.
+
+**An explicit structural width example.** Suppose Section 7's hypotheses
+close through $\eta N/W\le T$, with width-uniform constants. For the
+constant reference $\widehat q_n=q_0>0$, choose
+$r_n=1+\eta L_*/W$. Then a prospective choice is
+
+$$
+M=e^{L_*T},\qquad
+b_n\le\frac{\delta_2}{W}
+\left[e^{L_*\eta n/W}-1\right].
+\tag{42}
+$$
+
+For an exponential reference $\widehat q_n=q_0e^{k_0\eta n}$, the lower
+bound $k_0\ge-K_0/W$, with $K_0\ge0$, instead permits
+$M=e^{(L_*+K_0)T}$. These factors
+come from structural regional bounds, not ratios measured after training.
+They are $O(1)$ in width but need not be small: the constants in the
+exponential can be enormous, and the first-exit conditioning margin can
+allow only a very short interval. Thus this example proves a width order,
+not a useful finite-width exclusion by itself. Actual constant evaluation
+and closure remain necessary before claiming a practical acquisition bound.
+The [campaign report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_persistence/README.md)
+keeps that finite-width audit separate from the structural width statement.
+
+Finally, two different appearances of $W$ must be kept separate. At fixed
+normalized threshold $\lambda_*$, the required physical slope is
+$\gamma_*=\lambda_*/h$, which is proportional to $W$ when
+$N_{\rm ref}$ is proportional to $W$. The reinforcement clock from Section
+7 is a statement about time, $\eta n$ of order $W$. A slope threshold and
+a time scale have different units. Neither implies that acquisition occurs
+after $O(W)$ updates, and small-parameter rate bounds cannot be extrapolated
+beyond their established first-exit interval to claim such a hitting time.

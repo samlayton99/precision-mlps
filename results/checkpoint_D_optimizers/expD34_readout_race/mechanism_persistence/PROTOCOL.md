@@ -111,3 +111,33 @@ second-step scaling, zero-force handling, physical constraint scaling,
 signed travel accounting and failed-update handling. Sparse states and
 cumulative budgets replace long optimization traces. Feedback has priority
 over physical continuations if the wall or GPU cap becomes binding.
+
+## Follow-up diagnostics after observing the initial results
+
+The user requested both a looser acquisition envelope and continued study of
+the coupled mechanism. The following analyses were added after the primary
+outcomes were known. They are retrospective comparisons, with no model
+coefficients fitted to future states; they are not additional prospective confirmations.
+
+The envelope audit compares saved speed ratios and all-step accumulated
+effective travel with the issued reference. A factor two is a diagnostic
+candidate selected after inspecting the misses. Its acquisition-margin
+calculation uses observed tracking travel and is explicitly not a certificate.
+
+For physical responses, a frozen full loss Hessian predicts the derivative
+of displacement by $[(I-\eta H_0)^n-I]v$. A parallel prediction uses the
+frozen derivative of $F$. These keep vector coupling omitted by the scalar
+model but freeze subsequent operator evolution. Existing coupled quintic
+models instead evolve all parameters and sensitivities from each physical
+fork. One retains the projected fine field; the other retains the full
+polynomial gradient to account for the transient introduced by finite kicks.
+Each uses a constant initial exact-minus-polynomial correction computed at
+its own fork. The fine model matches initial $F$; the full model matches
+initial $g$. The correction need not remain tangent away from the fork.
+
+The primary response comparison uses amplitude 0.0025 at 20,000 updates;
+all other amplitudes, horizons, failures and unsupported predictions remain
+available. Raw slope-vector response, readout response and baseline motion
+are different scores. Finite polynomial trajectories do not establish
+Taylor validity, particularly at the late sine forks. These diagnostics
+locate missing coupling and motivate a subsequent prospective test.

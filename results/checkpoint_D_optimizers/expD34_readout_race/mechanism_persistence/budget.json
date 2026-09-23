@@ -1,0 +1,15 @@
+{
+  "start_utc": "2026-09-23 19:19:09 UTC",
+  "deadline_utc": "2026-09-23 21:19:09 UTC",
+  "limit_gpu_seconds": 3600,
+  "prior_authorization_used_seconds": 22286.465931415557,
+  "combined_authorization_seconds": 36000,
+  "accounting": "Reserve before launch; count allocated GPU elapsed including compilation and failures. All numerical CPU work also runs under Slurm.",
+  "reservations": [
+    {"id": "feedback", "reserved_gpu_seconds": 1800, "accounted_gpu_seconds": 252, "status": "complete", "job_id": 1306, "purpose": "240 preissued six-arm feedback continuations, 20k updates each"},
+    {"id": "physical", "reserved_gpu_seconds": 1200, "accounted_gpu_seconds": 65, "status": "complete", "job_id": 1308, "purpose": "112 preissued ordinary-GD physical-kick continuations, 20k updates each"}
+  ],
+  "cpu_jobs": [1304, 1305, 1307, 1309, 1310, 1311, 1312, 1313, 1314, 1315, 1316, 1317, 1318],
+  "accounted_gpu_seconds": 317,
+  "verification": "Slurm sacct reports COMPLETED with exit 0:0 for both GPU jobs; batch/step entries are components, not additional GPU allocations."
+}

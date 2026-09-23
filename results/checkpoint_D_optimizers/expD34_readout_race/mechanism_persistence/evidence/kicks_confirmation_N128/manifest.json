@@ -1,0 +1,47 @@
+{
+  "input_sha256": "1dd5bc8d20a0b209ad0a1fb9a1769b280eb8dd9fb7c9d0f232a610c891a76a91",
+  "source_sha256": "3729df634f5765055cd7c85748db6981ee86b59dbe59a92715c7414a065d6c9c",
+  "kernel_sha256": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5",
+  "pulse_input_sha256": "fa164e44d5e020c077149aa00370095de148017ffcf4347238449a1e5e960485",
+  "direction_sha256": "49a91b815dc854a81015632ed302ab6f17acbaa43ad816b2e154ee028746ae96",
+  "amplitudes": [
+    0.0,
+    0.01,
+    -0.01,
+    0.005,
+    -0.005,
+    0.0025,
+    -0.0025
+  ],
+  "source_cases": 6,
+  "available_source_cases": 12,
+  "selected_source_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "selection": {
+    "seed": 32,
+    "targets": null
+  },
+  "resolved_cases": 6,
+  "retained_baselines": 6,
+  "output_cases": 42,
+  "coordinate_order": "a,b,c,d",
+  "force_space": "full empirical complement of constant and linear modes",
+  "constraints": [
+    "delta_a=0 exactly",
+    "JC delta=0",
+    "DzC delta=0",
+    "Dg_a delta=0",
+    "D||F||\u00b2 delta=0"
+  ],
+  "objective": "k_pure=-(D+C)/||F||\u00b2; positive amplitude increases it to first order",
+  "amplitude_units": "RMS over all coordinates of delta divided by fork block RMS",
+  "optimizer": "ordinary GD after the initial physical perturbation",
+  "issued_utc": "2026-09-23T19:35:46.916471+00:00",
+  "numerical_certificate": false
+}

@@ -588,12 +588,79 @@ errors can point in different scale directions. The shared explanation is
 weak or insufficiently sustained outward coupling, not one universal sign,
 one dominant parameter block, or rapid return to a fixed small-scale geometry.
 
-**The next theoretical requirement.** The coupled quintic model now retains
-enough sensitivity evolution to predict these fresh-seed motions well.
-The next step is to control its error and the duration of its small-parameter
-regime sharply enough to bound outward travel. That duration should emerge
-from the starting state and mechanism, rather than being imposed by the
-experiment schedule.
+**The new persistence test.** At width 1409, removing residual relaxation
+changes positive slope travel by only 0.00505% at the median of twelve
+states; doubling geometry feedback changes it by 1.51%. These interventions
+start with the same gradient. Thus the wide-state explanation is often a
+weak force that reinforces slowly, rather than a strong force continuously
+cancelled by rapid error correction. Later states can behave differently.
+For one late sine state, reinforcement initially wins, but error relaxation
+strengthens enough to reverse the force-growth rate during the next 20k
+updates. This is a state-dependent distinction within the effective fine
+force, not a return to coarse disequilibrium as the primary explanation.
+
+The [persistence note](d34_state_dependent_persistence.md) gives an exact
+identity for this mechanism. Here $F$ denotes all coordinates of the same
+effective fine gradient whose slope block is $F_a$ above. Its squared norm
+changes according to
+
+$$
+\frac{d}{dt}\frac{\|F\|^2}{2}
+=-\mathcal D-\mathcal C-F^TDF[R].
+$$
+
+$\mathcal D\ge0$ is residual relaxation; the signed $\mathcal C$ is the
+effect of changing geometry under the remaining error load, including
+coarse compensation. The last term explicitly charges disequilibrium's
+effect on force evolution. At bounded rescaled parameters, the new theorem
+bounds force magnitude by $O(W^{-1})$, intrinsic amplification rate by
+$O(W^{-1})$, and the relative relaxation contribution by $O(W^{-2})$.
+It permits growing forces and assumes persistent small tracking. It also
+states the geometric and conditioning conditions needed to keep these
+orders valid over a finite interval.
+
+The physical-kick thread sharpens the coupling requirement. Matching slopes
+exactly, and their first update and force magnitude to first order, still
+leaves later responses different. On the six-target width-177 panel, the scalar model has median
+response error near 88–89%, and a frozen full Hessian has about 93% error.
+Evolving the anchored quintic effective-force model reduces this to about
+14% in both cohorts. These follow-up comparisons are retrospective and
+their errors remain larger than those for the unperturbed paths. Late pure
+sine remains unresolved: one quintic case fails numerically and the other
+predicts the response poorly. The mechanism needs evolving coupled geometry;
+its small-parameter approximation is not uniformly successful at late states.
+
+**We need an upper bound, not an exact forecast.** A frozen scalar growth
+rate still misses some coupled motion. That can matter for mechanism
+identification without defeating an acquisition bound. The late sine
+forecast misses force magnitude by 156%, but it overpredicts it. Across
+the forty natural-GD forks, the largest saved-time ratio of actual to
+predicted speed is 1.477. A factor-two reference budget exceeds the observed
+accumulated effective-force travel in every case. These are retrospective
+diagnostics, not a proof that the same factor controls every intermediate
+state or a longer window.
+
+The [constant-factor theorem](d34_state_dependent_persistence.md#8-a-forecast-can-miss-the-trajectory-and-still-give-a-useful-upper-bound)
+formalizes the weaker objective: prove $\|F_n\|\le M\widehat q_n+b_n$,
+where $\widehat q_n$ is a preissued speed forecast and $b_n$ bounds tracking's
+propagated effect. Add direct slope tracking, sum the speeds, and apply the
+travel bound from Section 5. The multiplier $M$ costs linearly in travel and
+quadratically in the allowed acquisition fraction. It need not be close to
+one when the remaining scale distance is large. Directional prediction is
+valuable for explaining motion; this conservative upper bound does not
+require it to be accurate.
+
+**What still needs sharpening.** We now have a signed amplification
+criterion and a conditional width law, but generic parameter-maxima bounds
+are numerically inadequate: even setting tracking to zero, their first-exit
+test supports at most eighteen updates on the tested states. This is a
+failure of those constants, not observed escape after eighteen updates.
+The next calculation must preserve the loaded curvature and coarse geometry
+well enough to prove a modest accumulated amplification allowance. It must
+also close the parameter region over the claimed window. The
+[experiment report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_persistence/README.md)
+keeps successful predictions, physical-kick confounding and failed scalar
+closures visible alongside these proof requirements.
 
 The force reduction and coupled forecasts have evidence across functions;
 the width-dependent rate has a conditional proof; selected empirical instances
