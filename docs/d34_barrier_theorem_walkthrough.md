@@ -10,7 +10,7 @@ The [mechanism companion](d34_transport_mechanisms.md) develops this interpretat
 
 The [expanded target and Adam study](../results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/README.md) strengthens one empirical simplification for GD: across 13 targets and five seeds, tracking contributes at most 0.469% of the summed component-force norm budget over updates 20,000–600,000. Understanding the effective fine force remains the main problem in that setting. Adam does not satisfy the same small-tracking observation: tracking can dominate raw-gradient and step activity while much of its signed motion cancels. Its first-moment history, shared second-moment scaling, and zero crossings must be measured separately; the GD theorem is not an Adam theorem.
 
-The subsequent [conditional stagnation study](d34_coarse_balance_stagnation.md#4-what-the-degree-9-theorem-actually-proves)
+The subsequent [conditional stagnation study](d34_coarse_balance_stagnation.md#a-stronger-degree-9-result-is-available-as-a-special-case)
 identifies two slow generated-error modes as the main source of motion in the
 degree-9 GD regime. It also gives a stronger local bound: subtract the hard-mode
 loss that cannot yet be removed, then use GD descent to limit parameter travel.

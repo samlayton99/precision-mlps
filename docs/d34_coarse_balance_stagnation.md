@@ -218,7 +218,65 @@ must account for nonlinear feedback over that interval; fitting a new coefficien
 the future trajectory would be an explanation of that trajectory, not a
 successful prior forecast.
 
-## 4. What the degree-9 theorem actually proves
+## 4. Turn a movement prediction into an acquisition bound
+
+**Example: a finite travel allowance can rule out new scale acquisition.**
+A neuron starting at gamma 0.2 cannot reach gamma 1 during a window in which
+its total outward travel is bounded by 0.1. The same argument can treat each
+neuron separately, including an existing large-slope tail. The useful result
+is an exclusion over the stated window; it does not require predicting what
+the network eventually learns.
+
+**Theory: budget outward travel and pay for approximation error.** Write
+$P_{+,j}(N)=\sum_{n=0}^{N-1}[|a_{j,n+1}|-|a_{j,n}|]_+$ for cumulative
+outward travel, where $[u]_+=\max(u,0)$. A hat denotes the same quantity
+on the predicted trajectory. In the fixed-map model of Section 3, the spectral
+formula gives
+
+$$
+\widehat P_{+,j}(N)\le
+\sum_{\lambda_i>0}|b_i|\,|(T_sv_i)_{a,j}|\,
+\frac{1-(1-\eta\lambda_i)^N}{\lambda_i},
+\qquad 0<\eta\lambda_i\le1.
+$$
+
+Here $(T_sv_i)_{a,j}$ is the slope coordinate for neuron $j$. The bound adds
+the absolute travel supplied by each relaxing direction, so it remains valid
+when their signed contributions cancel or a slope crosses zero. Weak
+sensitivity limits motion over a finite window; small sensitivity alone does
+not imply a small eventual displacement.
+
+To transfer this statement to ordinary GD, suppose a closed neighborhood
+argument gives $|a_{j,n}-\widehat a_{j,n}|\le\varepsilon_{j,n}$ at every
+step through $N$. Then
+
+$$
+P_{+,j}(N)\le\widehat P_{+,j}(N)
++\sum_{n=0}^{N-1}(\varepsilon_{j,n}+\varepsilon_{j,n+1}).
+$$
+
+This follows because changing either endpoint of an increment changes its
+positive gamma increment by at most that endpoint's slope error. Thus the
+surrogate travel plus its accumulated error allowance is an ordinary-GD
+travel budget. A neuron whose starting gamma plus that budget is below
+$\Gamma$ cannot acquire scale $\Gamma$ in the window. Count those exclusions
+across neurons to obtain a population statement. The detailed companion
+derives the map-drift, residual-evolution, and remainder controls needed for
+such an enclosure. An observed small endpoint error alone does not supply
+the required per-step bounds.
+
+**Prediction.** A useful conditional theorem should exclude a specified
+acquisition event over 1k–200k updates where its assumptions close. It need
+not rule out acquisition forever. A separate ordinary-GD neighborhood/path
+audit currently closes at sampled horizons of 100–50k updates across the
+original starts, evaluated in FP64 rather than directed rounding. That audit
+uses a geometric path bound; it is not a computed certificate for the spectral
+travel transfer displayed above. Successful forecasts beyond its closed
+horizons remain empirical evidence. The spectral bound is a target-general
+conditional framework. Whether its budget is small enough to be useful
+depends on the target and checkpoint.
+
+### A stronger degree-9 result is available as a special case
 
 **Example: most remaining loss is locally unavailable.** At the ten degree-9
 checkpoints used for persistence bounds, half-MSE is about 0.375. Yet only
@@ -228,7 +286,7 @@ excludes scale 1 for 10.2–17.1 million additional updates, with every gamma
 below 0.388. GD was simulated through six million updates; the longer horizons
 are bounds, not completed trajectories.
 
-The practical conclusion already holds on the primary 1k–200k window. The
+The degree-9 exclusion already holds on the primary 1k–200k window. The
 larger exclusion horizon is extra strength of this degree-9 bound, not a
 standard that every target-specific prediction must meet.
 
@@ -256,12 +314,8 @@ does not establish entry from initialization, permanent trapping, or a
 directed-rounding numerical certificate.
 
 The modified feedback fields need not decrease this loss, so the theorem
-cannot be transferred automatically. A bound that survives any discrete
-update uses exact positive travel,
-
-$$
-P_{+,j}(n)=\sum_{k<n}[|a_{j,k+1}|-|a_{j,k}|]_+.
-$$
+cannot be transferred automatically. The positive-travel argument above
+does survive any discrete update and also gives a convenient aggregate bound.
 
 For a starting cutoff $\gamma_0<\Gamma$, the fraction ever reaching $\Gamma$
 is at most the initial fraction above $\gamma_0$, plus
