@@ -1,7 +1,7 @@
 # Understanding the gamma barrier: a theorem and a measurement guide
 
-For a consolidated account of the current mechanism, start with
-[GD scale acquisition: the effective gradient and the bounds it supports](d34_effective_gradient_state.md).
+For a tutorial on the current mechanism, start with
+[Why GD acquires scales slowly](d34_effective_gradient_state.md).
 It connects the two gain terms, measured examples, and present theorem assumptions.
 
 Why can training fit the output while a population of slopes fails to acquire a specified scale? The useful object is the slope force that remains after the easily fitted residual components have relaxed. Its magnitude, direction, and distribution across neurons answer different questions. This note derives a conditional finite-time population-barrier theorem and explains how to measure its ingredients even when a complete proof from initialization is unavailable.
