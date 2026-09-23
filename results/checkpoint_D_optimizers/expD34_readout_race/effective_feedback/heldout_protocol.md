@@ -99,6 +99,11 @@ motion or no intervention effect. Mathematically zero or empirically unresolved
 denominators receive an explicit unresolved label, not an arbitrary numerical
 floor. Do not fit percentage-accuracy cutoffs. Multiple seeds, forks, and horizons
 from one function are repeated observations, not independent function samples.
+For the modal forecast, also compare the predicted change from its starting
+residual with the actual change: its zero-change baseline retains $e_{H,s}$.
+Do not use a large unchanged target residual to make a poor change forecast
+look accurate. Keep individual mode coefficients and errors available; tiny
+unresolved sign changes are not counted as evidence of a mechanism.
 Do not choose a winning horizon, target subset, or new model after seeing these
 outcomes. Two seeds probe
 initialization variability; they do not establish population-level probability
