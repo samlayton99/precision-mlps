@@ -1,0 +1,48 @@
+{
+  "case": {"target": "moment9", "seed": 0, "start": 600000, "width": 177, "nref": 128},
+  "additional_updates": 20000,
+  "total_updates": 620000,
+  "eta": "exact binary64 value of 0.002",
+  "normalized_scale": "lambda=abs(a)/64",
+  "threshold": "1/4",
+  "scope": "Real-arithmetic simultaneous ordinary GD on exact archived binary64 x,y,p0. Does not certify a floating-point training implementation or target generation.",
+  "arithmetic": {"library": "python-flint", "version": "0.9.0", "precision_bits": 100},
+  "reference": "Exact rational chord interpolation between archived binary64 frozen-model centers; every intermediate update is covered analytically.",
+  "source_repo_relative": "experiments/expD34_readout_race/mechanism_arb_certificate.py",
+  "source_sha256": "8ce86d75c5bc57035a8402d00e2add13b4d4faf6444f1e07a5968d925094788d",
+  "inputs_sha256": "cbaf34a19628000572d2026645d763d25df6ad91df5ee627593eb1aafc1c8af1",
+  "reference_archive_sha256": "6ee588119fa238d9040443223c28df2a4cbdce70ebdb47dc2de01a89b9a3160e",
+  "remote_input_archive": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/inputs/development.npz",
+  "remote_reference_archive": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/moving_tube/development_moment9/enclosure.npz",
+  "runs": [
+    {
+      "artifact": "chunk1000.json",
+      "sha256": "c8f23cab23f79ec853cd3e29c699f21fd3c9a814b670928b4572282ececcdb6f",
+      "chunk_updates": 1000,
+      "slurm_job": 1246,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "wall_seconds": 27,
+      "cpus": 1,
+      "gpus": 0,
+      "all_177_excluded_through_horizon": true,
+      "normalized_prefix_upper_rounded_up": "0.00307850",
+      "parameter_radius_upper_rounded_up": "0.00705758"
+    },
+    {
+      "artifact": "chunk100.json",
+      "sha256": "93d67a55d656f1ee3a50da17e7eb2f53a4fc9be3427a5d8d5c87bfb0e3c9f0a6",
+      "chunk_updates": 100,
+      "slurm_job": 1252,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "wall_seconds": 271,
+      "cpus": 1,
+      "gpus": 0,
+      "all_177_excluded_through_horizon": true,
+      "normalized_prefix_upper_rounded_up": "0.002973994",
+      "parameter_radius_upper_rounded_up": "0.000372332"
+    }
+  ],
+  "interpretation": "A one-instance certificate, not a uniform claim across targets or initializations. Interval strings in the raw result enclose the computed dyadic upper endpoints. Scalar radii are nondecreasing, and endpoint maxima cover every exact reference chord."
+}
