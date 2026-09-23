@@ -1606,6 +1606,135 @@ The defect is evaluated on the forecast, not a future true state; the map deriva
 
 **Prediction.** Report separately the interval over which the surrogate predicts motion, the shorter interval over which an ordinary-GD enclosure closes, and the cumulative contribution of each controlled defect. Long-time success of the first does not lengthen the second automatically. Failure of a uniform bound is not evidence of acquisition; verified acquisition outside a claimed closed envelope would instead invalidate that bound or its implementation.
 
+## 13. A heterogeneous cubic example explains what must evolve
+
+The preceding experiments study the effective map without assuming a particular target. This section asks what a simple model can explain about the map itself. The answer is limited but useful: different slope/readout arrangements can reverse the cubic contribution even when the represented coarse and cubic outputs are identical. The model also supplies a sharp exclusion: with only one fine error, its projected flow cannot overshoot that error's target. These are exact statements about the surrogate below, not a new theorem for late-stage tanh GD.
+
+### 13.1 The same error can produce opposite scale motion
+
+**Example.** At the sine forks, the cubic residual remains positive from 100k to 400k updates, but its effective contribution to mean-gamma velocity changes from inward to outward in all five original seeds. The [fork audit](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/cubic_sign_audit/summary.json) finds that the signed map coefficient changes sign. An explanation based only on the size or sign of cubic error misses this change. The question is which parameter combinations can change that coefficient.
+
+**Theory: retain heterogeneity in a two-mode surrogate.** Set hidden biases to zero and retain the leading linear and cubic modal outputs,
+
+$$
+\varphi_1=\kappa_1\sum_jc_ja_j,\qquad
+\varphi_3=\kappa_3\sum_jc_ja_j^3,\qquad
+\kappa_1=\langle q_1,x\rangle_m>0,\quad
+\kappa_3=-\tfrac13\langle q_3,x^3\rangle_m<0.
+\tag{H1}
+$$
+
+Here the empirical modes have positive leading coefficients. On the D34 grid, $\kappa_1\approx0.5773502$ and $\kappa_3\approx-0.05039518$. Normalizing the linear output coefficient to one gives $\alpha_3=\kappa_3/\kappa_1$ in the earlier notation. This model keeps the leading coefficient of each mode; it is **not** the full cubic Taylor polynomial of tanh, because that polynomial also contributes a cubic correction to $\varphi_1$. It omits hidden-bias effects and higher modes. None of these omissions is claimed small at late sine states.
+
+Project the parameter gradient onto the tangent space of the current $\varphi_1$ level set. With all sums running over neurons, define
+
+$$
+D=\sum_j(c_j^2+a_j^2)>0,\qquad
+N=\sum_j(3c_j^2a_j^2+a_j^4),\qquad \mu=N/D.
+$$
+
+The effective cubic column has the exact blocks
+
+$$
+(T_3)_{a,j}=\kappa_3c_j(3a_j^2-\mu),\qquad
+(T_3)_{c,j}=\kappa_3a_j(a_j^2-\mu).
+\tag{H2}
+$$
+
+To obtain (H2), use $J_1=\kappa_1(c,a)$ and $J_3=\kappa_3(3ca^2,a^3)$, and subtract $J_1^T(J_1J_1^T)^{-1}J_1J_3^T$ from $J_3^T$. Thus the shared quantity $\mu$ is the response needed to maintain the coarse output. It depends on the entire distribution, including readouts; it is not a mean slope chosen independently of the dynamics.
+
+Between slope zero crossings, put
+
+$$
+U=\sum_j\operatorname{sign}(a_j)c_ja_j^2,\qquad
+V=\sum_j\operatorname{sign}(a_j)c_j,
+\qquad
+A_3=-\frac{\kappa_3}{W}(3U-\mu V).
+\tag{H3}
+$$
+
+The cubic contribution to mean-gamma velocity is exactly $e_3A_3$. Since $\kappa_3<0$, its sign is the sign of $e_3(3U-\mu V)$. This is the heterogeneous sign criterion. It does not assume that every neuron moves in the mean direction.
+
+For a concrete counterexample, consider these two width-two states:
+
+| Slopes $a$ | Readouts $c$ | $A_3$ |
+|---|---|---:|
+| $(0.1,0.1)$ | $(-0.05,-0.05)$ | $-4.032\times10^{-5}$ |
+| $(0.11,0.3)$ | $(-0.0933597853,0.0008985879)$ | $+1.007\times10^{-4}$ |
+
+Both have $\sum ca=-0.01$ and $\sum ca^3=-0.0001$, using the unrounded coefficients in the [algebra check](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/cubic_sign_audit/heterogeneous_theory_check.json). Therefore they have the same coarse output, cubic output, and errors against any common target. Their cubic scale velocities nevertheless have opposite signs whenever $e_3\ne0$. The parameters determining the effective sensitivity cannot be replaced by those output errors alone.
+
+**Prediction.** A proposed explanation of the sign change must reproduce the changing moment gap $3U-\mu V$, or its exact-tanh counterpart $-\operatorname{sign}(a)^TT_{a,3}/W$. Matching coarse error and cubic error is insufficient. This is a diagnostic prediction at a state; predicting when that gap changes sign requires its own evolution law.
+
+### 13.2 The projected flow closes in particles, but not in cubic error alone
+
+**Example.** Correcting a positive cubic residual may initially contract slopes and later expand them if $A_3$ changes sign. That does not imply the cubic residual itself can cross zero. The two statements concern different factors of the same velocity.
+
+**Theory: exact projected-flow identities.** For $e_3=\varphi_3-Y_3$, the two-mode coarse-projected flow is
+
+$$
+\dot a_j=-e_3(T_3)_{a,j},\qquad
+\dot c_j=-e_3(T_3)_{c,j}.
+\tag{H4}
+$$
+
+It preserves $\varphi_1$ exactly because $J_1T_3=0$. Meanwhile,
+
+$$
+\dot e_3=-S e_3,\qquad
+S=\|T_3\|^2
+=\kappa_3^2\left[\sum_j(9c_j^2a_j^4+a_j^6)-\frac{N^2}{D}\right]\ge0.
+\tag{H5}
+$$
+
+The nonnegativity follows from the orthogonal projection, or Cauchy–Schwarz. Along a regular solution with $D>0$,
+
+$$
+e_3(t)=e_3(0)\exp\left[-\int_0^t S(\tau)\,d\tau\right].
+\tag{H6}
+$$
+
+Thus the cubic error cannot change sign. This remains true even though the map and $A_3$ evolve. It is not a claim that all individual slopes contract, nor that their eventual displacement is small.
+
+For clarity about what a moment closure would require, differentiating (H3) gives
+
+$$
+\dot A_3=-\frac{\kappa_3}{W}
+(3\dot U-\dot\mu V-\mu\dot V),\qquad
+\dot\mu=(\dot N-\mu\dot D)/D,
+\tag{H7}
+$$
+
+where (H4) yields
+
+$$
+\begin{aligned}
+\dot V&=-\kappa_3e_3\sum_j|a_j|(a_j^2-\mu),\\
+\dot U&=-\kappa_3e_3\sum_j\left[
+|a_j|^5-\mu|a_j|^3+6c_j^2|a_j|^3-2\mu c_j^2|a_j|\right],\\
+\dot D&=-4\kappa_3e_3\sum_j a_jc_j(2a_j^2-\mu),\\
+\dot N&=-\kappa_3e_3\sum_j\left[
+18c_ja_j^5-10\mu c_ja_j^3+18c_j^3a_j^3-6\mu c_j^3a_j\right].
+\end{aligned}
+\tag{H8}
+$$
+
+These formulas are valid away from slope sign changes; absolute-value observables require the crossing treatment used elsewhere in the note. They exhibit the closure problem directly: higher mixed moments enter the evolution of the moment gap. Neither $e_3$ alone nor the pair $(e_3,A_3)$ has a closed law from these identities. The complete finite-particle surrogate is closed, but reducing it further needs additional justified structure or error bounds.
+
+Equations (H4)–(H6) are continuous-time projected dynamics. An ordinary Euler step along this tangent field does not preserve the nonlinear coarse output exactly: its coarse change includes $\eta^2\kappa_1e_3^2\sum_j(T_3)_{a,j}(T_3)_{c,j}$. Actual GD also retains its tracking and orthogonal-residual corrections. The projected-flow result therefore cannot be promoted to an ordinary-GD barrier without controlling these differences. Section 12 provides the separate finite-time movement and transfer framework.
+
+**Prediction.** Within this two-mode projected flow, a sign reversal of cubic-driven scale motion must come from $A_3$, not from cubic overshoot. An observed residual crossing falsifies the one-fine-mode description for that interval. Explaining it requires additional fine couplings or other departures from this surrogate; increasing the sensitivity while retaining (H5) cannot produce the crossing.
+
+### 13.3 The empirical success is a sign explanation, not a late-time closure
+
+**Example.** A posthoc comparison evaluates (H2) at 30 sine and degree-9 forks, retaining their actual parameters and exact cubic residuals. The [heterogeneous-cubic audit](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/heterogeneous_cubic/summary.json) gets the sign of $A_3$ correct at all 30 states. For sine, median effective-column relative errors are 8.7% at 100k and 9.1% at 400k. These are not uniform approximation guarantees: one 400k error is about 81%, and the 600k median error is **723%**. A posthoc attempt using the full biased cubic polynomial and all gradient blocks gets only two of the five late-sine signs right. Adding that Taylor term does not repair the late regime.
+
+**Theory: additional modes can permit overshoot, but their coupling must be tested.** With several fine errors, $\dot e_3$ includes off-diagonal terms such as $-S_{35}e_5$. The scalar sign-preservation argument no longer applies. It would still be insufficient to assert that these terms explain the observed crossing without predicting their effect.
+
+There is a direct existing test. The untouched, previously issued fixed-map forecasts already retain all 64 fine modes through degree 65. For the seven sine forks at 400k (seeds 0–4, 20, and 21), after 200k additional ordinary-GD updates, five actual cubic residuals are negative. Both the pure fixed-map forecast and its constant-remainder version predict a positive cubic residual in all seven cases. The [forecast comparison](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/heterogeneous_cubic/forecast_errors.json) records those five missed crossings. This diagnostic was selected after observing the results; the forecasts were not refitted or reissued.
+
+**Prediction.** A useful next closure must predict both the changing signed cubic sensitivity and the residual crossing produced by the coupled fine modes. The sign criterion identifies relevant parameter moments at small scales; the large late errors prevent using its cubic approximation to predict the crossing quantitatively. Within the audited small-correction regime, the failed fixed-map multimode forecasts point to evolving effective coupling. They do not establish a particular new closure, its acquisition time, or a universal barrier. A successful replacement must issue that crossing and the resulting signed travel before seeing the continuation.
+
 ## Appendix A. Computable neighborhood bounds
 
 Section 9 needs two kinds of uniform estimates: how much one GD step can

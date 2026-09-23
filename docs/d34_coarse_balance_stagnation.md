@@ -306,6 +306,17 @@ $A_k$, in $e_k$, or in the cancellation among modes. Sine exhibits each
 possibility. Degree 9's slowly varying generated errors describe one regime
 of this same coupled system; they are not a target restriction on the framework.
 
+A heterogeneous cubic example makes the missing information concrete.
+Two networks can have identical coarse and cubic outputs, hence identical
+errors, yet opposite $A_3$. Their signed readout–slope correlations differ.
+Moreover, with only one fine error, the projected flow obeys
+$\dot e_3=-\|T_3\|^2e_3$, so it cannot overshoot the cubic target.
+The [derivation](d34_coarse_balance_stagnation_details.md#13-a-heterogeneous-cubic-example-explains-what-must-evolve)
+therefore identifies two requirements: retain enough geometry to determine
+the signed sensitivity, and enough fine-mode coupling to permit the observed
+error reversal. Its cubic approximation explains early checkpoint signs but
+fails quantitatively at late sine states; it is not yet a long-time predictor.
+
 Adam carries first and second moments, so the GD response equation does not
 apply to its parameters alone. The existing
 [signed-motion audit](../results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/README.md#path-length-is-different-from-outward-movement)
