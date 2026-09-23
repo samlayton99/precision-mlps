@@ -365,6 +365,24 @@ slope, while showing why dissipation is not a universal radial barrier.
 The zero-$C_1$ absolute-radius result above is illustrative and should not
 be imposed on a fitted target with nonzero coarse slope.
 
+The same example predicts a direction change when the target has a fifth
+component. Assume it remains orthogonal through degree three and also has
+$\langle y_H,x^4\rangle_m=0$, so that $\beta=0$ stays invariant on the
+symmetric grid. Pure odd fifth- and ninth-degree fine targets satisfy this
+extra condition. With conserved $p=\alpha\zeta>0$, put
+
+$$
+D=\frac{tp^2}{18}-\frac{2p\langle y_H,x^5\rangle_m}{15}.
+$$
+
+Then $\mathcal E=D\alpha^4$ and
+$\alpha'=-4D\alpha^5/(\alpha^2+\zeta^2)$.
+Thus the same balanced model contracts slopes for $D>0$ and expands them
+for $D<0$, with opposite readout motion imposed by $\alpha\zeta=p$.
+The sign is predicted by a specific competition between generated error and
+target loading. A target with a fourth-degree component can also move the
+bias and does not obey this scalar reduction.
+
 **Prediction.** This model distinguishes fourth- or fifth-degree forcing from a
 ninth-degree regime dominated, at this order, by correcting generated
 lower modes. Under the contraction conditions, it also gives the
@@ -376,3 +394,117 @@ each slope. Transferring its confinement or population conclusions to
 ordinary GD requires the conditional errors in (11) and the tracking
 allowances to fit the desired margins. No archived numerical accuracy or
 unconditional persistence claim is made here.
+
+## 6. An exact GD diagnostic connects the reduced identity to the network
+
+**Example and purpose.** Readout growth accompanied by slope contraction is
+consistent with the reduced mechanism, but those two observations alone do
+not identify its cause. An exact observable in the original tanh network can
+separate the residual contribution, coarse correction, and finite-step term.
+The following identity is proposed as a diagnostic; no new measurement of
+it is reported here.
+
+**Identity and proof.** In physical parameters define
+
+$$
+Q(\theta)=\frac12\sum_j(a_j^2+b_j^2-c_j^2),\qquad
+H_\theta(x)=\sum_jc_j[\tanh(u_j)-u_j\operatorname{sech}^2(u_j)],
+\quad u_j=a_jx+b_j.
+$$
+
+Under $X_j=\sqrt W(a_j,b_j,c_j)$, this is exactly
+$Q(\theta)=\mathcal Q(\rho_W)$ from Section 5, in physical coordinates.
+
+For ordinary GD with $g=\nabla L(\theta_n)$, direct expansion of this
+quadratic observable gives the exact discrete identity
+
+$$
+Q_{n+1}-Q_n
+=\eta\langle r,H_{\theta_n}\rangle_m
++\frac{\eta^2}{2}
+\left(\|g_a\|^2+\|g_b\|^2-\|g_c\|^2\right).
+\tag{15}
+$$
+
+Indeed $g_{a,j}=\langle r,c_jx\operatorname{sech}^2u_j\rangle_m$,
+$g_{b,j}=\langle r,c_j\operatorname{sech}^2u_j\rangle_m$, and
+$g_{c,j}=\langle r,\tanh u_j\rangle_m$. Thus the linear increment
+$\eta\sum_j(c_jg_{c,j}-a_jg_{a,j}-b_jg_{b,j})$ is the first term
+of (15). Gradient flow has $\dot Q=\langle r,H_\theta\rangle_m$.
+Neither identity assumes coarse balance, small slopes, or a particular target.
+
+To compare with Section 5, use the unprojected Taylor outputs
+$f_3=-\sum_jc_ju_j^3/3$ and $f_5=2\sum_jc_ju_j^5/15$. Then
+
+$$
+H_\theta=-2f_3-4f_5
++O\!\left(\sum_j|c_j||u_j|^7\right).
+\tag{16}
+$$
+
+The remainder is uniform on a specified bounded preactivation interval.
+Crucially, the exact residual pairing also includes the coarse part:
+
+$$
+\langle r,H_\theta\rangle_m
+=\langle P_Hr,P_HH_\theta\rangle_m
++e_C^TH_C,
+\tag{17}
+$$
+
+where $e_C$ and $H_C$ are the coefficients of $P_Cr$ and $P_CH_\theta$
+in the orthonormal constant/linear basis, and $P_C=I-P_H$.
+The unprojected functions in (16) cannot simply replace the projected
+functions in (8) while discarding the second term of (17).
+
+Here is a conditional quantitative comparison. On the rescaled bounded
+domain of Section 5, put $U=A_a+A_b$ when
+$|a_j|\le A_a/\sqrt W$, $|b_j|\le A_b/\sqrt W$, and
+$|c_j|\le A_c/\sqrt W$. The elementary inequality
+$|\tanh u-u\operatorname{sech}^2u|\le2|u|^3/3$ gives
+$\|H_C\|\le C_H/W$, with $C_H=2A_cU^3/3$.
+To prove that inequality, differentiate its left-hand function before taking
+absolute values: its derivative is $2u\operatorname{sech}^2u\tanh u$,
+whose magnitude is at most $2u^2$, and integrate from zero.
+Write $K_C=J_CJ_C^T\succeq\kappa I$ and
+
+$$
+z_C=e_C+K_C^{-1}J_CJ_H^Te_H,\qquad r_C=J_C^Tz_C.
+$$
+
+If $y_H$ is orthogonal through degree three, the existing raw-fine-force
+bound $\|J_H^Te_H\|\le G_*/W^2$ yields
+
+$$
+|e_C^TH_C|
+\le\frac{C_H}{W}\|z_C\|
++\frac{C_HG_*}{\sqrt\kappa W^3}
+\le\frac{C_H}{\sqrt\kappa W}\|r_C\|
++\frac{C_HG_*}{\sqrt\kappa W^3}.
+\tag{18}
+$$
+
+The full empirical complement is used here. The first bound separates
+actual coarse disequilibrium from the nonzero coarse error needed for
+instantaneous balance. Taylor expansion of the fine pairing in (17) gives
+
+$$
+\langle P_Hr,P_HH_\theta\rangle_m
+=\frac{-2\|\psi_3\|_m^2+4\langle y_H,\psi_5\rangle_m}{W^2}
++O(W^{-3}).
+\tag{19}
+$$
+
+Its constants depend on the stated domain and target bound. Equations
+(15), (18), and (19) recover the reduced relative-energy identity with
+explicit coarse allowance, Taylor remainder, and the exact signed
+finite-step correction. Small tracking must be compared with these terms;
+it cannot be inferred solely from a small tracking-to-total-force ratio.
+
+**Prediction.** A subsequent trajectory audit can check whether generated
+fine error accounts for the signed change in $Q$, whether target loading
+opposes it, and whether coarse or finite-step corrections matter. A decline
+in $Q$ means geometry energy decreases relative to readout energy. It does
+not establish contraction of every slope, an acquisition barrier, or the
+duration for which the approximation remains valid. Those conclusions still
+require the separate trajectory and travel bounds.
