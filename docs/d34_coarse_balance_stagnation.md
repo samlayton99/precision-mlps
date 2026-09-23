@@ -23,6 +23,11 @@ fine residual changes little. We have conditional
 theorems for these regimes and numerically certified finite windows;
 we do not have a universal stagnation theorem.
 
+The newer [coupled-ODE results](d34_coupled_ode_mechanisms.md) derive examples
+of persistent rate suppression without assuming an equilibrium or a small
+future force. They identify structural conditions to test on the trained
+population; they do not establish those conditions across the target panel.
+
 This is the main reading note. Sections 1–2 explain the force and its direction;
 Sections 3–4 test its coupled evolution and develop a surrogate; Section 5
 connects that surrogate to acquisition bounds. Section 6 states the remaining
@@ -650,24 +655,53 @@ one when the remaining scale distance is large. Directional prediction is
 valuable for explaining motion; this conservative upper bound does not
 require it to be accurate.
 
-**What still needs sharpening.** We now have a signed amplification
-criterion and a conditional width law, but generic parameter-maxima bounds
-are numerically inadequate: even setting tracking to zero, their first-exit
-test supports at most eighteen updates on the tested states. This is a
-failure of those constants, not observed escape after eighteen updates.
-The next calculation must preserve the loaded curvature and coarse geometry
-well enough to prove a modest accumulated amplification allowance. It must
-also close the parameter region over the claimed window. The
-[experiment report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_persistence/README.md)
-keeps successful predictions, physical-kick confounding and failed scalar
-closures visible alongside these proof requirements.
+**The theoretical objective is persistent rate suppression.** In one exact
+reduced correction ODE, rescaled slopes decrease like $\tau_2^{-1/6}$ while
+readouts grow like $\tau_2^{1/6}$. The slope speed falls like
+$\tau_2^{-7/6}$. The system keeps changing and has no finite parameter
+equilibrium. Correction weakens its own sensitivity, so the force becomes
+small as an outcome of the dynamics. These are derived rates for that
+restricted ODE, not fitted exponents or a theorem for every training target.
+
+The [mechanism note](d34_coupled_ode_mechanisms.md) develops three connected
+arguments with proofs. First, maintaining a coarse contribution can require
+large compensating readout motion, producing long escape times even when the
+target pushes outward. This compensation is already part of the effective
+fine flow at zero disequilibrium. Second, explicit target and generated-error
+coefficients determine the time needed to pass through a scale interval.
+Third, a population-level correction equation gives either a finite correction
+budget or algebraically slow continuing motion, according to how sensitivity
+changes with the remaining error. For the latter mechanism, an independently
+derived scalar example has squared sensitivity proportional, up to constants,
+to the cube of the generated-error norm. For zero competing drive, the
+population theorem shows that where this relation holds, the full-parameter
+path allowance grows only as $T^{1/6}$ in reduced time on the established interval. An attracting
+equilibrium is treated only as a separate contrast case.
+
+These statements make the next assumptions concrete. A heterogeneous
+population can redistribute coarse fit and bypass a scalar readout
+bottleneck, so alignment and redistribution must be studied explicitly.
+Generated-error correction can also become progressively less conditioned;
+assuming a fixed restoring rate would miss the algebraic example. The existing
+perturbations support an evolving coupled description, but do not yet prove
+either of these regional structures. The note's assumption ledger records
+supporting and contrary evidence, including the late-sine limitations.
+
+Generic parameter-maxima bounds currently support at most eighteen updates
+in the recent first-exit audit, even with tracking set to zero. That is a
+limitation of those constants, not observed escape after eighteen updates.
+The immediate objective is a mechanism-based lower bound on acquisition time
+with a justified duration. Accurate prediction of every small movement is
+not required. The [experiment report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_persistence/README.md)
+retains the numerical limitations alongside the successful comparisons.
 
 The force reduction and coupled forecasts have evidence across functions;
 the width-dependent rate has a conditional proof; selected empirical instances
 have finite rounding-controlled certificates. A broadly useful theorem still
-needs its future-error and regime-persistence assumptions verified more
-sharply. None of these claims requires permanent trapping or establishes entry
-into the post-transient regime from initialization.
+needs a structural persistence condition established for the heterogeneous
+dynamics and its transfer errors controlled. None of these claims requires
+permanent trapping or establishes entry into the post-transient regime from
+initialization.
 
 Two related observations are useful but are not prerequisites for this argument.
 The [frozen-geometry readout study](../results/checkpoint_D_optimizers/expD34_readout_race/readout_scale/README.md)

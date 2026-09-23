@@ -14,6 +14,16 @@ assumption is a regional bound on **loaded force amplification**. That bound
 must be established separately; a value measured at one checkpoint is not a
 proof of its persistence. No new numerical results are asserted here.
 
+For mechanisms that derive slow rates from a specified coupled ODE, use the
+[companion mechanism note](d34_coupled_ode_mechanisms.md). It proves passage
+delays from readout compensation and signed target/error competition, and
+derives algebraic slowing when correction weakens its own sensitivity. The
+system need not approach an equilibrium. Its assumption ledger distinguishes
+the proved reduced-system statements from the unverified conditions needed
+for a heterogeneous tanh-GD population. The role of the present note is to
+turn a justified persistence condition into discrete motion and acquisition
+bounds.
+
 **Notation.** All norms below are Euclidean norms in orthonormal empirical
 coordinates; the loss uses the empirical mean normalization.
 
@@ -925,6 +935,16 @@ requires $M$ and the relevant correction constants to remain bounded
 uniformly across the widths and time windows claimed. Observing modest
 ratios at finitely many endpoints suggests such a bound; it does not prove
 (36), (39), or uniformity in width.
+
+The [ODE rate results](d34_coupled_ode_mechanisms.md#4-a-heterogeneous-population-can-have-a-limited-correction-travel-budget)
+offer a different starting point from a close forecast: a structural law
+relating generated error to its changing sensitivity can bound accumulated
+motion directly. For example, with zero competing drive their cubic degeneracy
+condition yields a $T^{1/6}$ path allowance in the reduced clock, conditional on the stated
+regional assumptions. Establishing such a law for the trained population is
+a mechanistic persistence problem, not merely an improvement in forecast
+accuracy. Its transfer to this discrete-GD argument must retain the relevant
+tracking, approximation and time-normalization terms.
 
 **An explicit structural width example.** Suppose Section 7's hypotheses
 close through $\eta N/W\le T$, with width-uniform constants. For the
