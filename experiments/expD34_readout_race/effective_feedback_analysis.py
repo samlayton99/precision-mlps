@@ -252,6 +252,60 @@ def plot_comparison(rows, output):
         plt.close(fig)
 
 
+def plot_contrasts(rows, output):
+    """Plot paired branch-minus-joint changes, with every actual seed retained.
+
+    Predicted medians require support for every corresponding actual case;
+    missing forecasts create gaps rather than silently changing the cohort.
+    """
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    selected = [r for r in rows if int(r['degree']) == 65 and float(r['eta']) == .002
+                and r['valid'] in (True, 'True')]
+    colors = dict(freeze_map='tab:blue', clamp_residual='tab:orange')
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7), squeeze=False)
+    for ri, target in enumerate(('moment9', 'sine')):
+        for ci, start in enumerate((400000, 600000)):
+            ax = axes[ri, ci]
+            records = [r for r in selected if r['target'] == target and int(r['start']) == start]
+            seeds = sorted({int(r['seed']) for r in records})
+            for arm, color in colors.items():
+                branch = [r for r in records if r['arm'] == arm]
+                for seed in seeds:
+                    values = sorted([r for r in branch if int(r['seed']) == seed], key=lambda r: int(r['offset']))
+                    ax.plot([int(r['offset']) for r in values],
+                            [float(r['actual_mean_gamma_contrast']) for r in values],
+                            color=color, alpha=.18, linewidth=.8)
+                offsets = sorted({int(r['offset']) for r in branch})
+                actual, predicted = [], []
+                for offset in offsets:
+                    paired = [r for r in branch if int(r['offset']) == offset]
+                    actual.append(np.median([float(r['actual_mean_gamma_contrast']) for r in paired]))
+                    supported = all(r['contrast_supported'] in (True, 'True') for r in paired)
+                    predicted.append(np.median([float(r['predicted_mean_gamma_contrast']) for r in paired])
+                                     if supported else np.nan)
+                if offsets:
+                    ax.plot(offsets, actual, color=color, linewidth=2, label=f'{arm}: actual median')
+                    ax.plot(offsets, predicted, color=color, linestyle='--', linewidth=1.5,
+                            label=f'{arm}: predicted median')
+            if not records:
+                ax.text(.5, .5, 'No paired run', ha='center', transform=ax.transAxes)
+            ax.axhline(0, color='gray', linewidth=.6)
+            ax.set_title(f'{target}, fork {start:,}; {len(seeds)} seeds')
+            ax.set_xscale('symlog', linthresh=10)
+            ax.set_xlim(left=0)
+            ax.set_xlabel('Additional reference GD updates')
+            ax.set_ylabel('Mean |a| difference: branch minus joint')
+            ax.grid(alpha=.2)
+            if records:
+                ax.legend(fontsize=6.5)
+    fig.tight_layout()
+    for suffix in ('png', 'pdf'):
+        fig.savefig(Path(output)/f'paired_scale_contrasts.{suffix}', dpi=170)
+    plt.close(fig)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, required=True)
@@ -265,6 +319,7 @@ def main():
     write_csv(args.output/'actual_vs_forecast.csv', rows)
     write_csv(args.output/'branch_contrasts.csv', contrasts)
     plot_comparison(rows, args.output)
+    plot_contrasts(contrasts, args.output)
     print(json.dumps(dict(rows=len(rows), contrasts=len(contrasts), output=str(args.output))))
 
 
