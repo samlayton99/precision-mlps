@@ -1,6 +1,6 @@
 # Understanding the gamma barrier: a theorem and a measurement guide
 
-Why can training fit the output while a population of slopes fails to acquire a specified scale? The useful object is the slope force that remains after the easily fitted residual components have relaxed. Its magnitude, direction, and distribution across neurons answer different questions. This note derives a conditional finite-time population-barrier theorem and explains how to measure its ingredients even when a complete proof from initialization is unavailable.
+Why can training reduce the loss while failing to reach the slope scales and precision we seek? The useful object is the slope force that remains after the easily fitted residual components have relaxed. Its magnitude, direction, and distribution across neurons answer different questions. This note derives a conditional finite-time population-barrier theorem and explains how to measure its ingredients even when a complete proof from initialization is unavailable.
 
 The theorem applies to actual simultaneous GD, including random nonzero readouts and nonlinear signal regeneration. It does not establish that its hypotheses hold for every D34 initialization. The [technical theory note](d34_transport_scale_barrier.md) gives the broader transport formulation; the [evidence report](../results/checkpoint_D_optimizers/expD34_readout_race/transport_barrier/README.md) records the numerical tests. Here the goal is to make the mathematical steps and diagnostic interpretation accessible without prior knowledge of Schur complements or transport PDEs.
 
@@ -19,6 +19,15 @@ further updates from each of ten retained starting states. This is a
 conditional theorem from specified checkpoints, with numerical constants rather than
 directed-rounding certification; it does not establish entry from initialization
 or permanent trapping.
+
+For the current mechanism argument, start with the
+[coupled-force exposition](d34_coarse_balance_stagnation.md). Its matched
+experiments keep the initial effective force unchanged and separately fix
+its sensitivity map or its supplied error. The purpose is to explain how
+the surviving force sustains or loses outward motion, after the small
+corrections have already been identified. This walkthrough supplies the
+underlying population theorem; the exposition develops and tests the
+additional dynamical model needed to use that theorem predictively.
 
 **Notation. Physical parameters and empirical norms are used throughout.**
 

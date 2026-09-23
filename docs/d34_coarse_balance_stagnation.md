@@ -269,13 +269,18 @@ conditions for precision fitting.
 
 ## 5. Transfer to sine and Adam through the surviving force
 
-**Example: sine recovers force without sufficient acquisition.** Across five
-GD seeds, the effective slope-force norm grows by a median factor of 12.8
-between 400k and 600k. At 600k, median mean gamma is only 0.158 and relative
-evaluation MSE is about 0.496. A frozen-Jacobian forecast from 100k has 99.4%
-median force-vector error at 600k. The
-[force audit](../results/checkpoint_D_optimizers/expD34_readout_race/force_plateaus/README.md)
-rules out transferring degree 9's fixed-coupling approximation unchanged.
+**Example: the same sine error first contracts slopes, then expands them.**
+At 100k, the cubic residual is positive and drives inward mean-scale motion
+in all five seeds. At 400k, that residual remains positive but its effective
+slope contribution is outward in every seed. The change is in the signed
+sensitivity. At 600k, the sensitivity retains its new sign, but the cubic
+residual has reversed in three seeds; cubic contraction then opposes a
+substantial outward fifth-mode contribution. The
+[checkpoint audit](../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/cubic_sign_audit/README.md)
+shows these separate changes directly. The substantial cubic target error
+does not always supply outward motion, even though it is more accessible
+than the ninth-degree target. These trajectories still fail to reach the
+intended geometry and precision.
 
 **Theory: retain the identified force while evolving its drivers.** With the
 complete fine complement, the exact flow identity is
@@ -293,6 +298,14 @@ this force rather than inferring it from coefficient size. For sine, the
 cubic target coefficient is nonzero, so its cubic residual is not solely
 unwanted network output.
 
+To see the direction explicitly, define
+$A_k=-W^{-1}\sum_j\operatorname{sign}(a_j)(T_a)_{jk}$.
+Then mode $k$ contributes $A_ke_k$ to instantaneous mean-scale velocity
+away from zero slopes. A change of direction can come from a change in
+$A_k$, in $e_k$, or in the cancellation among modes. Sine exhibits each
+possibility. Degree 9's slowly varying generated errors describe one regime
+of this same coupled system; they are not a target restriction on the framework.
+
 Adam carries first and second moments, so the GD response equation does not
 apply to its parameters alone. The existing
 [signed-motion audit](../results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/README.md#path-length-is-different-from-outward-movement)
@@ -301,9 +314,10 @@ tracking activity often cancels. Its remaining influence through the shared
 denominator is part of the coupled system. Test transfer through persistent
 signed motion, rather than requiring small raw tracking norms in Adam.
 
-**Prediction.** A sine model must predict the signed responses to fixing
-$T_a$ or the supplied $e_H$, including their later feedback through all
-parameters. Adam is outside the current GD campaign. A later transfer test
+**Prediction.** A sine model must predict the sensitivity reversal and later
+modal cancellation, then the signed responses to fixing $T_a$ or the supplied
+$e_H$, including their feedback through all parameters. A force-norm forecast
+alone misses this distinction. Adam is outside the current GD campaign. A later transfer test
 would alter the specified raw force before both moments update, preserving
 their starting histories. Agreement concerns which interventions strengthen
 or suppress sustained acquisition; magnitudes and timescales may differ.

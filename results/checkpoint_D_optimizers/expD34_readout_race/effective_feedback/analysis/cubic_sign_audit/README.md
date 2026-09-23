@@ -6,6 +6,13 @@ concrete. For sine, the cubic error drives contraction at 100k and expansion at
 sensitivity reverses. Thus even an accessible, substantial target error does
 not determine the direction of scale motion by itself.
 
+| Symbol | Meaning |
+|---|---|
+| $e_k=f_k-Y_k$ | Network-minus-target coefficient along empirical polynomial $q_k$. |
+| $T_a$ | Effective map from retained fine errors to the slope gradient. |
+| $A_k$ | Signed mean-scale velocity per unit error in mode $k$, defined below. |
+| $F_a=T_ae_H$ | Effective slope gradient; the velocity has the opposite sign. |
+
 The audit uses the existing 30 checkpoints: sine and degree 9, seeds 0–4,
 at 100k, 400k, and 600k. It recomputes the degree-65 effective force from each
 checkpoint, without training. This is a descriptive check of the mechanism;
