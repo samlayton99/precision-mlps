@@ -37,6 +37,15 @@ tanh steps provide sharp, exactly realizable features. The kinks test continuous
 functions with nonsmooth derivatives and slowly decaying modal tails. These are
 ten instances in five families, not ten independent families.
 
+![Locked normalized target functions and their constant-plus-linear projections.](analysis/heldout_targets/target_functions.png)
+
+The target-only audit was recorded before inspecting trained outcomes. The
+constant/linear component contains 17.25%–89.95% of target energy across these
+instances. These proportions describe the functions; they do not preclassify
+learning difficulty or select successful cases. The
+[audit](analysis/heldout_targets/target_audit.json) retains its timestamp,
+source hashes, normalization, and retained/omitted polynomial energies.
+
 ## Paired experiment
 
 Use seeds 22 and 23, the existing width-177 initialization, physical coordinates,
