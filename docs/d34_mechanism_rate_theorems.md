@@ -450,3 +450,224 @@ If the map-response or closure allowance consumes the acquisition margin,
 the proposed theorem is uninformative for that case. That is a concrete reason
 to refine its coupled mechanism, not permission to weaken its hypotheses or
 infer a barrier from the small tracking measurements alone.
+
+## 7. A loaded-response condition that closes the ordinary-GD envelope
+
+**Example.** The frozen reference can leave a large distance to $\lambda=0.25$
+while its map changes appreciably. Requiring a small unweighted $\|T-T_0\|$
+would discard this case. A more relevant question is whether the *loaded,
+time-propagated response* varies enough inside the proposed neighborhood to
+consume that distance. This section gives an explicit sufficient test.
+
+All references below are constructed from the checkpoint and prescribed
+model calculations, not selected to follow future true states. Every bound
+is conditional on its stated neighborhood estimates; samples of a Jacobian
+are not a supremum over that neighborhood.
+
+### A single-state functional, including the finite-step error
+
+For $0\le k<n$, abbreviate the fixed propagation matrix by
+$Q_{n,k}=T_0\Phi_{n-1-k}$. Define functions of one parameter state $\theta$:
+
+$$
+\begin{aligned}
+\mathcal K_{n,k}(\theta)
+ &=-[T(\theta)-T_0]e_H(\theta)
+     +Q_{n,k}[S(\theta)-S_0]e_H(\theta),\\
+\mathcal C_{n,k}(\theta)
+ &=-r_C(\theta)+Q_{n,k}J_H(\theta)r_C(\theta),\\
+\mathcal O_{n,k}(\theta)
+ &=-g_\perp(\theta)+Q_{n,k}J_H(\theta)g_\perp(\theta),\\
+\tau(\theta)
+ &=e_H(G(\theta))-e_H(\theta)+\eta J_H(\theta)g(\theta),\qquad
+ G(\theta)=\theta-\eta g(\theta).
+\end{aligned}\tag{21}
+$$
+
+In particular, $e_H(\theta)$ is always the nonlinear network residual
+projected into the fixed fine basis. It is not an independent auxiliary
+variable in (21). Evaluating $G(\theta)$ is one analytic virtual GD update;
+$\tau(\theta)$ does not require an unknown next trajectory state. The exact
+identity (19) is equivalently
+
+$$
+\theta_n=\widehat\theta_n
+ +\eta\sum_{k<n}\bigl[\mathcal K_{n,k}(\theta_k)
+       +\mathcal C_{n,k}(\theta_k)+\mathcal O_{n,k}(\theta_k)\bigr]
+ -\sum_{k<n}Q_{n,k}\tau(\theta_k).
+\tag{22}
+$$
+
+All sums start at the checkpoint, $k=0$. At $k=n-1$, $Q_{n,n-1}=0$,
+so the most recent residual update has no propagated parameter contribution.
+The final sum has no extra factor of $\eta$.
+
+### Proposition: a full-parameter neighborhood inclusion test
+
+Choose reference states $\bar\theta_0=\theta_0,\ldots,\bar\theta_N$ and
+coordinate radii $r_k\ge0$. Let
+
+$$
+\mathcal D_k=\{\theta:|\theta-\bar\theta_k|\le r_k\},\qquad
+b_n=\widehat\theta_n+\eta\sum_{k<n}\mathcal K_{n,k}(\bar\theta_k)
+       -\bar\theta_n.
+\tag{23}
+$$
+
+Absolute values and inequalities between vectors are coordinatewise. Assume
+the coarse solve remains invertible on each box. Suppose nonnegative matrices
+$L_{n,k}$ and nonnegative vectors $c_n$ satisfy
+
+$$
+\begin{aligned}
+|D\mathcal K_{n,k}(\theta)|&\le L_{n,k}
+       &&\text{for every }\theta\in\mathcal D_k,\\
+\left|\eta\sum_{k<n}(\mathcal C_{n,k}(\theta_k)
+                  +\mathcal O_{n,k}(\theta_k))
+       -\sum_{k<n}Q_{n,k}\tau(\theta_k)\right|&\le c_n
+       &&\text{for every choice }\theta_k\in\mathcal D_k.
+\end{aligned}\tag{24}
+$$
+
+The separate two-channel allowances of (20), together with omitted-mode and
+finite-step allowances, are one sufficient way to obtain $c_n$. In particular,
+uniform small tracking shrinks it through both $(r_C)_a$ and $J_Hr_C$.
+For full-parameter inclusion the other parameter coordinates also need
+bounds; small slope tracking does not supply them automatically.
+
+If
+
+$$
+|b_n|+c_n+\eta\sum_{k<n}L_{n,k}r_k\le r_n
+\quad\text{for every }1\le n\le N,
+\tag{25}
+$$
+
+then ordinary GD stays in these boxes through $N$. More precisely it satisfies
+
+$$
+\left|\theta_n-\widehat\theta_n
+ -\eta\sum_{k<n}\mathcal K_{n,k}(\bar\theta_k)\right|
+\le c_n+\eta\sum_{k<n}L_{n,k}r_k.
+\tag{26}
+$$
+
+**Proof.** The initial state is in its box. Suppose all previous states are
+in theirs. Each box is convex, so the mean-value integral and (24) bound
+$|\mathcal K_{n,k}(\theta_k)-\mathcal K_{n,k}(\bar\theta_k)|$
+by $L_{n,k}r_k$. Substituting into (22) proves (26). Adding $|b_n|$ then gives
+(25), placing the next state in its box. Induction proves both conclusions.
+If the derivative estimates require smoothness beyond the box because of
+$\tau$, bound the image $G(\mathcal D_k)$ and its connecting update segments
+as part of those estimates; this is not supplied by trajectory inclusion alone.
+
+The center in (26) retains the signed reference correction. The boxes in
+(23) are centered at the independently chosen $\bar\theta_k$. These need not
+coincide. In particular, choosing $\bar\theta=\widehat\theta$ requires the
+box radius to pay for the entire reference correction $b_n$ even when the
+final acquisition envelope benefits from its sign.
+
+### Scalar and block conditions an implementation can check
+
+For common radii $r_k=r$ choose a nonnegative matrix $A$ and vector $d$ with
+
+$$
+A\ge\eta\sum_{k<n}L_{n,k},\qquad d\ge |b_n|+c_n
+\quad\text{for all }n\le N.
+\tag{27}
+$$
+
+Then $d+Ar\le r$ suffices. If the spectral radius of $A$ is less than one,
+$(I-A)^{-1}$ is nonnegative and $r=(I-A)^{-1}d$ is a candidate. The estimates
+must be established on the boxes with that candidate radius; evaluating $A$
+on a smaller box and enlarging the radius afterward is invalid.
+
+For a cheaper scalar criterion choose positive coordinate scales $w$ and
+$W_d=\operatorname{diag}(w)$. Use boxes $r=Rw$ and establish
+
+$$
+a\ge\max_{n\le N}\eta\sum_{k<n}
+ \sup_{\theta\in\mathcal D_k}
+ \|W_d^{-1}D\mathcal K_{n,k}(\theta)W_d\|_\infty,
+\qquad d_w\ge\max_{n\le N}\|W_d^{-1}(|b_n|+c_n)\|_\infty.
+\tag{28}
+$$
+
+The conditions $a<1$ and $R\ge d_w/(1-a)$ imply inclusion. Block norms for
+slopes, biases, readouts, and output bias give an intermediate small
+nonnegative matrix condition. The sequential criterion (25) can be sharper
+than either common-radius reduction. Failure of these sufficient conditions
+does not establish that the network escapes; it identifies a failed enclosure.
+
+One can improve the reference centers without inspecting the true future.
+For example, a prescribed map-only Volterra reference is defined causally by
+
+$$
+\bar\theta_0=\theta_0,\qquad
+\bar\theta_n=\widehat\theta_n
+ +\eta\sum_{k<n}\mathcal K_{n,k}(\bar\theta_k).
+\tag{29}
+$$
+
+Here $b_n=0$. Equation (29) still needs its own computation and may be costly;
+it is a nonlinear surrogate, not a free consequence of freezing $T$. Its
+omission of tracking, omitted modes, and finite-step terms is charged by
+$c_n$. If instead one recursively includes every exact channel of (22), the
+reference reproduces ordinary GD itself. That is not an independent reduced
+model or a mechanistic simplification.
+
+### Exact loaded derivatives and the missing numerical ingredient
+
+For any direction $v$, with all unmarked quantities evaluated at $\theta$,
+
+$$
+\begin{aligned}
+D\mathcal K_{n,k}[v]
+={}&-(DT[v])e-(T-T_0)J_Hv\\
+ &+Q_{n,k}\{[(DT[v])^TT+T^TDT[v]]e+(S-S_0)J_Hv\}.
+\end{aligned}\tag{30}
+$$
+
+Thus the quantity to control contains the current residual load and the
+paired response. Bounding $DT$ and $e$ separately can lose decisive modal
+cancellation. At the checkpoint the terms with $T-T_0$ and $S-S_0$ vanish,
+but $DT[v]e$ generally does not.
+
+These derivatives are computable without a future trajectory. Write
+$K_C=J_CJ_C^T$. Then
+
+$$
+\begin{aligned}
+DK_C[v]&=(DJ_C[v])J_C^T+J_C(DJ_C[v])^T,\\
+DB[v]&=K_C^{-1}\{(DJ_C[v])J_H^T+J_C(DJ_H[v])^T-DK_C[v]B\},\\
+DT[v]&=(DJ_H[v])^T-(DJ_C[v])^TB-J_C^TDB[v].
+\end{aligned}\tag{31}
+$$
+
+For a version that also keeps signed reference tracking or finite-step
+corrections, differentiate those functions in (21). In particular,
+
+$$
+D\tau(\theta)[v]
+=J_H(G(\theta))(I-\eta H(\theta))v-J_H(\theta)v
+ +\eta\{DJ_H(\theta)[v]g(\theta)+J_H(\theta)H(\theta)v\}.
+\tag{32}
+$$
+
+This makes explicit the full loss Hessian and the nonlinear projection
+consistency; neither can be silently replaced by an auxiliary residual state.
+Signed reference corrections can be moved into $b_n$, while their derivative
+uncertainty is added to $L_{n,k}$. For the finite-step channel this means adding
+a bound for $D[-Q_{n,k}\tau]/\eta$, because (25) places an outer $\eta$
+before $L_{n,k}$ and the last sum in (22) has none. Uniform upper bounds still need proof on
+the proposed boxes, for example from analytic derivative bounds or validated
+interval evaluation. FP64 point derivatives and refinement of the reference
+sum are useful diagnostics of that task, not its completion.
+
+**Prediction and useful failure report.** Apply (17)–(18) with the signed center
+in (26) and its explicit uncertainty. Report whether loss of exclusion comes
+from the reference correction itself, the two tracking channels, omitted or
+finite-step terms, or the loaded-response neighborhood gain. This separates
+a mechanism that actually predicts acquisition from an error bound that is
+too loose to decide. It also states precisely what must improve before the
+strong frozen-model exclusion can become an ordinary-GD theorem.
