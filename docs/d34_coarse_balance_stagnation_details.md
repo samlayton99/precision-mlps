@@ -1495,15 +1495,15 @@ a_2^{\rm clamp\_residual}-a_2^{\rm joint}
 \tag{M2}
 $$
 
-These are exact discrete identities. For a forecast from the fork, let $\mathcal H_s=\nabla^2L(\theta_s)$. The derivatives of the full applied directions are
+These are exact discrete identities. For a forecast from the fork, the derivatives of the full applied directions are
 
 $$
 \begin{aligned}
-Dg_s^{\rm joint}&=\mathcal H_s,\\
+Dg_s^{\rm joint}&=\nabla^2L(\theta_s),\\
 Dg_s^{\rm freeze\_map}[d]
-&=\mathcal H_sd-E_a(DT_{a,s}[d])e_s,\\
+&=\nabla^2L(\theta_s)d-E_a(DT_{a,s}[d])e_s,\\
 Dg_s^{\rm clamp\_residual}[d]
-&=\mathcal H_sd-E_aT_{a,s}J_{H,s}d.
+&=\nabla^2L(\theta_s)d-E_aT_{a,s}J_{H,s}d.
 \end{aligned}
 \tag{M3}
 $$
@@ -1604,7 +1604,7 @@ $$
 
 The defect is evaluated on the forecast, not a future true state; the map derivative must be bounded on the neighborhood joining true and predicted states. Closing that neighborhood and comparing the resulting envelope with the acquisition distance gives a conditional **ordinary-GD** exclusion. Without closure, it remains an attempted bound. A bound on either modified branch transfers only with an additional bound on its discrepancy from the ordinary-GD field.
 
-**Prediction.** Report separately the interval over which the surrogate predicts motion, the shorter interval over which an ordinary-GD enclosure closes, and the cumulative contribution of each controlled defect. Long-time success of the first does not lengthen the second automatically. Failure of a uniform bound is not evidence of acquisition; verified acquisition outside a claimed closed envelope would instead invalidate that bound or its implementation.
+**Prediction.** Report separately the interval over which the surrogate accurately predicts motion, the interval over which an ordinary-GD enclosure closes, and the cumulative contribution of each controlled defect. The enclosure may be more conservative; there is no assumed ordering of these intervals. Success of the forecast does not lengthen the proved interval automatically. Failure of a uniform bound is not evidence of acquisition; verified acquisition outside a claimed closed envelope would instead invalidate that bound or its implementation.
 
 ## 13. A heterogeneous cubic example explains what must evolve
 
