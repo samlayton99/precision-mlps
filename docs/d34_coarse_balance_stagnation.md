@@ -15,6 +15,17 @@ and precision, so its explanation must retain more of the evolving coupling.
 The matched-feedback experiments test that coupling directly. The observed $O(h)$
 readouts at large frozen gammas remain a supporting observation.
 
+The question is **finite-time stagnation over a useful training window**, not
+permanent trapping or an indefinitely accurate reduced trajectory. The primary
+matched tests use 1k, 10k, 50k, and 200k additional GD updates at
+$\eta=0.002$. Their forks are at 100k, 400k, and 600k total updates; for
+example, a 100k fork followed for 200k ends at 300k total updates. Later
+million-update continuations are optional stress tests. Their forecast failures
+do not refute a model that accurately predicts the stated shorter window.
+Within that window, however, a wrong prediction remains a limitation. Update
+counts specify this experiment's horizon; comparisons across optimizers and
+learning rates also require attention to the size of their steps.
+
 **Notation for simultaneous GD in physical coordinates. The network is a sum of features, with no division by width.**
 
 | Symbol | Meaning |
@@ -44,15 +55,16 @@ earlier attenuation analysis.
 
 ## 1. The force that remains after coarse balance
 
-**Example: two lower-error directions explain degree-9 motion.** Evolving the
-quadratic and cubic errors while keeping their coupling fixed predicts slope
-displacement from 600k through six million GD updates to 4.12–5.53% relative
-error. Over that continuation, mean gamma falls slightly, every final gamma
-is below 0.211, and relative MSE remains near 0.75. These are failed scale
-and precision acquisitions. The
+**Example: lower-error correction predicts continued degree-9 stagnation.**
+From the existing degree-9 600k checkpoints, the full fixed-map model predicts
+slope displacement over the next 200k updates to a median 0.315% relative
+vector error. Mean gamma falls slightly and relative MSE remains near 0.75.
+These are failed scale and precision acquisitions over the stated window.
+The quadratic and cubic errors supply the dominant inward force. The earlier
 [persistence evidence](d34_coarse_balance_stagnation_details.md#10-testing-what-keeps-the-force-small)
-shows that residual relaxation, rather than rapid readout adjustment, supplies
-most of the force's slow decline.
+also tests a two-error reduction over much longer continuations; that is
+additional evidence for this particular target, not a required horizon for
+the general explanation.
 
 **Theory: the effective force includes the response needed to maintain the coarse fit.**
 For the exact tanh network,
@@ -215,6 +227,10 @@ within the selected neighborhoods. Evaluating the ordinary-GD bounds in FP64
 excludes scale 1 for 10.2–17.1 million additional updates, with every gamma
 below 0.388. GD was simulated through six million updates; the longer horizons
 are bounds, not completed trajectories.
+
+The practical conclusion already holds on the primary 1k–200k window. The
+larger exclusion horizon is extra strength of this degree-9 bound, not a
+standard that every target-specific prediction must meet.
 
 **Theory: separate the original descent theorem from bounds on modified motion.**
 Small-slope features have weak ninth-degree output throughout a sufficiently

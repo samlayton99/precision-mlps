@@ -2,7 +2,14 @@
 
 ## Proposed effective-force perturbations
 
-**Current protocol: matched feedback, with outcomes still to be measured.**
+**Current protocol: matched feedback, with the original 13-target panel complete
+through 200k additional updates.** The
+[200k report](../../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/analysis/existing_200k/README.md)
+reports all targets and both seed cohorts. A
+[prospectively locked ten-function panel](../../results/checkpoint_D_optimizers/expD34_readout_race/effective_feedback/heldout_protocol.md)
+tests transfer across five new families; fresh seeds on the original functions
+do not constitute that test.
+
 This specification supersedes the broad mode-deletion proposal retained below.
 The question is now whether evolving errors or evolving sensitivities supplies
 the feedback that limits scale acquisition. The identified object remains
@@ -113,6 +120,15 @@ the branch. Keep the predeclared horizons even if a later curve is inconvenient.
 
 ### Locked cases, horizon tiers, and common budget
 
+The primary scientific horizon is **1k–200k additional updates**, with total
+updates since initialization reported separately. At the 100k fork, those
+endpoints are 101k–300k total; at the 600k fork, they are 601k–800k total.
+The aim is a useful finite-time explanation, not indefinite forecast accuracy.
+Million-update continuations are optional stress tests. After the user's
+horizon clarification, the long panel was stopped after its completed 500k
+and 2m tiers; the uncompleted 5.4m tier is not a required deliverable or a
+failed prediction. Its consumed time remains in the shared accounting.
+
 Use the 13 targets in `adam_forces.TARGETS`: sine, Runge, moments 3, 5, and 9,
 mixed sine, localized sine, chirp, moment 4, and the four existing blends.
 Preserve their original training-grid normalization, width 177, FP64,
@@ -126,6 +142,11 @@ in $R_a$; a degree-129 control changes the intervention as well as its diagnosis
 | Existing trajectories | 13 targets × seeds 0–4 × forks 100k, 400k, 600k: **195 starts, 585 branches**. | 1k, 10k, 50k, 200k. |
 | Fresh validation | Seeds 20 and 21 supply **26 ordinary-GD backbones** from the unchanged initialization. Fork all targets at 100k, 400k, 600k: **78 starts, 234 branches**. | The same 1k, 10k, 50k, 200k tiers. |
 | Locked long panel | Sine, moment 9, moment 5, mixed sine, chirp × seeds 0 and 20 × forks 400k and 600k: **20 starts, 60 branches**. | 500k, 2m, 5.4m if throughput and the shared ceiling permit. |
+
+The table preserves the original locked design. The ten new functions and
+their 180 primary branches are specified in the linked held-out protocol;
+the long-panel status above records the subsequent horizon decision. Neither
+change selects targets by whether their outcomes favor stagnation.
 
 Complete broad common tiers before expanding their horizon. The long panel is
 fixed by target, seed, and fork rather than selected for an interesting result.
