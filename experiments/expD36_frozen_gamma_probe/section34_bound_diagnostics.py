@@ -111,7 +111,7 @@ def main():
     fig, axes = plt.subplots(1, 2, figsize=(5.5, 2.65))
     # Fixed margins avoid backend-dependent clipping when PDF then PNG are saved.
     fig.subplots_adjust(left=.09, right=.99, bottom=.18, top=.89, wspace=.28)
-    colors = ['#0072B2', '#E69F00', '#009E73', '#CC79A7']
+    colors = ['#332288', '#0072B2', '#009E73', '#CC6677']
     for lam, color, (steps, ratio, pred, act) in zip(LAMBDAS, colors, plot_data):
         mask = steps>0
         axes[0].plot(steps[mask], ratio[mask], color=color, lw=1.25, label=rf'$\lambda=1/{round(1/lam)}$')

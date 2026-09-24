@@ -1,0 +1,1578 @@
+{
+  "comparisons": {},
+  "input_sha256": "eaba106586d281be9c0ea2d13d8b958dc4b35dec2a7227c6b1533547eb3ddecc",
+  "assay_steps": 5000000,
+  "selection": "Each geometry chooses one fixed recipe by final validation output error; every geometry receives the same candidate schedules/rates and budget.",
+  "kernel_interpretation": "mu_i/mu_max and target weights diagnose normalized plain GD. They are not an Adam rate prediction.",
+  "numerical_resolution": "rho <= 1e-18 target energy is numerically unresolved, not an established capacity floor.",
+  "geometries": [
+    {
+      "name": "uniform_lambda0.03125",
+      "family": "uniform",
+      "gamma": 7.296875,
+      "lambda_rms": 0.03125,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null,
+      "selected": {
+        "run_index": 0,
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.0001,
+        "validation_error": 0.11657445365837792,
+        "train_error": 0.11657280615516928
+      },
+      "eval_error": 0.11657486588619285,
+      "candidates": [
+        {
+          "run_index": 0,
+          "recipe_index": 0,
+          "schedule": "constant",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 0.11844226743836028,
+          "train_error": 0.11844069934515673
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 1,
+          "schedule": "constant",
+          "learning_rate": 1e-05,
+          "validation_error": 0.11684890539508376,
+          "train_error": 0.11684727536400559
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 2,
+          "schedule": "constant",
+          "learning_rate": 0.0001,
+          "validation_error": 0.11657445365837792,
+          "train_error": 0.11657280615516928
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 3,
+          "schedule": "constant",
+          "learning_rate": 0.001,
+          "validation_error": 0.1166468644378559,
+          "train_error": 0.11664522124618382
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 4,
+          "schedule": "constant",
+          "learning_rate": 0.002,
+          "validation_error": 0.11664057445518271,
+          "train_error": 0.11663890201598853
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 5,
+          "schedule": "constant",
+          "learning_rate": 0.01,
+          "validation_error": 0.1723264155686418,
+          "train_error": 0.1723252654520314
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 6,
+          "schedule": "constant",
+          "learning_rate": 0.1,
+          "validation_error": 0.11662230207264182,
+          "train_error": 0.11662066226759799
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 7,
+          "schedule": "constant",
+          "learning_rate": 0.3,
+          "validation_error": 0.7178283988721338,
+          "train_error": 0.7178294813085518
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 8,
+          "schedule": "cosine",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 0.13636660589319782,
+          "train_error": 0.13636553924173378
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 9,
+          "schedule": "cosine",
+          "learning_rate": 1e-05,
+          "validation_error": 0.12588189697464888,
+          "train_error": 0.1258804985659601
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 10,
+          "schedule": "cosine",
+          "learning_rate": 0.0001,
+          "validation_error": 0.1190874725057613,
+          "train_error": 0.11908586988800417
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 11,
+          "schedule": "cosine",
+          "learning_rate": 0.001,
+          "validation_error": 0.11730603872019313,
+          "train_error": 0.11730439558774895
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 12,
+          "schedule": "cosine",
+          "learning_rate": 0.002,
+          "validation_error": 0.11712216111179191,
+          "train_error": 0.11712052138902965
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 13,
+          "schedule": "cosine",
+          "learning_rate": 0.01,
+          "validation_error": 0.1168820562992148,
+          "train_error": 0.11688041812624317
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 14,
+          "schedule": "cosine",
+          "learning_rate": 0.1,
+          "validation_error": 0.11669630153691815,
+          "train_error": 0.11669466124401522
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 15,
+          "schedule": "cosine",
+          "learning_rate": 0.3,
+          "validation_error": 0.11664678801996195,
+          "train_error": 0.1166451464690098
+        }
+      ],
+      "assay_steps": 5000000,
+      "kernel_checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.2420532225194338e-24,
+          "energy_closure": 1.0000000000000002,
+          "direct_quadratic_form": 30.841588616006707,
+          "spectral_quadratic_form": 30.84158861600663
+        },
+        "residual": {
+          "total_energy": 0.013589219134890945,
+          "complement_energy": 1.2399684880245545e-24,
+          "energy_closure": 0.013589219134890954,
+          "direct_quadratic_form": 9.771961260302753e-08,
+          "spectral_quadratic_form": 9.771961260303312e-08
+        }
+      },
+      "mu_max": 221.35667403508296,
+      "slow_energy": {
+        "0.01": 0.2090552442133311,
+        "0.0001": 0.18389689809576804,
+        "1e-06": 0.0452448480891402,
+        "1e-08": 0.04147371086530183,
+        "1e-10": 2.07733315205072e-06,
+        "1e-12": 2.62613369383935e-07
+      },
+      "unresolved_target_energy_at_rho_1e_18": 1.146083228320549e-12,
+      "resolved_projection_residual": 1.0705527676488203e-06,
+      "raw_residual_energy_below_cutoff": {
+        "0.01": 0.01358921872441087,
+        "0.0001": 0.013589218724410799,
+        "1e-06": 0.013589218722468982,
+        "1e-08": 0.01354234626774384,
+        "1e-10": 2.0810267513746844e-06,
+        "1e-12": 2.619782999563336e-07
+      },
+      "frozen_second_moment_metric": {
+        "mu_max": 388327.96834372974,
+        "checks": {
+          "target": {
+            "total_energy": 1.0,
+            "complement_energy": 9.857207291950411e-25,
+            "energy_closure": 1.0000000000000013,
+            "direct_quadratic_form": 57082.75344969194,
+            "spectral_quadratic_form": 57082.75344969206
+          },
+          "residual": {
+            "total_energy": 0.013589219134890945,
+            "complement_energy": 9.824739940015654e-25,
+            "energy_closure": 0.01358921913489094,
+            "direct_quadratic_form": 0.0001722594506726663,
+            "spectral_quadratic_form": 0.0001722594506726049
+          }
+        },
+        "target_energy_below_cutoff": {
+          "0.01": 0.2095970774640612,
+          "0.0001": 0.18068734869353165,
+          "1e-06": 0.04524976617676446,
+          "1e-08": 0.04196794864836151,
+          "1e-10": 2.8110268748271494e-06,
+          "1e-12": 2.719130801631664e-07
+        },
+        "residual_energy_below_cutoff": {
+          "0.01": 0.013589218724410846,
+          "0.0001": 0.013589218724410846,
+          "1e-06": 0.013589218724338237,
+          "1e-08": 0.013563811607136314,
+          "1e-10": 2.7981908724637045e-06,
+          "1e-12": 2.712707070588044e-07
+        },
+        "bias_correction_count": 5000000,
+        "epsilon": 1e-08,
+        "learning_rate_included": false,
+        "schedule": "constant",
+        "interpretation": "Endpoint second-moment metric only; momentum and evolving preconditioners remain. Relative spectrum omits learning rate, including at cooled cosine endpoints."
+      }
+    },
+    {
+      "name": "uniform_lambda0.0625",
+      "family": "uniform",
+      "gamma": 14.59375,
+      "lambda_rms": 0.0625,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null,
+      "selected": {
+        "run_index": 0,
+        "recipe_index": 12,
+        "schedule": "cosine",
+        "learning_rate": 0.002,
+        "validation_error": 0.00045321524287980874,
+        "train_error": 0.0004527363131883773
+      },
+      "eval_error": 0.0004533351750539752,
+      "candidates": [
+        {
+          "run_index": 0,
+          "recipe_index": 0,
+          "schedule": "constant",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 0.0005272478956010156,
+          "train_error": 0.000526675550720794
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 1,
+          "schedule": "constant",
+          "learning_rate": 1e-05,
+          "validation_error": 0.0005528720396941057,
+          "train_error": 0.0005522746630428838
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 2,
+          "schedule": "constant",
+          "learning_rate": 0.0001,
+          "validation_error": 0.0006975898121630424,
+          "train_error": 0.0006971090243698731
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 3,
+          "schedule": "constant",
+          "learning_rate": 0.001,
+          "validation_error": 0.0005791250195196252,
+          "train_error": 0.0005787324824328407
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 4,
+          "schedule": "constant",
+          "learning_rate": 0.002,
+          "validation_error": 0.00045339104716208845,
+          "train_error": 0.0004529119807644558
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 5,
+          "schedule": "constant",
+          "learning_rate": 0.01,
+          "validation_error": 0.004539006764295399,
+          "train_error": 0.004539004370500849
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 6,
+          "schedule": "constant",
+          "learning_rate": 0.1,
+          "validation_error": 0.007962083095367561,
+          "train_error": 0.007961984530443184
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 7,
+          "schedule": "constant",
+          "learning_rate": 0.3,
+          "validation_error": 0.0006347775305716913,
+          "train_error": 0.0006340998915399798
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 8,
+          "schedule": "cosine",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 0.000533621803909874,
+          "train_error": 0.0005330444748030662
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 9,
+          "schedule": "cosine",
+          "learning_rate": 1e-05,
+          "validation_error": 0.0005565491327524402,
+          "train_error": 0.0005559490645979376
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 10,
+          "schedule": "cosine",
+          "learning_rate": 0.0001,
+          "validation_error": 0.0005822336170947856,
+          "train_error": 0.0005816089759431923
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 11,
+          "schedule": "cosine",
+          "learning_rate": 0.001,
+          "validation_error": 0.0004717845345432788,
+          "train_error": 0.00047128770356338434
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 12,
+          "schedule": "cosine",
+          "learning_rate": 0.002,
+          "validation_error": 0.00045321524287980874,
+          "train_error": 0.0004527363131883773
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 13,
+          "schedule": "cosine",
+          "learning_rate": 0.01,
+          "validation_error": 0.00045594356835842217,
+          "train_error": 0.000455461005696923
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 14,
+          "schedule": "cosine",
+          "learning_rate": 0.1,
+          "validation_error": 0.0005132295631659306,
+          "train_error": 0.0005126845838160601
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 15,
+          "schedule": "cosine",
+          "learning_rate": 0.3,
+          "validation_error": 0.0006347917214467673,
+          "train_error": 0.000634114067255939
+        }
+      ],
+      "assay_steps": 5000000,
+      "kernel_checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.551887507949228e-29,
+          "energy_closure": 1.0000000000000009,
+          "direct_quadratic_form": 33.86306569153766,
+          "spectral_quadratic_form": 33.86306569153777
+        },
+        "residual": {
+          "total_energy": 2.0497016927934823e-07,
+          "complement_energy": 8.900005854751866e-31,
+          "energy_closure": 2.049701692793482e-07,
+          "direct_quadratic_form": 1.5344032105972138e-13,
+          "spectral_quadratic_form": 1.5344032106018603e-13
+        }
+      },
+      "mu_max": 226.34442376221665,
+      "slow_energy": {
+        "0.01": 0.20730957188451538,
+        "0.0001": 0.04536359619901509,
+        "1e-06": 3.883201441734485e-05,
+        "1e-08": 5.741908331025058e-07,
+        "1e-10": 2.6054143287268516e-09,
+        "1e-12": 5.040079464890823e-12
+      },
+      "unresolved_target_energy_at_rho_1e_18": 0.0,
+      "resolved_projection_residual": 0.0,
+      "raw_residual_energy_below_cutoff": {
+        "0.01": 2.0497016927927576e-07,
+        "0.0001": 2.0497016894136157e-07,
+        "1e-06": 2.0497014846546694e-07,
+        "1e-08": 1.9012204236136573e-07,
+        "1e-10": 2.53970372615579e-09,
+        "1e-12": 4.917741553809442e-12
+      },
+      "frozen_second_moment_metric": {
+        "mu_max": 15374912948.357323,
+        "checks": {
+          "target": {
+            "total_energy": 1.0,
+            "complement_energy": 1.269902827790076e-29,
+            "energy_closure": 0.9999999999999993,
+            "direct_quadratic_form": 2441677572.643031,
+            "spectral_quadratic_form": 2441677572.6430373
+          },
+          "residual": {
+            "total_energy": 2.0497016927934823e-07,
+            "complement_energy": 7.19707787265939e-31,
+            "energy_closure": 2.049701692793484e-07,
+            "direct_quadratic_form": 3.6476272810734045e-06,
+            "spectral_quadratic_form": 3.6476272810812853e-06
+          }
+        },
+        "target_energy_below_cutoff": {
+          "0.01": 0.20398784943340176,
+          "0.0001": 0.045428656647593546,
+          "1e-06": 7.406764345696537e-05,
+          "1e-08": 1.2705544407687341e-06,
+          "1e-10": 1.5684338494637018e-08,
+          "1e-12": 3.4700020634659268e-12
+        },
+        "residual_energy_below_cutoff": {
+          "0.01": 2.0497016927934823e-07,
+          "0.0001": 2.0497016927926742e-07,
+          "1e-06": 2.049701557180547e-07,
+          "1e-08": 2.0433198928886539e-07,
+          "1e-10": 6.580391129506188e-09,
+          "1e-12": 1.3176198052996934e-11
+        },
+        "bias_correction_count": 5000000,
+        "epsilon": 1e-08,
+        "learning_rate_included": false,
+        "schedule": "cosine",
+        "interpretation": "Endpoint second-moment metric only; momentum and evolving preconditioners remain. Relative spectrum omits learning rate, including at cooled cosine endpoints."
+      }
+    },
+    {
+      "name": "uniform_lambda0.09375",
+      "family": "uniform",
+      "gamma": 21.890625,
+      "lambda_rms": 0.09375,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null,
+      "selected": {
+        "run_index": 0,
+        "recipe_index": 12,
+        "schedule": "cosine",
+        "learning_rate": 0.002,
+        "validation_error": 6.620748561258648e-05,
+        "train_error": 6.60215194120494e-05
+      },
+      "eval_error": 6.625415113422796e-05,
+      "candidates": [
+        {
+          "run_index": 0,
+          "recipe_index": 0,
+          "schedule": "constant",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 0.00017962848397091804,
+          "train_error": 0.00017927128814714625
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 1,
+          "schedule": "constant",
+          "learning_rate": 1e-05,
+          "validation_error": 0.0001760187869763196,
+          "train_error": 0.00017562871899297534
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 2,
+          "schedule": "constant",
+          "learning_rate": 0.0001,
+          "validation_error": 0.00018715155725972823,
+          "train_error": 0.00018669458772286584
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 3,
+          "schedule": "constant",
+          "learning_rate": 0.001,
+          "validation_error": 7.179552065308571e-05,
+          "train_error": 7.160270221788243e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 4,
+          "schedule": "constant",
+          "learning_rate": 0.002,
+          "validation_error": 0.025144689249425218,
+          "train_error": 0.025144686965927875
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 5,
+          "schedule": "constant",
+          "learning_rate": 0.01,
+          "validation_error": 0.009124239675521423,
+          "train_error": 0.009124220044104563
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 6,
+          "schedule": "constant",
+          "learning_rate": 0.1,
+          "validation_error": 0.0029121672467755477,
+          "train_error": 0.0029121824316775125
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 7,
+          "schedule": "constant",
+          "learning_rate": 0.3,
+          "validation_error": 0.0003633653248853535,
+          "train_error": 0.000363035465532356
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 8,
+          "schedule": "cosine",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 0.00018050215097846557,
+          "train_error": 0.00018014339222817988
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 9,
+          "schedule": "cosine",
+          "learning_rate": 1e-05,
+          "validation_error": 0.00017641972732676943,
+          "train_error": 0.00017602752113554345
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 10,
+          "schedule": "cosine",
+          "learning_rate": 0.0001,
+          "validation_error": 0.00018383534616469986,
+          "train_error": 0.00018337089817454974
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 11,
+          "schedule": "cosine",
+          "learning_rate": 0.001,
+          "validation_error": 7.178723173025023e-05,
+          "train_error": 7.159440290248875e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 12,
+          "schedule": "cosine",
+          "learning_rate": 0.002,
+          "validation_error": 6.620748561258648e-05,
+          "train_error": 6.60215194120494e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 13,
+          "schedule": "cosine",
+          "learning_rate": 0.01,
+          "validation_error": 7.183794578530093e-05,
+          "train_error": 7.163732263141475e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 14,
+          "schedule": "cosine",
+          "learning_rate": 0.1,
+          "validation_error": 0.00012408776522160293,
+          "train_error": 0.00012376272951750277
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 15,
+          "schedule": "cosine",
+          "learning_rate": 0.3,
+          "validation_error": 0.0002211518834566141,
+          "train_error": 0.0002206108240875707
+        }
+      ],
+      "assay_steps": 5000000,
+      "kernel_checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.003848049400771e-29,
+          "energy_closure": 1.0000000000000004,
+          "direct_quadratic_form": 34.62206023667177,
+          "spectral_quadratic_form": 34.62206023667175
+        },
+        "residual": {
+          "total_energy": 4.3588410254697e-09,
+          "complement_energy": 2.3845181425941003e-31,
+          "energy_closure": 4.3588410254697126e-09,
+          "direct_quadratic_form": 2.4424055229152136e-15,
+          "spectral_quadratic_form": 2.4424055228933365e-15
+        }
+      },
+      "mu_max": 227.32476035926163,
+      "slow_energy": {
+        "0.01": 0.2071982637331803,
+        "0.0001": 0.03995711658634904,
+        "1e-06": 1.9382013505264695e-07,
+        "1e-08": 1.1689373469181419e-08,
+        "1e-10": 2.2051171999493135e-10,
+        "1e-12": 1.5560885913146194e-12
+      },
+      "unresolved_target_energy_at_rho_1e_18": 0.0,
+      "resolved_projection_residual": 0.0,
+      "raw_residual_energy_below_cutoff": {
+        "0.01": 4.358841025469418e-09,
+        "0.0001": 4.3588410241705055e-09,
+        "1e-06": 4.358841006107396e-09,
+        "1e-08": 4.230187954341916e-09,
+        "1e-10": 2.1079747330052327e-10,
+        "1e-12": 1.5239756506195688e-12
+      },
+      "frozen_second_moment_metric": {
+        "mu_max": 17895353657.677437,
+        "checks": {
+          "target": {
+            "total_energy": 1.0,
+            "complement_energy": 1.8362773206675705e-29,
+            "energy_closure": 1.0000000000000004,
+            "direct_quadratic_form": 3002667863.0514545,
+            "spectral_quadratic_form": 3002667863.05145
+          },
+          "residual": {
+            "total_energy": 4.3588410254697e-09,
+            "complement_energy": 2.2112572896365497e-31,
+            "energy_closure": 4.358841025469704e-09,
+            "direct_quadratic_form": 1.5650779840688125e-07,
+            "spectral_quadratic_form": 1.5650779840678932e-07
+          }
+        },
+        "target_energy_below_cutoff": {
+          "0.01": 0.20602532404763807,
+          "0.0001": 0.03562074775276303,
+          "1e-06": 3.16974626102251e-07,
+          "1e-08": 1.6199806718297793e-08,
+          "1e-10": 2.932319942416939e-10,
+          "1e-12": 5.677680547933051e-13
+        },
+        "residual_energy_below_cutoff": {
+          "0.01": 4.3588410254697e-09,
+          "0.0001": 4.358841025385589e-09,
+          "1e-06": 4.358840277145166e-09,
+          "1e-08": 4.308648002959635e-09,
+          "1e-10": 2.556602315411313e-10,
+          "1e-12": 1.7953190533020989e-12
+        },
+        "bias_correction_count": 5000000,
+        "epsilon": 1e-08,
+        "learning_rate_included": false,
+        "schedule": "cosine",
+        "interpretation": "Endpoint second-moment metric only; momentum and evolving preconditioners remain. Relative spectrum omits learning rate, including at cooled cosine endpoints."
+      }
+    },
+    {
+      "name": "uniform_lambda0.125",
+      "family": "uniform",
+      "gamma": 29.1875,
+      "lambda_rms": 0.125,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null,
+      "selected": {
+        "run_index": 0,
+        "recipe_index": 3,
+        "schedule": "constant",
+        "learning_rate": 0.001,
+        "validation_error": 4.258761842545515e-06,
+        "train_error": 4.250733181887676e-06
+      },
+      "eval_error": 4.260819886185331e-06,
+      "candidates": [
+        {
+          "run_index": 0,
+          "recipe_index": 0,
+          "schedule": "constant",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 9.679739574527992e-05,
+          "train_error": 9.65112292373494e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 1,
+          "schedule": "constant",
+          "learning_rate": 1e-05,
+          "validation_error": 9.076412875860258e-05,
+          "train_error": 9.046708385462631e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 2,
+          "schedule": "constant",
+          "learning_rate": 0.0001,
+          "validation_error": 7.510618749048296e-05,
+          "train_error": 7.478324903236486e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 3,
+          "schedule": "constant",
+          "learning_rate": 0.001,
+          "validation_error": 4.258761842545515e-06,
+          "train_error": 4.250733181887676e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 4,
+          "schedule": "constant",
+          "learning_rate": 0.002,
+          "validation_error": 6.501234011482928e-06,
+          "train_error": 6.49969693294692e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 5,
+          "schedule": "constant",
+          "learning_rate": 0.01,
+          "validation_error": 0.0001615678504468728,
+          "train_error": 0.00016156663494830566
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 6,
+          "schedule": "constant",
+          "learning_rate": 0.1,
+          "validation_error": 0.0015391483676118118,
+          "train_error": 0.0015391436788697898
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 7,
+          "schedule": "constant",
+          "learning_rate": 0.3,
+          "validation_error": 0.13223869153022044,
+          "train_error": 0.13223869428653443
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 8,
+          "schedule": "cosine",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 9.756209345968797e-05,
+          "train_error": 9.727559112379445e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 9,
+          "schedule": "cosine",
+          "learning_rate": 1e-05,
+          "validation_error": 8.64505626015935e-05,
+          "train_error": 8.613734726719726e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 10,
+          "schedule": "cosine",
+          "learning_rate": 0.0001,
+          "validation_error": 7.485551689394299e-05,
+          "train_error": 7.453241481010056e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 11,
+          "schedule": "cosine",
+          "learning_rate": 0.001,
+          "validation_error": 4.260714907215746e-06,
+          "train_error": 4.252699315869863e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 12,
+          "schedule": "cosine",
+          "learning_rate": 0.002,
+          "validation_error": 6.507908145152982e-06,
+          "train_error": 6.506384598963682e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 13,
+          "schedule": "cosine",
+          "learning_rate": 0.01,
+          "validation_error": 6.623720618134698e-06,
+          "train_error": 6.594508344080049e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 14,
+          "schedule": "cosine",
+          "learning_rate": 0.1,
+          "validation_error": 4.1237211479223e-05,
+          "train_error": 4.1051198096995497e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 15,
+          "schedule": "cosine",
+          "learning_rate": 0.3,
+          "validation_error": 0.00011063088306078654,
+          "train_error": 0.00011017631035049168
+        }
+      ],
+      "assay_steps": 5000000,
+      "kernel_checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.7780611157573623e-29,
+          "energy_closure": 1.0000000000000018,
+          "direct_quadratic_form": 34.917274093662016,
+          "spectral_quadratic_form": 34.917274093662115
+        },
+        "residual": {
+          "total_energy": 1.8068732583584824e-11,
+          "complement_energy": 1.6784364998543653e-31,
+          "energy_closure": 1.8068732583584828e-11,
+          "direct_quadratic_form": 3.2108075598797107e-13,
+          "spectral_quadratic_form": 3.210807559879779e-13
+        }
+      },
+      "mu_max": 227.6726910327897,
+      "slow_energy": {
+        "0.01": 0.20721223662670651,
+        "0.0001": 0.0015299244026536485,
+        "1e-06": 9.097349195075211e-07,
+        "1e-08": 2.395860176918063e-10,
+        "1e-10": 6.335931779233306e-12,
+        "1e-12": 1.6708856520608606e-13
+      },
+      "unresolved_target_energy_at_rho_1e_18": 0.0,
+      "resolved_projection_residual": 0.0,
+      "raw_residual_energy_below_cutoff": {
+        "0.01": 1.806732130559177e-11,
+        "0.0001": 1.8067321305582965e-11,
+        "1e-06": 1.8067321304216573e-11,
+        "1e-08": 1.6185189850941876e-11,
+        "1e-10": 4.498924571623479e-12,
+        "1e-12": 1.405553076964629e-13
+      },
+      "frozen_second_moment_metric": {
+        "mu_max": 38155.766562788885,
+        "checks": {
+          "target": {
+            "total_energy": 1.0,
+            "complement_energy": 1.6423204065988067e-29,
+            "energy_closure": 1.0000000000000007,
+            "direct_quadratic_form": 6416.5424213022925,
+            "spectral_quadratic_form": 6416.542421302293
+          },
+          "residual": {
+            "total_energy": 1.8068732583584824e-11,
+            "complement_energy": 1.6647518017929435e-31,
+            "energy_closure": 1.806873258358484e-11,
+            "direct_quadratic_form": 5.385093330961095e-11,
+            "spectral_quadratic_form": 5.3850933309608174e-11
+          }
+        },
+        "target_energy_below_cutoff": {
+          "0.01": 0.20667187614036175,
+          "0.0001": 0.0010792059815446509,
+          "1e-06": 7.055364229513472e-07,
+          "1e-08": 3.489099009712504e-10,
+          "1e-10": 6.945222175147592e-12,
+          "1e-12": 1.942890293094024e-13
+        },
+        "residual_energy_below_cutoff": {
+          "0.01": 1.8067321305583208e-11,
+          "0.0001": 1.806732130558293e-11,
+          "1e-06": 1.8067321305582358e-11,
+          "1e-08": 1.6834401568739368e-11,
+          "1e-10": 4.898685711499298e-12,
+          "1e-12": 1.6156429871189645e-13
+        },
+        "bias_correction_count": 5000000,
+        "epsilon": 1e-08,
+        "learning_rate_included": false,
+        "schedule": "constant",
+        "interpretation": "Endpoint second-moment metric only; momentum and evolving preconditioners remain. Relative spectrum omits learning rate, including at cooled cosine endpoints."
+      }
+    },
+    {
+      "name": "uniform_lambda0.25",
+      "family": "uniform",
+      "gamma": 58.375,
+      "lambda_rms": 0.25,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null,
+      "selected": {
+        "run_index": 0,
+        "recipe_index": 10,
+        "schedule": "cosine",
+        "learning_rate": 0.0001,
+        "validation_error": 6.620708302958729e-07,
+        "train_error": 6.624580670221147e-07
+      },
+      "eval_error": 6.619822484093838e-07,
+      "candidates": [
+        {
+          "run_index": 0,
+          "recipe_index": 0,
+          "schedule": "constant",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 1.1262111139069056e-05,
+          "train_error": 1.1174732684661836e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 1,
+          "schedule": "constant",
+          "learning_rate": 1e-05,
+          "validation_error": 1.1651677304175988e-05,
+          "train_error": 1.1540242478422298e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 2,
+          "schedule": "constant",
+          "learning_rate": 0.0001,
+          "validation_error": 2.4231905244080328e-05,
+          "train_error": 2.4231932579023583e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 3,
+          "schedule": "constant",
+          "learning_rate": 0.001,
+          "validation_error": 3.6695479565929645e-05,
+          "train_error": 3.628012819196207e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 4,
+          "schedule": "constant",
+          "learning_rate": 0.002,
+          "validation_error": 3.654477474183056e-05,
+          "train_error": 3.614653463626902e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 5,
+          "schedule": "constant",
+          "learning_rate": 0.01,
+          "validation_error": 0.008630397493701184,
+          "train_error": 0.008630395949137915
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 6,
+          "schedule": "constant",
+          "learning_rate": 0.1,
+          "validation_error": 1.3176916441287736,
+          "train_error": 1.3176916531887068
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 7,
+          "schedule": "constant",
+          "learning_rate": 0.3,
+          "validation_error": 0.008684931209295746,
+          "train_error": 0.008684900962640274
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 8,
+          "schedule": "cosine",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 1.1302169527436112e-05,
+          "train_error": 1.1214954250992704e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 9,
+          "schedule": "cosine",
+          "learning_rate": 1e-05,
+          "validation_error": 9.643670429841242e-06,
+          "train_error": 9.508225985216359e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 10,
+          "schedule": "cosine",
+          "learning_rate": 0.0001,
+          "validation_error": 6.620708302958729e-07,
+          "train_error": 6.624580670221147e-07
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 11,
+          "schedule": "cosine",
+          "learning_rate": 0.001,
+          "validation_error": 3.613142421040725e-05,
+          "train_error": 3.570906371596921e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 12,
+          "schedule": "cosine",
+          "learning_rate": 0.002,
+          "validation_error": 3.538234805154545e-05,
+          "train_error": 3.497057854921989e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 13,
+          "schedule": "cosine",
+          "learning_rate": 0.01,
+          "validation_error": 3.2786536090828367e-05,
+          "train_error": 3.240589736190297e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 14,
+          "schedule": "cosine",
+          "learning_rate": 0.1,
+          "validation_error": 2.7984195573742837e-05,
+          "train_error": 2.765305225052586e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 15,
+          "schedule": "cosine",
+          "learning_rate": 0.3,
+          "validation_error": 7.911380286070817e-05,
+          "train_error": 7.820660642539292e-05
+        }
+      ],
+      "assay_steps": 5000000,
+      "kernel_checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.682655160947834e-29,
+          "energy_closure": 1.000000000000001,
+          "direct_quadratic_form": 35.224733851027125,
+          "spectral_quadratic_form": 35.22473385102717
+        },
+        "residual": {
+          "total_energy": 4.3885069056874716e-13,
+          "complement_energy": 1.4412814690634031e-31,
+          "energy_closure": 4.388506905687472e-13,
+          "direct_quadratic_form": 5.082764420926695e-19,
+          "spectral_quadratic_form": 5.082764420929618e-19
+        }
+      },
+      "mu_max": 228.00996674625733,
+      "slow_energy": {
+        "0.01": 0.2072734266783185,
+        "0.0001": 0.00029237318589769856,
+        "1e-06": 8.671464988285749e-07,
+        "1e-08": 4.7695166704997405e-09,
+        "1e-10": 2.4557245126288763e-11,
+        "1e-12": 1.6253665080512292e-13
+      },
+      "unresolved_target_energy_at_rho_1e_18": 0.0,
+      "resolved_projection_residual": 0.0,
+      "raw_residual_energy_below_cutoff": {
+        "0.01": 4.388506905687466e-13,
+        "0.0001": 4.388506905685908e-13,
+        "1e-06": 4.388506905590669e-13,
+        "1e-08": 3.9977077171856135e-13,
+        "1e-10": 3.7623380947193006e-14,
+        "1e-12": 2.469679961684529e-15
+      },
+      "frozen_second_moment_metric": {
+        "mu_max": 22752835150.862606,
+        "checks": {
+          "target": {
+            "total_energy": 1.0,
+            "complement_energy": 2.2501781826911488e-29,
+            "energy_closure": 1.0000000000000007,
+            "direct_quadratic_form": 3521822891.4457693,
+            "spectral_quadratic_form": 3521822891.4457746
+          },
+          "residual": {
+            "total_energy": 4.3885069056874716e-13,
+            "complement_energy": 1.4755319078104364e-31,
+            "energy_closure": 4.388506905687467e-13,
+            "direct_quadratic_form": 5.0234340260984326e-11,
+            "spectral_quadratic_form": 5.0234340261076944e-11
+          }
+        },
+        "target_energy_below_cutoff": {
+          "0.01": 0.2072614571284629,
+          "0.0001": 0.0002971813002836665,
+          "1e-06": 8.71789666900824e-07,
+          "1e-08": 4.8130200935858625e-09,
+          "1e-10": 2.5030533201686467e-11,
+          "1e-12": 1.6775469902086115e-13
+        },
+        "residual_energy_below_cutoff": {
+          "0.01": 4.3885069056874716e-13,
+          "0.0001": 4.388506905687469e-13,
+          "1e-06": 4.388506901707782e-13,
+          "1e-08": 4.01057045011184e-13,
+          "1e-10": 3.7749904360045844e-14,
+          "1e-12": 2.483475844760212e-15
+        },
+        "bias_correction_count": 5000000,
+        "epsilon": 1e-08,
+        "learning_rate_included": false,
+        "schedule": "cosine",
+        "interpretation": "Endpoint second-moment metric only; momentum and evolving preconditioners remain. Relative spectrum omits learning rate, including at cooled cosine endpoints."
+      }
+    },
+    {
+      "name": "uniform_lambda0.5",
+      "family": "uniform",
+      "gamma": 116.75,
+      "lambda_rms": 0.5,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null,
+      "selected": {
+        "run_index": 0,
+        "recipe_index": 9,
+        "schedule": "cosine",
+        "learning_rate": 1e-05,
+        "validation_error": 3.162339550778531e-07,
+        "train_error": 2.92558892693732e-07
+      },
+      "eval_error": 3.2253693590942775e-07,
+      "candidates": [
+        {
+          "run_index": 0,
+          "recipe_index": 0,
+          "schedule": "constant",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 1.9441469001701567e-06,
+          "train_error": 1.93235275179342e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 1,
+          "schedule": "constant",
+          "learning_rate": 1e-05,
+          "validation_error": 1.0078732691971163e-06,
+          "train_error": 1.0006056055645363e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 2,
+          "schedule": "constant",
+          "learning_rate": 0.0001,
+          "validation_error": 1.3448472894413619e-05,
+          "train_error": 1.2998249830644733e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 3,
+          "schedule": "constant",
+          "learning_rate": 0.001,
+          "validation_error": 3.6562097724661506e-05,
+          "train_error": 3.55320973456506e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 4,
+          "schedule": "constant",
+          "learning_rate": 0.002,
+          "validation_error": 0.01084413074452915,
+          "train_error": 0.010844076770465337
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 5,
+          "schedule": "constant",
+          "learning_rate": 0.01,
+          "validation_error": 0.002752159975367729,
+          "train_error": 0.002752160846587277
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 6,
+          "schedule": "constant",
+          "learning_rate": 0.1,
+          "validation_error": 4.4068577105797116e-05,
+          "train_error": 4.2407375745446675e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 7,
+          "schedule": "constant",
+          "learning_rate": 0.3,
+          "validation_error": 0.0053325432098410746,
+          "train_error": 0.005332498240626949
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 8,
+          "schedule": "cosine",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 1.8356300721637654e-06,
+          "train_error": 1.8225264366463737e-06
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 9,
+          "schedule": "cosine",
+          "learning_rate": 1e-05,
+          "validation_error": 3.162339550778531e-07,
+          "train_error": 2.92558892693732e-07
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 10,
+          "schedule": "cosine",
+          "learning_rate": 0.0001,
+          "validation_error": 1.1567971808869357e-05,
+          "train_error": 1.1025844123320829e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 11,
+          "schedule": "cosine",
+          "learning_rate": 0.001,
+          "validation_error": 3.17838828859844e-05,
+          "train_error": 3.059346683759258e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 12,
+          "schedule": "cosine",
+          "learning_rate": 0.002,
+          "validation_error": 3.157216335849107e-05,
+          "train_error": 3.0384352974316645e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 13,
+          "schedule": "cosine",
+          "learning_rate": 0.01,
+          "validation_error": 3.287780972346353e-05,
+          "train_error": 3.1644101467155286e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 14,
+          "schedule": "cosine",
+          "learning_rate": 0.1,
+          "validation_error": 4.406552569255439e-05,
+          "train_error": 4.24043936244679e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 15,
+          "schedule": "cosine",
+          "learning_rate": 0.3,
+          "validation_error": 7.375080455882285e-05,
+          "train_error": 7.095586059300428e-05
+        }
+      ],
+      "assay_steps": 5000000,
+      "kernel_checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.830180466096083e-18,
+          "energy_closure": 1.0,
+          "direct_quadratic_form": 35.30676169286153,
+          "spectral_quadratic_form": 35.30676169286157
+        },
+        "residual": {
+          "total_energy": 8.55907056919198e-14,
+          "complement_energy": 2.8301804849436344e-18,
+          "energy_closure": 8.55907056919199e-14,
+          "direct_quadratic_form": 2.105614645684958e-20,
+          "spectral_quadratic_form": 2.1056146456576868e-20
+        }
+      },
+      "mu_max": 228.094449889593,
+      "slow_energy": {
+        "0.01": 0.2049413166684535,
+        "0.0001": 0.00015422911773366188,
+        "1e-06": 5.402633176387894e-07,
+        "1e-08": 3.4205417387411785e-09,
+        "1e-10": 2.207467542092445e-11,
+        "1e-12": 8.104628079763643e-15
+      },
+      "unresolved_target_energy_at_rho_1e_18": 0.0,
+      "resolved_projection_residual": 0.0,
+      "raw_residual_energy_below_cutoff": {
+        "0.01": 8.559070569191979e-14,
+        "0.0001": 8.559070569181995e-14,
+        "1e-06": 8.559070569085061e-14,
+        "1e-08": 8.55582932424032e-14,
+        "1e-10": 1.5296868103604098e-14,
+        "1e-12": 6.456897161148937e-17
+      },
+      "frozen_second_moment_metric": {
+        "mu_max": 22802626969.54218,
+        "checks": {
+          "target": {
+            "total_energy": 1.0,
+            "complement_energy": 2.812668774686425e-18,
+            "energy_closure": 1.0000000000000009,
+            "direct_quadratic_form": 3530533075.0364175,
+            "spectral_quadratic_form": 3530533075.036418
+          },
+          "residual": {
+            "total_energy": 8.55907056919198e-14,
+            "complement_energy": 2.8126687837976284e-18,
+            "energy_closure": 8.559070569192041e-14,
+            "direct_quadratic_form": 2.097690618781014e-12,
+            "spectral_quadratic_form": 2.0976906187590342e-12
+          }
+        },
+        "target_energy_below_cutoff": {
+          "0.01": 0.20494010825917353,
+          "0.0001": 0.00015507356857702437,
+          "1e-06": 5.418294289905035e-07,
+          "1e-08": 3.4169783669213416e-09,
+          "1e-10": 2.234912255261179e-11,
+          "1e-12": 7.216449660063518e-15
+        },
+        "residual_energy_below_cutoff": {
+          "0.01": 8.55907056919198e-14,
+          "0.0001": 8.55907056919198e-14,
+          "1e-06": 8.559070569181272e-14,
+          "1e-08": 8.555915101915889e-14,
+          "1e-10": 1.5324611880251237e-14,
+          "1e-12": 6.457020250714446e-17
+        },
+        "bias_correction_count": 5000000,
+        "epsilon": 1e-08,
+        "learning_rate_included": false,
+        "schedule": "cosine",
+        "interpretation": "Endpoint second-moment metric only; momentum and evolving preconditioners remain. Relative spectrum omits learning rate, including at cooled cosine endpoints."
+      }
+    },
+    {
+      "name": "uniform_lambda1",
+      "family": "uniform",
+      "gamma": 233.5,
+      "lambda_rms": 1.0,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null,
+      "selected": {
+        "run_index": 0,
+        "recipe_index": 8,
+        "schedule": "cosine",
+        "learning_rate": 3.3333333333333337e-06,
+        "validation_error": 1.4374155773410045e-05,
+        "train_error": 1.4368530563403574e-05
+      },
+      "eval_error": 1.437648032401148e-05,
+      "candidates": [
+        {
+          "run_index": 0,
+          "recipe_index": 0,
+          "schedule": "constant",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 1.5174430872204265e-05,
+          "train_error": 1.5170497211193142e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 1,
+          "schedule": "constant",
+          "learning_rate": 1e-05,
+          "validation_error": 1.4427497182026415e-05,
+          "train_error": 1.4413231943010612e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 2,
+          "schedule": "constant",
+          "learning_rate": 0.0001,
+          "validation_error": 3.071524443603016e-05,
+          "train_error": 3.0087745411521596e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 3,
+          "schedule": "constant",
+          "learning_rate": 0.001,
+          "validation_error": 2.1553160773439394e-05,
+          "train_error": 1.996798027473294e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 4,
+          "schedule": "constant",
+          "learning_rate": 0.002,
+          "validation_error": 2.2110389351965294e-05,
+          "train_error": 2.054965933030069e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 5,
+          "schedule": "constant",
+          "learning_rate": 0.01,
+          "validation_error": 6.297397829200823e-05,
+          "train_error": 6.248152858483042e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 6,
+          "schedule": "constant",
+          "learning_rate": 0.1,
+          "validation_error": 2.4934408786993916,
+          "train_error": 2.4934409296850935
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 7,
+          "schedule": "constant",
+          "learning_rate": 0.3,
+          "validation_error": 4.2673091894577535,
+          "train_error": 4.267309338888794
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 8,
+          "schedule": "cosine",
+          "learning_rate": 3.3333333333333337e-06,
+          "validation_error": 1.4374155773410045e-05,
+          "train_error": 1.4368530563403574e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 9,
+          "schedule": "cosine",
+          "learning_rate": 1e-05,
+          "validation_error": 1.442791014010663e-05,
+          "train_error": 1.441357073754642e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 10,
+          "schedule": "cosine",
+          "learning_rate": 0.0001,
+          "validation_error": 1.8990354252747585e-05,
+          "train_error": 1.795683966689931e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 11,
+          "schedule": "cosine",
+          "learning_rate": 0.001,
+          "validation_error": 2.1553452478309434e-05,
+          "train_error": 1.996812512266907e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 12,
+          "schedule": "cosine",
+          "learning_rate": 0.002,
+          "validation_error": 2.161958146152605e-05,
+          "train_error": 2.0020660402328805e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 13,
+          "schedule": "cosine",
+          "learning_rate": 0.01,
+          "validation_error": 2.1938823326552787e-05,
+          "train_error": 2.0273221836255393e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 14,
+          "schedule": "cosine",
+          "learning_rate": 0.1,
+          "validation_error": 2.7275553068431394e-05,
+          "train_error": 2.453995439809741e-05
+        },
+        {
+          "run_index": 0,
+          "recipe_index": 15,
+          "schedule": "cosine",
+          "learning_rate": 0.3,
+          "validation_error": 4.7730433963438e-05,
+          "train_error": 4.1346841825624414e-05
+        }
+      ],
+      "assay_steps": 5000000,
+      "kernel_checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.8598711415250744e-10,
+          "energy_closure": 0.9999999999999998,
+          "direct_quadratic_form": 35.32772257281819,
+          "spectral_quadratic_form": 35.3277225728182
+        },
+        "residual": {
+          "total_energy": 2.0645467055166452e-10,
+          "complement_energy": 1.8598711415404732e-10,
+          "energy_closure": 2.0645467055166452e-10,
+          "direct_quadratic_form": 7.497682451653231e-20,
+          "spectral_quadratic_form": 7.497682452013812e-20
+        }
+      },
+      "mu_max": 228.1155794312058,
+      "slow_energy": {
+        "0.01": 0.20494455452126625,
+        "0.0001": 0.00011019911085352607,
+        "1e-06": 3.3880220762227964e-07,
+        "1e-08": 4.034589329293681e-10,
+        "1e-10": 2.0369994579994e-10,
+        "1e-12": 2.0369994579994e-10
+      },
+      "unresolved_target_energy_at_rho_1e_18": 2.0059043315256986e-10,
+      "resolved_projection_residual": 1.4162995204142726e-05,
+      "raw_residual_energy_below_cutoff": {
+        "0.01": 2.0645467055166452e-10,
+        "0.0001": 2.0645467055166447e-10,
+        "1e-06": 2.064546705514499e-10,
+        "1e-08": 2.0645375131803006e-10,
+        "1e-10": 2.0382982762532783e-10,
+        "1e-12": 2.0382982762532783e-10
+      },
+      "frozen_second_moment_metric": {
+        "mu_max": 22804634295.99333,
+        "checks": {
+          "target": {
+            "total_energy": 1.0,
+            "complement_energy": 1.8497983791909144e-10,
+            "energy_closure": 0.9999999999999986,
+            "direct_quadratic_form": 3532707101.3383865,
+            "spectral_quadratic_form": 3532707101.3383803
+          },
+          "residual": {
+            "total_energy": 2.0645467055166452e-10,
+            "complement_energy": 1.849798379214137e-10,
+            "energy_closure": 2.0645467055166452e-10,
+            "direct_quadratic_form": 7.372874176389158e-12,
+            "spectral_quadratic_form": 7.372874176550187e-12
+          }
+        },
+        "target_energy_below_cutoff": {
+          "0.01": 0.20494430863221724,
+          "0.0001": 0.00011055503306067749,
+          "1e-06": 3.403018916658951e-07,
+          "1e-08": 4.057429947579294e-10,
+          "1e-10": 2.0370183317908186e-10,
+          "1e-12": 2.0370183317908186e-10
+        },
+        "residual_energy_below_cutoff": {
+          "0.01": 2.0645467055166452e-10,
+          "0.0001": 2.0645467055166452e-10,
+          "1e-06": 2.0645467055164113e-10,
+          "1e-08": 2.0645376841974887e-10,
+          "1e-10": 2.0382987979508644e-10,
+          "1e-12": 2.0382987979508644e-10
+        },
+        "bias_correction_count": 5000000,
+        "epsilon": 1e-08,
+        "learning_rate_included": false,
+        "schedule": "cosine",
+        "interpretation": "Endpoint second-moment metric only; momentum and evolving preconditioners remain. Relative spectrum omits learning rate, including at cooled cosine endpoints."
+      }
+    }
+  ]
+}

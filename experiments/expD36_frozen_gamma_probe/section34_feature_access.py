@@ -20,6 +20,10 @@ except ImportError:
     from adam_feature_probe_spectrum import slow_energy, CUTOFFS
     from section34_analyze import binned_traces, json_safe, style
 
+BANDWIDTH_COLORS = {
+    .03125: '#332288', .0625: '#0072B2', .09375: '#56B4E9',
+    .125: '#009E73', .25: '#CC6677', .5: '#E69F00', 1.: '#999933',
+}
 
 
 def metric_spectrum(phi, target, residual, diagonal=None):
@@ -165,7 +169,8 @@ def plots(rows,kernel_arrays,thresholds,output):
         for ax,optimizer in zip(axes[0],optimizers):
             ids=[i for i,r in enumerate(rows) if r.get('optimizer','uniform')==optimizer and r.get('family')!='slope_intervention' and f'g{i}_slow_energy' in kernel_arrays]
             if ids and all(rows[i]['family']=='uniform' for i in ids):
-                for i,color in zip(ids,plt.cm.viridis(np.linspace(.05,.9,len(ids)))):
+                for i in ids:
+                    color = BANDWIDTH_COLORS[rows[i]['lambda_rms']]
                     ax.plot(thresholds,kernel_arrays[f'g{i}_slow_energy'],color=color,label=f"λ = {Fraction(rows[i]['lambda_rms']).limit_denominator(32)}")
                 stages=[]
             else:stages=sorted({rows[i].get('snapshot_step',0) or 0 for i in ids})
@@ -186,8 +191,9 @@ def uniform_trajectories(rows, curves, output):
     if not ids:return
     style();plt.rcParams.update({'font.size':8,'axes.labelsize':8,'axes.titlesize':9,'legend.fontsize':7,'xtick.labelsize':7,'ytick.labelsize':7})
     fig,axes=plt.subplots(2,1,figsize=(5.5,4.5),layout='constrained')
-    for i,color in zip(ids,plt.cm.viridis(np.linspace(.05,.9,len(ids)))):
-        row=rows[i];t=curves[f'g{i}_steps']/1e6;y=curves[f'g{i}_median']
+    for i in ids:
+        row=rows[i];color=BANDWIDTH_COLORS[row['lambda_rms']]
+        t=curves[f'g{i}_steps']/1e6;y=curves[f'g{i}_median']
         fraction=Fraction(row['lambda_rms']).limit_denominator(32)
         label=f'λ = {fraction}'
         axes[0].plot(t,y,color=color,label=label)
