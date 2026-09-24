@@ -1,21 +1,43 @@
 {
-  "task_start_commit": "7b96319",
+  "task_start_commit": "e448ad1",
   "gpu_hours": 0,
   "optimizer_training_updates": 0,
-  "archive_cpu_audit": {
-    "slurm_job_id": 1326,
-    "elapsed_seconds": 30,
-    "series": 40,
-    "states_per_series": 200001,
-    "trace_chunks": 400,
-    "remote_writes": false
+  "mechanism": {
+    "selection": {
+      "rank": 22,
+      "rho": 1.6118564905814997e-06,
+      "initial_target_energy": 0.041443063105551466,
+      "eigenvalue": 0.000389636054079584,
+      "reference_largest_eigenvalue": 241.731231258074,
+      "ratio_cutoff": 2e-06,
+      "relative_singular_cutoff": 1e-14,
+      "eligible_count": 90,
+      "retained_count": 111,
+      "eigenvector_residual_norm": 9.547040876213383e-14,
+      "sample_mean": -2.1681396794827907e-18,
+      "norm": 0.9999999999999993,
+      "reference_gamma": 8,
+      "target": "sine_mix_2_6_10",
+      "rule": "Maximum initial squared target projection among gamma8 modes with0<rho<=2e-6 and sigma>1e-14*sigma1; descending-spectrum rank.",
+      "retrospective_status": "Prescribed diagnostic rule applied retrospectively to the existing archive; no GD or Adam trajectory outcomes enter selection.",
+      "interpretation": "The direction is held fixed at every gamma; it is an eigenvector only at the reference gamma8, not asserted to remain one."
+    },
+    "maximum_absolute_correction_fraction": 0.0006007549916115954,
+    "maximum_direct_row_error": 1.734723475976807e-18,
+    "independent_proof_review": true,
+    "closed_form_vs_fourier_quadrature_test": true,
+    "analysis_reproduced_byte_identical": true,
+    "finite_correction_scope": "Measured for the fixed selected direction and archived geometry."
   },
   "tests": {
-    "focused_passed": 23,
-    "full_non_slow_passed": 833,
+    "focused_passed": 22,
+    "new_tests_passed": 3,
+    "full_non_slow_passed": 836,
     "failed": 17,
     "skipped": 9,
     "deselected": 4,
+    "warnings": 10,
+    "elapsed_seconds": 280.12,
     "baseline_failure_ids": [
       "FAILED constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
       "FAILED constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
@@ -55,12 +77,44 @@
       "FAILED tests/test_expI02_block_prior.py::test_structured_regression_loaders"
     ],
     "new_failure_ids": [],
-    "log_sha256": "c41a63a42152a423542ecb712fdbce5dd12c93fd5a1ef475c3d49c2d30cdb1c2",
-    "baseline_log_sha256": "746c4ab771db8e3dc663064a538103c50fed3717735049bc948af9e2c4fd19e7",
-    "uncompressed_log_sha256": "e9abf639270b624e76b3e4cd2e513f6219df3c8299827c0008db806945c524dc",
-    "log_file": "tests_ema_reverse.log.gz",
-    "new_tests_passed": 10,
-    "elapsed_seconds": 280.44
+    "log_file": "tests_mechanism.log.gz",
+    "log_sha256": "2581bd88b4cb13cdfd19c16343f649fac0ffea2acd68cae688f33262de3c1380",
+    "uncompressed_log_sha256": "f966b36be675f1386dfb55ca0273db4e93f6e46e27438f003beaded37ac176db",
+    "baseline_log_sha256": "c41a63a42152a423542ecb712fdbce5dd12c93fd5a1ef475c3d49c2d30cdb1c2",
+    "baseline_log_file": "tests_ema_reverse.log.gz"
+  },
+  "gd_crossings": {
+    "gammas": [
+      8,
+      12,
+      16,
+      64
+    ],
+    "executed_hits": [
+      15798313,
+      186057,
+      61792,
+      16013
+    ],
+    "true_spectrum_hits": [
+      15798313,
+      186057,
+      61792,
+      16013
+    ],
+    "relative_error_before_hit": [
+      0.01000000017466132,
+      0.010000132696725488,
+      0.010000134332162205,
+      0.010000203916583059
+    ],
+    "relative_error_at_hit": [
+      0.009999999825764827,
+      0.009999994652799174,
+      0.009999935462998459,
+      0.009999798999466689
+    ],
+    "threshold": 0.01
   },
   "projections": {
     "checkpoint_target_view_comparisons": 480,
@@ -81,52 +135,6 @@
     },
     "failed_runs": 0
   },
-  "figure_reproduction": {
-    "artifacts_byte_identical": 11,
-    "figures_visually_reviewed": 5,
-    "source_hashes_verified": 10,
-    "artifact_hashes_verified": 10
-  },
-  "document": {
-    "pages": 11,
-    "visual_review_all_pages": true,
-    "embedded_fonts": true,
-    "latex_warnings": false,
-    "markdown_math_delimiters_checked": true,
-    "figure_links_checked": true
-  },
-  "numerical_status": "FP64 verified evaluations of analytical bounds and modal projections; no new interval certification.",
-  "artifact_sha256": {
-    "docs/gamma_optimizer_access_note.md": "022c7dfb6e0fb1c5988a5f8186f7f72006c53a6d6dec9b6c4c3b8ef06ae6b930",
-    "docs/gamma_optimizer_access_note.pdf": "48cf38d2a2240197ee1cdd352d9de5cbc7aa8adb4621cdc84b162de6c5008ed5",
-    "docs/gamma_optimizer_access_note.tex": "7ded2d6cb32697058c23d790dedac671de0df1b92a6d8e89b1c992242ebcb85c",
-    "experiments/expD36_frozen_gamma_probe/adam_ema_analysis.py": "727a6de735095d0567ca71d75cf49d963d0342f7e40c7c048218931c168979c3",
-    "experiments/expD36_frozen_gamma_probe/gamma_reverse_bound.py": "80764138bfc916b1b5bf7ff3e92fe6f231c4e565c775539a918743b165a11664",
-    "experiments/expD36_frozen_gamma_probe/optimizer_access_figure.py": "5652b2e7d4a1ee8a6d64781b5800a10ae03308f7fd47ef6d2afffd63d006989c",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/analysis.json": "a4f9e56f85d902db14de737e61b656097a2263a0e37c21c7e401b5e28c9c8eb8",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ema_analysis.json": "b7503d6688a5c76c60c851ed9adcecbe8bdbf236b078b95ae7b1eaf933f165f3",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ema_curves.npz": "35cee22729d74e531c876bbc870dca8d16ecce7dfea82729311a52f418ade763",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/figure_data.json": "a3d12f5b96e09419c58b94c2635d1efa7c65b17cb20172d69552cf76ea1af063",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_directional_evolution.pdf": "d6b020ee2e732d1ee7d69420250131d8b54e7a37ed032fc23d305fa3a6f85613",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_directional_evolution.png": "dab452c7cbadb09ed4f4ec5c94213e62fb5536ede67f603b8dc15f39909bd8d5",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_ema_sensitivity.pdf": "90c8ac7a18f821721a152af45766481fc01eee5fe99b80d36932efc256fbbf6e",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_ema_sensitivity.png": "b18dbfcacf45c6032589dd53f54ef2b0ba616f9efb18e0d6d2149310a69f2b2a",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_schedule.pdf": "5ba52edd4d3bbd749a98e6e6ed3522d75a16c0b01f92012a0be00b0c3f8b50c5",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_schedule.png": "6babfa557e6b76942e6221c36818b07ca82228180466b7b4a82d0bcebadfe492",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_targets.pdf": "9d8f9e1d1a678861768f8a77531ddb53debf1adeb1b73da42695769bc9f60a50",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_targets.png": "5cab5bbe7bd94cf1a4919d8a3c14fe5b1c6fe5fef963dd718b8a760986787bb3",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.pdf": "eb265c18607f8f11a29c00a469a67049c832930d22ed8fbbd814b955d2a0ce44",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.png": "a0d1775296bc499396393dd8d6520c8dd257bffd32ff69da61e6330f699247ce",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/projection_audit.json": "337069dbae8b86bdde8ca21231b472cd09cd3a5705e3fb1e0e6b8a9e3807a789",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/projections.npz": "025b207f765ae6d211cb94f8f2758ed847b663bb13de519292dab71c3b215bdc",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ratio_bounds.json": "50afbf5ecac2e5c7780d1d87828bd0f04f364a83a8da41281ace4bf2fd57c33e",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/reverse_bounds.json": "5d9ec04481d183cb10ce3cbfdfd009f7d565f6daee1c7ef9bf58a75a78353a38",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/tests.log.gz": "6733f077a26ba1a295e97ca85ad1ea0253ba510ccc869e71513c4dbf977c47bc",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/tests_ema_reverse.log.gz": "c41a63a42152a423542ecb712fdbce5dd12c93fd5a1ef475c3d49c2d30cdb1c2",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/trace_audit.json": "d2aeeb7877f85c565bd5f145601c56cbc1e42d9ee49987e949855b8daeab4d90",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/trace_envelopes.npz": "197588b29074d81c7a5ddb4c85d1a8d673ab762b004fec19ed096ac1b9144546"
-  },
-  "previous_task_start_commit": "233e6cc",
   "ema": {
     "main_half_life": 100,
     "half_lives": [
@@ -155,25 +163,51 @@
     "all40_target_hits_and48_sensitivity_hits_verified": true,
     "analysis_reproduced_byte_identical": true
   },
-  "reverse_bound": {
-    "gammas": [
-      8,
-      12,
-      16,
-      64
-    ],
-    "necessary_updates": [
-      6458359,
-      169485,
-      34555,
-      5927
-    ],
-    "independent_proof_review": true,
-    "tests": 4,
-    "reproduced_byte_identical": true,
-    "finite_tanh_action": true,
-    "per_gamma_projected_solve": true,
-    "numerical_allowances": "Heuristic FP64 sensitivity, not outward-rounded certificates."
+  "figure_reproduction": {
+    "artifacts_byte_identical": 11,
+    "figures_visually_reviewed": 5,
+    "source_hashes_verified": 8,
+    "artifact_hashes_verified": 10,
+    "leading_ratio_arrays_checked": 4,
+    "gd_reference_hits_checked": 4,
+    "target_case_ema_hits_checked": 40
   },
-  "source_hash_checks": 52
+  "document": {
+    "pages": 9,
+    "visual_review_all_pages": true,
+    "fonts_embedded_subset_unicode": 28,
+    "latex_warnings": false,
+    "markdown_math_delimiters_checked": true,
+    "figure_links_checked": 5,
+    "independent_md_tex_scientific_consistency_review": true
+  },
+  "source_hash_checks": 58,
+  "numerical_status": "FP64 evaluations, spectral decompositions, and measurements. The Fourier identity is analytic; measured finite corrections are specific to the archived probe.",
+  "artifact_sha256": {
+    "docs/gamma_optimizer_access_note.md": "cfa6798262368785e4b2097b303016d03d60a1f562a12557f413d7327ca239fc",
+    "docs/gamma_optimizer_access_note.pdf": "2b093597f3601912a94c649880ed40ffaaca5bbc8f1447bb25e2d6ccaf6f9b1d",
+    "docs/gamma_optimizer_access_note.tex": "c0e6e445fb7165a0d5e88c2197e4b1e757d1e651521b7a2280d33c25f8676d8a",
+    "experiments/expD36_frozen_gamma_probe/gamma_mechanism_analysis.py": "25a00dd8a1b6fa92eb37675977812fd908aa53c4e4104c250234bfa7c3ae377b",
+    "experiments/expD36_frozen_gamma_probe/optimizer_access_figure.py": "dbaa363eab706b5567f74a24fc3f2bcce642a0874f506bff7a6d8a717fcd51ca",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/analysis.json": "a4f9e56f85d902db14de737e61b656097a2263a0e37c21c7e401b5e28c9c8eb8",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ema_analysis.json": "b7503d6688a5c76c60c851ed9adcecbe8bdbf236b078b95ae7b1eaf933f165f3",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ema_curves.npz": "35cee22729d74e531c876bbc870dca8d16ecce7dfea82729311a52f418ade763",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/figure_data.json": "eedb85929f7e7444d3b2ae4990852f3bc2d2f3d71372a5b4c78fe43b606784d8",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/mechanism_analysis.json": "31ffe2ec77b94a25ac162ebb8403fc48f50eabeedce927d3c77d88a8052a75e8",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/mechanism_arrays.npz": "1340438ae58bb740416825224ef758ebe253b90cae07af5479ff7e7d03f14d62",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_ema_sensitivity.pdf": "90c8ac7a18f821721a152af45766481fc01eee5fe99b80d36932efc256fbbf6e",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_ema_sensitivity.png": "b18dbfcacf45c6032589dd53f54ef2b0ba616f9efb18e0d6d2149310a69f2b2a",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_mechanism.pdf": "7ee2f0df41d7fd9d484350c1905d34c2c24344854b9b9c5935a952c7fc2ad6d0",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_mechanism.png": "77e9bc8f2ebbd7d1b9d60a43bd833bb4fa362cf80553efdcc3ee731aa3449292",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_schedule.pdf": "5ba52edd4d3bbd749a98e6e6ed3522d75a16c0b01f92012a0be00b0c3f8b50c5",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_schedule.png": "6babfa557e6b76942e6221c36818b07ca82228180466b7b4a82d0bcebadfe492",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_targets.pdf": "9d8f9e1d1a678861768f8a77531ddb53debf1adeb1b73da42695769bc9f60a50",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_targets.png": "5cab5bbe7bd94cf1a4919d8a3c14fe5b1c6fe5fef963dd718b8a760986787bb3",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.pdf": "56e941e4c682651bd1279dc79f6ef765f776d873f3c227648a56ceb8d7c9c1a3",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.png": "62104c4d82e181e33b3a77958d584f914396f495f5b179c865da15982092c42f",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/projections.npz": "025b207f765ae6d211cb94f8f2758ed847b663bb13de519292dab71c3b215bdc",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/tests_mechanism.log.gz": "2581bd88b4cb13cdfd19c16343f649fac0ffea2acd68cae688f33262de3c1380",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/trace_envelopes.npz": "197588b29074d81c7a5ddb4c85d1a8d673ab762b004fec19ed096ac1b9144546",
+    "tests/test_expD36_gamma_mechanism_analysis.py": "85f6323345c5717fadc2adbb952edea0755869634c48c4b2fc36c6ef1931b821"
+  }
 }

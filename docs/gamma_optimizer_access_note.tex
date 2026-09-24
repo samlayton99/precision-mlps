@@ -3,643 +3,450 @@
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsthm,newtxtext,newtxmath}
 \usepackage[letterpaper,margin=0.78in]{geometry}
-\usepackage{graphicx,microtype,xcolor,caption,fancyhdr,tabularx,pdflscape}
+\usepackage{graphicx,microtype,xcolor,caption,fancyhdr,tabularx,pdflscape,placeins}
 \usepackage[colorlinks=true,linkcolor=blue!40!black,urlcolor=blue!50!black]{hyperref}
 \definecolor{ink}{HTML}{263442}
 \DeclareMathOperator{\sech}{sech}
 \DeclareMathOperator{\sign}{sign}
 \DeclareMathOperator{\diag}{diag}
 \theoremstyle{definition}\newtheorem{theorem}{Theorem}
-\newcommand{\repo}{https://github.com/samlayton99/precision-mlps/blob/experiment/frozen-gamma-probe}
 \graphicspath{{results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/}}
-\hypersetup{pdftitle={How gamma changes access to the target under GD and Adam}}
+\hypersetup{pdftitle={How gamma controls access to a target during readout training}}
 \setlength{\parindent}{0pt}\setlength{\parskip}{5pt plus 1pt}
 \setlength{\emergencystretch}{2em}\setlength{\headheight}{14pt}
 \captionsetup{font=small,labelfont=bf,justification=raggedright,singlelinecheck=false}
 \pagestyle{fancy}\fancyhf{}
-\fancyhead[L]{\small\color{ink}Gamma and access to the target}
-\fancyhead[R]{\small GD, Adam, and finite spectral comparison}
+\fancyhead[L]{\small\color{ink}Gamma and access to a target}
+\fancyhead[R]{\small Mechanism, GD, and Adam}
 \fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0.3pt}
 \begin{document}
 \thispagestyle{plain}
 {\color{ink}\fontsize{23}{26}\selectfont\bfseries
-How gamma changes access to the target\\under GD and Adam\par}
+How gamma controls access to a target\\during readout training\par}
 \vspace{8pt}
-Small tanh slopes can leave needed target components difficult to acquire
-under both gradient descent and Adam. On the same finite dictionary, the
-explicit spectral comparison below certifies rank-32 eigenvalue-ratio
-increases of approximately 35, 428, and 36,790 times relative to the
-actual gamma-8 ratio when gamma rises to 12, 16, and 64.
-At gamma 8, the chosen slow subspace initially
-holds 4.33\% of the target energy. After 200,000 common-recipe Adam updates,
-its residual energy alone still exceeds the 1\% error tolerance. At larger
-gammas it is below tolerance.
+Small slopes can make an attainable target expensive to learn. In our
+frozen-feature tanh model, the same target reaches 1\% relative error after
+\textbf{15.8 million GD updates at gamma 8}, compared with \textbf{16,013
+updates at gamma 64}. Adam also struggles at gamma 8: error remains above
+1\% after 200,000 updates. Centers, target, readout coordinates, and zero
+initialization are held fixed.
 
-The distinction between rates and optimizer behavior remains essential.
-The GD spectrum predicts its training curve exactly, up to numerical
-evaluation. Adam changes the update geometry, so we measure residual
-projections and first crossings of smoothed loss. With one shared
-100-update EMA half-life, crossings occur at 7,688, 1,900, and 1,486
-updates for gammas 12, 16, and 64. Gamma 8 does not cross within 200,000.
-These are measured Adam times, not predictions from a GD theorem; later
-recrossings occur. The corrected delay argument below supplies the upper-rate
-and target-overlap bounds that a necessary GD delay actually requires.
+The explanation has three parts. Gamma determines how strongly each
+feature smooths rapid variation. This changes the kernel's response to
+patterns in the target, and the measured target-weighted spectrum reveals
+their relative learning rates. Classical GD dynamics then predict the
+observed delay; Adam tests empirically how the difficulty persists under
+adaptive updates. We follow one representative target, then check other
+targets and optimizer settings.
 
+\textbf{Notation.} Eigenvalues are denoted by $\mu$ throughout.
 \begin{center}\small
-\begin{tabularx}{\linewidth}{@{}p{0.30\linewidth}X@{}}
+\begin{tabularx}{\linewidth}{@{}p{0.34\linewidth}X@{}}
 \hline Symbol & Meaning\\\hline
-$\gamma,h$ & Common tanh slope and center spacing\\
-$J_\gamma,K_\gamma=J_\gamma J_\gamma^T$ & Sample-normalized feature matrix and readout kernel\\
-$\mu_i,u_i$ & Descending eigenvalues and orthonormal sample-space eigenvectors\\
-$\rho_i=\mu_i/\mu_1$ & Learning rate relative to the fastest direction under normalized-step GD\\
-$y,r_n$ & Normalized target samples and residual after $n$ updates\\
-$p_i=|u_i^Ty|^2/\|y\|^2$ & Fraction of initial target energy in direction $u_i$\\
-$P_\gamma(\rho),R_{\gamma,n}(\rho)$ & Initial and remaining energy in positive modes with ratios at most $\rho$\\
-$H,T_{\rm EMA}$ & Adam horizon and first crossing of exponentially averaged squared relative error\\\hline
+$\gamma$ & Common slope of frozen tanh features\\
+$J_\gamma$, $K_\gamma=J_\gamma J_\gamma^T$ & Sample-normalized feature matrix and readout kernel\\
+$y$, $r_n$, $e(n)=\|r_n\|/\|y\|$ & Target samples, residual, and relative error\\
+$\mu_i$, $u_i$, $\rho_i=\mu_i/\mu_1$ & Eigenvalues, unit eigenvectors, relative eigenvalues\\
+$p_i=|u_i^Ty|^2/\|y\|^2$ & Fraction of target energy in an eigenvector\\
+$q_\gamma(v)=v^TK_\gamma v$ & Kernel response to fixed unit sample pattern $v$\\\hline
 \end{tabularx}
 \end{center}
 
-\section{Why the largest eigenvalue matters}
-For inputs $x_a$, centers $c_j$, and $m$ samples, use ordinary tanh features
-and a bias:
+\section{The target is attainable; the question is how quickly}
+The readout model is
+\[
+\widehat f(x)=w_0+\sum_{j=1}^{W}w_j\tanh\!\left(\gamma(x-c_j)\right).
+\]
+Only coefficients $w_j$ are trained. Centers $c_j$ and common slope
+$\gamma$ remain fixed during each run. We compare
+$\gamma\in\{8,12,16,64\}$ on the same uniform centers and samples.
+The primary target is
+\[
+f(x)=\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x),
+\qquad x\in[-1,1].
+\]
+There are 559 tanh features plus bias, spacing $h=1/256$, and
+$m=8{,}193$ training samples. Normalize features and target by $\sqrt m$:
 \[
 J_\gamma[a,j]=\frac{\tanh(\gamma(x_a-c_j))}{\sqrt m},\qquad
-J_\gamma[a,0]=\frac1{\sqrt m}.
+J_\gamma[a,0]=\frac1{\sqrt m},\qquad y_a=\frac{f(x_a)}{\sqrt m}.
 \]
-With normalized targets $y_a=f(x_a)/\sqrt m$, minimizing
-$\frac12\|J_\gamma w-y\|^2$ is ordinary half mean-squared error. Geometry
-is frozen; only readout $w$ is trained. From $w_0=0$, GD gives
-$r_{n+1}=(I-\eta K_\gamma)r_n$. The largest eigenvalue limits the stable
-step shared by all directions. For $\eta=1/(2\mu_1)$,
-\[
-\frac{\|r_n\|^2}{\|y\|^2}
-=\sum_i p_i(\gamma)\left(1-\frac{\rho_i(\gamma)}2\right)^{2n}.
-\]
-A ratio of one halves that component's residual every update. A ratio of
-$10^{-6}$ requires about two million updates for one e-fold reduction.
-A small ratio matters only if the target needs that direction. Both
-eigenvectors and target weights can change with gamma; ordered rank is
-not a fixed physical direction across dictionaries. For a prescribed common
-step, the rate is $\eta\mu_i$, and ratios alone do not determine update
-counts. The calculations below use the actual archived steps.
+Then $\tfrac12\|J_\gamma w-y\|^2$ is half mean-squared error.
+All four GD runs actually reach 1\% error, establishing attainability at
+the studied accuracy, without requiring exact representation everywhere
+on the interval.
 
-\section{A finite-dictionary theorem with gamma explicit}
-This is the cross-gamma comparison from the collaborator's
-\href{gamma_slow_learning_alt_view.pdf}{alternative-view note}, written
-with $\mu$ for eigenvalues. Centers are consecutive and uniformly spaced;
-inputs are fixed. Uniform input sampling makes the explicit increment
-Toeplitz and easy to apply, but the quadratic-form identity itself does
-not require uniform samples.
+The kernel measures how residual patterns couple to available features.
+For a unit vector $v$ on the sample grid,
+\[
+q_\gamma(v)=v^TK_\gamma v=\|J_\gamma^Tv\|^2.
+\]
+This is total squared correlation of the dictionary with that pattern.
+For an eigenvector it equals the eigenvalue. For a general direction,
+\[
+q_\gamma(v)=\sum_i\mu_i(\gamma)|u_i(\gamma)^Tv|^2.
+\]
+The same quadratic expression defines $q_\gamma(v)$ for arbitrary $v$;
+unit normalization makes directional responses comparable.
+We can track a physically fixed pattern across gamma while allowing
+the eigenvectors to change.
 
-Let there be $W$ centers, spacing $h$, and center-cell interval
-$I=[c_1-h/2,c_W+h/2]$. Define $d_{ab}=x_a-x_b$ and
+\section{Gamma explicitly controls the kernel response}
+\subsection*{Smaller gamma smooths more strongly}
+A tanh transition is a smoothed step:
 \[
-K^{(0)}_\gamma[a,b]=\frac{W+1}{m}
--\frac2{hm}d_{ab}\coth(\gamma d_{ab}),\qquad
-E_\gamma=K_\gamma-K^{(0)}_\gamma,
+\tanh(\gamma\,\cdot)=s_\gamma*\sign,\qquad
+s_\gamma(x)=\frac\gamma2\sech^2(\gamma x).
 \]
-using the continuous diagonal value $d\coth(\gamma d)=1/\gamma$ at
-$d=0$. The correction $E_\gamma$ includes the finite center interval
-and replacement of a center integral by discrete centers. It is retained.
-For $\gamma_b>\gamma_a$, set
+Convolution averages translated steps against the density $s_\gamma$.
+Small gamma spreads this average more widely. Its Fourier multiplier is
 \[
-G_{ba}[a,b]=\frac2{hm}\left[
-d_{ab}\coth(\gamma_a d_{ab})-d_{ab}\coth(\gamma_b d_{ab})\right].
+M_\gamma(\omega)=\frac z{\sinh z},\qquad
+z=\frac{\pi|\omega|}{2\gamma},\qquad M_\gamma(0)=1.
 \]
-\begin{theorem}[Explicit gamma gain and finite spectral comparison]
-The matrix $G_{ba}$ is positive semidefinite. For every real sample vector
-$\nu$,
+It is close to one for slow variation and decays rapidly when
+$|\omega|/\gamma$ is large. Increasing gamma admits more rapid variation.
+The squared multiplier enters the kernel because it pairs two smoothed
+features. This describes original tanh features; the step explains their
+construction.
+
+\subsection*{An explicit statement for the finite tanh dictionary}
+Inputs and centers stay fixed. For $d_{ab}=x_a-x_b$, define the analytic
+center-integral contribution and finite correction:
+\[
+B_\gamma[a,b]=\frac{W+1}{m}-\frac2{hm}d_{ab}\coth(\gamma d_{ab}),
+\qquad R_\gamma=K_\gamma-B_\gamma.
+\]
+Use the continuous value $d\coth(\gamma d)=1/\gamma$ at zero.
+$R_\gamma$ accounts for the finite center interval and replacement of
+its integral by a discrete sum. These effects belong to the actual model.
+The proof gives their explicit integral expression; the example measures
+their size.
+
+\begin{theorem}[Gamma-dependent response of a finite tanh kernel]
+For consecutive uniformly spaced centers, fixed input samples, slopes
+$\Gamma>\gamma>0$, and every real sample vector $v$, define
+\[
+V_v(\omega)=\sum_{a=1}^{m}v_a e^{-i\omega x_a}.
+\]
+Then
 \begin{align*}
-\nu^TG_{ba}\nu
+q_\Gamma(v)-q_\gamma(v)
+&=\mathcal A_{\Gamma,\gamma}(v)+v^T(R_\Gamma-R_\gamma)v,\\
+\mathcal A_{\Gamma,\gamma}(v)
 &=\frac2{\pi hm}\int_{\mathbb R}
-\frac{M_{\gamma_b}(\omega)^2-M_{\gamma_a}(\omega)^2}{\omega^2}
-\left|\sum_a\nu_a e^{-i\omega x_a}\right|^2\,d\omega,\\
-M_\gamma(\omega)&=\frac z{\sinh z},\qquad
-z=\frac{\pi|\omega|}{2\gamma}.
+\frac{M_\Gamma(\omega)^2-M_\gamma(\omega)^2}{\omega^2}
+|V_v(\omega)|^2\,d\omega\ \ge0.
 \end{align*}
-Let $U_i$ contain orthonormal eigenvectors for the largest $i$ positive
-eigenvalues of $K_{\gamma_a}$. Set
-\begin{align*}
-C_i&=\diag(\mu_1(\gamma_a),\ldots,\mu_i(\gamma_a))+U_i^TG_{ba}U_i,\\
-B_i&=U_i^T(E_{\gamma_b}-E_{\gamma_a})U_i,
-\qquad \delta_i=\|C_i^{-1/2}B_iC_i^{-1/2}\|_2.
-\end{align*}
-For any $L_b\ge\mu_1(\gamma_b)$,
-\[
-\boxed{\frac{\mu_i(\gamma_b)}{\mu_1(\gamma_b)}
-\ge\frac{[1-\delta_i]_+\,\mu_{\min}(C_i)}{L_b}.}
-\]
-Here $\mu_{\min}(C_i)$ is the smallest eigenvalue of the displayed small
-matrix. The computed bound uses the maximum absolute row sum of the
-actual finite kernel for $L_b$.
+The apparent zero-frequency singularity has a continuous limit.
+No zero-mean assumption on $v$ is needed.
 \end{theorem}
-The multiplier increases with gamma: larger gamma removes less
-high-frequency content. The theorem carries that gain into an entire
-trial subspace, then accounts for the finite correction and normalization
-by the largest eigenvalue. It does not assert that every finite-dictionary
-ratio increases. An improvement is guaranteed only when the bound exceeds
-the old ratio. The calculation uses an old eigenspace and small spectral
-problems; it is not a scalar law depending on gamma alone.
+The multiplier difference is the explicit gamma gain; $|V_v|^2$ describes
+the tested pattern's frequencies; $1/\omega^2$ comes from underlying
+step features. The last term accounts for finite geometry. Its sign and
+size depend on direction, so a positive Fourier contribution alone does
+not prove monotonicity of every finite-kernel eigenvalue or ratio.
 
-\subsection*{Proof}
-Write $g_{ab}(c)=\tanh(\gamma(x_a-c))\tanh(\gamma(x_b-c))$.
-Direct integration gives
+\subsection*{Follow one direction the target actually needs}
+At gamma 8, select the eigenvector with largest target energy among
+resolved positive modes satisfying $\rho_i\le2\times10^{-6}$.
+This reproducible retrospective selection uses the initial target and
+kernel, with no training outcomes. It selects \textbf{eigenvector 22},
+carrying \textbf{4.14\% of target squared norm}, with relative eigenvalue
+only $1.612\times10^{-6}$.
+
+Freeze this vector $v$ and change gamma. Starting from its gamma-8
+response, the explicit mechanism predicts
 \[
-\int_{\mathbb R}(1-g_{ab}(c))\,dc=2d_{ab}\coth(\gamma d_{ab}).
+q^{\rm Fourier}_\Gamma(v)=q_8(v)+\mathcal A_{\Gamma,8}(v).
 \]
-For distinct inputs, the identity
-$1-\tanh u\tanh v=\coth(u-v)(\tanh u-\tanh v)$ reduces the integral
-to two translated tanh profiles. Their difference integrates to twice
-the translation. The coincident limit follows from
-$\int\sech^2(\gamma c)\,dc=2/\gamma$.
+This uses the known reference direction and gamma multiplier, with no
+new eigenspace calculation at other slopes. Compare it with the directly
+measured $\|J_\Gamma^Tv\|^2$. Numerically, the Fourier term is evaluated
+through its equivalent closed-form pairwise entries
+$2[d\coth(8d)-d\coth(\Gamma d)]/(hm)$, proved below.
+Response rises from $0.000389636$ at gamma 8
+to $0.386738$ at gamma 64, about a thousandfold. At gammas 12, 16, and
+64, finite corrections are respectively \textbf{0.0601\%, 0.0339\%, and
+0.00439\%} of actual response. On this target-relevant direction, the
+explicit Fourier contribution quantitatively explains the change.
 
-The center integral over $I$ equals $Wh$ minus the whole-line deficit
-plus the deficit outside $I$. Its normalized kernel is therefore
-$K^{(0)}_\gamma$ plus the omitted-exterior correction. Adding the
-discrete-center quadrature difference gives exactly
-$K_\gamma=K^{(0)}_\gamma+E_\gamma$.
+The direction stays fixed. At larger gamma, its response is a weighted
+average of new eigenvalues, not necessarily one eigenvalue. Small measured
+corrections apply to this probe and geometry. The full measured spectrum
+below shows how change is distributed among actual learning directions.
 
-The density $s_\gamma(x)=\frac\gamma2\sech^2(\gamma x)$ satisfies
-$\tanh(\gamma\,\cdot)=s_\gamma*\sign$: both derivatives equal
-$2s_\gamma$ and both vanish at zero. Under convention
-$\widehat f(\omega)=\int f(x)e^{-i\omega x}\,dx$, substituting
-$u=e^{2\gamma x}$ and $a=\omega/(2\gamma)$ gives
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{optimizer_access_mechanism.pdf}
+\caption{\textbf{Gamma's action is explicit and measurable.}
+Left: analytic squared multipliers at all four gammas; marked frequencies
+are the target's three nominal frequencies, not automatically finite-kernel
+eigenmodes. Right: actual response and reference response plus Fourier
+gain for fixed gamma-8 eigenvector 22, carrying 4.14\% initial target
+energy. Curves nearly coincide because finite correction is below
+0.061\% of actual response at every larger gamma. These are directional
+responses, not eigenvalues tracked across gamma.}
+\end{figure}
+\clearpage
+
+\section{The measured spectrum explains the GD delay}
+For zero initialization, $r_n=J_\gamma w_n-y$ obeys
+\[
+r_{n+1}=(I-\eta K_\gamma)r_n.
+\]
+Expanding $y$ in orthonormal eigenvectors gives each component the factor
+$1-\eta\mu_i$. Orthogonality yields exact relative squared error:
+\[
+e(n)^2=\sum_i p_i(\gamma)(1-\eta\mu_i(\gamma))^{2n}.
+\]
+Nullspace energy is included with factor one. The largest eigenvalue
+limits the shared stable step: $0<\eta<2/\mu_1$. Our runs use
+$\eta\mu_1\simeq1/2$, giving, at the exact normalized step,
+\[
+e(n)^2=\sum_i p_i(\gamma)\left(1-\frac{\rho_i(\gamma)}2\right)^{2n}.
+\]
+Forecasts use the actual archived step. A ratio of one halves a component's
+residual each update; a ratio of $10^{-6}$ takes about two million updates
+for one e-fold reduction. Target weights determine which rates matter.
+Large eigenvalues elsewhere cannot accelerate an independently evolving
+slow GD component.
+
+For the fixed direction above, measured response divided by
+$\mu_1(\gamma)$ is $1.612\times10^{-6}$ at gamma 8 and
+$1.560\times10^{-3}$ at gamma 64, about a 968-fold increase.
+This is the direction's weighted average of relative eigenvalues.
+The complete target-weighted spectrum accounts for how the individual
+rates contribute to training.
+
+We measure the finite tanh spectrum and target weights, then evaluate this
+classical formula without fitting a rate to training trajectories. First
+1\% crossings are \textbf{15,798,313; 186,057; 61,792; and 16,013 updates}
+at gammas 8, 12, 16, and 64. All four agree with executed crossings.
+The gamma mechanism explains the kernel-response change; the spectral
+calculation accounts for complete finite geometry when computing time.
+
+\section{Does Adam encounter the same difficult directions?}
+Adam rescales readout-coordinate updates and uses gradient history:
+\[
+r_{n+1}=r_n-\alpha_nJ_\gamma D_n\widehat m_n,\qquad
+D_n=\diag\!\left((\sqrt{\widehat v_n}+\epsilon_{\rm Adam})^{-1}\right).
+\]
+$\widehat m_n$ and $\widehat v_n$ are bias-corrected first and second
+moments. Even without momentum, the effective kernel changes with $D_n$.
+GD eigenvectors are diagnostic coordinates for Adam; GD decay is not
+an Adam time law.
+
+We can still ask: \textbf{does error remain in directions the raw kernel
+learns slowly?} Project saved Adam residuals onto the finite-kernel modes:
+\[
+\sum_{0<\rho_i(\gamma)\le\rho}
+\frac{|u_i(\gamma)^Tr_n|^2}{\|y\|^2}.
+\]
+\begin{landscape}
+\begin{figure}[p]\centering
+\includegraphics[width=\linewidth]{optimizer_access_three_panel.pdf}
+\caption{\textbf{From gamma to learning difficulty.}
+A: leading 64 actual finite-kernel eigenvalue ratios, ordered separately
+at each gamma; matching rank does not imply matching eigenvectors.
+B: initial target energy and residual energy after 200,000 common-recipe
+Adam updates, accumulated over positive modes below each ratio cutoff.
+Energy $10^{-4}$ is the 1\% error budget. C: executed GD crossings and
+measured-spectrum forecasts, with observed first Adam loss-EMA crossings
+using one 100-update half-life. The arrow means no crossing by 200,000;
+GD has longer budgets. Target and feature geometry match across panels.}
+\end{figure}
+\end{landscape}
+
+All energies use original target norm. At gamma 8, modes with
+$\rho_i\le2\times10^{-6}$ initially hold 4.33\% of target energy.
+After 200,000 Adam updates, remaining energy is $1.47094\times10^{-4}$,
+alone above the $10^{-4}$ budget for 1\% error. Almost all final residual
+energy lies there. Adam removes about 99.66\% of initial band energy,
+but enough remains to prevent acquisition.
+
+At gammas 12, 16, and 64, final band energies are $2.2660\times10^{-6}$,
+$1.0437\times10^{-7}$, and $3.8307\times10^{-8}$, below tolerance.
+Subspaces share a spectral definition across gamma, while eigenvectors
+may differ. Adam can temporarily increase projected residual components;
+these measurements describe remaining error, not untouched initial content.
+
+\subsection*{Make the Adam acquisition statistic visible}
+The common setting uses initial rate $10^{-3}$, epsilon $10^{-12}$, and
+moments $(0.9,0.999)$. Rate stays constant through 20,000 updates,
+decays by cosine to $10^{-6}$ at 50,000, then remains fixed through
+200,000. This shared schedule permits an early-learning comparison while
+explaining later settling behavior.
+
+Smooth squared relative error with shared half-life $s=100$ updates:
+\[
+M_0=e(0)^2=1,\qquad M_n=\beta M_{n-1}+(1-\beta)e(n)^2,
+\qquad\beta=2^{-1/s}.
+\]
+The first update with $M_n\le10^{-4}$ is first EMA acquisition.
+Plots show $\sqrt{M_n}$ in relative-error units. Common-recipe crossings
+are \textbf{7,688; 1,900; and 1,486} for gammas 12, 16, and 64;
+gamma 8 never crosses within the horizon. Every crossing is computed
+from every saved update.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{optimizer_access_schedule.pdf}
+\caption{\textbf{The crossing comes from actual training.}
+Bands show minima and maxima of raw errors in update bins; lines show
+the square root of loss EMA. Dashed vertical lines and threshold dots
+identify first crossings. The gray window is shared rate decay from
+20,000 to 50,000. Displayed curves are sampled; crossing calculations
+use every update.}
+\end{figure}
+
+This measures first acquisition of smoothed loss. Later EMA upcrossings
+occur 73, 97, and 98 times at the three successful slopes. Raw sustained
+crossings occur around 41,000 under the shared schedule. The EMA window
+is a retrospective visualization choice with a memory-induced resolution
+limit: $M_n\ge\beta^n$ precludes crossing before
+$\lceil s\log_2(10^4)\rceil$. At half-life 100 this floor is
+\textbf{1,329 updates}, close to the gamma-64 crossing. EMA compresses
+differences between sufficiently fast runs.
+
+For this attainable target and fixed geometry, small gamma leaves needed
+directions weakly coupled to features. GD exhibits the delay implied by
+its spectrum; Adam retains sufficient error in those slow directions to
+miss the same accuracy threshold at gamma 8 within its budget.
+\FloatBarrier
+
+\section{Proof of the gamma-response theorem}
+Let $I=[c_1-h/2,c_W+h/2]$ be the union of center cells, and put
+\[
+F_{ab,\gamma}(c)=\tanh(\gamma(x_a-c))\tanh(\gamma(x_b-c)).
+\]
+First, the whole-line deficit is
+\[
+\int_{\mathbb R}(1-F_{ab,\gamma}(c))\,dc
+=2d_{ab}\coth(\gamma d_{ab}).
+\]
+For distinct samples, use
+$1-\tanh u\tanh v=\coth(u-v)(\tanh u-\tanh v)$.
+The translated-profile difference integrates to twice its translation.
+For coincident samples, $\int\sech^2(\gamma c)\,dc=2/\gamma$ gives
+the continuous limit.
+
+Since $|I|=Wh$, subtract the deficit and restore its part outside $I$
+to obtain $K_\gamma=B_\gamma+R_\gamma$, with
+\begin{align*}
+R_\gamma[a,b]
+={}&\frac1m\left[\sum_{j=1}^{W}F_{ab,\gamma}(c_j)
+-\frac1h\int_I F_{ab,\gamma}(c)\,dc\right]\\
+&+\frac1{hm}\int_{\mathbb R\setminus I}(1-F_{ab,\gamma}(c))\,dc.
+\end{align*}
+The bracket is the quadrature discrepancy; the last integral accounts
+for the finite interval. Bias contributes $1/m$ to $B_\gamma$ and
+cancels between gammas.
+
+Next, $s_\gamma*\sign=\tanh(\gamma\,\cdot)$ follows by differentiation:
+both derivatives equal $2s_\gamma$ and both functions vanish at zero.
+With $\widehat g(\omega)=\int g(x)e^{-i\omega x}\,dx$, substitute
+$u=e^{2\gamma x}$ and $a=\omega/(2\gamma)$:
 \begin{align*}
 \widehat s_\gamma(\omega)
 &=\int_0^\infty\frac{u^{-ia}}{(1+u)^2}\,du
 =\Gamma(1-ia)\Gamma(1+ia)\\
 &=\frac{\pi a}{\sinh(\pi a)}=M_\gamma(\omega).
 \end{align*}
-This uses the beta integral and gamma reflection identity, with
-continuous value one at zero. The difference
+These equalities use the beta integral and gamma-function reflection
+identity. Here $\Gamma(\cdot)$ is the gamma function, distinct from
+the larger slope $\Gamma$.
+
+Define the integrable difference profile
 \[
-D(d)=2[d\coth(\gamma_a d)-d\coth(\gamma_b d)]
+D(d)=2[d\coth(\gamma d)-d\coth(\Gamma d)].
 \]
-is integrable. The second derivative of $2d\coth(\gamma d)$ is
-$4(s_\gamma*s_\gamma)(d)$, by differentiating the deficit integral and
-integrating once by parts. Hence
-$\widehat{D''}=4(M_{\gamma_a}^2-M_{\gamma_b}^2)$ and
+Differentiating the deficit integral twice and integrating once by parts
+gives
 \[
-\widehat D(\omega)
-=\frac{4(M_{\gamma_b}(\omega)^2-M_{\gamma_a}(\omega)^2)}{\omega^2}.
+\frac{d^2}{dd^2}[2d\coth(\gamma d)]=4(s_\gamma*s_\gamma)(d).
 \]
-The continuous zero-frequency limit is
-$\widehat D(0)=\frac{\pi^2}{3}(\gamma_a^{-2}-\gamma_b^{-2})$.
-Fourier inversion contributes $1/(2\pi)$, giving precisely
-$2/(\pi hm)$ in the quadratic-form identity.
-
-The larger-gamma multiplier is at least as large, so the transform is
-nonnegative. Fourier inversion proves the identity and positivity.
-In particular $C_i$ is positive definite. Compressing the actual new
-kernel gives $U_i^TK_{\gamma_b}U_i=C_i+B_i$. By definition of
-$\delta_i$, this is at least $(1-\delta_i)C_i$ in quadratic-form order.
-Min--max yields
-$\mu_i(\gamma_b)\ge(1-\delta_i)\mu_{\min}(C_i)$ for $\delta_i<1$.
-When $\delta_i\ge1$, positivity of the actual kernel gives zero as a
-lower bound. Divide by $\mu_1(\gamma_b)\le L_b$.\hfill$\square$
-
-\section{From needed directions to a GD delay}
-Define positive slow energy
+To see every step, write the deficit as
+$\int[1-t_\gamma(u)t_\gamma(u-d)]\,du$, with
+$t_\gamma(u)=\tanh(\gamma u)$. Its second derivative is
 \[
-P_\gamma(\rho)=\sum_{0<\rho_i(\gamma)\le\rho}p_i(\gamma).
+-\int t_\gamma(u)t_\gamma''(u-d)\,du
+=\int t_\gamma'(u)t_\gamma'(u-d)\,du.
 \]
-If $P_\gamma(\rho)\ge p>\varepsilon^2$, retaining these terms in the
-exact GD residual gives
+The boundary term vanishes, and $t_\gamma'=2s_\gamma$, proving the identity.
+Consequently
 \[
-E_\gamma(n)\ge\sqrt p(1-\rho/2)^n,\qquad
-n\ge\left\lceil\frac{\log(\sqrt p/\varepsilon)}{-\log(1-\rho/2)}\right\rceil
+\widehat D(\omega)=\frac{4(M_\Gamma(\omega)^2-M_\gamma(\omega)^2)}{\omega^2},
+\qquad\widehat D(0)=\frac{\pi^2}{3}(\gamma^{-2}-\Gamma^{-2}).
 \]
-as necessary time to reach relative error $\varepsilon$. For the actual
-archived step, replace $\rho/2$ by the per-update rate cutoff. The positive
-restriction separates slow acquisition from permanent nullspace error.
-The compact-filter calculation in the
-\href{gamma_structured_kernel_note.pdf}{structured-kernel note} supplies
-lower bounds on positive slow energy with its declared numerical allowances.
+This follows from $\widehat{D''}=-\omega^2\widehat D$; expand
+$z/\sinh z$ to get the continuous zero-frequency value. Since
+$z/\sinh z$ decreases for positive $z$, $M_\Gamma\ge M_\gamma$,
+so the transform is nonnegative.
 
-This time bound is a separate target-dependent statement. A lower bound
-on an eigenvalue ratio establishes a rate floor; it does not by itself
-establish a necessary delay. The full target-weighted spectrum gives the
-reference forecast; compact positive-energy bounds give conservative
-necessary times. The collaborator's larger-gamma comparison is valid;
-using that lower bound alone to conclude necessary small-gamma delay
-would reverse the needed inequality.
+Finally $B_\Gamma[a,b]-B_\gamma[a,b]=D(x_a-x_b)/(hm)$.
+Fourier inversion contributes $1/(2\pi)$, and summation against
+$v_av_b$ yields $|V_v(\omega)|^2$. This proves the Fourier term with
+prefactor $2/(\pi hm)$. Add the exact finite correction to prove the
+theorem.\hfill$\square$
 
-\subsection*{The missing direction: an upper rate and target-overlap bound}
-Fix reference slope $\Gamma\ge\gamma$. The same decomposition gives
-\[
-K_\gamma=K_\Gamma-G_{\Gamma,\gamma}+R_{\gamma,\Gamma},\qquad
-R_{\gamma,\Gamma}=E_\gamma-E_\Gamma.
-\]
-The explicit positive gamma gain from Section~2 is now subtracted.
-This is the correct direction for proving weak smaller-slope action on
-needed directions. The correction must remain:
-$K_\Gamma-G_{\Gamma,\gamma}$ need not itself be positive semidefinite.
-
-Choose any orthonormal trial basis $V$ and set $P=VV^T$. Its columns are
-candidate slow sample-space directions, not necessarily eigenvectors.
-Define
-\[
-A_\gamma=V^TK_\gamma V,\qquad C_\gamma=(I-P)K_\gamma V,\qquad
-q=\frac{\|V^Ty\|}{\|y\|}.
-\]
-$A_\gamma$ measures action inside the proposed slow subspace;
-$C_\gamma$ measures action sent outside it. Both follow from the gamma
-decomposition including its finite correction. For example,
-\begin{align*}
-\alpha_\gamma
-&=\mu_{\max}\!\left(V^T(K_\Gamma-G_{\Gamma,\gamma})V\right)
-+\|V^TR_{\gamma,\Gamma}V\|_2,\\
-\mu_{\max}(A_\gamma)&\le\alpha_\gamma.
-\end{align*}
-Retaining the signed correction inside the small matrix can give a tighter
-upper bound. Likewise retain corrected off-subspace action to obtain
-$c_\gamma\ge\|C_\gamma\|_2$. Compressed action alone does not establish
-that trial directions remain slow: coupling is the missing check.
-
-\begin{theorem}[Small-gamma slow target energy and necessary GD delay]
-Let $K_\gamma=J_\gamma J_\gamma^T$, $y\ne0$, $V^TV=I$, and suppose
-the bounds above on $A_\gamma$ and $C_\gamma$ hold. For $b>\alpha_\gamma$,
-set
-\[
-\delta=\min\!\left(1,\frac{c_\gamma}{b-\alpha_\gamma}\right),\qquad
-L=\left[q\sqrt{1-\delta^2}-\delta\sqrt{1-q^2}\right]_+^2.
-\]
-At least a fraction $L$ of target energy lies in actual kernel modes
-with eigenvalues in $[0,b]$. For any explicit readout witness $w_*$, put
-\[
-e_0=\frac{\|y-J_\gamma w_*\|^2}{\|y\|^2},\qquad p=[L-e_0]_+.
-\]
-At least $p$ target energy lies in positive modes $0<\mu_i(\gamma)\le b$.
-With zero initialization, $0<\eta\|K_\gamma\|_2\le1$, and $\eta b<1$,
-\[
-\boxed{E_\gamma(n)\ge\sqrt p\,(1-\eta b)^n.}
-\]
-If $p>\varepsilon^2$, reaching relative error $\varepsilon$ requires
-\[
-\boxed{n\ge\left\lceil
-\frac{\log(\sqrt p/\varepsilon)}{-\log(1-\eta b)}\right\rceil.}
-\]
-\end{theorem}
-For a dimensionless ratio upper bound, divide $b$ by a \emph{lower}
-bound on $\mu_1$, such as a nonzero Rayleigh quotient. Dividing by
-Section~2's row-sum upper bound would give the wrong direction. Timing
-above uses the actual prescribed step and avoids extra normalization.
-
-\textbf{Proof.} Let $F=\mathbf1_{(b,\infty)}(K_\gamma)$ project onto
-true fast modes. With $X=FV$, compressing
-$K_\gamma V=VA_\gamma+C_\gamma$ gives the Sylvester equation
-\[
-(K_\gamma|_{\operatorname{ran}F})X-XA_\gamma=FC_\gamma.
-\]
-Its solution is the integral of
-$e^{-tK_\gamma|_{\operatorname{ran}F}}FC_\gamma e^{tA_\gamma}$
-over $t\ge0$. The exponential norms give the integrable factor
-$e^{-t(b-\alpha_\gamma)}$, hence $\|FV\|_2\le\delta$.
-If $q=0$ or $\delta=1$, the bound is zero and immediate. Otherwise
-normalize $y$ and put $v=Py/q$, $d=\|Fv\|\le\delta$, and
-$s=(I-F)v/\sqrt{1-d^2}$. The unit slow vector $s$ has overlap
-$\sqrt{1-d^2}$ with $v$ and overlap at most $d$ with any unit vector
-orthogonal to $v$. Decompose $y=qv+\sqrt{1-q^2}z$ to get
-\[
-\|(I-F)y\|\ge|s^Ty|
-\ge\left[q\sqrt{1-d^2}-d\sqrt{1-q^2}\right]_+
-\ge\sqrt L.
-\]
-The nullspace part of $y$ is orthogonal to every $J_\gamma w_*$, so
-its squared norm fraction is at most $e_0$. Subtracting leaves $p$ in
-positive slow modes. Each retains residual factor at least
-$(1-\eta b)^n$ under the stated step condition. Summing squared
-residuals proves the error bound; solving for $n$ gives the time bound.
-\hfill$\square$
-
-Eigenvectors are not assumed fixed across gamma. Gamma determines weak
-action and coupling; the target enters through $q$ and the witness.
-An easy target can make the conclusion trivial. The target-angle conversion
-is sharp given its leakage bound, but coupling and kernel bounds can
-remain conservative. This is a GD theorem, not an Adam rate law.
-
-\subsection*{What the reverse comparison gives numerically}
-We evaluate actual finite tanh action on trial spaces and audit the explicit
-gamma gain and finite correction. We neither discard the correction nor
-substitute a periodic spectrum. Candidate spaces are tails of a fixed
-gamma-64 reference basis and eigenbands of the kernel projected onto
-discrete polynomial spaces of degrees 32, 64, and 128. The latter require
-a small spectral solve at each gamma. Polynomial truncation selects a
-trial space; omitted action remains in $C_\gamma$.
-
-A fixed spectral-cutoff grid selects the strongest necessary bound without
-reading observed GD acquisition times. Taking the maximum valid lower
-bound over these spaces is valid. The default adds explicit floating-point
-allowances to compressed upper rates and coupling, with zero-, one-, and
-ten-times allowance sensitivity. These are FP64 evaluations of an
-exact-arithmetic theorem, not interval-certified numerical bounds.
-
-Strongest necessary times at gammas 8, 12, 16, and 64 are
-\textbf{6,458,359; 169,485; 34,555; and 5,927 updates}, compared with
-actual crossings of \textbf{15,798,313; 186,057; 61,792; and 16,013}.
-They retain about \textbf{41\%, 91\%, 56\%, and 37\%} of measured delay.
-Degree-128 projected spaces win at the first three gammas; a reference
-tail wins at gamma 64. Earlier compact-filter bounds remain separate.
-
-Fixed reference directions are substantially less informative at small
-gamma: they give only 361, 644, and 951 updates at gammas 8, 12, and 16.
-The useful bound retains changing finite geometry and target alignment.
-This repairs the logical direction and improves measured delay bounds,
-but does not create a scalar formula in gamma alone.
-
-\section{What we measure for Adam}
-\href{https://arxiv.org/abs/1412.6980}{Adam} rescales readout-coordinate
-updates and uses gradient history. For
-$r_n=Jw_n-y$, its update is
-\[
-r_{n+1}=r_n-\alpha_n JD_n\widehat m_n,\qquad
-D_n=\diag\bigl((\sqrt{\widehat v_n}+\epsilon_{\rm Adam})^{-1}\bigr).
-\]
-Raw-kernel eigenmodes are diagnostic coordinates, not independent Adam
-decay modes. Even without momentum, the effective kernel would be the
-time-dependent $JD_nJ^T$. We do not apply the GD time law to Adam.
-
-Instead, at saved checkpoints measure
-\[
-R_{\gamma,n}(\rho)=\sum_{0<\rho_i(\gamma)\le\rho}
-\frac{|u_i(\gamma)^Tr_n|^2}{\|y\|^2}.
-\]
-Initially this equals $P_\gamma(\rho)$. At a fixed update count, it asks
-whether Adam removed target components occupying the GD-slow subspace.
-A substantial remaining value supports the proposed obstruction for this
-optimizer and protocol. A small value indicates acquisition of those
-components; that outcome must also be reported.
-
-\textbf{First EMA acquisition (main Adam metric).}
-Let $\ell_n=E(n)^2$ be squared relative error. With half-life $s=100$
-updates and $\beta=2^{-1/s}$, define
-\begin{align*}
-M_0&=\ell_0=1,\qquad M_n=\beta M_{n-1}+(1-\beta)\ell_n,\\
-T_{\rm EMA}&=\min\{n\le H:M_n\le10^{-4}\}.
-\end{align*}
-Plots show $\sqrt{M_n}$ in relative-error units. Averaging squared error
-matches training loss; this is not an EMA of the error norm. Initialization
-retains the true initial loss instead of a falsely low average. Crossing
-means first acquisition of the smoothed-loss threshold, not permanent
-settlement. Runs without a crossing are censored at $H=200{,}000$.
-
-The half-life is one shared, post-hoc plotting choice, not a gamma-specific
-tuning. Sensitivity uses 10, 30, 100, 300, 1,000, and 3,000 updates.
-Metrics use every recorded update, not sparse-checkpoint interpolation.
-No optimizer reruns or settings changes are involved.
-
-The EMA itself has a resolution limit. Nonnegative losses and $M_0=1$
-imply $M_n\ge\beta^n$. Even zero loss after initialization cannot cross
-before $\lceil s\log_2(10^4)\rceil$ updates:
-\textbf{1,329 updates at half-life 100}. The gamma-64 crossing at 1,486
-is close to this smoothing floor. EMA compresses differences between
-sufficiently fast runs; it is not an exact optimizer time. The sensitivity
-figure explicitly displays this floor.
-
-\textbf{Sustained acquisition (supporting diagnostic).}
-With the same horizon and $\varepsilon=0.01$,
-\[
-T_{\rm sust}=\min\{n:E(k)\le\varepsilon\text{ for all }k=n,\ldots,H\}.
-\]
-If $E(H)>\varepsilon$, acquisition is unobserved within the horizon.
-For a successful run, this is one plus the last update above threshold,
-or zero when no update is above threshold. Report the confirmation length
-$H-T_{\rm sust}+1$. No smoothing is used and nothing is asserted beyond $H$.
-
-\section{Matched experimental protocol}
-The primary target is
-$f(x)=\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(10\pi x)$ on
-$[-1,1]$. The archive uses spacing $h=1/256$, 559 tanh features plus bias,
-and 8,193 uniformly spaced training inputs. Centers, samples, target, raw
-readout coordinates, and zero initialization are fixed; slopes are 8,
-12, 16, and 64.
-
-Common-recipe Adam uses initial rate $10^{-3}$, additive epsilon
-$10^{-12}$, and moments $(0.9,0.999)$. Its rate is constant through
-20,000 updates, decays by cosine to $10^{-3}$ of its initial value at
-50,000, then remains fixed. Runs continue to 200,000 updates. This
-schedule is a material part of the acquisition result.
-
-Sensitivity comparisons reuse validation-selected recipes: five initial
-rates crossed with two epsilons, selected by median validation error at
-40,000, 42,500, 45,000, 47,500, and 50,000 updates; optimizer states
-continue intact. No new selection uses present spectral projections.
-All plots concern training-grid optimization; separate validation data
-selected the sensitivity recipes. No new held-out generalization claim
-is made.
-
-Supporting targets are $\exp(\sin(3\pi x))$, $1/(1+25x^2)$,
-$\sqrt5\,x^2$, and $\sqrt2\sin(2\pi x)$. Targets and checkpoints are not
-selected for agreement with the hypothesis. These scalings are retained
-because Adam's additive epsilon makes scaling part of the protocol.
-The saved SVD cutoff is numerical, not an exact-rank statement. Omitted
-energy is reported as unresolved, not automatically as nullspace.
-
-\section{What the matched measurements show}
-The main comparison is shown on the following landscape page so that
-the spectral and acquisition-time panels remain legible.
-\begin{landscape}
-\begin{figure}[p]\centering
-\includegraphics[width=\linewidth]{optimizer_access_three_panel.pdf}
-\caption{\textbf{Gamma, needed directions, and acquisition.}
-A: finite-kernel ratios and numerical larger-gamma rate lower bounds,
-referenced to gamma 8. B: initial target energy and common-recipe Adam
-residual energy after 200,000 updates, accumulated over resolved positive
-modes. Energy $10^{-4}$ corresponds to 1\% relative error.
-C: executed GD crossings, full-spectrum forecasts, necessary GD times
-from the reverse-subspace and earlier compact bounds, and first Adam
-loss-EMA crossings with shared 100-update half-life. GD has
-longer executed trajectories; the Adam arrow denotes its own budget.
-Target and geometry match across panels. Panel A's rate lower bounds do
-not supply panel C's necessary times; those require positive slow-energy
-lower bounds. No theoretical time curve is asserted for Adam.}
-\end{figure}
-\end{landscape}
-
-\subsection*{The spectral theorem is informative, with measurable slack}
-At rank 32 the old ratio is $5.2174\times10^{-9}$. Bounds at gammas
-12, 16, and 64 are $1.8172\times10^{-7}$, $2.2340\times10^{-6}$,
-and $1.9195\times10^{-4}$, retaining about 26\%, 30\%, and 35\% of
-actual new ratios. The bound is within a factor of four at this prescribed
-rank while exposing a large explicit gamma effect. Rank 64 is less tight:
-bounds retain only 5.3\%, 5.7\%, and 8.0\%. The gamma-8 baseline rank-64
-bound is numerically unresolved and labeled accordingly. Ranks are not
-selected after seeing tightness.
-
-\subsection*{The slow subspace explains the remaining gamma-8 error}
-At illustrative cutoff $\rho=2\times10^{-6}$, gamma 8 has initial
-positive slow energy $0.0433333$. After 200,000 common-recipe Adam
-updates, the remaining energy is $1.4709443\times10^{-4}$, alone
-exceeding the $10^{-4}$ budget for 1\% error. Total relative error is
-0.0121283; 99.9998\% of residual energy lies in that band. Adam removed
-about 99.66\% of its initial energy, but the remainder prevents acquisition.
-
-At the same cutoff, final slow residual energies are
-$2.2660\times10^{-6}$, $1.0437\times10^{-7}$, and $3.8307\times10^{-8}$
-at gammas 12, 16, and 64, below tolerance. The cutoff is a descriptive
-probe inherited from the earlier $\eta\mu\le10^{-6}$ analysis under
-$\eta\mu_1\simeq1/2$. Main cumulative curves expose full cutoff
-dependence. The subspaces share a spectral definition across gamma,
-not the same eigenvectors.
-
-Initial slow energy is not monotone: it is $2.85\times10^{-7}$ at
-gamma 16 and $1.48\times10^{-6}$ at gamma 64. Adam can increase a
-diagnostic subspace's residual energy: at 20,000 updates the gamma-12
-and gamma-16 slow energies exceed their initial values. These are
-projected residuals, not necessarily untouched initial target content.
-
-\begin{figure}[htbp]\centering
-\includegraphics[width=\linewidth]{optimizer_access_directional_evolution.pdf}
-\caption{\textbf{Evolution within the slow band.} The cutoff is
-$2\times10^{-6}$ for every gamma. GD curves follow its target-weighted
-spectrum; Adam values are saved readout checkpoints projected onto each
-finite kernel's modes. Energies use the original target norm. Lines
-between Adam checkpoints do not determine exact acquisition time;
-every-update traces do.}
-\end{figure}
-
-\subsection*{First EMA crossings reveal early acquisition}
-Common Adam first crosses raw 1\% at 4,084, 1,361, and 333 updates
-for gammas 12, 16, and 64. Loss-EMA first crossings are 7,688, 1,900,
-and 1,486. This resolves earlier learning concealed by the previous
-sustained-crossing plot. EMA later recrosses above threshold 73, 97,
-and 98 times: first acquisition is not settled acquisition. Raw sustained
-crossings remain 41,397, 41,412, and 41,539, reflecting oscillations
-and rate decay. Gamma 8 never crosses within 200,000 under either recipe.
-
-Window sensitivity matters. Half-life 30 gives common crossings 4,374,
-1,430, and 510; half-life 300 gives 26,465, 11,278, and 5,342.
-At half-life 1,000 they cluster near 28,000--30,000 and lose monotone
-ordering. Long memory and oscillations can restore a nearly flat comparison.
-Selected-recipe half-life-100 crossings are 40,208, 41,716, and 10,076.
-The evidence supports the stated target, recipe, and metric, not universal
-monotonic Adam improvement.
-
-Executed GD reaches 1\% at 15,798,313, 186,057, 61,792, and 16,013
-updates. Compact necessary times are 5,072,048, 130,057, 29,640, and
-5,421. The full constructed-spectrum forecast agrees with executed
-crossings; conservative bounds retain about 32\%, 70\%, 48\%, and
-34\% of observed delay. These times do not follow by substituting
-panel A's ratio lower bounds.
-
-\begin{figure}[htbp]\centering
-\includegraphics[width=\linewidth]{optimizer_access_schedule.pdf}
-\caption{\textbf{Where the Adam crossing comes from.}
-Colored bands contain minima and maxima of actual per-update errors
-within update bins. Solid curves show the square root of loss EMA with
-shared 100-update half-life. The dashed vertical line and threshold dot
-mark its first crossing, computed from every update. Gray windows mark
-rate decay from 20,000 to 50,000. All curves come from saved training data.}
-\end{figure}
-
-\begin{figure}[htbp]\centering
-\includegraphics[width=\linewidth]{optimizer_access_ema_sensitivity.pdf}
-\caption{\textbf{The smoothing choice is visible.} Every gamma uses the
-same half-life at each horizontal position. The dotted line marks the
-main choice 100; triangles at 200,000 updates denote no observed
-crossing. The gray dashed curve is the earliest crossing permitted by
-memory of the initial loss, even if all later losses were zero.
-Long windows materially change acquisition times. These are
-sensitivity calculations on the same trajectories, not new training.}
-\end{figure}
-
-Five-target sensitivity prevents a universal claim. In selected Runge
-runs at gammas 12 and 16, the first 1\% crossing is update 122;
-last recrossings postpone sustained acquisition to 199,808 and 199,710.
-Only 193 and 291 confirming states remain through the endpoint.
-Common-recipe single-sine final error also does not improve monotonically
-with gamma. These exceptions are retained.
+\section{Empirical checks and reproduction}
+The five targets are the sine mixture, $\exp(\sin(3\pi x))$,
+$1/(1+25x^2)$, $\sqrt5x^2$, and $\sqrt2\sin(2\pi x)$.
+Supplementary comparisons retain shared and archived validation-selected
+Adam settings. Selection used median validation error at five checkpoints
+from 40,000 to 50,000, over five initial rates and two epsilons;
+optimizer state continued intact. These plots measure training-grid
+optimization, without a new held-out generalization claim.
 
 \begin{figure}[htbp]\centering
 \includegraphics[width=\linewidth]{optimizer_access_targets.pdf}
-\caption{\textbf{Target and recipe sensitivity.} Every archived target
-is included with the same first loss-EMA crossing and 100-update half-life. Recipes were
-selected by original late-window validation error, not fastest acquisition
-or agreement with this kernel argument. Arrows denote no EMA acquisition
-within 200,000 updates.}
+\caption{\textbf{Target and optimizer setting matter.} All archived targets
+use the same 100-update loss-EMA half-life. Selected settings optimize
+late validation error, not early acquisition. Arrows indicate no crossing
+within 200,000. Results do not yield universal monotone ordering by gamma.}
 \end{figure}
 
-\clearpage
-\section{Numerical verification and reproduction}
-Adam analysis covers 40 cases and 12 saved checkpoints per case.
-Direct feature reconstruction matches archived hashes. All 480 residual
-norms agree with saved measurements within $9.14\times10^{-16}$.
-The most negative total-minus-projected energy is $-2.89\times10^{-15}$,
-consistent with floating-point subtraction; this signed discrepancy is
-retained. Omitted-SVD energy is monitored, not labeled irreducible error.
+The primary common-recipe ordering appears at EMA half-lives 30, 100,
+and 300. At 1,000, crossings cluster near 28,000--30,000 and reorder.
+With selected settings, half-life-100 crossings at gammas 12, 16, and
+64 are 40,208; 41,716; and 10,076. These expose dependence on the
+measurement window and optimizer recipe.
 
-A fresh rectangular SVD and direct sample-space residual projection
-reproduce band energies across all 480 checkpoint/target/view cases at
-seven ratio cutoffs. The largest band-energy discrepancy is
-$5.02\times10^{-14}$ and energy closure differs by at most
-$5.33\times10^{-14}$. At the displayed cutoff, common-recipe discrepancies
-are below $3.54\times10^{-16}$. At gamma 16
-the recomputed numerical retained rank is larger by three, and at gamma
-64 by one. These are tiny-cutoff numerical rank changes, not a change
-in the true feature space, and do not affect the $2\times10^{-6}$ band.
-The gamma-8 obstruction persists at the stricter cutoff $2\times10^{-7}$,
-where remaining energy is $1.45561\times10^{-4}$.
+\begin{figure}[htbp]\centering
+\includegraphics[width=\linewidth]{optimizer_access_ema_sensitivity.pdf}
+\caption{\textbf{The smoothing choice is visible.} Each horizontal position
+uses one half-life for all gammas. The dotted line marks 100 updates;
+the gray dashed line is earliest possible crossing due to initial-loss
+memory. Triangles mark censoring at 200,000. All points summarize the
+same saved trajectories.}
+\end{figure}
+\FloatBarrier
 
-A fresh read-only persistent-archive audit processed 400 trace chunks
-and all states 0 through 200,000 for the 40 selected series. First,
-last-above, and sustained crossings agree exactly with both remote and
-local arrays at all six recorded tolerances. Remote metadata and local
-compact-manifest hashes agree. This used one CPU for 30 seconds and no
-GPU. Only requested scalar errors were retrieved; old data was unchanged.
+All calculations use archived FP64 features and trajectories. Modal
+analysis retains singular values above $10^{-14}$ of the largest;
+omitted numerical directions are reported separately, not identified as
+exact nullspace. Independent SVD and direct residual projections
+reproduce slow-band energies within $5.1\times10^{-14}$. Every-update
+traces determine EMA crossings; saved readouts determine modal residual
+measurements. The fixed-direction calculation compares the explicit
+increment to direct feature action and records the signed finite
+correction. No new training was performed.
 
-The explicit Toeplitz increment agrees with independently computed direct
-rows within $5\times10^{-16}$. The small-matrix calculation checks
-positivity resolution, old trial-space gaps, relative correction
-conditioning, and two whitening formulations. These are floating-point
-checks, not outward-rounded certificates for new ratio bounds. The
-implemented $C_i$ uses $U_i^TK_{\gamma_a}U_i$ instead of the equivalent
-eigenvalue diagonal to preserve the measured trial-space identity.
-
-All 23 focused tests pass, including rotated-trial-space reverse bounds
-and an independent explicit EMA recurrence. The reverse-action
-reconstruction discrepancy is below $8.5\times10^{-20}$ in Frobenius
-norm; this checks algebraic consistency, not the finite correction
-independently. Under zero-, one-, and ten-times arithmetic allowances,
-gamma-8 degree-128 necessary times are 6,554,361; 6,458,359; and
-5,539,258. Gamma 12 changes only from 169,486 to 169,482 over this
-range. Allowance sensitivity does not constitute a rounding certificate.
-
-EMA analysis recomputes all 40 complete trajectories at six half-lives.
-Its compact artifacts and the reverse-bound evidence reproduce
-byte-for-byte. An independent figure audit matches every target-case
-crossing, every window-sensitivity crossing, and every plotted EMA curve
-to those artifacts. Curves retain each exact first crossing and its
-preceding state; sparse visual sampling can omit later oscillations,
-whose counts come from complete traces.
-
-The full non-slow suite reports 833 passed, 17 failed, 9 skipped, and
-4 deselected. The 17 failure identifiers exactly match the pre-existing
-baseline; no new test failure was introduced.
-
-The \href{../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/}{gamma\_optimizer\_access evidence}
-contains source hashes, array conventions, unresolved statuses, retained
-ranks, and every plotted quantity. Full scalar traces remain in the
-persistent archive; compact envelopes and the independent audit accompany
-this study. Reproduce locally with one BLAS thread:
+The \href{../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/}{numerical evidence}
+contains the selected direction, plotted quantities, source hashes, and
+verification records. Reproduce from the repository root with one BLAS thread:
 \par\vspace{6pt}
-\begin{minipage}{\linewidth}
-\begin{quote}\footnotesize\begin{verbatim}
+\begin{minipage}{\linewidth}\begin{quote}\footnotesize\begin{verbatim}
 export OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
-python -m experiments.expD36_frozen_gamma_probe.gamma_ratio_bound
-python -m experiments.expD36_frozen_gamma_probe.gamma_reverse_bound
+python -m experiments.expD36_frozen_gamma_probe.gamma_mechanism_analysis
 python -m experiments.expD36_frozen_gamma_probe.adam_spectral_analysis
-python -m experiments.expD36_frozen_gamma_probe.adam_projection_audit
 python -m experiments.expD36_frozen_gamma_probe.adam_ema_analysis \
   --archive /path/to/adam_raw_scalar_archive.npz
 python -m experiments.expD36_frozen_gamma_probe.optimizer_access_figure
 latexmk -pdf -outdir=/tmp/gamma-optimizer-latex \
   docs/gamma_optimizer_access_note.tex
-\end{verbatim}\end{quote}
-\end{minipage}
+\end{verbatim}\end{quote}\end{minipage}
 \par\vspace{6pt}
-The optional archive audit is in \texttt{adam\_trace\_audit.py}:
-\texttt{extract} reads the persistent run directory; \texttt{verify}
-compares the scalar archive with local compact evidence. No least-squares
-refit, spectral solve, or detached diagnostic changes a trained readout.
-No new training was performed.
+Extract the scalar archive from persistent training data using
+\texttt{adam\_trace\_audit.py}. Existing compact EMA artifacts suffice
+to regenerate figures without retrieving complete traces.
 \end{document}
