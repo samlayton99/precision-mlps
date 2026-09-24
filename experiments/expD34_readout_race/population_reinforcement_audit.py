@@ -84,14 +84,44 @@ def observables(p, x, y):
     omega = ratio(width*jnp.sum(r2*force_squared))
     m4 = width*jnp.sum(r2**2)
     transport = ratio(-2*width*jnp.sum(jnp.sum(particle_p*particle_F, axis=0)*force_squared))
-    redistribution = ratio(2*width*jnp.sum(r2*jnp.sum(particle_F*particle_derivative, axis=0)))-2*omega*ratio(rhs)
+    def redistribution_from(force_derivative):
+        blocks = force_derivative[:-1].reshape(3, -1)
+        return (ratio(2*width*jnp.sum(r2*jnp.sum(particle_F*blocks, axis=0)))
+                -2*omega*ratio(F@force_derivative))
+
+    redistribution = redistribution_from(derivative)
+    # The residual-only term in dot F is -Pi J_H^* J_H F. All remaining
+    # terms include evolving geometry/projector compensation. These probes
+    # follow effective flow -F, not the archived state's full-GD velocity.
+    relax_gradient = J.T@fine_velocity/len(x)
+    derivative_relaxation = -relax_gradient+jc.T@jnp.linalg.solve(gram, jc@relax_gradient)
+    redistribution_relaxation = redistribution_from(derivative_relaxation)
+    redistribution_other = redistribution_from(derivative-derivative_relaxation)
+    participation = ratio(width*jnp.sum(force_squared**2))/jnp.where(f2 > 0, f2, 1.)
+    participation_dot = (ratio(4*width*jnp.sum(force_squared*jnp.sum(particle_F*particle_derivative, axis=0)))
+                         /jnp.where(f2 > 0, f2, 1.)-4*participation*ratio(direct))
+    f = jnp.sqrt(f2)
+
+    def normalized(value, denominator):
+        return jnp.where(resolved&(denominator > 0), value/jnp.where(denominator > 0, denominator, 1.), jnp.nan)
+
+    kappa_omega = normalized(redistribution, 2*f*omega)
+    kappa_participation = normalized(participation_dot, 4*f*participation)
     coarse_direction_bound = jnp.sqrt(2.)+4*jnp.sqrt(omega/width)
     ell_m4_bound = 3*jnp.sqrt(2.)*Y*m4/jnp.where(eig[0] > 0, eig[0]*width, 1.)
     row.update(force_weighted_second_moment=omega, M4=m4,
                force_weighted_fourth_moment=ratio(width**2*jnp.sum(r2**2*force_squared)),
-               hidden_force_energy_concentration=ratio(width*jnp.sum(force_squared**2))/jnp.where(f2 > 0, f2, 1.),
+               hidden_force_energy_concentration=participation,
+               hidden_force_energy_concentration_dot=participation_dot,
                omega_dot_transport=transport, omega_dot_redistribution=redistribution,
                omega_dot_effective=transport+redistribution,
+               omega_dot_redistribution_relaxation=redistribution_relaxation,
+               omega_dot_redistribution_geometry_compensation=redistribution_other,
+               omega_redistribution_split_absolute_error=jnp.abs(redistribution-redistribution_relaxation-redistribution_other),
+               kappaOmega_signed=kappa_omega, kappaOmega_positive=jnp.maximum(kappa_omega, 0.),
+               kappaI_signed=kappa_participation, kappaI_positive=jnp.maximum(kappa_participation, 0.),
+               transport_saturation=normalized(transport, 2*f*jnp.sqrt(omega*participation)),
+               dlogOmega_pertravel=normalized(transport+redistribution, f*omega),
                sqrt_M4_dot_effective=-2*width*jnp.sum(r2*jnp.sum(particle_p*particle_F, axis=0))/jnp.sqrt(m4),
                sqrt_M4_speed_bound=2*jnp.sqrt(omega*f2),
                weighted_geometry_rate_bound=6*jnp.sqrt(2.)*Y*omega/width,

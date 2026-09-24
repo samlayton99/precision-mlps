@@ -26,6 +26,11 @@ TERMS = ('residual_relaxation_rate', 'generated_geometry_rate', 'target_geometry
          'force_weighted_second_moment', 'force_weighted_fourth_moment',
          'hidden_force_energy_concentration', 'omega_dot_transport',
          'omega_dot_redistribution', 'omega_dot_effective',
+         'hidden_force_energy_concentration_dot',
+         'omega_dot_redistribution_relaxation', 'omega_dot_redistribution_geometry_compensation',
+         'omega_redistribution_split_absolute_error',
+         'kappaOmega_signed', 'kappaOmega_positive', 'kappaI_signed', 'kappaI_positive',
+         'transport_saturation', 'dlogOmega_pertravel',
          'weighted_geometry_rate_bound', 'weighted_compensation_rate_bound',
          'weighted_curvature_rate_bound', 'measured_ell_norm', 'ell_M4_bound')
 METRICS = TERMS + ('structural_to_directional', 'generated_target_cancellation',

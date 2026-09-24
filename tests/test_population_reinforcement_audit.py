@@ -68,6 +68,48 @@ def test_force_weighted_population_identity_and_bounds():
     assert row['measured_ell_norm'] <= row['ell_M4_bound']+1e-12
 
 
+def test_force_participation_derivative_matches_jvp():
+    p, x, y = map(jnp.asarray, fixture())
+    F = kernel.effective(p, x, y)
+    width = (len(p)-1)//3
+
+    def participation(point):
+        force = kernel.effective(point, x, y)
+        energy = jnp.sum(force[:-1].reshape(3, -1)**2, axis=0)
+        return width*jnp.sum(energy**2)/(force@force)**2
+
+    value, derivative = jax.jvp(participation, (p,), (-F,))
+    row = observables(p, x, y)
+    np.testing.assert_allclose(row['hidden_force_energy_concentration'], value, rtol=1e-12)
+    np.testing.assert_allclose(row['hidden_force_energy_concentration_dot'], derivative, rtol=1e-10, atol=1e-12)
+    np.testing.assert_allclose(row['kappaI_signed'], derivative/(4*jnp.linalg.norm(F)*value), rtol=1e-10)
+    assert abs(row['transport_saturation']) <= 1+1e-12
+    assert row['kappaI_positive'] == max(0., row['kappaI_signed'])
+    assert row['kappaOmega_positive'] == max(0., row['kappaOmega_signed'])
+
+
+def test_omega_force_redistribution_split_without_particle_movement():
+    p, x, y = map(jnp.asarray, fixture())
+    state = kernel.decomposition(p, x, y)
+    F, J, jc, gram, basis = (state[k] for k in ('F', 'J', 'JC', 'gram', 'basis'))
+    width = (len(p)-1)//3
+    r2 = jnp.sum(p[:-1].reshape(3, -1)**2, axis=0)
+    grad = J.T@kernel._fine(J@F, basis)/len(x)
+    relaxation = -(jnp.eye(len(p))-jc.T@jnp.linalg.solve(gram, jc))@grad
+
+    def fixed_geometry_omega(force):
+        energy = jnp.sum(force[:-1].reshape(3, -1)**2, axis=0)
+        return width*jnp.sum(r2*energy)/(force@force)
+
+    _, derivative = jax.jvp(fixed_geometry_omega, (F,), (relaxation,))
+    row = observables(p, x, y)
+    np.testing.assert_allclose(row['omega_dot_redistribution_relaxation'], derivative, rtol=1e-10, atol=1e-12)
+    np.testing.assert_allclose(F@relaxation, row['residual_relaxation'], rtol=1e-10, atol=1e-13)
+    assert row['omega_redistribution_split_absolute_error'] < 1e-12
+    omega = row['force_weighted_second_moment']
+    np.testing.assert_allclose(row['dlogOmega_pertravel'], row['omega_dot_effective']/(jnp.linalg.norm(F)*omega), rtol=1e-12)
+
+
 def write_input(path, p, x, ys):
     np.savez(path, p=np.stack([p]*len(ys)), x=x, y=np.stack(ys),
              cases=np.array(json.dumps([dict(target=f'test{i}') for i in range(len(ys))])))
