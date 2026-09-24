@@ -20,7 +20,10 @@ def main():
     p.add_argument('--bounds',type=Path,required=True)
     p.add_argument('--gd',type=Path,required=True)
     p.add_argument('--base',type=Path)
-    p.add_argument('--frozen-adam',type=Path)
+    reference_source=p.add_mutually_exclusive_group()
+    reference_source.add_argument('--frozen-adam',type=Path)
+    reference_source.add_argument('--frozen-analysis',type=Path,
+        help='Use validated compact uniform-access analysis instead of copying full raw Adam traces')
     p.add_argument('--output',type=Path,required=True)
     args=p.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     summary=json.loads((args.analysis/'summary.json').read_text())
@@ -76,7 +79,23 @@ def main():
         values=binned_traces(arr,ri)
         axes[1].plot(values['steps']/1e6,values['median'][:,gi],color='#333333',ls='--',lw=1.2,label='Fixed Adam')
         axes[1].fill_between(values['steps']/1e6,values['low'][:,gi],values['high'][:,gi],color='#333333',alpha=.08,lw=0)
-        reference=dict(geometry_index=gi,recipe_index=ri,recipe=meta['recipes'][ri],validation_error=float(errors[ri]))
+        reference=dict(source=str(args.frozen_adam),geometry_index=gi,recipe_index=ri,recipe=meta['recipes'][ri],validation_error=float(errors[ri]))
+    if args.frozen_analysis:
+        access=json.loads((args.frozen_analysis/'summary.json').read_text())
+        if access['assay_steps']!=horizon:raise ValueError('Frozen Adam analysis horizon mismatch')
+        if args.base is not None:
+            manifest=json.loads((args.base/'manifest.json').read_text())
+            if manifest['input_sha256']!=access['input_sha256']:raise ValueError('Frozen Adam analysis uses different inputs')
+        gi=next(i for i,row in enumerate(access['geometries']) if row['family']=='uniform' and np.isclose(row['lambda_rms'],.25))
+        row=access['geometries'][gi];selected=row['selected']
+        if not np.isfinite(selected['validation_error']):raise ValueError('No finite uniform Adam reference')
+        curves=np.load(args.frozen_analysis/'assay_traces.npz')
+        t=curves[f'g{gi}_steps']
+        if t[-1]!=horizon:raise ValueError('Frozen Adam display trace is incomplete')
+        axes[1].plot(t/1e6,curves[f'g{gi}_median'],color='#333333',ls='--',lw=1.2,label='Fixed Adam')
+        axes[1].fill_between(t/1e6,curves[f'g{gi}_low'],curves[f'g{gi}_high'],color='#333333',alpha=.08,lw=0)
+        reference=dict(source=str(args.frozen_analysis),geometry_index=gi,recipe_index=selected['recipe_index'],
+            recipe={k:selected[k] for k in ['schedule','learning_rate']},validation_error=selected['validation_error'])
     axes[1].plot(indices/1e6,actual[indices,-1],color='#777777',ls=':',lw=1.2,label='Fixed GD')
     axes[2].axhline(.25,color='#333333',ls=':',lw=1,label='Reference 1/4')
     axes[1].set_ylabel('Relative output error');axes[2].set_ylabel(r'Scaled slope, $h|a_j|$')
