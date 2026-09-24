@@ -53,7 +53,7 @@ def main():
         for name,ls in [('rms','-'),('q99','--')]:
             if name=='rms':ts=trace[f'{optimizer}_rms_steps'];ys=trace[f'{optimizer}_rms_median']
             else:ts=trace[f'{optimizer}_checkpoint_steps'];ys=trace[f'{optimizer}_lambda_q99']
-            axes[2].plot(ts/1e6,np.median(ys,axis=1),color=color,ls=ls,lw=1.5,label=f'{label} '+('RMS' if name=='rms' else '99%'))
+            axes[2].plot(ts/1e6,np.median(ys,axis=1),color=color,ls=ls,lw=1.5,label=f'{label} '+('RMS' if name=='rms' else '99th'))
             axes[2].fill_between(ts/1e6,np.min(ys,axis=1),np.max(ys,axis=1),color=color,alpha=.08,lw=0)
     reference=None
     if args.frozen_adam:
@@ -75,13 +75,14 @@ def main():
         reference=dict(geometry_index=gi,recipe_index=ri,recipe=meta['recipes'][ri],validation_error=float(errors[ri]))
     axes[1].plot(indices/1e6,actual[indices,-1],color='#777777',ls=':',lw=1.2,label='Fixed GD')
     axes[2].axhline(.25,color='#333333',ls=':',lw=1,label='Reference 1/4')
-    axes[1].set_ylabel('Relative output error');axes[2].set_ylabel('Relative slope, λ')
+    axes[1].set_ylabel('Relative output error');axes[2].set_ylabel(r'Scaled slope, $h|a_j|$')
     for ax in axes:
         ax.set_yscale('log');ax.grid(alpha=.13,which='major');ax.tick_params(labelsize=7)
     for ax in axes[1:]:
-        ax.set_xlim(0,horizon/1e6);ax.set_xlabel('Updates (millions)');ax.legend(loc='best')
+        ax.set_xlim(0,horizon/1e6);ax.set_xlabel('Updates (millions)');ax.legend(loc='upper right' if ax==axes[1] else 'lower right')
     for ax,title in zip(axes,['A  Frozen readout','B  Joint training','C  Slope acquisition']):ax.set_title(title,loc='left',pad=24)
     axes[0].set_xlim(0,horizon)
+    axes[0].set_xticks([0,100,10000,1000000],['0',r'$10^2$',r'$10^4$',r'$10^6$'])
     for suffix in ['pdf','png','svg']:fig.savefig(args.output/f'section34_three_panel.{suffix}',dpi=300)
     plt.close(fig)
     (args.output/'figure_provenance.json').write_text(json.dumps(dict(joint_analysis=str(args.analysis),bound_source=str(args.bounds),executed_gd_source=str(args.gd),frozen_adam_reference=reference,horizon=horizon,display='Seedwise within-bin medians; shading retains all seedwise extrema in every displayed bin. Slopes use fixed reference spacing 2/467.'),indent=2)+'\n')

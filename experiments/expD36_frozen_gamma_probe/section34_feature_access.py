@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from fractions import Fraction
 import numpy as np
 import scipy.linalg
 from threadpoolctl import threadpool_limits
@@ -130,6 +131,7 @@ def analyze(input_path, manifest_path, run_paths, output, kernels=True):
     np.savez_compressed(output/'assay_traces.npz',**curves)
     if kernels:np.savez_compressed(output/'kernel_diagnostics.npz',cutoffs=thresholds,**kernel_arrays)
     plots(summaries,kernel_arrays,thresholds,output)
+    uniform_trajectories(summaries,curves,output)
     if kernel_arrays:adaptive_plot(summaries,kernel_arrays,thresholds,output)
 
 
@@ -174,6 +176,30 @@ def plots(rows,kernel_arrays,thresholds,output):
         for ext in ['png','pdf']:fig.savefig(output/f'target_weighted_kernel.{ext}',dpi=220)
         plt.close(fig)
 
+
+
+
+def uniform_trajectories(rows, curves, output):
+    ids=[i for i,r in enumerate(rows) if r.get('family')=='uniform' and 'selected' in r]
+    if not ids:return
+    style();plt.rcParams.update({'font.size':8,'axes.labelsize':8,'axes.titlesize':9,'legend.fontsize':7,'xtick.labelsize':7,'ytick.labelsize':7})
+    fig,axes=plt.subplots(2,1,figsize=(5.5,4.5),layout='constrained')
+    for i,color in zip(ids,plt.cm.viridis(np.linspace(.05,.9,len(ids)))):
+        row=rows[i];t=curves[f'g{i}_steps']/1e6;y=curves[f'g{i}_median']
+        fraction=Fraction(row['lambda_rms']).limit_denominator(32)
+        label=f'λ = {fraction}'
+        axes[0].plot(t,y,color=color,label=label)
+        axes[0].fill_between(t,curves[f'g{i}_low'],curves[f'g{i}_high'],color=color,alpha=.1,lw=0)
+        if any(np.isclose(row['lambda_rms'],v) for v in [.09375,.125,.25]):
+            axes[1].plot(t,y,color=color,label=label)
+            axes[1].fill_between(t,curves[f'g{i}_low'],curves[f'g{i}_high'],color=color,alpha=.1,lw=0)
+    axes[0].set_title('Uniform dictionaries, tuned frozen Adam')
+    axes[1].set_title('Comparing bandwidth near 0.1 with 0.25')
+    for ax in axes:
+        ax.set_yscale('log');ax.set_xlabel('Readout updates (millions)');ax.set_ylabel('Relative output L2 error');ax.grid(alpha=.15);ax.legend(fontsize=7,ncol=4 if ax==axes[0] else 3,loc='upper right')
+    axes[0].set_ylim(top=axes[0].get_ylim()[1]*4)
+    for ext in ['png','pdf']:fig.savefig(output/f'uniform_adam_trajectories.{ext}',dpi=220)
+    plt.close(fig)
 
 
 def adaptive_plot(rows, arrays, thresholds, output):
