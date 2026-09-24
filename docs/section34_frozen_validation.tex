@@ -35,6 +35,17 @@ accurate small-slope fit has readout $\ell_1$ norm
 about $7.5\times10^3$. It witnesses attainability without claiming that the
 corresponding coefficients are easy to learn.
 
+The slow error has the expected frequency content. Projecting the executed
+residual onto the three orthogonal target harmonics shows that
+$\sin(14\pi x)$ accounts for $95.41\%$ of remaining residual energy at
+$\lambda=1/32$ after five million updates. At its frequency, the feature
+multiplier is $M_\gamma(14\pi)=0.001463$ for $\lambda=1/32$ and $0.799774$
+for $1/4$. These values describe feature smoothing, not eigenvalue ratios.
+The finite-kernel theorem accounts for the geometry connecting smoothing to
+GD rates. At larger bandwidths, the late residual lies predominantly outside
+the three input harmonics, illustrating why the full finite kernel remains
+relevant even for a target with only three frequencies.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/uniform_access/uniform_adam_trajectories.pdf}
