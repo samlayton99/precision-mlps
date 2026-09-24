@@ -203,6 +203,81 @@ def plots(source, output):
     if not states:
         raise ValueError('No bundle states.csv files under source')
     output.mkdir(parents=True, exist_ok=True)
+
+    def statistics(values):
+        values = np.asarray(values, dtype=float)
+        finite = values[np.isfinite(values)]
+        return dict(count=len(values), finite_count=len(finite),
+                    minimum=float(finite.min()) if len(finite) else None,
+                    median=float(np.median(finite)) if len(finite) else None,
+                    maximum=float(finite.max()) if len(finite) else None)
+
+    errors, sensitivities, progress = [], [], []
+    panels = sorted({r['bundle'] for r in states if not r['bundle'].startswith('primary_')})
+    panels = ['primary', 'primary_0', *panels]
+    for panel in panels:
+        selected = [r for r in states if (r['bundle'].startswith('primary_') if panel == 'primary'
+                                         else r['bundle'] == panel)]
+        for optimizer in sorted({r['optimizer'] for r in selected}):
+            for step in sorted({int(r['step']) for r in selected}):
+                rows = [r for r in selected if r['optimizer'] == optimizer and int(r['step']) == step]
+                if not rows:
+                    continue
+                identity = dict(panel=panel, optimizer=optimizer, step=step,
+                                states=len(rows), targets=sorted({r['target'] for r in rows}),
+                                seeds=sorted({int(r['seed']) for r in rows}),
+                                learning_rates=sorted({float(r['eta']) for r in rows}))
+                result = dict(identity, training_relative_l2=statistics([r['relative_l2'] for r in rows]),
+                              independent_grid_relative_l2=statistics([r['relative_eval_l2'] for r in rows]))
+                result['counts_above_tolerance'] = [dict(tolerance=tol,
+                    training=sum(float(r['relative_l2']) > tol for r in rows),
+                    independent_grid=sum(float(r['relative_eval_l2']) > tol for r in rows),
+                    denominator=len(rows)) for tol in (.1, .01, .001, .0001, .000001)]
+                errors.append(result)
+                if optimizer != 'adam':
+                    continue
+                failing = [r for r in rows if float(r['relative_l2']) > .01]
+                gradient_reductions = [-float(r['current_gradient_linear_loss_change']) for r in failing]
+                lag_ratios = [float(r['momentum_lag_linear_loss_change'])/g
+                              for r, g in zip(failing, gradient_reductions) if g > 0]
+                ratios = [-float(r['actual_loss_change'])/g
+                          for r, g in zip(failing, gradient_reductions) if g > 0]
+                progress.append(dict(identity, failing_training_tolerance=.01,
+                    failing_states=len(failing), positive_gradient_prediction_count=sum(g > 0 for g in gradient_reductions),
+                    actual_loss_decreases=sum(float(r['actual_loss_change']) < 0 for r in failing),
+                    actual_loss_increases=sum(float(r['actual_loss_change']) > 0 for r in failing),
+                    momentum_opposes_current_gradient=sum(float(r['momentum_lag_linear_loss_change']) > 0 for r in failing),
+                    momentum_cancels_at_least_entire_gradient_prediction=sum(
+                        float(r['momentum_lag_linear_loss_change']) >= g and g > 0
+                        for r, g in zip(failing, gradient_reductions)),
+                    actual_reduction_over_current_gradient_prediction=statistics(ratios),
+                    momentum_lag_over_current_gradient_prediction=statistics(lag_ratios),
+                    actual_loss_change=statistics([r['actual_loss_change'] for r in failing]),
+                    quadratic_loss_cost=statistics([r['quadratic_loss_change'] for r in failing]),
+                    nonlinear_loss_change=statistics([r['nonlinear_loss_change'] for r in failing])))
+                for block in ('readout', 'joint'):
+                    for metric in ('raw', 'adaptive'):
+                        rr = [r for r in summary if r['optimizer'] == optimizer and int(r['step']) == step
+                              and r['block'] == block and r['metric'] == metric
+                              and (r['bundle'].startswith('primary_') if panel == 'primary' else r['bundle'] == panel)]
+                        sensitivities.append(dict(identity, block=block, metric=metric,
+                            spectral_states=len(rr),
+                            instantaneous_slow_threshold=1e-5,
+                            fraction_residual_in_slow_or_unresolved=statistics([
+                                r['energy_fraction_eta_lambda_below_1_over_100000'] for r in rr]),
+                            residual_weighted_eta_eigenvalue=statistics([r['weighted_rate'] for r in rr]),
+                            unresolved_residual_fraction=statistics([r['unresolved_residual_fraction'] for r in rr]),
+                            resolved_condition_number=statistics([r['resolved_condition'] for r in rr])))
+    facts = dict(error_summaries=errors, adam_sensitivity_summaries=sensitivities,
+                 adam_virtual_next_step_among_training_failures=progress,
+                 maximum_loss_identity_error=max(float(r['loss_identity_error']) for r in states),
+                 maximum_output_step_identity_error=max(float(r['output_step_identity_error']) for r in states),
+                 maximum_spectral_energy_reconstruction_error=max(float(r['energy_reconstruction_error']) for r in summary),
+                 maximum_spectral_gradient_energy_absolute_error=max(abs(float(r['spectral_gradient_energy'])
+                     -float(r['direct_gradient_energy'])) for r in summary),
+                 state_role='Virtual next update, including terminal checkpoints; not integrated trajectory attribution',
+                 spectral_role='Instantaneous current-gradient metric; not an Adam convergence forecast')
+    (output/'facts.json').write_text(json.dumps(facts, indent=2)+'\n')
     plt.rcParams.update({'font.size': 11, 'axes.spines.top': False, 'axes.spines.right': False})
     fig, axes = plt.subplots(1, 3, figsize=(14, 4.3), constrained_layout=True)
     for ax, step in zip(axes, (20000, 100000, 600000)):
@@ -233,6 +308,31 @@ def plots(source, output):
         ax.legend()
     fig.savefig(output/'adam_residual_weighted_sensitivity.png', dpi=180)
     plt.close(fig)
+    fig, axes = plt.subplots(2, 3, figsize=(13.8, 8), constrained_layout=True)
+    slow_column = 'energy_fraction_eta_lambda_below_1_over_100000'
+    for row_index, block in enumerate(('readout', 'joint')):
+        for ax, step in zip(axes[row_index], (20000, 100000, 600000)):
+            selected = [r for r in summary if r['optimizer'] == 'adam'
+                        and r['bundle'].startswith('primary_') and r['block'] == block
+                        and int(r['step']) == step]
+            paired = {}
+            for r in selected:
+                paired.setdefault(key(r), {})[r['metric']] = float(r[slow_column])
+            pairs = [r for r in paired.values() if 'raw' in r and 'adaptive' in r]
+            for values in pairs:
+                ax.plot([0, 1], [values['raw'], values['adaptive']],
+                        color='0.65', alpha=.3, linewidth=.6)
+            for position, metric, color in ((0, 'raw', 'tab:blue'), (1, 'adaptive', 'tab:orange')):
+                values = [r[metric] for r in pairs]
+                ax.scatter(np.full(len(values), position), values, color=color, alpha=.55, s=18)
+            ax.set(xticks=[0, 1], xticklabels=['Raw', 'Adaptive'], ylim=(-.03, 1.03),
+                   xlim=(-.25, 1.25), title=f'{block.capitalize()} · {step:,} updates',
+                   ylabel='Fraction of current residual energy')
+    fig.suptitle('Adam: residual energy at instantaneous eta × eigenvalue < 10⁻⁵\n'
+                 'Includes unresolved directions; paired target/seed states, not a trajectory forecast',
+                 fontsize=13)
+    fig.savefig(output/'adam_bulk_slow_residual_energy.png', dpi=180)
+    plt.close(fig)
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.5), constrained_layout=True)
     for bundle_prefix, label, color in [('primary_', 'eta = 0.002', 'tab:orange'),
                                         ('rates_0', 'eta = 0.0002', 'tab:green'),
@@ -248,8 +348,10 @@ def plots(source, output):
     axes[0].set(xscale='log', yscale='symlog', xlabel='Current-gradient predicted loss reduction',
                 ylabel='Actual next-step loss reduction', title='Positive = progress; negative = loss increase')
     axes[0].set_yscale('symlog', linthresh=1e-12)
-    axes[1].set(xscale='log', yscale='symlog', xlabel='Raw training relative L2 error',
+    axes[0].set_yticks([-1e-4, -1e-8, 0., 1e-8, 1e-4])
+    axes[1].set(xscale='log', yscale='linear', xlabel='Raw training relative L2 error',
                 ylabel='Momentum-lag loss term / gradient reduction', title='Above 1: lag cancels gradient descent')
+    axes[1].set_yticks([0., .25, .5, .75, 1.])
     axes[1].axhline(1., color='gray', ls=':')
     axes[0].legend()
     fig.savefig(output/'adam_actual_output_progress.png', dpi=180)
