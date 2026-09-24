@@ -1,7 +1,7 @@
 ---
 title: "Why gradient descent acquires slope scale slowly"
 subtitle: "Mechanism, empirical evidence, and a population theorem"
-date: "23 September 2026"
+date: "24 September 2026"
 fontsize: 10pt
 geometry: margin=0.8in
 colorlinks: true
@@ -312,10 +312,68 @@ Separate physical parameter kicks provide a caution:
 first-order matching can still create substantial tracking at finite amplitude.
 Those contaminated kicks are not clean tests of a low-tracking mechanism.
 
+**A larger test: double the slopes, then let GD respond.** The earlier pulses
+changed mean scale by only about 0.7--3% at the median and deliberately
+preserved the initial slope gradient. To test a larger neighborhood, we now
+multiply both slopes and hidden biases by 1.25 or 2, preserving feature
+centers. We adjust only readouts and output bias to restore $z=0$, then resume
+ordinary GD. The repair is chosen near either the original readout $c_0$
+(“primary”) or $c_0/s$ (“inverse readout”), where $s$ is the dilation factor.
+Neither repair preserves the initial slope gradient or the fine residual.
+
+For a concrete example, doubling the geometry of the left-Gaussian run at
+width 1409, seed 30, produces only 0.588% additional mean-scale growth over
+20k updates. This is the largest growth among the twelve primary twofold
+cases at that width. Some other targets contract. The issue is the rate of
+subsequent movement, not a common direction of movement.
+
+![Finite geometry dilations followed by ordinary GD. Each curve starts after the imposed increase, so injected scale is excluded from learned motion. Solid curves are medians and shading is the interquartile range; dashed curves freeze each state's own initial effective slope gradient. Left: 23 targets and two seeds, width 177, after 600k prior updates. Middle and right: six targets and two seeds per width, after 20k prior updates. Every branch continues for 20k updates at learning rate 0.002; flow time 40 means 20k updates. All six branches per checkpoint passed preparation and completed training. Primary and inverse identify readout repair references, not different GD rules. Different checkpoint ages prevent treating the three panels as a controlled width comparison.](figures/d34_pi_finite_dilations.png)
+
+**What the wide states show.** Twofold primary dilation raises the initial
+effective slope-force norm by median factors 3.44 and 3.53 at widths 705 and
+1409. Yet subsequent median mean-scale growth is only 0.392% and 0.181%; the
+largest increases are 1.394% and 0.588%. The force itself grows by median
+factors 1.139 and 1.034 during the continuation. Thus there is reinforcement,
+but it is limited over this window. Tracking's accumulated slope-norm budget
+is below 0.1% of the effective-fine budget in every wide branch. These are
+cleaner evidence for persistence of slow effective dynamics than the earlier
+gradient-matched pulses.
+
+**What the late states add.** After twofold primary dilation at width 177,
+33 of 46 cases contract, but the median contraction is only 0.150% of the
+enlarged starting scale. The median gap to the repaired baseline retains
+99.17% of its initial size. The initial force burst typically subsides:
+its norm rises 13.8-fold at the median, then falls to 17.0% of its post-kick
+value. This supports transient correction without a strong return to the
+old scale. It does not describe every late state: some ordinary baselines
+grow substantially, and the inverse-readout repair reduces contraction to
+24 of 46 cases. Late interventions also renew tracking more strongly, with
+norm-budget ratios up to 7.21%; their attribution needs that qualification.
+Signed contributions can cancel: in one late branch, tracking's contribution
+exceeds the net mean-scale change. These late responses are full-GD findings,
+not exact effective-flow experiments.
+
+**The mechanism must retain target-side forces.** In the width-1409
+mixed-sine example, seed 30, the doubled state has signed effective
+mean-scale rate $-6.22\times10^{-9}$. Its target-side cubic contribution is
+$-6.18\times10^{-9}$, while generated quadratic and cubic contributions sum
+to only about $-1.01\times10^{-11}$. Here initial inward motion is mainly the target's
+coupling to the current compensated sensitivities, not correction of generated
+lower-mode error. The contributions split the cubic residual coefficient
+$f_3-y_3$ while retaining the same compensated sensitivity. That distinction
+prevents a universal “unwanted cubic makes
+slopes shrink” explanation. A theory must allow target-dependent signs while
+explaining why the coupled sensitivity changes slowly.
+
+\Needspace{5\baselineskip}
+
 **The refined prediction.** Wide, diffuse populations should exhibit weak
 reinforcement even when some slopes expand and the fine residual remains
-almost fixed. A useful theory should bound collective travel without requiring
-universal contraction, common signs, or a stable equilibrium.
+almost fixed. The finite dilations support that prediction within the tested
+broad-feature neighborhood; they do not reach the desired construction scale
+in the wide panels or prove persistence for longer horizons. A useful theory
+should bound collective travel without requiring universal contraction,
+common signs, or a stable equilibrium.
 
 ## 4. The population is heterogeneous, but its motion is small
 
@@ -349,9 +407,8 @@ population that has already changed into a different scale regime.
 ![Wider populations have much weaker physical slope force at the 20k-update forks. Each width contains six targets and two seeds; points retain individual cases and larger markers summarize medians. The physical-force panel shows the decline in RMS effective fine slope gradient. Multiplying by $W^{3/2}$ gives medians 0.628, 0.695, and 0.661; rescaled slope RMS values are 1.456, 1.471, and 1.466. Actual widths 177, 705, and 1409 correspond to reference resolutions 128, 512, and 1024. Force values use the retained modal audit. A power-law guide is a comparison, not a fitted asymptotic theorem.](figures/d34_pi_width_scaling.png)
 
 Degree five is visibly different: its force decreases faster than the
-$W^{-3/2}$ guide over these widths, so its rescaled force also falls. The
-near-constant median describes the panel's typical behavior, not a common
-rate for every target.
+$W^{-3/2}$ guide over these widths, so its rescaled force also falls.
+The median describes typical behavior; individual targets have different rates.
 
 The six functions are degree five, mixed sine, an off-center Gaussian, a
 compact bump, a tanh step, and a kink. No case reaches $\lambda=0.25$ through
@@ -402,6 +459,8 @@ than freezing an initial Jacobian. It is still a coupled dynamical system;
 a closed system for just a few moments would require additional justification.
 
 ![Quintic force accuracy is strong in the wide panel but fails in late sine. Each point is a median and each segment a full range. Left: 96 sampled states per width, comprising twelve cases and eight horizons. Right: four late cases kept separate; source indices in the labels are archive indices, not seeds. Blue is cubic, orange quintic; triangles restrict to the largest 10% of slopes. These are force reconstructions at actual states, not forecasts.](../results/checkpoint_D_optimizers/expD34_readout_race/population_coverage/evidence/summary/polynomial_error.png)
+
+\Needspace{4\baselineskip}
 
 **Prediction and separate forecast test.** If the evolving surrogate captures
 the relevant coupling, it should predict motion from its own state without
@@ -872,6 +931,32 @@ numbers in the pulse panel of Figure 4 use the smallest amplitude. Halving
 checks distinguish the predicted first-order response from finite-amplitude
 matching errors.
 
+The finite-dilation experiment instead fixes $(a,b)=s(a_0,b_0)$ with
+$s\in\{1,1.25,2\}$. With $v=(c,d)$, the repair finds a locally stationary
+solution of
+
+$$
+\min_v\tfrac12\|v-v_{\rm ref}\|^2\quad\text{subject to}\quad z(v)=0,
+\qquad v_{\rm ref}=(c_0,d_0)\ \text{or}\ (c_0/s,d_0).
+$$
+
+The distance reference is fixed throughout continuation in $s$; this is not
+full readout least squares or a claim of a globally nearest repair. The six
+branches are ordinary GD, the repaired $s=1$ baseline, and both references
+at each larger scale. All 350 repairs passed normalized balance tolerance
+$10^{-12}$ and normalized stationarity tolerance $10^{-8}$; the maximum
+initial tracking norm divided by the larger original/repaired effective
+slope-force norm is $8.01\times10^{-7}$. All 420 branches then completed 20k ordinary-GD
+updates. The late panel uses all 23 functions with two seeds each; each wide
+panel uses degree five, mixed sine, left Gaussian, right bump, right step,
+and the absolute-value kink, with two seeds per function.
+
+The construction threshold is not injected into the wide populations: their
+largest final $\lambda$ values are 0.00114 and 0.000384. Twofold dilation of
+the late states does inject six neuron labels above $\lambda=0.25$ in each
+readout-reference arm. No new GD crossings occur in any main branch.
+Injected labels are kept separate from subsequent acquisition.
+
 For cloning, $k$ identical copies each receive readout $c_j/k$. The function
 and residual are initially unchanged. Replica symmetry makes the geometry
 rate $1/k$ of the original and the aggregate readout rate $k$ times the
@@ -907,6 +992,14 @@ seven fixed region choices and a duration selected from initial information.
 The energy verification uses eighteen initial states: six targets, three
 widths, and one seed. These studies overlap; their counts must not be added
 and interpreted as independent samples of target functions.
+
+For finite dilations, every-update channel accounting reproduces individual
+normalized scale changes with maximum absolute defect $3.23\times10^{-16}$.
+The six prespecified late development targets were also run in all six arms
+with half the learning rate and twice the updates. Across these 36 controls
+at matched flow time, the largest endpoint slope-vector difference is
+$2.34\times10^{-5}$ times the original-step displacement. This controls
+step-size sensitivity on the selected subset, not every wide trajectory.
 
 The ordinary floating-point diagnostics support the reported empirical
 comparisons, not interval-wide rigorous bounds. In particular, sampled force
