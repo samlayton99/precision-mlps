@@ -1,6 +1,6 @@
 # How gamma controls readout learning
 
-**An attainable target can be slow to learn because the needed kernel eigenvalues are small relative to the largest one.** Gamma controls these relative rates through an explicit smoothing operator. We carry that operator into two-sided bounds on the finite tanh spectrum, then into necessary and sufficient GD times. The argument specializes the [V4 ratio theorem](gamma_ratio_note_v4.pdf); the calculations below use the same geometry as our executed GD and Adam experiments.
+**An attainable target can be slow to learn because the needed kernel eigenvalues are small relative to the largest one.** Gamma controls these relative rates through an explicit smoothing operator. Our theorem bounds how much output error must remain after any number of frozen-feature GD updates. Its prediction substitutes gamma-dependent upper bounds on the learning rates into the GD error formula. The argument specializes the [V4 ratio theorem](gamma_ratio_note_v4.pdf), on the same geometry as our executed GD and Adam experiments.
 
 **Notation.** Eigenvalues use $\mu$; all norms are Euclidean.
 
@@ -70,7 +70,7 @@ $$
 
 These allowances follow from analytic tails, rather than measured differences from the actual small eigenvalues.
 
-**Theorem (finite eigenvalue-ratio interval).** Let $\beta_1\ge\cdots\ge\beta_{m-1}$ be the eigenvalues of $S_\gamma$, and let $0<\ell_\gamma\le\mu_1(K_\gamma)\le L_\gamma$. For $2\le i\le m-1$,
+**Lemma (finite eigenvalue-ratio interval).** Let $\beta_1\ge\cdots\ge\beta_{m-1}$ be the eigenvalues of $S_\gamma$, and let $0<\ell_\gamma\le\mu_1(K_\gamma)\le L_\gamma$. For $2\le i\le m-1$,
 
 $$
 \boxed{
@@ -83,27 +83,25 @@ Here $[a]_+=\max(a,0)$. Set both endpoints to one for $i=1$; for $i=m$ use lower
 
 The one-index shift accounts for the constant direction removed by $Q$; actual eigenvectors need not have zero mean. All quantities use the current gamma and geometry. Computing the spectrum of $S_\gamma$ is part of the calculation. Finite corrections and normalization can prevent individual finite ratios from increasing, even though the integral contribution increases.
 
-## 3. The same endpoints bound acquisition time
+## 3. The theorem predicts remaining output error
 
-Because $(1-\rho/2)^{2n}$ decreases with $\rho\in[0,1]$, the theorem yields
-
-$$
-\underbrace{\sum_i p_i(1-\overline\rho_i/2)^{2n}}_{e_{\rm lower}(n)^2}
-\ \le\ e(n)^2\ \le\
-\underbrace{\sum_i p_i(1-\underline\rho_i/2)^{2n}}_{e_{\rm upper}(n)^2}.
-$$
-
-The first $\varepsilon$-crossings of these two curves bracket the actual crossing:
+**Theorem (frozen-feature GD output-error lower bound).** Under the frozen-feature setup above, let $y\ne0$, initialize $w_0=0$, and use $\eta=1/(2\mu_1(K_\gamma))$. With the upper rate bounds $\overline\rho_i(\gamma)$ from the lemma and actual target weights $p_i(\gamma)=|u_i(\gamma)^Ty|^2/\|y\|^2$, every integer $n\ge0$ satisfies
 
 $$
-n_{\rm necessary}\le n_\varepsilon\le n_{\rm sufficient}.
+\boxed{\frac{\|J_\gamma w_n-y\|^2}{\|y\|^2}
+\ \ge\ \underbrace{\sum_i p_i(\gamma)
+\left(1-\frac{\overline\rho_i(\gamma)}2\right)^{2n}}_{e_{\rm lower}(n)^2}.}
 $$
 
-**Upper rate bounds force a minimum learning time; lower rate bounds guarantee a time by which learning finishes.** An upper error curve that never crosses gives an unresolved sufficient time. The weights $p_i$ are those of the actual finite kernel, obtained from its feature SVD; substituting integral-kernel eigenvectors would require another argument. The theorem bounds the rates, while the target projections specify which rates matter.
+The prediction uses the lemma's $\overline\rho_i$, constructed from $S_\gamma$ and its allowances. Substituting the actual $\rho_i$ instead gives the separate exact-spectrum reference curve. Target weights come from the actual finite-feature SVD; substituting integral-kernel eigenvectors would require another argument. Neither calculation uses a GD trajectory.
+
+**Proof.** Expand the residual in the actual kernel eigenvectors. Since $\rho_i\le\overline\rho_i\le1$, each exact decay factor is at least its bounded counterpart. Multiply by $p_i\ge0$ and sum. Thus target energy in directions with small bounded rates must persist. $\square$
+
+**Necessary time.** Define $n_{\rm necessary}=\min\{n:e_{\rm lower}(n)\le\varepsilon\}$. The actual $\varepsilon$-crossing cannot precede this count. Appendix A also derives an upper error curve and a sufficient time from the lower rate endpoints.
 
 **Same-geometry validation.** We use $W=559$, $h=1/256$, $m=8{,}193$ uniform samples on $[-1,1]$, and $f(x)=\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(10\pi x)$. At gammas 8, 12, 16, and 64, executed GD reaches 1% after **15,798,313; 186,057; 61,792; and 16,013 updates**. The actual-spectrum formula reproduces these crossings. Figure 1 compares them with the recomputed theorem intervals; Appendix B shows the error curves that produce the interval endpoints. All forecasts use the archived step, replacing $\rho_i/2$ by $\eta\mu_1\rho_i$.
 
-The necessary bounds retain **88.1-88.2%** of the observed delay. The sufficient bounds range from **2.07 times** the observed count at gamma 8 to **1.27 times** at gamma 64. Concretely, the evaluated intervals are **13,934,809-32,778,524** updates at gamma 8 and **14,118-20,278** at gamma 64. These are checked FP64 evaluations of the theorem, with numerical allowances described below.
+The theorem's lower error curves first reach 1% at **13,934,809; 163,954; 54,453; and 14,118 updates**, respectively. These necessary counts retain **88.1-88.2%** of the observed delay. The companion sufficient bounds range from **2.07 times** the observed count at gamma 8 to **1.27 times** at gamma 64. These are checked FP64 evaluations, with numerical allowances described below.
 
 **Adam is an empirical comparison.** At gamma 8, modes with $0<\rho_i\le2\times10^{-6}$ initially contain **4.33%** of target energy and retain **$1.47094\times10^{-4}$** after 200,000 Adam updates. That residual alone exceeds the $10^{-4}$ squared-error budget for 1% accuracy. Corresponding band energies at larger gammas are below budget. Adam's adaptive updates do not obey the GD decay law.
 
@@ -111,7 +109,7 @@ With one shared 100-update half-life, first crossings of an EMA of squared relat
 
 <figure>
   <img src="../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.png" alt="Finite-kernel ratio bounds, target and Adam residual energy in slow modes, and theorem GD time intervals alongside executed GD and Adam crossings." style="max-width: 100%;">
-  <figcaption><strong>Figure 1. Gamma, needed directions, and acquisition.</strong> A: actual eigenvalue ratios and theorem enclosures at the four slopes. B: cumulative initial target energy (dashed) and Adam residual energy after 200,000 updates (solid); the blue residual exceeds the 1% budget in slow modes alone. C: necessary-to-sufficient GD intervals, actual-spectrum forecasts, and executed crossings; Adam markers show first EMA acquisition. Its arrow marks censoring at 200,000; GD has a longer budget. All panels use the same target and geometry. Bounds are checked FP64 evaluations.</figcaption>
+  <figcaption><strong>Figure 1. Gamma, needed directions, and acquisition.</strong> A: actual eigenvalue ratios and lemma enclosures at the four slopes. B: cumulative initial target energy (dashed) and Adam residual energy after 200,000 updates (solid); the blue residual exceeds the 1% budget in slow modes alone. C: the dashed theorem curve marks first crossings of the output-error lower bound; the shaded interval extends to the companion sufficient time. The solid forecast uses actual eigenvalues; circles mark executed GD. Adam markers show first EMA acquisition; its arrow marks censoring at 200,000. GD has a longer budget. All panels use the same target and geometry. Bounds are checked FP64 evaluations.</figcaption>
 </figure>
 
 ## Appendix A. Construction and full proof
@@ -169,7 +167,7 @@ $$
 
 This proves the two-sided matrix enclosure. The bias vanishes under $Q$.
 
-**Eigenvalues and normalization.** If $\kappa_i$ are the descending eigenvalues of $Q^TK_\gamma Q$, the enclosure gives $\beta_i-\delta_\gamma-\tau_\gamma\le\kappa_i\le\beta_i+\delta_\gamma$. Interlacing gives $\mu_i\ge\kappa_i\ge\mu_{i+1}$, proving the numerator endpoints. Divide lower numerators by $L_\gamma$ and upper numerators by $\ell_\gamma$ to obtain the theorem.
+**Eigenvalues and normalization.** If $\kappa_i$ are the descending eigenvalues of $Q^TK_\gamma Q$, the enclosure gives $\beta_i-\delta_\gamma-\tau_\gamma\le\kappa_i\le\beta_i+\delta_\gamma$. Interlacing gives $\mu_i\ge\kappa_i\ge\mu_{i+1}$, proving the numerator endpoints. Divide lower numerators by $L_\gamma$ and upper numerators by $\ell_\gamma$ to obtain the lemma.
 
 For the normalization used in the calculation, let $e=\mathbf1/\sqrt m$ and define
 
@@ -184,7 +182,15 @@ $$
 
 The first is a Rayleigh lower bound. In the basis $[e,Q]$, the remaining block is bounded by $cI$ and the coupling has norm $b$, so the largest eigenvalue is at most that of the displayed two-by-two scalar comparison. Numerical upper allowances are also included in $c$. These quantities use feature matrix-vector products and the corrected integral spectrum, without the actual small eigenvalues.
 
-**GD times.** Expanding the zero-initialized residual in the actual eigenvectors gives the error formula. Monotonicity in each ratio proves both error bounds. The error curves decrease with update count, so their first crossings bracket the true crossing; an empty crossing set means $+\infty$. A positive mode is representable because $u_i=J_\gamma(J_\gamma^Tu_i/\mu_i)$. Thus target energy in slow positive modes describes optimization delay separately from nullspace capacity. $\square$
+**GD error and times.** Expanding the zero-initialized residual in the actual eigenvectors gives the error formula. Monotonicity in each ratio proves the output-error lower bound. Using the lower rate endpoints analogously gives the companion upper bound:
+
+$$
+e_{\rm lower}(n)^2\le e(n)^2\le
+\underbrace{\sum_i p_i(1-\underline\rho_i/2)^{2n}}_{e_{\rm upper}(n)^2},
+\qquad n_{\rm necessary}\le n_\varepsilon\le n_{\rm sufficient}.
+$$
+
+The error curves decrease with update count, so their first crossings bracket the true crossing; an empty crossing set means $+\infty$. For a general nonoscillatory step, replace $\rho/2$ by $\eta\mu_1\rho$ with $0<\eta\mu_1\le1$. A positive mode is representable because $u_i=J_\gamma(J_\gamma^Tu_i/\mu_i)$. Thus target energy in slow positive modes describes optimization delay separately from nullspace capacity. $\square$
 
 ## Appendix B. Numerical bounds and optimizer checks
 
@@ -198,7 +204,7 @@ Actual finite-feature SVD supplies the target weights and comparison spectrum. R
 
 <figure>
   <img src="../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_gd_bounds.png" alt="GD error curves bracketed by the two theorem predictions, with executed one-percent crossings marked at each gamma." style="max-width: 100%;">
-  <figcaption><strong>Figure B1. Where the predicted time interval comes from.</strong> The lower error curve uses upper ratio endpoints; the upper curve uses lower endpoints. Their 1% crossings give necessary and sufficient times. The reference curve uses the actual finite spectrum, and the marked crossing comes from executed GD. All curves retain the same actual target weights, with unresolved energy handled conservatively.</figcaption>
+  <figcaption><strong>Figure B1. The theorem predicts remaining output error.</strong> The dashed lower bound substitutes the lemma's upper rate endpoints into the GD formula; its 1% crossing gives the necessary time. The dotted companion upper bound uses lower rate endpoints. The solid reference uses actual eigenvalues, and the marked crossing comes from executed GD. All curves retain the same actual target weights, with unresolved energy handled conservatively.</figcaption>
 </figure>
 
 **Adam protocol.** The common setting uses initial rate $10^{-3}$, epsilon $10^{-12}$, and moments $(0.9,0.999)$. The rate is fixed through 20,000 updates, decays by cosine to $10^{-6}$ at 50,000, then remains fixed through 200,000. Define $M_0=1$, $M_n=\beta M_{n-1}+(1-\beta)e(n)^2$, $\beta=2^{-1/100}$. First EMA acquisition is the first $M_n\le10^{-4}$, computed from every update. Since $M_n\ge\beta^n$, no crossing occurs before 1,329 updates. Later upcrossings occur 73, 97, and 98 times at gammas 12, 16, and 64; sustained raw crossings occur around 41,000.

@@ -1,6 +1,6 @@
 {
   "task_start_commit": "cd1dfd9",
-  "purpose": "Rewrite the technical note around V4 and recompute ratio, error, and acquisition-time bounds on the archived geometry.",
+  "purpose": "Present the frozen-feature GD theorem as an output-error lower bound predicted using the gamma-dependent upper rate endpoints.",
   "gpu_hours": 0,
   "optimizer_training_updates": 0,
   "theorem": {
@@ -150,13 +150,14 @@
     }
   },
   "figure_reproduction": {
-    "artifacts_byte_identical": 11,
-    "figures_visually_reviewed": 5,
+    "source_revision": "64d2474",
+    "figures_visually_reviewed_this_revision": 2,
     "source_hashes_verified": 15,
     "artifact_hashes_verified": 10,
-    "leading_ratio_enclosures_checked": 4,
-    "gd_curve_enclosures_checked": 4,
-    "gd_executed_time_enclosures_checked": 4
+    "all_figure_numeric_arrays_unchanged_from_f582523": true,
+    "lower_error_curves_independently_reconstructed": 4,
+    "necessary_first_crossings_verified": 4,
+    "previous_full_figure_reproduction_revision": "f582523"
   },
   "document": {
     "pages": 7,
@@ -172,12 +173,12 @@
     "independent_md_tex_scientific_consistency_review": true
   },
   "artifact_sha256": {
-    "docs/gamma_optimizer_access_note.md": "29900fd3f71871bcb1fa523ec7db53adb8f2e8ad71fd0f0d92720a0ac4026d4f",
-    "docs/gamma_optimizer_access_note.pdf": "fca7a3882f768c3d67673e9e016e0930dda04426109819d60497b3145d880814",
-    "docs/gamma_optimizer_access_note.tex": "bf6eca88a60801abf1f413bfb5391045b4721900dbc364c5f3d6b0105bf90362",
+    "docs/gamma_optimizer_access_note.md": "8bd90098924f855f8fb4372eaa747e55bb4c71ae6f8c3dd53205f21692749c51",
+    "docs/gamma_optimizer_access_note.pdf": "87b7dd0efda30777d9b5d45d3520a5ad15f585be3f5bc4bd9c33e2bf6968e1ed",
+    "docs/gamma_optimizer_access_note.tex": "96f6f4ae0bf96b7d32a08e5d0aaf091e199fa8b5a9b2a6ca820fe68d23d2a815",
     "docs/gamma_ratio_note_v4.pdf": "8e2c5ec684ec7290f259d09e3d18afb3bb0837dfeb00ec069d8d901c07a14357",
     "experiments/expD36_frozen_gamma_probe/direct_ratio_interval.py": "526a90cfd30b7126f6688adce2edc38f4e26b77f44bcee993783b06bc455ff12",
-    "experiments/expD36_frozen_gamma_probe/optimizer_access_figure.py": "07136f4acc0fbda1fd9d8f56238b265febd5a5b1ca72b62270c83f1cb8035862",
+    "experiments/expD36_frozen_gamma_probe/optimizer_access_figure.py": "4d4808ce836662406575851f45fb98da501a3f0e8cb800582cf79c15971d7ead",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_direct_ratio/archive_g12_q10_p20.json": "05dbe144a29f5919eb0c333cf9dfaa0f1ac2be0bbc8b1c7cec317c17c7510248",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_direct_ratio/archive_g12_q10_p20.npz": "c378bc905cadeba3428cba1406f4e23f22ec22f8df9fdcffeab42bccfc4e5bb6",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_direct_ratio/archive_g12_q16_p24.json": "d10f159c1d3609e8b2afc68856b3c6539dff3ca9a923880d3420215c185a2064",
@@ -215,20 +216,64 @@
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/analysis.json": "a4f9e56f85d902db14de737e61b656097a2263a0e37c21c7e401b5e28c9c8eb8",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ema_analysis.json": "b7503d6688a5c76c60c851ed9adcecbe8bdbf236b078b95ae7b1eaf933f165f3",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ema_curves.npz": "35cee22729d74e531c876bbc870dca8d16ecce7dfea82729311a52f418ade763",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/figure_data.json": "35267972ddbf326c5b814725dcb668fcfe8a40944f1f25c705a625d31497fd4c",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/figure_data.json": "621c4c2a9e57cbadeec05a8b479061b9a7eb1cfb9277b00533bda71e51bf17c8",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_ema_sensitivity.pdf": "90c8ac7a18f821721a152af45766481fc01eee5fe99b80d36932efc256fbbf6e",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_ema_sensitivity.png": "b18dbfcacf45c6032589dd53f54ef2b0ba616f9efb18e0d6d2149310a69f2b2a",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_gd_bounds.pdf": "93e9914d2c984a6eca2b654967c99c6f361bc49267f16a7069af5aa2e134b32c",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_gd_bounds.png": "d950f0f84c91f504942924cc3ea06798fe1663f47e5b18d16f165b8b0a10a477",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_gd_bounds.pdf": "2859db074764178b3780829e56555cd38f7b25317e558947dd82e8c8319ee001",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_gd_bounds.png": "1ac86a36e87af1ee8473823c8b8436461fc030b8b0ca4bb74f6e3780fdd23fe7",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_schedule.pdf": "5ba52edd4d3bbd749a98e6e6ed3522d75a16c0b01f92012a0be00b0c3f8b50c5",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_schedule.png": "6babfa557e6b76942e6221c36818b07ca82228180466b7b4a82d0bcebadfe492",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_targets.pdf": "9d8f9e1d1a678861768f8a77531ddb53debf1adeb1b73da42695769bc9f60a50",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_targets.png": "5cab5bbe7bd94cf1a4919d8a3c14fe5b1c6fe5fef963dd718b8a760986787bb3",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.pdf": "13b645455b025e6b14a562202d5c931ac68f5e4de1a9cb2ba972f6dc6e290d44",
-    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.png": "f1b2e1ef830a272b4f189b7a920d427e75352679d5b205ac0667f50d3b89a44a",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.pdf": "093c150246146fea77cd74bf4c97b79008ccfc71441f78f93b1e3112c9c3ed34",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/optimizer_access_three_panel.png": "21bd0a4a2463fa32e8a66291fddfaf40d71130dbf703399ccc1209105b20596a",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/projections.npz": "025b207f765ae6d211cb94f8f2758ed847b663bb13de519292dab71c3b215bdc",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/tests_v4.log.gz": "3ff9f263dbea161c5714b470499a3ef15c07f4b14e20caceb7d8dd1a1d311afe",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/trace_envelopes.npz": "197588b29074d81c7a5ddb4c85d1a8d673ab762b004fec19ed096ac1b9144546",
     "tests/test_expD36_direct_ratio_interval.py": "9d23b27da8f8b6d508ce4d20a1f700700ff487b72261f0cbc7a35d03235a2ca2"
+  },
+  "output_error_revision": {
+    "base_commit": "f582523",
+    "all_figure_numeric_arrays_unchanged": true,
+    "source_hash_checks": 15,
+    "artifact_hash_checks": 10,
+    "decay_rates_source": "theorem rho_upper, scaled by actual eta*mu1",
+    "target_weights_source": "actual finite-feature SVD; unresolved energy omitted",
+    "rows": [
+      {
+        "gamma": 8,
+        "necessary_updates": 13934809,
+        "error_before": 0.010000000030200898,
+        "error_at": 0.00999999963464629,
+        "maximum_reconstruction_gap": 0.0
+      },
+      {
+        "gamma": 12,
+        "necessary_updates": 163954,
+        "error_before": 0.010000103163263772,
+        "error_at": 0.009999946509895398,
+        "maximum_reconstruction_gap": 0.0
+      },
+      {
+        "gamma": 16,
+        "necessary_updates": 54453,
+        "error_before": 0.010000065998056931,
+        "error_at": 0.009999840329617378,
+        "maximum_reconstruction_gap": 0.0
+      },
+      {
+        "gamma": 64,
+        "necessary_updates": 14118,
+        "error_before": 0.010000325045594055,
+        "error_at": 0.009999865773601246,
+        "maximum_reconstruction_gap": 0.0
+      }
+    ],
+    "focused_tests_passed": 6,
+    "independent_mathematical_review": true,
+    "new_training": false,
+    "numerical_analysis_changed": false,
+    "current_pdf_all_pages_visually_reviewed": true,
+    "full_suite_scope": "Previous V4 implementation suite retained; current presentation revision reran the six focused tests."
   }
 }
