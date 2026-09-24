@@ -163,7 +163,9 @@ def style():
 
 
 def plot_joint(traces, selected, horizon, output):
-    style(); fig, axes = plt.subplots(1,2,figsize=(10,3.7),layout='constrained')
+    style()
+    plt.rcParams.update({'font.size':8,'axes.labelsize':8,'xtick.labelsize':7.5,'ytick.labelsize':7.5})
+    fig, axes = plt.subplots(1,2,figsize=(5.5,2.8),layout='constrained')
     colors = {'adam':'#0072B2','gd':'#D55E00'}
     for optimizer in selected:
         color = colors.get(optimizer,'#009E73'); label = optimizer.upper() if optimizer=='gd' else optimizer.title()
@@ -174,14 +176,17 @@ def plot_joint(traces, selected, horizon, output):
         for name, ls in [('rms','-'),('q99','--')]:
             if name == 'rms':
                 ts=traces[f'{optimizer}_rms_steps'];ys=traces[f'{optimizer}_rms_median']
+                low=traces[f'{optimizer}_rms_low'];high=traces[f'{optimizer}_rms_high']
             else:
                 ts=traces[f'{optimizer}_checkpoint_steps'];ys=traces[f'{optimizer}_lambda_q99']
-            axes[1].plot(ts/1e6,np.median(ys,axis=1),color=color,ls=ls,label=f'{label}, '+('RMS' if name=='rms' else '99th percentile'))
-            axes[1].fill_between(ts/1e6,np.min(ys,axis=1),np.max(ys,axis=1),color=color,alpha=.09,lw=0)
-    axes[1].axhline(.25,color='#444444',ls=':',lw=1,label='Uniform reference λ = 0.25')
-    axes[0].set_ylabel('Relative output L2 error');axes[1].set_ylabel('Slope × reference spacing, λ')
+                low=high=ys
+            axes[1].plot(ts/1e6,np.median(ys,axis=1),color=color,ls=ls,label=f'{label} '+('RMS' if name=='rms' else '99th'))
+            axes[1].fill_between(ts/1e6,np.min(low,axis=1),np.max(high,axis=1),color=color,alpha=.09,lw=0)
+    axes[1].axhline(.25,color='#444444',ls=':',lw=1,label='Uniform reference 1/4')
+    axes[0].set_ylabel('Relative output L2 error');axes[1].set_ylabel(r'Scaled slope, $h|a_j|$')
     for ax in axes:
-        ax.set_yscale('log');ax.set_xlim(0,horizon/1e6);ax.set_xlabel('Joint-training updates (millions)');ax.grid(alpha=.15);ax.legend(fontsize=8)
+        ax.set_yscale('log');ax.set_xlim(0,horizon/1e6);ax.set_xlabel('Updates (millions)');ax.grid(alpha=.15);ax.legend(fontsize=7)
+    axes[1].legend(fontsize=7,loc='upper right',bbox_to_anchor=(1,.92))
     for suffix in ['png','pdf']:fig.savefig(output/f'joint_error_and_slopes.{suffix}',dpi=220)
     plt.close(fig)
 
