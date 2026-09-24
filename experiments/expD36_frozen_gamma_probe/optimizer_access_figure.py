@@ -1,4 +1,4 @@
-"""Paper figures from saved spectral bounds and actual Adam trajectories."""
+"""Paper figures from finite spectra, explicit gamma smoothing, and actual optimization."""
 import argparse
 import hashlib
 import json
@@ -7,7 +7,6 @@ from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -70,19 +69,16 @@ def main():
     parser.add_argument('--source', type=Path, default=DEFAULT)
     args = parser.parse_args()
     folder = args.source
-    paths = [folder/'analysis.json', folder/'projections.npz', folder/'ratio_bounds.json',
-        folder/'trace_envelopes.npz', folder.parent/'structured_gamma/summary.json',
+    paths = [folder/'analysis.json', folder/'projections.npz', folder/'trace_envelopes.npz',
         folder.parent/'gamma_factorized_kernel/summary.json', Path(__file__),
-        folder/'ema_analysis.json', folder/'ema_curves.npz', folder/'reverse_bounds.json']
+        folder/'ema_analysis.json', folder/'ema_curves.npz', folder/'mechanism_analysis.json']
     analysis = json.loads(paths[0].read_text())
     projection = np.load(paths[1])
-    ratios = json.loads(paths[2].read_text())
-    traces = np.load(paths[3])
-    structured = json.loads(paths[4].read_text())
-    factorized = json.loads(paths[5].read_text())
-    ema_analysis = json.loads(paths[7].read_text())
-    ema_curves = np.load(paths[8])
-    reverse = json.loads(paths[9].read_text())
+    traces = np.load(paths[2])
+    factorized = json.loads(paths[3].read_text())
+    ema_analysis = json.loads(paths[5].read_text())
+    ema_curves = np.load(paths[6])
+    mechanism = json.loads(paths[7].read_text())
     ema_cases = {(c['gamma'], c['view'], c['target']): c for c in ema_analysis['cases']}
     half_life = 100
     ema_index = list(ema_curves['half_lives']).index(half_life)
@@ -104,7 +100,6 @@ def main():
             numerical_status='FP64 diagnostics; Adam residual projections are not GD-theorem predictions.',
             positive_modes='Only retained positive SVD modes; omitted numerical directions excluded.',
             energy_normalization=analysis['normalization'],
-            ratio_baseline='The gamma8 rank64 lower-bound evaluation is unresolved and omitted; its finite-spectrum reference remains shown.',
             connecting_lines='Lines between evaluated gamma values and saved Adam checkpoints are visual guides, not fitted dynamics.'), figures={})
 
     fig, axes = plt.subplots(1, 3, figsize=(11.5, 4.15))
@@ -113,22 +108,17 @@ def main():
         clean(ax)
     ax = axes[0]
     ratio_data = []
-    for rank, color in zip((8, 16, 32, 64), COLORS):
-        rows = [next(r for r in c['records'] if r['rank'] == rank) for c in ratios['cases']]
-        actual = [r['actual_new_ratio'] for r in rows]
-        bound = [r['lower_ratio'] if r['lower_ratio'] is not None else np.nan for r in rows]
-        ax.plot(GAMMAS, actual, color=color, marker='o', markersize=3.7, label=f'Rank {rank}')
-        ax.plot(GAMMAS, bound, color=color, linestyle='--', linewidth=1.25,
-                marker='v', markersize=3.4)
-        ratio_data.append(dict(rank=rank, gamma=GAMMAS, actual=actual, lower_bound=bound,
-                               statuses=[r['status'] for r in rows]))
-    gamma_axis(ax)
-    ax.set_yscale('log')
-    ax.set_ylim(2e-17, .15)
-    ax.set_yticks([1e-16, 1e-12, 1e-8, 1e-4, 1e-1])
-    ax.set_ylabel(r'Eigenvalue ratio $\mu_i/\mu_1$')
-    ax.set_title('A  Larger slopes open slow modes', loc='left', pad=19)
-    ax.text(0, 1.035, 'Solid: finite spectrum   Dashed: lower bound', transform=ax.transAxes,
+    for gamma, color in zip(GAMMAS, COLORS):
+        values = projection[f'g{gamma}_rho'][::-1][:64]
+        ranks = np.arange(1, len(values)+1)
+        ax.plot(ranks, values, color=color, label=rf'$\gamma={gamma}$')
+        ratio_data.append(dict(gamma=gamma, ranks=ranks, eigenvalue_ratios=values))
+    ax.set(yscale='log', ylim=(2e-17, 1.5), xlim=(1, 64),
+           xlabel='Eigenvalue rank', ylabel=r'Eigenvalue ratio $\mu_i/\mu_1$')
+    ax.set_xticks([1,16,32,48,64])
+    ax.set_yticks([1e-16, 1e-12, 1e-8, 1e-4, 1])
+    ax.set_title('A  Gamma changes the spectrum', loc='left', pad=19)
+    ax.text(0, 1.035, 'Actual finite tanh kernel · leading 64 modes', transform=ax.transAxes,
             fontsize=7.3, color='#53616c')
     ax.legend(ncol=2, frameon=False, loc='upper center', bbox_to_anchor=(.5, -.28))
 
@@ -157,21 +147,11 @@ def main():
     ax = axes[2]
     archived = {d['gamma']: d for d in factorized['dictionaries']}
     gd_actual = [archived[g]['executed_hits'][0] for g in GAMMAS]
-    gd_forecast = [max((r for r in factorized['rows'] if r['gamma'] == g),
-                      key=lambda r: r['harmonics'])['approximate_hits'][0] for g in GAMMAS]
-    gd_lower = [next(r for r in structured['rows'] if r['n'] == 512 and r['gamma'] == g)
-                ['best_necessary'][1][0] for g in GAMMAS]
-    gd_reverse = [max(a['best']['necessary_updates'] for a in
-                     next(c for c in reverse['cases'] if c['gamma'] == g)['approaches'])
-                  for g in GAMMAS]
+    gd_forecast = [archived[g]['reference_hits'][0] for g in GAMMAS]
     adam = [ema_case(g, 'common', first)['first_hit'] for g in GAMMAS]
     ax.plot(GAMMAS, gd_forecast, color='#253c51', linewidth=1.6, label='GD spectrum forecast')
     ax.plot(GAMMAS, gd_actual, color='#253c51', linestyle='none', marker='o',
             markerfacecolor='white', markersize=5, label='Executed GD')
-    ax.plot(GAMMAS, gd_lower, color='#8d9ca6', linestyle=':', linewidth=1.1,
-            label='GD compact bound')
-    ax.plot(GAMMAS, gd_reverse, color='#257f79', linestyle='--', marker='v', markersize=4,
-            label='GD reverse bound')
     ax.plot(GAMMAS[1:], adam[1:], color='#ce7041', marker='s', markersize=4,
             label='Adam first EMA hit')
     ax.scatter([8], [200000], marker='^', color='#ce7041', s=28, zorder=4)
@@ -189,45 +169,56 @@ def main():
               columnspacing=.8, handlelength=1.7, fontsize=7)
     evidence['figures']['optimizer_access_three_panel'] = dict(ratios=ratio_data,
         energy=energy_data, timings=dict(gamma=GAMMAS, gd_actual=gd_actual,
-        gd_full_forecast=gd_forecast, gd_necessary=gd_lower, gd_reverse_necessary=gd_reverse,
+        gd_full_forecast=gd_forecast, gd_forecast_source='True finite-tanh spectrum reference_hits',
         adam_first_ema=adam,
         adam_ema_half_life=half_life,
         adam_censor_horizon=200000), slow_cutoff=2e-6, error_squared_threshold=1e-4)
     save(fig, folder, 'optimizer_access_three_panel', manifest)
 
-    # Fixed raw-kernel slow subspaces diagnose Adam; only GD has spectral rates.
-    fig, axes = plt.subplots(1, 4, figsize=(11.5, 3.3), sharey=True)
-    fig.subplots_adjust(bottom=.24, top=.83, left=.07, right=.99, wspace=.15)
-    evolution = []
-    gd_steps = np.unique(np.r_[0, np.geomspace(1, 17000000, 240).astype(int)])
-    steps = projection['checkpoint_steps']
-    for ax, gamma, color in zip(axes, GAMMAS, COLORS):
-        rho = projection[f'g{gamma}_rho']; mask = rho <= 2e-6
-        initial = projection[f'g{gamma}_initial_energy'][mask, 0]
-        eta = archived[gamma]['eta']
-        kernel_max = next(d['largest_eigenvalue'] for d in analysis['diagnostics']
-                          if d['gamma'] == gamma)
-        np.testing.assert_allclose(eta*kernel_max, .5, rtol=1e-10, atol=0.)
-        gd = np.exp(2*np.outer(gd_steps, np.log1p(-rho[mask]*eta*kernel_max)))@initial
-        actual = projection[f'g{gamma}_common_residual_energy'][:, mask, 0].sum(axis=1)
-        ax.plot(gd_steps, gd, color='#677c8d', linestyle='--', label='GD spectral reference')
-        ax.plot(steps, actual, color=color, marker='o', markersize=3, label='Adam checkpoints')
-        ax.axhline(1e-4, color='#9099a0', linestyle=':', linewidth=.9)
-        ax.axvline(200000, color='#c9cfd3', linewidth=.8)
-        ax.set(xscale='symlog', xlim=(0, 17000000), yscale='log', ylim=(1e-11, .5),
-               xlabel='Optimizer updates', title=rf'$\gamma={gamma}$')
-        ax.set_xticks([0, 1e3, 2e5, 1e7], labels=['0', '1k', '200k', '10m'])
+    fig, axes = plt.subplots(1, 2, figsize=(9.3, 3.7))
+    fig.subplots_adjust(left=.09, right=.98, bottom=.25, top=.82, wspace=.30)
+    frequency = mechanism['frequency']
+    ax = axes[0]
+    for row, color in zip(frequency['rows'], COLORS):
+        ax.plot(frequency['omega'], row['multiplier_squared'], color=color,
+                label=rf"$\gamma={row['gamma']}$")
+    for omega in frequency['target_omega']:
+        ax.axvline(omega, color='#9ca8b0', linestyle=':', linewidth=.8)
+    ax.set(yscale='log', ylim=(1e-6, 1.15), xlabel=r'Angular frequency $\omega$',
+           ylabel=r'Squared feature multiplier $M_\gamma(\omega)^2$')
+    ax.set_title('A  Gamma controls frequency attenuation', loc='left', pad=20)
+    ax.text(0, 1.035, 'Dotted guides: target frequencies', transform=ax.transAxes,
+            fontsize=8, color='#53616c')
+    ax.legend(ncol=4, loc='upper center', bbox_to_anchor=(.5, -.25), frameon=False)
+    ax = axes[1]
+    rows = mechanism['rows']
+    slopes = [r['gamma'] for r in rows]
+    actual = [r['actual_action'] for r in rows]
+    explained = [r['reference_action_plus_gain'] for r in rows]
+    ax.plot(slopes, explained, color='#4b5b68', linewidth=1.6,
+            label='Baseline + explicit Fourier gain')
+    for row, color in zip(rows, COLORS):
+        ax.scatter(row['gamma'], row['actual_action'], edgecolor=color,
+                   facecolor='white', linewidth=1.5, s=42, zorder=4)
+    ax.plot([], [], color='#4b5b68', marker='o', markerfacecolor='white',
+            linestyle='none', label='Actual finite kernel')
+    gamma_axis(ax)
+    ax.set(yscale='log', ylabel=r'Fixed-direction response $v^T K_\gamma v$')
+    ax.set_title('B  The same direction gains access', loc='left', pad=20)
+    fraction = mechanism['selection']['initial_target_energy']
+    correction = mechanism['maximum_absolute_correction_fraction']
+    ax.text(0, 1.035, f'Fixed v: {100*fraction:.2f}% initial target energy',
+            transform=ax.transAxes, fontsize=8, color='#53616c')
+    ax.text(.04, .93, f'Max. finite correction: {100*correction:.3f}%',
+            transform=ax.transAxes, va='top', fontsize=8)
+    ax.legend(loc='upper center', bbox_to_anchor=(.5, -.25), frameon=False, fontsize=8)
+    for ax in axes:
         clean(ax)
-        evolution.append(dict(gamma=gamma, gd_eta=eta, kernel_largest_eigenvalue=kernel_max,
-                              gd_steps=gd_steps, gd_energy=gd,
-                              adam_steps=steps, adam_energy=actual))
-    axes[0].set_ylabel('Residual energy in fixed slow subspace')
-    fig.suptitle(r'Energy in resolved modes $0<\mu_i/\mu_1\leq2\times10^{-6}$', y=.99, fontsize=11)
-    fig.legend(handles=[Line2D([], [], color='#677c8d', linestyle='--', label='GD spectral reference'),
-                         Line2D([], [], color='#444', marker='o', markersize=3, label='Adam checkpoints')],
-               loc='lower center', ncol=2, frameon=False, bbox_to_anchor=(.5, -.01))
-    evidence['figures']['optimizer_access_directional_evolution'] = evolution
-    save(fig, folder, 'optimizer_access_directional_evolution', manifest)
+    evidence['figures']['optimizer_access_mechanism'] = dict(frequency=frequency,
+        selection=mechanism['selection'], rows=rows,
+        maximum_absolute_correction_fraction=correction,
+        interpretation='One fixed direction across gamma, not a tracked eigenvalue; line omits the separately measured finite correction.')
+    save(fig, folder, 'optimizer_access_mechanism', manifest)
 
     fig, axes = plt.subplots(1, 5, figsize=(11.5, 3.2), sharey=True)
     fig.subplots_adjust(bottom=.26, top=.8, left=.065, right=.99, wspace=.16)
