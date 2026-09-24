@@ -5,46 +5,50 @@ inaccurate. Its whole population can continue moving, while the nonlinear
 output sensitivity needed to correct the residual develops too slowly. This
 note makes that distinction precise for the exact tanh gradient-flow ODE.
 
-The first result is a **closed, initial-data persistence theorem**. A finite
-population moment bounds how quickly that same moment can increase; a
-collective travel bound preserves coarse conditioning; and together they
-bound output-error reduction. No future concentration bound, frozen Jacobian,
-Taylor surrogate, or maximum-neuron support assumption is needed. The
-sixth-moment version gives a width-dependent window proportional to
-$W^{2/3}$ under bounded initial rescaled moments. A higher finite-moment
-version improves this to $W^{1-2/p}$ for fixed $p\ge6$.
+The central result combines a conditional theorem with empirical evidence:
+**an empirically persistent population structure limits reinforcement of
+initially weak effective force. Allowing variation within that structure,
+the theorem bounds population scale acquisition and output progress over
+a stated training budget.** The relevant assumptions concern accumulated
+curvature feedback and force concentration; they do not assume that future
+force or population movement stays small.
 
-The population refinement is **Theorem 12**. An accumulated budget for concentration of the effective force
-closes the fourth-moment evolution and gives a conditional time proportional
-to $W$. Brief concentration spikes are allowed. It assumes neither small
-future force, bounded future moments, nor a future coarse-conditioning
-margin. This sharper result and the
-initial-data result answer different questions: the former identifies the
-population property whose preservation remains to be proved, while the
-latter supplies a shorter sufficient window without that future premise.
+**Theorem 14** retains the initial effective force and turns an accumulated
+feedback allowance into an output-error floor. Accumulated concentration
+supplies the additional population-movement and acquisition bounds.
+**Proposition 15** proves the extension to ordinary GD with explicit
+tracking and finite-step disturbance allowances. The main theorem is
+conditional on these structural budgets. Their empirical persistence is
+part of the explanation, with target coverage and perturbation limits
+reported separately from the proved implication.
 
-The numerical audit exposes another important loss: replacing the measured
-initial effective force by a norm bound can discard most of its weakness.
-**Theorem 14** retains that initial force and assumes an accumulated feedback
-budget; it bounds output-error reduction without requiring a concentration
-budget. Concentration enters its additional population-movement conclusion.
-**Theorem 16** below derives a sufficient feedback-persistence interval from
-initial residual-loaded curvature and aggregate parameter travel. Its
-usefulness is tested separately from the conditional theorem.
+The accompanying evidence covers 23 targets in the principal width-705
+baseline and six targets in fresh matched effective-flow/GD integrations
+through 100k additional updates at the reference learning rate. Force
+forecasts test whether the mechanism explains the direction and rate of
+evolution. The theorem tests whether allowed reinforcement is still too
+weak to enable useful population acquisition or output accuracy. Both
+roles matter; the desired conclusion allows substantial forecasting slack.
 
-These are rigorous sufficient bounds, not yet claims of quantitatively useful
-certification on every experimental checkpoint. The cleanest theorem concerns
-the effective fine flow. A final initial-data comparison system also includes
-tracking and finite steps for ordinary GD. In particular, small
-tracking-induced slope motion does not automatically imply small
-tracking-induced output progress.
+The **initial-data theorems strengthen this result** by deriving sufficient
+structural persistence from a checkpoint alone. The earlier moment
+arguments give width-dependent windows proportional to $W^{2/3}$ and,
+for fixed higher moments, $W^{1-2/p}$. Theorem 12 controls fourth-moment
+evolution using accumulated concentration. Theorem 16 retains initial
+residual-loaded curvature and proves a feedback-persistence interval through
+aggregate parameter travel. Its numerical certificates are useful for
+some states and conservative for others. Obtaining equally long
+initial-data certificates across all targets is an additional objective,
+not a requirement for the conditional mechanism-and-evidence result.
 
-For a reader seeking the main logical chain: Section 2 translates population
-structure into an output-error floor; Sections 4–5 prove that structure
-persists under the effective ODE; Section 6 includes tracking and discrete
-GD. The width exponents describe sufficient asymptotic windows. Whether
-their constants give a useful training-budget guarantee at a particular
-checkpoint is a separate numerical question.
+For the main argument, read the accumulated-feedback appendix containing
+Theorem 14 and Proposition 15, together with its empirical study. Section 2
+supplies the population-to-output connection. Sections 4–6 and Theorem 16
+develop the stronger initial-data guarantees. The assumptions, their
+empirical support, and any outward-rounded certificate retain distinct
+status throughout; sampled agreement does not certify every numerical
+trajectory. In particular, tracking's effects on output and force growth
+must be checked alongside its slope contribution.
 
 | Symbol | Meaning |
 |---|---|

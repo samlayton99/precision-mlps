@@ -7,12 +7,19 @@ covering 23 targets. Fresh integrations also support it over 100k additional
 updates on six diverse targets, with negligible changes in the conclusion
 when measured tracking effects are included.
 
-We have also proved and numerically certified an initial-data persistence
-result for the exact effective ODE. Its duration is useful on the degree-five
-checkpoint and shorter on the other five targets. Thus the mechanism has a
-closed ODE proof, but the present sufficient constants do not yet explain
-the whole observed duration broadly. The conditional theorem, empirical
-premise checks, and initial-data certificates are separate results.
+The central claim is that empirically persistent population structure limits
+reinforcement of initially weak effective force. The conditional theorem
+allows variation in that structure while bounding acquisition and output
+progress over the stated interval. Force forecasts and perturbation tests
+assess whether this explains the observed dynamics. They complement the
+theorem's quantitative bounds.
+
+An initial-data persistence theorem and numerical certificates strengthen
+this result. Their durations are useful on the degree-five checkpoint and
+shorter on the other five targets. Those limits concern deriving persistence
+from a checkpoint alone. They do not make such a derivation a prerequisite
+for the conditional theorem and its cross-target empirical support. Proved
+implications, empirical premise checks, and certificates remain distinct.
 
 **Notation and scope.** Norms use the empirical training measure; parameter
 norms are Euclidean. Output error always uses the network's attached readouts.
@@ -289,13 +296,15 @@ as established by the frozen-geometry controls. A theorem for the residual
 plateau after that fitting would need a later restart or explicit residual
 subspace control; the present weak-initial-force bound does not cover it.
 
-## 7. What is established and what remains
+## 7. The main result and its possible strengthenings
 
 We have completed the three tasks: a proved finite-interval conditional
 theorem with tracking and GD disturbance terms; broad archive checks plus
 fresh matched-flow tests; and a closed initial-data theorem with six
-outward-rounded effective-flow instances. The last step succeeds as a
-proof and only partly succeeds in giving the desired duration.
+outward-rounded effective-flow instances. The central scientific result is
+the conditional mechanism together with evidence that its structural
+assumptions persist over useful intervals. The initial-data theorem explains
+how that persistence can arise and certifies additional instances.
 
 The supported explanation is that weak initial residual coupling and modest
 accumulated reinforcement leave too little integrated force to change the
@@ -304,14 +313,22 @@ and population moments need not remain constant. The initial-data theorem
 explains one way the structure persists: strengthening the loaded curvature
 requires motion supplied by the force whose growth it controls.
 
-To extend the certified duration across targets, the next proof should retain
-the aggregate residual loading when bounding the change of curvature, just
-as the current proof retains it initially. Alternatively, the conditional
-statement can assume an accumulated directional-feedback allowance, with
-its finite-interval empirical coverage stated explicitly. Neither route
-requires controlling each neuron. A rigorous ordinary-GD transfer still
-needs a validated bound on tracking and within-step disturbances. Adam and
-continuous-input generalization are outside these new certificates.
+The primary statement uses accumulated directional-feedback and concentration
+allowances, with their finite-interval empirical coverage and slack stated
+explicitly. Its strength comes from transparent structural assumptions,
+informative bounds on acquisition and output error, and force forecasts and
+interventions that test the proposed dynamics. It need not derive every
+assumption from initialization or predict each neuron to explain the
+population mechanism. The large-injection cases in Section 6 mark a real
+limit of this regime-specific explanation.
+
+Longer initial-data certificates are a possible strengthening. Retaining
+aggregate residual loading when bounding the change of curvature is one
+route. Proposition 15 already proves the GD extension under explicit
+disturbance budgets; certifying longer GD instances would verify those
+budgets, including within-step effects. These are further guarantees, not
+prerequisites for presenting the conditional theorem and its evidence.
+Adam and continuous-input generalization remain outside the new certificates.
 
 ## Reproducibility and evidence roles
 

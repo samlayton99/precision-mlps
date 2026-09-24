@@ -7,14 +7,15 @@ aggregate GPU-hour limits, output metrics, target coverage, and large geometry
 interventions. The self-contained exposition is the
 [PI note](../../../../docs/d34_scale_acquisition_pi_note.md); the detailed
 [population proof](../../../../docs/d34_population_output_persistence.md)
-states the initial-data theorems and their variants.
+states the conditional mechanism and its initial-data strengthenings.
 
-The main result is a population mechanism: a small initial fourth moment
-and distributed effective fine force limit their own coupled reinforcement.
-This gives a conditional persistence theorem for the evolving ODE. Large
-geometry injections improve readout fitting with little subsequent slope
-growth, across 23 targets; the remaining proof gap is preserving the
-structural condition for a useful duration with realistic constants.
+The main result combines a population mechanism, a conditional theorem,
+and cross-target evidence. Empirically persistent population structure limits
+reinforcement of initially weak effective force. With stated allowances for
+feedback, concentration, tracking, and finite steps, the theorem bounds
+population acquisition and output progress over a training budget. Force
+forecasts and perturbations test this explanation. Deriving the full duration
+from initial data alone is a stronger objective pursued alongside this result.
 
 ## Latest refinement: preserve weak residual coupling
 
@@ -46,10 +47,12 @@ curvature can change through total population motion. Arb certifies relative
 error at least 0.8660246 through flow time 333.8467 on the degree-five state.
 That is about 167k updates' worth of flow time at learning rate 0.002,
 **not a discrete-GD certificate**. The five other target certificates last
-only about 3k–7k update-equivalent durations. Extending the initial-data
-guarantee broadly still requires a less conservative bound on changes in
-aggregate residual loading. The evidence supports a finite-interval
-structural assumption while this part of the proof is refined.
+only about 3k–7k update-equivalent durations. These quantify the scope of the
+stronger initial-data result. The conditional theorem and its empirical
+support remain the central explanation; longer initial-data certificates
+would strengthen that explanation. A rigorous certification of the longer
+GD instances would additionally verify the disturbance budgets already
+handled by Proposition 15.
 
 The following sections retain the earlier evidence and theorem comparisons;
 their shorter bounds are superseded only in the cases explicitly covered
