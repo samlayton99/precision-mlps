@@ -1927,3 +1927,242 @@ it invariant. The output lower bound avoids needing a converse assertion
 that accurate output requires a particular slope or center arrangement.
 Center coverage is not established here. Neither the accumulated theorem
 nor its pointwise refinement alone proves slow acquisition for Adam.
+
+## Appendix. Preserve weak initial coupling through accumulated feedback
+
+**What this result addresses.** The accumulated-concentration audit finds
+that the cubic population estimate can exceed the actual effective force
+by hundreds of times. Replacing the force by that estimate at every time
+discards the weak coupling we are trying to explain. This appendix instead
+starts from the actual initial force and controls its amplification. All
+assumptions are on a finite interval; they need not survive eventual scale
+acquisition. The result is conditional, and the numerical audit must test
+its assumptions separately from its consequences.
+
+### The structural quantities and their interpretation
+
+Use $f=\|F\|$, $Y=\|e_H\|$, $q=M_4^{1/4}$, and the same compensated
+effective flow $\dot\theta=-F$ as above. At a nonzero-force state put
+$v=F/f$. Define the two signed feedback rates
+
+$$
+\kappa_H=-\langle e_H,D^2e_H[v,v]\rangle,\qquad
+\kappa_C=\ell\cdot D^2e_C[v,v],
+\tag{F1}
+$$
+
+where $\ell=(J_CJ_C^*)^{-1}J_CJ_H^*e_H$ is the compensating coarse
+coefficient. These are whole-population second output responses in the
+current unit force direction. They are not separate predictions for neurons.
+The exact norm identity in Proposition 9 reads
+
+$$
+\frac{d}{dt}\log f=-\|J_Hv\|^2+\kappa_H+\kappa_C.
+\tag{F2}
+$$
+
+Residual relaxation supplies the nonpositive first term. A simple
+nonnegative upper bound on reinforcing feedback is
+
+$$
+d_{\rm dir}=Y\|D^2e_H[v,v]\|
+             +\|\ell\|\,\|D^2e_C[v,v]\|.
+\tag{F3}
+$$
+
+Two sharper, sign-sensitive alternatives are
+
+$$
+d_{\rm split}=[\kappa_H]_+ +[\kappa_C]_+,\qquad
+d_{\rm signed}=[\kappa_H+\kappa_C]_+,
+\qquad 0\le d_{\rm signed}\le d_{\rm split}\le d_{\rm dir}.
+\tag{F4}
+$$
+
+The directional bound makes no favorable-sign assumption. It measures how
+strongly the current population's motion bends fine and coarse output, and
+how the residual and compensation load those responses. The two signed
+bounds test whether retaining cancellation is necessary. Their dependence
+on the current force direction does not make them force-amplitude bounds:
+the direction is normalized before the second output response is measured.
+However, assuming their accumulated size is small is still a substantive
+future structural assumption, not a consequence of this appendix.
+
+### A finite-interval conditional theorem
+
+**Theorem 14 (weak initial coupling with an accumulated feedback budget).**
+Suppose $E_s(0)>0$, $Y_0>0$, and $f_0>0$. Let $d\ge0$ be any measurable
+upper bound on $\kappa_H+\kappa_C$ along exact effective flow, for example
+any of (F3)--(F4). Suppose nondecreasing functions $B,C$, with $B(0)=C(0)=0$,
+satisfy, for every $0\le t\le T$,
+
+$$
+\int_0^t d(s)\,ds\le B(t),\qquad
+\mathcal C(t)=\int_0^t\sqrt{I_F(s)}\,ds\le C(t).
+\tag{F5}
+$$
+
+Set $H(t)=\int_0^t e^{2B(s)}\,ds$ and
+$L_4(t)=f_0\sqrt{C(t)H(t)}$. Then
+
+$$
+\begin{aligned}
+f(t)&\le f_0e^{B(t)},\\
+\int_0^t f(s)^2\,ds&\le f_0^2H(t),\\
+\int_0^t I_F(s)^{1/4}f(s)\,ds&\le L_4(t),\\
+q(t)&\le q_0+L_4(t),\\
+Y(t)^2&\ge[Y_0^2-2f_0^2H(t)]_+.
+\end{aligned}
+\tag{F6}
+$$
+
+Consequently, with $c_Q=2\sqrt2/3$,
+
+$$
+\frac{\|f_{\theta(t)}-y\|}{\|y\|}\ge
+\frac1{\|y\|}\max\left\{
+\sqrt{[Y_0^2-2f_0^2H(t)]_+},
+\left[\|P_Hy\|-\frac{c_Q}{W}(q_0+L_4(t))^4\right]_+
+\right\}.
+\tag{F7}
+$$
+
+For initial fraction $p_0$ above $\lambda_0<\lambda_*$,
+
+$$
+p_{\rm ever}(t)\le\min\left\{1,p_0+
+\frac{h^4L_4(t)^4}{W^2(\lambda_*-\lambda_0)^4}\right\}.
+\tag{F8}
+$$
+
+Only terminal budgets $B_T,C_T$ are needed for a simpler uniform conclusion
+on $[0,T]$: replace $H(t)$ by $t e^{2B_T}$ and $L_4(t)$ by
+$f_0e^{B_T}\sqrt{C_Tt}$. This avoids inferring any pointwise bound on $d$
+or $I_F$ from an integral allowance. The statement also permits additive
+uncertainty in either integral, provided that uncertainty is included in
+the upper budgets.
+
+**Proof.** The rank lemma makes the exact effective flow globally defined.
+Equation (F2), with its nonpositive relaxation term dropped, gives
+$d\log f/dt\le d$. Integrating proves the first line of (F6), then
+integration of its square gives the second. Cauchy--Schwarz yields
+
+$$
+\int_0^t I_F^{1/4}f\,ds
+\le f_0\left(\int_0^t\sqrt{I_F}\,ds\right)^{1/2}
+           \left(\int_0^t e^{2B(s)}\,ds\right)^{1/2}
+\le L_4(t).
+$$
+
+The population norm inequality in (P1) gives the fourth line of (F6), and
+the exact identity $d(Y^2)/dt=-2f^2$ gives the fifth. The capacity inequality
+and $\|f_\theta-y\|\ge Y$ give (F7). Finally, Minkowski gives
+$(W\sum_j(\int_0^t|\dot p_j|\,ds)^4)^{1/4}\le L_4(t)$; counting
+labels whose slope travel exceeds $(\lambda_*-\lambda_0)/h$ gives (F8).
+All bounds are monotone in their upper budgets. A zero-force state, if
+encountered, remains stationary by uniqueness; the proof extends by
+continuity without dividing by zero there. $\square$
+
+**What is gained and what is assumed.** Unlike (P3), this envelope has no
+moment-denominator singularity. It becomes uninformative when the feedback
+budget permits enough amplification to exhaust its error or travel
+allowance. It retains the actual initial residual coupling through $f_0$.
+It does not prove that (F5) holds from initial data. A constant-rate
+specialization $B(t)=bt$ gives
+$H(t)=(e^{2bt}-1)/(2b)$, with limit $H(t)=t$ at $b=0$.
+Testing $B(t)=\alpha d_{\rm dir}(0)t$ for specified factors $\alpha$
+is a test of persistence of an aggregate response, not a fit of future
+force amplitude. Such a premise can fail, and its failure must be reported.
+
+An observed large value of $\kappa_H+\kappa_C$ is not automatically a
+large change in force: its time integral matters. Conversely, reusing the
+observed net $d\log f/dt$ as a forecast would mostly reconstruct the force
+trace and would not test the proposed mechanism. The audit must therefore
+keep residual relaxation separate and compare (F3)--(F4).
+
+### Tracking and discrete GD require explicit disturbance budgets
+
+**Proposition 15 (aggregate disturbance extension).** Consider an absolutely
+continuous path with defined coarse projector and
+$\dot\theta=-F-S$. For full gradient flow $S=R$. For the linear
+interpolant of ideal GD, with $t_n=n\eta$, put
+
+$$
+\theta(t)=\theta_n-(t-t_n)g(\theta_n),\qquad
+S(t)=g(\theta_n)-F(\theta(t))
+=R(\theta(t))+g(\theta_n)-g(\theta(t)).
+\tag{F9}
+$$
+
+Thus $S$ contains both tracking and the finite-step defect. At nonzero-force
+points use a nonnegative $d$ as above and define
+
+$$
+u_S=\|DF[S]\|,\qquad
+r_S=\left(W\sum_j|S_j|^4\right)^{1/4},\qquad
+z_S=[\langle e_H,J_HS\rangle]_+.
+$$
+
+For $B(t)=\int_0^t d$, define
+
+$$
+\bar f(t)=e^{B(t)}\left[f_0+\int_0^t e^{-B(s)}u_S(s)\,ds\right],\quad
+D(t)=\int_0^t\bar f(s)^2\,ds,\quad
+L(t)=\sqrt{\mathcal C(t)D(t)}+\int_0^t r_S(s)\,ds.
+\tag{F10}
+$$
+
+Then $f\le\bar f$, $q\le q_0+L$, and
+
+$$
+Y(t)^2\ge\left[Y_0^2-2D(t)-2\int_0^t z_S(s)\,ds\right]_+.
+\tag{F11}
+$$
+
+The capacity and acquisition conclusions follow with $L$ in place of
+$L_4$. Upper integrable envelopes on $d,u_S,r_S,z_S,\sqrt{I_F}$ give
+corresponding upper budgets; no small maximum over neurons is required.
+
+**Proof.** Differentiating $F$ along the disturbed path and applying (F2)
+to its $-F$ part gives $D^+f\le df+u_S$. The integrating-factor
+inequality proves (F10)'s force bound. At $f=0$, the $-F$ contribution
+vanishes and $D^+f\le u_S$, so the same comparison applies. Triangle
+inequality gives $D^+q\le I_F^{1/4}f+r_S$; Cauchy--Schwarz and
+integration give its stated bound. Finally,
+$d(Y^2)/dt=-2f^2-2\langle e_H,J_HS\rangle$, which proves (F11).
+The same particle-travel argument proves the population conclusion.
+Equation (F9) is an exact identity on each GD segment, so it introduces
+no Taylor approximation. $\square$
+
+Small tracking slope force alone does not supply these disturbance budgets.
+The additional derivative loading $DF[S]$, hidden-block fourth-norm
+transport, and adverse fine-energy contribution must be checked. This
+proposition states precisely what a GD transfer must establish; it does
+not certify those inputs for the archived trajectories.
+
+### What a numerical persistence certificate would require
+
+An empirical integral is not a certified upper budget. A sufficient
+route is a validated path enclosure, endpoint interval evaluations of the
+structural quantities, and derivative bounds between endpoints. For a scalar
+quantity $a$ on a segment of length $\Delta$, certified endpoint upper
+bounds $a_0^+,a_1^+$ and $|\dot a|\le L$ imply
+
+$$
+\int a(t)\,dt\le
+\frac\Delta2(a_0^++a_1^+)+\frac{L\Delta^2}{4}.
+\tag{F12}
+$$
+
+To see this, bound $a(t)$ by the smaller of the two endpoint cones
+$a_0^++Lt$ and $a_1^++L(\Delta-t)$ and integrate. If their intersection
+lies outside the segment the smaller single cone gives an even stronger
+bound. Summing (F12) gives a valid budget without bounding the maximum
+concentration or feedback over the whole training horizon. Higher-order
+validated quadrature may improve this sufficient calculation.
+
+Applying (F12) to floating-point samples with estimated, rather than
+certified, derivative bounds remains a diagnostic. Step-size refinement
+and dense sampling can test that diagnostic but do not replace a validated
+path enclosure. The numerical work should distinguish conditional theorem,
+empirical premise coverage, and any actual certificate obtained.
