@@ -147,14 +147,15 @@ def plots(rows,kernel_arrays,thresholds,output):
             if not subset:continue
             stages=sorted({r['snapshot_step'] for r in subset});color=colors.get(optimizer,'#333333')
             values=[np.array([r['eval_error'] for r in subset if r['snapshot_step']==s]) for s in stages]
-            axes[0].plot(np.array(stages)/1e6,[np.median(v) for v in values],'-o',color=color,label=optimizer.upper())
+            label = ('Adam' if optimizer == 'adam' else 'GD') + ' features'
+            axes[0].plot(np.array(stages)/1e6,[np.median(v) for v in values],'-o',color=color,label=label)
             axes[0].fill_between(np.array(stages)/1e6,[min(v) for v in values],[max(v) for v in values],color=color,alpha=.12)
             final=max(stages);interventions=[r for r in rows if r.get('optimizer')==optimizer and r.get('snapshot_step')==final and 'eval_error' in r]
             factors=sorted({r.get('slope_multiplier',1.) for r in interventions})
             vals=[np.array([r['eval_error'] for r in interventions if r.get('slope_multiplier',1.)==s]) for s in factors]
-            axes[1].plot(factors,[np.median(v) for v in vals],'-o',color=color,label=optimizer.upper())
+            axes[1].plot(factors,[np.median(v) for v in vals],'-o',color=color,label=label)
             axes[1].fill_between(factors,[min(v) for v in vals],[max(v) for v in vals],color=color,alpha=.12)
-        axes[0].set_xlabel('Source joint updates (millions)');axes[0].set_title('Readout restart')
+        axes[0].set_xlabel('Source joint updates (millions)');axes[0].set_title('Frozen Adam readout restart')
         axes[1].set_xlabel('Slope and intercept multiplier');axes[1].set_xscale('log',base=4);axes[1].set_xticks([1,4,16],['1','4','16']);axes[1].set_title('Same centers, increased slopes')
         for ax in axes:ax.set_yscale('log');ax.set_ylabel('Final relative output error');ax.legend();ax.grid(alpha=.15)
         for ext in ['png','pdf']:fig.savefig(output/f'feature_access_assays.{ext}',dpi=220)
