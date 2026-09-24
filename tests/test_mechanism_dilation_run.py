@@ -125,3 +125,25 @@ def test_blocked_diagnostics_and_evaluation_match_full_vmap_with_remainder():
     expected = jax.jit(jax.vmap(runner.evaluation_relative_l2, in_axes=(0, None, 0)))(pp, x, yy)
     measured = runner.evaluation_factory(2)(pp, x, yy)
     np.testing.assert_allclose(measured, expected, rtol=2e-13, atol=2e-14)
+
+
+def test_frozen_geometry_updates_readout_and_attributes_zero_slope_motion():
+    p, x, y = fixture()
+    eta = .002
+    gradient = jax.grad(lambda v: jnp.mean((kernel.output(v, x)-y)**2)/2)(p)
+    initial = runner.initial_state(p)
+    one = runner.step(initial, x, y, .01, eta, freeze_geometry=True)
+    np.testing.assert_array_equal(one['p'][:6], p[:6])
+    np.testing.assert_allclose(one['p'][6:], p[6:]-eta*gradient[6:], rtol=1e-13, atol=1e-15)
+    for name in ('signed', 'positive', 'negative', 'crossing', 'norm_integral',
+                 'absolute_radial', 'effective_absolute_radial', 'effective_norm_integral'):
+        np.testing.assert_array_equal(one[name], np.zeros_like(one[name]), err_msg=name)
+    state = jax.tree.map(lambda v: v[None], initial)
+    evolved = runner.advance_factory(x, eta, freeze_geometry=True)(state, y[None], jnp.array([.01]), 5)
+    np.testing.assert_array_equal(evolved['p'][0, :6], p[:6])
+    assert int(evolved['count'][0]) == 5
+    # Existing full-GD tests exercise the default; explicit False must agree too.
+    default = runner.step(initial, x, y, .01, eta)
+    explicit = runner.step(initial, x, y, .01, eta, freeze_geometry=False)
+    for key in default:
+        np.testing.assert_array_equal(default[key], explicit[key])

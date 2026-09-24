@@ -47,9 +47,15 @@ def initial_state(p):
                 count=jnp.array(0, dtype=jnp.int64), failed=jnp.array(False))
 
 
-def step(old, x, y, h, eta):
+def step(old, x, y, h, eta, freeze_geometry=False):
     p = old['p']; w = (p.shape[0]-1)//3
     gradient, parts, fine, resolved, residual, _ = channels(p, x, y)
+    if freeze_geometry:
+        # The gradient remains ordinary on c,d. Channel motion is masked by the
+        # same mobility, so nonexistent slope motion is never attributed to F/R.
+        gradient = gradient.at[:2*w].set(0.)
+        parts = parts.at[:, :2*w].set(0.)
+        fine = fine.at[:2*w].set(0.)
     delta = -eta*gradient
     pn = p+delta
     change = h*(jnp.abs(pn[:w])-jnp.abs(p[:w]))
@@ -76,9 +82,9 @@ def step(old, x, y, h, eta):
     return new
 
 
-def advance_factory(x, eta):
+def advance_factory(x, eta, freeze_geometry=False):
     def advance(state, y, h, length):
-        return jax.lax.fori_loop(0, length, lambda _, s: step(s, x, y, h, eta), state)
+        return jax.lax.fori_loop(0, length, lambda _, s: step(s, x, y, h, eta, freeze_geometry), state)
     return jax.jit(jax.vmap(advance, in_axes=(0, 0, 0, None)))
 
 
@@ -156,6 +162,7 @@ def run(args):
         raise ValueError('FP64 requires JAX_ENABLE_X64=true')
     validate_backend(args.backend)
     diagnostic_batch = getattr(args, 'diagnostic_batch', 16)
+    freeze_geometry = getattr(args, 'freeze_geometry', False)
     if diagnostic_batch <= 0:
         raise ValueError('diagnostic_batch must be positive')
     with np.load(args.input) as data:
@@ -178,6 +185,9 @@ def run(args):
                     slurm_job_id=os.environ.get('SLURM_JOB_ID'), source_commit=os.environ.get('D34_SOURCE_COMMIT'),
                     eta=args.eta, steps=args.steps, channels=CHANNELS, error_thresholds=ERROR_THRESHOLDS,
                     diagnostic_batch=diagnostic_batch,
+                    freeze_geometry=freeze_geometry,
+                    diagnostic_force_scope='unmasked full-GD reference gradient at the current state',
+                    motion_rate_and_integral_scope='actual parameter mobility; zero geometry motion when frozen',
                     failure_rule='nonfinite ordinary GD; unresolved decomposition continues in unknown channel',
                     rate_channels=('effective', *CHANNELS),
                     rate_time='physical flow time t=eta*n; normalized slopes lambda=h*abs(a)',
@@ -209,7 +219,7 @@ def run(args):
         eval_x = jnp.asarray(evaluation[0][0])
         eval_y = jnp.asarray(np.stack([record[1] for record in evaluation]))
     evaluate = evaluation_factory(diagnostic_batch) if eval_x is not None else None
-    advance = advance_factory(x, args.eta)
+    advance = advance_factory(x, args.eta, freeze_geometry)
     schedule = sorted({0, args.steps, *(round(n*.002/args.eta) for n in HORIZONS
                                         if round(n*.002/args.eta) <= args.steps)})
     w = (p0.shape[1]-1)//3
@@ -218,13 +228,17 @@ def run(args):
         if count > previous:
             state = advance(state, y, h, count-previous)
         measured = measure(state['p'], x, y, h, q)
+        if freeze_geometry:
+            for name in ('signed_mean_rates', 'radial_rms_rates', 'lambda_rms_rates',
+                         'outward_mean_rates', 'q23_generated_signed_rate', 'q23_target_signed_rate'):
+                measured[name] = jnp.zeros_like(measured[name])
         state['error_first_hit'] = jnp.where(
             (state['error_first_hit'] < 0)&(measured['relative_l2'][:, None] <= jnp.array(ERROR_THRESHOLDS))
             &~state['failed'][:, None], state['count'][:, None], state['error_first_hit'])
         measured['relative_eval_l2'] = (evaluate(state['p'], eval_x, eval_y) if evaluate is not None
                                          else jnp.full(len(valid), jnp.nan))
-        forecast = p0[:, :w]-args.eta*count*initial['Fa']
-        full_forecast = p0[:, :w]-args.eta*count*initial['ga']
+        forecast = p0[:, :w]-args.eta*count*initial['Fa']*(not freeze_geometry)
+        full_forecast = p0[:, :w]-args.eta*count*initial['ga']*(not freeze_geometry)
         displacement = state['p'][:, :w]-p0[:, :w]
         error = jnp.linalg.norm(state['p'][:, :w]-forecast, axis=1)
         norm = jnp.linalg.norm(displacement, axis=1)
@@ -251,6 +265,8 @@ def main():
     parser.add_argument('--eta', type=float, default=.002)
     parser.add_argument('--steps', type=int, default=20000)
     parser.add_argument('--diagnostic-batch', type=int, default=16)
+    parser.add_argument('--freeze-geometry', action='store_true',
+                        help='Hold a,b exactly fixed; update only c,d by ordinary GD')
     parser.add_argument('--targets'); parser.add_argument('--cohorts'); parser.add_argument('--arms'); parser.add_argument('--seeds')
     parser.add_argument('--backend', choices=('cpu', 'gpu'), default='gpu')
     args = parser.parse_args()
