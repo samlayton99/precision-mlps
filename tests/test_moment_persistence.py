@@ -172,3 +172,35 @@ def test_gd_metadata_and_step_rejection_are_explicit():
     initial = theorem.initial_state(p, x, y, .002)
     assert theorem.gd_constants(initial, 1.1)['reason'] == 'missing_eta'
     assert theorem.gd_constants(dict(initial, eta=100.), 1.1)['reason'] == 'step_size'
+
+
+def test_force_coupled_one_step_contains_actual_mixed_state():
+    rng = np.random.default_rng(821)
+    w = 33
+    xyz = rng.uniform(-.2, .2, (3, w))
+    p = np.r_[xyz.ravel()/np.sqrt(w), .13]
+    x = np.linspace(-1., 1., 65)
+    y = np.sin(2.3*x)+.21*x*x+.3
+    eta = 1e-5
+    initial = theorem.initial_state(p, x, y, .01, eta)
+    constants = theorem.gd_constants(initial, 1.1)
+    assert constants['valid']
+    state = dict(q=initial['z0'], m=np.sqrt(initial['M0']), s=np.sqrt(initial['Es0']), r=initial['R0'], u=initial['F0'])
+    bound = theorem.gd_step(state, constants, force_coupled=True)
+    assert theorem.gd_exit_reason(bound, constants) is None
+    # All recurrences use OLD q and u; q_next is not fed back into this step.
+    assert bound['m'] == pytest.approx(state['m']+eta*(state['u']+constants['J']*state['q']))
+    decomposition = coverage.geometry(p, x, y)
+    gradient = decomposition['F']+decomposition['R']
+    for fraction in (.25, .5, 1.):
+        actual = theorem.initial_state(p-fraction*eta*gradient, x, y, .01, eta)
+        assert actual['R0'] <= bound['r']+1e-12
+        assert np.sqrt(actual['M0']) <= bound['m']+1e-12
+        assert np.sqrt(actual['Es0']) >= bound['s']-1e-12
+        assert actual['coarse_k0'] >= constants['kappa']-1e-12
+    assert actual['z0'] <= bound['q']+1e-12
+    assert actual['F0'] <= bound['u']+1e-12
+    primary, _ = theorem.evaluate_gd_margin(dict(initial, eta=None), 1.1)
+    refined, _ = theorem.evaluate_gd_margin(dict(initial, eta=None), 1.1, force_coupled=True)
+    assert primary['recurrence_variant'] == 'primary'
+    assert refined['recurrence_variant'] == 'force_coupled'

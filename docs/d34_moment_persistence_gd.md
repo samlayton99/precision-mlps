@@ -317,3 +317,126 @@ $\eta n/W$ clock. Stronger cancellations in special targets are not used,
 so it does not establish a $W^2$ clock or permanent saturation. Numerically
 evaluated scalar recurrences require outward rounding for a certified
 instance; ordinary floating-point evaluation is an applicability estimate.
+
+## 6. Proved refinement: propagate the initial force into the region bounds
+
+**Example and motivation.** A checkpoint can have a very small actual
+effective force even when the uniform regional bound $f_*/W$ is large.
+The first recurrence in (4) then charges tracking for movement that the
+network need not make. The moment and support recurrences likewise use
+regional force allowances without using the measured initial force.
+This section couples all four structural bounds to the evolving force
+envelope $u_n$. Its future values are proved recursively; they are not
+read from a training trajectory.
+
+Keep the same region, constants, and step-size conditions (1)–(3). This
+refinement is a separate theorem and does not alter the primary recurrence
+(4). Initialize $\overline z_0,m_0,s_0,r_0,u_0$ exactly as in Section 2,
+and define
+
+$$
+\omega_n=u_n+J\overline z_n.
+\tag{12}
+$$
+
+Use the following alternative recurrence:
+
+$$
+\begin{aligned}
+\overline z_{n+1}
+ &=(1-\eta\kappa)\overline z_n
+   +\frac{\eta D_\ell}{W}\omega_n
+   +\frac{\eta^2H_C}{2}\omega_n^2,\\
+m_{n+1}&=m_n+\eta\omega_n,\\
+s_{n+1}&=s_n-\eta\omega_n,\\
+r_{n+1}&=r_n+\eta\left[
+ \min\left\{\frac{B_*}{W},\sqrt W\,u_n\right\}
+ +\sqrt2R\overline z_n\right],\\
+u_{n+1}&=u_n+\frac{\eta L_F}{W}\omega_n.
+\end{aligned}
+\tag{13}
+$$
+
+**Refined theorem.** Suppose (1)–(3) hold and the sequences in (13)
+satisfy, at every index through $N$,
+
+$$
+r_n<R,\qquad m_n<\sqrt{\overline M},\qquad
+s_n>\sqrt{\underline E_s}.
+\tag{14}
+$$
+
+Then all conclusions (6) hold with these new sequences. Every intervening
+update segment remains in the region. In particular, (13) bounds ordinary
+GD's force reinforcement, tracking, and structural evolution from the
+initial checkpoint without an assumption about future force size.
+
+**Proof.** Suppose the claims hold at step $n$. Then
+$\|g_n\|\le\|F_n\|+J\|z_n\|\le\omega_n$.
+For an interpolation fraction $t\in[0,1]$, the metric isometry and the
+triangle and reverse-triangle inequalities give
+
+$$
+\sqrt{M(\theta_n-t\eta g_n)}\le m_n+t\eta\omega_n
+\le m_{n+1},\qquad
+\sqrt{E_s(\theta_n-t\eta g_n)}\ge s_n-t\eta\omega_n
+\ge s_{n+1}.
+$$
+
+For a single particle, two valid bounds on its effective-force component
+are available at the initial endpoint of the step:
+
+$$
+\sqrt W\,|F_{a,b,c,j,n}|
+\le\min\left\{B_*/W,\sqrt W\,u_n\right\}.
+$$
+
+The first is (11); the second follows from the full physical force norm.
+The tracking component still has rescaled particle norm at most
+$\sqrt2R\overline z_n$. Thus the fourth recurrence encloses every
+particle along the entire segment. Conditions (14) put that segment
+inside the region before its derivatives are bounded.
+
+The segment residual and total-loss descent argument of Section 4 now
+applies unchanged. The exact tracking recurrence there, with
+$\|g_n\|\le\omega_n$, proves the first line of (13). The regional
+force derivative bound gives
+
+$$
+\|F_{n+1}\|\le\|F_n\|
+ +\eta\sup_{\text{segment}}\|DF\|\,\|g_n\|
+\le u_n+\eta L_F\omega_n/W=u_{n+1}.
+$$
+
+This closes induction. No later observed force or loss has entered the
+construction. The inherited step-size condition $a_*\le1$ remains a
+sufficient hypothesis; the absolute moment inequalities above do not
+themselves require it.
+
+The accumulated physical parameter path is bounded by
+
+$$
+\mathcal B_N:=\eta\sum_{n=0}^{N-1}\omega_n=m_N-m_0.
+$$
+
+Consequently the same first-hit argument proves
+
+$$
+\operatorname{fraction}_{\rm ever}(\lambda_*,N)
+\le\min\left\{1,
+\operatorname{fraction}_0(\lambda>\lambda_0)
++\frac{h^2\mathcal B_N^2}{W(\lambda_*-\lambda_0)^2}\right\},
+\qquad \lambda_*>\lambda_0.
+\tag{15}
+$$
+
+The support bound remains $\max_{j,n\le N}\lambda_{j,n}\le hr_N/\sqrt W$.
+This completes the refined theorem.
+
+**Prediction and limitation.** The refinement can extend the interval when
+the proved force envelope stays well below the uniform regional allowance.
+That is an initial-data prediction to evaluate, not a gain asserted by the
+proof. It does not repair an already negative initial Gram perturbation
+margin. The regional derivative constant $L_F$ can also amplify $u_n$ too
+quickly for a useful horizon. Evaluate this refinement separately from
+the primary recurrence so that either limitation remains visible.

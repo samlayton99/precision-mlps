@@ -170,9 +170,15 @@ def gd_constants(initial, multiplier):
     return result
 
 
-def gd_step(state, constants):
+def gd_step(state, constants, force_coupled=False):
     q, m, s, r, u = (state[k] for k in ('q', 'm', 's', 'r', 'u'))
     eta, w, j = constants['eta'], constants['W'], constants['J']
+    if force_coupled:
+        speed = u+j*q
+        return dict(q=(1-eta*constants['kappa'])*q+eta*constants['Dell']/w*speed+eta**2*constants['Hc']/2*speed**2,
+            m=m+eta*speed, s=s-eta*speed,
+            r=r+eta*(min(constants['B']/w, np.sqrt(w)*u)+np.sqrt(2)*constants['radius']*q),
+            u=u+eta*constants['LF']/w*speed)
     speed = constants['f']/w+j*q
     return dict(q=(1-eta*constants['kappa'])*q+eta*constants['Dell']/w*speed+eta**2*constants['Hc']/2*speed**2,
         m=(1+constants['a'])*m+eta*j*q,
@@ -193,9 +199,10 @@ def gd_exit_reason(state, constants):
     return None
 
 
-def evaluate_gd_margin(initial, multiplier, requested=()):
+def evaluate_gd_margin(initial, multiplier, requested=(), force_coupled=False):
     constants = gd_constants(initial, multiplier)
-    result = dict(constants, valid_updates=0)
+    result = dict(constants, valid_updates=0,
+                  recurrence_variant='force_coupled' if force_coupled else 'primary')
     if not constants['valid']:
         return result, {}
     state = dict(q=initial['z0'], m=np.sqrt(initial['M0']), s=np.sqrt(initial['Es0']), r=initial['R0'], u=initial['F0'])
@@ -204,7 +211,7 @@ def evaluate_gd_margin(initial, multiplier, requested=()):
         return dict(result, reason='stationary', valid_updates=None), {n: dict(state) for n in requested}
     n = 0
     while True:
-        trial = gd_step(state, constants)
+        trial = gd_step(state, constants, force_coupled)
         reason = gd_exit_reason(trial, constants)
         if reason is not None:
             break
@@ -219,7 +226,7 @@ def evaluate_gd_margin(initial, multiplier, requested=()):
     return result, records
 
 
-def natural_audit(base, output, hashes):
+def natural_audit(base, output, hashes, force_coupled=False):
     initials, margin_rows, path_rows, missing, failures = [], [], [], [], []
     expected_panels = [f'feedback_{cohort}_{panel}' for cohort in ('development', 'confirmation') for panel in ('N128', 'N512', 'N1024', 'late')]
     found_cases = 0
@@ -268,7 +275,7 @@ def natural_audit(base, output, hashes):
             initials.append(dict(meta, **initial, eta_source='verified_prediction_manifest'))
             evaluations = []
             for multiplier in MULTIPLIERS:
-                result, envelopes = evaluate_gd_margin(initial, multiplier, requested)
+                result, envelopes = evaluate_gd_margin(initial, multiplier, requested, force_coupled)
                 margin_rows.append(dict(meta, **result)); evaluations.append((result, envelopes))
             chosen, envelopes = max(evaluations, key=lambda pair: np.inf if pair[0].get('valid_updates') is None else pair[0]['valid_updates'])
             for n in requested:
@@ -358,7 +365,7 @@ def audit(args):
         for multiplier in MULTIPLIERS:
             value = evaluate_margin(initial, multiplier)
             margins.append(dict(meta, **value)); selected.append(value)
-            gd_value, _ = evaluate_gd_margin(initial, multiplier)
+            gd_value, _ = evaluate_gd_margin(initial, multiplier, force_coupled=args.force_coupled)
             gd_margins.append(dict(meta, **gd_value))
         chosen = max(selected, key=lambda value: value['max_time_lower'])
         best.append(dict(meta, **chosen))
@@ -367,10 +374,12 @@ def audit(args):
     coverage.write_csv(args.output/'effective_flow_best.csv', best)
     coverage.write_csv(args.output/'ordinary_gd_margins.csv', gd_margins)
     coverage.write_csv(args.output/'failures.csv', failures)
-    natural = natural_audit(args.base, args.output, hashes)
+    natural = natural_audit(args.base, args.output, hashes, args.force_coupled)
     result = dict(source_sha256=coverage.digest(__file__), input_hashes=hashes, **natural,
         inventory_states=len(rows), evaluated_states=len(inputs), failures=len(failures),
         missing_eta_states=sum(row['eta'] is None for row in inputs),
+        recurrence_variant='force_coupled' if args.force_coupled else 'primary',
+        force_coupled_policy='Use proved recurrence from initial F0; no future force observations enter the envelope',
         dependency_sha256={str(Path(coverage.__file__)): coverage.digest(coverage.__file__)},
         multipliers=MULTIPLIERS, clock='T=eta*N/W', role='FP64 theorem-condition evaluation; GF and ordinary-GD rows separate; no rigorous certificates',
         eta_policy='Explicit archive metadata only; missing rates do not prevent continuous-time evaluation',
@@ -382,4 +391,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--force-coupled', action='store_true', help='Evaluate the separately proved initial-force recurrence; default remains the primary recurrence')
     audit(parser.parse_args())

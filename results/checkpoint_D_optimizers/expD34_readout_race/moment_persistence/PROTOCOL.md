@@ -89,3 +89,18 @@ none is informative, report that outcome and identify the limiting estimate.
 The report is authored directly in Markdown after inspecting the evidence.
 The central note will link the full proof and the empirical assessment.
 Adam and the PI packet remain outside this round.
+
+## Follow-up fixed after inspecting the primary outcome
+
+The primary calculation admitted 22 of 223 initial regions and supported
+at most five ordinary-GD updates. A separately proved refinement in
+Section 6 of the GD note feeds the initial effective-force norm into all
+subsequent movement bounds. It replaces the tracking recurrence's uniform
+regional speed allowance by the recursively bounded actual speed. This is
+a follow-up motivated by the primary failure, not a preregistered result.
+
+Evaluate the refinement on exactly the same panels and seven multipliers,
+in a separate output directory using `--force-coupled`. Retain the primary
+outcome. Do not change initial conditioning tests or insert future observed
+forces. Compare valid horizons and the same archived conclusions. A longer
+but still short interval remains an uninformative long-horizon result.
