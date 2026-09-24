@@ -1,0 +1,544 @@
+{
+  "input_sha256": "be357924d77d60c51c1720d3ceaf55723be2e41205f70678e8a7e1a173a563cc",
+  "candidates": [
+    {
+      "run": "joint_adam_constant",
+      "recipe_index": 0,
+      "recipe": {
+        "schedule": "constant",
+        "learning_rate": 0.02
+      },
+      "errors": {
+        "train": [
+          0.004344792776667416,
+          0.016996521483050087,
+          0.012588127565606028,
+          0.004034642148711024,
+          0.0026755450159872633
+        ],
+        "validation": [
+          0.004345209267472146,
+          0.016996700983620723,
+          0.012588918298422153,
+          0.00403487423649684,
+          0.0026761817792335823
+        ],
+        "eval": [
+          0.004345313703665855,
+          0.016996745908336476,
+          0.012589116111055012,
+          0.004034932403036008,
+          0.002676341239166733
+        ]
+      },
+      "median_validation_error": 0.004345209267472146,
+      "state_sha256": "c6129378a1d85e7f5c6b44fefc4928b3850413e988671a184ecc1781e0c6312d"
+    },
+    {
+      "run": "joint_adam_constant",
+      "recipe_index": 1,
+      "recipe": {
+        "schedule": "constant",
+        "learning_rate": 0.002
+      },
+      "errors": {
+        "train": [
+          0.009583269991602998,
+          0.011467814303255228,
+          0.004371573299699149,
+          0.006932202368020489,
+          0.009657309399289254
+        ],
+        "validation": [
+          0.009583781645861834,
+          0.011467935015629,
+          0.00437251232244146,
+          0.006932233848296127,
+          0.00965733542909108
+        ],
+        "eval": [
+          0.009583909739720129,
+          0.011467965234270931,
+          0.004372747450087523,
+          0.006932241783045017,
+          0.00965734200078785
+        ]
+      },
+      "median_validation_error": 0.009583781645861834,
+      "state_sha256": "c6129378a1d85e7f5c6b44fefc4928b3850413e988671a184ecc1781e0c6312d"
+    },
+    {
+      "run": "joint_adam_cosine",
+      "recipe_index": 0,
+      "recipe": {
+        "schedule": "cosine",
+        "learning_rate": 0.05
+      },
+      "errors": {
+        "train": [
+          0.002255977919573152,
+          0.0014596001026542349,
+          0.0022965399451755075,
+          0.0018143227040915435,
+          0.001697921138791134
+        ],
+        "validation": [
+          0.002256448919740474,
+          0.0014598646831824869,
+          0.0022966035181307518,
+          0.001814724093052333,
+          0.0016984847884862
+        ],
+        "eval": [
+          0.0022565672289257075,
+          0.0014599311690205402,
+          0.0022966194614682986,
+          0.0018148249745477383,
+          0.0016986261576348333
+        ]
+      },
+      "median_validation_error": 0.001814724093052333,
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "run": "joint_adam_cosine",
+      "recipe_index": 1,
+      "recipe": {
+        "schedule": "cosine",
+        "learning_rate": 0.02
+      },
+      "errors": {
+        "train": [
+          0.002259051218128118,
+          0.0012160675976130477,
+          0.0017061519556261326,
+          0.0018287089742457267,
+          0.0033376816694593993
+        ],
+        "validation": [
+          0.0022591638861103745,
+          0.001216452965915283,
+          0.0017067749655878277,
+          0.0018288728044976983,
+          0.003337703010397483
+        ],
+        "eval": [
+          0.0022591921003210056,
+          0.0012165496029102466,
+          0.0017069310138414229,
+          0.0018289139478561477,
+          0.0033377083501952625
+        ]
+      },
+      "median_validation_error": 0.0018288728044976983,
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    }
+  ],
+  "selected": {
+    "run": "joint_adam_cosine",
+    "recipe_index": 0,
+    "recipe": {
+      "schedule": "cosine",
+      "learning_rate": 0.05
+    },
+    "errors": {
+      "train": [
+        0.002255977919573152,
+        0.0014596001026542349,
+        0.0022965399451755075,
+        0.0018143227040915435,
+        0.001697921138791134
+      ],
+      "validation": [
+        0.002256448919740474,
+        0.0014598646831824869,
+        0.0022966035181307518,
+        0.001814724093052333,
+        0.0016984847884862
+      ],
+      "eval": [
+        0.0022565672289257075,
+        0.0014599311690205402,
+        0.0022966194614682986,
+        0.0018148249745477383,
+        0.0016986261576348333
+      ]
+    },
+    "median_validation_error": 0.001814724093052333,
+    "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+  },
+  "center_coverage": [
+    {
+      "seed": 0,
+      "zero_slopes": 0,
+      "finite_centers": 512,
+      "fraction_centers_inside_interval": 0.974609375,
+      "scaled_slope_rms": 0.05846670462961675,
+      "scaled_slope_q99": 0.25059569660169256,
+      "thresholds": [
+        0.001,
+        0.01,
+        0.05,
+        0.1,
+        0.25
+      ],
+      "counts_above_threshold": [
+        53,
+        53,
+        49,
+        45,
+        6
+      ],
+      "inside_counts_above_threshold": [
+        48,
+        48,
+        47,
+        44,
+        6
+      ],
+      "all_defined_center_coverage": {
+        "count": 512,
+        "center_quantiles": [
+          -128.76605900255458,
+          -0.026796328352525482,
+          0.017165716277696433,
+          0.017167676710047312,
+          0.017169679429104703,
+          0.19738555629248283,
+          499.5020031682154
+        ],
+        "distinct_centers_rounded_12dp": 512,
+        "occupied_32_equal_interval_bins": 30,
+        "maximum_count_in_one_bin": 453
+      },
+      "active_inside_center_coverage": {
+        "count": 48,
+        "center_quantiles": [
+          -0.9891112048375708,
+          -0.8383006603202207,
+          -0.32031466161857364,
+          0.026186972987187807,
+          0.35618825181303304,
+          0.8694545097663353,
+          0.997039629835914
+        ],
+        "distinct_centers_rounded_12dp": 48,
+        "occupied_32_equal_interval_bins": 30,
+        "maximum_count_in_one_bin": 3
+      },
+      "subnormal_slope_count": 451,
+      "minimum_abs_slope": 1.186720832664e-312,
+      "two_million_counts_above_same_thresholds": [
+        42,
+        39,
+        33,
+        26,
+        0
+      ],
+      "two_million_fraction_centers_inside_interval": 0.986328125
+    },
+    {
+      "seed": 1,
+      "zero_slopes": 0,
+      "finite_centers": 512,
+      "fraction_centers_inside_interval": 0.9765625,
+      "scaled_slope_rms": 0.058183238203493,
+      "scaled_slope_q99": 0.2465512456386985,
+      "thresholds": [
+        0.001,
+        0.01,
+        0.05,
+        0.1,
+        0.25
+      ],
+      "counts_above_threshold": [
+        58,
+        56,
+        54,
+        45,
+        5
+      ],
+      "inside_counts_above_threshold": [
+        50,
+        50,
+        49,
+        43,
+        5
+      ],
+      "all_defined_center_coverage": {
+        "count": 512,
+        "center_quantiles": [
+          -1.9193641927064085,
+          -0.06970938767380605,
+          -0.06970938767380364,
+          -0.06970938767380286,
+          -0.06970938767380212,
+          0.24821958276805195,
+          117.95012725319161
+        ],
+        "distinct_centers_rounded_12dp": 63,
+        "occupied_32_equal_interval_bins": 30,
+        "maximum_count_in_one_bin": 451
+      },
+      "active_inside_center_coverage": {
+        "count": 50,
+        "center_quantiles": [
+          -0.9922148497356822,
+          -0.8451242464297689,
+          -0.34898066523935883,
+          0.007486565531742555,
+          0.3591478583131913,
+          0.899618121008781,
+          0.9785712748801703
+        ],
+        "distinct_centers_rounded_12dp": 50,
+        "occupied_32_equal_interval_bins": 30,
+        "maximum_count_in_one_bin": 3
+      },
+      "subnormal_slope_count": 0,
+      "minimum_abs_slope": 2.9548615666455244e-269,
+      "two_million_counts_above_same_thresholds": [
+        37,
+        36,
+        31,
+        25,
+        1
+      ],
+      "two_million_fraction_centers_inside_interval": 0.990234375
+    },
+    {
+      "seed": 2,
+      "zero_slopes": 0,
+      "finite_centers": 512,
+      "fraction_centers_inside_interval": 0.08984375,
+      "scaled_slope_rms": 0.054840561130400374,
+      "scaled_slope_q99": 0.2426228186783152,
+      "thresholds": [
+        0.001,
+        0.01,
+        0.05,
+        0.1,
+        0.25
+      ],
+      "counts_above_threshold": [
+        51,
+        50,
+        48,
+        42,
+        5
+      ],
+      "inside_counts_above_threshold": [
+        46,
+        46,
+        45,
+        40,
+        5
+      ],
+      "all_defined_center_coverage": {
+        "count": 512,
+        "center_quantiles": [
+          -753.1013900962935,
+          -0.05381781167480996,
+          1.4923061998912932,
+          1.4945773001928895,
+          1.5764658496672972,
+          1.6095614223098338,
+          94.01877444302595
+        ],
+        "distinct_centers_rounded_12dp": 512,
+        "occupied_32_equal_interval_bins": 29,
+        "maximum_count_in_one_bin": 3
+      },
+      "active_inside_center_coverage": {
+        "count": 46,
+        "center_quantiles": [
+          -0.976714796443403,
+          -0.7781717188669706,
+          -0.3686090358979984,
+          -0.00022956821476446607,
+          0.3401567705930615,
+          0.8442323749191418,
+          0.969029143791817
+        ],
+        "distinct_centers_rounded_12dp": 46,
+        "occupied_32_equal_interval_bins": 29,
+        "maximum_count_in_one_bin": 3
+      },
+      "subnormal_slope_count": 421,
+      "minimum_abs_slope": 7.58070765e-316,
+      "two_million_counts_above_same_thresholds": [
+        43,
+        43,
+        37,
+        26,
+        0
+      ],
+      "two_million_fraction_centers_inside_interval": 0.986328125
+    },
+    {
+      "seed": 3,
+      "zero_slopes": 0,
+      "finite_centers": 512,
+      "fraction_centers_inside_interval": 0.984375,
+      "scaled_slope_rms": 0.053157574513470786,
+      "scaled_slope_q99": 0.23258751074747427,
+      "thresholds": [
+        0.001,
+        0.01,
+        0.05,
+        0.1,
+        0.25
+      ],
+      "counts_above_threshold": [
+        54,
+        52,
+        47,
+        41,
+        4
+      ],
+      "inside_counts_above_threshold": [
+        47,
+        47,
+        45,
+        40,
+        4
+      ],
+      "all_defined_center_coverage": {
+        "count": 512,
+        "center_quantiles": [
+          -169.18156007974676,
+          -0.09867557527303603,
+          0.11540979868314144,
+          0.11544624756866625,
+          0.1154842449779043,
+          0.11573842273244059,
+          6.174090626988172
+        ],
+        "distinct_centers_rounded_12dp": 512,
+        "occupied_32_equal_interval_bins": 28,
+        "maximum_count_in_one_bin": 459
+      },
+      "active_inside_center_coverage": {
+        "count": 47,
+        "center_quantiles": [
+          -0.991111394524239,
+          -0.9093396045205416,
+          -0.39505721951929285,
+          -0.015548993750594693,
+          0.3959523343277306,
+          0.8412647876285563,
+          0.973501995047038
+        ],
+        "distinct_centers_rounded_12dp": 47,
+        "occupied_32_equal_interval_bins": 28,
+        "maximum_count_in_one_bin": 3
+      },
+      "subnormal_slope_count": 457,
+      "minimum_abs_slope": 9.549605764e-314,
+      "two_million_counts_above_same_thresholds": [
+        43,
+        38,
+        35,
+        28,
+        0
+      ],
+      "two_million_fraction_centers_inside_interval": 0.986328125
+    },
+    {
+      "seed": 4,
+      "zero_slopes": 0,
+      "finite_centers": 512,
+      "fraction_centers_inside_interval": 0.9765625,
+      "scaled_slope_rms": 0.058597263900940354,
+      "scaled_slope_q99": 0.25654857398573916,
+      "thresholds": [
+        0.001,
+        0.01,
+        0.05,
+        0.1,
+        0.25
+      ],
+      "counts_above_threshold": [
+        54,
+        52,
+        50,
+        45,
+        7
+      ],
+      "inside_counts_above_threshold": [
+        49,
+        49,
+        49,
+        45,
+        7
+      ],
+      "all_defined_center_coverage": {
+        "count": 512,
+        "center_quantiles": [
+          -199.1838120857275,
+          -0.10043209564251974,
+          0.07707863603014689,
+          0.07707863603014758,
+          0.07707863603014847,
+          0.1653076588931844,
+          195314.92614554524
+        ],
+        "distinct_centers_rounded_12dp": 62,
+        "occupied_32_equal_interval_bins": 31,
+        "maximum_count_in_one_bin": 453
+      },
+      "active_inside_center_coverage": {
+        "count": 49,
+        "center_quantiles": [
+          -0.9894845969367407,
+          -0.8345338870639005,
+          -0.29389122960223135,
+          0.015144023477630617,
+          0.36902698850315585,
+          0.9303093642854038,
+          0.9946783035595054
+        ],
+        "distinct_centers_rounded_12dp": 49,
+        "occupied_32_equal_interval_bins": 31,
+        "maximum_count_in_one_bin": 3
+      },
+      "subnormal_slope_count": 0,
+      "minimum_abs_slope": 2.0756021716468203e-288,
+      "two_million_counts_above_same_thresholds": [
+        41,
+        40,
+        38,
+        29,
+        1
+      ],
+      "two_million_fraction_centers_inside_interval": 0.978515625
+    }
+  ],
+  "selection": "One complete recipe chosen by median final validation error across all five seeds; final checkpoint only; dense grid is resolution check.",
+  "center_numerical_caution": "Many near-zero slopes are subnormal at5M; raw center ratios and distinct-center counts for those units are not robust geometric evidence. Interpret thresholded active-center coverage instead.",
+  "two_million_dense_comparison": {
+    "previous_errors": [
+      0.004289679175695511,
+      0.0035643457308061808,
+      0.0019318087210715962,
+      0.0021278251024981014,
+      0.0025094988485799287
+    ],
+    "final_errors": [
+      0.0022565672289257075,
+      0.0014599311690205402,
+      0.0022966194614682986,
+      0.0018148249745477383,
+      0.0016986261576348333
+    ],
+    "paired_new_over_previous": [
+      0.5260456869853996,
+      0.4095930303288324,
+      1.1888441316251734,
+      0.8529013838670783,
+      0.676878635985846
+    ],
+    "median_error_reduction": 0.2768177695818794,
+    "interpretation": "Fresh full-horizon cosine runs at each horizon, not a resumed identical trajectory."
+  }
+}
