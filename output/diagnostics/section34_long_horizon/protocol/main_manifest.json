@@ -1,0 +1,90 @@
+{
+  "width": 512,
+  "interior_intervals": 467,
+  "interior_centers": 468,
+  "halo_each_side": 22,
+  "spacing": 0.004282655246252677,
+  "halo_rule": "ceil(sqrt(interior_intervals)); inverted within total width",
+  "geometries": [
+    {
+      "name": "uniform_lambda0.03125",
+      "family": "uniform",
+      "gamma": 7.296875,
+      "lambda_rms": 0.03125,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null
+    },
+    {
+      "name": "uniform_lambda0.0625",
+      "family": "uniform",
+      "gamma": 14.59375,
+      "lambda_rms": 0.0625,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null
+    },
+    {
+      "name": "uniform_lambda0.09375",
+      "family": "uniform",
+      "gamma": 21.890625,
+      "lambda_rms": 0.09375,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null
+    },
+    {
+      "name": "uniform_lambda0.125",
+      "family": "uniform",
+      "gamma": 29.1875,
+      "lambda_rms": 0.125,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null
+    },
+    {
+      "name": "uniform_lambda0.25",
+      "family": "uniform",
+      "gamma": 58.375,
+      "lambda_rms": 0.25,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null
+    },
+    {
+      "name": "uniform_lambda0.5",
+      "family": "uniform",
+      "gamma": 116.75,
+      "lambda_rms": 0.5,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null
+    },
+    {
+      "name": "uniform_lambda1",
+      "family": "uniform",
+      "gamma": 233.5,
+      "lambda_rms": 1.0,
+      "seed": null,
+      "snapshot_step": null,
+      "source_error": null
+    }
+  ],
+  "samples": 2048,
+  "validation_samples": 4096,
+  "eval_samples": 8192,
+  "target_name": "mixed_sines",
+  "target_normalizer": 0.8100925873009825,
+  "target_formula": "sin(2*pi*x)+0.5*sin(6*pi*x)+0.25*sin(14*pi*x)",
+  "input_sha256": "eaba106586d281be9c0ea2d13d8b958dc4b35dec2a7227c6b1533547eb3ddecc",
+  "feature_layout": "raw tanh columns followed by output bias",
+  "parameter_initialization": "zero readout for frozen features; five paired affine Xavier joint initializations",
+  "seed_ids": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "evaluation_role": "8192 midpoint resolution check, previously inspected; not an untouched test set"
+}
