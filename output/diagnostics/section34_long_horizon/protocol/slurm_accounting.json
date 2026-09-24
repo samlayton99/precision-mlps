@@ -1,0 +1,283 @@
+{
+  "window_start_utc": "2026-09-24T08:23:00Z",
+  "window_end_utc": "2026-09-24T14:23:00Z",
+  "gpu_budget_hours": 6,
+  "allocated_gpu_seconds": 19155,
+  "allocated_gpu_hours": 5.320833333333334,
+  "gpu_jobs": 23,
+  "accounting": "Slurm sacct -X allocation records; counts allocated GPU elapsed seconds once per job, including compilation and I/O; CPU-only jobs contribute zero GPU time.",
+  "jobs": [
+    {
+      "job_id": 1384,
+      "name": "s34-bench-adam",
+      "state": "COMPLETED",
+      "elapsed_seconds": 19,
+      "gpus": 1,
+      "allocation": "billing=8,cpu=8,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1385,
+      "name": "s34-bounds",
+      "state": "FAILED",
+      "elapsed_seconds": 1,
+      "gpus": 0,
+      "allocation": "billing=8,cpu=8,mem=64G,node=1"
+    },
+    {
+      "job_id": 1386,
+      "name": "s34-bench-gd",
+      "state": "COMPLETED",
+      "elapsed_seconds": 18,
+      "gpus": 1,
+      "allocation": "billing=8,cpu=8,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1388,
+      "name": "s34-joint-gd",
+      "state": "COMPLETED",
+      "elapsed_seconds": 2380,
+      "gpus": 1,
+      "allocation": "billing=8,cpu=8,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1389,
+      "name": "s34-joint-adam",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1459,
+      "gpus": 1,
+      "allocation": "billing=8,cpu=8,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1390,
+      "name": "s34-bounds",
+      "state": "CANCELLED by 1003",
+      "elapsed_seconds": 0,
+      "gpus": 0,
+      "allocation": ""
+    },
+    {
+      "job_id": 1396,
+      "name": "s34-frozen-gd",
+      "state": "COMPLETED",
+      "elapsed_seconds": 69,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1397,
+      "name": "s34-frozen-adam",
+      "state": "COMPLETED",
+      "elapsed_seconds": 179,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1406,
+      "name": "s34-quad-gd",
+      "state": "COMPLETED",
+      "elapsed_seconds": 2318,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1407,
+      "name": "s34-quad-adam",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1472,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1427,
+      "name": "s34-adam5m-const",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1195,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1428,
+      "name": "s34-adam5m-cos",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1199,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1429,
+      "name": "s34-gd5m",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1712,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1432,
+      "name": "s34-learned2m",
+      "state": "COMPLETED",
+      "elapsed_seconds": 985,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1433,
+      "name": "s34-frozen-expand",
+      "state": "COMPLETED",
+      "elapsed_seconds": 197,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1434,
+      "name": "s34-frozen5m",
+      "state": "COMPLETED",
+      "elapsed_seconds": 447,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1435,
+      "name": "s34-frozen-gd-checks",
+      "state": "COMPLETED",
+      "elapsed_seconds": 217,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1441,
+      "name": "s34-quad-frozen",
+      "state": "COMPLETED",
+      "elapsed_seconds": 195,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1442,
+      "name": "s34-quad-adam-expand",
+      "state": "COMPLETED",
+      "elapsed_seconds": 485,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1443,
+      "name": "s34-learned-analysis",
+      "state": "FAILED",
+      "elapsed_seconds": 1,
+      "gpus": 0,
+      "allocation": "billing=2,cpu=2,mem=32G,node=1"
+    },
+    {
+      "job_id": 1449,
+      "name": "s34-quad-gd5m-const",
+      "state": "COMPLETED",
+      "elapsed_seconds": 795,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1450,
+      "name": "s34-quad-gd5m-cos",
+      "state": "COMPLETED",
+      "elapsed_seconds": 823,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1456,
+      "name": "s34-main5m-analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 44,
+      "gpus": 0,
+      "allocation": "billing=2,cpu=2,mem=32G,node=1"
+    },
+    {
+      "job_id": 1457,
+      "name": "s34-learned5m",
+      "state": "COMPLETED",
+      "elapsed_seconds": 1000,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1458,
+      "name": "s34-main5m-metrics",
+      "state": "COMPLETED",
+      "elapsed_seconds": 166,
+      "gpus": 0,
+      "allocation": "billing=2,cpu=2,mem=32G,node=1"
+    },
+    {
+      "job_id": 1459,
+      "name": "s34-geometry-adam",
+      "state": "COMPLETED",
+      "elapsed_seconds": 356,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1460,
+      "name": "s34-learned5m-analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 78,
+      "gpus": 0,
+      "allocation": "billing=2,cpu=2,mem=32G,node=1"
+    },
+    {
+      "job_id": 1461,
+      "name": "s34-uniform5m-analysis",
+      "state": "FAILED",
+      "elapsed_seconds": 1,
+      "gpus": 0,
+      "allocation": "billing=2,cpu=2,mem=32G,node=1"
+    },
+    {
+      "job_id": 1462,
+      "name": "s34-cpu-dependencies",
+      "state": "COMPLETED",
+      "elapsed_seconds": 3,
+      "gpus": 0,
+      "allocation": "billing=1,cpu=1,mem=8G,node=1"
+    },
+    {
+      "job_id": 1464,
+      "name": "s34-uniform5m-analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 9,
+      "gpus": 0,
+      "allocation": "billing=2,cpu=2,mem=32G,node=1"
+    },
+    {
+      "job_id": 1465,
+      "name": "s34-learned2m-analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 29,
+      "gpus": 0,
+      "allocation": "billing=2,cpu=2,mem=32G,node=1"
+    },
+    {
+      "job_id": 1482,
+      "name": "s34-quad-adam5m-cos",
+      "state": "COMPLETED",
+      "elapsed_seconds": 821,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1483,
+      "name": "s34-quad-adam5m-const",
+      "state": "COMPLETED",
+      "elapsed_seconds": 814,
+      "gpus": 1,
+      "allocation": "billing=2,cpu=2,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 1485,
+      "name": "s34-quad5m-analysis",
+      "state": "COMPLETED",
+      "elapsed_seconds": 14,
+      "gpus": 0,
+      "allocation": "billing=2,cpu=2,mem=32G,node=1"
+    }
+  ]
+}

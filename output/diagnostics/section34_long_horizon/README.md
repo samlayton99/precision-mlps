@@ -74,3 +74,5 @@ The four focused test modules for analysis, bounds, bound diagnostics, and joint
 The repository-wide run recorded 868 passed, 17 failed, and 9 skipped tests. All 17 failures were reproduced on the pre-study baseline `f0e7dff` in an isolated checkout. They concern missing external dependencies or datasets, existing numerical thresholds and dtype expectations, and existing module-import collisions. No unrelated fixes were mixed into this study.
 
 Floating-point quadrature refinement and reconstruction checks support the numerical evaluation; they are not directed-rounding certificates. Direct-fit cutoff sensitivity is reported separately from exact mathematical representability. A frozen-GD theorem is not asserted as an Adam or joint-training convergence law.
+
+All 23 GPU allocations completed successfully, using **5.321 aggregate GPU-hours**, including compilation and I/O. The [Slurm accounting record](protocol/slurm_accounting.json) counts allocation records once and preserves CPU-job outcomes separately. The work completed within the six-hour execution window and six-GPU-hour allowance.
