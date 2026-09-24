@@ -28,6 +28,8 @@ Neither optimizer met that constant-run trigger on the primary target at two mil
 
 Quadratic Adam did meet the continuation trigger: the best constant recipe, $\eta=0.0002$, improved its trailing-window error by 30.82%. That rate also lay at the lower search boundary, prompting one expansion to $0.0002/3$ under both schedules before selecting continuation candidates.
 
+The supporting quadratic extension advances the best rate per schedule across all five seeds, rather than the two rates used for the primary extension. This budget adjustment follows measured small-batch throughput. Its five-million-update joint curves are compared over the same horizon; the quadratic uniform readouts were executed for two million updates and are reported separately.
+
 Every raw joint-training error and RMS slope is saved. Parameters are saved every 10,000 updates. The plotted slope statistics are the RMS and 99th percentile of $h|a_j|$, using the uniform reference spacing $h$ even though learned centers are not uniform. A uniform reference line does not assert that the same statistic is a necessary threshold for heterogeneous features. Plot reduction retains the full horizon, exact endpoints, and within-bin extrema so brief instability remains visible.
 
 ## Frozen-feature checks

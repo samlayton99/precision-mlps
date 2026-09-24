@@ -84,6 +84,12 @@ two-million-update evidence. In the quadratic experiment, Adam's constant
 rate $0.0002$ \emph{did} meet the duration trigger: its error reduction was
 $30.82\%$. Its lower-boundary expansion to $0.0002/3$ was also queued.
 No conclusion about these pending checks is inferred from the earlier runs.
+The supporting quadratic extension advances the best rate per schedule
+across all five seeds, rather than the two rates used for the primary
+extension. This budget adjustment follows measured small-batch throughput.
+Its five-million-update joint curves are compared over the same horizon;
+the quadratic uniform readouts were executed for two million updates and
+are reported separately.
 
 \paragraph{Slope statistics and trajectory preservation.}
 Every raw joint-training error and RMS slope is saved; parameters are saved
@@ -128,7 +134,7 @@ $\{10^{-5},10^{-4},10^{-3},0.002,0.01,0.1\}$ and both schedules.
 Boundary winners prompted a shared expansion by $10^{-5}/3$ and $0.3$;
 the expanded rates apply to every uniform dictionary and learned-feature
 assay. The preselected main reference is $\lambda=1/4$, using one complete
-recipe chosen by final validation error. The queued five-million-update
+recipe chosen by final validation error. The completed five-million-update
 uniform comparison uses the complete expanded grid.
 
 A direct SVD readout fit independently checks attainable accuracy. The
@@ -147,8 +153,7 @@ $a_j$ and $b_j$ by four or sixteen, preserving each nonconstant feature's
 center. These interventions test slope changes at learned centers and do
 not impose the uniform-center assumptions of the theorem. Each assay has a
 common two-million-update readout budget; this is additional diagnostic
-computation, not a matched end-to-end training budget. Pending assay results
-are not treated as evidence.
+computation, not a matched end-to-end training budget.
 
 For a kernel or adaptive metric $A$, with eigenvalues $\nu_i$ and normalized
 eigenvectors $z_i$, the energy below relative cutoff $\tau$ is reported as
