@@ -75,3 +75,5 @@ For the constant runs, the median adaptive-trace-weighted contribution of $\epsi
 The completed [frozen-feature validation](section34_frozen_validation.md) reports five-million-update theorem tightness and the bandwidth sweep with Adam trajectories.
 
 The [learned-geometry controls](section34_geometry_controls.md) compare readout restarts, direct fits, and isolated changes to slopes or centers. They also explain why a high slope percentile does not imply acquisition of a uniform high-precision dictionary.
+
+The [quadratic control](section34_quadratic_validation.md) reports five-million-update joint training and separately labeled two-million-update frozen checks. It demonstrates both continued progress with longer training and much smaller acquired slopes for the smoother arithmetic target.

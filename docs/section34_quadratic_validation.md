@@ -2,12 +2,6 @@
 
 The quadratic target reaches lower error with substantially smaller learned slopes than the primary mixed-sine target. The frozen-dictionary theorem remains accurate for this target, but the joint-training comparison does not support a universal slope threshold or a permanent training failure.
 
-| Quantity | Meaning |
-|---|---|
-| Relative output error | $\lVert f-y\rVert_2/\lVert y\rVert_2$ on the specified midpoint grid |
-| $h\lvert a_j\rvert$ | Absolute input slope of neuron $j$, scaled by reference spacing $h=2/467$ |
-| $\lambda=\gamma h$ | Common scaled slope for a uniform frozen dictionary; not a single parameter of a heterogeneous learned model |
-
 ## Five-million-update joint comparison
 
 We replace the mixed-sine target by $x^2$, normalized by its training-grid RMS, retaining the total width of 512, five paired initializations, FP64 arithmetic, and 2,048 training, 4,096 validation, and 8,192 resolution-check midpoints. The objective and optimizer settings follow the [main protocol](section34_empirical_appendix.md). After a two-million-update rate search and a lower-rate Adam expansion, the best rate for each optimizer and schedule is rerun from initialization for five million updates. Cosine decay spans the entire new horizon. This secondary control retains one rate per schedule, whereas the primary target retains two. One complete recipe per optimizer is selected by median final validation error across all five seeds; neither seeds nor earlier checkpoints are selected separately. The dense grid checks resolution and is not an untouched generalization test.

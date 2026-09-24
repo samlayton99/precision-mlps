@@ -2,6 +2,8 @@
 
 This directory contains compact evidence for the proposed [Section 3.4](../../../docs/section34_slope_acquisition.md), its [proof](../../../docs/section34_slope_appendix.md), and the [experimental protocol](../../../docs/section34_empirical_appendix.md). The study uses width 512 including halos, five paired joint-training seeds, full-horizon cosine and constant schedules, and raw relative output error. The theorem concerns frozen GD; Adam and evolving features are evaluated empirically.
 
+The [compiled review PDF](../../pdf/section34_slope_acquisition_review.pdf) combines the proposed subsection, full proof, and empirical appendices. The [drop-in LaTeX subsection](../../../docs/section34_slope_acquisition.tex) is separate from the review wrapper.
+
 ## Evidence and provenance
 
 - [Main three-panel figure](main_5m/section34_three_panel.pdf) compares five million executed updates. Its provenance records the exact analyses and display reduction. `main_5m/joint_analysis/` retains all candidate recipes, the globally selected trajectories, selected parameter arrays, and independently reconstructed endpoint errors.
@@ -11,6 +13,7 @@ This directory contains compact evidence for the proposed [Section 3.4](../../..
 - `main_5m/harmonic_diagnostic/` projects executed GD residuals onto the three target harmonics and their orthogonal complement. These physical-frequency projections are distinct from kernel eigenmode projections.
 - `main_5m/joint_metrics/` uses the actual joint Adam second moments for readout and full-Jacobian metrics. It reports local target and residual projections, not an Adam convergence prediction.
 - `geometry_2m/` contains readout restarts and separate slope/center interventions on two-million-update source models. `main_5m/geometry_diagnostics/` contains the longer-source comparison and direct-fit evidence. Source-training and additional readout budgets remain distinct.
+- `quadratic/` contains the separate normalized-$x^2$ control: five-million-update joint curves, two-million-update frozen checks, selected recipes, and the continuation budget.
 - `attainability/` retains direct-fit coefficients and recomputed errors at three SVD cutoffs. These are numerical witnesses of attainable accuracy, not proofs of an approximation floor.
 - `protocol/` records the target, geometry, initialization, original optimizer grids, and the shared frozen-Adam grid expansion.
 - `main_2m/` retains the earlier complete comparison and its constant-rate Adam metric control. It must not be substituted for a five-million-update result.
