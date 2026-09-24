@@ -16,6 +16,45 @@ geometry injections improve readout fitting with little subsequent slope
 growth, across 23 targets; the remaining proof gap is preserving the
 structural condition for a useful duration with realistic constants.
 
+## Latest refinement: preserve weak residual coupling
+
+The [feedback-persistence study](evidence/feedback_findings/README.md) completes
+the next three steps: a conditional theorem retaining the initial effective
+force, an audit across the saved target and perturbation panels, and a new
+initial-data proof with outward-rounded effective-ODE instances.
+
+Theorem 14 uses accumulated curvature feedback to bound force amplification
+and output-error reduction. Its energy conclusion needs no concentration
+premise; accumulated concentration supplies the additional population
+movement bound. On all 46 width-705 baseline branches, an allowance of twice
+the initial directional feedback rate covers every saved prefix over 20k
+further updates and yields a conditional error floor above 1%. The longer
+six-target archive requires a factor-four allowance to cover every branch.
+These are empirical premise checks, not continuous-time certificates.
+
+Fresh matched effective-flow and GD integrations through 100k equivalent
+updates support the reduction: relative output errors differ by at most
+$1.72\times10^{-6}$ across six targets. Tracking terms measured in the
+force and energy comparison change the conditional floor by at most
+$4.16\times10^{-6}$. The bound allows force to grow and population moments
+to change; it does not require a stable equilibrium or accurate frozen model.
+
+![The effective ODE and GD agree while force can grow slowly below the feedback envelope.](evidence/feedback_findings/fresh_force_envelopes.png)
+
+Theorem 16 closes an initial-data argument by bounding how residual-loaded
+curvature can change through total population motion. Arb certifies relative
+error at least 0.8660246 through flow time 333.8467 on the degree-five state.
+That is about 167k updates' worth of flow time at learning rate 0.002,
+**not a discrete-GD certificate**. The five other target certificates last
+only about 3k–7k update-equivalent durations. Extending the initial-data
+guarantee broadly still requires a less conservative bound on changes in
+aggregate residual loading. The evidence supports a finite-interval
+structural assumption while this part of the proof is refined.
+
+The following sections retain the earlier evidence and theorem comparisons;
+their shorter bounds are superseded only in the cases explicitly covered
+by the new results.
+
 ## What the archive establishes
 
 The initial audit contains 223 distinct static checkpoints and 320 natural
@@ -126,9 +165,12 @@ constants. These FP64 audits are not outward-rounded interval certificates.
 
 The isotropic squared-sensitivity bound exceeds the actual residual-aligned
 sensitivity by a median factor 5,507 at width 1409. Consequently a sharper
-mechanism must preserve directional population correlations and signed
-feedback, not merely substitute a smaller initial force into an otherwise
-worst-case growth bound.
+mechanism should preserve residual loading and directional population
+information. The new feedback study finds that favorable feedback signs are
+unnecessary for useful bounds in the wide baseline regime; retaining their
+cancellation helps in the late narrow regime. Substituting a smaller initial
+force into a generic growth bound does not by itself recover the full
+observed duration across targets.
 
 **The force-feedback audit locates the loss.** At the same width-1409
 checkpoints, the generic curvature-rate bound is 598 times the bound evaluated
@@ -156,7 +198,7 @@ in the ODE argument; they do not provide a bound between saved checkpoints.
 
 ## A simpler collective persistence condition
 
-The preferred conditional theorem now controls accumulated force
+The first collective conditional theorem controls accumulated force
 concentration,
 
 $$

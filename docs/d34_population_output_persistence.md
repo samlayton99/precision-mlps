@@ -60,6 +60,7 @@ checkpoint is a separate numerical question.
 | $B=(\sum_j|p_j|^6)^{1/6}$ | Physical population sixth norm; $B=M_6^{1/6}/W^{1/3}$. |
 | $I_F=W\sum_j|F_j|^4/\|F\|^4$ | Concentration of hidden force energy; the denominator includes output-bias force. |
 | $\mathcal C(t)=\int_0^t\sqrt{I_F(s)}\,ds$ | Accumulated concentration; the integrand is set to zero at zero force. |
+| $\mathcal B(t)$ | Accumulated upper allowance for reinforcing curvature feedback; distinct from the sixth norm $B$. |
 
 ## 1. The exact evolving system
 
@@ -2001,21 +2002,21 @@ future structural assumption, not a consequence of this appendix.
 **Theorem 14 (weak initial coupling with an accumulated feedback budget).**
 Suppose $E_s(0)>0$, $Y_0>0$, and $f_0>0$. Let $d\ge0$ be any measurable
 upper bound on $\kappa_H+\kappa_C$ along exact effective flow, for example
-any of (F3)--(F4). Suppose nondecreasing functions $B,C$, with $B(0)=C(0)=0$,
+any of (F3)--(F4). Suppose nondecreasing functions $\mathcal B,C$, with $\mathcal B(0)=C(0)=0$,
 satisfy, for every $0\le t\le T$,
 
 $$
-\int_0^t d(s)\,ds\le B(t),\qquad
+\int_0^t d(s)\,ds\le\mathcal B(t),\qquad
 \mathcal C(t)=\int_0^t\sqrt{I_F(s)}\,ds\le C(t).
 \tag{F5}
 $$
 
-Set $H(t)=\int_0^t e^{2B(s)}\,ds$ and
+Set $H(t)=\int_0^t e^{2\mathcal B(s)}\,ds$ and
 $L_4(t)=f_0\sqrt{C(t)H(t)}$. Then
 
 $$
 \begin{aligned}
-f(t)&\le f_0e^{B(t)},\\
+f(t)&\le f_0e^{\mathcal B(t)},\\
 \int_0^t f(s)^2\,ds&\le f_0^2H(t),\\
 \int_0^t I_F(s)^{1/4}f(s)\,ds&\le L_4(t),\\
 q(t)&\le q_0+L_4(t),\\
@@ -2043,9 +2044,9 @@ p_{\rm ever}(t)\le\min\left\{1,p_0+
 \tag{F8}
 $$
 
-Only terminal budgets $B_T,C_T$ are needed for a simpler uniform conclusion
-on $[0,T]$: replace $H(t)$ by $t e^{2B_T}$ and $L_4(t)$ by
-$f_0e^{B_T}\sqrt{C_Tt}$. This avoids inferring any pointwise bound on $d$
+Only terminal budgets $\mathcal B_T,C_T$ are needed for a simpler uniform conclusion
+on $[0,T]$: replace $H(t)$ by $t e^{2\mathcal B_T}$ and $L_4(t)$ by
+$f_0e^{\mathcal B_T}\sqrt{C_Tt}$. This avoids inferring any pointwise bound on $d$
 or $I_F$ from an integral allowance. The statement also permits additive
 uncertainty in either integral, provided that uncertainty is included in
 the upper budgets.
@@ -2058,7 +2059,7 @@ integration of its square gives the second. Cauchy--Schwarz yields
 $$
 \int_0^t I_F^{1/4}f\,ds
 \le f_0\left(\int_0^t\sqrt{I_F}\,ds\right)^{1/2}
-           \left(\int_0^t e^{2B(s)}\,ds\right)^{1/2}
+           \left(\int_0^t e^{2\mathcal B(s)}\,ds\right)^{1/2}
 \le L_4(t).
 $$
 
@@ -2075,10 +2076,13 @@ continuity without dividing by zero there. $\square$
 moment-denominator singularity. It becomes uninformative when the feedback
 budget permits enough amplification to exhaust its error or travel
 allowance. It retains the actual initial residual coupling through $f_0$.
-It does not prove that (F5) holds from initial data. A constant-rate
-specialization $B(t)=bt$ gives
+The energy floor needs no concentration premise: $\mathcal C$ enters only
+the additional population and capacity bounds. Thus loss of a useful
+concentration allowance need not destroy the output-energy conclusion.
+The theorem does not prove that (F5) holds from initial data. A constant-rate
+specialization $\mathcal B(t)=bt$ gives
 $H(t)=(e^{2bt}-1)/(2b)$, with limit $H(t)=t$ at $b=0$.
-Testing $B(t)=\alpha d_{\rm dir}(0)t$ for specified factors $\alpha$
+Testing $\mathcal B(t)=\alpha d_{\rm dir}(0)t$ for specified factors $\alpha$
 is a test of persistence of an aggregate response, not a fit of future
 force amplitude. Such a premise can fail, and its failure must be reported.
 
@@ -2111,10 +2115,10 @@ r_S=\left(W\sum_j|S_j|^4\right)^{1/4},\qquad
 z_S=[\langle e_H,J_HS\rangle]_+.
 $$
 
-For $B(t)=\int_0^t d$, define
+For $\mathcal B(t)=\int_0^t d$, define
 
 $$
-\bar f(t)=e^{B(t)}\left[f_0+\int_0^t e^{-B(s)}u_S(s)\,ds\right],\quad
+\bar f(t)=e^{\mathcal B(t)}\left[f_0+\int_0^t e^{-\mathcal B(s)}u_S(s)\,ds\right],\quad
 D(t)=\int_0^t\bar f(s)^2\,ds,\quad
 L(t)=\sqrt{\mathcal C(t)D(t)}+\int_0^t r_S(s)\,ds.
 \tag{F10}
@@ -2381,3 +2385,22 @@ effective ODE for the empirical input measure and archived binary64 initial
 state. It does not certify ordinary GD, Adam, or continuous-distribution
 generalization; tracking and finite-step allowances require Proposition 15
 or a separate full-dynamics calculation.
+
+### Numerical scope of the current instances
+
+The accompanying [feedback-persistence study](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/feedback_findings/README.md)
+separates the three evidence levels. First, the directional-budget premise
+in Theorem 14 passes a factor-two initial-rate allowance on all 46 original
+width-705 trajectories over 20k further GD updates; the six archived longer
+continuations require factor four for complete coverage. Second, new
+step-refined effective-flow and GD integrations through 100k equivalent
+updates agree in relative output error to at most $1.72\times10^{-6}$.
+Third, 128-bit Arb evaluations certify Theorem 16 at six initial states.
+
+The degree-five instance has $T_*>333.8467$ and relative output error
+greater than 0.8660246 throughout that effective-flow interval. The other
+five certified times range from 5.9922 to 14.1561, with large positive
+error floors. These shorter intervals expose the remaining conservatism
+in $L_*$. The arithmetic enclosures certify the encoded empirical ODE;
+they do not turn the numerical GD agreement or sampled feedback premises
+into certificates. No new Adam persistence guarantee is asserted.
