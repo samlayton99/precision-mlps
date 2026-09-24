@@ -41,17 +41,19 @@ are presently too conservative to explain the observed duration. Thus we have
 a supported mechanism and a precise proof target, not yet a general theorem
 that GD cannot learn useful slopes on practical horizons.
 
-**Notation used throughout.** Norms on parameter vectors are Euclidean;
-function norms use the empirical mean over training inputs.
+**How to read the plots.** A neuron's physical slope scale is
+$\gamma_j=|a_j|$. Its normalized scale is $\lambda_j=h|a_j|$, where
+$h=2/N_{\rm ref}$ is the construction spacing. The actual neuron count $W$
+includes halo neurons and differs from $N_{\rm ref}$. The opening plots pair
+the gradient signals with the scales they produce; the later plots test why
+that motion stays small. Every comparison identifies its baseline and the
+cases represented by its points or shading.
 
-| Symbol | Meaning |
-|---|---|
-| $a_j,b_j,c_j,d$ | Signed slope, hidden bias, readout weight, and output bias. |
-| $W$, $h=2/N_{\rm ref}$ | Actual neuron count and construction spacing; $W$ includes halo neurons. |
-| $\gamma_j=\lvert a_j\rvert$, $\lambda_j=h\lvert a_j\rvert$ | Physical and normalized slope scales. |
-| $g=\nabla L$, $F$, $R$ | Full gradient, effective fine gradient, and coarse tracking correction. The velocity has the negative sign. |
-| $e_C$, $e_H$ | Constant/linear residual coefficients and their full orthogonal complement. |
-| $M$, $C_6$ | Total particle second moment and normalized sixth moment, defined in Section 6. |
+We keep three gradient names throughout: the full gradient $g$, the effective
+fine gradient $F$, and the coarse tracking correction $R$, with $g=F+R$.
+Training velocity has the opposite sign. Parameter-vector norms are Euclidean;
+function norms use the empirical mean over training inputs. Other symbols
+are introduced where they enter the argument.
 
 \newpage
 
@@ -84,7 +86,8 @@ conditioning. The particular
 threshold $0.25$ is an informative construction benchmark, not a proved
 necessary or sufficient condition for every possible approximation.
 
-For inputs $x_i\in[-1,1]$, let
+For inputs $x_i\in[-1,1]$, let $a_j$ denote signed slopes, $b_j$ hidden
+biases, $c_j$ readout weights, and $d$ the output bias. The model and loss are
 
 $$
 f_\theta(x)=d+\sum_{j=1}^Wc_j\tanh(a_jx+b_j),\qquad
@@ -219,19 +222,18 @@ kinks. Two seeds and forks at updates 100k, 400k, and 600k give 60 starts at
 $W=177$, with $m=2048$ and $\eta=0.002$. The functions were fixed before
 their outcomes were inspected.
 
-**Table 1. Effective-force dominance on the new-function panel.** Each row
-summarizes the same 60 ordinary-GD continuations. Ratios compare Euclidean
-slope-gradient norms, except the final row, which compares signed sums.
+**Read the next plot relative to equal force.** A ratio of 100% would mean
+the remainder is as large as the effective fine gradient. The measured ratios
+sit far below that reference at both ends of the continuations. The median
+falls from 0.0206% to 0.0103%; the largest final ratio is 0.0958%.
 
-| Diagnostic | Median | Maximum |
-|---|---:|---:|
-| Remainder / effective slope force at the fork | 0.0206% | 1.03% |
-| Same ratio after 200k additional updates | 0.0103% | 0.0958% |
-| Accumulated signed remainder-travel / effective-travel vector norms | -- | 0.389% |
+![Effective fine gradients dominate on ten additional functions. Each paired case is one of 60 ordinary-GD starts: ten functions, two seeds, and three fork times at width 177. The vertical coordinate is the remainder slope-gradient norm divided by the effective fine slope-gradient norm, expressed as a percentage. The remainder includes coarse tracking and residual modes omitted beyond degree 65. The comparison is between the fork and 200k additional updates; 100% denotes equal force. These are endpoint observations, not bounds between samples.](figures/d34_pi_force_dominance.png)
 
-These measurements support force attribution, not uniform bounds between
-saved states. Signed
-cancellation also makes the last row different from an absolute travel budget.
+A separate accumulated measurement reaches the same attribution conclusion:
+the norm of the signed remainder-travel vector is at most 0.389% of the
+corresponding effective-travel norm. This is not plotted on the force axis
+because it measures accumulated motion, with cancellation, rather than an
+instantaneous force. Neither measurement supplies an absolute travel budget.
 A broader cross-function audit of 1,665 saved states from 333 starts found
 direct tracking slope-force ratios at most 1.24%, and tracking-induced
 fine-residual forcing ratios at most 0.70%. The latter compares the norms of
@@ -281,17 +283,19 @@ A nonzero target cubic component changes this force, and joint training
 adds the coupling in (2). This scalar illustration explains a possible
 contribution, not the net direction of the full population.
 
-\Needspace{20\baselineskip}
+**Three visual tests distinguish slow motion from restoration.** In the first
+panel, changing geometry feedback has the larger effect, but neither
+intervention produces rapid reinforcement in this wide regime. In the second,
+100% means a small outward perturbation survives unchanged: the points stay
+near that line, rather than returning toward zero. In the third, 1 means the
+cloned model moves as much as the original. Correcting the geometry learning
+rate largely restores that motion; correcting only the readout rate does not.
 
-**Table 2. Experiments distinguish slow motion from a universal restoring
-force.** These are finite-window, matched comparisons; they do not establish
-a sign rule for every neuron or target.
+![Matched perturbations test three explanations of slow GD motion. The feedback panel measures the absolute percentage change in 20k-update positive normalized slope travel relative to ordinary GD at width 1409: six functions in each of two cohorts. The pulse panel measures the directional offset remaining after 20k updates at the smallest tested symmetric pulse amplitude, across 23 functions in each cohort; 100% means no restoration. The cloning panel compares Euclidean slope-displacement norms with the original network on the two 23-function cohorts; 1 means equal motion. Geometry-rate and readout-rate corrections are distinct interventions. Points retain case variation; the three panels have different units and must be read against their own reference.](figures/d34_pi_interventions.png)
 
-| Test | Observation | Consequence for the explanation |
-|---|---|---|
-| Feedback interventions, 12 cases at $W=1409$, 20k updates | Residual-relaxation removal: 0.00505% median travel change; doubled geometry feedback: 1.51% | Geometry feedback matters more here, but neither perturbation produces rapid reinforcement. |
-| Small outward pulses, 23 functions and two seeds | At the smallest tested amplitude, 99.0-100.3% of the directional offset remains after 20k updates | Strong restoration is absent in the tested directions. |
-| Exact fourfold neuron cloning, development cohort | Ordinary cloned motion is about 0.275 of original; compensating geometry mobility gives about 1.05; compensating only readout mobility changes little | A universal readout-dissipation explanation fails this controlled comparison. |
+The pulse retention range is 99.0-100.3%. This argues against strong
+restoration in the tested directions, rather than proving the population is
+at an equilibrium. The clone slowdown likewise has a specific interpretation.
 
 The cloning test preserves the represented function by splitting each readout
 across identical copies. It divides each copy's geometry mobility by four
@@ -336,16 +340,18 @@ $X_j=(\alpha_j,\beta_j,\zeta_j)=\sqrt W(a_j,b_j,c_j)$.
 At three independently initialized widths, typical rescaled slopes stay
 comparable, whereas physical slope forces shrink strongly with width.
 
-\Needspace{11\baselineskip}
+**Read the width comparison in two steps.** First look at the physical slope
+force: it becomes much smaller as width increases. Then look at that same
+force multiplied by $W^{3/2}$: its median is nearly unchanged. The rescaled
+slopes also remain comparable. This separates a weak physical force from a
+population that has already changed into a different scale regime.
 
-**Table 3. Width scaling at the 20k-update forks.** Medians over six targets
-and two seeds at each width; force values use the retained modal audit.
+![Wider populations have much weaker physical slope force at the 20k-update forks. Each width contains six targets and two seeds; points retain individual cases and larger markers summarize medians. The physical-force panel shows the decline in RMS effective fine slope gradient. Multiplying by $W^{3/2}$ gives medians 0.628, 0.695, and 0.661; rescaled slope RMS values are 1.456, 1.471, and 1.466. Actual widths 177, 705, and 1409 correspond to reference resolutions 128, 512, and 1024. Force values use the retained modal audit. A power-law guide is a comparison, not a fitted asymptotic theorem.](figures/d34_pi_width_scaling.png)
 
-| $N_{\rm ref}$ | Actual $W$ | $\operatorname{RMS}(\sqrt W a)$ | $W^{3/2}\operatorname{RMS}(F_a)$ |
-|---:|---:|---:|---:|
-| 128 | 177 | 1.456 | 0.628 |
-| 512 | 705 | 1.471 | 0.695 |
-| 1024 | 1409 | 1.466 | 0.661 |
+Degree five is visibly different: its force decreases faster than the
+$W^{-3/2}$ guide over these widths, so its rescaled force also falls. The
+near-constant median describes the panel's typical behavior, not a common
+rate for every target.
 
 The six functions are degree five, mixed sine, an off-center Gaussian, a
 compact bump, a tanh step, and a kink. No case reaches $\lambda=0.25$ through
@@ -539,15 +545,22 @@ persistence bounds reaches at most 38 GD updates on the archived panel. That mis
 a limitation of the sufficient estimates, not a prediction that the dynamics
 escape after 38 steps.
 
-**Table 4. Current proof and evidence status.** The different rows answer
-different questions and should not be combined into one claimed horizon.
+**What we have proved.** The gradient decomposition is exact, and
+Proposition 1 gives a population travel bound under its stated shape and
+tracking assumptions. Appendix A supplies the proof. What remains is to
+derive preservation of those assumptions for an informative interval.
 
-| Result | What is established | What it does not establish |
-|---|---|---|
-| Exact decomposition and Proposition 1 | Effective-force identity; conditional population travel bound with a complete proof | Preservation of the proposed population shape on an informative interval |
-| Generic GD energy baseline | Outward-rounded initial checks for 18 width-panel states exclude $\lambda=0.25$ for 50k further updates | Why the effective force remains weak; a universal 50k barrier |
-| Existing exact-tanh persistence proof | Derives conditioning, force, and tracking bounds from initial data, allowing biases and mixed signs | Useful constants: only 22/223 states admitted, all at width 1409; best refined interval 38 updates |
-| Coupled quintic forecasts | Accurate 20k motion forecasts on the specified wide confirmation panel | A regional error certificate or a valid late-sine model |
+**What the numerical checks establish.** A generic GD energy bound, with
+outward-rounded initial checks at 18 width-panel states, excludes
+$\lambda=0.25$ for 50k further updates. The more mechanistic exact-tanh
+persistence proof allows mixed signs and biases, but its sufficient checks
+admit only 22 of 223 states, all at width 1409, and its best refined interval
+is just 38 updates. These are different bounds answering different questions.
+
+**What the forecasts add.** The coupled quintic model predicts 20k motion
+accurately on the specified wide confirmation panel. That is empirical
+support for the coupled mechanism, not a regional error certificate or a
+model that remains valid for late sine.
 
 The energy baseline is ordinary-GD mathematics,
 with verified assumptions at the archived 20k states of six targets and three
@@ -758,19 +771,21 @@ across targets at a fixed width and seed, and generated independently across
 widths. We use $(N_{\rm ref},W)=(128,177),(512,705),(1024,1409)$.
 The difference includes the extra neurons used beyond the reference grid.
 
-**Table B1. Six targets in the width and feedback panels.** Except for the
-already normalized polynomial target, each listed function is divided by its
-RMS on the original training grid. That normalization stays fixed during
-training and evaluation; target means are not subtracted for training.
+**The six targets in the width and feedback panels.** These formulas specify
+the functions before RMS normalization:
 
-| Target | Function before RMS normalization |
-|---|---|
-| Degree five | $0.3q_0+0.4q_1+\sqrt{0.75}\,q_5$; $q_k$ are empirical orthonormal polynomials with positive leading coefficient |
-| Mixed sine | $\sin(2\pi x)+0.5\sin(6\pi x)+0.25\sin(14\pi x)$ |
-| Off-center Gaussian | $\exp(-((x+0.35)/0.22)^2)$ |
-| Right compact bump | $\exp(1-1/(1-u^2))$ for $\lvert u\rvert<1$, otherwise zero; $u=(x-0.35)/0.22$ |
-| Right step | $\tanh(14(x-0.31))$ |
-| Kink | $\lvert x+0.23\rvert$ |
+- **Degree five:** $0.3q_0+0.4q_1+\sqrt{0.75}\,q_5$, where $q_k$ are empirical
+  orthonormal polynomials with positive leading coefficient.
+- **Mixed sine:** $\sin(2\pi x)+0.5\sin(6\pi x)+0.25\sin(14\pi x)$.
+- **Off-center Gaussian:** $\exp(-((x+0.35)/0.22)^2)$.
+- **Right compact bump:** $\exp(1-1/(1-u^2))$ for $|u|<1$, otherwise zero,
+  with $u=(x-0.35)/0.22$.
+- **Right step:** $\tanh(14(x-0.31))$.
+- **Kink:** $|x+0.23|$.
+
+Except for the already normalized polynomial target, each function is divided
+by its RMS on the original training grid. That normalization stays fixed
+during training and evaluation; target means are not subtracted for training.
 
 The degree-five label thus denotes a prescribed orthogonal residual shape,
 not the monomial $x^5$. The same distinction applies to the degree-nine
@@ -785,7 +800,7 @@ inputs; the force and trajectory quantities here concern the training grid.
 $1/(1+25x^2)$; these two functions are not RMS-rescaled. Degree $d$, for
 $d\in\{3,4,5,9\}$, denotes
 $0.3q_0+0.4q_1+\sqrt{0.75}\,q_d$, using the same empirical orthonormal
-polynomials as Table B1. Each of these polynomial targets has unit empirical
+polynomials defined above. Each of these polynomial targets has unit empirical
 RMS.
 
 Let $S(x)=\sin(2\pi x)+0.5\sin(6\pi x)+0.25\sin(14\pi x)$.
@@ -853,8 +868,9 @@ For the pulse experiment, an outward parameter direction lies in the common
 nullspace of the derivatives of coarse output, coarse disequilibrium, and the
 actual slope gradient. Symmetric amplitudes $\pm0.01,\pm0.005,\pm0.0025$
 are measured in the experiment's relative block-RMS units. The offset-retention
-numbers in Table 2 use the smallest amplitude. Halving checks distinguish the
-predicted first-order response from finite-amplitude matching errors.
+numbers in the pulse panel of Figure 4 use the smallest amplitude. Halving
+checks distinguish the predicted first-order response from finite-amplitude
+matching errors.
 
 For cloning, $k$ identical copies each receive readout $c_j/k$. The function
 and residual are initially unchanged. Replica symmetry makes the geometry
@@ -862,24 +878,35 @@ rate $1/k$ of the original and the aggregate readout rate $k$ times the
 original. Multiplying geometry learning rates by $k$, or dividing readout
 learning rates by $k$, isolates these effects. The construction spacing $h$
 is held fixed because this test changes parameterization, not resolution.
-
-\Needspace{28\baselineskip}
+The plotted motion is the Euclidean norm of the signed slope displacement,
+with one slope per group of identical copies, divided by that norm in the
+original branch. Counting all replicas separately would introduce an
+irrelevant factor $\sqrt{k}$. This norm measures motion in either direction,
+not just outward scale acquisition.
 
 ### B.3. Coverage and numerical meaning
 
-**Table B2. Evidence roles.** These studies overlap. Their counts must not be
-added and interpreted as independent samples of target functions.
+**Which evidence answers which question?** The opening plots establish the
+phenomenon over 65 ordinary-GD trajectories: thirteen targets and five seeds,
+through 600k updates at width 177. The new-function force test checks the
+reduction on ten additional functions in five families, using two seeds and
+three forks for 60 starts. Those functions were fixed before their outcomes
+were inspected.
 
-| Study | Design and role |
-|---|---|
-| Opening force/scale figures | Thirteen targets and five seeds; 65 ordinary-GD trajectories through 600k updates at width 177. Full-complement decomposition paired with mean and maximum slopes at saved states. |
-| New-function force test | Ten additional functions in five families, two seeds, three forks; 60 starts. Functions fixed before inspection of their outcomes. |
-| Width development / confirmation | Six targets, two seeds, three widths per panel; 36 cases each. Starts at 20k, followed for 20k further updates. |
-| Feedback interventions | 36 width cases plus four late sine/degree-nine starts; six arms each, 240 branches. |
-| Pulse and cloning tests | 23 target instances in separate development and confirmation cohorts. Matched-fork comparisons. |
-| Population audit | 223 deduplicated static states; 40 natural continuations with eight snapshots each. Retrospective structural and approximation tests. |
-| Persistence-bound audit | The same 223 states; seven fixed region choices per state. Duration selected from initial information. |
-| Energy verification | Eighteen initial states: six targets, three widths, one seed. Outward rounding checks sufficient GD assumptions. |
+The width development and confirmation panels each contain 36 cases: six
+targets, two seeds, and three widths, continued from 20k to 40k total updates.
+The feedback interventions use the 36 width cases and four later
+sine/degree-nine starts, with six arms each for 240 branches. Pulse and cloning
+tests use 23 target instances in separate development and confirmation
+cohorts. These matched comparisons test proposed mechanisms.
+
+The population audit instead tests structural assumptions retrospectively:
+223 deduplicated static states and 40 natural continuations with eight
+snapshots each. The persistence-bound audit uses the same 223 states, with
+seven fixed region choices and a duration selected from initial information.
+The energy verification uses eighteen initial states: six targets, three
+widths, and one seed. These studies overlap; their counts must not be added
+and interpreted as independent samples of target functions.
 
 The ordinary floating-point diagnostics support the reported empirical
 comparisons, not interval-wide rigorous bounds. In particular, sampled force
@@ -889,7 +916,7 @@ inequalities for exact-real GD starting from the stored binary64 data. It does
 not certify all earlier training or every rounding error in later machine
 updates.
 
-For completeness, the generic energy argument underlying Table 4 uses a
+For completeness, the generic energy argument discussed in Section 7 uses a
 descent factor $\mu>0$ satisfying
 $L_{n+1}\le L_n-\eta\mu\|g_n\|^2$. Summation and Cauchy-Schwarz give
 
