@@ -53,6 +53,17 @@ function norms use the empirical mean over training inputs.
 | $e_C$, $e_H$ | Constant/linear residual coefficients and their full orthogonal complement. |
 | $M$, $C_6$ | Total particle second moment and normalized sixth moment, defined in Section 6. |
 
+\newpage
+
+**The empirical starting point.** Across thirteen targets, the orange tracking
+force drops below the blue effective fine force after the initial transient.
+Black then follows blue. The derivation below explains this separation; the
+later question is why the surviving force often produces so little scale travel.
+
+![Full slope-gradient norm (black), effective fine-force norm (blue), and coarse-tracking norm (orange) during ordinary GD. Each panel shows five seeds; lines are medians and shading is the full seed range, not a confidence interval. Width 177, 2,048 training points, learning rate 0.002, through 600k updates. The norm axis is logarithmic; the update axis is logarithmic above update 10. Blue includes balanced coarse compensation. The vectors add, but their norms need not. These are sampled force magnitudes, not outward-motion or acquisition measurements. Target labels are defined in Appendix B.1.](figures/d34_pi_force_decomposition.png)
+
+\newpage
+
 ## 1. Start with the coupled training dynamics
 
 **Example and objective.** At reference resolution $N_{\rm ref}=512$,
@@ -108,7 +119,10 @@ cannot distinguish small driving error from poor coupling to a large error.
 
 ## 2. Separate coarse tracking from the force that survives balance
 
-**Motivating observation.** Across 60 starts on ten additional target functions,
+**Motivating observation.** Figure 1 makes the reduction visible: after the
+transient, the full slope force follows the effective fine force, including
+its later recovery on some targets. This is not a claim of universal force
+decay. Across 60 starts on ten additional target functions,
 the slope-gradient correction beyond the effective fine force is small after
 coarse fitting. We need a decomposition that retains what coarse fitting still
 does to the effective dynamics; simply deleting the constant and linear
@@ -130,6 +144,8 @@ along the degree-two orthogonal polynomial, and a *cubic error* is the
 degree-three coefficient. This is an exact decomposition of residual shapes,
 not a Taylor approximation. A Taylor approximation of the activation enters
 separately in Section 5.
+
+\Needspace{8\baselineskip}
 
 Assume $K=J_CJ_C^T$ is invertible. Define
 
@@ -207,6 +223,8 @@ median 0.00505%. Doubling geometry feedback changes it by 1.51%. The arms
 match the entire gradient at the initial fork and retain tracking evaluated
 at their own states. This comparison concerns how the force changes, rather
 than giving one arm a larger initial push.
+
+\Needspace{8\baselineskip}
 
 For the pure effective flow, put $T=\Pi J_H^T$, so $F=Te_H$.
 Differentiating along $\dot\theta=-F$ gives
@@ -740,6 +758,33 @@ It checks seed variation, not generalization to unseen functions. Where
 independent-grid fitting errors are measured, evaluation uses 8,192 midpoint
 inputs; the force and trajectory quantities here concern the training grid.
 
+**The thirteen targets in Figure 1.** Sine is $\sin(2\pi x)$, and Runge is
+$1/(1+25x^2)$; these two functions are not RMS-rescaled. Degree $d$, for
+$d\in\{3,4,5,9\}$, denotes
+$0.3q_0+0.4q_1+\sqrt{0.75}\,q_d$, using the same empirical orthonormal
+polynomials as Table B1. Each of these polynomial targets has unit empirical
+RMS.
+
+Let $S(x)=\sin(2\pi x)+0.5\sin(6\pi x)+0.25\sin(14\pi x)$.
+Mixed sine is $S(x)$ divided by its training-grid RMS. Localized sine is
+$S(x)\exp[-(x/0.4)^2/2]$, divided by its own RMS. Chirp is
+$\sin[2\pi(u+4u^2)]$, with $u=(x+1)/2$, likewise divided by its own RMS.
+All these normalizers are fixed from the original 2,048 training points.
+Finally, the four panels labeled Mix $s$ use
+
+$$
+y_s(x)=0.3q_0(x)+0.4q_1(x)
++\sqrt{0.75}\left[sq_3(x)+\sqrt{1-s^2}\,q_9(x)\right],
+\qquad s\in\{-0.1,0.01,0.1,0.3\}.
+$$
+
+These blends already have unit empirical RMS. Figure 1 uses five seeds
+numbered 0 through 4, with the same width-177 initialization law and training
+grid described above. Its full-complement decomposition has no omitted
+modal-residual term. At each saved state, the median and range are taken
+across the five seeds separately for each force norm. The shading is neither
+a confidence interval nor a bound on the unsampled times between states.
+
 ### B.2. What the interventions change
 
 The feedback experiment separates two evolving contributions while preserving
@@ -780,6 +825,8 @@ original. Multiplying geometry learning rates by $k$, or dividing readout
 learning rates by $k$, isolates these effects. The construction spacing $h$
 is held fixed because this test changes parameterization, not resolution.
 
+\Needspace{28\baselineskip}
+
 ### B.3. Coverage and numerical meaning
 
 **Table B2. Evidence roles.** These studies overlap. Their counts must not be
@@ -787,6 +834,7 @@ added and interpreted as independent samples of target functions.
 
 | Study | Design and role |
 |---|---|
+| Opening force figure | Thirteen targets and five seeds; 65 ordinary-GD trajectories through 600k updates at width 177. Full-complement decomposition at saved states. |
 | New-function force test | Ten additional functions in five families, two seeds, three forks; 60 starts. Functions fixed before inspection of their outcomes. |
 | Width development / confirmation | Six targets, two seeds, three widths per panel; 36 cases each. Starts at 20k, followed for 20k further updates. |
 | Feedback interventions | 36 width cases plus four late sine/degree-nine starts; six arms each, 240 branches. |
