@@ -106,6 +106,7 @@ def main():
             ema_choice='One common post-hoc visualization window; sensitivity at 10,30,100,300,1000,3000 updates.',
             numerical_status='Checked FP64 V4 p=0 theorem intervals, including analytic tails and numerical allowances; Adam projections are empirical.',
             theorem_source='gamma_direct_ratio/archive_g*_q10_p20; same archived geometry and GD steps',
+            output_error_lower_bound='Uses theorem rho_upper with actual target weights and archived eta*mu1; unresolved energy is omitted conservatively. Actual rho supplies only the separate reference decay rates and resolution check.',
             positive_modes='Only retained positive SVD modes; omitted numerical directions excluded.',
             energy_normalization=analysis['normalization'],
             connecting_lines='Lines between evaluated gamma values and saved Adam checkpoints are visual guides, not fitted dynamics.'), figures={})
@@ -131,7 +132,7 @@ def main():
     ax.set_xticks([1, 10, 20, 30, 40])
     ax.set_yticks([1e-12, 1e-8, 1e-4, 1])
     ax.set_title('A  Gamma sets relative learning rates', loc='left', pad=19)
-    ax.text(0, 1.035, 'Lines: finite spectrum   Bands: theorem intervals', transform=ax.transAxes,
+    ax.text(0, 1.035, 'Lines: finite spectrum   Bands: lemma intervals', transform=ax.transAxes,
             fontsize=7.3, color='#53616c')
     ax.legend(ncol=2, frameon=False, loc='upper center', bbox_to_anchor=(.5, -.28))
 
@@ -169,7 +170,9 @@ def main():
         raise ValueError('Recomputed theorem interval does not enclose executed GD.')
     adam = [ema_case(g, 'common', first)['first_hit'] for g in GAMMAS]
     ax.fill_between(GAMMAS, necessary, sufficient, color='#5888ab', alpha=.22,
-                    linewidth=0, label='GD theorem interval')
+                    linewidth=0, label='GD time interval')
+    ax.plot(GAMMAS, necessary, color='#2874a8', linestyle='--', linewidth=1.5,
+            label='Theorem: necessary GD time')
     ax.plot(GAMMAS, gd_forecast, color='#253c51', linewidth=1.6, label='GD spectrum forecast')
     ax.plot(GAMMAS, gd_actual, color='#253c51', linestyle='none', marker='o',
             markerfacecolor='white', markersize=5, label='Executed GD')
@@ -183,7 +186,7 @@ def main():
     ax.set_yscale('log')
     ax.set_ylim(700, 5e7)
     ax.set_ylabel('Updates to 1% error (Adam: smoothed)')
-    ax.set_title('C  The theorem brackets GD delay', loc='left', pad=19)
+    ax.set_title('C  Error lower bound forces delay', loc='left', pad=19)
     ax.text(0, 1.035, 'Adam: first loss-EMA crossing, half-life 100', transform=ax.transAxes,
             fontsize=7.3, color='#53616c')
     ax.legend(ncol=2, frameon=False, loc='upper center', bbox_to_anchor=(.45, -.28),
@@ -207,9 +210,9 @@ def main():
         ax.fill_between(steps, data['lower_error'], data['upper_error'], color=color,
                         alpha=.16, linewidth=0, label='Theorem error interval')
         ax.plot(steps, data['lower_error'], color=color, linestyle='--', linewidth=1,
-                label='Lower error (necessary time)')
+                label='Theorem output-error lower bound')
         ax.plot(steps, data['upper_error'], color=color, linestyle=':', linewidth=1.2,
-                label='Upper error (sufficient time)')
+                label='Companion output-error upper bound')
         ax.plot(steps, data['reference_error'], color='#253c51', linewidth=1.5,
                 label='Finite-spectrum error')
         ax.axhline(.01, color='#7a8289', linestyle=':', linewidth=.9)
@@ -226,7 +229,7 @@ def main():
         ax.set_ylabel('Relative training error')
     for ax in axes[-1]:
         ax.set_xlabel('GD updates')
-    fig.suptitle('Ratio endpoints give lower and upper GD error curves', fontsize=11, y=.99)
+    fig.suptitle('Theorem rate caps predict a lower bound on output error', fontsize=11, y=.99)
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles[1:], labels[1:], loc='lower center', ncol=2, frameon=False,
                bbox_to_anchor=(.5, -.005))

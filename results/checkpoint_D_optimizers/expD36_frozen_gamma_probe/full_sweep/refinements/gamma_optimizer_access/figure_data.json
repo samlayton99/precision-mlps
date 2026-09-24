@@ -4,7 +4,7 @@
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/projections.npz": "025b207f765ae6d211cb94f8f2758ed847b663bb13de519292dab71c3b215bdc",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/trace_envelopes.npz": "197588b29074d81c7a5ddb4c85d1a8d673ab762b004fec19ed096ac1b9144546",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/summary.json": "f99324e8bc04436ba82e8c6ffa3b2f8a76aaada044e4dbae57a4c510883f853a",
-    "experiments/expD36_frozen_gamma_probe/optimizer_access_figure.py": "07136f4acc0fbda1fd9d8f56238b265febd5a5b1ca72b62270c83f1cb8035862",
+    "experiments/expD36_frozen_gamma_probe/optimizer_access_figure.py": "4d4808ce836662406575851f45fb98da501a3f0e8cb800582cf79c15971d7ead",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ema_analysis.json": "b7503d6688a5c76c60c851ed9adcecbe8bdbf236b078b95ae7b1eaf933f165f3",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/ema_curves.npz": "35cee22729d74e531c876bbc870dca8d16ecce7dfea82729311a52f418ade763",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_direct_ratio/archive_g8_q10_p20.json": "53acb97443dfa839b2ae4683e84c54f0e229d760a782f2d6c333d4246de175ea",
@@ -27,6 +27,7 @@
     "ema_choice": "One common post-hoc visualization window; sensitivity at 10,30,100,300,1000,3000 updates.",
     "numerical_status": "Checked FP64 V4 p=0 theorem intervals, including analytic tails and numerical allowances; Adam projections are empirical.",
     "theorem_source": "gamma_direct_ratio/archive_g*_q10_p20; same archived geometry and GD steps",
+    "output_error_lower_bound": "Uses theorem rho_upper with actual target weights and archived eta*mu1; unresolved energy is omitted conservatively. Actual rho supplies only the separate reference decay rates and resolution check.",
     "positive_modes": "Only retained positive SVD modes; omitted numerical directions excluded.",
     "energy_normalization": "All energies divided by original target squared norm; rho = eigenvalue / largest eigenvalue.",
     "connecting_lines": "Lines between evaluated gamma values and saved Adam checkpoints are visual guides, not fitted dynamics."
@@ -24948,10 +24949,10 @@
     "reason": "M0=1 and nonnegative later losses imply Mn >= beta^n."
   },
   "artifact_sha256": {
-    "optimizer_access_three_panel.pdf": "13b645455b025e6b14a562202d5c931ac68f5e4de1a9cb2ba972f6dc6e290d44",
-    "optimizer_access_three_panel.png": "f1b2e1ef830a272b4f189b7a920d427e75352679d5b205ac0667f50d3b89a44a",
-    "optimizer_access_gd_bounds.pdf": "93e9914d2c984a6eca2b654967c99c6f361bc49267f16a7069af5aa2e134b32c",
-    "optimizer_access_gd_bounds.png": "d950f0f84c91f504942924cc3ea06798fe1663f47e5b18d16f165b8b0a10a477",
+    "optimizer_access_three_panel.pdf": "093c150246146fea77cd74bf4c97b79008ccfc71441f78f93b1e3112c9c3ed34",
+    "optimizer_access_three_panel.png": "21bd0a4a2463fa32e8a66291fddfaf40d71130dbf703399ccc1209105b20596a",
+    "optimizer_access_gd_bounds.pdf": "2859db074764178b3780829e56555cd38f7b25317e558947dd82e8c8319ee001",
+    "optimizer_access_gd_bounds.png": "1ac86a36e87af1ee8473823c8b8436461fc030b8b0ca4bb74f6e3780fdd23fe7",
     "optimizer_access_targets.pdf": "9d8f9e1d1a678861768f8a77531ddb53debf1adeb1b73da42695769bc9f60a50",
     "optimizer_access_targets.png": "5cab5bbe7bd94cf1a4919d8a3c14fe5b1c6fe5fef963dd718b8a760986787bb3",
     "optimizer_access_schedule.pdf": "5ba52edd4d3bbd749a98e6e6ed3522d75a16c0b01f92012a0be00b0c3f8b50c5",
