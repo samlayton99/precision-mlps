@@ -1,0 +1,1370 @@
+{
+  "scope": "Conditional FP64 effective-flow bounds. Future I_F<=32 is assumed, not certified.",
+  "reference_physical_time": 40.0,
+  "reference": "20,000 updates times eta=0.002; comparison only, not a GD certificate",
+  "source_statuses": {
+    "archive": {
+      "initial_concentration_outside_allowance": 135,
+      "conditional_FP64_effective_flow": 406,
+      "quadrature_error_too_large": 2
+    },
+    "broad": {
+      "initial_concentration_outside_allowance": 98,
+      "conditional_FP64_effective_flow": 157,
+      "quadrature_error_too_large": 2
+    }
+  },
+  "groups": {
+    "W705 canonical": {
+      "total": 24,
+      "initial_I_within_allowance": 24,
+      "accepted": 24,
+      "targets": [
+        "bump_right",
+        "gauss_left",
+        "kink_abs",
+        "mixed_sine",
+        "moment5",
+        "step_right"
+      ],
+      "target_seed_pairs": [
+        [
+          "bump_right",
+          "30"
+        ],
+        [
+          "bump_right",
+          "31"
+        ],
+        [
+          "bump_right",
+          "32"
+        ],
+        [
+          "bump_right",
+          "33"
+        ],
+        [
+          "gauss_left",
+          "30"
+        ],
+        [
+          "gauss_left",
+          "31"
+        ],
+        [
+          "gauss_left",
+          "32"
+        ],
+        [
+          "gauss_left",
+          "33"
+        ],
+        [
+          "kink_abs",
+          "30"
+        ],
+        [
+          "kink_abs",
+          "31"
+        ],
+        [
+          "kink_abs",
+          "32"
+        ],
+        [
+          "kink_abs",
+          "33"
+        ],
+        [
+          "mixed_sine",
+          "30"
+        ],
+        [
+          "mixed_sine",
+          "31"
+        ],
+        [
+          "mixed_sine",
+          "32"
+        ],
+        [
+          "mixed_sine",
+          "33"
+        ],
+        [
+          "moment5",
+          "30"
+        ],
+        [
+          "moment5",
+          "31"
+        ],
+        [
+          "moment5",
+          "32"
+        ],
+        [
+          "moment5",
+          "33"
+        ],
+        [
+          "step_right",
+          "30"
+        ],
+        [
+          "step_right",
+          "31"
+        ],
+        [
+          "step_right",
+          "32"
+        ],
+        [
+          "step_right",
+          "33"
+        ]
+      ],
+      "common_all_methods": 24,
+      "common_target_seed_pairs": [
+        [
+          "bump_right",
+          "30"
+        ],
+        [
+          "bump_right",
+          "31"
+        ],
+        [
+          "bump_right",
+          "32"
+        ],
+        [
+          "bump_right",
+          "33"
+        ],
+        [
+          "gauss_left",
+          "30"
+        ],
+        [
+          "gauss_left",
+          "31"
+        ],
+        [
+          "gauss_left",
+          "32"
+        ],
+        [
+          "gauss_left",
+          "33"
+        ],
+        [
+          "kink_abs",
+          "30"
+        ],
+        [
+          "kink_abs",
+          "31"
+        ],
+        [
+          "kink_abs",
+          "32"
+        ],
+        [
+          "kink_abs",
+          "33"
+        ],
+        [
+          "mixed_sine",
+          "30"
+        ],
+        [
+          "mixed_sine",
+          "31"
+        ],
+        [
+          "mixed_sine",
+          "32"
+        ],
+        [
+          "mixed_sine",
+          "33"
+        ],
+        [
+          "moment5",
+          "30"
+        ],
+        [
+          "moment5",
+          "31"
+        ],
+        [
+          "moment5",
+          "32"
+        ],
+        [
+          "moment5",
+          "33"
+        ],
+        [
+          "step_right",
+          "30"
+        ],
+        [
+          "step_right",
+          "31"
+        ],
+        [
+          "step_right",
+          "32"
+        ],
+        [
+          "step_right",
+          "33"
+        ]
+      ],
+      "methods": {
+        "Initial sensitivity": {
+          "count": 24,
+          "min": 3.806418479903349,
+          "p10": 3.8908892647941604,
+          "median": 4.223913244660836,
+          "p90": 7.943688336120794,
+          "max": 8.26178014911787
+        },
+        "Initial force": {
+          "count": 24,
+          "min": 1.9610452071660922,
+          "p10": 2.043989011198091,
+          "median": 2.4323726009020836,
+          "p90": 5.657571541103474,
+          "max": 5.965854414447909
+        },
+        "Concentration: explicit": {
+          "count": 24,
+          "min": 0.2629548152143149,
+          "p10": 0.269079862589764,
+          "median": 0.2941060967982795,
+          "p90": 0.5381925577275344,
+          "max": 0.566085518418138
+        },
+        "Concentration: initial force": {
+          "count": 24,
+          "min": 1.9695058055950285,
+          "p10": 2.0480978501248885,
+          "median": 2.491916082971245,
+          "p90": 4.9274272395718794,
+          "max": 5.142954262434815
+        }
+      },
+      "common_methods": {
+        "Initial sensitivity": {
+          "count": 24,
+          "min": 3.806418479903349,
+          "p10": 3.8908892647941604,
+          "median": 4.223913244660836,
+          "p90": 7.943688336120794,
+          "max": 8.26178014911787
+        },
+        "Initial force": {
+          "count": 24,
+          "min": 1.9610452071660922,
+          "p10": 2.043989011198091,
+          "median": 2.4323726009020836,
+          "p90": 5.657571541103474,
+          "max": 5.965854414447909
+        },
+        "Concentration: explicit": {
+          "count": 24,
+          "min": 0.2629548152143149,
+          "p10": 0.269079862589764,
+          "median": 0.2941060967982795,
+          "p90": 0.5381925577275344,
+          "max": 0.566085518418138
+        },
+        "Concentration: initial force": {
+          "count": 24,
+          "min": 1.9695058055950285,
+          "p10": 2.0480978501248885,
+          "median": 2.491916082971245,
+          "p90": 4.9274272395718794,
+          "max": 5.142954262434815
+        }
+      },
+      "relative_output_error_floor": {
+        "count": 24,
+        "min": 0.33560527745666296,
+        "p10": 0.3438988463191149,
+        "median": 0.7416246445526629,
+        "p90": 0.8284839750949282,
+        "max": 0.8336995846861623
+      },
+      "relative_fine_retention": {
+        "count": 24,
+        "min": 0.9894558597916453,
+        "p10": 0.9901458653330744,
+        "median": 0.9953670047570498,
+        "p90": 0.995995083347051,
+        "max": 0.9960849942550329
+      },
+      "explicit_relative_fine_retention": {
+        "count": 24,
+        "min": 0.9700830516195377,
+        "p10": 0.9722501621971861,
+        "median": 0.9867089467918788,
+        "p90": 0.9883706095632749,
+        "max": 0.9887867781608461
+      },
+      "flow_time": {
+        "count": 24,
+        "min": 1.9695058055950285,
+        "p10": 2.0480978501248885,
+        "median": 2.491916082971245,
+        "p90": 4.9274272395718794,
+        "max": 5.142954262434815
+      },
+      "explicit_flow_time": {
+        "count": 24,
+        "min": 0.2629548152143149,
+        "p10": 0.269079862589764,
+        "median": 0.2941060967982795,
+        "p90": 0.5381925577275344,
+        "max": 0.566085518418138
+      },
+      "time_relative_tolerance_difference": {
+        "count": 24,
+        "min": 0.0,
+        "p10": 0.0,
+        "median": 7.54654385949244e-15,
+        "p90": 9.181395576358657e-10,
+        "max": 1.1381890809959162e-09
+      },
+      "positive_output_floors": 24,
+      "output_floors_above_one_percent": 24,
+      "fine_retention_at_least_half": 24,
+      "refined_time_at_least_40": 0,
+      "refined_over_Initial sensitivity": {
+        "count": 24,
+        "min": 0.3899113204880576,
+        "p10": 0.39626326937514805,
+        "median": 0.4896891407973099,
+        "p90": 1.2412851851683444,
+        "max": 1.2642640155238718
+      },
+      "refined_over_Initial force": {
+        "count": 24,
+        "min": 0.8620649960850164,
+        "p10": 0.8741880438707099,
+        "median": 1.002415891219335,
+        "p90": 1.080796565075162,
+        "max": 1.0939910510405486
+      }
+    },
+    "W1409 canonical": {
+      "total": 24,
+      "initial_I_within_allowance": 24,
+      "accepted": 24,
+      "targets": [
+        "bump_right",
+        "gauss_left",
+        "kink_abs",
+        "mixed_sine",
+        "moment5",
+        "step_right"
+      ],
+      "target_seed_pairs": [
+        [
+          "bump_right",
+          "30"
+        ],
+        [
+          "bump_right",
+          "31"
+        ],
+        [
+          "bump_right",
+          "32"
+        ],
+        [
+          "bump_right",
+          "33"
+        ],
+        [
+          "gauss_left",
+          "30"
+        ],
+        [
+          "gauss_left",
+          "31"
+        ],
+        [
+          "gauss_left",
+          "32"
+        ],
+        [
+          "gauss_left",
+          "33"
+        ],
+        [
+          "kink_abs",
+          "30"
+        ],
+        [
+          "kink_abs",
+          "31"
+        ],
+        [
+          "kink_abs",
+          "32"
+        ],
+        [
+          "kink_abs",
+          "33"
+        ],
+        [
+          "mixed_sine",
+          "30"
+        ],
+        [
+          "mixed_sine",
+          "31"
+        ],
+        [
+          "mixed_sine",
+          "32"
+        ],
+        [
+          "mixed_sine",
+          "33"
+        ],
+        [
+          "moment5",
+          "30"
+        ],
+        [
+          "moment5",
+          "31"
+        ],
+        [
+          "moment5",
+          "32"
+        ],
+        [
+          "moment5",
+          "33"
+        ],
+        [
+          "step_right",
+          "30"
+        ],
+        [
+          "step_right",
+          "31"
+        ],
+        [
+          "step_right",
+          "32"
+        ],
+        [
+          "step_right",
+          "33"
+        ]
+      ],
+      "common_all_methods": 24,
+      "common_target_seed_pairs": [
+        [
+          "bump_right",
+          "30"
+        ],
+        [
+          "bump_right",
+          "31"
+        ],
+        [
+          "bump_right",
+          "32"
+        ],
+        [
+          "bump_right",
+          "33"
+        ],
+        [
+          "gauss_left",
+          "30"
+        ],
+        [
+          "gauss_left",
+          "31"
+        ],
+        [
+          "gauss_left",
+          "32"
+        ],
+        [
+          "gauss_left",
+          "33"
+        ],
+        [
+          "kink_abs",
+          "30"
+        ],
+        [
+          "kink_abs",
+          "31"
+        ],
+        [
+          "kink_abs",
+          "32"
+        ],
+        [
+          "kink_abs",
+          "33"
+        ],
+        [
+          "mixed_sine",
+          "30"
+        ],
+        [
+          "mixed_sine",
+          "31"
+        ],
+        [
+          "mixed_sine",
+          "32"
+        ],
+        [
+          "mixed_sine",
+          "33"
+        ],
+        [
+          "moment5",
+          "30"
+        ],
+        [
+          "moment5",
+          "31"
+        ],
+        [
+          "moment5",
+          "32"
+        ],
+        [
+          "moment5",
+          "33"
+        ],
+        [
+          "step_right",
+          "30"
+        ],
+        [
+          "step_right",
+          "31"
+        ],
+        [
+          "step_right",
+          "32"
+        ],
+        [
+          "step_right",
+          "33"
+        ]
+      ],
+      "methods": {
+        "Initial sensitivity": {
+          "count": 24,
+          "min": 6.837849761181445,
+          "p10": 6.897403572955598,
+          "median": 7.618913669281302,
+          "p90": 14.230306203572,
+          "max": 14.454186993985331
+        },
+        "Initial force": {
+          "count": 24,
+          "min": 3.673984278973835,
+          "p10": 3.700176385421606,
+          "median": 4.535245502940601,
+          "p90": 11.097957406718523,
+          "max": 11.353751299829941
+        },
+        "Concentration: explicit": {
+          "count": 24,
+          "min": 0.5303876724453566,
+          "p10": 0.5389795898735165,
+          "median": 0.5903023336980971,
+          "p90": 1.0867821799941282,
+          "max": 1.111161323312285
+        },
+        "Concentration: initial force": {
+          "count": 24,
+          "min": 4.464868529558658,
+          "p10": 4.4924237862195175,
+          "median": 5.4108763480642255,
+          "p90": 11.58083457448406,
+          "max": 11.891685952859723
+        }
+      },
+      "common_methods": {
+        "Initial sensitivity": {
+          "count": 24,
+          "min": 6.837849761181445,
+          "p10": 6.897403572955598,
+          "median": 7.618913669281302,
+          "p90": 14.230306203572,
+          "max": 14.454186993985331
+        },
+        "Initial force": {
+          "count": 24,
+          "min": 3.673984278973835,
+          "p10": 3.700176385421606,
+          "median": 4.535245502940601,
+          "p90": 11.097957406718523,
+          "max": 11.353751299829941
+        },
+        "Concentration: explicit": {
+          "count": 24,
+          "min": 0.5303876724453566,
+          "p10": 0.5389795898735165,
+          "median": 0.5903023336980971,
+          "p90": 1.0867821799941282,
+          "max": 1.111161323312285
+        },
+        "Concentration: initial force": {
+          "count": 24,
+          "min": 4.464868529558658,
+          "p10": 4.4924237862195175,
+          "median": 5.4108763480642255,
+          "p90": 11.58083457448406,
+          "max": 11.891685952859723
+        }
+      },
+      "relative_output_error_floor": {
+        "count": 24,
+        "min": 0.3833771496440026,
+        "p10": 0.38473225136450395,
+        "median": 0.7850870205355034,
+        "p90": 0.8704077238378475,
+        "max": 0.8712119154749606
+      },
+      "relative_fine_retention": {
+        "count": 24,
+        "min": 0.995532187869553,
+        "p10": 0.9956409820888877,
+        "median": 0.9979479857427322,
+        "p90": 0.9981674464494122,
+        "max": 0.9981980515220104
+      },
+      "explicit_relative_fine_retention": {
+        "count": 24,
+        "min": 0.9856955307070877,
+        "p10": 0.9860832908601537,
+        "median": 0.993398620347379,
+        "p90": 0.994098273992959,
+        "max": 0.994172255440773
+      },
+      "flow_time": {
+        "count": 24,
+        "min": 4.464868529558658,
+        "p10": 4.4924237862195175,
+        "median": 5.4108763480642255,
+        "p90": 11.58083457448406,
+        "max": 11.891685952859723
+      },
+      "explicit_flow_time": {
+        "count": 24,
+        "min": 0.5303876724453566,
+        "p10": 0.5389795898735165,
+        "median": 0.5903023336980971,
+        "p90": 1.0867821799941282,
+        "max": 1.111161323312285
+      },
+      "time_relative_tolerance_difference": {
+        "count": 24,
+        "min": 0.0,
+        "p10": 0.0,
+        "median": 4.611239493338826e-14,
+        "p90": 7.564181049431838e-10,
+        "max": 9.331761789045815e-10
+      },
+      "positive_output_floors": 24,
+      "output_floors_above_one_percent": 24,
+      "fine_retention_at_least_half": 24,
+      "refined_time_at_least_40": 0,
+      "refined_over_Initial sensitivity": {
+        "count": 24,
+        "min": 0.47424015712901224,
+        "p10": 0.48031734334941556,
+        "median": 0.5938695735321691,
+        "p90": 1.6246395521180017,
+        "max": 1.6394782109340347
+      },
+      "refined_over_Initial force": {
+        "count": 24,
+        "min": 1.0378292481401774,
+        "p10": 1.0450304270342026,
+        "median": 1.2124305287963315,
+        "p90": 1.249458920870193,
+        "max": 1.256261940303547
+      }
+    },
+    "W705 broad": {
+      "total": 58,
+      "initial_I_within_allowance": 58,
+      "accepted": 58,
+      "targets": [
+        "blend_m010",
+        "blend_p001",
+        "blend_p010",
+        "blend_p030",
+        "bump_left",
+        "bump_right",
+        "chirp",
+        "exp_left",
+        "exp_right",
+        "gauss_left",
+        "gauss_right",
+        "kink_abs",
+        "kink_relu",
+        "localized_sine",
+        "mixed_sine",
+        "moment3",
+        "moment4",
+        "moment5",
+        "moment9",
+        "runge",
+        "sine",
+        "step_left",
+        "step_right"
+      ],
+      "target_seed_pairs": [
+        [
+          "blend_m010",
+          "30"
+        ],
+        [
+          "blend_m010",
+          "31"
+        ],
+        [
+          "blend_p001",
+          "30"
+        ],
+        [
+          "blend_p001",
+          "31"
+        ],
+        [
+          "blend_p010",
+          "30"
+        ],
+        [
+          "blend_p010",
+          "31"
+        ],
+        [
+          "blend_p030",
+          "30"
+        ],
+        [
+          "blend_p030",
+          "31"
+        ],
+        [
+          "bump_left",
+          "30"
+        ],
+        [
+          "bump_left",
+          "31"
+        ],
+        [
+          "bump_right",
+          "30"
+        ],
+        [
+          "bump_right",
+          "31"
+        ],
+        [
+          "bump_right",
+          "32"
+        ],
+        [
+          "bump_right",
+          "33"
+        ],
+        [
+          "chirp",
+          "30"
+        ],
+        [
+          "chirp",
+          "31"
+        ],
+        [
+          "exp_left",
+          "30"
+        ],
+        [
+          "exp_left",
+          "31"
+        ],
+        [
+          "exp_right",
+          "30"
+        ],
+        [
+          "exp_right",
+          "31"
+        ],
+        [
+          "gauss_left",
+          "30"
+        ],
+        [
+          "gauss_left",
+          "31"
+        ],
+        [
+          "gauss_left",
+          "32"
+        ],
+        [
+          "gauss_left",
+          "33"
+        ],
+        [
+          "gauss_right",
+          "30"
+        ],
+        [
+          "gauss_right",
+          "31"
+        ],
+        [
+          "kink_abs",
+          "30"
+        ],
+        [
+          "kink_abs",
+          "31"
+        ],
+        [
+          "kink_abs",
+          "32"
+        ],
+        [
+          "kink_abs",
+          "33"
+        ],
+        [
+          "kink_relu",
+          "30"
+        ],
+        [
+          "kink_relu",
+          "31"
+        ],
+        [
+          "localized_sine",
+          "30"
+        ],
+        [
+          "localized_sine",
+          "31"
+        ],
+        [
+          "mixed_sine",
+          "30"
+        ],
+        [
+          "mixed_sine",
+          "31"
+        ],
+        [
+          "mixed_sine",
+          "32"
+        ],
+        [
+          "mixed_sine",
+          "33"
+        ],
+        [
+          "moment3",
+          "30"
+        ],
+        [
+          "moment3",
+          "31"
+        ],
+        [
+          "moment4",
+          "30"
+        ],
+        [
+          "moment4",
+          "31"
+        ],
+        [
+          "moment5",
+          "30"
+        ],
+        [
+          "moment5",
+          "31"
+        ],
+        [
+          "moment5",
+          "32"
+        ],
+        [
+          "moment5",
+          "33"
+        ],
+        [
+          "moment9",
+          "30"
+        ],
+        [
+          "moment9",
+          "31"
+        ],
+        [
+          "runge",
+          "30"
+        ],
+        [
+          "runge",
+          "31"
+        ],
+        [
+          "sine",
+          "30"
+        ],
+        [
+          "sine",
+          "31"
+        ],
+        [
+          "step_left",
+          "30"
+        ],
+        [
+          "step_left",
+          "31"
+        ],
+        [
+          "step_right",
+          "30"
+        ],
+        [
+          "step_right",
+          "31"
+        ],
+        [
+          "step_right",
+          "32"
+        ],
+        [
+          "step_right",
+          "33"
+        ]
+      ],
+      "common_all_methods": 58,
+      "common_target_seed_pairs": [
+        [
+          "blend_m010",
+          "30"
+        ],
+        [
+          "blend_m010",
+          "31"
+        ],
+        [
+          "blend_p001",
+          "30"
+        ],
+        [
+          "blend_p001",
+          "31"
+        ],
+        [
+          "blend_p010",
+          "30"
+        ],
+        [
+          "blend_p010",
+          "31"
+        ],
+        [
+          "blend_p030",
+          "30"
+        ],
+        [
+          "blend_p030",
+          "31"
+        ],
+        [
+          "bump_left",
+          "30"
+        ],
+        [
+          "bump_left",
+          "31"
+        ],
+        [
+          "bump_right",
+          "30"
+        ],
+        [
+          "bump_right",
+          "31"
+        ],
+        [
+          "bump_right",
+          "32"
+        ],
+        [
+          "bump_right",
+          "33"
+        ],
+        [
+          "chirp",
+          "30"
+        ],
+        [
+          "chirp",
+          "31"
+        ],
+        [
+          "exp_left",
+          "30"
+        ],
+        [
+          "exp_left",
+          "31"
+        ],
+        [
+          "exp_right",
+          "30"
+        ],
+        [
+          "exp_right",
+          "31"
+        ],
+        [
+          "gauss_left",
+          "30"
+        ],
+        [
+          "gauss_left",
+          "31"
+        ],
+        [
+          "gauss_left",
+          "32"
+        ],
+        [
+          "gauss_left",
+          "33"
+        ],
+        [
+          "gauss_right",
+          "30"
+        ],
+        [
+          "gauss_right",
+          "31"
+        ],
+        [
+          "kink_abs",
+          "30"
+        ],
+        [
+          "kink_abs",
+          "31"
+        ],
+        [
+          "kink_abs",
+          "32"
+        ],
+        [
+          "kink_abs",
+          "33"
+        ],
+        [
+          "kink_relu",
+          "30"
+        ],
+        [
+          "kink_relu",
+          "31"
+        ],
+        [
+          "localized_sine",
+          "30"
+        ],
+        [
+          "localized_sine",
+          "31"
+        ],
+        [
+          "mixed_sine",
+          "30"
+        ],
+        [
+          "mixed_sine",
+          "31"
+        ],
+        [
+          "mixed_sine",
+          "32"
+        ],
+        [
+          "mixed_sine",
+          "33"
+        ],
+        [
+          "moment3",
+          "30"
+        ],
+        [
+          "moment3",
+          "31"
+        ],
+        [
+          "moment4",
+          "30"
+        ],
+        [
+          "moment4",
+          "31"
+        ],
+        [
+          "moment5",
+          "30"
+        ],
+        [
+          "moment5",
+          "31"
+        ],
+        [
+          "moment5",
+          "32"
+        ],
+        [
+          "moment5",
+          "33"
+        ],
+        [
+          "moment9",
+          "30"
+        ],
+        [
+          "moment9",
+          "31"
+        ],
+        [
+          "runge",
+          "30"
+        ],
+        [
+          "runge",
+          "31"
+        ],
+        [
+          "sine",
+          "30"
+        ],
+        [
+          "sine",
+          "31"
+        ],
+        [
+          "step_left",
+          "30"
+        ],
+        [
+          "step_left",
+          "31"
+        ],
+        [
+          "step_right",
+          "30"
+        ],
+        [
+          "step_right",
+          "31"
+        ],
+        [
+          "step_right",
+          "32"
+        ],
+        [
+          "step_right",
+          "33"
+        ]
+      ],
+      "methods": {
+        "Initial sensitivity": {
+          "count": 58,
+          "min": 3.734714893186331,
+          "p10": 3.8080148043911666,
+          "median": 4.144044334407078,
+          "p90": 8.096258618688031,
+          "max": 14.034441969196086
+        },
+        "Initial force": {
+          "count": 58,
+          "min": 1.9223938668990104,
+          "p10": 2.0482118886272467,
+          "median": 2.5898222022336768,
+          "p90": 5.535702882022669,
+          "max": 6.365302235952446
+        },
+        "Concentration: explicit": {
+          "count": 58,
+          "min": 0.2525615415970684,
+          "p10": 0.26739313031541095,
+          "median": 0.28914487136166617,
+          "p90": 0.5478786199207579,
+          "max": 0.9490097208271567
+        },
+        "Concentration: initial force": {
+          "count": 58,
+          "min": 1.9647939949346254,
+          "p10": 2.0792790015911295,
+          "median": 2.573802131223994,
+          "p90": 4.953793869813421,
+          "max": 5.767982576120465
+        }
+      },
+      "common_methods": {
+        "Initial sensitivity": {
+          "count": 58,
+          "min": 3.734714893186331,
+          "p10": 3.8080148043911666,
+          "median": 4.144044334407078,
+          "p90": 8.096258618688031,
+          "max": 14.034441969196086
+        },
+        "Initial force": {
+          "count": 58,
+          "min": 1.9223938668990104,
+          "p10": 2.0482118886272467,
+          "median": 2.5898222022336768,
+          "p90": 5.535702882022669,
+          "max": 6.365302235952446
+        },
+        "Concentration: explicit": {
+          "count": 58,
+          "min": 0.2525615415970684,
+          "p10": 0.26739313031541095,
+          "median": 0.28914487136166617,
+          "p90": 0.5478786199207579,
+          "max": 0.9490097208271567
+        },
+        "Concentration: initial force": {
+          "count": 58,
+          "min": 1.9647939949346254,
+          "p10": 2.0792790015911295,
+          "median": 2.573802131223994,
+          "p90": 4.953793869813421,
+          "max": 5.767982576120465
+        }
+      },
+      "relative_output_error_floor": {
+        "count": 58,
+        "min": 0.2084591446563298,
+        "p10": 0.34231810038606103,
+        "median": 0.7752595078208637,
+        "p90": 0.8318783776822473,
+        "max": 0.9277408135377493
+      },
+      "relative_fine_retention": {
+        "count": 58,
+        "min": 0.9850083213507664,
+        "p10": 0.9890540185641669,
+        "median": 0.9954656200178579,
+        "p90": 0.9960374285598671,
+        "max": 0.9967278994356528
+      },
+      "explicit_relative_fine_retention": {
+        "count": 58,
+        "min": 0.9583861274368977,
+        "p10": 0.9692730942289671,
+        "median": 0.9866451222735575,
+        "p90": 0.9887257696710174,
+        "max": 0.990678399424433
+      },
+      "flow_time": {
+        "count": 58,
+        "min": 1.9647939949346254,
+        "p10": 2.0792790015911295,
+        "median": 2.573802131223994,
+        "p90": 4.953793869813421,
+        "max": 5.767982576120465
+      },
+      "explicit_flow_time": {
+        "count": 58,
+        "min": 0.2525615415970684,
+        "p10": 0.26739313031541095,
+        "median": 0.28914487136166617,
+        "p90": 0.5478786199207579,
+        "max": 0.9490097208271567
+      },
+      "time_relative_tolerance_difference": {
+        "count": 58,
+        "min": 0.0,
+        "p10": 0.0,
+        "median": 1.2584405719155962e-14,
+        "p90": 4.3064473329033516e-10,
+        "max": 1.1381890809959162e-09
+      },
+      "positive_output_floors": 58,
+      "output_floors_above_one_percent": 58,
+      "fine_retention_at_least_half": 58,
+      "refined_time_at_least_40": 0,
+      "refined_over_Initial sensitivity": {
+        "count": 58,
+        "min": 0.3899113204880576,
+        "p10": 0.4137843394351909,
+        "median": 0.5500752515415506,
+        "p90": 1.129800570323426,
+        "max": 1.3255296154022715
+      },
+      "refined_over_Initial force": {
+        "count": 58,
+        "min": 0.8547712327503755,
+        "p10": 0.8850271152139682,
+        "median": 0.990718183534709,
+        "p90": 1.0768120166968613,
+        "max": 1.1065402039236218
+      }
+    }
+  },
+  "force_joins": {
+    "archive": {
+      "matched": 543,
+      "total": 543,
+      "source": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_certificates/states.csv",
+      "sha256": "934f287b526b0fe4dca8c137912a5461ce57f48e01c918d0492a1c8faa1d2a12"
+    },
+    "broad": {
+      "matched": 257,
+      "total": 257,
+      "source": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/broader_static_force/states.csv",
+      "sha256": "a311495206c14cbb3538438eb2136c5bb3517c4c47aa9db8b2abe23da47b98f8"
+    }
+  },
+  "provenance": {
+    "archive": {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/shape_certificate_archive_checked/states.csv",
+      "sha256": "92554b990f17beccbafcd682cdbbbc7d94fd06867ce4797e8fb390499c495587"
+    },
+    "broad": {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/shape_certificate_broad_checked/states.csv",
+      "sha256": "23ebc9edd0b56dd978a02208e0af61ff767c7e922d968f188a3ae6608eb4946d"
+    }
+  }
+}

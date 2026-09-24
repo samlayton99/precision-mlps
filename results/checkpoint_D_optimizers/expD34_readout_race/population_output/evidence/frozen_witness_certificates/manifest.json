@@ -1,0 +1,97 @@
+{
+  "search_job_id": 1470,
+  "search_job_state": "COMPLETED",
+  "search_elapsed_seconds": 14,
+  "search_allocated_cpus": 2,
+  "selection": "Paired baseline and100x primary interventions on mixed_sine and bump_right; selected after FP64 witness search.",
+  "records": [
+    {
+      "job_id": 1471,
+      "job_state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 2,
+      "allocated_cpus": 1,
+      "allocated_gpus": 0,
+      "input_file": "../frozen_witness_final/witness_repaired_mixed_sine.npz",
+      "input_sha256": "949c198af1c0a2ab49f247f6bc519416f03418715775a48980cf1497ae0ff9a6",
+      "certificate_file": "repaired_mixed_sine.json",
+      "target": "mixed_sine",
+      "arm": "repaired",
+      "start": 20000,
+      "seed": 30,
+      "floor_interval": "[0.911147536308061909328976440118603967822724380 +/- 2.99e-46]",
+      "certified_above": {
+        "0.01": true,
+        "0.001": true,
+        "0.0001": true
+      },
+      "scope": "Every integer update 0<=n<=N of exact-arithmetic frozen-feature GD for the encoded empirical problem; not FP64-training or continuum certification"
+    },
+    {
+      "job_id": 1472,
+      "job_state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 2,
+      "allocated_cpus": 1,
+      "allocated_gpus": 0,
+      "input_file": "../frozen_witness_final/witness_s100_primary_mixed_sine.npz",
+      "input_sha256": "a80f68501dc854a0d843079b719f9634d17e5a4175a74b37055a851100261fbe",
+      "certificate_file": "s100_primary_mixed_sine.json",
+      "target": "mixed_sine",
+      "arm": "s100_primary",
+      "start": 20000,
+      "seed": 30,
+      "floor_interval": "[0.179342168381803617088757787294004827621289372 +/- 4.99e-46]",
+      "certified_above": {
+        "0.01": true,
+        "0.001": true,
+        "0.0001": true
+      },
+      "scope": "Every integer update 0<=n<=N of exact-arithmetic frozen-feature GD for the encoded empirical problem; not FP64-training or continuum certification"
+    },
+    {
+      "job_id": 1473,
+      "job_state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 2,
+      "allocated_cpus": 1,
+      "allocated_gpus": 0,
+      "input_file": "../frozen_witness_final/witness_repaired_bump_right.npz",
+      "input_sha256": "c8fc119d6d38e6ba22fc41fdcb9414173d035680a5bdd08785e3cc4d24883103",
+      "certificate_file": "repaired_bump_right.json",
+      "target": "bump_right",
+      "arm": "repaired",
+      "start": 20000,
+      "seed": 30,
+      "floor_interval": "[0.874283513276425982535103180466991040125467073 +/- 4.24e-46]",
+      "certified_above": {
+        "0.01": true,
+        "0.001": true,
+        "0.0001": true
+      },
+      "scope": "Every integer update 0<=n<=N of exact-arithmetic frozen-feature GD for the encoded empirical problem; not FP64-training or continuum certification"
+    },
+    {
+      "job_id": 1474,
+      "job_state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 2,
+      "allocated_cpus": 1,
+      "allocated_gpus": 0,
+      "input_file": "../frozen_witness_final/witness_s100_primary_bump_right.npz",
+      "input_sha256": "a79fec2b1ea95bc401a7bdad12dc4a90584a7dd95848dde9e9291ffed8bb3540",
+      "certificate_file": "s100_primary_bump_right.json",
+      "target": "bump_right",
+      "arm": "s100_primary",
+      "start": 20000,
+      "seed": 30,
+      "floor_interval": "[0.0253613997985409134763011108944288867302331964 +/- 4.52e-47]",
+      "certified_above": {
+        "0.01": true,
+        "0.001": true,
+        "0.0001": true
+      },
+      "scope": "Every integer update 0<=n<=N of exact-arithmetic frozen-feature GD for the encoded empirical problem; not FP64-training or continuum certification"
+    }
+  ]
+}
