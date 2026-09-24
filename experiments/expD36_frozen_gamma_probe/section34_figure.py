@@ -51,10 +51,14 @@ def main():
         axes[1].plot(t,np.median(y,axis=1),color=color,lw=1.6,label=f'Joint {label}')
         axes[1].fill_between(t,np.min(trace[f'{optimizer}_error_low'],axis=1),np.max(trace[f'{optimizer}_error_high'],axis=1),color=color,alpha=.12,lw=0)
         for name,ls in [('rms','-'),('q99','--')]:
-            if name=='rms':ts=trace[f'{optimizer}_rms_steps'];ys=trace[f'{optimizer}_rms_median']
-            else:ts=trace[f'{optimizer}_checkpoint_steps'];ys=trace[f'{optimizer}_lambda_q99']
+            if name=='rms':
+                ts=trace[f'{optimizer}_rms_steps'];ys=trace[f'{optimizer}_rms_median']
+                low=trace[f'{optimizer}_rms_low'];high=trace[f'{optimizer}_rms_high']
+            else:
+                ts=trace[f'{optimizer}_checkpoint_steps'];ys=trace[f'{optimizer}_lambda_q99']
+                low=high=ys
             axes[2].plot(ts/1e6,np.median(ys,axis=1),color=color,ls=ls,lw=1.5,label=f'{label} '+('RMS' if name=='rms' else '99th'))
-            axes[2].fill_between(ts/1e6,np.min(ys,axis=1),np.max(ys,axis=1),color=color,alpha=.08,lw=0)
+            axes[2].fill_between(ts/1e6,np.min(low,axis=1),np.max(high,axis=1),color=color,alpha=.08,lw=0)
     reference=None
     if args.frozen_adam:
         if args.base is None:p.error('--frozen-adam requires --base')
@@ -85,7 +89,7 @@ def main():
     axes[0].set_xticks([0,100,10000,1000000],['0',r'$10^2$',r'$10^4$',r'$10^6$'])
     for suffix in ['pdf','png','svg']:fig.savefig(args.output/f'section34_three_panel.{suffix}',dpi=300)
     plt.close(fig)
-    (args.output/'figure_provenance.json').write_text(json.dumps(dict(joint_analysis=str(args.analysis),bound_source=str(args.bounds),executed_gd_source=str(args.gd),frozen_adam_reference=reference,horizon=horizon,display='Seedwise within-bin medians; shading retains all seedwise extrema in every displayed bin. Slopes use fixed reference spacing 2/467.'),indent=2)+'\n')
+    (args.output/'figure_provenance.json').write_text(json.dumps(dict(joint_analysis=str(args.analysis),bound_source=str(args.bounds),executed_gd_source=str(args.gd),frozen_adam_reference=reference,horizon=horizon,display='Error and RMS lines use seedwise within-bin medians; their shading retains all raw seedwise extrema in each bin. The 99th-percentile slopes use saved parameter checkpoints and show their seed range. Slopes use fixed reference spacing 2/467.'),indent=2)+'\n')
 
 
 if __name__=='__main__':
