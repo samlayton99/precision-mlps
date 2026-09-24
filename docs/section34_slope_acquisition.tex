@@ -2,14 +2,13 @@
 \subsection{Slope controls optimization access to high precision}
 \label{sec:slope-acquisition}
 
-Holding the construction's relative bandwidth $\lambda=\gamma h$ fixed as
-width increases requires $\gamma=\Theta(W)$. Training all parameters must
-instead discover a useful hidden geometry. Its cost is not determined by
-approximation capacity alone: even features that admit an accurate readout
-can expose the required corrections only through weak gradients.
-Scale-dependent spectral bias is established by
-\citet{xu2020frequency,tancik2020fourier}; here we quantify its output-error
-consequences for the construction's finite tanh geometry.
+Section~3.3 identifies a useful relative bandwidth $\lambda=\gamma h$ for
+the construction. Holding it fixed as width increases requires
+$\gamma=\Theta(W)$. Training must acquire a useful feature geometry as well
+as fit its readout; the latter can remain slow even when the features already
+represent the target accurately. We quantify this distinction for the finite
+tanh construction. The underlying scale-dependent spectral bias is
+established prior work~\citep{xu2020frequency,tancik2020fourier}.
 
 \paragraph{Slope controls access to representable corrections.}
 Freeze the uniform centers from Section~3.1 and a common slope $\gamma$.
@@ -32,16 +31,27 @@ This smoothing multiplies frequency $\omega$ by
 \end{equation}
 Smaller slopes attenuate rapid variation more strongly. Integrating these
 features over centers at density $1/h$ gives a kernel whose directional
-response is weighted by $M_\gamma^2$. Bounding its difference from the finite
-center grid gives upper bounds on relative learning rates, and hence a lower
-bound on remaining output error.
+response is weighted by $M_\gamma^2$. For an orthonormal basis $Q$ of
+mean-zero sample directions, this integral is explicitly
+\begin{equation}
+ H_\gamma=-\frac2{hm}Q^T[d_{ab}\coth(\gamma d_{ab})]_{a,b}Q,
+ \qquad d_{ab}=z_a-z_b,
+ \label{eq:slope-explicit-kernel}
+\end{equation}
+with diagonal value $1/\gamma$ inside brackets. The integral exposes how
+gamma filters each sample direction; finite-center corrections transfer this
+calculation to the dictionary actually trained. Specifically, subtract an
+explicit contribution $T_\gamma$ from exterior lattice centers absent from
+that dictionary, giving $S_\gamma=H_\gamma-T_\gamma$. Poisson summation
+supplies a lattice-error allowance $\delta_\gamma$ such that
+$Q^TK_\gamma Q\preceq S_\gamma+\delta_\gamma I$.
+Both corrections are defined in Appendix~\ref{app:slope-proof}.
 
 \begin{theorem}[Slope-dependent output-error lower bound]
 \label{thm:slope-output}
 Let consecutive uniformly spaced centers cover the sample interval, with
 common slope $\gamma>0$, and let $y\ne0$. Let $\beta_i(\gamma)$ be the
-descending eigenvalues of the corrected continuous-center kernel $S_\gamma$
-defined below, $\delta_\gamma$ its analytic lattice allowance, and
+descending eigenvalues of $S_\gamma$ above and
 $\ell_\gamma=v_0^TK_\gamma v_0$ for $v_0=\mathbf1/\sqrt m$. Define
 \begin{equation}
  \bar\rho_1=1,\qquad
@@ -86,24 +96,11 @@ to acquire.
 \end{figure}
 
 \paragraph{Proof sketch.}
-Let $Q$ have orthonormal columns spanning the mean-zero sample directions
-$v_0^\perp$. The continuous-center kernel is explicitly
-\begin{equation}
- H_\gamma=-\frac2{hm}Q^T[d_{ab}\coth(\gamma d_{ab})]_{a,b}Q,
- \qquad d_{ab}=z_a-z_b,
- \label{eq:slope-explicit-kernel}
-\end{equation}
-with diagonal value $1/\gamma$ inside brackets. Its quadratic form weights a
-sample direction's frequency content by $M_\gamma^2$. Subtract the contributions
-$T_\gamma$ of explicitly retained centers outside the finite dictionary to
-obtain $S_\gamma=H_\gamma-T_\gamma$. Poisson summation bounds the center-lattice
-discrepancy by $\delta_\gamma$; the remaining exterior tail is positive and its
-subtraction only lowers the finite kernel. Hence
-$Q^TK_\gamma Q\preceq S_\gamma+\delta_\gamma I$. Interlacing and
-$\ell_\gamma\le\mu_1$ give $\rho_i\le\bar\rho_i$. Substituting these rate bounds
-into the exact squared relative output error
-$\sum_i p_i(1-\rho_i/2)^{2n}$ proves the statement.
-Appendix~\ref{app:slope-proof} specifies the corrections and proves each step.
+Interlacing transfers the projected-kernel upper bound to
+$\mu_i\le\beta_{i-1}+\delta_\gamma$ for $i\ge2$.
+Since $\ell_\gamma\le\mu_1$, this gives $\rho_i\le\bar\rho_i$.
+Substitute these upper rates into the exact squared relative output error
+$\sum_i p_i(1-\rho_i/2)^{2n}$, whose factors decrease with $\rho_i$.
 
 The bound uses the actual dictionary's target projections; its rate endpoints
 are computed from the slope-dependent integral kernel and finite-center
@@ -124,15 +121,14 @@ that already admit accurate readouts.
 Joint Adam reduces median relative error to $2.51\times10^{-3}$, while Adam
 applied only to the readout of the supplied $\lambda=1/4$ dictionary reaches
 $1.48\times10^{-6}$ over the same horizon. Joint GD remains at $0.252$
-(Figure~\ref{fig:slope-acquisition}B). During Adam's improvement, its median
-RMS scaled slope reaches $0.0367$ and its median 99th percentile reaches
-$0.171$ (Figure~\ref{fig:slope-acquisition}C). These statistics measure
-acquisition but do not by themselves establish that the learned slopes are
-insufficient. An endpoint diagnostic finds over 99.998\% of the remaining
-residual energy in directions below $10^{-6}$ of the largest eigenvalue of
-the full Jacobian metric after actual Adam scaling. This measures weak local
-directions, not an Adam convergence rate; the temporal theorem remains
-specific to frozen GD.
+(Figure~\ref{fig:slope-acquisition}B). For jointly trained features
+$\tanh(a_jx+b_j)$, Figure~\ref{fig:slope-acquisition}C tracks the distribution
+of scaled slopes $h|a_j|$. Adam's endpoint median RMS and 99th percentile are
+$0.0367$ and $0.171$: substantial, heterogeneous acquisition that still
+leaves a large output-accuracy gap. The remaining residual is concentrated
+in weak local directions even after accounting for Adam's coordinate scaling,
+including under constant learning rates (Appendix~\ref{app:slope-experiments}).
+This is a local diagnostic; the temporal theorem applies to frozen GD.
 
 The construction supplies accurate feature geometry and readout weights
 directly. It therefore avoids both the search for that geometry and slow

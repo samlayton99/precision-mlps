@@ -13,3 +13,13 @@ The relative-rate paragraph now explains the essential constraint once: the larg
 The validation paragraph distinguishes the dense-grid direct-fit error from GD training error and reports trajectory-wide tightness as well as endpoint tightness. The joint-training paragraph leads with the accuracy gap between learned and supplied features. Slope summaries are identified as measurements of acquisition, not a universal sufficiency test. The actual Adam-scaled Jacobian diagnostic is quantified and distinguished from a convergence theorem.
 
 The concluding transition states what the construction supplies—geometry and readout weights—and which search costs it avoids. The text does not claim a proved joint-training equilibrium mechanism or a general impossibility result for language models. The longer-horizon and intervention results remain pending for the second review; they may change the empirical interpretation.
+
+## Review 2: definitions and reader progression
+
+A separate reader checked the revised section against Section 3.3, the proof, and the empirical protocol. The main defect was the order of explanation: the theorem introduced the corrected kernel before the reader knew why it existed, and the final empirical paragraph introduced a full Jacobian metric just as the argument should resolve.
+
+The opening now starts from the useful bandwidth identified in Section 3.3 and states the acquisition question before discussing spectral bias. The explicit continuous-center kernel and the purpose of its two corrections now precede the theorem. The reader sees how gamma enters, why a finite-grid correction is needed, and which definitions the appendix supplies before encountering the rate endpoints. The proof sketch can consequently focus on interlacing and the GD error identity, without explaining the kernel a second time.
+
+The joint-training paragraph now defines $a_j$ through the actual learned feature $\tanh(a_jx+b_j)$. Its slope statistics are identified as endpoints, since the trajectories need not increase monotonically. The main result is the output-accuracy gap accompanying substantial but heterogeneous slope acquisition. Detailed adaptive-metric percentages move to the empirical appendix, where the constant-rate control and its seed variability can be explained properly. The main text retains the local-direction interpretation and its distinction from the frozen-GD theorem.
+
+This review changed the sequence of the argument and the placement of evidence; it did not optimize a length metric. Final numerical values and the causal interpretation of slope interventions remain for the third review after the longer runs complete.

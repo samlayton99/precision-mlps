@@ -175,3 +175,22 @@ Moments from a restarted readout are not substituted for joint-training
 moments. Selected recipes, continuation decisions, and figure provenance
 remain attached to their run records. Finite-budget error is reported as
 such and does not establish permanent optimization failure.
+
+\paragraph{Constant-rate control for the adaptive-metric interpretation.}
+At the selected two-million-update cosine Adam endpoints, over $99.998\%$
+of residual energy lies below relative eigenvalue $10^{-6}$ in the full
+Jacobian metric with actual Adam scaling. The best constant-rate recipe,
+$\eta=0.02$, gives median $98.763\%$, with seed range
+$47.671$--$99.309\%$. These fractions divide by the endpoint residual energy;
+the cumulative curves themselves divide by target energy. Thus weak local
+directions also matter without cosine cooldown, although the concentration
+is not uniform across constant-run seeds.
+
+The constant runs' median adaptive-trace-weighted contribution of $\epsilon$
+to $\sqrt{\widehat v}+\epsilon$ is $7.71\times10^{-6}$ for the full Jacobian
+and $1.09\times10^{-6}$ for its readout block, versus approximately $24\%$
+and $23\%$ at the cosine endpoints. Counting coordinates with
+$\sqrt{\widehat v}\le\epsilon$ exaggerates its effect because many have
+negligible Jacobian columns. The constant-rate check therefore supports the
+weak-direction interpretation without relying on an epsilon-dominated metric;
+it remains a local diagnostic, not an Adam convergence theorem.
