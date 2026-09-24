@@ -958,3 +958,137 @@ This proposition uses a fixed feature matrix and ordinary GD. Its modal
 identity does not transfer to evolving features or to Adam's adaptive,
 momentum-dependent updates. Sections 4–7 address the distinct question of
 whether evolving population structure itself preserves slow learning.
+
+## Appendix. How rapidly can the actual effective force reinforce itself?
+
+The nonlinear sensitivity of a population need not be well aligned with
+its remaining target error. Therefore even the measured Jacobian norm can
+overestimate the force actually driving training. The following refinement
+starts from the measured effective-force norm and bounds its subsequent
+reinforcement through the evolving constrained-gradient ODE. It is an
+effective-flow result; it does not by itself certify ordinary GD or Adam.
+
+**Proposition 9: initial-force persistence.** Consider the exact effective
+flow $\dot\theta=-F$, with $Y_0>0$ and
+$f_0=\|F(\theta_0)\|>0$. Choose $q>1$ and let
+
+$$
+A_q=(q-1)B_0,\qquad
+H_C=\sqrt2+4(\sqrt{M_0}+A_q).
+$$
+
+Choose a positive coarse singular-value margin $\sigma$ no larger than
+the maximum of the two valid initial-data lower bounds from Theorem 3.
+Define, for $b\ge B_0$,
+
+$$
+U(b)=f_0+2\sqrt2Y_0(b^3-B_0^3)
++\frac{3Y_0H_C}{4\sigma}(b^4-B_0^4),\qquad
+T_q^F=\int_{B_0}^{qB_0}\frac{db}{U(b)}.
+$$
+
+Let $b(t)$ solve $\dot b=U(b)$, $b(0)=B_0$. Through $T_q^F$,
+the effective flow remains defined and satisfies
+
+$$
+B(t)\le b(t),\qquad
+\|F(t)\|\le U(b(t)),\qquad
+\int_0^t\|F(s)\|\,ds\le b(t)-B_0,
+\qquad \sigma_{\min}(J_C(t))\ge\sigma.
+$$
+
+Its fine-error floor is
+
+$$
+Y(t)\ge\left[Y_0^2-2I(b(t))\right]_+^{1/2},
+$$
+
+where the integrated force allowance is explicit:
+
+$$
+\begin{aligned}
+I(b)={}&f_0(b-B_0)\\
+&+2\sqrt2Y_0\left[\frac{b^4-B_0^4}{4}-B_0^3(b-B_0)\right]\\
+&+\frac{3Y_0H_C}{4\sigma}
+\left[\frac{b^5-B_0^5}{5}-B_0^4(b-B_0)\right].
+\end{aligned}
+$$
+
+The output-capacity and population-crossing bounds already proved in the
+note apply with the same travel allowance $b(t)-B_0$. If the energy floor
+above becomes zero, it is simply uninformative; the capacity bound may
+still be useful.
+
+**Proof: retain the exact geometry and compensation feedback.** Let
+$A=J_C$ temporarily, so $\Pi A^*=0$ and $\Pi^2=\Pi$.
+Differentiating these identities in direction $F$ gives
+
+$$
+(D\Pi[F])A^*=-\Pi(DA[F])^*,\qquad
+\Pi(D\Pi[F])\Pi=0.
+$$
+
+Since $g_H=F+A^*\ell$, differentiating $F=\Pi g_H$ along
+$\dot\theta=-F$ yields the exact identity
+
+$$
+\boxed{\quad
+\frac12\frac{d}{dt}\|F\|^2
+=-\|J_HF\|^2
+-\langle e_H,D^2e_H[F,F]\rangle
++\ell\cdot D^2e_C[F,F].
+\quad}
+$$
+
+The first term is residual relaxation. The second and third are the
+changing nonlinear geometry and coarse-compensation contributions; their
+signs are not fixed. No projector-derivative term has been omitted.
+
+Inside the proposed travel region, $Y\le Y_0$,
+$\|D^2e_H\|\le6\sqrt2B^2$,
+$\|D^2e_C\|\le H_C$, and
+$|\ell|\le3Y_0B^3/\sigma$. Dropping the nonpositive first term and
+bounding the other two gives, for $f=\|F\|>0$,
+
+$$
+\dot f\le Y_0\left(6\sqrt2B^2+
+\frac{3H_C}{\sigma}B^3\right)f,
+\qquad D^+B\le f.
+$$
+
+The right sides are nondecreasing in the nonnegative comparison variables.
+Consequently the scalar system
+
+$$
+\dot b=u,\qquad
+\dot u=Y_0\left(6\sqrt2b^2+
+\frac{3H_C}{\sigma}b^3\right)u,
+\quad (b(0),u(0))=(B_0,f_0)
+$$
+
+bounds $(B,f)$ from above while the coarse margin holds. Dividing the
+second equation by the first and integrating gives $u=U(b)$.
+Its integrated speed is $b-B_0$, so the same first-exit argument as in
+Theorem 3 preserves the coarse margin through $b=qB_0$. This closes the
+comparison without a future-force assumption. Finally (2) gives
+
+$$
+Y(t)^2=Y_0^2-2\int_0^t f(s)^2\,ds
+\ge Y_0^2-2\int_{B_0}^{b(t)}U(u)\,du,
+$$
+
+which is the claimed formula. $\square$
+
+If $f_0=0$ and the initial coarse projector is defined, the initial state
+is an equilibrium of the effective-flow ODE and remains stationary. This
+includes $Y_0=0$. The positive-force integral is not used in that case.
+The proposition does not claim that the observed stalled states have
+exactly zero force or form an attracting equilibrium.
+
+When $f_0$ is much smaller than $Y_0B_0^3$, the comparison begins with
+that smaller speed. It then allows the current force to grow at
+a state-dependent rate. A longer interval, if obtained numerically, would
+therefore describe suppressed reinforcement in the evolving ODE, not
+continued agreement with a frozen-force forecast. Whether these absolute
+curvature bounds retain the empirically observed slowness for a useful
+duration remains a numerical question.
