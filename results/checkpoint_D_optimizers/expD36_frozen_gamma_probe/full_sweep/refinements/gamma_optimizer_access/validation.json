@@ -173,20 +173,22 @@
     "target_case_ema_hits_checked": 40
   },
   "document": {
-    "pages": 9,
+    "pages": 6,
     "visual_review_all_pages": true,
     "fonts_embedded_subset_unicode": 28,
     "latex_warnings": false,
     "markdown_math_delimiters_checked": true,
     "figure_links_checked": 5,
-    "independent_md_tex_scientific_consistency_review": true
+    "independent_md_tex_scientific_consistency_review": true,
+    "main_pages": 3,
+    "appendix_pages": 3
   },
   "source_hash_checks": 58,
   "numerical_status": "FP64 evaluations, spectral decompositions, and measurements. The Fourier identity is analytic; measured finite corrections are specific to the archived probe.",
   "artifact_sha256": {
-    "docs/gamma_optimizer_access_note.md": "cfa6798262368785e4b2097b303016d03d60a1f562a12557f413d7327ca239fc",
-    "docs/gamma_optimizer_access_note.pdf": "2b093597f3601912a94c649880ed40ffaaca5bbc8f1447bb25e2d6ccaf6f9b1d",
-    "docs/gamma_optimizer_access_note.tex": "c0e6e445fb7165a0d5e88c2197e4b1e757d1e651521b7a2280d33c25f8676d8a",
+    "docs/gamma_optimizer_access_note.md": "727a35aea8c5ecdf236c40b8b756d1c87b5f461a76da033fc2c6e2c3020a333d",
+    "docs/gamma_optimizer_access_note.pdf": "2faf35ab799bc93558a68e938b9205528ced316adb7749c5416f6c206d0a0938",
+    "docs/gamma_optimizer_access_note.tex": "e7cf6de260d985203354e27e16516536a69b5f29841dda6a2dd2bbbdf2fa7025",
     "experiments/expD36_frozen_gamma_probe/gamma_mechanism_analysis.py": "25a00dd8a1b6fa92eb37675977812fd908aa53c4e4104c250234bfa7c3ae377b",
     "experiments/expD36_frozen_gamma_probe/optimizer_access_figure.py": "dbaa363eab706b5567f74a24fc3f2bcce642a0874f506bff7a6d8a717fcd51ca",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/analysis.json": "a4f9e56f85d902db14de737e61b656097a2263a0e37c21c7e401b5e28c9c8eb8",
@@ -209,5 +211,26 @@
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/tests_mechanism.log.gz": "2581bd88b4cb13cdfd19c16343f649fac0ffea2acd68cae688f33262de3c1380",
     "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_optimizer_access/trace_envelopes.npz": "197588b29074d81c7a5ddb4c85d1a8d673ab762b004fec19ed096ac1b9144546",
     "tests/test_expD36_gamma_mechanism_analysis.py": "85f6323345c5717fadc2adbb952edea0755869634c48c4b2fc36c6ef1931b821"
+  },
+  "document_revision": {
+    "base_commit": "4cb46e6",
+    "purpose": "Condense the narrative, introduce the theorem construction, and retain the full proof and empirical checks in appendices.",
+    "previous_pages": 9,
+    "pages": 6,
+    "main_pages": 3,
+    "body_font_points": 11,
+    "previous_markdown_whitespace_words": 2779,
+    "markdown_whitespace_words": 1623,
+    "main_markdown_whitespace_words": 940,
+    "unchanged_evidence_artifacts_verified": 22,
+    "new_training": false,
+    "new_numerical_tests": false,
+    "checks": [
+      "Independent scientific review of compressed prose and proof",
+      "All five figure paths resolve",
+      "All six rendered pages visually reviewed",
+      "Clean LaTeX compilation with embedded fonts",
+      "Existing non-document artifact hashes unchanged"
+    ]
   }
 }
