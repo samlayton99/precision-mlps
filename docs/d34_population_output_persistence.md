@@ -1334,3 +1334,311 @@ The remaining task is to derive a sufficiently small signed redistribution
 bound from the coupled vector field, or identify another closed collective
 quantity. Measuring these two aggregate terms and perturbing their
 population alignment provides a direct test of that hypothesis.
+
+## Appendix. A conditional theorem from population shape
+
+Proposition 10 assumes that the force-weighted population size stays bounded.
+Can a more structural premise imply that conclusion? The following theorem
+uses two properties of the **distribution** of force energy: it does not
+concentrate on a vanishing fraction of neurons, and its size distribution
+does not develop an increasingly heavy tail relative to its own mean.
+These premises allow the mean size and force magnitude to change. A coupled
+comparison then bounds both, together with the fourth and sixth population
+moments. This is a conditional theorem about the exact evolving ODE;
+preservation of its two shape assumptions remains to be established or
+falsified empirically.
+
+For $f=\|F\|>0$, retain the weights and sizes from the preceding appendix,
+including the output-bias block with $q_d=0$. Define
+
+$$
+\Omega=\sum_{j,d}\omega_jq_j,\qquad
+\Omega_2=\sum_{j,d}\omega_jq_j^2,\qquad
+V_F=\Omega_2-\Omega^2,\qquad
+I_F=W\sum_{j=1}^W\omega_j^2,\qquad
+K_F=\frac{\Omega_2}{\Omega^2}.
+$$
+
+Here $\Omega=\Omega_F$, and $\Omega_2$ is the force-weighted fourth moment
+of the rescaled particle size. The bias weight is included in the first
+three sums, but excluded from $I_F$. In particular, $K_F\ge1$.
+The bound $I_F\le I_*$ prevents hidden force energy from concentrating
+excessively: equal weights on all hidden neurons give $I_F=1$, whereas
+equal weights on only $m$ hidden neurons give $I_F=W/m$ when the bias force
+vanishes. The bound $K_F\le K_*$ permits the force-weighted mean size to
+grow, but controls the spread relative to that mean. Both quantities are
+unchanged by multiplying the entire force vector by a nonzero scalar.
+
+### Residual relaxation and redistribution have different signs
+
+The negative term $-\|J_HF\|^2$ in the force-norm identity reduces total
+force energy. It need not reduce the size of the population carrying that
+energy. The distinction can be quantified without controlling individual
+neurons.
+
+**Lemma 11 (relaxation-induced redistribution).** At a state with defined
+coarse projector, let
+
+$$
+\mathcal A=\Pi J_H^*J_H\Pi
+$$
+
+act on the coarse tangent space $\ker J_C$. Let $\Delta_H$ be its spectral
+diameter on that space. The contribution $G_{\rm relax}=-\mathcal A F$
+to $G=\dot F$ produces size redistribution satisfying
+
+$$
+|\dot\Omega_{\rm relax}|
+\le\Delta_H\sqrt{V_F}
+\le\frac{9M_6}{W^2}\sqrt{V_F}.
+$$
+
+**Proof.** Let $Q$ be the block diagonal parameter operator with entries
+$q_jI_3$ and bias entry zero. Set $U=\Pi(Q-\Omega I)F$. Then
+$\langle U,F\rangle=0$ and $\|U\|\le f\sqrt{V_F}$. The redistribution
+term is $-2\langle U,\mathcal A F\rangle/f^2$. Subtracting the midpoint
+of the spectrum times the identity from $\mathcal A$ does not change this
+inner product, and its remaining operator norm is $\Delta_H/2$.
+Cauchy–Schwarz proves the first bound. The second follows from
+$\Delta_H\le\|J_H\|^2\le9M_6/W^2$. $\square$
+
+For example, consider the two-dimensional linear flow
+$\dot F=-\operatorname{diag}(1,0)F$ with $F(0)=(1,1)$ and fixed size
+operator $Q=\operatorname{diag}(1,4)$. The force norm decreases, but
+
+$$
+\Omega(t)=\frac{e^{-2t}+4}{e^{-2t}+1}
+$$
+
+increases from $5/2$ toward $4$. This is a counterexample to an inference
+from positive-semidefinite residual relaxation alone; it is not claimed
+as a trajectory of the tanh network. Under bounded $M_6$ and $V_F$, the
+lemma nevertheless bounds this redistribution by $O(W^{-2})$. The
+curvature terms below can act at the larger $O(W^{-1})$ rate.
+
+### A closed comparison under two shape assumptions
+
+**Theorem 12 (conditional population-shape persistence).** Consider the
+noiseless effective flow $\dot\theta=-F$ of Section 1, with
+$f_0=\|F(0)\|>0$. Fix a travel allowance $A_*>0$ such that
+
+$$
+\sigma_*=
+\sigma_{\min}(J_C(0))-(\sqrt2+4\sqrt{M_0})A_*-2A_*^2>0.
+$$
+
+Suppose the following two **future structural conditions** hold along the
+flow until this travel allowance is exhausted:
+
+$$
+I_F(t)\le I_*,\qquad K_F(t)\le K_*,
+\qquad I_*<\infty,\quad 1\le K_*<\infty.
+\tag{S}
+$$
+
+Equivalently, the conclusions below hold up to the first violation of
+(S). The theorem does not deduce (S) from its initial validity. No future
+bound on $f$, $\Omega$, $M_4$, or $M_6$ is assumed.
+
+Set $\tau=t/W$, $k=\sqrt{K_*}$ and $\delta=\sqrt{K_*-1}$. The comparison
+variables $\bar g,\bar u,\bar s,\bar m,\bar A$ represent upper bounds
+for $Wf,\sqrt\Omega,\sqrt{M_4},\sqrt{M_6}$ and parameter travel,
+respectively. Initialize them at these actual initial values, with
+$\bar A(0)=0$. A prime in the following system means $d/d\tau$:
+
+$$
+\begin{aligned}
+\bar A'&=\bar g,\\
+\bar s'&=2\bar g\bar u,\\
+\bar m'&=3k\bar g\bar u^2,\\
+\bar g'&=
+Y_0\left[6\sqrt2\bar u^2+
+\frac{3\sqrt2\bar s^2}{\sigma_*^2}
+\left(\sqrt2+\frac{4\bar u}{\sqrt W}\right)\right]\bar g,\\
+\bar u'&=
+\bar g\sqrt{I_*}
++\frac{9\delta}{2W}\bar m^2\bar u
++6\sqrt2Y_0\delta k\bar u^3\\
+&\quad+
+\delta\bar u\left(\sqrt2+\frac{4\bar u}{\sqrt W}\right)
+\left(\frac{3\sqrt2Y_0\bar s^2}{\sigma_*^2}
++\frac{\bar g}{\sigma_*}\right).
+\end{aligned}
+\tag{S1}
+$$
+
+Let $\tau_*$ be the endpoint of this comparison while it stays finite
+and $\bar A<A_*$. Then, for $0\le t/W<\tau_*$, subject to (S),
+
+$$
+Wf(t)\le\bar g(t/W),\qquad
+\Omega(t)\le\bar u(t/W)^2,\qquad
+M_4(t)\le\bar s(t/W)^2,\qquad
+M_6(t)\le\bar m(t/W)^2,
+$$
+
+and the actual total parameter travel is at most $\bar A(t/W)$.
+Consequently,
+
+$$
+\begin{aligned}
+\|f_{\theta(t)}-y\|
+&\ge\left[\|P_Hy\|-
+\frac{2\sqrt2}{3W}\bar s(t/W)^2\right]_+,\\
+Y(t)^2
+&\ge\left[Y_0^2-
+\frac2W\int_0^{t/W}\bar g(\xi)^2\,d\xi\right]_+.
+\end{aligned}
+\tag{S2}
+$$
+
+For a sequence of widths, assume $M_0,M_4(0),M_6(0),\Omega(0),Y_0,Wf_0$
+are uniformly bounded, initial coarse conditioning is uniformly positive,
+and $I_*,K_*$ are width-independent. A fixed sufficiently small $A_*$
+then yields a width-independent $c>0$ on which (S1) remains bounded.
+Provided (S) holds, the conclusions apply through time $cW$:
+the network's non-affine output is $O(W^{-1})$, while its squared fine
+error decreases by at most $O(W^{-1})$. Bounded initial $M_6$ and $Y_0$
+already imply $Wf_0\le3Y_0\sqrt{M_6(0)}$; the initial force scaling need
+not be a separate empirical assumption. Initial $\Omega$ and the future
+shape conditions are separate requirements.
+
+**Proof: decompose the changing force.** Define the self-adjoint contracted
+curvature operator $\mathcal H$ by its bilinear form
+
+$$
+\langle v,\mathcal H w\rangle
+=\langle e_H,D^2e_H[v,w]\rangle
+-\ell\cdot D^2e_C[v,w].
+$$
+
+Differentiating $F=J_H^*e_H-J_C^*\ell$ along $\dot\theta=-F$ and
+projecting onto $\ker J_C$ gives
+$\Pi G=-\Pi(J_H^*J_H+\mathcal H)F$.
+Differentiating $J_CF=0$ gives $J_CG=D^2e_C[F,F]$.
+Combining these tangent and normal components yields the exact identity
+
+$$
+G=-\mathcal A F-\Pi\mathcal H F
++J_C^*K^{-1}D^2e_C[F,F].
+\tag{S3}
+$$
+
+The last term is the response required because the tangent space itself
+changes. This calculation retains its evolution explicitly.
+
+The global tanh Hessian bounds used in Proposition 10 also imply
+
+$$
+\begin{aligned}
+\|\mathcal H F\|
+&\le\frac{6\sqrt2Y}{W}f\sqrt{\Omega_2}
++|\ell|f\left(\sqrt2+4\sqrt{\Omega/W}\right),\\
+\|J_C^*K^{-1}D^2e_C[F,F]\|
+&\le\frac{f^2}{\sigma_*}
+\left(\sqrt2+4\sqrt{\Omega/W}\right).
+\end{aligned}
+\tag{S4}
+$$
+
+For the first inequality, the fine contracted Hessian is block diagonal
+in the hidden particles, with block norm at most $6\sqrt2Y|p_j|^2$.
+Squaring and summing its action on $F_j$ gives
+$6\sqrt2Yf\sqrt{\Omega_2}/W$.
+The coarse contracted blocks have norms at most
+$|\ell|(\sqrt2+4|p_j|)$; the triangle inequality in the block Euclidean
+norm gives the remaining term. The second inequality uses
+$\|J_C^*K^{-1}\|\le1/\sigma_*$ and the directional coarse-Hessian bound.
+
+**Proof: obtain the closed population inequality.** The redistribution
+contribution of any part of $G$ is
+$2\langle(Q-\Omega I)F,G\rangle/f^2$.
+Use Lemma 11 for the relaxation part, (S4) for the other parts,
+and the movement bound from the preceding appendix. The result is
+
+$$
+\begin{aligned}
+\dot\Omega\le{}&2f\sqrt{\Omega I_F}
++\frac{9M_6}{W^2}\sqrt{V_F}
++\frac{12\sqrt2Y}{W}\sqrt{V_F\Omega_2}\\
+&+2\sqrt{V_F}\left(\sqrt2+4\sqrt{\Omega/W}\right)
+\left(|\ell|+\frac f{\sigma_*}\right).
+\end{aligned}
+\tag{S5}
+$$
+
+This is an exact differential inequality for the evolving system; it has
+not replaced the system by a fixed Jacobian. As in Proposition 10,
+
+$$
+|\ell|\le\frac{3\sqrt2Y M_4}{\sigma_*^2W},\qquad
+\dot f\le\frac{Y}{W}
+\left[6\sqrt2\Omega+
+\frac{3\sqrt2M_4}{\sigma_*^2}
+\left(\sqrt2+4\sqrt{\Omega/W}\right)\right]f.
+\tag{S6}
+$$
+
+The population moments themselves obey
+
+$$
+D^+\sqrt{M_4}\le2f\sqrt\Omega,\qquad
+D^+\sqrt{M_6}\le3f\sqrt{\Omega_2}.
+\tag{S7}
+$$
+
+For the second inequality, differentiate $M_6=W^2\sum_j|p_j|^6$ and
+apply Cauchy–Schwarz to
+$\sum_j|p_j|^5|F_j|$ using factors $|p_j|^3$ and
+$|p_j|^2|F_j|$. This gives
+$|\dot M_6|\le6f\sqrt{M_6\Omega_2}$.
+The first inequality was proved in Proposition 10.
+
+Now substitute $\sqrt{V_F}\le\delta\Omega$,
+$\sqrt{\Omega_2}\le k\Omega$ and $Y\le Y_0$ into (S5)–(S7), divide
+(S5) by $2\sqrt\Omega$, and change time to $\tau=t/W$.
+This gives precisely the upper differential inequalities (S1).
+Their right-hand sides are nondecreasing in all nonnegative comparison
+variables, so the componentwise comparison principle applies.
+If a force-zero state is encountered, uniqueness of the smooth effective
+flow makes that state stationary; the positive-force argument can be
+restricted to the interval before it. For positive force, $\Omega>0$:
+if force were supported only on zero particles and the output bias,
+the zero-particle Jacobian blocks and $J_CF=0$ would force $F=0$.
+
+**Proof: close the rank and output bounds.** Travel at most $\bar A<A_*$
+implies $\sqrt M\le\sqrt{M_0}+\bar A$. Integration of the coarse-Hessian
+bound therefore preserves $\sigma_{\min}(J_C)\ge\sigma_*$.
+A first-exit argument validates the rank used in (S4)–(S6).
+The first output bound (S2) follows from the fourth-moment capacity
+bound. The second follows by integrating $dY^2/dt=-2f^2$.
+Finally, for $W\ge1$ the coefficients $1/W$ and $1/\sqrt W$ in (S1)
+are at most one. With uniformly bounded initial data and fixed positive
+$\sigma_*$, a single polynomial comparison system therefore gives a
+bounded solution and travel below $A_*$ on a common positive interval
+$0\le\tau\le c$. This proves the stated conditional $cW$ duration.
+$\square$
+
+### What this adds, and what it does not establish
+
+The conditional mechanism is now a population statement: if force remains
+distributed across sufficiently many particles and its relative size spread
+stays controlled, then the coupled system cannot rapidly amplify that
+population's size or force. The fourth moment remains bounded, so its
+nonlinear output remains too small to resolve a fixed non-affine target.
+Individual escapes are allowed; the population crossing bound following
+Proposition 10 applies with travel $\bar A$.
+
+The empirical test is correspondingly specific. Measure $I_F$ and $K_F$
+along natural trajectories and after large scale perturbations. Their
+boundedness cannot be inferred from a small force norm, and the theorem
+makes no claim that all initial configurations preserve them. A rise in
+either quantity identifies a concrete way that the population can leave
+this mechanism. Differentiating further moments without a structural
+argument merely creates another moment hierarchy. Proving preservation of
+(S), or replacing it by another empirically supported shape condition,
+remains the open step toward an initial-data-only $O(W)$ theorem.
+
+This theorem concerns the exact effective fine flow. It does not by itself
+prove the same persistence for full GD or Adam; their tracking and optimizer
+effects require their own comparison or verification.
