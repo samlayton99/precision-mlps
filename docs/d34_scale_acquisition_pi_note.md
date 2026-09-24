@@ -55,12 +55,21 @@ function norms use the empirical mean over training inputs.
 
 \newpage
 
-**The empirical starting point.** Across thirteen targets, the orange tracking
-force drops below the blue effective fine force after the initial transient.
-Black then follows blue. The derivation below explains this separation; the
-later question is why the surviving force often produces so little scale travel.
+**The empirical starting point.** Read each row from force to scale. The orange
+tracking force falls below the blue effective fine force early; black then
+follows blue. Degree five and degree nine barely change scale afterward, while
+other targets develop later growth. The question is what controls that delay.
 
-![Full slope-gradient norm (black), effective fine-force norm (blue), and coarse-tracking norm (orange) during ordinary GD. Each panel shows five seeds; lines are medians and shading is the full seed range, not a confidence interval. Width 177, 2,048 training points, learning rate 0.002, through 600k updates. The norm axis is logarithmic; the update axis is logarithmic above update 10. Blue includes balanced coarse compensation. The vectors add, but their norms need not. These are sampled force magnitudes, not outward-motion or acquisition measurements. Target labels are defined in Appendix B.1.](figures/d34_pi_force_decomposition.png)
+![Forces and scales for seven targets under ordinary GD: width 177, 2,048 inputs, learning rate 0.002, five seeds, through 600k updates. Lines show seed medians; shading shows the full seed range. Right: mean and maximum normalized slopes, with $h=2/128=1/64$. The horizontal dashed line is the construction benchmark $\lambda=0.25$. Each vertical dotted line is the median first sampled tracking/effective-force crossover across seeds. All axes are logarithmic. Blue includes balanced coarse compensation; force norms need not add. A maximum measures one extreme, not population acquisition. Targets are defined in Appendix B.1.](figures/d34_pi_forces_scales_1.png)
+
+\newpage
+
+**The same comparison across the remaining targets.** The force crossover
+appears throughout this panel, too, but the later scale trajectories differ.
+An explanation of persistence must account for this target dependence after
+tracking becomes small.
+
+![The remaining six targets, using the same settings, axes, five-seed aggregation, and crossover definition as Figure 1. Scale traces use the same saved states as the forces. The horizontal dashed line is $\lambda=0.25$; no saved maximum reaches it in any of the 65 trajectories across both figures. Some targets show later effective-force reinforcement and scale growth while tracking remains subdominant. These observations concern sampled states, not a proof between samples. A curve's visual slope on logarithmic axes is not its movement per optimizer update.](figures/d34_pi_forces_scales_2.png)
 
 \newpage
 
@@ -119,7 +128,7 @@ cannot distinguish small driving error from poor coupling to a large error.
 
 ## 2. Separate coarse tracking from the force that survives balance
 
-**Motivating observation.** Figure 1 makes the reduction visible: after the
+**Motivating observation.** Figures 1 and 2 make the reduction visible: after the
 transient, the full slope force follows the effective fine force, including
 its later recovery on some targets. This is not a claim of universal force
 decay. Across 60 starts on ten additional target functions,
@@ -127,6 +136,20 @@ the slope-gradient correction beyond the effective fine force is small after
 coarse fitting. We need a decomposition that retains what coarse fitting still
 does to the effective dynamics; simply deleting the constant and linear
 residual from (1) would miss that effect.
+
+The paired scale traces show **an early slowdown accompanying tracking
+decay**. In the sine, degree-three, and degree-nine examples, the sampled
+mean-slope increment changes from positive before the force crossover to small
+or negative near it. The scale levels already change little before the
+crossing, so this is not a sharply identified onset time. **Later behavior
+differs across targets:** between each seed's crossover and the final saved
+state, the median mean-slope ratio is 0.999 for degree nine and 1.002 for degree
+five, but 1.72 for sine and 2.49 for degree three. Maximum slopes can grow much
+more. Across all 65 runs, tracking first becomes smaller at saved updates
+799--4,999 and stays smaller at every later saved state. Thus the early
+crossover identifies the regime whose dynamics we should study; it does not
+by itself explain its duration. That is the role of the effective-force
+feedback studied below.
 
 Choose a fixed empirical orthonormal basis with coarse space
 $C=\operatorname{span}\{1,x\}$. Let $e_C$ be its two residual coefficients,
@@ -758,7 +781,7 @@ It checks seed variation, not generalization to unseen functions. Where
 independent-grid fitting errors are measured, evaluation uses 8,192 midpoint
 inputs; the force and trajectory quantities here concern the training grid.
 
-**The thirteen targets in Figure 1.** Sine is $\sin(2\pi x)$, and Runge is
+**The thirteen targets in Figures 1 and 2.** Sine is $\sin(2\pi x)$, and Runge is
 $1/(1+25x^2)$; these two functions are not RMS-rescaled. Degree $d$, for
 $d\in\{3,4,5,9\}$, denotes
 $0.3q_0+0.4q_1+\sqrt{0.75}\,q_d$, using the same empirical orthonormal
@@ -778,12 +801,27 @@ y_s(x)=0.3q_0(x)+0.4q_1(x)
 \qquad s\in\{-0.1,0.01,0.1,0.3\}.
 $$
 
-These blends already have unit empirical RMS. Figure 1 uses five seeds
+These blends already have unit empirical RMS. Figures 1 and 2 use five seeds
 numbered 0 through 4, with the same width-177 initialization law and training
-grid described above. Its full-complement decomposition has no omitted
+grid described above. Their full-complement decomposition has no omitted
 modal-residual term. At each saved state, the median and range are taken
-across the five seeds separately for each force norm. The shading is neither
-a confidence interval nor a bound on the unsampled times between states.
+across the five seeds separately for each force norm and each scale statistic.
+The shading is neither a confidence interval nor a bound on unsampled times.
+There are 172 saved pre-update states per trajectory, from update 9 to 599,999.
+The plotted values are instantaneous measurements at those states, not
+averages over the intervals between them. The normalized scale uses
+$N_{\rm ref}=128$, not the actual width 177, so $h=1/64$.
+
+For each seed, the crossover is the first saved state satisfying
+$\|R_a\|\le\|F_a\|$. The plotted marker is the median of those five times,
+not the crossing of the median curves. The final/crossover ratios in Section 2
+are computed within each seed before taking the median. The early-motion
+comparison uses the nearest saved states to half, once, and twice each seed's
+crossover time. Its signed mean-slope increment is
+$W^{-1}\sum_j\operatorname{sgn}(a_j)\Delta a_j$; the correction from slopes
+crossing zero is negligible in those comparisons. This is a retrospective
+timing check, not an intervention establishing that norm equality causes the
+slowdown.
 
 ### B.2. What the interventions change
 
@@ -834,7 +872,7 @@ added and interpreted as independent samples of target functions.
 
 | Study | Design and role |
 |---|---|
-| Opening force figure | Thirteen targets and five seeds; 65 ordinary-GD trajectories through 600k updates at width 177. Full-complement decomposition at saved states. |
+| Opening force/scale figures | Thirteen targets and five seeds; 65 ordinary-GD trajectories through 600k updates at width 177. Full-complement decomposition paired with mean and maximum slopes at saved states. |
 | New-function force test | Ten additional functions in five families, two seeds, three forks; 60 starts. Functions fixed before inspection of their outcomes. |
 | Width development / confirmation | Six targets, two seeds, three widths per panel; 36 cases each. Starts at 20k, followed for 20k further updates. |
 | Feedback interventions | 36 width cases plus four late sine/degree-nine starts; six arms each, 240 branches. |
