@@ -1,10 +1,14 @@
-\section{Experimental protocol and supporting evidence}\label{app:slope-experiments}
+\section{Empirical validation and protocol}\label{app:slope-experiments}
 
 The frozen-feature experiment tests the GD output-error bound under its stated
 assumptions. The joint-training experiment asks whether GD and Adam acquire
 features that permit accurate output within the measured budget. They share
 the target, width, sample grids, precision, and error metric; the frozen-GD
 theorem does not apply to evolving features or to Adam.
+
+\input{docs/section34_frozen_validation.tex}
+
+\subsection{Experimental protocol}
 
 \paragraph{Targets, width, and sampling.}
 The primary target on $[-1,1]$ is
@@ -194,5 +198,3 @@ $\sqrt{\widehat v}\le\epsilon$ exaggerates its effect because many have
 negligible Jacobian columns. The constant-rate check therefore supports the
 weak-direction interpretation without relying on an epsilon-dominated metric;
 it remains a local diagnostic, not an Adam convergence theorem.
-
-\input{docs/section34_frozen_validation.tex}
