@@ -141,7 +141,7 @@ def test_prepare_retains_all_six_attempts_and_source_metadata(tmp_path, monkeypa
     case = dict(target='test', seed=1, start=20000, cohort='early', Nref=128, h=2/128)
     np.savez(source, p=p, x=x, y=x[None, :], cases=np.array(json.dumps([case])),
              x_eval=x, y_eval=x[None, :])
-    def fake_repair(p, x, y, scale, reference):
+    def fake_repair(p, x, y, scale, reference, continuation):
         point = p.copy()
         point[:6] *= scale
         return point, dict(valid=scale != 2, reason='fixture')
@@ -156,3 +156,20 @@ def test_prepare_retains_all_six_attempts_and_source_metadata(tmp_path, monkeypa
         assert [item['valid'] for item in cases] == [True, True, True, False, True, False]
         assert all(item['original_case_id'] == 0 for item in cases)
         assert all(item['Nref'] == 128 and item['cohort'] == 'early' for item in cases)
+
+
+def test_log_continuation_keeps_final_reference(monkeypatch):
+    p = np.r_[[.2, -.3, .5], [.1, -.05, .08], [.4, -.2, .3], .02]
+    x = np.linspace(-1, 1, 33)
+    seen = []
+    stage = repair._stage
+    def wrapped(v, geometry, reference, x, y, target_rms):
+        seen.append(reference.copy())
+        return stage(v, geometry, reference, x, y, target_rms)
+    monkeypatch.setattr(repair, '_stage', wrapped)
+    point, info = repair.repair_case(p, x, np.sin(1.3*x), 10., 'inverse', 'log')
+    assert info['valid'], info
+    np.testing.assert_array_equal(point[:6], 10*p[:6])
+    assert len(info['stages']) < 40
+    for reference in seen:
+        np.testing.assert_array_equal(reference, np.r_[p[6:9]/10, p[9]])

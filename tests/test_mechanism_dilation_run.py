@@ -53,7 +53,10 @@ def test_sparse_run_records_invalid_branch_and_own_forecast(tmp_path):
     source = tmp_path/'input.npz'
     cases = [dict(target='fixture', cohort='development', arm='original', h=.01, valid=True),
              dict(target='fixture', cohort='development', arm='invalid', h=.01, valid=False)]
-    np.savez(source, p=np.stack([p, p]), x=x, y=np.stack([y, y]), cases=json.dumps(cases))
+    xe = jnp.linspace(-.99, .99, 65, dtype=jnp.float64)
+    ye = .3+.4*xe+jnp.sin(3*xe)
+    np.savez(source, p=np.stack([p, p]), x=x, y=np.stack([y, y]), cases=json.dumps(cases),
+             x_eval=xe, y_eval=np.stack([ye, ye]))
     output = tmp_path/'output'
     runner.run(SimpleNamespace(input=source, output=output, backend='cpu', eta=.002,
                                steps=2, targets=None, cohorts=None, arms=None))
@@ -65,6 +68,10 @@ def test_sparse_run_records_invalid_branch_and_own_forecast(tmp_path):
         assert not data['failed'].any()
         assert data['closure_error'].max() < 1e-16
         np.testing.assert_allclose(data['forecast_lambda'], .01*abs(data['forecast_a']))
+        expected_eval = np.linalg.norm(kernel.output(data['p'][0], xe)-ye)/np.linalg.norm(ye)
+        np.testing.assert_allclose(data['relative_eval_l2'][0], expected_eval, rtol=1e-13)
+        radii2 = 3*np.sum(data['p'][0, :-1].reshape(3, 3)**2, axis=0)
+        np.testing.assert_allclose(data['M6'][0], np.mean(radii2**3), rtol=1e-13)
 
 
 def test_nonlinear_full_complement_agreement_and_rms_derivative():
@@ -80,3 +87,23 @@ def test_nonlinear_full_complement_agreement_and_rms_derivative():
     values = runner.diagnostic(p, x, y, .01, jnp.asarray(q[:, 2:4]*np.sqrt(len(x))))
     derivative = jax.jvp(lambda v: .01*jnp.sqrt(jnp.mean(v[:3]**2)), (p,), (-fine,))[1]
     np.testing.assert_allclose(values['lambda_rms_rates'][0], derivative, atol=1e-14)
+
+
+def test_unresolved_split_does_not_stop_ordinary_gd():
+    p = jnp.zeros(10, dtype=jnp.float64)
+    x = jnp.linspace(-1., 1., 33)
+    y = .5+jnp.sin(x)
+    state = runner.initial_state(p)
+    got = runner.step(state, x, y, .01, .002)
+    assert not bool(got['failed'])
+    assert int(got['diagnostic_unresolved_steps']) == 1
+    assert int(got['count']) == 1
+    np.testing.assert_allclose(got['p'][-1], .001, atol=1e-16)
+
+
+def test_raw_error_hits_use_l2_not_mse_and_initial_time():
+    p, x, _ = fixture()
+    output = kernel.output(p, x)
+    y = output/1.05  # relative L2=.05, relative MSE=.0025
+    got = runner.step(runner.initial_state(p), x, y, .01, .002)
+    np.testing.assert_array_equal(got['error_first_hit'], [0, -1, -1, -1, -1])

@@ -111,7 +111,7 @@ def _stage(v, geometry, reference, x, y, target_rms):
     raise AssertionError('unreachable')
 
 
-def repair_case(p, x, y, scale, reference='primary'):
+def repair_case(p, x, y, scale, reference='primary', continuation='linear'):
     """Return a repaired state and JSON-safe diagnostics, including failures.
 
     ``primary`` fixes the distance reference at (c0,d0); ``inverse`` fixes it
@@ -124,6 +124,8 @@ def repair_case(p, x, y, scale, reference='primary'):
     p, x, y = (np.asarray(value, dtype=np.float64) for value in (p, x, y))
     if p.ndim != 1 or (p.size-1) % 3 or x.ndim != 1 or y.shape != x.shape:
         raise ValueError('Invalid parameter or grid shape')
+    if continuation not in ('linear', 'log'):
+        raise ValueError('Expected linear/log continuation')
     if scale < 1 or not np.isfinite(scale) or reference not in ('primary', 'inverse'):
         raise ValueError('Expected finite scale >= 1 and primary/inverse reference')
     w = (p.size-1)//3
@@ -136,7 +138,7 @@ def repair_case(p, x, y, scale, reference='primary'):
     actual_target_rms = float(np.sqrt(np.mean(y*y)))
     target_rms = max(actual_target_rms, 1e-12)
     info = dict(valid=False, scale=float(scale), reference=reference,
-                target_rms=actual_target_rms, target_normalizer=target_rms, stages=[], failures=[],
+                continuation=continuation, target_rms=actual_target_rms, target_normalizer=target_rms, stages=[], failures=[],
                 distance_metric='sum_dc_squared_plus_dd_squared',
                 balance_tolerance=BALANCE_TOLERANCE,
                 stationarity_tolerance=STATIONARITY_TOLERANCE,
@@ -150,7 +152,7 @@ def repair_case(p, x, y, scale, reference='primary'):
         info['stages'].append(dict(scale=1., **record))
         current, increment = 1., MAX_INCREMENT
         while current < scale:
-            next_scale = min(scale, current+increment)
+            next_scale = min(scale, current*np.exp(increment) if continuation == 'log' else current+increment)
             try:
                 candidate, record = _stage(v, next_scale*geometry0, vref, x, y, target_rms)
             except ValueError as error:
@@ -197,13 +199,17 @@ def repair_case(p, x, y, scale, reference='primary'):
         return fallback, info
 
 
-def prepare(input_path, output_path, nref=None, cohort=None):
+def prepare(input_path, output_path, nref=None, cohort=None, scales=None, continuation='linear'):
     """Six records per case, including invalid attempts for the runner to skip."""
     pp, x, yy, cases = ef.load_inputs(input_path)
     records, states, labels, indices = [], [], [], []
     arms = (('original', 1., 'none'), ('repaired', 1., 'primary'),
             ('s125_primary', 1.25, 'primary'), ('s2_primary', 2., 'primary'),
             ('s125_inverse', 1.25, 'inverse'), ('s2_inverse', 2., 'inverse'))
+    if scales is not None:
+        arms = (('original', 1., 'none'), ('repaired', 1., 'primary')) + tuple(
+            (f's{scale:g}_{reference}', scale, reference)
+            for reference in ('primary', 'inverse') for scale in scales)
     for index, (p, y, case) in enumerate(zip(pp, yy, cases)):
         case = dict(case)
         width = (len(p)-1)//3
@@ -228,7 +234,7 @@ def prepare(input_path, output_path, nref=None, cohort=None):
                 point, repair = p.copy(), dict(valid=bool(np.all(np.isfinite(p))),
                                                reason='unmodified_baseline')
             else:
-                point, repair = repair_case(p, x, y, scale, reference)
+                point, repair = repair_case(p, x, y, scale, reference, continuation)
             record = dict(case, original_case_id=original_id, source_index=index,
                           arm=arm, scale=scale, reference=reference,
                           valid=repair['valid'], repair=repair)
@@ -262,8 +268,12 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--nref', type=int)
     parser.add_argument('--cohort')
+    parser.add_argument('--scales', help='Comma-separated factors; omit for original six arms')
+    parser.add_argument('--continuation', choices=('linear', 'log'), default='linear')
     args = parser.parse_args()
-    prepare(args.input, args.output, args.nref, args.cohort)
+    prepare(args.input, args.output, args.nref, args.cohort,
+            None if args.scales is None else [float(v) for v in args.scales.split(',')],
+            args.continuation)
 
 
 if __name__ == '__main__':
