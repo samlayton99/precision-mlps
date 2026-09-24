@@ -1,0 +1,285 @@
+\section{Explicit spectral bounds and proof}
+\label{app:note-spectrum}
+
+The main theorem concerns the actual finite tanh dictionary. An auxiliary
+center integral exposes its gamma dependence; lattice and exterior-center
+allowances transfer its spectrum to that dictionary. This appendix specifies
+each approximation and the resulting endpoints.
+
+\paragraph{Finite setup.}
+Let $z_1,\ldots,z_M$ be distinct training points with $M\ge2$, $W$ consecutive centers on
+$c_0+h\mathbb Z$ cover their interval, and $\gamma>0$. Define
+\begin{equation}
+ \Phi_\gamma=[\mathbf1,(\tanh(\gamma(z_a-x_j)))_{a,j}],\qquad
+ K_\gamma=\frac1M\Phi_\gamma\Phi_\gamma^\top,\qquad
+ y=(f(z_a))_{a=1}^M\ne0.
+\end{equation}
+Readout GD minimizes $\|\Phi_\gamma w-y\|^2/(2M)$.
+The theorem permits arbitrary distinct samples; the reported experiments use
+uniform samples. Write $v_0=\mathbf1/\sqrt M$ and let $Q$ have orthonormal
+columns spanning $v_0^\perp$. This projection removes the common constant
+sample pattern, not any target assumption. Put
+$t_\gamma(c)=(\tanh(\gamma(z_a-c)))_a$.
+
+\paragraph{The gamma-dependent correlation model.}
+Its center-integrated, mean-zero kernel is
+\begin{equation}
+ H_\gamma=\frac1{hM}\int_{\mathbb R}
+ Q^\top t_\gamma(c)t_\gamma(c)^\top Q\,dc
+ =-\frac2{hM}Q^\top[d_{ab}\coth(\gamma d_{ab})]_{a,b}Q,
+ \quad d_{ab}=z_a-z_b.
+ \label{eq:note-H}
+\end{equation}
+The diagonal of the bracketed matrix is $1/\gamma$. Choose a finite set
+$\mathcal F$ of exterior lattice centers absent from the actual dictionary,
+leaving two unretained tails starting at $c_L<\min z_a$ and
+$c_R>\max z_a$. Subtract their retained contribution:
+\begin{equation}
+ T_\gamma=\frac1M\sum_{c\in\mathcal F}
+ Q^\top t_\gamma(c)t_\gamma(c)^\top Q,\qquad
+ S_\gamma=H_\gamma-T_\gamma.
+ \label{eq:note-S}
+\end{equation}
+Let $\beta_1\ge\cdots\ge\beta_{M-1}$ be the eigenvalues of $S_\gamma$.
+For any $0<\theta<\pi/2$, the lattice and remaining-tail allowances are
+\begin{align}
+ \delta_\gamma&=
+ \frac{8\gamma\|z-\bar z\mathbf1\|^2\sec^4\theta}
+ {3hM[\exp(2\pi\theta/(\gamma h))-1]},\qquad
+ \bar z=M^{-1}\sum_a z_a,\label{eq:note-delta}\\
+ \tau_\gamma&=
+ \frac{4[e^{-4\gamma(c_R-z_{\max})}
+       +e^{-4\gamma(z_{\min}-c_L)}]}{1-e^{-4\gamma h}}.
+ \label{eq:note-tau}
+\end{align}
+They give the matrix enclosure
+\begin{equation}
+ S_\gamma-(\delta_\gamma+\tau_\gamma)I
+ \preceq Q^\top K_\gamma Q\preceq S_\gamma+\delta_\gamma I.
+ \label{eq:note-matrix-enclosure}
+\end{equation}
+
+\paragraph{Relative-eigenvalue endpoints.}
+Normalize using scalar bounds $\ell_\gamma\le\mu_1\le L_\gamma$.
+The following require only matrix-vector products with the finite dictionary:
+\begin{align}
+ \ell_\gamma&=v_0^\top K_\gamma v_0\ge1,
+ &b_\gamma&=\|Q^\top K_\gamma v_0\|,
+ &c_\gamma&=\beta_1+\delta_\gamma,\\
+ L_\gamma&=\frac{\ell_\gamma+c_\gamma+
+ \sqrt{(\ell_\gamma-c_\gamma)^2+4b_\gamma^2}}2.
+ \label{eq:note-normalization}
+\end{align}
+Set $\underline\rho_1=\overline\rho_1=1$ and $\beta_M=0$.
+The endpoints in Theorem~\ref{thm:note-spectrum} are
+\begin{equation}
+ \boxed{\underline\rho_i=
+ \frac{[\beta_i-\delta_\gamma-\tau_\gamma]_+}{L_\gamma},
+ \qquad
+ \overline\rho_i=\min\!\left\{1,
+ \frac{\beta_{i-1}+\delta_\gamma}{\ell_\gamma}\right\},
+ \quad 2\le i\le M.}
+ \label{eq:note-endpoints}
+\end{equation}
+Exact zeros known from $\operatorname{rank}K_\gamma\le W+1$ may have both
+endpoints set to zero. No target or optimization trajectory enters these
+spectral bounds.
+
+\subsection{Derivation of the explicit gamma dependence}
+The identity
+$1-\tanh u\tanh v=\coth(u-v)(\tanh u-\tanh v)$ gives
+\begin{equation}
+ \int_{\mathbb R}[1-\tanh(\gamma(z_a-c))\tanh(\gamma(z_b-c))]dc
+ =2d_{ab}\coth(\gamma d_{ab}).
+\end{equation}
+Multiplication by $Q^\top$ and $Q$ removes the constant term and proves
+\eqref{eq:note-H}. The integral is finite after projection because
+$Q^\top t_\gamma(c)$ decays at both ends.
+
+The smoothing interpretation can also be made exact. With
+$s_\gamma(x)=\frac\gamma2\sech^2(\gamma x)$,
+$\tanh(\gamma\,\cdot)=s_\gamma*\sign$. Its Fourier multiplier is
+\begin{equation}
+ A_\gamma(\omega)=\widehat s_\gamma(\omega)
+ =\frac{\pi|\omega|/(2\gamma)}{\sinh(\pi|\omega|/(2\gamma))},
+ \qquad A_\gamma(0)=1.
+ \label{eq:note-attenuation}
+\end{equation}
+For completeness, substitution $r=e^{2\gamma x}$ in the Fourier transform
+gives $\int_0^\infty r^{-i\omega/(2\gamma)}(1+r)^{-2}dr$.
+The beta integral evaluates this as
+$\Gamma(1-i\omega/(2\gamma))\Gamma(1+i\omega/(2\gamma))$,
+which equals \eqref{eq:note-attenuation} by the reflection formula.
+For $u=Qv$, the step combination $\sum_a u_a\sign(c-z_a)$ has compact
+support, and its derivative is $2\sum_a u_a\delta_{z_a}$. Parseval gives
+\begin{equation}
+ v^\top H_\gamma v=\frac2{\pi hM}\int_{\mathbb R}
+ \frac{A_\gamma(\omega)^2}{\omega^2}
+ \left|\sum_a(Qv)_a e^{-i\omega z_a}\right|^2d\omega.
+ \label{eq:note-directional-filter}
+\end{equation}
+The apparent zero-frequency singularity is removable since $\sum_a(Qv)_a=0$.
+Thus gamma acts on a direction's frequency content through the explicit
+weight $A_\gamma^2$. Since $t/\sinh t$ decreases for $t>0$, increasing gamma
+increases every directional response of $H_\gamma$ and hence its ordered
+eigenvalues. This order concerns the integral kernel; exterior subtraction
+and normalization need not preserve monotonicity of every finite ratio.
+
+\subsection{Transfer to the finite dictionary}
+For $u\perp\mathbf1$, the function
+$g(\zeta)=\sum_a u_a\tanh(\gamma(\zeta-z_a))$ is analytic for
+$|\operatorname{Im}\zeta|<\pi/(2\gamma)$.
+Subtracting the common translate at $\bar z$ and integrating derivatives,
+Minkowski and Cauchy--Schwarz yield
+\begin{equation}
+ \int_{\mathbb R}|g(t\pm i\theta/\gamma)|^2dt
+ \le\frac{4\gamma}{3}\sec^4\theta
+ \|z-\bar z\mathbf1\|^2\|u\|^2.
+ \label{eq:note-strip}
+\end{equation}
+Here $|\sech^2(t+i\theta)|\le\sec^2\theta\sech^2t$ and
+$\int\sech^4t\,dt=4/3$. Shift the contour for the analytic function
+$g(\zeta)^2$, not $|g(\zeta)|^2$: its transform is bounded by the
+right side of \eqref{eq:note-strip} times $e^{-\theta|\omega|/\gamma}$.
+Poisson summation at frequencies $2\pi k/h$ then gives
+\begin{equation}
+ \left\|\frac1M\sum_{c\in c_0+h\mathbb Z}
+ Q^\top t_\gamma(c)t_\gamma(c)^\top Q-H_\gamma\right\|
+ \le\delta_\gamma.
+\end{equation}
+The geometric sum over $k\ne0$ produces the denominator in
+\eqref{eq:note-delta}.
+
+Deleting exterior centers converts the infinite lattice to the actual
+dictionary. The retained deletions give $T_\gamma$. For a remaining center
+$c\ge c_R$, projection removes the constant limit and
+$1-\tanh t\le2e^{-2t}$ gives an outer-product norm, divided by $M$, of at
+most $4e^{-4\gamma(c-z_{\max})}$.
+Summing this geometric series and its left-tail counterpart bounds the
+remaining positive deletion by $\tau_\gamma I$. This proves
+\eqref{eq:note-matrix-enclosure}.
+
+If $\kappa_i$ are the eigenvalues of $Q^\top K_\gamma Q$, min--max and
+codimension-one interlacing give
+\begin{equation}
+ \beta_i-\delta_\gamma-\tau_\gamma\le\kappa_i
+ \le\beta_i+\delta_\gamma,
+ \qquad \mu_i\ge\kappa_i\ge\mu_{i+1}.
+\end{equation}
+The Rayleigh quotient gives $\mu_1\ge\ell_\gamma$.
+In the decomposition $\operatorname{span}(v_0)\oplus v_0^\perp$,
+the diagonal blocks of $K_\gamma$ are bounded above by
+$\ell_\gamma$ and $c_\gamma I$, and the off-diagonal block has norm
+$b_\gamma$. Its quadratic form is therefore bounded by the largest
+eigenvalue of $\left[\begin{smallmatrix}\ell_\gamma&b_\gamma\\
+b_\gamma&c_\gamma\end{smallmatrix}\right]$, namely $L_\gamma$.
+Dividing the interlacing bounds by these normalization endpoints proves
+\eqref{eq:note-endpoints} and the main theorem.
+
+\subsection{Classical output-error consequence}
+For $r_n=\Phi_\gamma w_n-y$, normalized least-squares GD gives
+$r_{n+1}=(I-\eta K_\gamma)r_n$ and $r_0=-y$. Expansion in the actual
+finite-kernel eigenvectors gives
+\begin{equation}
+ e_n^2=\sum_i p_i(1-\eta\mu_i)^{2n}
+ =\sum_i p_i(1-\rho_i/2)^{2n}
+ \ge\sum_i p_i(1-\overline\rho_i/2)^{2n}.
+\end{equation}
+The last inequality follows because the factor decreases with
+$\rho_i\in[0,1]$. This proves Corollary~\ref{cor:note-output}.
+Our step is a conservative fraction of the stability limit $2/\mu_1$;
+any nonoscillatory step $0<\eta\mu_1\le1$ instead uses $\eta\mu_1\rho_i$.
+Only exact nullspace energy gives a permanent floor. For $\mu_i>0$,
+$u_i=\Phi_\gamma(\Phi_\gamma^\top u_i/(M\mu_i))$ is representable,
+however small its rate. The target weights require the actual eigenvectors;
+the theorem bounds eigenvalues, not their target alignment.
+
+\section{Evaluation, accuracy, and empirical scope}
+\label{app:note-evaluation}
+
+\paragraph{Which quantities are computed.}
+The theorem endpoints use the explicit center integral, exterior-center
+subtraction, and scalar normalization bounds. A separate SVD of the actual
+finite feature matrix supplies the validation eigenvalues and target weights
+$p_i$. The plotted lower error uses the theorem's upper rates, not actual
+rates. The spectral figure selects three ranks for readability; the error
+bound includes every numerically resolved target projection.
+
+The integral is evaluated through a positive quadrature factor rather than
+by subtracting nearly equal entries of \eqref{eq:note-H}. There is no Fourier
+truncation. Truncating the center integral at
+$\pm(\max_a|z_a|+P/\gamma)$ omits a positive matrix of norm at most
+$2e^{-4P}/(h\gamma)$, added to the numerical upper endpoint.
+The exterior remainder enters the lower endpoint. Compressing the combined
+integral and exterior factors $Z$ to rank $r$ introduces the two-sided bound
+$2\sigma_1(Z)\sigma_{r+1}(Z)+\sigma_{r+1}(Z)^2$ on their signed Gram matrix.
+Quadrature refinement and an empirical arithmetic guard are checked
+separately; the figures are FP64 evaluations, not interval-arithmetic
+certificates. Refining quadrature order from 10 to 16 and padding from
+20 to 24 changes the lower error curves by at most $9.6\times10^{-11}$.
+
+The remaining analytic slack comes from the interlacing index shift, the
+normalization bounds $\ell_\gamma,L_\gamma$, and additive allowances.
+Small absolute errors can dominate extremely small eigenvalues; the
+enclosure is valid but need not be informative for every geometry or mode.
+In this experiment it is informative both for the plotted ratios and for
+the full error trajectory. Omitting unresolved target energy from the lower
+curve only weakens it; it is not interpreted as an exact approximation floor.
+
+\paragraph{Target, geometry, and measurements.}
+All displayed data use
+\begin{equation}
+ f(x)=\frac{\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(14\pi x)}
+ {\sqrt{21/32}},\qquad x\in[-1,1].
+\end{equation}
+The total hidden width is $W=512$, comprising $N=467$ interior cells and
+$R=22$ halo centers on each side, so $h=2/467$ and $W=N+2R+1$.
+There are 2,048 uniform training midpoints, 4,096 validation points, and
+8,192 dense evaluation points. Every reported error is relative output
+$L^2$ error on its stated grid, not squared loss or an EMA.
+The dense grid checks resolution; it is not an untouched generalization test.
+Frozen GD starts its readout at zero and executes five million full-batch
+FP64 updates with $\eta=1/(2\mu_1)$ at each bandwidth.
+Figure~\ref{fig:note-training}A displays training error. Its spectral
+reference agrees with executed GD within $2.9\times10^{-14}$.
+
+Joint training optimizes all slopes, centers (through affine biases), and
+readout parameters for five million updates on five paired seeds. One
+recipe per optimizer is selected by median final validation error over all
+five seeds. The selected Adam and GD schedules are full-horizon cosine
+decays with initial learning rates 0.05 and 0.2, respectively.
+Frozen Adam uses the same final-validation selection criterion.
+Panel B shows raw training errors summarized for display; quoted joint and
+frozen-Adam endpoint values use the dense grid. Display bins retain extrema,
+including spikes, rather than replacing the comparison with first tolerance
+crossings. Panel C measures $h|a_j|$ for learned features
+$\tanh(a_jx+b_j)$, using the original reference spacing $h$.
+
+\paragraph{What the joint experiment establishes.}
+Adam's median scaled RMS slope is $0.0582$, and its 99th percentile is
+$0.2466$; the five seeds have $6,5,5,4,7$ features at or above $1/4$.
+These statistics describe heterogeneous geometry, not an effective uniform
+bandwidth. The uniform $1/4$ dictionary is an empirical comparison, not a
+necessary scale for every target or learned dictionary.
+
+Joint Adam continues improving late in training; its median endpoint error
+falls about 28\% between the two- and five-million-update experiments.
+The result is a precision gap under a large finite budget, not permanent
+failure. Checked direct fits and an additional two-million-update readout
+restart on the learned five-million-update features barely improve their
+error. Multiplying the learned slopes by 4 or 16 at fixed centers worsens
+the median refitted error to 0.0916 or 0.139, respectively. These interventions
+change nonnested feature spaces: they support investigating slopes and
+centers together, not a theorem that increasing slopes always helps.
+Neither the fixed-kernel proof nor its scalar GD rates apply to evolving
+features or Adam's adaptive preconditioner. The next theoretical question
+is how evolving features acquire a useful geometry.
+
+\paragraph{Reproducibility.}
+The source and numerical provenance for the new spectral figure are
+\path{experiments/expD36_frozen_gamma_probe/section34_spectrum_figure.py}
+and \path{output/diagnostics/section34_long_horizon/main_5m/spectrum/relative_rates.json}.
+The existing three-panel figure, full protocols, checks, and evidence links
+are indexed in \path{output/diagnostics/section34_long_horizon/README.md}.
+Both figures reuse completed runs; preparing this note launches no new
+training experiments.

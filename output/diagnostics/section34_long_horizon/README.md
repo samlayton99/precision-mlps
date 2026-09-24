@@ -1,5 +1,7 @@
 # Section 3.4 evidence
 
+The latest [paper-facing note](../../pdf/section34_spectrum_note.pdf) presents the spectral theorem first, followed by the GD output-error corollary and the transition to joint feature acquisition. Its [editable subsection](../../../docs/section34_spectrum_subsection.tex), [full proof](../../../docs/section34_spectrum_appendix.tex), and [LaTeX wrapper](../../../docs/section34_spectrum_note.tex) are separate. The new [standalone spectrum figure](main_5m/spectrum/relative_rates.pdf) compares three finite-kernel ratios with the theorem intervals at four bandwidths; it reuses the saved bounds and adds no training runs.
+
 This directory contains compact evidence for the proposed [Section 3.4](../../../docs/section34_slope_acquisition.md), its [proof](../../../docs/section34_slope_appendix.md), and the [experimental protocol](../../../docs/section34_empirical_appendix.md). The study uses width 512 including halos, five paired joint-training seeds, full-horizon cosine and constant schedules, and raw relative output error. The theorem concerns frozen GD; Adam and evolving features are evaluated empirically.
 
 The [compiled review PDF](../../pdf/section34_slope_acquisition_review.pdf) combines the proposed subsection, full proof, and empirical appendices. The [drop-in LaTeX subsection](../../../docs/section34_slope_acquisition.tex) is separate from the review wrapper.
