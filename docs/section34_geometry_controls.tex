@@ -46,7 +46,7 @@ is $0.217$, below the restart's $0.251$ but still far from high precision.
  \label{fig:geometry-readout-controls}
 \end{figure}
 
-\paragraph{Steepening a learned dictionary can reduce its accuracy.}
+\paragraph{Steepening can reduce accuracy.}
 Multiplying both $a_j$ and $b_j$ in $\tanh(a_jx+b_j)$ by four or sixteen
 preserves its center $-b_j/a_j$. For final Adam features, these changes
 increase median restart error to $0.1056$ and $0.1652$, respectively;
@@ -60,7 +60,7 @@ The new dictionary need not contain the old span: steeper features can lose
 a useful approximation. This is not a monotone intervention proving that
 larger slopes always improve a learned model.
 
-\paragraph{Center placement and slope distribution cannot be exchanged independently.}
+\paragraph{Isolated geometry replacements do not restore high precision.}
 Two further controls use the final unscaled dictionaries. One places their
 exact signed slopes on the uniform reference centers, with one predeclared
 permutation per source optimizer and seed. The other preserves learned

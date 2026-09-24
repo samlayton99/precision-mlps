@@ -21,13 +21,13 @@ At Adam's final features, the restart's $0.002501$ error nearly matches the orig
   <figcaption>Readout access through acquired features. Source labels identify the joint optimizer; every follow-up readout uses Adam for two million additional updates. Earlier feature snapshots and final slope interventions use the same candidate recipes and final-validation selection rule. Results refer to the primary mixed-sine target and five paired seeds.</figcaption>
 </figure>
 
-## Increasing slopes is not a nested improvement of a learned dictionary
+## Steepening can reduce accuracy
 
 Multiplying both $a_j$ and $b_j$ in $\tanh(a_jx+b_j)$ by four or sixteen preserves its center $-b_j/a_j$. On Adam-acquired final features, these interventions raise median restart error to $0.1056$ and $0.1652$: the median paired increases are $42.2\times$ and $66.0\times$. Direct fits give the same median errors at both $10^{-12}$ and $10^{-14}$ cutoffs, with much smaller coefficient norms than the unscaled fits. On GD-acquired features, restart medians increase to $0.280$ and $0.292$, although direct-fit medians decrease to $0.205$ and $0.156$.
 
 These outcomes separate two effects. A slope change can alter the attainable approximation and the rate at which a particular optimizer accesses it. The modified dictionary does not contain the old dictionary as a subspace; steeper versions of the same features can lose a useful approximation. Consequently, this intervention is not a monotone test of the claim that larger slope always improves a learned model.
 
-## Separating center placement from slope magnitudes
+## Isolated geometry replacements do not restore high precision
 
 Two additional controls use the final unscaled dictionaries. The first places their exact signed slopes on the uniform reference centers, using one predeclared permutation per source optimizer and seed. The second preserves their learned centers but replaces every slope magnitude by the common construction value $\gamma=0.25/h$, preserving signs. Neither control adds neurons.
 

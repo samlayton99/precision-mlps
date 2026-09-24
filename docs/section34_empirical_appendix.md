@@ -61,3 +61,5 @@ At the selected cosine Adam endpoints, over 99.998% of residual energy lies belo
 For the constant runs, the median adaptive-trace-weighted contribution of $\epsilon$ to $\sqrt{\widehat v}+\epsilon$ is $7.71\times10^{-6}$ for the full Jacobian and $1.09\times10^{-6}$ for its readout block. The corresponding cosine values are about 24% and 23%. Counting coordinates with $\sqrt{\widehat v}\le\epsilon$ would overstate this effect, because many have negligible Jacobian columns. The constant-rate check therefore supports the weak-direction interpretation without relying on an epsilon-dominated endpoint metric. It does not turn that diagnostic into an Adam convergence theorem.
 
 The completed [frozen-feature validation](section34_frozen_validation.md) reports five-million-update theorem tightness and the bandwidth sweep with Adam trajectories.
+
+The [learned-geometry controls](section34_geometry_controls.md) compare readout restarts, direct fits, and isolated changes to slopes or centers. They also explain why a high slope percentile does not imply acquisition of a uniform high-precision dictionary.
