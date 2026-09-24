@@ -48,6 +48,26 @@ def test_stationary_force_has_undefined_log_rate():
     assert np.isnan(row['log_force_rate'])
 
 
+def test_force_weighted_population_identity_and_bounds():
+    p, x, y = map(jnp.asarray, fixture())
+    F = kernel.effective(p, x, y)
+    width = (len(p)-1)//3
+
+    def omega(point):
+        force = kernel.effective(point, x, y)
+        radius2 = jnp.sum(point[:-1].reshape(3, -1)**2, axis=0)
+        energy = jnp.sum(force[:-1].reshape(3, -1)**2, axis=0)
+        return width*jnp.sum(radius2*energy)/(force@force)
+
+    value, derivative = jax.jvp(omega, (p,), (-F,))
+    row = observables(p, x, y)
+    np.testing.assert_allclose(row['force_weighted_second_moment'], value, rtol=1e-12)
+    np.testing.assert_allclose(row['omega_dot_effective'], derivative, rtol=1e-10, atol=1e-12)
+    assert abs(row['sqrt_M4_dot_effective']) <= row['sqrt_M4_speed_bound']+1e-12
+    assert row['log_force_rate'] <= row['weighted_curvature_rate_bound']+1e-12
+    assert row['measured_ell_norm'] <= row['ell_M4_bound']+1e-12
+
+
 def write_input(path, p, x, ys):
     np.savez(path, p=np.stack([p]*len(ys)), x=x, y=np.stack(ys),
              cases=np.array(json.dumps([dict(target=f'test{i}') for i in range(len(ys))])))

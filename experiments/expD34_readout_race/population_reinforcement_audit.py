@@ -47,6 +47,11 @@ def observables(p, x, y):
     sigma = jnp.sqrt(jnp.maximum(0., eig[0]))
     r2 = jnp.sum(p[:-1].reshape(3, -1)**2, axis=0)
     M, B = jnp.sum(r2), jnp.sum(r2**3)**(1/6)
+    width = len(r2)
+    particle_p = p[:-1].reshape(3, -1)
+    particle_F = F[:-1].reshape(3, -1)
+    particle_derivative = derivative[:-1].reshape(3, -1)
+    force_squared = jnp.sum(particle_F**2, axis=0)
     Y = jnp.sqrt(jnp.mean(state['eH']**2))
     HC = jnp.sqrt(2.)+4*jnp.sqrt(M)
     ratio = lambda value: jnp.where((f2 > 0)&resolved, value/jnp.where(f2 > 0, f2, 1.), jnp.nan)
@@ -76,6 +81,24 @@ def observables(p, x, y):
     row.update(terms)
     row.update({key+'_rate': ratio(value) for key, value in terms.items()})
     row['absolute_split_rate_sum'] = sum(jnp.abs(row[key+'_rate']) for key in terms)
+    omega = ratio(width*jnp.sum(r2*force_squared))
+    m4 = width*jnp.sum(r2**2)
+    transport = ratio(-2*width*jnp.sum(jnp.sum(particle_p*particle_F, axis=0)*force_squared))
+    redistribution = ratio(2*width*jnp.sum(r2*jnp.sum(particle_F*particle_derivative, axis=0)))-2*omega*ratio(rhs)
+    coarse_direction_bound = jnp.sqrt(2.)+4*jnp.sqrt(omega/width)
+    ell_m4_bound = 3*jnp.sqrt(2.)*Y*m4/jnp.where(eig[0] > 0, eig[0]*width, 1.)
+    row.update(force_weighted_second_moment=omega, M4=m4,
+               force_weighted_fourth_moment=ratio(width**2*jnp.sum(r2**2*force_squared)),
+               hidden_force_energy_concentration=ratio(width*jnp.sum(force_squared**2))/jnp.where(f2 > 0, f2, 1.),
+               omega_dot_transport=transport, omega_dot_redistribution=redistribution,
+               omega_dot_effective=transport+redistribution,
+               sqrt_M4_dot_effective=-2*width*jnp.sum(r2*jnp.sum(particle_p*particle_F, axis=0))/jnp.sqrt(m4),
+               sqrt_M4_speed_bound=2*jnp.sqrt(omega*f2),
+               weighted_geometry_rate_bound=6*jnp.sqrt(2.)*Y*omega/width,
+               weighted_compensation_rate_bound=ell_m4_bound*coarse_direction_bound,
+               weighted_curvature_rate_bound=6*jnp.sqrt(2.)*Y*omega/width+ell_m4_bound*coarse_direction_bound,
+               measured_ell_norm=jnp.linalg.norm(state['balance']), ell_M4_bound=ell_m4_bound,
+               particle_force_energy_fraction=ratio(jnp.sum(force_squared)))
     return row
 
 

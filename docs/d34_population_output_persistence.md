@@ -1092,3 +1092,245 @@ therefore describe suppressed reinforcement in the evolving ODE, not
 continued agreement with a frozen-force forecast. Whether these absolute
 curvature bounds retain the empirically observed slowness for a useful
 duration remains a numerical question.
+
+## Appendix. A conditional population theorem weighted by the actual force
+
+The previous proofs bound curvature in every possible parameter direction.
+They can therefore lose information about which part of the population is
+actually moving. A more targeted structural quantity weights particle size
+by its share of the current effective-force energy:
+
+$$
+f=\|F\|,\qquad
+\Omega_F=
+\frac{W\sum_j|p_j|^2|F_j|^2}{f^2}
+=\frac{\sum_j|X_j|^2|F_j|^2}{f^2},
+\qquad M_4=\mathbb E_W|X|^4=W\sum_j|p_j|^4.
+$$
+
+Here $F_j=(F_{a,j},F_{b,j},F_{c,j})$ contains the three particle
+coordinates; the denominator includes the output-bias force as well.
+$\Omega_F$ is unchanged if all force coordinates are multiplied by the
+same nonzero scalar. Thus bounding it constrains **where the force acts**,
+not how small its amplitude must be. Large particles are allowed if they
+carry sufficiently little of the force energy.
+
+The following statement is conditional in a new, explicit way. Unlike
+Theorems 3–4 and Proposition 9, it does not establish all its structural
+conditions from initial data. It assumes that $\Omega_F$ stays bounded,
+and derives the force rate, a fourth-moment envelope, and output persistence.
+Proving preservation of that force-weighted condition remains open.
+
+**Proposition 10: slow reinforcement under a force-weighted population
+condition.** Consider noiseless exact effective flow with
+$Y_0>0$, $f_0=\|F(\theta_0)\|>0$, and
+$\sigma_0=\sigma_{\min}(J_C(\theta_0))>0$.
+Choose a travel allowance $A_*>0$ such that
+
+$$
+\sigma_*=
+\sigma_0-(\sqrt2+4\sqrt{M_0})A_*-2A_*^2>0.
+$$
+
+Assume $\Omega_F(t)\le\Omega_*$, with $\Omega_*>0$, along this
+effective trajectory until its first exit from total parameter travel
+$A_*$. Set
+
+$$
+M_{4,*}=\left(\sqrt{M_4(0)}+2\sqrt{\Omega_*}A_*\right)^2,
+$$
+
+$$
+\beta=Y_0\left[
+6\sqrt2\Omega_*+
+\frac{3\sqrt2M_{4,*}}{\sigma_*^2}
+\left(\sqrt2+4\sqrt{\frac{\Omega_*}{W}}\right)
+\right],\qquad
+T_* = \frac{W}{\beta}
+\log\left(1+\frac{\beta A_*}{Wf_0}\right).
+$$
+
+Through $T_*$, the coarse projector remains defined and
+
+$$
+\begin{aligned}
+\|F(t)\|&\le f_0e^{\beta t/W},\\
+\int_0^t\|F(s)\|\,ds&\le
+A(t):=\frac{Wf_0}{\beta}(e^{\beta t/W}-1),\\
+M_4(t)&\le
+\left(\sqrt{M_4(0)}+2\sqrt{\Omega_*}A(t)\right)^2,\\
+\|f_{\theta(t)}-y\|&\ge
+\left[\|P_Hy\|-\frac{2\sqrt2}{3W}M_{4,*}\right]_+.
+\end{aligned}
+$$
+
+The first $f$ in the proposition denotes force norm; the subscripted
+$f_\theta$ in the last line denotes network output. The fine-error progress
+bound is also explicit:
+
+$$
+Y(t)^2\ge
+\left[Y_0^2-
+\frac{Wf_0^2}{\beta}(e^{2\beta t/W}-1)\right]_+.
+$$
+
+In particular, suppose initial $M_0,M_4(0),Y_0$ and $Wf_0$ are bounded
+above uniformly in width, $\sigma_0$ is bounded below, and the structural
+allowance $\Omega_*$ is width-independent. A fixed sufficiently small
+$A_*$ then gives $T_*\ge cW$ for a width-independent $c>0$.
+Bounded initial $M_6$ is one sufficient way to obtain $f_0=O(W^{-1})$
+from Lemma 2, but no bound on **future** $M_6$ is required here.
+For a target with substantial non-affine output, the retained error is
+therefore substantial on this conditional $O(W)$ interval.
+
+**Proof: retain force-weighted curvature.** The neuronwise Hessian estimate
+used earlier gives a sharper bound when applied to the current force:
+
+$$
+\|D^2e_H[F,F]\|
+\le6\sqrt2\sum_j|p_j|^2|F_j|^2
+=\frac{6\sqrt2}{W}\Omega_F f^2.
+$$
+
+The coarse Hessian satisfies a corresponding directional estimate. Its
+particle block is bounded by $\sqrt2+4|c_j|$, so Cauchy–Schwarz gives
+
+$$
+\|D^2e_C[F,F]\|
+\le\sqrt2\sum_j|F_j|^2+4\sum_j|c_j||F_j|^2
+\le\left(\sqrt2+4\sqrt{\frac{\Omega_F}{W}}\right)f^2.
+$$
+
+To control compensation, one need not introduce a future sixth moment.
+The coarse Jacobian block for particle $j$ has norm at most
+$\sqrt2|p_j|$, while its uncompensated fine-gradient block is at most
+$3Y|p_j|^3$. The output-bias component of $g_H$ vanishes exactly. Hence
+
+$$
+|\ell|\le\frac{\|J_Cg_H\|}{\sigma_*^2}
+\le\frac{3\sqrt2Y}{\sigma_*^2}\sum_j|p_j|^4
+=\frac{3\sqrt2Y M_4}{\sigma_*^2W}.
+$$
+
+Substitute these estimates into the exact norm identity in Proposition 9
+and discard the nonpositive residual-relaxation term. While the proposed
+region holds,
+
+$$
+\frac{d}{dt}\log f
+\le\frac{Y_0}{W}\left[
+6\sqrt2\Omega_F+
+\frac{3\sqrt2M_4}{\sigma_*^2}
+\left(\sqrt2+4\sqrt{\frac{\Omega_F}{W}}\right)
+\right].
+$$
+
+**Proof: close the population and rank bounds.** Since $\dot p_j=-F_j$,
+
+$$
+\left|\dot M_4\right|
+\le4W\sum_j|p_j|^3|F_j|
+\le4f\sqrt{M_4\Omega_F},\qquad
+D^+\sqrt{M_4}\le2f\sqrt{\Omega_*}.
+$$
+
+Thus travel at most $A$ implies
+$\sqrt{M_4}\le\sqrt{M_4(0)}+2\sqrt{\Omega_*}A$.
+It also implies $\sqrt M\le\sqrt{M_0}+A$. Integrating
+$\|DJ_C\|\le\sqrt2+4\sqrt M$ along the path gives
+
+$$
+\sigma_{\min}(J_C(t))
+\ge\sigma_0-(\sqrt2+4\sqrt{M_0})A-2A^2.
+$$
+
+These are the claimed fourth-moment and coarse-rank envelopes. They bound
+the logarithmic force rate by $\beta/W$, giving the exponential force
+bound and its integrated travel. A first-exit argument closes the region
+through $A(T_*)=A_*$. The output floor follows from
+$\|P_Hf_\theta\|\le(2\sqrt2/3)M_4/W$; the fine-error progress bound
+follows by integrating $dY^2/dt=-2f^2$. This proves the proposition.
+$\square$
+
+As before, $f_0=0$ gives a stationary effective flow when the initial
+projector is defined. It is not evaluated by the positive-force time formula.
+No ordinary-GD or Adam persistence claim follows automatically from this
+effective-flow proposition.
+
+**The associated population scale statement.** For any spacing $h>0$, set
+$\lambda_j=h|a_j|$. Let $p_0$ be the fraction initially above
+$\lambda_0<\lambda_*$ and let $p_{\rm ever}(t)$ count labels that have
+reached $\lambda_*$ at any time up to $t$. Any total parameter-travel
+bound $A(t)$ proved in this note gives
+
+$$
+p_{\rm ever}(t)\le
+\min\left\{1,\ p_0+
+\frac{h^2A(t)^2}{W(\lambda_*-\lambda_0)^2}\right\}.
+$$
+
+Indeed, Minkowski's inequality gives
+$\sum_j(\int_0^t|\dot a_j|\,ds)^2\le A(t)^2$.
+Each new crossing requires slope travel at least
+$(\lambda_*-\lambda_0)/h$, so counting by squared travel proves the
+claim. This allows individual escapes while controlling their population
+fraction, and needs no individual-neuron forecast.
+
+### What remains to propagate: force-energy redistribution
+
+The hypothesis on $\Omega_F$ is not supplied by Proposition 10. Its exact
+derivative identifies the remaining collective dynamical question. Let
+$G=\dot F=-DF[F]$. Then
+
+$$
+\begin{aligned}
+\dot\Omega_F={}&
+-\frac{2W}{f^2}\sum_j(p_j\cdot F_j)|F_j|^2\\
+&+\frac{2W}{f^2}\sum_j|p_j|^2(F_j\cdot G_j)
+-\frac{2\Omega_F}{f^2}(F\cdot G).
+\end{aligned}
+$$
+
+The first line is movement of the force-carrying population. The second
+line is redistribution of force energy among particles. To express this
+without separate particle predictions, introduce weights
+$\omega_j=|F_j|^2/f^2$ and the output-bias weight
+$\omega_d=F_d^2/f^2$, which together sum to one. Assign sizes
+$q_j=|X_j|^2$, $q_d=0$, and block growth rates
+$\nu_j=F_j\cdot G_j/|F_j|^2$ and $\nu_d=G_d/F_d$ where their weights
+are nonzero. Their values at zero-weight blocks do not affect the formula.
+Then the same identity is
+
+$$
+\dot\Omega_F
+=-2W\sum_j\omega_j(p_j\cdot F_j)
++2\operatorname{Cov}_{\omega}(q,\nu).
+$$
+
+The covariance is positive when force energy moves preferentially toward
+larger particles, even if their positions barely change. This is a
+population feedback condition, distinct from controlling every neuron's
+trajectory.
+
+For example, define hidden-force participation
+$I_F=W\sum_j\omega_j^2$. The movement term obeys
+
+$$
+\left|2W\sum_j\omega_j(p_j\cdot F_j)\right|
+\le2f\sqrt{\Omega_F I_F}.
+$$
+
+This is Cauchy–Schwarz applied to
+$\sum_j|p_j|\omega_j^{3/2}$, using
+$\sum_j|p_j|^2\omega_j=\Omega_F/W$ and
+$\sum_j\omega_j^2=I_F/W$.
+
+If $I_F$ is bounded and $f=O(W^{-1})$, this part changes at rate
+$O(W^{-1})$. But $\Omega_F$ alone does not bound $I_F$ or the covariance.
+A generic Cauchy–Schwarz estimate of the covariance introduces a
+force-weighted fourth moment and the variation of the block growth rates;
+it does not close an initial-data theorem at the desired rate.
+The remaining task is to derive a sufficiently small signed redistribution
+bound from the coupled vector field, or identify another closed collective
+quantity. Measuring these two aggregate terms and perturbing their
+population alignment provides a direct test of that hypothesis.
