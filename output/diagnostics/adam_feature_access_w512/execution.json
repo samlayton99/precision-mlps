@@ -1,0 +1,22 @@
+{
+  "training_commit": "5011051",
+  "remote_root": "/workspace/junmiaoh/experiments/precision-mlps/runs/adam_feature_access_w512_20260923",
+  "width": 512,
+  "interior_intervals": 467,
+  "interior_centers": 468,
+  "halo_each_side": 22,
+  "joint_cases": 30,
+  "frozen_cases": 324,
+  "production_updates_per_case": 200000,
+  "all_production_cases_finite_at_endpoint": true,
+  "jobs": [
+    {"id": 1373, "role": "discarded frozen benchmark", "gpus": 1, "allocated_seconds": 11, "state": "COMPLETED", "exit_code": "0:0"},
+    {"id": 1374, "role": "discarded joint benchmark", "gpus": 1, "allocated_seconds": 15, "state": "COMPLETED", "exit_code": "0:0"},
+    {"id": 1375, "role": "uniform and initial frozen readouts", "gpus": 1, "allocated_seconds": 32, "state": "COMPLETED", "exit_code": "0:0"},
+    {"id": 1376, "role": "joint training", "gpus": 1, "allocated_seconds": 108, "state": "COMPLETED", "exit_code": "0:0"},
+    {"id": 1381, "role": "acquired-feature frozen readouts", "gpus": 1, "allocated_seconds": 35, "state": "COMPLETED", "exit_code": "0:0"}
+  ],
+  "total_allocated_gpu_seconds": 201,
+  "total_allocated_gpu_hours": 0.05583333333333333,
+  "maximum_concurrent_gpus": 2
+}

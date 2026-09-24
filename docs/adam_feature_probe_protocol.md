@@ -2,6 +2,8 @@
 
 The question is whether joint training acquires features that make its target easier to learn. We train fresh width-512 networks, freeze their features at recorded checkpoints, restart their readouts, and compare with uniform-center dictionaries under the same readout budget. Cosine decay spans each entire run. Every halo feature counts toward the total hidden width.
 
+The completed [results and figures](adam_feature_probe_results.md) report all five seeds and both schedules.
+
 ## Protocol fixed before execution
 
 - Set the **total hidden width to 512**. Invert the existing D06 halo rule $r=\lceil\sqrt{N}\rceil$ subject to $N+1+2r=512$: $N=467$ intervals, 468 centers on $[-1,1]$, and 22 halo centers on each side. The spacing is $h=2/467$; centers are $-1+jh$ for $j=-22,\ldots,489$. This preserves the frozen-kernel study's halo convention; it is not a claim that the separate uncorrected QI construction's default halo policy is identical.

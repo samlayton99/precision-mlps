@@ -7,6 +7,8 @@ import jax.numpy as jnp
 from experiments.expD36_frozen_gamma_probe import adam_feature_probe_prepare as prepare
 from experiments.expD36_frozen_gamma_probe import adam_feature_probe_run as frozen
 from experiments.expD36_frozen_gamma_probe import adam_joint_probe_run as joint
+from experiments.expD36_frozen_gamma_probe import adam_feature_probe_collect as collect
+from experiments.expD36_frozen_gamma_probe import adam_feature_probe_spectrum as spectrum
 
 
 def test_width_budget_includes_halos():
@@ -21,6 +23,14 @@ def test_width_budget_includes_halos():
 def test_independent_adam_references():
     frozen.self_test()
     joint.self_test()
+
+
+def test_known_kernel_spectrum_and_target_energy():
+    spectrum.self_test()
+
+
+def test_merge_preserves_each_case_and_snapshot():
+    collect.self_test()
 
 
 @pytest.mark.parametrize('count', [0, 50000, 100000, 199999])
