@@ -1765,7 +1765,53 @@ $A(t)\le(\bar q_*(t)-q_0)/I_*^{1/4}$, where
 $\bar q_*(t)=q_0(1-6Y_0\sqrt{I_*}q_0^2t/W)^{-1/2}$.
 The rank lemma makes a travel-based rank restriction unnecessary for this
 explicit moment result. Existing numerical evaluations that imposed that
-restriction remain sufficient but have not evaluated the new theorem.
+restriction remain sufficient; the new retrospective audit below evaluates
+the accumulated formula without that restriction.
+
+### Numerical usefulness of the accumulated formula
+
+The accumulated premise improves the theorem's scope, but its present
+force estimate still permits much faster population evolution than the
+archive exhibits. A post-processing audit covers 1,170 existing GD
+continuations and 3,770 saved states. It substitutes the measured
+concentration histories into (P3)--(P4b), using trapezoidal quadrature in
+$t=\eta n$. This is a diagnostic evaluation of effective-flow formulas
+on GD histories, not a certificate for either continuous effective flow
+or discrete GD.
+
+The principal width-705 comparison contains all 23 targets at two seeds,
+restarting at 20,000 updates and continuing for 20,000 more at $\eta=0.002$.
+The larger of the two relative output floors in (P4a) reaches 1% after a
+median 3,361 nominal updates, with range 1,793--11,098. Using the fixed
+allowance $I_*=32$ in the same formula gives a median 1,495. The paired
+duration improvement has median 2.15. At width 1409, the six-target,
+two-seed panel gives a median 6,670. No original branch retains a defined
+moment envelope through the full continuation.
+
+In contrast, width-705 endpoint moments satisfy
+$0.9849\le M_4(T)/M_4(0)\le1.0504$ and relative output errors remain
+31.7%--99.8%. Every-update counters record no 1% error crossing or
+$\lambda=0.25$ acquisition in these 46 branches. The theorem is consistent
+with the early saved states, but does not yet explain the full duration
+of their observed persistence.
+
+The comparison isolates a useful proof target. At the 138 saved states
+of those branches, the median ratio
+$(3YI_F^{1/4}q^3/W)/f$ is 200.6, whereas the median ratio
+$I_F^{1/4}f/|\dot q_{\rm effective}|$ is 5.41. Thus the larger typical
+loss is in the force inequality in (P1), which combines cubic sensitivity,
+residual alignment, compensation, and Hölder's inequality. These ratios
+do not separate those contributions or prove their future persistence.
+Nor is there universal contraction: $\dot q_{\rm effective}>0$ at 77
+of the 138 states. A useful refinement should retain collective
+compensated sensitivity and residual loading, rather than assume a small
+future force or constrain every particle.
+
+The width-705 eight-snapshot natural panel changes its concentration
+integral by at most 0.569% when reduced to three snapshots. This is a
+sampling-sensitivity check, not an upper error bound. The full numerical
+scope, target coverage, plots, formula tests, and limitations are given
+in the [accumulated-concentration audit](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/accumulated_concentration/README.md).
 
 ### Optional refinement with a pointwise allowance and measured initial force
 

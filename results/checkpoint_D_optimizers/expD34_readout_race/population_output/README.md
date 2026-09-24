@@ -156,14 +156,15 @@ in the ODE argument; they do not provide a bound between saved checkpoints.
 
 ## A simpler collective persistence condition
 
-The preferred conditional theorem now needs only a bound on force
+The preferred conditional theorem now controls accumulated force
 concentration,
 
 $$
-I_F=W\sum_j\left(\frac{|F_j|^2}{\|F\|^2}\right)^2\le I_*.
+I_F=W\sum_j\left(\frac{|F_j|^2}{\|F\|^2}\right)^2,\qquad
+\mathcal C(t)=\int_0^t\sqrt{I_F(s)}\,ds.
 $$
 
-This quantity is unchanged when the entire force is multiplied by a scalar.
+The instantaneous concentration is unchanged when the force is multiplied by a nonzero scalar.
 It controls how the force is distributed, rather than assuming its magnitude
 is small. Writing $q=M_4^{1/4}$, orthogonality of the effective projection
 and Hölder's inequality give
@@ -173,21 +174,24 @@ $$
 D^+q\le I_F^{1/4}\|F\|.
 $$
 
-The coupled inequalities propagate the fourth moment, weak force, limited
-travel, and output error for a conditional interval proportional to width.
-Only the initial moments and a uniform positive coarse singular-value margin
-are needed in addition to the future concentration bound. There is no future
-moment, force-amplitude, or per-neuron confinement assumption. Preservation
-of concentration remains open, as does transferring this particular sharper
-bound to full GD or Adam. The earlier initial-data theorems remain separate.
+The coupled inequalities propagate the fourth moment, accumulated force,
+limited travel, and output error. A bounded time-average of $\sqrt{I_F}$
+gives a conditional interval proportional to width. Initial coarse rank
+suffices: its finite-time preservation is proved, without a future
+conditioning margin. There is no future moment, force-amplitude, or
+per-neuron confinement assumption. Preservation of the concentration budget
+remains open, as does transferring this result to full GD or Adam. The
+earlier initial-data theorems remain separate. An integral premise does not
+imply a uniform instantaneous force bound.
 
 The broader longitudinal check now covers all 23 targets at width 705:
 46 original and 46 repaired trajectories, sampled at 0, 1k, and 20k further
 updates. None exceeds the illustrative allowance 32; the maximum is 22.27.
 Concentration can grow, with maximum sampled/initial ratio 1.49. In the
 six-target repaired 100k extension, the right bump and left Gaussian exceed
-32 and the sampled maximum is 86.2. This is evidence for a finite regime,
-not invariance of that particular allowance. The 100-fold injected arms
+32 and the sampled maximum is 86.2. Crossing 32 does not end the new theorem's
+regime: the relevant condition is the accumulated budget. The 100-fold
+injected arms
 also remain below 32 while fitting much faster: concentration alone is not
 the obstruction. Their initial population moments are much larger.
 
@@ -198,15 +202,38 @@ sufficient theorem condition ceasing to hold is not an output-success event.
 
 ![A finite concentration regime, with output failure persisting beyond it in two cases.](evidence/concentration_pi_plot/concentration_and_output.png)
 
-The numerical constants remain conservative. With the illustrative allowance
+The earlier pointwise numerical comparisons remain conservative. With the
+illustrative allowance
 $I_*=32$, all 58 width-705 broad states and all 24 width-1409 original states
 pass the initial check. The refined median effective-flow times are 2.57 and
 5.41, with minimum relative output floors 20.8% and 38.3%. No interval reaches
-physical time 40. The new formulation is a simpler mechanism and an
-asymptotic-rate result, not a practical-duration certificate. It does not
-outperform the evolving-Jacobian bound on these checkpoints.
+physical time 40. These calculations used the earlier measured-initial-force
+refinement and a travel-based conditioning restriction; they did not evaluate
+the accumulated-concentration theorem.
 
 ![Conditional lifetimes and retained output-error floors.](evidence/shape_certificate_summary/conditional_lifetimes.png)
+
+**The accumulated theorem has now been evaluated retrospectively.** The
+[new audit](evidence/accumulated_concentration/README.md) post-processes
+1,170 archived continuations on Modal, without opening parameter archives.
+In the balanced original-GD panel of 23 targets and two seeds at width 705,
+the estimated 1% output floor lasts a median 3,361 further updates, versus
+1,495 with the fixed allowance 32 and the same rank-free formula. At width
+1409 the six-target median is 6,670. These are effective-flow times divided
+by the GD learning rate, not certified GD iteration bounds. Neither panel's
+envelope reaches the full 20,000-update continuation.
+
+At width 705 the actual fourth moment changes by at most 5.1%, final errors
+remain 31.7%–99.8%, and every-update counters record no 1% error crossing or
+$\lambda=0.25$ acquisition. The cubic population estimate exceeds the actual
+effective force by a median factor 200.6, whereas the moment-transport
+estimate exceeds the absolute effective moment rate by a median 5.41.
+The largest measured loss of information is therefore in bounding force
+from population size. Explaining that aggregate slack is the next proof
+question; assuming the force stays small would bypass it. Sparse clock
+quadrature and the effective-flow-to-GD transfer remain uncertified.
+
+![Observed moment persistence and error versus accumulated-concentration envelopes at width 705.](evidence/accumulated_concentration/wide_population_envelopes.png)
 
 ## Broader target coverage at width 705
 
