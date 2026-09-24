@@ -1,0 +1,226 @@
+{
+  "gd8": {
+    "actual_checkpoints": 1709,
+    "maximum_lower_minus_actual": -0.0006448140810351357,
+    "analytic_initialization_weight_closure": -9.992007221626409e-16,
+    "minimum_lower_actual_ratio": 0.8587696947777448,
+    "crossings": [
+      {
+        "epsilon": 0.1,
+        "necessary_updates": 853024,
+        "executed_updates": null,
+        "bracket_lower": 960000,
+        "bracket_upper": 970000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.03,
+        "necessary_updates": 2722280,
+        "executed_updates": null,
+        "bracket_lower": 3080000,
+        "bracket_upper": 3090000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.01,
+        "necessary_updates": 13934809,
+        "executed_updates": 15798313,
+        "bracket_lower": 15790000,
+        "bracket_upper": 15800000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.003,
+        "necessary_updates": 121872978,
+        "executed_updates": null,
+        "bracket_lower": 17000000,
+        "bracket_upper": null,
+        "censored": true
+      },
+      {
+        "epsilon": 0.001,
+        "necessary_updates": 814957928,
+        "executed_updates": null,
+        "bracket_lower": 17000000,
+        "bracket_upper": null,
+        "censored": true
+      }
+    ]
+  },
+  "gd12": {
+    "actual_checkpoints": 29,
+    "maximum_lower_minus_actual": -0.002217903042523315,
+    "analytic_initialization_weight_closure": 8.881784197001252e-16,
+    "minimum_lower_actual_ratio": 0.7233725660533321,
+    "crossings": [
+      {
+        "epsilon": 0.1,
+        "necessary_updates": 38198,
+        "executed_updates": null,
+        "bracket_lower": 40000,
+        "bracket_upper": 50000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.03,
+        "necessary_updates": 101234,
+        "executed_updates": null,
+        "bracket_lower": 110000,
+        "bracket_upper": 120000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.01,
+        "necessary_updates": 163954,
+        "executed_updates": 186057,
+        "bracket_lower": 180000,
+        "bracket_upper": 190000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.003,
+        "necessary_updates": 396868,
+        "executed_updates": null,
+        "bracket_lower": 200000,
+        "bracket_upper": null,
+        "censored": true
+      },
+      {
+        "epsilon": 0.001,
+        "necessary_updates": 14336482,
+        "executed_updates": null,
+        "bracket_lower": 200000,
+        "bracket_upper": null,
+        "censored": true
+      }
+    ]
+  },
+  "gd16": {
+    "actual_checkpoints": 29,
+    "maximum_lower_minus_actual": -0.0003551535137162978,
+    "analytic_initialization_weight_closure": 1.9984014443252818e-15,
+    "minimum_lower_actual_ratio": 0.8123395091532383,
+    "crossings": [
+      {
+        "epsilon": 0.1,
+        "necessary_updates": 9521,
+        "executed_updates": null,
+        "bracket_lower": 10000,
+        "bracket_upper": 20000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.03,
+        "necessary_updates": 26639,
+        "executed_updates": null,
+        "bracket_lower": 30000,
+        "bracket_upper": 40000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.01,
+        "necessary_updates": 54453,
+        "executed_updates": 61792,
+        "bracket_lower": 60000,
+        "bracket_upper": 70000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.003,
+        "necessary_updates": 173305,
+        "executed_updates": null,
+        "bracket_lower": 190000,
+        "bracket_upper": 200000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.001,
+        "necessary_updates": 496315,
+        "executed_updates": null,
+        "bracket_lower": 200000,
+        "bracket_upper": null,
+        "censored": true
+      }
+    ]
+  },
+  "gd64": {
+    "actual_checkpoints": 29,
+    "maximum_lower_minus_actual": -0.00015249121935068154,
+    "analytic_initialization_weight_closure": -1.6653345369377348e-15,
+    "minimum_lower_actual_ratio": 0.8699911387733138,
+    "crossings": [
+      {
+        "epsilon": 0.1,
+        "necessary_updates": 1040,
+        "executed_updates": null,
+        "bracket_lower": 1000,
+        "bracket_upper": 2000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.03,
+        "necessary_updates": 3317,
+        "executed_updates": null,
+        "bracket_lower": 3000,
+        "bracket_upper": 4000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.01,
+        "necessary_updates": 14118,
+        "executed_updates": 16013,
+        "bracket_lower": 10000,
+        "bracket_upper": 20000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.003,
+        "necessary_updates": 99905,
+        "executed_updates": null,
+        "bracket_lower": 110000,
+        "bracket_upper": 120000,
+        "censored": false
+      },
+      {
+        "epsilon": 0.001,
+        "necessary_updates": 658915,
+        "executed_updates": null,
+        "bracket_lower": 200000,
+        "bracket_upper": null,
+        "censored": true
+      }
+    ]
+  },
+  "joint": {
+    "raw_curated_overlap_exact": true,
+    "raw_endpoint_state_exact": true,
+    "maximum_archived_train_mse_gap": 4.440892098500626e-16,
+    "snapshots_per_case": 39,
+    "cases": 10,
+    "archived_train_mse_comparisons": 390,
+    "paired_initialization_exact": true,
+    "endpoint_medians": {
+      "gd": {
+        "train_error": 0.553847010260093,
+        "eval_error": 0.553850909160981,
+        "lambda_rms": 0.008750766641886955
+      },
+      "adam": {
+        "train_error": 0.05831103773877331,
+        "eval_error": 0.05831457528901444,
+        "lambda_rms": 0.08628385581307411
+      }
+    }
+  },
+  "construction": {
+    "gamma": 16,
+    "lambda_rms": 0.25,
+    "width": 177,
+    "rank": 138,
+    "rcond": 4.547473508864641e-13,
+    "train_error": 2.2023863674505114e-12,
+    "eval_error": 2.3212483312589096e-12,
+    "method": "Direct SVD least squares with bias; capacity witness, not a training trajectory.",
+    "verification_16384_error": 2.32834172930327e-12
+  }
+}
