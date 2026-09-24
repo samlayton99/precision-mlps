@@ -1,4 +1,4 @@
-% Drop-in paper text; figures are separate in section34_spectrum_figures.tex.
+% Drop-in section; load section34_spectrum_figures.tex for its figure definitions.
 \subsection{Bandwidth controls optimization access to high precision}
 \label{sec:bandwidth-access}
 
@@ -34,10 +34,17 @@ $d$ is the separation between training points.
 Controlling the finite-center corrections gives the relative-rate bounds;
 a standard spectral argument then yields the output-error inequality.
 
+\SectionSpectrumFigure
+\FloatBarrier
+
 Increasing $\lambda$ from $1/32$ to $1/4$ raises the thirtieth relative
 eigenvalue by $1.4\times10^5$, versus only $1.3$ for the fourth
 (Figure~\ref{fig:note-spectrum}); the thirtieth mode carries about 2.5\%
 of target energy at both endpoints.
+
+\SectionTrainingFigure
+\FloatBarrier
+
 At $\lambda=1/32$, a direct readout fit attains $6.2\times10^{-10}$ dense-grid
 relative error, yet five million GD updates retain training error $0.210$
 against the theorem's lower bound $0.2098$ (Figure~\ref{fig:note-training}A).
