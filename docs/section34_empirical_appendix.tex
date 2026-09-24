@@ -76,15 +76,21 @@ starts again from its paired initialization with decay over its new horizon.
 
 For the primary target, neither optimizer met the constant-run trigger at
 two million updates. A discretionary five-million-update duration check was
-nevertheless queued because the selected Adam cosine trajectory still reduced
-its trailing-window error by $20.60\%$ over the final fifth. The queued
+nevertheless executed because the selected Adam cosine trajectory still reduced
+its trailing-window error by $20.60\%$ over the final fifth. The longer
 comparison uses Adam constant rates $0.02,0.002$, Adam cosine rates
 $0.05,0.02$, and GD rates $0.2,0.5$ under both schedules, restarting from the
-paired initialization. These pending runs do not enter the completed
-two-million-update evidence. In the quadratic experiment, Adam's constant
+paired initialization. The selected five-million-update recipes are cosine
+Adam at $0.05$ and cosine GD at $0.2$. Adam's median dense-grid error falls
+from $0.0025095$ at two million updates to $0.0018148$ at five million,
+although one of the five paired seeds worsens. Its five-million-update
+cosine trajectory still reduces trailing-window error by $28.90\%$ over
+the final fifth; the best constant-rate trajectory reduces it by $18.42\%$.
+These are finite-budget comparisons, not converged optimizer optima.
+In the quadratic experiment, Adam's constant
 rate $0.0002$ \emph{did} meet the duration trigger: its error reduction was
-$30.82\%$. Its lower-boundary expansion to $0.0002/3$ was also queued.
-No conclusion about these pending checks is inferred from the earlier runs.
+$30.82\%$. Its lower-boundary expansion to $0.0002/3$ was worse under both
+schedules, leaving the winning rates interior to the expanded grid.
 The supporting quadratic extension advances the best rate per schedule
 across all five seeds, rather than the two rates used for the primary
 extension. This budget adjustment follows measured small-batch throughput.
@@ -187,6 +193,29 @@ remain attached to their run records. Finite-budget error is reported as
 such and does not establish permanent optimization failure.
 
 \paragraph{Constant-rate control for the adaptive-metric interpretation.}
+At the five-million-update endpoints in Figure~\ref{fig:slope-acquisition},
+the full Jacobian with the actual Adam metric places at least $99.9997\%$
+of each seed's remaining residual energy below relative eigenvalue $10^{-6}$.
+Figure~\ref{fig:joint-adaptive-spectrum} shows the target and residual
+projections before and after adaptive scaling. The near-flat readout
+residual curves mean that almost all remaining error is already confined
+to the weakest readout directions; the full Jacobian supplies additional
+directions, but their relative eigenvalues are also small.
+
+\begin{figure}[t]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/joint_metrics/joint_endpoint_metrics.pdf}
+ \caption{\textbf{Remaining error occupies weak local directions.}
+ Five-million-update endpoints of the selected joint runs. Each curve sums
+ target or residual energy below the horizontal relative-eigenvalue cutoff,
+ divided by target energy; its right endpoint is therefore one or the squared
+ relative output error. Rows use readout and full-parameter Jacobians.
+ Dashed blue curves apply the saved joint Adam second-moment scaling.
+ Lines show seed medians and shading shows ranges. These endpoint metrics
+ diagnose geometry; they do not predict Adam's trajectory.}
+ \label{fig:joint-adaptive-spectrum}
+\end{figure}
+
 At the selected two-million-update cosine Adam endpoints, over $99.998\%$
 of residual energy lies below relative eigenvalue $10^{-6}$ in the full
 Jacobian metric with actual Adam scaling. The best constant-rate recipe,

@@ -26,7 +26,11 @@ One recipe is selected globally per optimizer by median final validation error a
 
 Neither optimizer met that constant-run trigger on the primary target at two million updates. We added the five-million-update primary comparison as a separate duration check because the selected Adam cosine trajectory still improved by 20.60% over its final fifth. This extension advances the two strongest rates per schedule: Adam constant $0.02,0.002$, Adam cosine $0.05,0.02$, and GD $0.2,0.5$ for both schedules. It preserves the original initialization and selection rule, and retains the two-million-update results separately.
 
+The selected five-million-update recipes are cosine Adam at $0.05$ and cosine GD at $0.2$. Adam's median dense-grid error falls from $0.0025095$ to $0.0018148$, although one of the five paired seeds worsens. Its longer cosine trajectory still reduces trailing-window error by 28.90% over the final fifth, and the best constant-rate trajectory reduces it by 18.42%. These are finite-budget comparisons, not converged optimizer optima.
+
 Quadratic Adam did meet the continuation trigger: the best constant recipe, $\eta=0.0002$, improved its trailing-window error by 30.82%. That rate also lay at the lower search boundary, prompting one expansion to $0.0002/3$ under both schedules before selecting continuation candidates.
+
+The expanded quadratic rate was worse under both schedules, leaving the winning rates interior to the expanded grid.
 
 The supporting quadratic extension advances the best rate per schedule across all five seeds, rather than the two rates used for the primary extension. This budget adjustment follows measured small-batch throughput. Its five-million-update joint curves are compared over the same horizon; the quadratic uniform readouts were executed for two million updates and are reported separately.
 
@@ -54,7 +58,15 @@ The actual joint-training endpoints receive a separate check. Their readout Jaco
 
 The results, selected recipes, continuation decisions, and figure provenance are recorded alongside the completed runs. An improvement with longer training is reported as improvement; the experiment does not infer permanent optimization failure from a finite budget.
 
-## Completed two-million-update adaptive-metric control
+## Actual joint-training adaptive metrics
+
+At the five-million-update endpoints in the main figure, the full Jacobian with the actual Adam metric places at least 99.9997% of each seed's remaining residual energy below relative eigenvalue $10^{-6}$. The near-flat readout residual curves below mean that almost all remaining error is already confined to the weakest readout directions. The full Jacobian supplies additional directions, but their relative eigenvalues are also small.
+
+![Actual joint-training endpoint metrics at five million updates.](../output/diagnostics/section34_long_horizon/main_5m/joint_metrics/joint_endpoint_metrics.png)
+
+**Remaining error occupies weak local directions.** Each curve sums target or residual energy below the horizontal relative-eigenvalue cutoff, divided by target energy; its right endpoint is therefore one or the squared relative output error. Rows use readout and full-parameter Jacobians. Dashed blue curves apply the saved joint Adam second-moment scaling. Lines show seed medians and shading shows ranges. These endpoint metrics diagnose geometry; they do not predict Adam's trajectory.
+
+### Two-million-update constant-rate control
 
 At the selected cosine Adam endpoints, over 99.998% of residual energy lies below relative eigenvalue $10^{-6}$ in the full Jacobian metric with the actual Adam scaling. Repeating the diagnostic on the best constant-rate recipe, $\eta=0.02$, gives a median of 98.763%, with seed range 47.671–99.309%. Thus weak local directions also matter without cosine cooldown, although the constant-run concentration is not uniform across seeds. These fractions divide by each endpoint's residual energy; the underlying cumulative curves divide by target energy.
 
