@@ -2,8 +2,8 @@
 
 Run with .venv-modal/bin/modal run experiments/expD34_readout_race/
 population_accumulated_modal.py --output <new-local-evidence-directory>.
-Use --study feedback for Theorem 14. Only the eight explicitly named files
-below are uploaded. Tests and numerical
+Use --study feedback for Theorem 14 or --study loop for the population
+feedback/travel bootstrap. Only the explicitly named files below are uploaded. Tests and numerical
 analysis run remotely, with a 4 GiB hard memory limit and a ten-minute timeout.
 """
 from __future__ import annotations
@@ -29,7 +29,10 @@ MOTION = EVIDENCE / "dilation_final_summary/states.csv"
 FILES = (*SOURCES, MOTION, HELPER, TEST,
          Path("experiments/expD34_readout_race/population_accumulated_modal.py"),
          Path("experiments/expD34_readout_race/population_feedback_budget.py"),
-         Path("tests/test_population_feedback_budget.py"))
+         Path("tests/test_population_feedback_budget.py"),
+         Path("experiments/expD34_readout_race/population_feedback_loop.py"),
+         Path("tests/test_population_feedback_loop.py"),
+         EVIDENCE / "feedback_flow/states.csv", EVIDENCE / "feedback_flow_100k/states.csv")
 
 app = modal.App("d34-population-accumulated-audit")
 image = (modal.Image.debian_slim(python_version="3.12")
@@ -50,16 +53,20 @@ def audit(study: str = "concentration") -> bytes:
     started = time.time()
     root, output = Path("/work"), Path("/tmp/accumulated-audit")
     hashes = {str(p): hashlib.sha256((root / p).read_bytes()).hexdigest() for p in FILES}
-    if study not in ("concentration", "feedback"):
+    if study not in ("concentration", "feedback", "loop"):
         raise ValueError("Unknown audit")
     commands = [[sys.executable, "-m", "pytest", str(TEST), "tests/test_population_feedback_budget.py",
-                 "-q", "-p", "no:cacheprovider"]]
-    module = "population_feedback_budget" if study == "feedback" else "population_accumulated_audit"
+                 "tests/test_population_feedback_loop.py", "-q", "-p", "no:cacheprovider"]]
+    module = {"feedback": "population_feedback_budget", "loop": "population_feedback_loop",
+              "concentration": "population_accumulated_audit"}[study]
     command = [sys.executable, "-m", "experiments.expD34_readout_race." + module]
     for source in SOURCES:
         command.extend(["--source", str(source)])
     if study == "concentration":
         command.extend(["--motion-source", str(MOTION)])
+    if study == "loop":
+        for folder in ("feedback_flow", "feedback_flow_100k"):
+            command.extend(["--dense-source", str(EVIDENCE / folder / "states.csv")])
     command.extend(["--output", str(output)])
     commands.append(command)
     logs = []
