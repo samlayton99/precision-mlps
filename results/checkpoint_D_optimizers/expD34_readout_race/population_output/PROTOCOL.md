@@ -8,7 +8,7 @@ five aggregate GPU-hours, including controls and retries.
 
 ## Evidence and outcomes
 
-The archive audit covers the available 23 target families, keeping the six-target
+The archive audit covers the available 23 target functions, keeping the six-target
 wide panel separate from the broader late panel. The primary error is the
 attached network's unsmoothed relative $L^2$ error. Training and independent-grid
 errors are separate. Report several tolerances, not one privileged acquisition

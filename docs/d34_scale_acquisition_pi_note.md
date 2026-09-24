@@ -42,14 +42,16 @@ and experiments indicate slow geometry feedback even when substantial error
 remains. Correcting generated lower-order error can further suppress motion,
 but it is not the sole explanation across targets.
 
-This note derives that reduction, tests its interpretation against the
-experiments, and connects population structure directly to output-error lower
-bounds. The new persistence proof starts from population moments and coarse
-tracking at a post-transient state, then derives a window of slow evolution.
-It allows the features and their Jacobian to change throughout that window.
-Its mathematical validity and the usefulness of its constants at experimental
-widths are separate questions. Neither the mechanism nor the theorem requires
-every slope to shrink or a trapping equilibrium to exist.
+This note derives that reduction and connects population structure directly
+to output-error lower bounds. Its strongest mechanistic theorem is conditional:
+if the effective force remains distributed across the population, coupled
+motion takes a time proportional to width to substantially enlarge a bounded
+fourth moment. The proof derives weak force rather than assuming it, and lets
+features and compensation evolve throughout. A separate initial-data theorem
+requires no future concentration premise but gives shorter sufficient windows.
+Neither result requires every slope to shrink or a trapping equilibrium to
+exist. Preserving distributed force for a useful duration remains the main
+proof gap.
 
 **How to read the plots.** A neuron's physical slope scale is
 $\gamma_j=|a_j|$. Its normalized scale is $\lambda_j=h|a_j|$, where
@@ -287,35 +289,34 @@ $$
 \tag{4}
 $$
 
-The first term always depletes force. The second is signed: changing features,
-readouts, biases, and coarse compensation can reinforce or suppress it. Full
-flow adds $-F^TDF[R]$. Equation (4) identifies a mechanism to investigate,
-rather than imposing a favorable sign on all motion.
+Residual relaxation means fitting away error aligned with the current
+sensitivities; this term always depletes the force norm. Geometry and
+compensation feedback changes the sensitivity map $T$ itself as features,
+readouts, and the coarse projector evolve. It can reinforce or suppress
+force. Full flow adds $-F^TDF[R]$. None of these norm statements requires
+every slope to shrink.
 
 There are two compatible routes to slow acquisition. **Generated-error
-correction** can oppose expansion: a broad feature creates unwanted quadratic
+correction** can oppose expansion: a broad feature (small $|a|$) creates unwanted quadratic
 or cubic output, and reducing that error can be easier than resolving the
 target's finer structure. **Weak reinforcement** can also keep motion small
 when those errors barely relax: the population's sensitivity itself changes
 too slowly to produce a much stronger force. The latter matters for sine and
 other targets without degree-nine orthogonality.
 
-For a concrete local Taylor illustration of generated-error correction, take
-one zero-bias feature, hold its readout $c$ fixed, and retain its cubic coefficient
-$A(a)=-\chi ca^3$, with $\chi>0$ set by the polynomial normalization.
-If the target has no cubic component, the cubic-error loss $A(a)^2/2$
-alone gives $\dot a=-3\chi^2c^2a^5$, which shrinks either sign of slope.
-A nonzero target cubic component changes this force, and joint training
-adds the coupling in (2). This scalar illustration explains a possible
-contribution, not the net direction of the full population.
+For a local Taylor example, take one zero-bias feature with fixed readout $c$
+and cubic coefficient $A(a)=-\chi ca^3$, where $\chi>0$ depends on polynomial
+normalization. If the target has no cubic component, its loss $A(a)^2/2$
+gives $\dot a=-3\chi^2c^2a^5$, shrinking either sign of slope. A target
+cubic component changes this force; joint training adds coupling (2).
+This illustrates one contribution, not the net population motion.
 
-**Three visual tests distinguish slow motion from restoration.** In the first
-panel, changing geometry feedback has the larger effect, but neither
-intervention produces rapid reinforcement in this wide regime. In the second,
-100% means a small outward perturbation survives unchanged: the points stay
-near that line, rather than returning toward zero. In the third, 1 means the
-cloned model moves as much as the original. Correcting the geometry learning
-rate largely restores that motion; correcting only the readout rate does not.
+**Read the three visual tests against their reference lines.** Changing
+geometry feedback has the larger effect, but neither intervention rapidly
+reinforces the wide population's force. Small outward perturbations remain
+near 100% retention: they do not restore the old scale. In the cloning panel,
+1 means equal motion. Correcting the geometry learning rate largely restores
+it; correcting the readout rate alone does not.
 
 ![Matched perturbations test three explanations of slow GD motion. The feedback panel measures the absolute percentage change in 20k-update positive normalized slope travel relative to ordinary GD at width 1409: six functions in each of two cohorts. The pulse panel measures the directional offset remaining after 20k updates at the smallest tested symmetric pulse amplitude, across 23 functions in each cohort; 100% means no restoration. The cloning panel compares Euclidean slope-displacement norms with the original network on the two 23-function cohorts; 1 means equal motion. Geometry-rate and readout-rate corrections are distinct interventions. Points retain case variation; the three panels have different units and must be read against their own reference.](figures/d34_pi_interventions.png)
 
@@ -338,46 +339,63 @@ Separate physical parameter kicks provide a caution:
 first-order matching can still create substantial tracking at finite amplitude.
 Those contaminated kicks are not clean tests of a low-tracking mechanism.
 
-**A larger test: double the slopes, then let GD respond.** The earlier pulses
-changed mean scale by only about 0.7--3% at the median and deliberately
-preserved the initial slope gradient. To test a larger neighborhood, we now
-multiply both slopes and hidden biases by 1.25 or 2, preserving feature
-centers. We adjust only readouts and output bias to restore $z=0$, then resume
-ordinary GD. The repair is chosen near either the original readout $c_0$
-(“primary”) or $c_0/s$ (“inverse readout”), where $s$ is the dilation factor.
-Neither repair preserves the initial slope gradient or the fine residual.
+**An order-of-magnitude test: supply larger features, then let GD respond.**
+The small pulses changed mean scale by only about 0.7--3% at the median.
+We now multiply slopes and hidden biases by $3.2,10,32,$ or $100$, preserving
+feature centers. Readouts and output bias are adjusted to restore $z=0$,
+near either the original readouts $c_0$ (“primary”) or $c_0/s$ (“inverse”),
+where $s$ is the imposed multiplier. The fine residual and initial effective
+force may change. Every branch then follows ordinary GD.
 
-For a concrete example, doubling the geometry of the left-Gaussian run at
-width 1409, seed 30, produces only 0.588% additional mean-scale growth over
-20k updates. This is the largest growth among the twelve primary twofold
-cases at that width. Some other targets contract. The issue is the rate of
-subsequent movement, not a common direction of movement.
+On the six-target width-1409 panel, the 100-fold primary intervention leads
+to median relative error 5.69% after 20k updates, compared with 82.8% in the
+repaired baseline. Yet mean slope increases by only 0.000951% beyond the
+supplied scale. Supplying useful features greatly changes output fitting
+without producing substantial subsequent acquisition. The readout repair
+itself leaves a large error; the improvement occurs during training.
 
-![Finite geometry dilations followed by ordinary GD. Each curve starts after the imposed increase, so injected scale is excluded from learned motion. Solid curves are medians and shading is the interquartile range; dashed curves freeze each state's own initial effective slope gradient. Left: 23 targets and two seeds, width 177, after 600k prior updates. Middle and right: six targets and two seeds per width, after 20k prior updates. Every branch continues for 20k updates at learning rate 0.002; flow time 40 means 20k updates. All six branches per checkpoint passed preparation and completed training. Primary and inverse identify readout repair references, not different GD rules. Different checkpoint ages prevent treating the three panels as a controlled width comparison.](figures/d34_pi_finite_dilations.png)
+The broader width-705 panel gives the same separation across all 23 targets
+and two seeds. A 100-fold injection leaves median errors 4.63% and 4.59%
+under the primary and inverse references. Additional mean-slope growth is
+at most 0.0511% in any of these 92 branches. Two primary and eleven inverse
+endpoints reach 1%; the other endpoints do not. The original, uninjected
+branches have median error 86.6%, with none reaching 1% at the endpoint.
 
-**What the wide states show.** Twofold primary dilation raises the initial
-effective slope-force norm by median factors 3.44 and 3.53 at widths 705 and
-1409. Yet subsequent median mean-scale growth is only 0.392% and 0.181%; the
-largest increases are 1.394% and 0.588%. The force itself grows by median
-factors 1.139 and 1.034 during the continuation. Thus there is reinforcement,
-but it is limited over this window. Tracking's accumulated slope-norm budget
-is below 0.1% of the effective-fine budget in every wide branch. These are
-cleaner evidence for persistence of slow effective dynamics than the earlier
-gradient-matched pulses.
+![Supplying much larger geometry improves output fitting without comparable subsequent scale growth. Top: independent-grid relative error immediately after repair (dotted) and after 20k GD updates (solid medians and individual points). Bottom: mean-slope change measured from each branch's post-repair starting scale; zero means no additional acquisition. The 1% line is an output criterion. Width 177 starts after 600k prior updates; wider cases start after 20k, so columns are not a controlled width comparison. Readout-reference policies are interventions, not different optimizers.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/dilation_final_summary/large_dilation_output_scale.png)
 
-**What the late states add.** After twofold primary dilation at width 177,
-33 of 46 cases contract, but the median contraction is only 0.150% of the
-enlarged starting scale. The median gap to the repaired baseline retains
-99.17% of its initial size. The initial force burst typically subsides:
-its norm rises 13.8-fold at the median, then falls to 17.0% of its post-kick
-value. This supports transient correction without a strong return to the
-old scale. It does not describe every late state: some ordinary baselines
-grow substantially, and the inverse-readout repair reduces contraction to
-24 of 46 cases. Late interventions also renew tracking more strongly, with
-norm-budget ratios up to 7.21%; their attribution needs that qualification.
-Signed contributions can cancel: in one late branch, tracking's contribution
-exceeds the net mean-scale change. These late responses are full-GD findings,
-not exact effective-flow experiments.
+**Which parameters deliver that improvement?** Freeze the injected geometry
+and train only the readouts at the same learning rate and update budget.
+At width 705, for six prespecified targets and one seed, this control
+reproduces a median 99.8--99.9% of full GD's error reduction after a 100-fold
+injection, at both 20k and 100k updates and under both repair references.
+At a tenfold injection it reproduces only 78.8--92.6%, depending on reference
+and budget: geometry evolution matters more there. These are fractions of
+relative-error reduction from the shared initial network, not fractions of
+squared-loss reduction.
+
+![Frozen geometry isolates readout fitting. Each row has six targets and five intervention arms at width 705, seed 30, starting after 20k updates. Left: errors under full GD and readout-only GD; equality means geometry evolution adds no benefit. Middle: readout RMS divided by construction spacing, with circles for full GD and triangles for frozen geometry. Right: the fraction of full-GD error reduction reproduced by readout-only GD. Both use the same post-repair network, learning rate, and budget. The frozen recurrence is evaluated spectrally without truncating singular modes or refitting readouts. Ratios of tiny baseline improvements are less informative than the errors themselves.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/frozen_summary/frozen_geometry_comparison.png)
+
+This distinguishes learning useful readouts on supplied geometry from learning
+that geometry. It also qualifies the readout-scale hypothesis. At 100k,
+the two 100-fold reference policies give median readout RMS values about
+$15.6h$ and $8.37h$ under full GD, close to their frozen controls. They retain
+memory of the intervention; one width does not establish an $O(h)$ law.
+The primary 100-fold panel still has median error 2.45% and median normalized
+RMS slope 0.0213, below the construction benchmark 0.25. Better fitting is
+not precision output or attainment of the proposed construction scale.
+
+**Frozen features admit a stronger failure statement.** Appendix A.6 gives
+an output-error floor valid at every update through a chosen budget.
+Outward-rounded evaluations certify that readout-only GD cannot reach 1%
+error through 100k updates in two selected width-705 examples. The mixed-sine
+floors are 91.11% before injection and 17.93% after 100-fold primary injection;
+the right-bump floors are 87.43% and 2.536%. These are certificates for
+exact-arithmetic GD on the encoded training problem with frozen geometry.
+They do not certify the evolving-feature trajectories or independent-grid
+error. Their role is to make the frozen-feature obstruction an output
+statement, rather than merely a condition-number observation.
+
+\Needspace{7\baselineskip}
 
 **The mechanism must retain target-side forces.** In the width-1409
 mixed-sine example, seed 30, the doubled state has signed effective
@@ -509,6 +527,16 @@ dominates $Q$, making this absolute-value bound too large. The late network
 can still have large error. Thus the theorem should identify a population
 regime and its duration, rather than claim a universal error floor from
 width alone.
+
+**Check beyond the original six targets.** We also trained the remaining
+seventeen functions at width 705 for 20k updates, using the same initialization
+law and two archived seeds. Together with the six-target, four-seed panel,
+this gives 58 checkpoints covering all 23 functions. The $Q$ bound is
+positive at every state and captures 96.4--99.4% of actual error. The
+largest tracking/effective fine-output speed ratio is 0.0641%.
+This extends the current-state mechanism across targets; it does not yet
+establish a common duration. The six original functions have extra seeds,
+so a median over all 58 states is not a balanced target average.
 
 **A sharper variant when target structure matters.** Project onto the
 orthogonal complement of polynomials of degree below $k$. Taylor's theorem
@@ -765,6 +793,8 @@ $$
 The first term is the current-gradient step; the second is the momentum
 lag relative to that step. Set $u=J\Delta\theta$ and
 $w=f_{\theta+\Delta\theta}-f_\theta-u$, all in RMS coordinates.
+\Needspace{7\baselineskip}
+
 The exact output-loss change is
 
 $$
@@ -794,8 +824,10 @@ median errors are 1.22%, 0.991%, and 0.667% for rates 0.002, 0.001, and
 Smaller steps improve some cases and reduce some update inefficiency; they
 do not remove the remaining accuracy gap on this panel.
 
-**What this adds, and what it does not.** Weak access to most remaining
-error coexists with inefficient updates in accessible directions. This
+**What this adds, and what it does not.** At the population level, the audit
+finds weak access to most remaining error and inefficient updates at many
+failing endpoints. The spectral statistics cover all 65 cases; the quoted
+inefficiency statistics condition on the 37 endpoints above 1%. This
 supports an Adam theory based on residual-weighted adaptive sensitivity
 and an accumulated output-progress budget. Three checkpoint diagnostics
 do not prove sustained oscillation, a uniform lower bound, or persistent
@@ -829,8 +861,6 @@ respectively, versus 2.07 for the sixth-moment bound. The observed
 are not certified GD update counts. The actual-force proof retains more
 residual energy but is limited by absolute curvature estimates.
 
-![Initial-data bounds distinguish mathematical persistence from the duration supported by conservative constants. The left panel shows available effective-flow time; the right shows the fraction of the initial fine-error norm retained by the bound. Points include all 223 static states, so the width-177 group contains different restart ages. Each method allows its sensitivity or force to evolve. A zero energy floor is uninformative. These FP64 calculations do not certify machine-rounding errors, unsampled trajectories, or ordinary GD.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/archive_summary_refined/effective_flow_enclosures.png)
-
 A separate generic GD energy argument, with outward-rounded initial checks
 at eighteen wide-panel states, already excludes $\lambda=0.25$ for 50k
 additional updates. Appendix B gives that proof. It is useful as a baseline,
@@ -858,6 +888,94 @@ and target contributions, as well as the corresponding derivatives of $Q$.
 For the last two, split $F=\Pi J_H^TP_Hf-\Pi J_H^TP_Hy$ at the same
 state. Both terms retain the same coarse compensation.
 
+The force-feedback identity in Appendix A.7 identifies where our proof loses
+information. At width 1409, the general curvature bound is a median 598 times
+larger than the bound along the actual force direction. Of the 24 states,
+fourteen have positive net force-norm growth and ten have negative growth.
+Among the sixteen with positive curvature feedback before relaxation, taking
+absolute values only after evaluating the force direction loses a median
+factor 2.07. The large loss therefore occurs mainly when replacing the
+population's actual direction of motion by a worst-case norm bound.
+This motivates controlling a force-weighted population moment; it does not
+require forecasting every neuron's path.
+
+**A simpler structural hypothesis: the force stays distributed.** Let
+$F_j=(F_{a,j},F_{b,j},F_{c,j})$ and define
+
+$$
+\omega_j=\frac{|F_j|^2}{\|F\|^2},\qquad
+I_F=W\sum_j\omega_j^2.
+$$
+
+The denominator includes the output-bias force. With zero bias force,
+equal energy across all hidden particles gives $I_F=1$; equal energy on
+only $m$ particles gives $I_F=W/m$. A larger value therefore records a
+more concentrated force. Multiplying the entire force by any nonzero scalar
+leaves $I_F$ unchanged. This is a condition on the population carrying the
+force, not an assumption that its magnitude stays small.
+
+The empirical premise is plausible in the wide regime. All 58 width-705
+forks covering 23 targets have $I_F\le22.2$. Across the saved states of
+twelve natural 20k-update continuations at each width, its maximum is 16.3
+at width 705 and 13.4 at width 1409. Narrow populations become substantially
+more concentrated, so the proposed regime does not cover every late state.
+
+The broader longitudinal test strengthens this premise over a stated window.
+At width 705, all 46 original trajectories and all 46 repaired controls,
+covering 23 targets and two seeds, remain below the illustrative allowance
+$I_F=32$ at saved updates 0, 1k, and 20k. Their sampled maximum is 22.27.
+This is not monotone decay: individual concentration ratios rise by up to
+1.49-fold. In the six-target 100k extension, the right bump and left Gaussian
+leave the same allowance; the maximum reaches 86.2. Thus the data support a
+finite regime, not universal or indefinite preservation of the number 32.
+Those two longer branches still have errors 88.1% and 78.8%, respectively,
+and neither meets 1% at any update in that continuation. Leaving this
+particular sufficient condition is not the same as successful acquisition.
+
+![Test the structural assumption together with output error. Left: 23 targets and two seeds, original GD at width 705, starting after 20k updates and continued for 20k more. Right: six targets at seed 30, repaired baseline at the same width and restart age, continued for 100k updates. Top: force concentration, with the illustrative allowance 32. Bottom: raw relative training error, with the 1% criterion. The two highlighted longer runs leave the allowance while retaining large error. Lines connect retained checkpoints; they do not certify concentration between checkpoints. The separately recorded every-update error counters exclude a 1% crossing in these two longer continuations.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/concentration_pi_plot/concentration_and_output.png)
+
+**What that condition buys.** Put $M_4=\mathbb E_W|X|^4$. The exact
+effective-flow structure gives the two inequalities
+
+$$
+\|F\|\le\frac{3Y I_F^{1/4}M_4^{3/4}}{W},\qquad
+D^+M_4^{1/4}\le I_F^{1/4}\|F\|.
+$$
+
+They close a population feedback loop: distributed force and broad particles
+give weak motion; weak motion takes a long time to build the fourth moment
+needed for strong nonlinear output. Appendix A.8 integrates this loop.
+Bounded initial fourth moment and coarse conditioning, together with bounded
+future $I_F$, give persistence for a time proportional to width. No future
+bound on force magnitude, fourth moment, or force-weighted particle size is
+assumed. No individual trajectory is forecast.
+
+The large interventions help distinguish this premise from the conclusion.
+The 100-fold width-705 arms also retain $I_F<32$ at saved states, while
+their readouts fit much faster. Their initial population scale is vastly
+larger. The theorem needs both distributed force and a small initial
+rescaled fourth moment; concentration alone is not a stagnation criterion.
+
+The remaining open question is now specific: **does the coupled dynamics
+preserve distributed force long enough?** The theorem proves the consequences
+of that structural condition; it does not prove the condition invariant.
+Saved-state checks and perturbations test its plausibility. The unconditional
+initial-data result earlier in the note remains separate, with its shorter
+sufficient window. Conditional width scaling alone does not establish a useful
+finite-width duration.
+
+To check usefulness, choose the illustrative allowance $I_*=32$ and apply
+the actual-initial-force refinement in A.8. All 58 broad width-705 starts
+and all 24 width-1409 starts satisfy its initial concentration check.
+The resulting median physical times are 2.57 and 5.41; all retain positive
+relative output-error floors, with minima 20.8% and 38.3%. No resulting
+interval reaches physical time 40, the time of the 20k-update continuations.
+The simpler hypothesis therefore improves the mechanistic formulation, not
+the finite-width duration enough to explain that whole observation window.
+It also does not beat the evolving-Jacobian bound on these states.
+
+![What the simpler assumption buys, and what remains unresolved. Left: median effective-flow duration and 10th--90th percentile range under four sufficient bounds. The concentration methods assume future $I_F\le32$; the other two use initial data only. The dashed reference is physical time 40, not a certified GD conversion. Right: output-error floors at the concentration/initial-force bound's endpoint. The original six-target groups have four seeds each; the broad width-705 group has 58 states across 23 targets and includes the original group. All starts have age 20k. These are FP64 evaluations of sufficient inequalities, not interval certificates or independent target samples.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/shape_certificate_summary/conditional_lifetimes.png)
+
 The measurements distinguish two regimes. At width 1409 after 20k updates,
 generated-output correction reduces $Q$ in all 24 states. The target
 contribution increases it in sixteen and decreases it in eight. Nevertheless,
@@ -879,10 +997,11 @@ restate the conclusion. Neither a fixed Jacobian nor universal contraction
 is the appropriate target.
 
 **Scope across targets and optimizers.** The evidence extends beyond degree
-nine and sine: 23 target instances in the broad audit, ten separately chosen
-new functions in the force test, and six families in the width/intervention
-panel. Repeated checkpoints are not independent target samples, and the
-wide-panel conclusions have not been established for all 23 functions.
+nine and sine: 23 target functions in the broad audit, ten separately chosen
+new functions in the force test, and six functions in the original width
+comparison. The width-705 output, tracking, and 20k-continuation audit now
+covers all 23 functions. Repeated checkpoints are not independent target
+samples, and sampled structural checks do not establish interval-wide bounds.
 The horizon is part of each statement. Eventual movement after millions of
 updates does not refute a finite-time slowdown, and long-run forecast failures
 do not define its practically relevant duration.
@@ -1052,6 +1171,8 @@ The first displays the stability balance: coarse relaxation opposes changes
 in the compensating response. The relevant output disturbance is $J_HR$,
 not merely the slope coordinates of $R$.
 
+\Needspace{12\baselineskip}
+
 Fix $q>1$, let $B_*=qB_0$, $A_*=(q-1)B_0$, and choose a positive
 initial-data coarse singular-value margin $\sigma$ from A.2. Define
 
@@ -1207,6 +1328,30 @@ The relevant weights are residual energies at the restart; they equal target
 energies only for zero initial output. Evolving-feature GD and Adam require
 separate arguments.
 
+**A directly certifiable version.** Singular vectors can suggest a useful
+residual direction without being part of its proof. For any fixed nonzero
+vector $v$, let $L\ge\|A\|^2$ and assume $0<\eta L<2$. Then every
+$0\le n\le N$ satisfies
+
+$$
+\frac{\|r_n\|}{\|\widetilde y\|}\ge
+\frac{\left[|v^Tr_0|-\|A^Tv\|\,\|r_0\|
+\sqrt{N\eta/(2-\eta L)}\right]_+}
+{\|v\|\,\|\widetilde y\|}.
+$$
+
+To prove this, expand one residual update to obtain
+$\|r_{k+1}\|^2\le\|r_k\|^2-
+\eta(2-\eta L)\|A^Tr_k\|^2$. Sum this inequality, telescope
+$v^T(r_n-r_0)=-\eta\sum_{k<n}(A^Tv)^TA^Tr_k$, and apply
+Cauchy--Schwarz. The resulting bound on the change in witness overlap,
+followed by $|v^Tr_n|\le\|v\|\|r_n\|$, proves the claim.
+For the normalized tanh design with a constant column, $L=W+1$ is a
+rigorous upper bound. Thus outward-rounded tanh values, inner products,
+and norms suffice to certify a supplied witness; certifying an SVD is
+unnecessary. This statement concerns exact-arithmetic GD on the encoded
+empirical problem, not continuum error or all rounding in machine training.
+
 ### A.7. A refinement using the actual initial effective force
 
 The measured force can be much smaller than the isotropic bound $3YB^3$.
@@ -1266,6 +1411,115 @@ why a very small initial force need not produce a proportionally long
 guarantee. If $f_0=0$, the exact effective flow is stationary wherever the
 projector is defined; the observed slow states need not satisfy that special
 case. No Adam or discrete-GD conclusion follows from this refinement alone.
+
+### A.8. Distributed force closes a fourth-moment persistence proof
+
+This conditional result concerns exact effective flow. Assume $Y_0>0$,
+$M_4(0)>0$, and initially positive coarse singular value $\sigma_0$.
+Choose a travel allowance $A_*>0$ such that
+
+$$
+\sigma_*=\sigma_0-(\sqrt2+4\sqrt{M_0})A_*-2A_*^2>0.
+$$
+
+Choose a fixed $I_*>0$. The one future structural premise is $I_F(t)\le I_*$ until this travel
+allowance is exhausted. Equivalently, the following conclusions hold up to
+the first violation of that condition. Write
+
+$$
+\begin{aligned}
+\overline M_4(t)&=
+\frac{M_4(0)}{\left(1-6Y_0\sqrt{I_*M_4(0)}\,t/W\right)^2},\\
+\overline A(t)&=I_*^{-1/4}
+\left(\overline M_4(t)^{1/4}-M_4(0)^{1/4}\right).
+\end{aligned}
+$$
+
+While the denominator is positive and $\overline A(t)\le A_*$,
+
+$$
+\begin{aligned}
+M_4(t)&\le\overline M_4(t),&
+\|F(t)\|&\le3Y_0I_*^{1/4}\overline M_4(t)^{3/4}/W,\\
+\|f_\theta-y\|_m&\ge
+\left[\|P_Hy\|_m-\frac{2\sqrt2}{3W}\overline M_4(t)\right]_+.
+\end{aligned}
+$$
+
+Total parameter travel is at most $\overline A(t)$, so (8) also bounds
+the fraction of labels ever acquiring a prescribed normalized scale.
+For uniformly bounded initial $M_0,M_4(0),Y_0$, a uniform positive lower
+bound on $\sigma_0$, and one width-independent $I_*$, these conclusions hold for a conditional interval
+$t\le cW$. The population's nonlinear output remains $O(W^{-1})$ on
+that interval. A target with a fixed non-affine component therefore retains
+substantial output error. More precisely, failure of a relative tolerance
+$\varepsilon$ follows whenever the displayed capacity floor exceeds
+$\varepsilon\|y\|_m$; a nonzero non-affine component alone does not rule
+out every possible tolerance.
+
+**Proof.** Put $f=\|F\|$. Orthogonality of $\Pi$ gives
+$f^2=\langle F,g_H\rangle$. The fine-gradient bias component is zero,
+and A.1 bounds each hidden block by $3Y|p_j|^3$. Hölder's inequality gives
+
+$$
+\begin{aligned}
+f^2&\le3Y\sum_j|F_j||p_j|^3\\
+&\le3Y\left(\sum_j|F_j|^4\right)^{1/4}
+           \left(\sum_j|p_j|^4\right)^{3/4}
+=\frac{3Yf I_F^{1/4}M_4^{3/4}}{W}.
+\end{aligned}
+$$
+
+The norm derivative of $M_4^{1/4}=W^{1/4}(\sum_j|p_j|^4)^{1/4}$ obeys
+$D^+M_4^{1/4}\le I_F^{1/4}f$. Combining the two inequalities and
+$Y\le Y_0$ yields
+
+$$
+D^+M_4^{1/4}\le
+\frac{3Y_0\sqrt{I_*}}{W}\left(M_4^{1/4}\right)^3.
+$$
+
+Its scalar comparison solution is $\overline M_4^{1/4}$. Integrating
+the resulting force upper bound gives $\overline A$, rather than using
+the actual signed change in $M_4$ as a travel bound. The rank first-exit
+argument in A.7 preserves $\sigma_{\min}(J_C)\ge\sigma_*$, and the
+fourth-moment output-capacity inequality gives the error floor. This proves
+the statement. If the effective force is zero, the smooth effective flow is
+stationary. No bound on future force magnitude was a premise.
+
+**Retaining a smaller measured initial force.** The preceding closed-form
+bound can be conservative. Under the same concentration premise, set
+
+$$
+m(A)=\left(M_4(0)^{1/4}+I_*^{1/4}A\right)^4.
+$$
+
+Cauchy--Schwarz gives
+$\Omega_F=\sum_j|X_j|^2|F_j|^2/f^2\le\sqrt{I_FM_4}$.
+The exact identity in A.7 and the block Hessian bounds therefore imply
+$\dot f/f\le\beta(A)/W$, where
+
+$$
+\beta(A)=Y_0\left[
+6\sqrt2\sqrt{I_*m(A)}+
+\frac{3\sqrt2m(A)}{\sigma_*^2}
+\left(\sqrt2+\frac{4I_*^{1/4}m(A)^{1/4}}{\sqrt W}\right)
+\right].
+$$
+
+For $f_0>0$, define $G(A)=Wf_0+\int_0^A\beta(a)\,da$. Since actual travel satisfies
+$\dot A=f$, integration gives $f\le G(A)/W$. The scalar comparison
+$\dot{\overline A}=G(\overline A)/W$ then proves the same moment and
+capacity bounds with $m(\overline A)$, through
+
+$$
+T_*=W\int_0^{A_*}\frac{dA}{G(A)}.
+$$
+
+It also gives $Y^2\ge[Y_0^2-(2/W)\int_0^{\overline A}G(a)\,da]_+$.
+This refinement evolves the force and compensation; it does not freeze
+either. Both versions remain conditional on distributed force. Neither
+alone proves persistence for full GD or Adam.
 
 ## Appendix B. Experimental methods and coverage
 
@@ -1381,8 +1635,9 @@ numbers in the pulse panel use the smallest amplitude. Halving
 checks distinguish the predicted first-order response from finite-amplitude
 matching errors.
 
-The finite-dilation experiment instead fixes $(a,b)=s(a_0,b_0)$ with
-$s\in\{1,1.25,2\}$. With $v=(c,d)$, the repair finds a locally stationary
+The finite-dilation experiment instead fixes $(a,b)=s(a_0,b_0)$.
+The initial study used $s\in\{1,1.25,2\}$; the larger study uses
+$s\in\{1,3.2,10,32,100\}$. With $v=(c,d)$, the repair finds a locally stationary
 solution of
 
 $$
@@ -1391,21 +1646,31 @@ $$
 $$
 
 The distance reference is fixed throughout continuation in $s$; this is not
-full readout least squares or a claim of a globally nearest repair. The six
-branches are ordinary GD, the repaired $s=1$ baseline, and both references
-at each larger scale. All 350 repairs passed normalized balance tolerance
-$10^{-12}$ and normalized stationarity tolerance $10^{-8}$; the maximum
-initial tracking norm divided by the larger original/repaired effective
-slope-force norm is $8.01\times10^{-7}$. All 420 branches then completed 20k ordinary-GD
-updates. The late panel uses all 23 functions with two seeds each; each wide
-panel uses degree five, mixed sine, left Gaussian, right bump, right step,
-and the absolute-value kink, with two seeds per function.
+full readout least squares or a claim of a globally nearest repair. The larger
+study has ten branches per start: original GD, repaired $s=1$, and both
+references at each larger multiplier. Its 104 starts comprise 23 targets
+with two seeds each at widths 177 and 705, plus six targets with two seeds
+at width 1409. Restart ages are 600k at width 177 and 20k at the wider sizes.
+All 936 repairs passed the balance and stationarity gates, and all 1,040
+branches completed 20k additional updates without nonfinite parameters.
+The gates use normalized balance tolerance $10^{-12}$ and stationarity
+tolerance $10^{-8}$. Supplied scales are excluded from learned movement.
 
-The construction threshold is not injected into the wide populations: their
-largest final $\lambda$ values are 0.00114 and 0.000384. Twofold dilation of
-the late states does inject six neuron labels above $\lambda=0.25$ in each
-readout-reference arm. No new GD crossings occur in any main branch.
-Injected labels are kept separate from subsequent acquisition.
+The six prespecified development targets are degree five, mixed sine, left
+Gaussian, right bump, right step, and absolute-value kink. Their first
+width-705 seed has five arms continued to 100k updates: repaired baseline,
+and both references at $s=10,100$. Matching half-step controls use those
+five arms for the same six targets at widths 177 and 705: 60 controls,
+40k updates at rate 0.001 versus 20k at 0.002. Thus the larger campaign has
+1,130 training branches including the longer runs and controls.
+
+The frozen comparison uses the same thirty width-705 starting networks,
+keeps $a,b$ fixed, and evolves $c,d$ by the exact linear GD recurrence
+evaluated in FP64 at 20k and 100k. It is not a least-squares solve. Four
+selected witness calculations additionally use 128-bit outward-rounded
+arithmetic. Their certificates concern all updates through 100k on the
+encoded empirical fixed-feature problem; the broad FP64 comparisons are
+not interval certificates.
 
 For cloning, $k$ identical copies each receive readout $c_j/k$. The function
 and residual are initially unchanged. Replica symmetry makes the geometry
@@ -1418,6 +1683,8 @@ with one slope per group of identical copies, divided by that norm in the
 original branch. Counting all replicas separately would introduce an
 irrelevant factor $\sqrt{k}$. This norm measures motion in either direction,
 not just outward scale acquisition.
+
+\Needspace{9\baselineskip}
 
 ### B.3. Coverage and numerical meaning
 
@@ -1449,13 +1716,13 @@ The energy verification uses eighteen initial states: six targets, three
 widths, and one seed. These studies overlap; their counts must not be added
 and interpreted as independent samples of target functions.
 
-For finite dilations, every-update channel accounting reproduces individual
-normalized scale changes with maximum absolute defect $3.23\times10^{-16}$.
-The six prespecified late development targets were also run in all six arms
-with half the learning rate and twice the updates. Across these 36 controls
-at matched flow time, the largest endpoint slope-vector difference is
-$2.34\times10^{-5}$ times the original-step displacement. This controls
-step-size sensitivity on the selected subset, not every wide trajectory.
+For the larger dilations, all sixty half-step controls match the initial
+state and total flow time of their reference branches. Their largest endpoint
+slope-vector difference is 0.1753% of the reference branch's displacement;
+the median is 0.00258%. This checks step-size sensitivity on the selected
+subset, not every trajectory. The original twofold study separately verified
+every-update scale-channel accounting to a maximum absolute defect
+$3.23\times10^{-16}$.
 
 The ordinary floating-point diagnostics support the reported empirical
 comparisons, not interval-wide rigorous bounds. In particular, sampled force
