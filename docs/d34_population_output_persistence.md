@@ -15,10 +15,11 @@ $W^{2/3}$ under bounded initial rescaled moments. A higher finite-moment
 version improves this to $W^{1-2/p}$ for fixed $p\ge6$.
 
 The preferred mechanistic refinement is **Theorem 12**, proved in the final
-appendix. One future structural premise, bounded concentration of the
-effective force across the population, closes the fourth-moment evolution
-and gives a conditional time proportional to $W$. It assumes neither small
-future force nor bounded future moments. This sharper result and the
+appendix. An accumulated budget for concentration of the effective force
+closes the fourth-moment evolution and gives a conditional time proportional
+to $W$. Brief concentration spikes are allowed. It assumes neither small
+future force, bounded future moments, nor a future coarse-conditioning
+margin. This sharper result and the
 initial-data result answer different questions: the former identifies the
 population property whose preservation remains to be proved, while the
 latter supplies a shorter sufficient window without that future premise.
@@ -49,6 +50,8 @@ checkpoint is a separate numerical question.
 | $E_s=\sum_j(a_j^2+c_j^2)$ | Slope–readout second moment controlling coarse conditioning. |
 | $M_p=\mathbb E_W|X|^p$ | Rescaled population moment of order $p$. |
 | $B=(\sum_j|p_j|^6)^{1/6}$ | Physical population sixth norm; $B=M_6^{1/6}/W^{1/3}$. |
+| $I_F=W\sum_j|F_j|^4/\|F\|^4$ | Concentration of hidden force energy; the denominator includes output-bias force. |
+| $\mathcal C(t)=\int_0^t\sqrt{I_F(s)}\,ds$ | Accumulated concentration; the integrand is set to zero at zero force. |
 
 ## 1. The exact evolving system
 
@@ -1459,14 +1462,23 @@ as a trajectory of the tanh network. Under bounded $M_6$ and $V_F$, the
 lemma nevertheless bounds this redistribution by $O(W^{-2})$. The
 curvature terms below can act at the larger $O(W^{-1})$ rate.
 
-## Appendix. The preferred conditional closure: distributed force alone
+## Appendix. The preferred conditional closure: accumulated concentration
 
-Proposition 10 can be closed with a single structural premise: **bounded force concentration
-$I_F$ alone propagates the fourth population moment.** Neither a future
-force-weighted size bound nor a future kurtosis bound is needed. This is
-the preferred conditional population theorem in this note. The initial-data
-theorems earlier remain distinct: the concentration assumption here still
-concerns a future interval.
+A concentration spike need not end a slow-acquisition regime. In the
+100k-update continuations, two targets cross the illustrative level
+$I_F=32$ while retaining large output error. The appropriate question is
+how much concentration accumulates while the population moves. We therefore
+replace a maximum over time by the integral $\mathcal C(t)$ defined below.
+The saved checkpoints motivate this change; they do not certify that
+integral between checkpoints.
+
+Theorem 12 proves that **an accumulated concentration budget propagates the
+fourth population moment**. Neither a future force-weighted size bound,
+future kurtosis bound, nor small future force is assumed. We also remove
+the earlier requirement that coarse conditioning remain close to its
+initial value: exact effective flow retains the rank needed to define its
+projector for every finite time. These are statements about the evolving
+ODE, with no frozen Jacobian or individual-neuron confinement premise.
 
 The key observation is that the effective gradient is an orthogonal
 projection of the fine gradient. Its strength cannot be arbitrary relative
@@ -1525,120 +1537,248 @@ $\sum_j(W|p_j|^2)^2=WM_4$. Cauchy–Schwarz applied to
 $\Omega_F=\sum_j\omega_j W|p_j|^2$ proves the third bound.
 The output-bias weight contributes zero to this sum. $\square$
 
-**Theorem 12 (conditional persistence from distributed effective force).**
-Consider the exact effective flow of Section 1 with $f_0>0$ and
-$\sigma_0=\sigma_{\min}(J_C(0))>0$. Choose a constant $I_*>0$ and
-a factor $\chi>1$. Define
+### Coarse rank need not stay close to its initial value
+
+The moment argument uses that $\Pi$ is an orthogonal projector. Its norm
+is at most one even when $J_C$ is poorly conditioned. A quantitative lower
+bound on the coarse singular value was needed for our earlier curvature
+estimates, but is not needed for (P1). We only need to show that the exact
+projector remains defined.
+
+**Rank and continuation lemma.** In the setting of Section 1, $J_C$ has
+rank two exactly when $E_s=\sum_j(a_j^2+c_j^2)>0$. From any such initial
+state, the exact effective flow exists for all finite positive times and
+retains rank two. In particular, no uniform-in-width conditioning margin
+is needed to apply the concentration lemma.
+
+**Proof.** Write $J_C$ as two rows. The output-bias column is $(1,0)^*$.
+Since $|a_jx+b_j|\le\sqrt{2M}$, set
+$m(M)=\operatorname{sech}^2(\sqrt{2M})>0$. In the second row, the
+$a_j$ column has absolute value at least $|c_j|\sqrt v\,m(M)$.
+The $c_j$ column has absolute value at least $|a_j|\sqrt v\,m(M)$:
+use $\int x\,d\mu=0$ and the identity
 
 $$
-s=I_*^{1/4},\qquad q_0=M_4(0)^{1/4},\qquad
-A_\chi=\frac{(\chi-1)q_0}{s}.
+\langle\tanh(b_j+a_jx),x/\sqrt v\rangle
+=\frac{a_j}{\sqrt v}\int x^2\int_0^1
+\operatorname{sech}^2(b_j+sa_jx)\,ds\,d\mu(x).
 $$
 
-Assume the initial rank margin is positive:
+Consequently the squared norm of the second row is at least
+$v m(M)^2E_s$. The bias column makes the Gram determinant at least that
+squared row norm. Also $\operatorname{tr}(J_CJ_C^*)\le1+2M$, by
+projection contractivity and the full Jacobian column bounds. Thus
 
 $$
-\sigma_\chi=
-\sigma_0-(\sqrt2+4\sqrt{M_0})A_\chi-2A_\chi^2>0.
+\sigma_{\min}(J_C)\ge
+\operatorname{sech}^2(\sqrt{2M})
+\sqrt{\frac{vE_s}{1+2M}}>0\quad\text{if }E_s>0.
 \tag{P2}
 $$
 
-The sole future population-shape assumption is
-$I_F(t)\le I_*$ on the interval in question. In particular, the theorem
-does **not** assume future bounds on $M_4,M_6,\Omega_F$, force-weighted
-size kurtosis, or $f$.
-Let
+If $E_s=0$, all $a_j,c_j$ vanish and the second row is zero, proving
+the converse. To prevent this degeneracy along the flow, use a second,
+coarser sensitivity estimate. The $a_j,b_j$ fine-Jacobian columns have
+norm at most $|c_j|$, and subtracting the constant $\tanh b_j$ bounds
+the $c_j$ column by $\sqrt v|a_j|$. Hence
+$\|J_H\|^2\le2E_s$ and $f\le\sqrt2Y_0\sqrt{E_s}$. It follows that
 
 $$
-k=\frac{6Y_0\sqrt{I_*}\,q_0^2}{W},\qquad
-T_\chi=\frac{1-\chi^{-2}}{k},\qquad
-\bar q(t)=\frac{q_0}{\sqrt{1-kt}}.
+\sqrt{E_s(t)}\ge\sqrt{E_s(0)}e^{-\sqrt2Y_0t}.
 $$
 
-Then, for $0\le t\le T_\chi$, provided the concentration assumption
-holds through that time,
+Finally, energy dissipation and Cauchy--Schwarz give
+$\int_0^t f\,ds\le Y_0\sqrt{t/2}$. All parameters, including the
+output bias, therefore remain in a bounded ball on each finite time
+interval. Equation (P2) and the lower bound on $E_s$ keep its closure
+away from rank loss. The smooth vector field continues past any proposed
+finite endpoint of its maximal solution. This proves the lemma. $\square$
+
+The lower bound (P2) may become very small. The lemma establishes existence
+of the exact effective flow, not accurate numerical inversion of a poorly
+conditioned coarse matrix. It also does not replace conditioning estimates
+in results that differentiate the projector.
+
+### Accumulated concentration controls population evolution
+
+**Theorem 12 (persistence from accumulated force concentration).**
+Consider the exact effective flow with $E_s(0)>0$ and $Y_0>0$.
+Write $q_0=M_4(0)^{1/4}>0$. Define $I_F=0$ wherever $f=0$, and set
 
 $$
-\begin{aligned}
-q(t)&\le\bar q(t)\le\chi q_0,\\
-f(t)&\le\frac{3Y(t)s\bar q(t)^3}{W},\\
-\int_0^t\|\dot\theta(v)\|\,dv
-&\le\frac{\bar q(t)-q_0}{s}\le A_\chi,\\
-\sigma_{\min}(J_C(t))&\ge\sigma_\chi.
-\end{aligned}
+\mathcal C(t)=\int_0^t\sqrt{I_F(s)}\,ds,\qquad
+\bar q(t)=\frac{q_0}
+{\sqrt{1-6Y_0q_0^2\mathcal C(t)/W}}.
 \tag{P3}
 $$
 
-The resulting output-error bounds are
+For every $t$ with positive denominator, all the following bounds hold
+through time $t$:
 
 $$
 \begin{aligned}
-\|f_{\theta(t)}-y\|
-&\ge\left[\|P_Hy\|-
-\frac{2\sqrt2}{3W}\bar q(t)^4\right]_+,\\
-Y(t)
-&\ge Y_0\exp\left\{
--\frac{9\sqrt{I_*}\,q_0^6}{2kW^2}
-\left[(1-kt)^{-2}-1\right]\right\}.
+q(t)&\le\bar q(t),\\
+\int_0^t I_F(s)^{1/4}f(s)\,ds&\le\bar q(t)-q_0,\\
+\int_0^t f(s)^2\,ds
+&\le\frac{3Y_0}{4W}\left[\bar q(t)^4-q_0^4\right],\\
+A(t):=\int_0^t f(s)\,ds
+&\le\sqrt{\frac{3Y_0t}{4W}\left[\bar q(t)^4-q_0^4\right]}.
 \end{aligned}
 \tag{P4}
 $$
 
-With a common fixed allowance $I_*>0$, width-independent upper bounds on
-$M_0,M_4(0),Y_0$, and a positive uniform lower bound on $\sigma_0$,
-one can choose a fixed
-$\chi>1$ sufficiently close to one so that (P2) holds uniformly. The
-conditional persistence interval is then at least $cW$ for some $c>0$.
-On that interval the non-affine output is $O(W^{-1})$, and squared fine
-error decreases by at most $O(W^{-1})$. A target with a fixed nonzero
-non-affine component consequently retains a positive output-error floor
-at sufficiently large width. This is a width-dependent effective-flow
-statement, not a claim about a fixed number of GD or Adam updates.
-For a relative tolerance $\varepsilon$ and $\|y\|>0$, failure is guaranteed
-whenever the first lower bound in (P4) exceeds $\varepsilon\|y\|$.
-A nonzero non-affine target component alone does not imply failure at every
-chosen tolerance.
-
-**Proof.** Since $Y\le Y_0$, the first two bounds (P1) imply
+The corresponding output bounds are
 
 $$
-D^+q\le\frac{3Y_0\sqrt{I_*}}Wq^3.
+\begin{aligned}
+\|f_{\theta(t)}-y\|
+&\ge\left[\|P_Hy\|-\frac{2\sqrt2}{3W}\bar q(t)^4\right]_+,\\
+Y(t)&\ge Y_0\exp\left[-
+\frac{3}{4Y_0W}\left(\bar q(t)^4-q_0^4\right)\right].
+\end{aligned}
+\tag{P4a}
 $$
 
-Its scalar comparison solution is $\bar q$. The force bound follows
-from (P1). Integrating
-$f\le3Y_0s\bar q^3/W=\dot{\bar q}/s$ proves the travel bound.
-As before, travel at most $A_\chi$ preserves the coarse rank by (P2).
-This closes the argument by first exit, and bounds all particle parameters
-and the output bias over this finite interval. No breakdown of the smooth
-effective ODE can precede it while the concentration assumption holds.
+In particular, an upper bound $\mathcal C(T)\le B_T$ gives all these
+conclusions on $[0,T]$ using $B_T$ in place of $\mathcal C(t)$, if
+$6Y_0q_0^2B_T<W$. No bound on the maximum of $I_F$, maximum particle
+size, future force amplitude, or future population moment is assumed.
+The premise controls the distribution of force energy over time; (P4)
+derives its accumulated magnitude and the population response.
 
-The capacity inequality
-$\|P_Hf_\theta\|\le(2\sqrt2/3)M_4/W$ proves the first line of (P4).
-For the second, $d(Y^2/2)/dt=-f^2$ and the force bound give
+**Proof: integrate the coupled moment inequality.** The rank lemma makes
+the effective flow globally defined. Where $f>0$, (P1) and $Y\le Y_0$
+give
 
 $$
-\frac d{dt}\log Y\ge
--\frac{9\sqrt{I_*}}{W^2}\bar q(t)^6.
+D^+q\le\frac{3Y_0}{W}\sqrt{I_F}\,q^3.
 $$
 
-Integration gives (P4). For the uniform-width conclusion, choose $\chi$
-using the upper bound on $q_0$ and the initial rank margin. The formula
-for $T_\chi$ then bounds its denominator by a width-independent constant
-times $W^{-1}$. The force bound is $O(W^{-1})$ on a fixed $cW$ interval,
-so integrating $2f^2$ bounds squared-error reduction by $O(W^{-1})$.
-If $f_0=0$, the effective flow is stationary and the positive-force
-formulas are unnecessary. $\square$
+Comparison, or integration of $d(q^{-2})/dt$, proves $q\le\bar q$.
+The same inequality holds with zero right side at a zero-force state;
+such a state is stationary by uniqueness. Since $0\le I_F\le W$,
+the integral $\mathcal C$ is well defined on every finite interval.
+The upper bound $I_F\le W$ is only an algebraic fact used for
+integrability, not the structural allowance used to obtain a long window.
 
-### Retaining the measured initial force without extra shape assumptions
+**Proof: control accumulated motion and dissipation.** Almost everywhere,
 
-The explicit theorem above bounds $f_0$ by Hölder's inequality. A much
-smaller measured $f_0$ can also be retained without additional shape bounds.
-The following scalar comparison uses the force-curvature identity already
-proved in Proposition 10.
+$$
+\dot{\bar q}=\frac{3Y_0}{W}\sqrt{I_F}\,\bar q^3,\qquad
+\int_0^t\sqrt{I_F}\,\bar q^6\,ds
+=\frac{W}{12Y_0}\left[\bar q(t)^4-q_0^4\right].
+$$
 
-**Corollary 13 (actual-force comparison under the same concentration
-assumption).** Choose any $A_*>0$ for which
+The force estimate in (P1) implies
+$I_F^{1/4}f\le\dot{\bar q}$ and
+$f^2\le9Y_0^2\sqrt{I_F}\,\bar q^6/W^2$.
+Integrating gives the second and third lines of (P4).
+Cauchy--Schwarz gives its last line. These are integrals of nonnegative
+speed, not the signed change of the actual moment; no monotonicity of
+$M_4$ is required.
+
+**Proof: retain output error.** The exact capacity bound
+$\|P_Hf_\theta\|\le(2\sqrt2/3)M_4/W$ gives the first line of (P4a).
+While $Y>0$, energy dissipation and (P1) give
+
+$$
+\frac d{dt}\log Y=-\frac{f^2}{Y^2}
+\ge-\frac9{W^2}\sqrt{I_F}\,\bar q^6.
+$$
+
+The preceding integral identity proves the second line of (P4a), also
+preventing a first zero of $Y$ on the stated interval. Since $\mathcal C$
+is nondecreasing, a terminal upper budget controls all earlier times.
+This completes the proof. $\square$
+
+The theorem allows instantaneous force spikes; an integrated premise does
+not imply a uniform bound $f(t)=O(W^{-1})$. It controls the total motion,
+dissipated error, and evolving output capacity, which are the quantities
+needed for a finite-budget failure statement.
+
+**Population acquisition consequence.** Fix $h>0$ and let
+$\lambda_j=h|a_j|$. If $p_0$ is the fraction initially above
+$0\le\lambda_0<\lambda_*$, then the fraction of labels ever reaching
+$\lambda_*$ by time $t$ satisfies
+
+$$
+p_{\rm ever}(t)\le\min\left\{1,\ p_0+
+\frac{h^4[\bar q(t)-q_0]^4}
+{W^2(\lambda_*-\lambda_0)^4}\right\}.
+\tag{P4b}
+$$
+
+Indeed, write $L_j=\int_0^t|\dot p_j|\,ds$. Minkowski's inequality
+and (P4) give $(W\sum_jL_j^4)^{1/4}\le\bar q(t)-q_0$.
+Each newly acquiring label needs $L_j\ge(\lambda_*-\lambda_0)/h$;
+counting these labels by their fourth powers proves (P4b). This is a
+population travel bound. It neither assumes a bound on every neuron nor
+predicts the sign of slope motion. The output floor is stronger evidence
+of failure when a particular scale threshold is not known to be necessary
+for accuracy.
+
+**Width-dependent duration from an average premise.** Suppose
+$q_0\le Q$, $Y_0\le Y_*$, and $E_s(0)>0$ at every width, with fixed
+$Q,Y_*>0$. Choose $0<\delta<1$ and $K>0$. If
+
+$$
+T=cW,\qquad
+\mathcal C(T)\le KT,\qquad
+0<c\le\frac{\delta}{6Y_*Q^2K},
+$$
+
+then $q(t)\le Q/\sqrt{1-\delta}$ on $[0,T]$. No uniform lower
+bound on the initial coarse singular value is needed. Moreover,
+
+$$
+\begin{aligned}
+\|P_Hf_{\theta(t)}\|&\le
+\frac{2\sqrt2Q^4}{3W(1-\delta)^2},\\
+Y_0^2-Y(t)^2&\le
+\frac{3Y_*Q^4}{2W}
+\left[(1-\delta)^{-2}-1\right].
+\end{aligned}
+$$
+
+These follow directly from (P4) and the capacity bound. Thus a bounded
+time-average of $\sqrt{I_F}$ yields a conditional interval proportional
+to width, with $O(W^{-1})$ nonlinear output and squared fine-error
+reduction. For relative tolerance $\varepsilon$ and $\|y\|>0$, the
+capacity floor proves failure whenever it exceeds $\varepsilon\|y\|$.
+A nonzero non-affine target component alone does not imply failure at
+every tolerance. Time is physical effective-flow time; no conversion to
+GD or Adam update counts has been proved here.
+
+**What was relaxed.** For example, if $I_F\le I_b$ except on a set of
+duration $\Delta$ on which $I_F\le H$, then
+$\mathcal C(T)\le\sqrt{I_b}(T-\Delta)+\sqrt H\,\Delta$.
+The cost depends on the duration as well as the height of the excursion.
+Crossing a chosen level such as 32 is no longer a stopping event. This
+example concerns an admissible concentration history, not a claim that
+every such history is realizable by the network ODE.
+
+The original pointwise premise is a stronger special case:
+$I_F\le I_*$ implies $\mathcal C(t)\le\sqrt{I_*}t$. It recovers the
+former moment envelope. Under that stronger premise, direct integration
+also gives the sharper travel bound
+$A(t)\le(\bar q_*(t)-q_0)/I_*^{1/4}$, where
+$\bar q_*(t)=q_0(1-6Y_0\sqrt{I_*}q_0^2t/W)^{-1/2}$.
+The rank lemma makes a travel-based rank restriction unnecessary for this
+explicit moment result. Existing numerical evaluations that imposed that
+restriction remain sufficient but have not evaluated the new theorem.
+
+### Optional refinement with a pointwise allowance and measured initial force
+
+Theorem 12 bounds force through Hölder's inequality. The earlier refinement
+below retains a smaller measured $f_0$, but uses the stronger pointwise
+premise $I_F\le I_*$. Its curvature estimate also needs a quantitative
+coarse-conditioning margin. These are additional restrictions of this
+optional refinement, not premises of Theorem 12. Keeping it explicit
+preserves the meaning of the existing finite-width numerical comparisons.
+
+**Corollary 13 (actual-force comparison with pointwise concentration).**
+Suppose $f_0>0$, $I_F(t)\le I_*$ on the interval in question, and
+$\sigma_0=\sigma_{\min}(J_C(0))>0$. Choose any $A_*>0$ for which
 
 $$
 \sigma_*=
@@ -1698,10 +1838,46 @@ integrate $dY^2/d\tau=-2g^2/W$ using
 $g(\tau)\le G(\bar A(\tau))$ and $d\bar A/d\tau=G(\bar A)$.
 This proves the corollary. $\square$
 
-The simpler mechanism therefore leaves one specific population question:
-does effective fine force remain distributed across enough neurons?
-Bounded $I_F$ is a substantive future assumption and can fail when force
-concentrates on a few particles. It does not assume a weak force amplitude,
-small future slopes, or a frozen feature model. Theorem 12 and Corollary 13 derive
-the resulting weak force and slow population motion. Neither theorem alone
-transfers this conclusion to full GD or Adam.
+### Which restrictions are essential to the present claim?
+
+The population theorem now separates a structural premise from consequences
+of the exact dynamics:
+
+- **Concentration over time:** the premise is a budget for
+  $\int\sqrt{I_F}$, not an instantaneous ceiling. Since $I_F$ is unchanged
+  by rescaling the force, this does not assume slow motion. Sparse saved
+  checkpoints cannot certify this integral; a measured quadrature would
+  still need an error envelope before being used as a certified budget.
+- **Coarse conditioning:** initial rank suffices for Theorem 12, and its
+  preservation is proved. The travel-based rank test in the earlier
+  effective-flow Theorem 3 can likewise be dropped for its moment and
+  output conclusions when $E_s(0)>0$; that test remains sufficient if an
+  explicit conditioning margin is wanted. The higher-moment Theorem 4,
+  Corollary 13, and the discrete-GD certificate still use quantitative
+  conditioning in their compensation or derivative
+  estimates. The rank lemma does not remove that use.
+- **Population moments and acquisition:** only the initial fourth moment
+  is supplied to Theorem 12. Future moments, integrated motion, and the
+  ever-acquired fraction are derived. Neither a maximum over neurons nor
+  a separate prediction for each neuron is assumed.
+- **Signs and cancellation:** the proof allows moment growth and
+  reinforcement. It needs neither universal slope shrinkage nor
+  contraction of every generated-error mode. This matters because the
+  observed signs vary across populations and targets.
+- **Tracking:** Theorem 12 concerns $\dot\theta=-F$, including balanced
+  coarse compensation inside $F$. For full GD, tracking must be accounted
+  for separately. At the continuous-flow level, its additional term in
+  the fourth-norm derivative is bounded by
+  $W^{1/4}(\sum_j|R_j|^4)^{1/4}$, whose accumulated effect is the relevant
+  budget. Its contribution to fine-error energy is
+  $-\langle e_H,J_HR\rangle$. Small instantaneous slope tracking alone
+  controls neither quantity. A full-GD extension must propagate these
+  effects and the finite-step error, rather than silently set them to zero.
+
+The remaining mechanistic question is whether the coupled dynamics keeps
+accumulated concentration moderate for a useful duration. The empirical
+force distributions motivate that premise, but the theorem does not prove
+it invariant. The output lower bound avoids needing a converse assertion
+that accurate output requires a particular slope or center arrangement.
+Center coverage is not established here. Neither the accumulated theorem
+nor its pointwise refinement alone proves slow acquisition for Adam.
