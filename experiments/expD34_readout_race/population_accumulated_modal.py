@@ -2,7 +2,8 @@
 
 Run with .venv-modal/bin/modal run experiments/expD34_readout_race/
 population_accumulated_modal.py --output <new-local-evidence-directory>.
-Only the six explicitly named files below are uploaded. Tests and numerical
+Use --study feedback for Theorem 14. Only the eight explicitly named files
+below are uploaded. Tests and numerical
 analysis run remotely, with a 4 GiB hard memory limit and a ten-minute timeout.
 """
 from __future__ import annotations
@@ -26,7 +27,9 @@ SOURCES = (EVIDENCE / "force_moment_archive/states.csv",
            EVIDENCE / "force_rotation_dilations_final/states.csv")
 MOTION = EVIDENCE / "dilation_final_summary/states.csv"
 FILES = (*SOURCES, MOTION, HELPER, TEST,
-         Path("experiments/expD34_readout_race/population_accumulated_modal.py"))
+         Path("experiments/expD34_readout_race/population_accumulated_modal.py"),
+         Path("experiments/expD34_readout_race/population_feedback_budget.py"),
+         Path("tests/test_population_feedback_budget.py"))
 
 app = modal.App("d34-population-accumulated-audit")
 image = (modal.Image.debian_slim(python_version="3.12")
@@ -40,18 +43,24 @@ if modal.is_local():
 
 @app.function(image=image, cpu=2, memory=(1024, 4096), timeout=600,
               max_containers=1, retries=0)
-def audit() -> bytes:
+def audit(study: str = "concentration") -> bytes:
     import importlib.metadata
     import resource
 
     started = time.time()
     root, output = Path("/work"), Path("/tmp/accumulated-audit")
     hashes = {str(p): hashlib.sha256((root / p).read_bytes()).hexdigest() for p in FILES}
-    commands = [[sys.executable, "-m", "pytest", str(TEST), "-q", "-p", "no:cacheprovider"]]
-    command = [sys.executable, "-m", "experiments.expD34_readout_race.population_accumulated_audit"]
+    if study not in ("concentration", "feedback"):
+        raise ValueError("Unknown audit")
+    commands = [[sys.executable, "-m", "pytest", str(TEST), "tests/test_population_feedback_budget.py",
+                 "-q", "-p", "no:cacheprovider"]]
+    module = "population_feedback_budget" if study == "feedback" else "population_accumulated_audit"
+    command = [sys.executable, "-m", "experiments.expD34_readout_race." + module]
     for source in SOURCES:
         command.extend(["--source", str(source)])
-    command.extend(["--motion-source", str(MOTION), "--output", str(output)])
+    if study == "concentration":
+        command.extend(["--motion-source", str(MOTION)])
+    command.extend(["--output", str(output)])
     commands.append(command)
     logs = []
     for command in commands:
@@ -61,7 +70,7 @@ def audit() -> bytes:
         logs.append(dict(command=command, returncode=result.returncode, stdout=result.stdout))
         if result.returncode:
             raise RuntimeError(f"Remote command failed with status {result.returncode}")
-    record = dict(platform="Modal CPU", memory_request_mib=1024, memory_hard_limit_mib=4096,
+    record = dict(platform="Modal CPU", study=study, memory_request_mib=1024, memory_hard_limit_mib=4096,
                   cpu=2, gpu=None, started_unix=started, finished_unix=time.time(),
                   child_peak_rss_mib=resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss / 1024,
                   sources=hashes, commands=logs,
@@ -80,11 +89,11 @@ def audit() -> bytes:
 
 
 @app.local_entrypoint()
-def main(output: str):
+def main(output: str, study: str = "concentration"):
     destination = Path(output)
     if destination.exists():
         raise ValueError("Use a new output directory to preserve earlier evidence")
-    result = audit.remote()
+    result = audit.remote(study)
     with zipfile.ZipFile(io.BytesIO(result)) as archive:
         if sum(item.file_size for item in archive.infolist()) > 32 * 1024**2:
             raise ValueError("Remote artifact limit exceeded")
