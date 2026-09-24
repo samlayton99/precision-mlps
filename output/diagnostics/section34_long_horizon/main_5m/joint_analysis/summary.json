@@ -1,0 +1,384 @@
+{
+  "horizon": 5000000,
+  "width": 512,
+  "spacing": 0.004282655246252677,
+  "candidates": [
+    {
+      "optimizer": "adam",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_constant",
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.02,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.004345209267472134,
+        0.01699670098362048,
+        0.012588918298422186,
+        0.004034874236496906,
+        0.0026761817792335697
+      ],
+      "median_validation_error": 0.004345209267472134,
+      "train_errors": [
+        0.004344792776667372,
+        0.0169965214830498,
+        0.012588127565605905,
+        0.004034642148711113,
+        0.002675545015987331
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "adam",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_constant",
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.002,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.009583781645861851,
+        0.011467935015628204,
+        0.004372512322441536,
+        0.00693223384829584,
+        0.009657335429091066
+      ],
+      "median_validation_error": 0.009583781645861851,
+      "train_errors": [
+        0.009583269991602729,
+        0.011467814303254631,
+        0.004371573299699069,
+        0.006932202368019977,
+        0.009657309399289393
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "adam",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+      "recipe_index": 0,
+      "schedule": "cosine",
+      "learning_rate": 0.05,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.002256448919740529,
+        0.0014598646831824938,
+        0.0022966035181307648,
+        0.001814724093052364,
+        0.001698484788486213
+      ],
+      "median_validation_error": 0.001814724093052364,
+      "train_errors": [
+        0.0022559779195731916,
+        0.0014596001026542216,
+        0.002296539945175449,
+        0.0018143227040915727,
+        0.0016979211387911537
+      ],
+      "all_seeds_finite": true,
+      "selected": true
+    },
+    {
+      "optimizer": "adam",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+      "recipe_index": 1,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.0022591638861104075,
+        0.0012164529659152862,
+        0.0017067749655878923,
+        0.0018288728044976797,
+        0.0033377030103975223
+      ],
+      "median_validation_error": 0.0018288728044976797,
+      "train_errors": [
+        0.0022590512181281594,
+        0.0012160675976130365,
+        0.0017061519556261506,
+        0.001828708974245751,
+        0.003337681669459421
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "gd",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.2544940532609158,
+        0.2635070471470646,
+        0.26115209866254924,
+        0.20339456621223972,
+        0.20434546990736463
+      ],
+      "median_validation_error": 0.2544940532609158,
+      "train_errors": [
+        0.254490582053846,
+        0.26350358340450564,
+        0.26114864141895816,
+        0.20339226214945305,
+        0.20434358673573638
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "gd",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.5,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.2590417276677624,
+        0.26579405174775234,
+        0.26079194809225953,
+        0.25863205983750054,
+        0.25920252284786427
+      ],
+      "median_validation_error": 0.25920252284786427,
+      "train_errors": [
+        0.25903826554152665,
+        0.265790792709927,
+        0.2607885439222739,
+        0.25862832454098,
+        0.2591987862853125
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "gd",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+      "recipe_index": 2,
+      "schedule": "cosine",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.2439341734058546,
+        0.24393606123410477,
+        0.2572916534266114,
+        0.20115835384574862,
+        0.20470287123648917
+      ],
+      "median_validation_error": 0.2439341734058546,
+      "train_errors": [
+        0.2439313678961394,
+        0.24393325573003827,
+        0.25728820444293127,
+        0.2011560766157398,
+        0.20470112107519564
+      ],
+      "all_seeds_finite": true,
+      "selected": true
+    },
+    {
+      "optimizer": "gd",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+      "recipe_index": 3,
+      "schedule": "cosine",
+      "learning_rate": 0.5,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.2483588572107749,
+        0.25814849903767234,
+        0.2555994953417866,
+        0.2466512802288148,
+        0.2475537379990023
+      ],
+      "median_validation_error": 0.2483588572107749,
+      "train_errors": [
+        0.24835586883688046,
+        0.25814492411647333,
+        0.25559602558911865,
+        0.24664834803525143,
+        0.2475507770355489
+      ],
+      "all_seeds_finite": true
+    }
+  ],
+  "selected": {
+    "adam": {
+      "optimizer": "adam",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+      "recipe_index": 0,
+      "schedule": "cosine",
+      "learning_rate": 0.05,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.002256448919740529,
+        0.0014598646831824938,
+        0.0022966035181307648,
+        0.001814724093052364,
+        0.001698484788486213
+      ],
+      "median_validation_error": 0.001814724093052364,
+      "train_errors": [
+        0.0022559779195731916,
+        0.0014596001026542216,
+        0.002296539945175449,
+        0.0018143227040915727,
+        0.0016979211387911537
+      ],
+      "all_seeds_finite": true,
+      "eval_errors": [
+        0.0022565672289257075,
+        0.0014599311690205255,
+        0.0022966194614682787,
+        0.0018148249745477592,
+        0.0016986261576348437
+      ],
+      "final_fifth_error_decrease": 0.2889935319436332,
+      "final_fifth_q99_increase": -0.021579295284990363
+    },
+    "gd": {
+      "optimizer": "gd",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+      "recipe_index": 2,
+      "schedule": "cosine",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.2439341734058546,
+        0.24393606123410477,
+        0.2572916534266114,
+        0.20115835384574862,
+        0.20470287123648917
+      ],
+      "median_validation_error": 0.2439341734058546,
+      "train_errors": [
+        0.2439313678961394,
+        0.24393325573003827,
+        0.25728820444293127,
+        0.2011560766157398,
+        0.20470112107519564
+      ],
+      "all_seeds_finite": true,
+      "eval_errors": [
+        0.24393487475699221,
+        0.2439367625838302,
+        0.2572925156441861,
+        0.20115892313298706,
+        0.2047033087595713
+      ],
+      "final_fifth_error_decrease": 0.002927292075536103,
+      "final_fifth_q99_increase": -0.0017006116892408496
+    }
+  },
+  "best_by_schedule": {
+    "adam_constant": {
+      "optimizer": "adam",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_constant",
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.02,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.004345209267472134,
+        0.01699670098362048,
+        0.012588918298422186,
+        0.004034874236496906,
+        0.0026761817792335697
+      ],
+      "median_validation_error": 0.004345209267472134,
+      "train_errors": [
+        0.004344792776667372,
+        0.0169965214830498,
+        0.012588127565605905,
+        0.004034642148711113,
+        0.002675545015987331
+      ],
+      "all_seeds_finite": true,
+      "final_fifth_error_decrease": 0.18421281455834593,
+      "final_fifth_q99_increase": 0.05291849375641733,
+      "rate_at_search_boundary": true
+    },
+    "adam_cosine": {
+      "optimizer": "adam",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+      "recipe_index": 0,
+      "schedule": "cosine",
+      "learning_rate": 0.05,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.002256448919740529,
+        0.0014598646831824938,
+        0.0022966035181307648,
+        0.001814724093052364,
+        0.001698484788486213
+      ],
+      "median_validation_error": 0.001814724093052364,
+      "train_errors": [
+        0.0022559779195731916,
+        0.0014596001026542216,
+        0.002296539945175449,
+        0.0018143227040915727,
+        0.0016979211387911537
+      ],
+      "all_seeds_finite": true,
+      "selected": true,
+      "final_fifth_error_decrease": 0.2889935319436332,
+      "final_fifth_q99_increase": -0.021579295284990363,
+      "rate_at_search_boundary": true
+    },
+    "gd_constant": {
+      "optimizer": "gd",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.2544940532609158,
+        0.2635070471470646,
+        0.26115209866254924,
+        0.20339456621223972,
+        0.20434546990736463
+      ],
+      "median_validation_error": 0.2544940532609158,
+      "train_errors": [
+        0.254490582053846,
+        0.26350358340450564,
+        0.26114864141895816,
+        0.20339226214945305,
+        0.20434358673573638
+      ],
+      "all_seeds_finite": true,
+      "final_fifth_error_decrease": 0.0022165652059064067,
+      "final_fifth_q99_increase": 0.0022317888962795074,
+      "rate_at_search_boundary": true
+    },
+    "gd_cosine": {
+      "optimizer": "gd",
+      "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+      "recipe_index": 2,
+      "schedule": "cosine",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.2439341734058546,
+        0.24393606123410477,
+        0.2572916534266114,
+        0.20115835384574862,
+        0.20470287123648917
+      ],
+      "median_validation_error": 0.2439341734058546,
+      "train_errors": [
+        0.2439313678961394,
+        0.24393325573003827,
+        0.25728820444293127,
+        0.2011560766157398,
+        0.20470112107519564
+      ],
+      "all_seeds_finite": true,
+      "selected": true,
+      "final_fifth_error_decrease": 0.002927292075536103,
+      "final_fifth_q99_increase": -0.0017006116892408496,
+      "rate_at_search_boundary": true
+    }
+  },
+  "selection": "One recipe per optimizer minimizing median final 4096-midpoint validation error across all seeds; requires finite endpoints in every seed.",
+  "evaluation": "8192-midpoint resolution check, not an untouched test set.",
+  "display": "Within-bin median per seed with exact min/max; full training horizon retained."
+}
