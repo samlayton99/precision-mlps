@@ -13,6 +13,14 @@ a stated training budget.** The relevant assumptions concern accumulated
 curvature feedback and force concentration; they do not assume that future
 force or population movement stays small.
 
+The interval starts at a post-transient checkpoint $t_0$. At that checkpoint,
+the population has not acquired the required scales, and the subsequent
+accumulated effects of coarse tracking are small enough for the stated
+disturbance budgets. Time $0$ in the persistence theorems means this restart,
+not random initialization. The early regime in which tracking can dominate
+is outside the claim. Entry into the regime is established empirically;
+the theorem explains what happens while its structural conditions hold.
+
 **Theorem 14** retains the initial effective force and turns an accumulated
 feedback allowance into an output-error floor. Accumulated concentration
 supplies the additional population-movement and acquisition bounds.
@@ -30,28 +38,26 @@ evolution. The theorem tests whether allowed reinforcement is still too
 weak to enable useful population acquisition or output accuracy. Both
 roles matter; the desired conclusion allows substantial forecasting slack.
 
-The **initial-data theorems strengthen this result** by deriving sufficient
-structural persistence from a checkpoint alone. The earlier moment
-arguments give width-dependent windows proportional to $W^{2/3}$ and,
-for fixed higher moments, $W^{1-2/p}$. Theorem 12 controls fourth-moment
-evolution using accumulated concentration. Theorem 16 retains initial
-residual-loaded curvature and proves a feedback-persistence interval through
-aggregate parameter travel. Its numerical certificates are useful for
-some states and conservative for others. Obtaining equally long
-initial-data certificates across all targets is an additional objective,
-not a requirement for the conditional mechanism-and-evidence result.
+The scientific objective is to state an informative conditional theorem
+and demonstrate that its aggregate conditions remain satisfied over long,
+specified training intervals. This requires checking their duration and
+margin, alongside the predicted limits on acquisition and output progress.
+Deriving the duration from the checkpoint alone is not an objective of the
+main argument. Earlier initial-data results, including Theorem 16, remain
+as supplementary mathematics. They also start from a specified state;
+they do not establish passage through the tracking-dominated transient.
 
 **Theorem 17** makes one mechanism for persistence explicit: accumulated
 population travel produces only a limited increase in reinforcing feedback.
 A scalar smallness condition then closes the feedback loop between force,
 travel, and reinforcement. Its response-to-travel premise has useful sampled
-coverage, but is not proved from initialization. It refines the explanation
+coverage over the reported intervals. It refines the explanation
 without replacing Theorem 14's broader conditional claim.
 
 For the main argument, read the accumulated-feedback appendix containing
 Theorem 14 and Proposition 15, together with its empirical study. Section 2
 supplies the population-to-output connection. Sections 4–6 and Theorem 16
-develop the stronger initial-data guarantees. The assumptions, their
+retain supplementary initial-data guarantees. The assumptions, their
 empirical support, and any outward-rounded certificate retain distinct
 status throughout; sampled agreement does not certify every numerical
 trajectory. In particular, tracking's effects on output and force growth
@@ -1959,6 +1965,33 @@ assumptions are on a finite interval; they need not survive eventual scale
 acquisition. The result is conditional, and the numerical audit must test
 its assumptions separately from its consequences.
 
+### The conditional claim and the evidence needed for it
+
+Start from a checkpoint after the tracking transient, retaining the actual
+attached readouts. Conditional on bounded accumulated reinforcement,
+concentration, and tracking/finite-step disturbances over the next $T$ units
+of training time, the theorem bounds population acquisition and keeps raw
+output error above a specified tolerance whenever its energy allowance is
+insufficient to reach that tolerance. This is the paper claim. It does not
+require proving that initialization enters this regime or deriving the
+entire duration from the checkpoint alone.
+
+The empirical counterpart checks the conditions themselves throughout the
+reported interval. Show their accumulated values against the stated
+allowances, report margin and first observed loss of coverage, and compare
+the resulting acquisition and error bounds with the actual trajectory.
+Checkpoints must be dense enough to test persistence between the broad
+archive's sparse samples, and sampling/refinement limitations remain visible.
+Showing only small endpoint slopes would not test these assumptions.
+
+The existing primary audit restarts at age 20k: the factor-two directional
+feedback allowance covers all saved prefixes on 46 baseline paths across
+23 targets over 20k further updates. Six archived longer paths require
+factor four for coverage through 100k further updates. These durations and
+margins support a finite-interval persistence claim; they are not universal
+training thresholds. Theorem 17 supplies a more restrictive sufficient
+mechanism, whose shorter coverage does not replace Theorem 14's main result.
+
 ### The structural quantities and their interpretation
 
 Use $f=\|F\|$, $Y=\|e_H\|$, $q=M_4^{1/4}$, and the same compensated
@@ -2206,7 +2239,7 @@ The feedback-budget theorem makes this change measurable. In the archived
 width-705 baseline panel, the initial force and accumulated directional
 feedback give useful effective-flow error floors across 23 targets. Those
 are evaluations on GD histories, not yet certificates for their dynamics.
-The present theorem addresses a different question: can an initial state
+The present theorem addresses a supplementary question: can an initial state
 alone imply a nonzero useful persistence interval for the effective ODE?
 
 The prediction is finite in time. Small initial force and small initial
@@ -2431,7 +2464,8 @@ The proposed mechanism is a closed loop: weak force supplies little population
 travel; little travel produces limited additional reinforcement; limited
 reinforcement preserves weak force. The following theorem proves this
 implication under an explicit response-to-travel premise. Establishing that
-premise from the network's initial state remains a stronger task.
+premise over the interval is the empirical task supporting the conditional
+claim; a derivation from the checkpoint alone is not required.
 
 ### The aggregate condition
 
@@ -2647,6 +2681,6 @@ The [aggregate feedback audit](../results/checkpoint_D_optimizers/expD34_readout
 contains the plot, exact scope, and reproduction instructions. The useful
 paper claim remains Theorem 14 with empirical persistence and explicit GD
 disturbance checks. Theorem 17 supplies a clearer sufficient mechanism for
-that persistence. A uniform response-to-travel bound over an appropriate
-population region would strengthen it further; the present data and proof
-do not establish that invariant region.
+that persistence. The empirical question is how long its response-to-travel
+condition remains satisfied, with what margin, and for which targets and
+perturbations. A uniform invariant-region proof is outside the main claim.

@@ -145,9 +145,10 @@ zero-baseline threshold, constant feedback, and changing feedback response.
 The numerical subprocess peak was about 202 MiB under a 4 GiB hard cap.
 No parameter archives were loaded locally and no new training was run.
 
-The implication in Theorem 17 is proved. A small response coefficient that
-holds uniformly over an appropriate population region is not yet proved.
-The paper's main result remains the broader conditional theorem together
-with cross-target evidence, forecasts, and perturbations. This calculation
-adds a concrete, testable explanation of persistence without making a
-universal initial-data certificate the standard for that claim.
+The implication in Theorem 17 is proved. Its response-to-travel premise is
+checked empirically over the stated intervals; a uniform invariant-region
+result is not claimed. The paper's main result is the broader conditional
+theorem after the tracking transient, together with evidence that its
+conditions remain satisfied for long intervals. Forecasts and perturbations
+test that explanation. Deriving persistence from a checkpoint alone is
+outside the current objective.

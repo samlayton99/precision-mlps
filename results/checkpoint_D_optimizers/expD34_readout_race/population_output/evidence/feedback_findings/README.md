@@ -14,11 +14,13 @@ progress over the stated interval. Force forecasts and perturbation tests
 assess whether this explains the observed dynamics. They complement the
 theorem's quantitative bounds.
 
-An initial-data persistence theorem and numerical certificates strengthen
-this result. Their durations are useful on the degree-five checkpoint and
-shorter on the other five targets. Those limits concern deriving persistence
-from a checkpoint alone. They do not make such a derivation a prerequisite
-for the conditional theorem and its cross-target empirical support. Proved
+The claim starts after the tracking transient. Time zero denotes the
+archived restart, and subsequent tracking effects are included through
+aggregate disturbance allowances. We aim to prove the conditional implication
+and show that its conditions remain satisfied for long, specified intervals.
+Deriving persistence from the restart alone is not a separate objective.
+The existing initial-data theorem and certificates remain supplementary;
+their shorter durations do not limit the conditional claim. Proved
 implications, empirical premise checks, and certificates remain distinct.
 
 **Notation and scope.** Norms use the empirical training measure; parameter
@@ -296,22 +298,19 @@ as established by the frozen-geometry controls. A theorem for the residual
 plateau after that fitting would need a later restart or explicit residual
 subspace control; the present weak-initial-force bound does not cover it.
 
-## 7. The main result and its possible strengthenings
+## 7. The conditional claim and persistence of its assumptions
 
-We have completed the three tasks: a proved finite-interval conditional
-theorem with tracking and GD disturbance terms; broad archive checks plus
-fresh matched-flow tests; and a closed initial-data theorem with six
-outward-rounded effective-flow instances. The central scientific result is
-the conditional mechanism together with evidence that its structural
-assumptions persist over useful intervals. The initial-data theorem explains
-how that persistence can arise and certifies additional instances.
+The central result is a proved finite-interval conditional theorem with
+tracking and GD disturbance terms, supported by broad archive checks and
+fresh matched-flow tests. It begins at a post-transient checkpoint where
+scale acquisition remains insufficient. The early tracking-dominated regime
+and a proof of entry from initialization are outside this claim.
 
 The supported explanation is that weak initial residual coupling and modest
 accumulated reinforcement leave too little integrated force to change the
 population enough or reduce output error enough. Force need not contract,
-and population moments need not remain constant. The initial-data theorem
-explains one way the structure persists: strengthening the loaded curvature
-requires motion supplied by the force whose growth it controls.
+and population moments need not remain constant. The structural premises
+concern the evolving population, not the validity of a frozen approximation.
 
 The primary statement uses accumulated directional-feedback and concentration
 allowances, with their finite-interval empirical coverage and slack stated
@@ -322,13 +321,15 @@ assumption from initialization or predict each neuron to explain the
 population mechanism. The large-injection cases in Section 6 mark a real
 limit of this regime-specific explanation.
 
-Longer initial-data certificates are a possible strengthening. Retaining
-aggregate residual loading when bounding the change of curvature is one
-route. Proposition 15 already proves the GD extension under explicit
-disturbance budgets; certifying longer GD instances would verify those
-budgets, including within-step effects. These are further guarantees, not
-prerequisites for presenting the conditional theorem and its evidence.
-Adam and continuous-input generalization remain outside the new certificates.
+The evidence should establish duration and margin directly: plot accumulated
+feedback, concentration, and disturbance effects against the allowances,
+report where they cease to hold, and compare the conditional acquisition
+and output-error bounds with training. Proposition 15 already supplies the
+GD implication under the disturbance budgets. Empirical coverage of those
+budgets and of the structural conditions is the relevant validation task.
+The initial-data certificates in Section 5 are supplementary results;
+extending their duration is not a campaign objective. The present result
+does not establish an Adam theorem or continuous-input generalization.
 
 Theorem 17 now makes one sufficient persistence mechanism more explicit:
 limited accumulated population travel causes limited additional reinforcing
