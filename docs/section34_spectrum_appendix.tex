@@ -254,7 +254,7 @@ $L^2$ error on its stated grid, not squared loss or an EMA.
 The dense grid checks resolution; it is not an untouched generalization test.
 Frozen GD starts its readout at zero and executes five million full-batch
 FP64 updates with $\eta=1/(2\mu_1)$ at each bandwidth.
-Figure~\ref{fig:note-training}A displays training error. Its spectral
+Figure~\ref{fig:note-spectrum}B displays training error. Its spectral
 reference agrees with executed GD within $2.9\times10^{-14}$.
 
 Joint training optimizes all slopes, centers (through affine biases), and
@@ -263,10 +263,10 @@ recipe per optimizer is selected by median final validation error over all
 five seeds. The selected Adam and GD schedules are full-horizon cosine
 decays with initial learning rates 0.05 and 0.2, respectively.
 Frozen Adam uses the same final-validation selection criterion.
-Panel B shows raw training errors summarized for display; quoted joint and
+Figure~\ref{fig:note-training}A shows raw training errors summarized for display; quoted joint and
 frozen-Adam endpoint values use the dense grid. Display bins retain extrema,
 including spikes, rather than replacing the comparison with first tolerance
-crossings. Panel C measures $h|a_j|$ for learned features
+crossings. Figure~\ref{fig:note-training}B measures $h|a_j|$ for learned features
 $\tanh(a_jx+b_j)$, using the original reference spacing $h$.
 
 \paragraph{What the joint experiment establishes.}
@@ -290,10 +290,10 @@ features or Adam's adaptive preconditioner. The next theoretical question
 is how evolving features acquire a useful geometry.
 
 \paragraph{Reproducibility.}
-The source and numerical provenance for the new spectral figure are
-\path{experiments/expD36_frozen_gamma_probe/section34_spectrum_figure.py}
-and \path{output/diagnostics/section34_long_horizon/main_5m/spectrum/relative_rates.json}.
-The existing three-panel figure, full protocols, checks, and evidence links
+The source and numerical provenance for the two paired figures are
+\path{experiments/expD36_frozen_gamma_probe/section34_paired_figures.py}
+and \path{output/diagnostics/section34_long_horizon/main_5m/paired/provenance.json}.
+The full protocols, checks, earlier figure layouts, and evidence links
 are indexed in \path{output/diagnostics/section34_long_horizon/README.md}.
 Both figures reuse completed runs; preparing this note launches no new
 training experiments.

@@ -1,6 +1,8 @@
-# Section 3.4 evidence
+# Bandwidth and feature-acquisition evidence
 
-The [complete section](../../pdf/section34_spectrum_subsection.pdf) places the spectrum plot beside the rate interpretation and the training figure beside the measured consequences. It combines the spectral bounds and GD consequence into one output-error theorem, with a short proof sketch and the transition to joint feature acquisition. The [full note](../../pdf/section34_spectrum_note.pdf) adds the proof and evaluation appendix. Its [editable subsection](../../../docs/section34_spectrum_subsection.tex), [figure definitions](../../../docs/section34_spectrum_figures.tex), and [LaTeX wrapper](../../../docs/section34_spectrum_note.tex) are separate. The compressed text retains the three-quarter-page budget at unchanged typography; figures and captions are budgeted separately and their final selection remains provisional. Both plots reuse completed computations.
+The [paper excerpt](../../pdf/section34_spectrum_subsection.pdf) separates two questions into adjacent subsections. [Section 3.4](../../../docs/section34_spectrum_subsection.tex) pairs the relative-rate spectrum with frozen-GD error to explain why bandwidth matters. [Section 3.5](../../../docs/section35_feature_acquisition.tex) pairs joint-training error with slope acquisition to show what training actually acquires. Each horizontal pair is 5.5 × 1.8 inches, matching the proportions of the submission's existing figures; the spectrum now occupies half a figure. The compressed theorem and proof sketch remain unchanged. Figures and captions are budgeted separately from the three-quarter-page argument.
+
+The [full note](../../pdf/section34_spectrum_note.pdf) adds the proof and evaluation appendix. The [figure definitions](../../../docs/section34_spectrum_figures.tex) and [LaTeX wrapper](../../../docs/section34_spectrum_note.tex) are editable separately. Both pairs reuse completed computations and preserve the full five-million-update horizon.
 
 This directory contains compact evidence for the proposed [Section 3.4](../../../docs/section34_slope_acquisition.md), its [proof](../../../docs/section34_slope_appendix.md), and the [experimental protocol](../../../docs/section34_empirical_appendix.md). The study uses width 512 including halos, five paired joint-training seeds, full-horizon cosine and constant schedules, and raw relative output error. The theorem concerns frozen GD; Adam and evolving features are evaluated empirically.
 
@@ -8,7 +10,7 @@ The [compiled review PDF](../../pdf/section34_slope_acquisition_review.pdf) comb
 
 ## Evidence and provenance
 
-- [Main three-panel figure](main_5m/section34_three_panel.pdf) compares five million executed updates. Its provenance records the exact analyses and display reduction. `main_5m/joint_analysis/` retains all candidate recipes, the globally selected trajectories, selected parameter arrays, and independently reconstructed endpoint errors.
+- [Spectrum and frozen readout](main_5m/paired/spectrum_readout.pdf) and [joint training and slope acquisition](main_5m/paired/joint_acquisition.pdf) are the current paper figures. Their [provenance](main_5m/paired/provenance.json) records input hashes, selected recipes, spectral intervals, and display conventions. The [earlier three-panel layout](main_5m/section34_three_panel.pdf) is retained. `main_5m/joint_analysis/` retains all candidate recipes, the globally selected trajectories, selected parameter arrays, and independently reconstructed endpoint errors.
 - `main_5m/bounds/` contains the slope-dependent spectral endpoints, target weights, predicted curves, and the two quadrature resolutions. These predictions use the theorem's rate upper bounds. Actual small eigenvalues are retained separately for numerical checks.
 - `main_5m/bound_diagnostics/` contains executed-GD comparisons, every-update extrema, and tolerance crossings. A missing crossing means it was not observed within the executed horizon.
 - `main_5m/uniform_access/` contains the full frozen-Adam bandwidth comparison, final-validation recipe selection, compact raw-error summaries, and kernel diagnostics.
@@ -20,13 +22,15 @@ The [compiled review PDF](../../pdf/section34_slope_acquisition_review.pdf) comb
 - `protocol/` records the target, geometry, initialization, original optimizer grids, and the shared frozen-Adam grid expansion.
 - `main_2m/` retains the earlier complete comparison and its constant-rate Adam metric control. It must not be substituted for a five-million-update result.
 
-## What the main figure establishes
+## What the paired figures establish
 
-Panel A answers whether the gamma-dependent theorem predicts a meaningful output-error obstruction. Its lower curve remains at least 75% of executed GD error at every update across the four bandwidths. At the smallest bandwidth, direct fitting attains $6.24\times10^{-10}$ dense-grid error, but five million GD updates leave $0.21013$ training error against a theorem lower bound of $0.20982$. This is evidence of difficult optimization access to already attainable accuracy.
+The spectrum/readout pair connects the rate bounds to their output-error consequence. Panel A shows three illustrative ordered relative eigenvalues at four bandwidths, together with their theorem intervals. Increasing bandwidth from $1/32$ to $1/4$ raises the thirtieth relative eigenvalue by about $1.4\times10^5$, versus only $1.3$ for the fourth; the thirtieth mode carries about 2.5% of target energy at both endpoints. Ordered ranks do not track the same eigenvector across slopes.
 
-Panel B answers whether joint training obtains the accuracy available from a supplied geometry within the same update budget. The five-million-update median joint Adam error is $0.001815$, compared with $6.62\times10^{-7}$ for the predeclared uniform frozen-Adam reference; joint GD remains near $0.244$. Both schedules were tested, selection uses a complete recipe across all seeds, and the plot retains instability.
+Panel B compares the theorem's lower output-error curve with executed GD. The lower curve remains at least 75% of executed error at every update across the four bandwidths. At the smallest bandwidth, direct fitting attains $6.24\times10^{-10}$ dense-grid error, but five million GD updates leave $0.21013$ training error against a theorem lower bound of $0.20982$. This is evidence of difficult optimization access to already attainable accuracy.
 
-Panel C measures slope acquisition in exactly B's runs. Adam's upper percentile approaches the reference, but only 4–7 of 512 features reach $h|a_j|\ge1/4$. This supports heterogeneous acquisition and a remaining accuracy gap; it does not establish a universal slope threshold for learned dictionaries. Direct fits and interventions show why the joint interpretation must include center placement and the distribution of slopes. Longer training improves Adam, so these curves establish a finite-budget cost, not permanent failure or a proved coarse-error tracking mechanism.
+The joint/acquisition pair asks whether training obtains the accuracy available from a supplied geometry within the same update budget. Panel A shows median joint Adam error of $0.001815$ after five million updates, compared with $6.62\times10^{-7}$ for the predeclared uniform frozen-Adam reference; joint GD remains near $0.244$. Both schedules were tested, selection uses a complete recipe across all seeds, and the plot retains instability.
+
+Panel B measures slope acquisition in exactly those joint runs. Adam's upper percentile approaches the reference, but only 4–7 of 512 features reach $h|a_j|\ge1/4$. This supports heterogeneous acquisition and a remaining accuracy gap; it does not establish a universal slope threshold for learned dictionaries. Direct fits and interventions show why the joint interpretation must include center placement and the distribution of slopes. Longer training improves Adam, so these curves establish a finite-budget cost, not permanent failure or a proved coarse-error tracking mechanism.
 
 The paper argument therefore connects the construction to an explicit frozen-GD obstruction, then measures the broader geometry-acquisition problem. It motivates supplying accurate primitives directly without claiming that a frozen-feature theorem governs Adam or all language-model training.
 
@@ -52,7 +56,18 @@ python -m experiments.expD36_frozen_gamma_probe.section34_bound_diagnostics \
 
 `section34_analyze.py` selects one recipe per joint optimizer across all five seeds, reconstructs final errors, and exports the learned-feature assays. `section34_feature_access.py` analyzes the executed readout restarts and uniform references. `section34_joint_metric.py` uses the actual joint Adam moments for its adaptive-Jacobian diagnostic. Plotting does not replace executed trajectories with spectral forecasts.
 
-The final main figure uses the validated compact uniform-Adam traces:
+Reproduce the two compact paper pairs from the saved analyses and executed GD:
+
+```sh
+python -m experiments.expD36_frozen_gamma_probe.section34_paired_figures \
+  --analysis output/diagnostics/section34_long_horizon/main_5m/joint_analysis \
+  --bounds output/diagnostics/section34_long_horizon/main_5m/bounds \
+  --gd "$study_root/h5m/frozen_gd" --base "$study_root/base" \
+  --frozen-analysis output/diagnostics/section34_long_horizon/main_5m/uniform_access \
+  --output output/diagnostics/section34_long_horizon/main_5m/paired
+```
+
+The earlier three-panel layout uses the same validated compact uniform-Adam traces:
 
 ```sh
 python -m experiments.expD36_frozen_gamma_probe.section34_figure \
@@ -70,14 +85,14 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error \
   -outdir=tmp/pdfs/section34_review docs/section34_review.tex
 ```
 
-Compile the compact section with integrated figures, followed by the full proof, using:
+Compile the two compact subsections with integrated figures, followed by the full proof, using:
 
 ```sh
 latexmk -pdf -interaction=nonstopmode -halt-on-error \
   -outdir=tmp/pdfs/section34_compact docs/section34_spectrum_note.tex
 ```
 
-The build log reports `SECTION34-APPENDIX-START-PAGE`; preceding pages form the complete section PDF. Its navigation annotations are removed when extracted, since the technical appendix is supplied in the full note. The prose and typography are preserved from the text compression; the figures now appear at their discussion points instead of on a separate evidence page.
+The build log reports `SECTION34-APPENDIX-START-PAGE`; preceding pages form the paper-excerpt PDF. Its navigation annotations are removed when extracted, since the technical appendix is supplied in the full note. The theorem's typography is preserved. The review wrapper starts each subsection on its own page with its figure; the drop-in sources impose no page breaks.
 
 The paper-facing text is authored directly in Markdown and LaTeX. Analysis programs produce numerical results and figures, not report prose.
 

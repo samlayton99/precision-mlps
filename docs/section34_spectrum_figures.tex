@@ -1,16 +1,15 @@
-% Provisional figures, inserted beside their interpretation in the subsection.
+% Two separate pairs: frozen-feature mechanism, then joint acquisition.
 \newcommand{\SectionSpectrumFigure}{%
 \begin{figure}[!htbp]
  \centering
- \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/spectrum/relative_rates.pdf}
- \caption{\textbf{Slope changes relative rates by very different amounts.}
- Finite-kernel ratios (solid, dots) and theorem intervals (dashed boundaries,
- shading) for three illustrative ordered ranks, at fixed width~512.
- Four bandwidths are evaluated; connecting lines are guides. Rank~30 carries
- 2.6\% and 2.5\% of target energy at the two endpoints, while its relative
- rate increases by $1.4\times10^5$. Ordered rank does not identify the same
- eigenvector across slopes. All figures use the target and geometry in
- Appendix~\ref{app:note-evaluation}.}
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/spectrum_readout.pdf}
+ \caption{\textbf{Small slopes weaken kernel directions and delay readout learning.}
+ \textbf{A:} finite-kernel ratios (dots) and theorem intervals (dashed
+ boundaries, shading) at four bandwidths. Lines connect ordered ranks;
+ eigenvectors change with bandwidth. \textbf{B:} executed frozen-GD relative
+ output errors (solid) and square roots of the theorem's lower bounds
+ (dashed), through five million updates. Both panels use width~512 and the
+ same target and geometry (Appendix~\ref{app:note-evaluation}).}
  \label{fig:note-spectrum}
 \end{figure}
 }
@@ -18,19 +17,16 @@
 \newcommand{\SectionTrainingFigure}{%
 \begin{figure}[!htbp]
  \centering
- \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/section34_three_panel.pdf}
- \caption{\textbf{From readout delay to feature acquisition.}
- \textbf{A:} executed frozen-readout GD errors (solid) and the square roots of
- the theorem's lower bounds (dashed).
- \textbf{B:} joint Adam/GD errors, with frozen uniform $\lambda=1/4$
- references over the same five-million-update budget.
- \textbf{C:} RMS and 99th-percentile scaled slopes $h|a_j|$ from B's joint
- runs. The reference bandwidth is a supplied geometry, not a necessary
- threshold for heterogeneous features. Joint curves summarize five paired
- seeds; shading retains seed variation and recorded within-bin extrema.
- The full horizon is shown and cosine schedules span that horizon.
- Appendix~\ref{app:note-evaluation} specifies the error measure and selection
- protocol. The theorem applies to A; B--C are empirical.}
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/joint_acquisition.pdf}
+ \caption{\textbf{Partial slope acquisition leaves a precision gap.}
+ \textbf{A:} joint Adam/GD relative output errors and frozen uniform
+ $\lambda=1/4$ references under the same five-million-update budget.
+ \textbf{B:} RMS and 99th-percentile scaled slopes $h|a_j|$ in A's joint
+ runs. The reference is a supplied geometry, not a necessary slope threshold.
+ Joint curves summarize five paired seeds; shading retains seed variation
+ and recorded within-bin extrema. Cosine schedules span the full horizon.
+ These are empirical comparisons; Appendix~\ref{app:note-evaluation} gives
+ the protocol.}
  \label{fig:note-training}
 \end{figure}
 }

@@ -1,0 +1,22 @@
+% Empirical lead-in to the analysis of evolving features.
+\subsection{Training must acquire useful slopes and centers}
+\label{sec:feature-acquisition}
+
+Joint training also leaves a substantial precision gap over this budget.
+After five million updates, joint Adam reaches median dense-grid relative
+error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$ on the supplied
+$\lambda=1/4$ features (Figure~\ref{fig:note-training}A).
+
+\SectionTrainingFigure
+\FloatBarrier
+
+Adam's 99th-percentile scaled slope approaches $1/4$, but only 4--7 of 512
+features reach that reference across the five seeds
+(Figure~\ref{fig:note-training}B).
+Readout refits on the learned features barely improve their error
+(Appendix~\ref{app:note-evaluation}).
+Longer training helps, but acquiring a few steep features does not recover
+the supplied geometry's accuracy within this budget.
+This motivates the next analysis: training must acquire useful slopes and
+centers together. The construction supplies both the feature geometry and
+the readout directly.
