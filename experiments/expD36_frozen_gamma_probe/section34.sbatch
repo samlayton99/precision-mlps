@@ -5,13 +5,13 @@
 #SBATCH --qos=lab-gpu2
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=2
 #SBATCH --mem=32G
 #SBATCH --time=01:30:00
 set -euo pipefail
 cd "${SECTION34_CODE:?}"
 export JAX_ENABLE_X64=true JAX_PLATFORMS=cuda XLA_PYTHON_CLIENT_PREALLOCATE=false
-export OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8
+export OPENBLAS_NUM_THREADS="${SLURM_CPUS_PER_TASK}" OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK}"
 srun bash -c '
   set -euo pipefail
   test -n "${SLURM_JOB_ID:-}"
