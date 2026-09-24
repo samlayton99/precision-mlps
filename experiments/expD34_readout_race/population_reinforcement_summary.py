@@ -204,8 +204,8 @@ def plot_natural(paths, output):
     return path.name
 
 
-def plot_force_weighted_population(endpoints, output):
-    omega = 'force_weighted_second_moment'
+def plot_force_weighted_population(endpoints, output, omega='force_weighted_second_moment',
+                                   label='Force-weighted size Ω', filename='force_weighted_population.png'):
     selected = [r for r in endpoints if np.isfinite(r['initial_'+omega])
                 and np.isfinite(r['final_'+omega]) and r['initial_'+omega] > 0]
     if not selected:
@@ -215,25 +215,25 @@ def plot_force_weighted_population(endpoints, output):
         groups[(row['width'], row['start'])].append(row)
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), constrained_layout=True)
     for index, ((width, start), group) in enumerate(sorted(groups.items())):
-        label = f'W={int(width)}, restart {int(start):,}; n={len(group)}'
+        cohort_label = f'W={int(width)}, restart {int(start):,}; n={len(group)}'
         color = f'C{index}'
         axes[0].scatter([r['initial_'+omega] for r in group], [r['final_'+omega] for r in group],
-                        label=label, color=color, s=28, alpha=.7)
+                        label=cohort_label, color=color, s=28, alpha=.7)
         values = np.array([r[omega+'_sampled_max_to_first'] for r in group])
         axes[1].scatter(index+np.linspace(-.12, .12, len(values)), values, color=color, s=28, alpha=.7)
         axes[1].plot([index-.2, index+.2], [np.median(values)]*2, color='black', lw=2)
     bounds = [r[key] for r in selected for key in ('initial_'+omega, 'final_'+omega) if r[key] > 0]
     axes[0].plot([min(bounds), max(bounds)], [min(bounds), max(bounds)], '--', color='.5', label='No change')
-    axes[0].set(xscale='log', yscale='log', xlabel='Initial force-weighted second moment Ω', ylabel='Final retained Ω')
+    axes[0].set(xscale='log', yscale='log', xlabel='Initial '+label, ylabel='Final retained '+label)
     axes[0].legend(fontsize=8)
     axes[1].axhline(1, color='.5', lw=.7)
     axes[1].set_xticks(range(len(groups)), [f'W={int(w)}\nrestart {int(s):,}' for w, s in sorted(groups)])
-    axes[1].set(yscale='log', ylabel='Maximum sampled Ω / initial Ω')
+    axes[1].set(yscale='log', ylabel='Maximum sampled / initial '+label)
     for ax in axes:
         ax.grid(alpha=.15)
-    fig.suptitle(f'Force-weighted population evolution: {len(selected)} natural trajectories\n'
+    fig.suptitle(f'{label}: {len(selected)} natural trajectories\n'
                  'Retained checkpoints only; sampled maxima do not bound intervening times')
-    path = output/'force_weighted_population.png'; fig.savefig(path, dpi=180); plt.close(fig)
+    path = output/filename; fig.savefig(path, dpi=180); plt.close(fig)
     return path.name
 
 
@@ -263,6 +263,10 @@ def summarize(source, output):
     weighted = plot_force_weighted_population(endpoints, output)
     if weighted:
         figures.append(weighted)
+    concentration = plot_force_weighted_population(endpoints, output,
+        'hidden_force_energy_concentration', 'Force concentration I_F', 'force_concentration.png')
+    if concentration:
+        figures.append(concentration)
     natural_groups = defaultdict(list)
     for row in endpoints:
         natural_groups[(row['width'], row['start'])].append(row)

@@ -224,6 +224,52 @@ def plot(output, endpoints, attempts):
                      f'{len({r["target"] for r in rows})} targets; {len(rows)} finite endpoints; dots=cases, lines=medians')
         fig.savefig(output/f'response_{index:02d}.png', dpi=180)
         plt.close(fig)
+    plot_overview(output, endpoints)
+
+
+def plot_overview(output, endpoints):
+    """Keep supplied geometry separate from subsequent learned expansion."""
+    import matplotlib.pyplot as plt
+    panels = ((177, 600000), (705, 20000), (1409, 20000))
+    fig, axes = plt.subplots(2, 3, figsize=(14, 7), constrained_layout=True)
+    for column, (width, age) in enumerate(panels):
+        rows = [r for r in endpoints if r['width'] == width and r['start'] == age
+                and r['eta'] == .002 and r['requested_steps'] == 20000
+                and not r['failed'] and r['completed_steps'] == 20000 and r['arm'] != 'original']
+        if not rows:
+            continue
+        for reference, color, label in (('primary', 'C0', 'Repair near original readout'),
+                                        ('inverse', 'C1', 'Repair near readout / multiplier')):
+            selected = [r for r in rows if r['reference'] == reference]
+            scales = sorted({r['scale'] for r in selected})
+            errors, initial_errors, growth = [], [], []
+            for scale in scales:
+                group = [r for r in selected if r['scale'] == scale]
+                ee = np.array([r['relative_eval_l2'] for r in group])
+                gg = 100*(np.array([r['gamma_mean_own_start_ratio'] for r in group])-1)
+                errors.append(np.median(ee))
+                initial_errors.append(np.median([r['initial_relative_eval_l2'] for r in group]))
+                growth.append(np.median(gg))
+                axes[0, column].scatter(np.full(len(ee), scale), ee, s=12, alpha=.2, color=color)
+                axes[1, column].scatter(np.full(len(gg), scale), gg, s=12, alpha=.2, color=color)
+            axes[0, column].plot(scales, errors, 'o-', color=color, label=label)
+            axes[0, column].plot(scales, initial_errors, ':', color=color)
+            axes[1, column].plot(scales, growth, 'o-', color=color)
+        axes[0, column].axhline(.01, color='.45', ls='--', lw=.8)
+        axes[0, column].set(yscale='log', ylabel='Independent-grid relative error',
+            title=f'W={width}; restart {age:,}\n{len({r["target"] for r in rows})} targets, '
+                  f'{len({(r["target"], r["seed"]) for r in rows})} starts')
+        axes[1, column].set(yscale='symlog', ylabel='Additional mean-slope change (%)')
+        axes[1, column].set_yscale('symlog', linthresh=.01)
+        axes[1, column].axhline(0, color='.45', lw=.8)
+        for ax in axes[:, column]:
+            ax.set(xscale='log', xlabel='Injected geometry multiplier')
+            ax.grid(alpha=.15)
+    axes[0, 0].legend(fontsize=8)
+    fig.suptitle('20,000 further GD updates: output fitting and additional scale acquisition\n'
+                 'Solid: endpoint medians; dotted: post-repair error; dots: individual cases; dashed: 1% error', fontsize=12)
+    fig.savefig(output/'large_dilation_output_scale.png', dpi=180)
+    plt.close(fig)
 
 
 def main():
