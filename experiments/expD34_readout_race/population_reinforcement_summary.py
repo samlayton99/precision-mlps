@@ -22,9 +22,15 @@ TERMS = ('residual_relaxation_rate', 'generated_geometry_rate', 'target_geometry
          'geometry_rate', 'compensation_rate', 'curvature_rate', 'log_force_rate',
          'structural_curvature_rate_bound', 'directional_curvature_rate_bound',
          'identity_absolute_error', 'identity_rate_error', 'curvature_split_absolute_error',
-         'archived_force_relative_difference', 'F_norm')
+         'archived_force_relative_difference', 'F_norm',
+         'force_weighted_second_moment', 'force_weighted_fourth_moment',
+         'hidden_force_energy_concentration', 'omega_dot_transport',
+         'omega_dot_redistribution', 'omega_dot_effective',
+         'weighted_geometry_rate_bound', 'weighted_compensation_rate_bound',
+         'weighted_curvature_rate_bound', 'measured_ell_norm', 'ell_M4_bound')
 METRICS = TERMS + ('structural_to_directional', 'generated_target_cancellation',
-                  'directional_to_positive_curvature', 'structural_to_positive_net_growth')
+                  'directional_to_positive_curvature', 'structural_to_positive_net_growth',
+                  'structural_to_weighted', 'weighted_to_directional')
 
 
 def number(row, key):
@@ -42,6 +48,9 @@ def derive(row):
     structural, directional = result['structural_curvature_rate_bound'], result['directional_curvature_rate_bound']
     generated, target = result['generated_rate'], result['target_rate']
     result['structural_to_directional'] = structural/directional if directional > 0 else np.nan
+    weighted = result['weighted_curvature_rate_bound']
+    result['structural_to_weighted'] = structural/weighted if weighted > 0 else np.nan
+    result['weighted_to_directional'] = weighted/directional if directional > 0 else np.nan
     denominator = abs(generated)+abs(target)
     result['generated_target_cancellation'] = 1-abs(generated+target)/denominator if denominator > 0 else np.nan
     curvature, rate = result['curvature_rate'], result['log_force_rate']
@@ -89,6 +98,20 @@ def trajectory_endpoints(paths):
                     positive_sampled_rates=sum(r['log_force_rate'] > 0 for r in path),
                     initial_bound_ratio=first['structural_to_directional'],
                     final_bound_ratio=last['structural_to_directional'])
+        for key in ('force_weighted_second_moment', 'force_weighted_fourth_moment',
+                    'hidden_force_energy_concentration', 'weighted_curvature_rate_bound',
+                    'measured_ell_norm', 'ell_M4_bound'):
+            initial = first[key]
+            available = [r[key] for r in path if np.isfinite(r[key])]
+            item['initial_'+key] = initial
+            item['final_'+key] = last[key]
+            item[key+'_last_to_first'] = last[key]/initial if initial > 0 else np.nan
+            item[key+'_sampled_max_to_first'] = max(available)/initial if available and initial > 0 else np.nan
+        for key in ('omega_dot_transport', 'omega_dot_redistribution', 'omega_dot_effective'):
+            item['initial_'+key] = first[key]
+            item['final_'+key] = last[key]
+            item[key+'_positive_sampled_rates'] = sum(r[key] > 0 for r in path)
+            item[key+'_negative_sampled_rates'] = sum(r[key] < 0 for r in path)
         result.append(item)
     return result
 
@@ -169,6 +192,39 @@ def plot_natural(paths, output):
     return path.name
 
 
+def plot_force_weighted_population(endpoints, output):
+    omega = 'force_weighted_second_moment'
+    selected = [r for r in endpoints if np.isfinite(r['initial_'+omega])
+                and np.isfinite(r['final_'+omega]) and r['initial_'+omega] > 0]
+    if not selected:
+        return None
+    groups = defaultdict(list)
+    for row in selected:
+        groups[(row['width'], row['start'])].append(row)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), constrained_layout=True)
+    for index, ((width, start), group) in enumerate(sorted(groups.items())):
+        label = f'W={int(width)}, restart {int(start):,}; n={len(group)}'
+        color = f'C{index}'
+        axes[0].scatter([r['initial_'+omega] for r in group], [r['final_'+omega] for r in group],
+                        label=label, color=color, s=28, alpha=.7)
+        values = np.array([r[omega+'_sampled_max_to_first'] for r in group])
+        axes[1].scatter(index+np.linspace(-.12, .12, len(values)), values, color=color, s=28, alpha=.7)
+        axes[1].plot([index-.2, index+.2], [np.median(values)]*2, color='black', lw=2)
+    bounds = [r[key] for r in selected for key in ('initial_'+omega, 'final_'+omega) if r[key] > 0]
+    axes[0].plot([min(bounds), max(bounds)], [min(bounds), max(bounds)], '--', color='.5', label='No change')
+    axes[0].set(xscale='log', yscale='log', xlabel='Initial force-weighted second moment Ω', ylabel='Final retained Ω')
+    axes[0].legend(fontsize=8)
+    axes[1].axhline(1, color='.5', lw=.7)
+    axes[1].set_xticks(range(len(groups)), [f'W={int(w)}\nrestart {int(s):,}' for w, s in sorted(groups)])
+    axes[1].set(yscale='log', ylabel='Maximum sampled Ω / initial Ω')
+    for ax in axes:
+        ax.grid(alpha=.15)
+    fig.suptitle(f'Force-weighted population evolution: {len(selected)} natural trajectories\n'
+                 'Retained checkpoints only; sampled maxima do not bound intervening times')
+    path = output/'force_weighted_population.png'; fig.savefig(path, dpi=180); plt.close(fig)
+    return path.name
+
+
 def summarize(source, output):
     source, output = Path(source), Path(output)
     with source.open(newline='') as stream:
@@ -192,8 +248,30 @@ def summarize(source, output):
     natural = plot_natural(paths, output)
     if natural:
         figures.append(natural)
+    weighted = plot_force_weighted_population(endpoints, output)
+    if weighted:
+        figures.append(weighted)
+    natural_groups = defaultdict(list)
+    for row in endpoints:
+        natural_groups[(row['width'], row['start'])].append(row)
+    weighted_endpoint_keys = [key for key in endpoints[0] if any(part in key for part in
+        ('force_weighted_', 'hidden_force_energy_', 'omega_dot_', 'weighted_curvature_', 'ell_'))] if endpoints else []
+    natural_population_facts = {f'W{int(width)}_age{int(start)}': dict(
+        trajectories=len(group), targets=sorted({r['target'] for r in group}),
+        metrics={key: stats([r[key] for r in group]) for key in weighted_endpoint_keys})
+        for (width, start), group in natural_groups.items()}
+    rate_facts = {}
+    rate_groups = defaultdict(list)
+    for row in rows:
+        rate_groups[(row['role'], row['width'], row['start'])].append(row)
+    for (role, width, start), group in rate_groups.items():
+        rate_facts[f'{role}_W{int(width)}_age{int(start)}'] = dict(
+            states=len(group), metrics={key: stats([r[key] for r in group]) for key in
+                ('omega_dot_transport', 'omega_dot_redistribution', 'omega_dot_effective')})
     result = dict(input_states=len(original), finite_states=len(rows), groups=facts, closure=closure,
-                  natural_trajectories=len(endpoints), natural_endpoint_statistics={key: stats([r[key] for r in endpoints])
+                  natural_trajectories=len(endpoints), natural_population_endpoints=natural_population_facts,
+                  omega_rate_statistics=rate_facts,
+                  natural_endpoint_statistics={key: stats([r[key] for r in endpoints])
                   for key in ('force_ratio_last_to_first', 'initial_log_force_rate', 'final_log_force_rate')},
                   interpretation=dict(structural_to_directional='loss from replacing the current direction by population norm bounds',
                                       generated_target_cancellation='1-|G+T|/(|G|+|T|); each source includes its compensation',
