@@ -18,10 +18,19 @@ header-includes:
 
 Our numerical construction obtains accurate approximation using narrow tanh
 transitions. Training the slopes from small initialization often produces much
-broader features. **We want to explain why deterministic gradient descent can
-continue fitting while failing to acquire the scales used by that construction.**
-The useful conclusion is a rate or a finite-time population bound; it need not
-assert that every slope shrinks or that training reaches a trapping equilibrium.
+broader features and substantial output error. **We want to explain why
+deterministic gradient descent can continue fitting without producing accurate
+output within a useful training budget.** Population scale acquisition is the
+mechanism we study, rather than a substitute for measuring that error.
+
+For a budget of $N$ updates and tolerance $\varepsilon$, success means that
+the network's actual readouts and geometry attain raw relative $L^2$ error
+$\|f_{\theta_n}-y\|/\|y\|\le\varepsilon$ at some $n\le N$.
+We report several tolerances, distinguish training from independent-grid
+error, and use the same checkpoint-selection rule for GD and Adam. A separate
+readout refit answers a different question about the supplied geometry. A
+failed endpoint does not establish failure at every earlier update; sparse
+archived samples cannot exclude an intervening crossing.
 
 The strongest empirical finding is that, after the initial coarse fit, slope
 motion is driven almost entirely by the **effective fine force**: the force
@@ -34,12 +43,13 @@ remains. Correcting generated lower-order error can further suppress motion,
 but it is not the sole explanation across targets.
 
 This note derives that reduction, tests its interpretation against the
-experiments, and proves a conditional population bound. Its substantive open
-assumption concerns preservation of the population's shape, not an assumed
-small future force. Existing proofs that derive persistence from initial data
-are presently too conservative to explain the observed duration. Thus we have
-a supported mechanism and a precise proof target, not yet a general theorem
-that GD cannot learn useful slopes on practical horizons.
+experiments, and connects population structure directly to output-error lower
+bounds. The new persistence proof starts from population moments and coarse
+tracking at a post-transient state, then derives a window of slow evolution.
+It allows the features and their Jacobian to change throughout that window.
+Its mathematical validity and the usefulness of its constants at experimental
+widths are separate questions. Neither the mechanism nor the theorem requires
+every slope to shrink or a trapping equilibrium to exist.
 
 **How to read the plots.** A neuron's physical slope scale is
 $\gamma_j=|a_j|$. Its normalized scale is $\lambda_j=h|a_j|$, where
@@ -74,6 +84,22 @@ tracking becomes small.
 ![The remaining six targets, using the same settings, axes, five-seed aggregation, and crossover definition as Figure 1. Scale traces use the same saved states as the forces. The horizontal dashed line is $\lambda=0.25$; no saved maximum reaches it in any of the 65 trajectories across both figures. Some targets show later effective-force reinforcement and scale growth while tracking remains subdominant. These observations concern sampled states, not a proof between samples. A curve's visual slope on logarithmic axes is not its movement per optimizer update.](figures/d34_pi_forces_scales_2.png)
 
 \newpage
+
+**Does the trained network produce accurate output?** On the same thirteen
+targets and five seeds, Adam makes substantially more progress than GD.
+At 600k updates its median relative error is 1.39%, versus 86.6% for GD.
+Nevertheless, 37 of 65 Adam endpoints exceed 1% error, 60 exceed 0.1%,
+and all 65 exceed $10^{-4}$. These numbers concern the actual trained
+readouts, with no refitting or smoothing. They make the accuracy requirement
+explicit: a circuit can improve substantially and still miss the required
+precision. The endpoints alone do not establish failure throughout training.
+
+![Output error and mean slope measured at the same three update counts for GD and Adam. Each panel contains thirteen targets and five seeds per optimizer at width 177 and learning rate 0.002. The horizontal line marks 1% relative error on an independent input grid. Larger slopes accompany much better Adam fits, but slope size alone does not determine accuracy. There is no separate checkpoint selection for the two methods.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_plots/adam_output_vs_scale.png)
+
+The rest of the note asks two different questions in order: why does the
+population often remain broad under GD, and why does that population structure
+leave substantial output error? Section 7 returns to Adam, where the adaptive
+metric and momentum require their own measurements.
 
 ## 1. Start with the coupled training dynamics
 
@@ -431,6 +457,75 @@ elsewhere. Discarding all misaligned neurons loses much of the mechanism.
 The conclusion should concern the fraction of neuron labels that ever travel
 far enough, allowing individuals to move in different directions.
 
+### From population structure to output error
+
+**A direct test of what the population cannot represent.** At the width-1409,
+20k-update checkpoints, measured relative error ranges from 42.8% to 91.3%.
+A simple population quantity already explains almost all of it: the lower
+bound below is 99.5% of the actual error at the median across six targets
+and four seeds. This is stronger than observing that slopes miss a preferred
+scale. It bounds the output error of the network with its current readouts.
+
+\Needspace{6\baselineskip}
+
+Define the readout-weighted nonlinear capacity
+
+$$
+Q(\theta)=\sum_j |c_j|a_j^2\left(|b_j|+\frac{|a_j|}{3}\right).
+$$
+
+For $|x|\le1$, subtract the affine function obtained by expanding each
+feature to first order at $x=0$. Since
+$|\tanh''u|\le2|u|$, the integral remainder gives
+
+$$
+\left|\tanh(b+ax)-\tanh b-ax\tanh'b\right|
+\le a^2|b|+\frac{|a|^3}{3}.
+$$
+
+Projection onto the fine space removes that affine function. The triangle
+inequality then yields the exact bound
+
+$$
+\boxed{\quad
+\|f_\theta-y\|_m\ge
+\left[\|P_Hy\|_m-Q(\theta)\right]_+.
+\quad}
+$$
+
+This is a global tanh inequality, not a truncated polynomial training model.
+It also holds on an independent input measure in $[-1,1]$, using that
+measure's own affine projection and target norm. When $Q$ is small, the
+population cannot supply enough nonlinear output to cancel the target's fine
+component. Preserving small $Q$ for a duration therefore preserves large
+output error for that duration.
+
+![Population inequalities explain the output error of broad states, but become uninformative for many concentrated late states. Each point is one of 223 archived checkpoints. Widths 705 and 1409 each contain six targets and four seeds at 20k updates; width 177 includes 175 checkpoints with different restart ages and broader target coverage. The vertical coordinate is the largest of the $Q$ bound and four valid polynomial-tail bounds. The dotted diagonal is equality with actual raw error. Training and independent-grid calculations use their own projections. A zero lower bound means this argument is uninformative, not that fitting succeeded.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/archive_summary_refined/static_strongest_output_floors.png)
+
+The distinction between diffuse and concentrated populations matters. The
+$Q$ bound is positive at all 48 wide checkpoints. Among 59 width-177
+checkpoints at 600k updates, it is positive at only 20; a small group often
+dominates $Q$, making this absolute-value bound too large. The late network
+can still have large error. Thus the theorem should identify a population
+regime and its duration, rather than claim a universal error floor from
+width alone.
+
+**A sharper variant when target structure matters.** Project onto the
+orthogonal complement of polynomials of degree below $k$. Taylor's theorem
+in the input gives
+
+$$
+\|f-y\|_m\ge
+\left[\|P_{\ge k}y\|_m-
+\frac{C_k}{k!}\sum_j|c_j||a_j|^k\right]_+,
+\qquad C_k=\sup_{u\in\mathbb R}|\tanh^{(k)}u|.
+$$
+
+The plot uses $k=2,3,5,9$ in addition to $Q$. These inequalities concern
+the exact network; their empirical usefulness depends on both the target
+tail and the current weighted slope moments. They are not restricted to a
+degree-nine target.
+
 ## 5. A useful coupled surrogate, with a visible domain of validity
 
 **Example.** At supplied wide-network states, a quintic approximation to tanh
@@ -481,49 +576,75 @@ Thus neither ninth-degree orthogonality nor one frozen growth rate explains
 all targets. The exact decomposition (2) survives these failures; the polynomial
 approximation and frozen-feedback models do not have universal validity.
 
-## 6. A population theorem that exposes the missing assumption
+## 6. A population theorem: slow reinforcement preserves output error
 
-**Motivation.** We do not need to predict every slope accurately. We need to
-show that enough slopes cannot travel from their small initial values to
-$\lambda_*$ quickly. The width evidence suggests preserving a diffuse
-population, rather than a common sign pattern. The following proposition
-makes that idea precise without assuming that the future force is small.
+**What this section shows.** We can now prove a persistence statement from
+the initial population, rather than assume that future fine forces or
+concentration remain small. The mechanism is a feedback limitation: broad
+features have weak nonlinear sensitivity, and their coupled motion cannot
+rapidly build much more of it. The conclusion is an output-error lower bound;
+limited population scale acquisition follows from the same argument.
 
-Define the empirical particle moments
+With $X_j=\sqrt W(a_j,b_j,c_j)$, define
 
 $$
-M=\mathbb E_W|X|^2=\sum_j(a_j^2+b_j^2+c_j^2),\quad
-M_6=\mathbb E_W|X|^6,\quad C_6=M_6/M^3.
+\begin{aligned}
+M&=\mathbb E_W|X|^2=\sum_j(a_j^2+b_j^2+c_j^2),&
+M_6&=\mathbb E_W|X|^6,\\
+B&=\frac{M_6^{1/6}}{W^{1/3}},&C_6&=M_6/M^3.
+\end{aligned}
 \tag{6}
 $$
 
-$C_6$ measures concentration: it grows when a small group carries a
-disproportionate share of the particle magnitude. Uniformly scaling every
-particle leaves $C_6$ unchanged. A bound on $C_6$ therefore does not assume
-small slopes, a small second moment, or little motion.
+$B=[\sum_j(a_j^2+b_j^2+c_j^2)^3]^{1/6}$ is a norm of the whole
+population; it allows heterogeneous particles.
+$C_6$ records concentration, but the theorem below does not assume a bound
+on its future values. Write $Y=\|e_H\|_m$ and
+$E_s=\sum_j(a_j^2+c_j^2)$.
 
-**Proposition 1: conditional delay under effective flow.** Consider
-$\dot\theta=-F$ with the full complement in (2), $|x_i|\le1$, and a
-well-defined coarse projector throughout $[0,T]$. Suppose $M_0>0$ and
-$C_6(t)\le\overline C_6$ on that interval. Let
-
-$$
-Y_0=\|e_H(0)\|_m,\qquad
-k=\frac{6Y_0\sqrt{\overline C_6}M_0}{W}.
-$$
-
-For $0\le t\le T$ with $kt<1$, the total physical parameter path and second moment obey
+**Proposition 1: initial-data persistence under effective flow.** Consider
+the exact flow $\dot\theta=-F$ on a centered symmetric grid in $[-1,1]$,
+with $v=\langle x^2\rangle_m>0$. Suppose $B_0,Y_0>0$. Choose $q>1$,
+put $A_q=(q-1)B_0$, and require the initial-data rank test
 
 $$
-\int_0^t\|F(s)\|\,ds\le A(t):=
-\sqrt{M_0}\bigl[(1-kt)^{-1/2}-1\bigr],\qquad
-M(t)\le\frac{M_0}{1-kt}.
+\delta_q=
+\sqrt{\frac{v(\sqrt{E_{s,0}}-A_q)_+^2}
+{1+2(\sqrt{M_0}+A_q)^2}}-3q^3B_0^3>0.
+$$
+
+Appendix A.2 gives an alternative test using the measured initial coarse
+singular value. Set $k=6Y_0B_0^2$ and $T_q=(1-q^{-2})/k$.
+For $0\le t\le T_q$, the coarse projector remains defined and
+
+$$
+\begin{aligned}
+B(t)&\le\frac{B_0}{\sqrt{1-kt}},\\
+\int_0^t\|F(s)\|\,ds&\le A(t):=
+B_0\bigl[(1-kt)^{-1/2}-1\bigr],\\
+Y(t)&\ge Y_0\exp\left\{-\frac{9B_0^6}{2k}
+\bigl[(1-kt)^{-2}-1\bigr]\right\}.
+\end{aligned}
 \tag{7}
 $$
 
-For $0\le\lambda_0<\lambda_*$, let $p_0$ be the fraction initially above
-$\lambda_0$. The fraction of labels ever reaching $\lambda_*$ by time $t$
-satisfies
+There is also a direct output interpretation. Throughout this interval,
+
+$$
+\|f(t)-y\|_m\ge
+\left[\|P_Hy\|_m-
+\frac{2\sqrt2q^4}{3W}M_6(0)^{2/3}\right]_+.
+$$
+
+The population still cannot produce enough non-affine output. This avoids
+assuming that every accurate network must attain a prescribed slope scale.
+For a nonzero target, dividing by $\|y\|_m$ gives a relative-error floor. The same capacity bound
+holds on an independent evaluation measure in $[-1,1]$, with that measure's
+own projection and target norm.
+
+Population movement remains part of the conclusion. For
+$0\le\lambda_0<\lambda_*$, let $p_0$ be the fraction initially above
+$\lambda_0$. The fraction of labels ever reaching $\lambda_*$ satisfies
 
 $$
 p_{\rm ever}(t)\le
@@ -532,107 +653,194 @@ p_{\rm ever}(t)\le
 \tag{8}
 $$
 
-Appendix A proves this for exact tanh, not a polynomial substitute. The central
-step is a structural sensitivity bound,
+**Why the result closes.** Exact tanh derivatives, after removing affine
+output, give the structural bound
 
 $$
-\|F\|\le\frac{3}{W}\|e_H\|_m\sqrt{M_6}.
+\|F\|\le\frac{3}{W}\|e_H\|_m\sqrt{M_6}=3YB^3.
 \tag{9}
 $$
 
-Affine projection removes the leading Jacobian, leaving a cubic-size
-remainder; the coarse compensation is an orthogonal projection and cannot
-increase its full norm. Under effective flow the fine loss decreases. These
-facts close a differential inequality for $M$ under the shape assumption.
-Small future force is a consequence, not a premise.
+Effective training decreases $Y$. A population norm cannot grow faster
+than total parameter speed, so $\dot B\le\|F\|\le3Y_0B^3$.
+This scalar differential inequality bounds future $B$ from $B_0$ alone;
+its travel allowance also preserves coarse conditioning. The proof concerns
+the evolving ODE, not the validity duration of a frozen Jacobian or a
+polynomial training model. It does not require slopes to shrink.
 
-For a desired additional crossing fraction $\varepsilon>0$, (8) remains at
-most $p_0+\varepsilon$ whenever
+For a desired additional crossing fraction $\varepsilon>0$, the same
+travel bound gives $p_{\rm ever}\le p_0+\varepsilon$ whenever
 
 $$
-t\le \frac{1}{k}\left[
+t\le\min\left\{T_q,\ \frac1k\left[
 1-\left(1+
-\frac{\sqrt{\varepsilon W}(\lambda_*-\lambda_0)}{h\sqrt{M_0}}
-\right)^{-2}\right],
+\frac{\sqrt{\varepsilon W}(\lambda_*-\lambda_0)}{hB_0}
+\right)^{-2}\right]\right\}.
 \tag{10}
 $$
 
-within the assumed interval and with $k>0$. At fixed $kt<1$, bounded
-$M_0,Y_0,\overline C_6$ give a time scale proportional to $W$ and a small
-population crossing allowance. If also $h$ is proportional to $1/W$, that
-allowance in (8) is $O(W^{-3})$ for a fixed normalized gap. This is a conditional
-width prediction, not an evaluated practical horizon. It is an absolute speed
-bound; it need not preserve an unusually tiny measured initial force.
+For bounded initial rescaled moments, nondegenerate coarse response, and
+$Y_0$ bounded above and away from zero, fixed $q$ gives $T_q$ proportional to $W^{2/3}$ and travel
+$O(W^{-1/3})$. These are sufficient asymptotic rates; the constants must be
+evaluated before claiming a useful experimental training budget.
 
-**Ordinary GD requires its own statement.** Suppose the projector (2) exists
-at each pre-update state of actual GD, and $L_n\le L_*$,
-$C_{6,n}\le\overline C_6$, and
-$\|R_{abc,n}\|\le\delta_n/W$, with $\delta_n\ge0$; the subscript excludes
-the output bias. Set
+**Ordinary GD: tracking can also be controlled from initial data.**
+Consider a sequence of widths with initial $M_6$ and total loss bounded
+above, $v$ and initial $E_s$ bounded below by positive constants, and
+$\|z_0\|=o(W^{-1/3})$. These are post-transient starting assumptions,
+not claims about how early training reaches such a state. There are
+width-independent $c>0$ and $\eta_*>0$ such that ordinary GD with
+$0<\eta\le\eta_*$ obeys, for all sufficiently large widths,
 
 $$
-\begin{aligned}
-\overline m_0&=\sqrt{M_0},\\
-\overline m_{n+1}&=\overline m_n+
-\frac{\eta}{W}\left(3\sqrt{2L_*\overline C_6}\,
-\overline m_n^3+\delta_n\right).
-\end{aligned}
+n\eta\le cW^{2/3}\quad\Longrightarrow\quad
+\begin{cases}
+M_{6,n}=O(1),\quad \displaystyle\sum_{k<n}\|\theta_{k+1}-\theta_k\|
+=O(W^{-1/3}),\\[2pt]
+\|f_n-y\|_m\ge[\|P_Hy\|_m-O(W^{-1})]_+.
+\end{cases}
 \tag{11}
 $$
 
-Then $\sqrt{M_n}\le\overline m_n$, and (8) holds through update $N$ with
-$A(t)$ replaced by $\overline m_N-\overline m_0$. Appendix A proves this
-directly from simultaneous GD. Loss descent needs a justified step size, and
-the tracking assumption concerns all slope, bias, and readout coordinates.
-Small measured slope tracking alone does not supply that premise. This
-corollary shows exactly where tracking control enters a population argument;
-it is not yet a certified bound for the experimental continuations.
+Appendix A.4 proves this using an explicit initial-data recurrence, including
+tracking and finite-step error. It does not identify GD with gradient flow
+by substituting $t=n\eta$. Future small tracking is a conclusion of that
+comparison, not an additional premise. The remaining practical question is
+whether the sufficient bounds retain the slow behavior for a useful budget
+at the measured widths; a sharper signed population inequality may extend
+that budget. Adam requires a different dynamical argument.
 
-**Assumptions to earn.** Small initial normalized scales and broad particle
-distributions are observed. Effective-force dominance and slow moment changes
-are observed in specified windows. But a useful interval-wide bound on
-$C_6$, the required full tracking budget, and their preservation from initial
-data have not been established by these observations. The proposition names
-this gap rather than hiding it inside a future-force assumption.
+## 7. Adam: measure access to the remaining error in its actual metric
 
-## 7. What is proved, and what would complete the mechanism?
+**The motivating example.** Adam reaches much lower error than GD in the
+opening comparison, but many runs remain far from the desired accuracy.
+The Euclidean GD theorem cannot explain Adam merely by changing a learning
+rate. Adam rescales parameter directions and carries momentum, so both
+effects must enter the diagnosis.
 
-**A concrete comparison.** At width 1409 the observed second moment changes
-by only a factor 0.99790-1.00433 between the endpoints of a 20k-update
-continuation. Nevertheless, FP64 evaluation of our latest initial-data
-persistence bounds reaches at most 38 GD updates on the archived panel. That mismatch is
-a limitation of the sufficient estimates, not a prediction that the dynamics
-escape after 38 steps.
+First consider a simpler question whose answer is exact. If geometry is
+frozen, let $A$ be the readout feature matrix, including output bias and
+divided by $\sqrt m$ to match the loss normalization. Ordinary readout GD
+obeys $r_{n+1}=(I-\eta AA^T)r_n$. If $AA^T$ has eigenvalues
+$\kappa_i$ and orthonormal eigenvectors $u_i$, then
 
-**What we have proved.** The gradient decomposition is exact, and
-Proposition 1 gives a population travel bound under its stated shape and
-tracking assumptions. Appendix A supplies the proof. What remains is to
-derive preservation of those assumptions for an informative interval.
+$$
+\|r_n\|^2=\sum_i(1-\eta\kappa_i)^{2n}|u_i^Tr_0|^2.
+$$
 
-**What the numerical checks establish.** A generic GD energy bound, with
-outward-rounded initial checks at 18 width-panel states, excludes
-$\lambda=0.25$ for 50k further updates. The more mechanistic exact-tanh
-persistence proof allows mixed signs and biases, but its sufficient checks
-admit only 22 of 223 states, all at width 1409, and its best refined interval
-is just 38 updates. These are different bounds answering different questions.
+For $\eta\kappa_{\max}\le1$, energy initially in eigenvalues at most
+$s$ cannot decay faster than $(1-\eta s)^{2n}$. Thus a slow subspace
+containing substantial residual energy yields an **output-error lower bound
+through a specified budget**. A large condition number alone is insufficient:
+the remaining error must actually occupy the difficult directions.
+Appendix A.6 states the bound precisely.
 
-**What the forecasts add.** The coupled quintic model predicts 20k motion
-accurately on the specified wide confirmation panel. That is empirical
-support for the coupled mechanism, not a regional error certificate or a
-model that remains valid for late sine.
+For an evolving Adam state we can ask the corresponding instantaneous
+question. Let $J$ be the full output Jacobian in the same RMS coordinates,
+$D=\operatorname{diag}[(\sqrt{\widehat v}+\epsilon)^{-1}]$ the next-update
+adaptive scaling, and $K_D=JDJ^T$. The spectrum of $K_D$, together with
+the residual energy in its eigenvectors, measures the current gradient's
+access to that error. We also compute the readout-only version. These are
+current-state measurements; evolving $D$, $J$, and momentum prevent treating
+the eigenvalues as Adam convergence rates.
 
-The energy baseline is ordinary-GD mathematics,
-with verified assumptions at the archived 20k states of six targets and three
-widths. It reaches nominal update 70k and already rules out a distant threshold
-without any effective-force analysis. Mechanistic theorems must add an
-explanation of rates, width dependence, or much longer persistence, rather
-than claiming that threshold exclusion alone validates the mechanism.
-The latest persistence audit evaluates its bounds in FP64, without interval
-certification; its short valid
-windows should be reported alongside the successful observations.
+![Most remaining Adam error lies in directions with weak instantaneous sensitivity, even after adaptive scaling. Each paired line joins the raw and adaptive calculation for one target/seed state; there are 65 states per panel. The displayed fraction includes eigenvalues with $\eta\kappa<10^{-5}$ and numerically unresolved directions. The cutoff is a sensitivity diagnostic, not a predicted 100k-update hitting time. At 600k updates the median joint fraction is 98.97% before scaling and 97.83% after scaling. These panels include successful and failing 1% endpoints alike.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_plots/adam_bulk_slow_residual_energy.png)
 
-**The next theoretical question is preferential growth.** For a nonzero
-particle population, exact differentiation gives
+At the final checkpoint, the median unresolved fraction in the adaptive
+joint calculation is only $2.94\times10^{-12}$, with maximum 0.611%.
+Thus the large slow-energy fraction is mostly in resolved weak directions.
+The result is compatible with a few strongly accessible directions
+contributing a substantial gradient while most output error remains hard to
+correct. An average sensitivity can hide this distinction.
+
+**Does the actual Adam step exploit the accessible directions?** Let
+$\widehat m$ be the next bias-corrected first moment. With
+$g=J^Tr$, write the update as
+
+$$
+\Delta\theta=-\eta D\widehat m
+=-\eta Dg-\eta D(\widehat m-g).
+$$
+
+The first term is the current-gradient step; the second is the momentum
+lag relative to that step. Set $u=J\Delta\theta$ and
+$w=f_{\theta+\Delta\theta}-f_\theta-u$, all in RMS coordinates.
+The exact output-loss change is
+
+$$
+\begin{aligned}
+L(\theta+\Delta\theta)-L(\theta)
+={}&\underbrace{-\eta g^TDg}_{\text{current-gradient reduction}}
++\underbrace{-\eta g^TD(\widehat m-g)}_{\text{momentum-lag contribution}}\\
+&+\underbrace{\tfrac12\|u\|^2}_{\text{quadratic step cost}}
++\underbrace{\langle r+u,w\rangle+\tfrac12\|w\|^2}_{\text{nonlinear remainder}}.
+\end{aligned}
+$$
+
+We reconstruct this next step from the archived parameters and optimizer
+moments. Among the 37 primary Adam endpoints still above 1% error at 600k,
+momentum lag suppresses 94.4% of the current gradient's predicted reduction
+at the median. The virtual next step increases loss in 22 of 37 cases.
+Only one has lag large enough to cancel the entire linear gradient reduction:
+the positive quadratic step cost also matters. This is a more precise
+diagnosis than saying that tracking simply cancels the fine gradient.
+
+![Current-gradient descent predictions can greatly overstate actual next-step progress. Left: positive vertical values mean loss decreases; negative values mean it increases. Right: a lag ratio of one cancels the current gradient's entire linear reduction before the quadratic step cost. Orange includes thirteen targets and five seeds at learning rate 0.002; the other rates use the same thirteen targets at seed zero. All three checkpoint ages are shown. These are virtual next updates reconstructed from saved optimizer states, not cumulative attributions over training.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_plots/adam_actual_output_progress.png)
+
+Rate controls prevent interpreting this as an unavoidable property of every
+Adam configuration. On the matched thirteen-target, seed-zero subset at 600k,
+median errors are 1.22%, 0.991%, and 0.667% for rates 0.002, 0.001, and
+0.0002. All thirteen endpoints at each rate still exceed $10^{-4}$.
+Smaller steps improve some cases and reduce some update inefficiency; they
+do not remove the remaining accuracy gap on this panel.
+
+**What this adds, and what it does not.** Weak access to most remaining
+error coexists with inefficient updates in accessible directions. This
+supports an Adam theory based on residual-weighted adaptive sensitivity
+and an accumulated output-progress budget. Three checkpoint diagnostics
+do not prove sustained oscillation, a uniform lower bound, or persistent
+tracking cancellation. Establishing duration requires controlling the
+evolving metric and optimizer moments together.
+
+## 8. What is proved, and what would complete the mechanism?
+
+**The main advance is a structural ODE result.** Starting from a diffuse
+population and sufficiently small coarse tracking, the theorem propagates
+bounded moments, limited travel, and substantial output error. It no longer
+assumes that the future fine force stays small. The proof applies to changing
+features and changing coarse compensation. Its ordinary-GD version closes
+tracking and finite-step error from initial data as well.
+
+**The practical duration remains the gap.** On the 24 width-1409 checkpoints,
+the current ordinary-GD recurrence gives 86--172 additional updates, with
+median 95. The actual continuations remain slow for 20k updates. The bound
+does not predict escape after 172 updates; it stops guaranteeing persistence.
+This is an FP64 evaluation of sufficient inequalities, not an outward-rounded
+certificate. Increasing the moment order improves an asymptotic exponent but
+worsens the tested finite-width constants, so it is not the useful refinement
+on this panel.
+
+We also tested two initial-data refinements for effective flow: start from
+the measured fine Jacobian norm, or from the smaller actual effective-force
+norm. Both derive subsequent growth bounds along the evolving ODE. At
+width 1409 their median guaranteed physical flow times are 7.62 and 4.54,
+respectively, versus 2.07 for the sixth-moment bound. The observed
+20k-update continuation has physical time 40. These effective-flow intervals
+are not certified GD update counts. The actual-force proof retains more
+residual energy but is limited by absolute curvature estimates.
+
+![Initial-data bounds distinguish mathematical persistence from the duration supported by conservative constants. The left panel shows available effective-flow time; the right shows the fraction of the initial fine-error norm retained by the bound. Points include all 223 static states, so the width-177 group contains different restart ages. Each method allows its sensitivity or force to evolve. A zero energy floor is uninformative. These FP64 calculations do not certify machine-rounding errors, unsampled trajectories, or ordinary GD.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/archive_summary_refined/effective_flow_enclosures.png)
+
+A separate generic GD energy argument, with outward-rounded initial checks
+at eighteen wide-panel states, already excludes $\lambda=0.25$ for 50k
+additional updates. Appendix B gives that proof. It is useful as a baseline,
+but a distant-threshold exclusion alone does not explain the effective-force
+mechanism. The population theorem adds output error, width dependence, and
+a reason for suppressed reinforcement. The remaining task is to preserve
+more of the signed collective structure in its duration estimate.
+
+**Which structure matters?** For a nonzero population, exact differentiation
+gives
 
 $$
 \frac{d}{dt}\log C_6
@@ -643,23 +851,32 @@ $$
 \tag{12}
 $$
 
-Concentration increases when large particles receive disproportionately
-positive radial motion. Thus the missing shape condition has a concrete
-mechanistic test: attribute the two weighted radial-growth terms to effective
-fine correction and shared compensation, retaining mixed signs and biases.
-An upper bound on their difference, derived from mixed moments of the ODE,
-would propagate $C_6$ and close the population argument. This is more useful
-than controlling every neuron's position separately. It remains a research
-target, not a proved invariant or an already measured empirical success.
+Concentration increases when larger particles receive disproportionately
+positive radial motion. This is a collective correlation, not a requirement
+to predict each neuron. We now measure its effective, tracking, generated,
+and target contributions, as well as the corresponding derivatives of $Q$.
+For the last two, split $F=\Pi J_H^TP_Hf-\Pi J_H^TP_Hy$ at the same
+state. Both terms retain the same coarse compensation.
 
-The discriminating follow-up is to measure (12) on existing trajectories,
-then perturb concentration or the relevant mixed moments while matching
-initial coarse balance and force as closely as possible. If stronger
-preferential growth accelerates acquisition, the shape mechanism gains a
-causal test. If concentration grows but scale travel remains small, a bound
-using signed outward coupling or the sensitivity actually reached by the
-residual should replace the isotropic sixth-moment bound. Either result changes
-the theorem's assumptions; it is not a search for smaller constants alone.
+The measurements distinguish two regimes. At width 1409 after 20k updates,
+generated-output correction reduces $Q$ in all 24 states. The target
+contribution increases it in sixteen and decreases it in eight. Nevertheless,
+the median ratio $|\dot Q|/(|\dot Q_{\rm generated}|+
+|\dot Q_{\rm target}|)$ is 0.999: there is little cancellation in the
+typical wide state. At width 177 after 600k, the same ratio has median
+0.0153 across 59 states. Strong cancellation is common there, but its signs
+are not universal. **Correction and weak sensitivity are complementary
+mechanisms whose relative importance changes with the population.**
+
+![The same population equation has different balances. Left: six targets and four seeds at width 1409 after 20k updates. Right: 59 late states across 23 targets at width 177 after 600k; thirteen targets have an additional seed-zero state, so this is not a balanced target average. Both axes are signed contributions to $\dot Q$ along the current effective flow. Points near the dashed line cancel; the color gives the fraction of absolute contributions retained in the net rate. Yellow means little cancellation. Signed logarithmic axes have a linear neighborhood around zero. These are instantaneous derivatives at supplied states, not a proof of future persistence.](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/archive_summary_refined/population_correction_regimes.png)
+
+An improved theorem should bound the growth-producing collective terms while
+retaining these correlations. A global absolute-value curvature bound loses
+both cancellation and weak target alignment. The proposed assumptions should
+be statements about those population correlations and their own evolution,
+verified against interventions; assuming a small future force would simply
+restate the conclusion. Neither a fixed Jacobian nor universal contraction
+is the appropriate target.
 
 **Scope across targets and optimizers.** The evidence extends beyond degree
 nine and sine: 23 target instances in the broad audit, ten separately chosen
@@ -670,13 +887,11 @@ The horizon is part of each statement. Eventual movement after millions of
 updates does not refute a finite-time slowdown, and long-run forecast failures
 do not define its practically relevant duration.
 
-Adam needs a different dynamical theorem. Its tracking activity can be large
-in raw gradients and component step lengths while largely cancelling in net
-outward motion. The Adam attribution experiments measure these separately
-and also contain escapes in some regimes.
-Momentum and adaptive scaling change both the metric and the state. The
-Euclidean GD bound above does not transfer to Adam merely because some of its
-trajectories also show scale saturation.
+The Adam audit strengthens the output-based framing but remains a separate
+dynamical problem. The evidence supports studying residual energy, adaptive
+sensitivity, and actual accumulated progress together. It does not support
+transferring the Euclidean GD rates or imposing one sign on Adam's tracking
+contribution across targets.
 
 \newpage
 
@@ -722,7 +937,7 @@ No parity, sign alignment, or individual support cap is required. The
 inequality is global for tanh, although useful scaling requires controlled
 moments.
 
-### A.2. Closing the effective-flow moment bound
+### A.2. Closing population persistence from initial data
 
 Under $\dot\theta=-F$,
 
@@ -732,21 +947,78 @@ $$
 \tag{A2}
 $$
 
-Let $p=(a,b,c)$, so $M=\|p\|^2$. Using (9) and the shape assumption,
+Let $p_j=(a_j,b_j,c_j)$. The upper derivative of a norm is at most
+the norm of its velocity. Therefore
 
 $$
-\dot M=-2p^TF_{abc}
-\le2\sqrt M\|F\|
-\le\frac{6Y_0\sqrt{\overline C_6}}{W}M^2.
+D^+B\le\left(\sum_j|\dot p_j|^6\right)^{1/6}
+\le\left(\sum_j|\dot p_j|^2\right)^{1/2}
+\le\|F\|\le3Y_0B^3.
 \tag{A3}
 $$
 
-Comparison with the scalar equality gives $M(t)\le M_0/(1-kt)$.
-Substituting this upper bound in
-$\|F\|\le3Y_0\sqrt{\overline C_6}M^{3/2}/W$ and integrating gives
-(7). If $Y_0=0$, then $F=0$ and the trajectory is stationary; (7) is read
-with $A=0$. The proposition assumes the coarse solve remains defined and
-does not derive that premise from (A3).
+Comparison gives $B\le b(t)=B_0(1-kt)^{-1/2}$, with
+$k=6Y_0B_0^2$. Since $\|F\|\le3Y_0b^3=b'$, total travel is at
+most $b-B_0=A(t)$. Also $\dot Y=-\|F\|^2/Y\ge-9B^6Y$ when
+$Y>0$. Integrating this inequality with the bound on $b$ proves all
+three estimates in (7). If $Y_0=0$, effective flow is stationary wherever
+the coarse projector is defined; no division by $k$ is needed.
+
+**Why coarse rank survives.** The affine network
+$f_0=d+\sum_jc_j(a_jx+b_j)$ has coarse Gram matrix
+
+$$
+K_0=\begin{pmatrix}
+1+\sum_j(b_j^2+c_j^2)&\sqrt v\sum_ja_jb_j\\
+\sqrt v\sum_ja_jb_j&v\sum_j(a_j^2+c_j^2)
+\end{pmatrix}.
+$$
+
+\Needspace{9\baselineskip}
+
+Cauchy–Schwarz gives $\det K_0\ge vE_s$ and
+$\operatorname{tr}K_0\le1+2M$. Thus the affine coarse Jacobian has
+least singular value at least $\sqrt{vE_s/(1+2M)}$. The column-remainder
+calculation in A.1 bounds the difference between the exact and affine
+coarse Jacobians by $3B^3$. Consequently
+
+$$
+\sigma_{\min}(J_C)\ge\sqrt{\frac{vE_s}{1+2M}}-3B^3.
+$$
+
+Travel at most $A_q$ gives
+$\sqrt M\le\sqrt{M_0}+A_q$ and
+$\sqrt{E_s}\ge(\sqrt{E_{s,0}}-A_q)_+$.
+Until $B$ reaches $qB_0$, the rank bound is therefore at least
+$\delta_q>0$. A first-exit argument closes the estimates: neither rank
+loss nor escape from the moment envelope occurs before $T_q$.
+Bounded total travel also permits continuation of the smooth ODE through
+that interval. This proves preservation, rather than assuming it.
+
+An alternative initial-data rank margin, valid for the same travel, is
+
+$$
+\sigma_{\min}(J_C(0))-
+\left[\sqrt2+4(\sqrt{M_0}+A_q)\right]A_q.
+$$
+
+Indeed $\|DJ_C\|\le\sqrt2+4\sqrt M$: the full neuron Hessian has
+geometry–geometry norm at most $4|c_j|$ and cross-block norm at most
+$\sqrt2$. Integrating along the path gives this alternative. The maximum
+of the two rank margins may be used in the theorem.
+
+**Why this implies output error.** Subtracting the affine network and
+using $|\tanh u-u|\le|u|^3/3$ yields
+
+$$
+\|P_Hf\|_m\le\frac{2\sqrt2}{3}\sum_j|p_j|^4
+\le\frac{2\sqrt2}{3}W^{1/3}B^4.
+$$
+
+With $B\le qB_0$, the reverse triangle inequality proves the stated
+output floor. The remainder estimate is pointwise on $[-1,1]$, so the
+capacity floor also holds for another evaluation measure on that interval.
+The dissipation identity (A2), however, concerns the training measure only.
 
 ### A.3. From collective travel to ever-acquired labels
 
@@ -765,27 +1037,114 @@ followed by a return below threshold. It is therefore stronger than an
 endpoint count. Solving $h^2A^2/[W(\lambda_*-\lambda_0)^2]\le\varepsilon$
 gives (10). No assumption on the direction of individual velocities was used.
 
-### A.4. Direct discrete-GD proof
+### A.4. Ordinary GD: close tracking and finite steps together
 
-At each iterate the complete empirical residual obeys
-$\|e_{H,n}\|_m\le\sqrt{2L_*}$. The exact identity and (A1) imply
+This proof constructs an initial-data certificate and then derives the
+width scaling in (11). It does not assume a future tracking budget.
+For the full gradient flow, the exact identities are
+
+$$
+\dot z=-Kz+\dot\ell,\qquad
+\dot e_H=-J_H\Pi J_H^Te_H-J_HR.
+$$
+
+The first displays the stability balance: coarse relaxation opposes changes
+in the compensating response. The relevant output disturbance is $J_HR$,
+not merely the slope coordinates of $R$.
+
+Fix $q>1$, let $B_*=qB_0$, $A_*=(q-1)B_0$, and choose a positive
+initial-data coarse singular-value margin $\sigma$ from A.2. Define
 
 $$
 \begin{aligned}
-\|p_{n+1}-p_n\|
-&\le\eta\bigl(\|F_{abc,n}\|+\|R_{abc,n}\|\bigr)\\
-&\le\frac{\eta}{W}
-\left(3\sqrt{2L_*\overline C_6}\,\|p_n\|^3+\delta_n\right).
+\overline Y&=\sqrt{2L_0},& J_*&=\sqrt{1+2(\sqrt{M_0}+A_*)^2},\\
+H_C&=\sqrt2+4(\sqrt{M_0}+A_*),&u_*&=3\overline YB_*^3,\\
+Y_{\rm seg}&=\overline Y+J_*A_*,&
+D_\ell&=\frac{6H_CY_{\rm seg}B_*^3}{\sigma^2}
++\frac{9B_*^6+6\sqrt2Y_{\rm seg}B_*^2}{\sigma}.
 \end{aligned}
 $$
 
-The right side is monotone in $\|p_n\|$. The triangle inequality and
-induction give $\|p_n\|\le\overline m_n$. Summing the increment bounds
-then gives $\sum_{n<N}\|p_{n+1}-p_n\|\le\overline m_N-\overline m_0$.
-The discrete version of A.3 proves the asserted population count.
-This proof uses the actual GD step; it does not replace $t$ by $\eta N$
-in a continuous-time theorem. Loss descent, full tracking control, and shape
-persistence remain explicit premises to verify or derive separately.
+These constants bound the region of total travel at most $A_*$.
+Require $\eta[J_*^2+Y_{\rm seg}H_C]\le1$. Starting from
+$Z_0=\|z_0\|$, $A_0=0$, compute
+
+$$
+\begin{aligned}
+v_n&=u_*+J_*Z_n,\\
+A_{n+1}&=A_n+\eta v_n,\\
+Z_{n+1}&=(1-\eta\sigma^2)Z_n+\eta D_\ell v_n
++\tfrac12H_C\eta^2v_n^2.
+\end{aligned}
+$$
+
+Every step with $A_{n+1}<A_*$ is certified: total loss decreases,
+parameter travel is at most $A_n$, $B_n\le B_*$, coarse rank is
+preserved, and $\|z_n\|\le Z_n$.
+
+To verify this claim, first note that the full output Jacobian and Hessian
+are bounded by $J_*$ and $H_C$. On the entire proposed GD segment,
+the residual norm is at most $Y_{\rm seg}$, so the loss Hessian is at
+most $J_*^2+Y_{\rm seg}H_C$. The step restriction gives loss descent
+and preserves the nodal residual bound $\overline Y$.
+
+For the fine output, subtract the affine network before differentiating
+twice. The remaining Hessian blocks have norms at most
+$4\sqrt2|p_j|^2$ and $2\sqrt2|p_j|^2$; thus
+$\|D^2e_H\|\le6\sqrt2B_*^2$ and
+$\|Dg_H\|\le9B_*^6+6\sqrt2Y_{\rm seg}B_*^2$.
+Differentiating $\ell=K^{-1}J_Cg_H$ in a parameter direction $w$ gives
+
+$$
+D\ell[w]=K^{-1}(DJ_C[w])F+K^{-1}J_CDg_H[w]
+-K^{-1}J_C(DJ_C[w])^T\ell.
+$$
+
+Using $\|\ell\|\le3Y_{\rm seg}B_*^3/\sigma$ bounds this derivative
+by $D_\ell$. Finally, the exact coarse update with its Taylor remainder is
+
+$$
+z_{n+1}=(I-\eta K_n)z_n+(\ell_{n+1}-\ell_n)+r_{C,n},\qquad
+\|r_{C,n}\|\le\tfrac12H_C\eta^2\|g_n\|^2.
+$$
+
+The step restriction ensures
+$\|I-\eta K_n\|\le1-\eta\sigma^2$. Since
+$\|g_n\|\le u_*+J_*Z_n$, induction proves the recurrence and its
+travel premise. The output-capacity proof in A.2 immediately supplies an
+error floor on every accepted step.
+
+For a separate fine-error progress bound, if $9\eta B_*^6\le1$, the
+fine update gives
+
+$$
+Y_{n+1}\ge(1-9\eta B_*^6)Y_n
+-3\eta B_*^3J_*Z_n-3\sqrt2\eta^2B_*^2v_n^2.
+$$
+
+The last term is the actual nonlinear GD remainder allowance; it is not
+omitted by a flow approximation.
+
+**Derive the asymptotic population window.** Under the initial conditions
+of (11), $B_0=\Theta(W^{-1/3})$, $A_*=\Theta(W^{-1/3})$,
+$\sigma$ is bounded below, $u_*=O(W^{-1})$, and
+$D_\ell=O(W^{-2/3})$. Choose a width-independent sufficiently small
+$\eta_*$. In the region $Z\le\varepsilon W^{-1/3}$, the recurrence
+then implies, for positive width-independent constants $c_0,C$,
+
+$$
+Z_{n+1}\le(1-c_0\eta)Z_n+C\eta W^{-5/3}+C\eta^2W^{-2}.
+$$
+
+For large widths this region is preserved from $Z_0=o(W^{-1/3})$.
+Summing through physical time $T=n\eta$ gives
+$\eta\sum_{k<n}Z_k\le CZ_0+CTW^{-5/3}+C\eta TW^{-2}$.
+Hence the travel recurrence is at most
+$CTW^{-1}+o(W^{-1/3})$ for $T=O(W^{2/3})$.
+Choosing the constant in $T\le cW^{2/3}$ sufficiently small keeps
+travel strictly below $A_*$, closing the induction. It follows that
+$M_{6,n}\le q^6M_{6,0}$, and the capacity bound proves (11).
+The discrete counting argument in A.3 also applies to this travel bound.
 
 ### A.5. What the transport PDE contributes
 
@@ -811,11 +1170,102 @@ assumption.
 Its useful contribution is to organize the theorem around transported mass,
 moments, and accumulated action. Equation (A3) bounds a population moment;
 (8) bounds mass whose characteristics ever cross a scale threshold.
-Transport alone does not prevent concentration or reinforcement. The missing
-step is a property of this velocity field, captured by (12), rather than a
-generic consequence of noiseless transport. Discrete GD transports the
+Transport alone does not prevent concentration or reinforcement. The initial-data
+moment inequality uses the specific tanh velocity field to prove persistence.
+Retaining the signed effects in (12) may explain a longer duration than this
+sufficient bound, but such an extension needs its own argument. Discrete GD transports the
 empirical measure by a map at each update; A.4 supplies the corresponding
 population bound without introducing artificial diffusion.
+
+### A.6. Frozen features: an output-error bound through a budget
+
+Let $\widetilde y=y/\sqrt m$, $r_n=Aw_n-\widetilde y$, and
+$K_{\rm fr}=AA^T$. This matrix is distinct from the two-dimensional coarse
+Gram matrix $K$ in (2). For $0<\eta\le1/\kappa_{\max}$, choose a cutoff
+$0<s\le\kappa_{\max}$ and define
+
+$$
+E_0=\|P_{\ker A^T}r_0\|^2,
+\qquad
+E_{\rm slow}(s)=\sum_{0<\kappa_i\le s}|u_i^Tr_0|^2.
+$$
+
+Every readout-GD update $0\le n\le N$ satisfies
+
+$$
+\frac{\|r_n\|}{\|\widetilde y\|}
+\ge
+\frac{\sqrt{E_0+(1-\eta s)^{2N}E_{\rm slow}(s)}}{\|\widetilde y\|}.
+$$
+
+Indeed, $r_n=(I-\eta K_{\rm fr})^nr_0$. In the slow eigenspace every
+multiplier is at least $1-\eta s\ge0$, and its $n$th power is at least
+its $N$th power. The nullspace component never changes. Retaining those
+terms in the exact squared-norm formula proves the bound. If the right-hand
+side exceeds an accuracy requirement, no checkpoint through $N$ meets it.
+The relevant weights are residual energies at the restart; they equal target
+energies only for zero initial output. Evolving-feature GD and Adam require
+separate arguments.
+
+### A.7. A refinement using the actual initial effective force
+
+The measured force can be much smaller than the isotropic bound $3YB^3$.
+To exploit that observation without freezing the force, differentiate the
+projector in (2). With $f=\|F\|$, the exact identity is
+
+$$
+\frac12\frac{d}{dt}f^2
+=-\|J_HF\|^2
+-\langle e_H,D^2e_H[F,F]\rangle
++\ell\cdot D^2e_C[F,F].
+$$
+
+For example, $(D\Pi[F])J_C^T=-\Pi(DJ_C[F])^T$ and
+$\Pi(D\Pi[F])\Pi=0$ follow by differentiating the projector identities.
+Substituting $g_H=F+J_C^T\ell$ gives the displayed compensation term
+with its positive sign. Thus this identity includes changes in geometry,
+readouts, and the coarse projector.
+
+Choose $q>1$, $A_q=(q-1)B_0$, a positive rank margin $\sigma$ from A.2,
+and $H_C=\sqrt2+4(\sqrt{M_0}+A_q)$. The fine Hessian estimate in A.4
+and $|\ell|\le3Y_0B^3/\sigma$ imply
+
+$$
+D^+B\le f,\qquad
+\dot f\le Y_0\left(6\sqrt2B^2+\frac{3H_C}{\sigma}B^3\right)f.
+$$
+
+For $f_0>0$, a comparison system is $\dot b=U(b)$, where
+
+$$
+U(b)=f_0+2\sqrt2Y_0(b^3-B_0^3)
++\frac{3Y_0H_C}{4\sigma}(b^4-B_0^4),\qquad b(0)=B_0.
+$$
+
+To verify it, introduce $u'=Y_0(6\sqrt2b^2+3H_Cb^3/\sigma)u$ and
+$b'=u$. These right-hand sides are nondecreasing in the nonnegative
+comparison variables. Integrating $du/db$ gives $u=U(b)$, so
+$B\le b$, $f\le U(b)$, and total travel is at most $b-B_0$.
+\Needspace{6\baselineskip}
+
+The rank-margin first-exit argument closes these estimates through
+
+$$
+T_q^F=\int_{B_0}^{qB_0}\frac{db}{U(b)}.
+$$
+
+The exact energy identity (A2) also yields
+
+$$
+Y(t)^2\ge\left[Y_0^2-2\int_{B_0}^{b(t)}U(u)\,du\right]_+.
+$$
+
+This proof propagates a small initial force from the changing ODE. It still
+drops residual relaxation and all favorable curvature signs, which explains
+why a very small initial force need not produce a proportionally long
+guarantee. If $f_0=0$, the exact effective flow is stationary wherever the
+projector is defined; the observed slow states need not satisfy that special
+case. No Adam or discrete-GD conclusion follows from this refinement alone.
 
 ## Appendix B. Experimental methods and coverage
 
@@ -927,7 +1377,7 @@ For the pulse experiment, an outward parameter direction lies in the common
 nullspace of the derivatives of coarse output, coarse disequilibrium, and the
 actual slope gradient. Symmetric amplitudes $\pm0.01,\pm0.005,\pm0.0025$
 are measured in the experiment's relative block-RMS units. The offset-retention
-numbers in the pulse panel of Figure 4 use the smallest amplitude. Halving
+numbers in the pulse panel use the smallest amplitude. Halving
 checks distinguish the predicted first-order response from finite-amplitude
 matching errors.
 
@@ -987,8 +1437,14 @@ cohorts. These matched comparisons test proposed mechanisms.
 
 The population audit instead tests structural assumptions retrospectively:
 223 deduplicated static states and 40 natural continuations with eight
-snapshots each. The persistence-bound audit uses the same 223 states, with
-seven fixed region choices and a duration selected from initial information.
+snapshots each. The persistence-bound audit uses the same 223 static states.
+It evaluates the sixth-moment, higher-moment, evolving-Jacobian, and
+evolving-force bounds using only information at each proposed restart.
+The force refinement selects the longest of six prespecified region fractions
+that retains at least half the initial fine-error norm. Its numerical
+quadrature error is recorded separately from the theoretical inequalities;
+none of these FP64 evaluations is an interval certificate. Ordinary GD uses
+the separate tracking recurrence in A.4.
 The energy verification uses eighteen initial states: six targets, three
 widths, and one seed. These studies overlap; their counts must not be added
 and interpreted as independent samples of target functions.
@@ -1009,7 +1465,25 @@ inequalities for exact-real GD starting from the stored binary64 data. It does
 not certify all earlier training or every rounding error in later machine
 updates.
 
-For completeness, the generic energy argument discussed in Section 7 uses a
+The Adam audit uses thirteen targets, five seeds, width 177, and the archived
+states at updates 20k, 100k, and 600k. GD is evaluated at those same update
+counts with the same error definitions. Training inputs are the original
+2,048 points; independent evaluation uses 8,192 midpoints in $[-1,1]$ and
+the original training-target normalization. No smoothed error or best-readout
+refit enters the comparison. The auxiliary rate controls retain seed zero,
+all thirteen targets, $\beta_1=0.9$, $\beta_2=0.999$, and
+$\epsilon=10^{-8}$. Their reported differences are paired by target and
+seed, not compared with the five-seed aggregate as if sampling were identical.
+
+The spectral calculation uses singular vectors of $J$ and $JD^{1/2}$,
+for either readout-only or joint parameters. Residual energy orthogonal to
+the computed range and energy below the numerical singular-value resolution
+floor are reported as unresolved. The full residual-energy and virtual-step
+identities close to approximately $2\times10^{-15}$ absolute error in the
+audit. Such numerical agreement verifies the diagnostic calculation, not
+its extrapolation to future training.
+
+For completeness, the generic energy argument discussed in Section 8 uses a
 descent factor $\mu>0$ satisfying
 $L_{n+1}\le L_n-\eta\mu\|g_n\|^2$. Summation and Cauchy-Schwarz give
 
@@ -1036,8 +1510,3 @@ $\sqrt{\eta(50{,}000)(0.417)/0.7}<8$; all slopes therefore remain below
 $3+8=11<16$. Since $N_{\rm ref}\ge128$, this excludes $\lambda=0.25$.
 It illustrates how a distant-threshold statement can hold without identifying
 the fine-force mechanism.
-
-The scientific question left for review is whether a condition such as (12)
-can be derived and shown to persist on the observed mixed-sign populations.
-Equations (7)-(11) state what that would buy: a rate and an ever-acquired
-population bound, without an accurate forecast of every neuron.
