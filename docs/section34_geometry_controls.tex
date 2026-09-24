@@ -123,6 +123,36 @@ misleading: three seeds contain 421--457 subnormal input slopes, making
 center ratios of nearly vanished features delicate. The earlier
 interventions remain controls on the two-million-update source dictionaries.
 
+Repeating the readout assays on the actual five-million-update source
+features gives median error $0.00181474$ for Adam-acquired features and
+$0.24209$ for GD-acquired features, compared with $0.002501$ and $0.25134$
+from the two-million-update source features. Every assay still uses
+\emph{two million additional Adam readout updates}, regardless of source
+optimizer or horizon. At the final Adam features, the restarted readout
+nearly reproduces the original joint error $0.00181482$.
+
+Separate interventions on the five-million-update source features also
+worsen accuracy. Multipliers four and sixteen give median errors
+$0.09161$ and $0.13893$ for Adam-acquired features, with median paired
+increases of $41.7\times$ and $69.2\times$ over their unmodified restarts.
+Every seed worsens. GD-acquired features give $0.27952$ and $0.28804$,
+also worse in every seed. The adverse intervention result thus persists
+at the longer source horizon.
+
+\begin{figure}[t]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/geometry_diagnostics/feature_access_assays_5m.pdf}
+ \caption{Five-million-update source trajectories tested with two million
+ additional frozen Adam updates per dictionary. Left: median dense error
+ from features acquired at the indicated source update, with the five-seed
+ range shaded. Right: the same readout protocol after multiplying slopes
+ and intercepts of the final five-million-update features. Legends identify
+ the source optimizer; all readout restarts use Adam. Earlier snapshots
+ belong to these fresh full-horizon schedules, not to the previous
+ two-million-update source runs.}
+ \label{fig:geometry-readout-controls-five-million}
+\end{figure}
+
 Direct fits to the final five-million-update Adam features reach median
 dense error $0.0018137$ at cutoff $10^{-12}$, compared with actual joint
 error $0.0018148$, with median coefficient norm $1.89\times10^6$.
