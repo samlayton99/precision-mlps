@@ -25,6 +25,10 @@ def test_independent_adam_references():
     joint.self_test()
 
 
+def test_joint_gd_matches_independent_parameter_updates():
+    joint.self_test('gd')
+
+
 def test_known_kernel_spectrum_and_target_energy():
     spectrum.self_test()
 
@@ -34,9 +38,10 @@ def test_merge_preserves_each_case_and_snapshot():
 
 
 @pytest.mark.parametrize('count', [0, 50000, 100000, 199999])
-def test_full_horizon_clock_in_both_training_modes(count):
+@pytest.mark.parametrize('optimizer', ['adam', 'gd'])
+def test_full_horizon_clock_in_both_training_modes(count, optimizer):
     config = dict(horizon=200000, learning_rates=[.002], epsilon=1e-8,
-                  schedules=['constant', 'cosine'])
+                  schedules=['constant', 'cosine'], optimizer=optimizer)
     rng = np.random.default_rng(781)
     x = np.linspace(-1, 1, 13)
     y = np.sin(3*x)

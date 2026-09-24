@@ -1,4 +1,4 @@
-"""FP64 joint Adam probe: fixed full-horizon schedules and all-update output errors."""
+"""FP64 joint Adam/GD probe with full-horizon schedules and raw output errors."""
 import argparse
 import hashlib
 import json
@@ -36,16 +36,23 @@ batch_field = jax.vmap(jax.vmap(field, in_axes=(0,None,None)), in_axes=(0,None,N
 
 def make_chunk(x, y, config, size):
     x, y = jnp.asarray(x), jnp.asarray(y)
+    optimizer = config.get('optimizer', 'adam')
+    if optimizer not in {'adam', 'gd'}:
+        raise ValueError(f'Unknown optimizer: {optimizer}')
     rec = recipes(config)
     rates = jnp.asarray([r['learning_rate'] for r in rec])[None, :, None]
     cosine = jnp.asarray([r['schedule']=='cosine' for r in rec])[None, :, None]
     def step(state, _):
         p, m, v, gradient, count = state
-        m = .9*m+.1*gradient
-        v = .999*v+.001*gradient**2
         t = count+1
         multiplier = jnp.where(cosine, .5*(1+jnp.cos(jnp.pi*count/config['horizon'])), 1.)
-        p = p-rates*multiplier*(m/(1-.9**t))/(jnp.sqrt(v/(1-.999**t))+config['epsilon'])
+        if optimizer == 'adam':
+            m = .9*m+.1*gradient
+            v = .999*v+.001*gradient**2
+            direction = (m/(1-.9**t))/(jnp.sqrt(v/(1-.999**t))+config['epsilon'])
+        else:
+            direction = gradient
+        p = p-rates*multiplier*direction
         gradient, error, rms = batch_field(p, x, y)
         return (p,m,v,gradient,t), (error,rms)
     return jax.jit(lambda state: jax.lax.scan(step, state, None, length=size))
@@ -57,12 +64,12 @@ def initial_state(parameters, x, y, config):
     return (p,jnp.zeros_like(p),jnp.zeros_like(p),gradient,jnp.asarray(0,dtype=jnp.int64)), error, rms
 
 
-def self_test():
+def self_test(optimizer='adam'):
     rng = np.random.default_rng(891)
     x = np.linspace(-1,1,17)
     y = np.sin(3*x)
     ps = rng.normal(scale=.2,size=(2,13))
-    cfg = dict(horizon=31,learning_rates=[.001,.02],epsilon=1e-8,schedules=['constant','cosine'])
+    cfg = dict(horizon=31,learning_rates=[.001,.02],epsilon=1e-8,schedules=['constant','cosine'],optimizer=optimizer)
     def numpy_field(p):
         a,b,c = p[:-1].reshape(3,-1)
         h = np.tanh(x[:,None]*a+b)
@@ -82,9 +89,14 @@ def self_test():
         for ri,rec in enumerate(recipes(cfg)):
             p=ps[si].copy(); m=np.zeros_like(p); v=np.zeros_like(p)
             for n in range(10):
-                g,_=numpy_field(p); m=.9*m+.1*g; v=.999*v+.001*g*g
+                g,_=numpy_field(p)
                 factor=.5*(1+np.cos(np.pi*n/cfg['horizon'])) if rec['schedule']=='cosine' else 1.
-                p-=rec['learning_rate']*factor*(m/(1-.9**(n+1)))/(np.sqrt(v/(1-.999**(n+1)))+cfg['epsilon'])
+                if optimizer == 'adam':
+                    m=.9*m+.1*g; v=.999*v+.001*g*g
+                    direction=(m/(1-.9**(n+1)))/(np.sqrt(v/(1-.999**(n+1)))+cfg['epsilon'])
+                else:
+                    direction=g
+                p-=rec['learning_rate']*factor*direction
                 expected[n,si,ri]=numpy_field(p)[1]
             expected_p[si,ri]=p
     np.testing.assert_allclose(np.asarray(result[0]),expected_p,rtol=2e-12,atol=2e-14)
@@ -92,7 +104,7 @@ def self_test():
     part,_=make_chunk(x,y,cfg,4)(state); split,_=make_chunk(x,y,cfg,6)(part)
     np.testing.assert_allclose(np.asarray(split[0]),expected_p,rtol=2e-12,atol=2e-14)
     assert .5*(1+np.cos(np.pi))==0. and .5*(1+np.cos(0))==1.
-    print(json.dumps(dict(self_test='passed',max_error_difference=float(np.max(np.abs(np.asarray(errors)-expected))))),flush=True)
+    print(json.dumps(dict(self_test='passed',optimizer=optimizer,max_error_difference=float(np.max(np.abs(np.asarray(errors)-expected))))),flush=True)
 
 
 def main():
@@ -109,6 +121,7 @@ def main():
         if len(devices)!=1 or devices[0].platform!='gpu': raise RuntimeError(f'Expected one GPU, got {devices}')
     if args.self_test:
         self_test()
+        self_test('gd')
         if args.input is None: return
     if not all([args.input,args.config,args.output]): parser.error('Training requires --input --config --output')
     config=json.loads(args.config.read_text()); steps=args.steps if args.steps is not None else config['horizon']
@@ -127,7 +140,7 @@ def main():
     snapshot_steps=np.unique(np.r_[np.arange(0,steps+1,10000),steps])
     snapshots=np.lib.format.open_memmap(args.output/'parameter_checkpoints.npy',mode='w+',dtype=np.float64,shape=(len(snapshot_steps),len(parameters),len(rec),parameters.shape[1]))
     np.save(args.output/'checkpoint_steps.npy',snapshot_steps)
-    metadata=dict(config=config,recipes=rec,planned_horizon=config['horizon'],actual_steps=steps,width=width,
+    metadata=dict(config=config,optimizer=config.get('optimizer','adam'),recipes=rec,planned_horizon=config['horizon'],actual_steps=steps,width=width,
                   input_sha256=hashlib.sha256(args.input.read_bytes()).hexdigest(),parameter_layout='a[W],b[W],c[W],d',
                   trace_axes=['update','seed','recipe'],checkpoint_axes=['checkpoint','seed','recipe','parameter'],
                   metric='raw relative output L2 error',slope_metric='sqrt(mean(a**2)), physical slope not dimensionless bandwidth',
