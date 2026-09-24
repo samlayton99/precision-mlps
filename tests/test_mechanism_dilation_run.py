@@ -107,3 +107,21 @@ def test_raw_error_hits_use_l2_not_mse_and_initial_time():
     y = output/1.05  # relative L2=.05, relative MSE=.0025
     got = runner.step(runner.initial_state(p), x, y, .01, .002)
     np.testing.assert_array_equal(got['error_first_hit'], [0, -1, -1, -1, -1])
+
+
+def test_blocked_diagnostics_and_evaluation_match_full_vmap_with_remainder():
+    p, x, y = fixture()
+    pp = jnp.stack([p*(1+.03*i) for i in range(5)])
+    yy = jnp.stack([y+.01*i for i in range(5)])
+    hh = jnp.full(5, .01)
+    q, _ = np.linalg.qr(np.polynomial.polynomial.polyvander(np.asarray(x), 3))
+    q = jnp.asarray(q[:, 2:4]*np.sqrt(len(x)))
+    full = jax.jit(jax.vmap(runner.diagnostic, in_axes=(0, None, 0, 0, None)))(pp, x, yy, hh, q)
+    # Five branches with batch two exercises two full blocks plus one remainder.
+    blocked = runner.diagnostic_factory(2)(pp, x, yy, hh, q)
+    for name in full:
+        np.testing.assert_allclose(blocked[name], full[name], rtol=2e-11, atol=2e-13,
+                                   equal_nan=True, err_msg=name)
+    expected = jax.jit(jax.vmap(runner.evaluation_relative_l2, in_axes=(0, None, 0)))(pp, x, yy)
+    measured = runner.evaluation_factory(2)(pp, x, yy)
+    np.testing.assert_allclose(measured, expected, rtol=2e-13, atol=2e-14)

@@ -131,10 +131,33 @@ def diagnostic(p, x, y, h, q):
                 Fa=fine[:w], ga=gradient[:w])
 
 
+def diagnostic_factory(batch_size=16):
+    """Bound the diagnostic Jacobian batch without changing training batches."""
+    def measure(pp, x, yy, hh, q):
+        return jax.lax.map(lambda item: diagnostic(item[0], x, item[1], item[2], q),
+                           (pp, yy, hh), batch_size=batch_size)
+    return jax.jit(measure)
+
+
+def evaluation_relative_l2(p, x, y):
+    a, b, c = p[:-1].reshape(3, -1)
+    return jnp.linalg.norm(jnp.tanh(x[:, None]*a+b)@c+p[-1]-y)/jnp.linalg.norm(y)
+
+
+def evaluation_factory(batch_size=16):
+    def evaluate(pp, x, yy):
+        return jax.lax.map(lambda item: evaluation_relative_l2(item[0], x, item[1]),
+                           (pp, yy), batch_size=batch_size)
+    return jax.jit(evaluate)
+
+
 def run(args):
     if not jax.config.x64_enabled:
         raise ValueError('FP64 requires JAX_ENABLE_X64=true')
     validate_backend(args.backend)
+    diagnostic_batch = getattr(args, 'diagnostic_batch', 16)
+    if diagnostic_batch <= 0:
+        raise ValueError('diagnostic_batch must be positive')
     with np.load(args.input) as data:
         pack = {k: data[k] for k in data.files}
     cases = json.loads(str(pack['cases']))
@@ -154,6 +177,7 @@ def run(args):
                     backend=jax.default_backend(), devices=[str(device) for device in jax.devices()],
                     slurm_job_id=os.environ.get('SLURM_JOB_ID'), source_commit=os.environ.get('D34_SOURCE_COMMIT'),
                     eta=args.eta, steps=args.steps, channels=CHANNELS, error_thresholds=ERROR_THRESHOLDS,
+                    diagnostic_batch=diagnostic_batch,
                     failure_rule='nonfinite ordinary GD; unresolved decomposition continues in unknown channel',
                     rate_channels=('effective', *CHANNELS),
                     rate_time='physical flow time t=eta*n; normalized slopes lambda=h*abs(a)',
@@ -175,7 +199,7 @@ def run(args):
     q = jnp.asarray(basis[:, 2:4])
     state = jax.vmap(initial_state)(p0)
     state['first_hit'] = jnp.where(h[:, None]*jnp.abs(p0[:, :(p0.shape[1]-1)//3]) >= .25, 0, -1)
-    measure = jax.jit(jax.vmap(diagnostic, in_axes=(0, None, 0, 0, None)))
+    measure = diagnostic_factory(diagnostic_batch)
     initial = measure(p0, x, y, h, q)
     eval_x = eval_y = None
     if 'x_eval' in pack and 'y_eval' in pack:
@@ -184,9 +208,7 @@ def run(args):
         evaluation = [widths.data(c['target'], 8192) for _, c in valid]
         eval_x = jnp.asarray(evaluation[0][0])
         eval_y = jnp.asarray(np.stack([record[1] for record in evaluation]))
-    evaluate = jax.jit(jax.vmap(lambda p, yy: jnp.linalg.norm(
-        jnp.tanh(eval_x[:, None]*p[:(len(p)-1)//3]+p[(len(p)-1)//3:2*((len(p)-1)//3)])
-        @p[2*((len(p)-1)//3):-1]+p[-1]-yy)/jnp.linalg.norm(yy))) if eval_x is not None else None
+    evaluate = evaluation_factory(diagnostic_batch) if eval_x is not None else None
     advance = advance_factory(x, args.eta)
     schedule = sorted({0, args.steps, *(round(n*.002/args.eta) for n in HORIZONS
                                         if round(n*.002/args.eta) <= args.steps)})
@@ -199,7 +221,7 @@ def run(args):
         state['error_first_hit'] = jnp.where(
             (state['error_first_hit'] < 0)&(measured['relative_l2'][:, None] <= jnp.array(ERROR_THRESHOLDS))
             &~state['failed'][:, None], state['count'][:, None], state['error_first_hit'])
-        measured['relative_eval_l2'] = (evaluate(state['p'], eval_y) if evaluate is not None
+        measured['relative_eval_l2'] = (evaluate(state['p'], eval_x, eval_y) if evaluate is not None
                                          else jnp.full(len(valid), jnp.nan))
         forecast = p0[:, :w]-args.eta*count*initial['Fa']
         full_forecast = p0[:, :w]-args.eta*count*initial['ga']
@@ -228,6 +250,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--eta', type=float, default=.002)
     parser.add_argument('--steps', type=int, default=20000)
+    parser.add_argument('--diagnostic-batch', type=int, default=16)
     parser.add_argument('--targets'); parser.add_argument('--cohorts'); parser.add_argument('--arms'); parser.add_argument('--seeds')
     parser.add_argument('--backend', choices=('cpu', 'gpu'), default='gpu')
     args = parser.parse_args()
