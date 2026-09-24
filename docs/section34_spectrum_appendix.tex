@@ -5,6 +5,9 @@ The main theorem concerns the actual finite tanh dictionary. An auxiliary
 center integral exposes its gamma dependence; lattice and exterior-center
 allowances transfer its spectrum to that dictionary. This appendix specifies
 each approximation and the resulting endpoints.
+The scale-dependent spectral bias is related to
+\citet{xu2020frequency,tancik2020fourier}; the argument below quantifies it
+for the finite quasi-interpolant dictionary.
 
 \paragraph{Finite setup.}
 Let $z_1,\ldots,z_M$ be distinct training points with $M\ge2$, $W$ consecutive centers on
@@ -15,6 +18,14 @@ $c_0+h\mathbb Z$ cover their interval, and $\gamma>0$. Define
  y=(f(z_a))_{a=1}^M\ne0.
 \end{equation}
 Readout GD minimizes $\|\Phi_\gamma w-y\|^2/(2M)$.
+Write its descending kernel eigenpairs as $(\mu_i,u_i)$ and define
+\begin{equation}
+ \rho_i=\mu_i/\mu_1,\qquad
+ p_i=|u_i^\top y|^2/\|y\|^2,\qquad
+ e_n^2=\frac{\|\Phi_\gamma w_n-y\|^2}{\|y\|^2}
+ =\frac{\|f-q_n\|_{2,Z}^2}{\|f\|_{2,Z}^2}.
+\end{equation}
+The energy weights sum to one, including any exact nullspace component.
 The theorem permits arbitrary distinct samples; the reported experiments use
 uniform samples. Write $v_0=\mathbf1/\sqrt M$ and let $Q$ have orthonormal
 columns spanning $v_0^\perp$. This projection removes the common constant
@@ -71,7 +82,8 @@ The following require only matrix-vector products with the finite dictionary:
  \label{eq:note-normalization}
 \end{align}
 Set $\underline\rho_1=\overline\rho_1=1$ and $\beta_M=0$.
-The endpoints in Theorem~\ref{thm:note-spectrum} are
+The relative-rate endpoints, including the upper bounds used in
+Theorem~\ref{thm:note-output}, are
 \begin{equation}
  \boxed{\underline\rho_i=
  \frac{[\beta_i-\delta_\gamma-\tau_\gamma]_+}{L_\gamma},
@@ -81,6 +93,8 @@ The endpoints in Theorem~\ref{thm:note-spectrum} are
  \quad 2\le i\le M.}
  \label{eq:note-endpoints}
 \end{equation}
+They enclose every finite-kernel ratio:
+$\underline\rho_i\le\rho_i\le\overline\rho_i$.
 Exact zeros known from $\operatorname{rank}K_\gamma\le W+1$ may have both
 endpoints set to zero. No target or optimization trajectory enters these
 spectral bounds.
@@ -174,7 +188,7 @@ $b_\gamma$. Its quadratic form is therefore bounded by the largest
 eigenvalue of $\left[\begin{smallmatrix}\ell_\gamma&b_\gamma\\
 b_\gamma&c_\gamma\end{smallmatrix}\right]$, namely $L_\gamma$.
 Dividing the interlacing bounds by these normalization endpoints proves
-\eqref{eq:note-endpoints} and the main theorem.
+the relative-rate enclosure from \eqref{eq:note-endpoints}.
 
 \subsection{Classical output-error consequence}
 For $r_n=\Phi_\gamma w_n-y$, normalized least-squares GD gives
@@ -186,7 +200,7 @@ finite-kernel eigenvectors gives
  \ge\sum_i p_i(1-\overline\rho_i/2)^{2n}.
 \end{equation}
 The last inequality follows because the factor decreases with
-$\rho_i\in[0,1]$. This proves Corollary~\ref{cor:note-output}.
+$\rho_i\in[0,1]$. This proves Theorem~\ref{thm:note-output}.
 Our step is a conservative fraction of the stability limit $2/\mu_1$;
 any nonoscillatory step $0<\eta\mu_1\le1$ instead uses $\eta\mu_1\rho_i$.
 Only exact nullspace energy gives a permanent floor. For $\mu_i>0$,

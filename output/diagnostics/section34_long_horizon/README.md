@@ -1,6 +1,6 @@
 # Section 3.4 evidence
 
-The latest [paper-facing note](../../pdf/section34_spectrum_note.pdf) presents the spectral theorem first, followed by the GD output-error corollary and the transition to joint feature acquisition. Its [editable subsection](../../../docs/section34_spectrum_subsection.tex), [full proof](../../../docs/section34_spectrum_appendix.tex), and [LaTeX wrapper](../../../docs/section34_spectrum_note.tex) are separate. The new [standalone spectrum figure](main_5m/spectrum/relative_rates.pdf) compares three finite-kernel ratios with the theorem intervals at four bandwidths; it reuses the saved bounds and adds no training runs.
+The latest [paper-facing note](../../pdf/section34_spectrum_note.pdf) combines the spectral bounds and GD consequence into one output-error theorem, with a short proof sketch and figure interpretation. The [text-only preview](../../pdf/section34_spectrum_subsection.pdf) shows the proposed subsection; the [editable text](../../../docs/section34_spectrum_subsection.tex), [full proof](../../../docs/section34_spectrum_appendix.tex), and [LaTeX wrapper](../../../docs/section34_spectrum_note.tex) are separate. The wrapper checks that the text, including its heading and equation, fits within three-quarters of the usable page height at unchanged typography. Figures and captions have a separate budget and remain provisional. The [standalone spectrum figure](main_5m/spectrum/relative_rates.pdf) and existing three-panel reuse completed computations.
 
 This directory contains compact evidence for the proposed [Section 3.4](../../../docs/section34_slope_acquisition.md), its [proof](../../../docs/section34_slope_appendix.md), and the [experimental protocol](../../../docs/section34_empirical_appendix.md). The study uses width 512 including halos, five paired joint-training seeds, full-horizon cosine and constant schedules, and raw relative output error. The theorem concerns frozen GD; Adam and evolving features are evaluated empirically.
 
@@ -69,6 +69,15 @@ Compile the review document from the repository root with:
 latexmk -pdf -interaction=nonstopmode -halt-on-error \
   -outdir=tmp/pdfs/section34_review docs/section34_review.tex
 ```
+
+Compile the compact paper-facing note, with figures and proof following the first page, using:
+
+```sh
+latexmk -pdf -interaction=nonstopmode -halt-on-error \
+  -outdir=tmp/pdfs/section34_compact docs/section34_spectrum_note.tex
+```
+
+The build log reports `SECTION34-TEXT-HEIGHT` and `SECTION34-TEXT-BUDGET` in TeX points. The text-only preview is the first page of this note, with navigation annotations removed because its referenced figures and appendix are in the full note.
 
 The paper-facing text is authored directly in Markdown and LaTeX. Analysis programs produce numerical results and figures, not report prose.
 

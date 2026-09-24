@@ -1,145 +1,55 @@
-% Editable paper subsection. Requires the theorem and corollary environments.
+% Drop-in paper text; figures are separate in section34_spectrum_figures.tex.
 \subsection{Bandwidth controls optimization access to high precision}
 \label{sec:bandwidth-access}
 
-The useful relative bandwidth $\lambda=\gamma h$ varies slowly with width
-once the target is resolved (Figure~2b). Maintaining this bandwidth as
-$h=\Theta(W^{-1})$ therefore requires $\gamma=\Theta(W)$.
+The construction's nearly width-independent relative bandwidth
+$\lambda=\gamma h$ requires $\gamma=\Theta(W)$.
 Even though larger widths admit smaller $\lambda$ at comparable construction
-error, small slopes can still delay readout learning by weakening
-target-relevant kernel directions. We quantify this effect first with fixed
-features, then examine whether joint training acquires useful feature geometry.
+error (Figure~2b), small slopes can delay readout optimization.
+We quantify this in the dictionary of Section~3.1, replacing the direct
+normalized least-squares solve with GD while keeping the features fixed.
 
-Consider the construction of Section~3.1, but solve its normalized readout least-squares
-problem by gradient descent. The sampled feature matrix $\Phi_\gamma$ includes
-the output bias; its kernel is $K_\gamma=\Phi_\gamma\Phi_\gamma^\top/M$,
-where $M$ is the number of training points. If its eigenvalues are
-$\mu_1\ge\cdots\ge\mu_M\ge0$, define
+\begin{theorem}[Slope-dependent output-error lower bound]
+\label{thm:note-output}
+For the fixed-center construction of Section~3.1 with common slope
+$\gamma>0$ and nonzero sampled target, readout GD from zero with
+$\eta=1/(2\mu_1)$ satisfies
 \begin{equation}
- \rho_i(\gamma)=\frac{\mu_i(K_\gamma)}{\mu_1(K_\gamma)}.
- \label{eq:note-relative-rates}
-\end{equation}
-The largest eigenvalue limits a stable shared step size; a small $\rho_i$
-then makes the corresponding output component slow to learn.
-
-\paragraph{How slope reaches these rates.}
-A tanh feature changes over distance $1/\gamma$. At small slope, broad,
-overlapping transitions respond weakly to rapidly alternating errors.
-After removing the common constant component, the center-integrated kernel
-is determined by the explicit pairwise profile
-\begin{equation}
- -d\coth(\gamma d)
- =-|d|-\frac{2|d|}{e^{2\gamma|d|}-1},
- \qquad d=z_a-z_b,
- \label{eq:note-correlation-profile}
-\end{equation}
-with value $-1/\gamma$ at $d=0$. Here $z_a,z_b$ are any two training
-points. The second term is the slope-dependent smoothing correction to the
-step-feature profile $-|d|$. Bounding the discrepancy from the actual finite
-center lattice transfers this explicit gamma dependence to the kernel spectrum.
-
-\begin{theorem}[Slope-dependent relative kernel spectrum]
-\label{thm:note-spectrum}
-For the uniformly spaced centers and training points of Section~3.1 and a
-common slope $\gamma>0$, the correlation profile
-\eqref{eq:note-correlation-profile} yields computable bounds
-\begin{equation}
- \boxed{\underline\rho_i(\gamma)\le
- \frac{\mu_i(K_\gamma)}{\mu_1(K_\gamma)}
- \le\overline\rho_i(\gamma),\qquad i=1,\ldots,M.}
- \label{eq:note-spectrum-bounds}
-\end{equation}
-The endpoints depend only on the slope and fixed feature geometry, and lie
-in $[0,1]$. Their explicit construction, finite-lattice and halo allowances,
-and proof are given in Appendix~\ref{app:note-spectrum}.
-\end{theorem}
-
-\begin{figure}[tbp]
- \centering
- \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/spectrum/relative_rates.pdf}
- \caption{\textbf{Slope changes relative rates by very different amounts.}
- Finite-kernel ratios (solid, dots) and theorem intervals (dashed boundaries,
- shading) for three illustrative ordered ranks, at fixed width~512.
- Four bandwidths are evaluated; connecting lines are guides. Rank~30 carries
- 2.6\% and 2.5\% of target energy at the two endpoints, while its relative
- rate increases by $1.4\times10^5$. Ordered rank does not identify the same
- eigenvector across slopes. All figures use the target and geometry in
- Appendix~\ref{app:note-evaluation}.}
- \label{fig:note-spectrum}
-\end{figure}
-
-Figure~\ref{fig:note-spectrum} makes this dependence quantitative: raising
-$\lambda$ from $1/32$ to $1/4$ changes the fourth relative eigenvalue by
-only a factor of $1.30$, but the thirtieth by $1.4\times10^5$.
-The bounds follow this change by computing the spectrum of the explicit,
-corrected correlation model before optimization. Whether these slow
-directions matter for training depends on the target's projections.
-
-\begin{corollary}[Output error from slow target components]
-\label{cor:note-output}
-For sampled target $y\ne0$, let $p_i(\gamma)=|u_i^\top y|^2/\|y\|^2$
-be its energy fraction in kernel eigenvector $u_i$. For zero-initialized readout GD
-with $\eta=1/(2\mu_1)$, the relative output error satisfies
-\begin{equation}
- \boxed{e_n^2:=\frac{\|\Phi_\gamma w_n-y\|^2}{\|y\|^2}
+ \frac{\|f-q_n\|_{2,Z}^{2}}{\|f\|_{2,Z}^{2}}
  \ge\sum_i p_i(\gamma)
- \left(1-\frac{\overline\rho_i(\gamma)}2\right)^{2n}.}
+ \left(1-\frac{\overline\rho_i(\gamma)}2\right)^{2n},\qquad n\ge0.
  \label{eq:note-output-bound}
 \end{equation}
-\end{corollary}
+Here $\|\cdot\|_{2,Z}$ is the training-sample RMS norm,
+$\mu_i$ are the descending readout-kernel eigenvalues, $p_i$ is the fraction
+of target energy in eigenvector $i$, and
+$\overline\rho_i(\gamma)\in[0,1]$ bounds $\mu_i/\mu_1$ from above.
+The explicit gamma-dependent rate bounds and finite-geometry allowances
+are given in Appendix~\ref{app:note-spectrum}.
+\end{theorem}
 
-Indeed, the exact GD error is the same sum with $\rho_i$ in place of
-$\overline\rho_i$. If directions carrying target energy $P$ have
-$\overline\rho_i\le r$, they force $e_n\ge\sqrt P(1-r/2)^n$.
-Small positive eigenvalues therefore delay components already representable
-by the dictionary; they need not create a nonzero approximation floor.
+\paragraph{Proof sketch.}
+Gamma enters the feature correlations through $d\coth(\gamma d)$, where
+$d$ is the separation between training points.
+Controlling the finite-center corrections gives the relative-rate bounds;
+a standard spectral argument then yields the output-error inequality.
 
-\begin{figure}[tbp]
- \centering
- \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/section34_three_panel.pdf}
- \caption{\textbf{From readout delay to feature acquisition.}
- \textbf{A:} executed frozen-readout GD errors (solid) and the square roots of
- the corollary's lower bounds (dashed).
- \textbf{B:} joint Adam/GD errors, with frozen uniform $\lambda=1/4$
- references over the same five-million-update budget.
- \textbf{C:} RMS and 99th-percentile scaled slopes $h|a_j|$ from B's joint
- runs. The reference bandwidth is a supplied geometry, not a necessary
- threshold for heterogeneous features. Joint curves summarize five paired
- seeds; shading retains seed variation and recorded within-bin extrema.
- The full horizon is shown and cosine schedules span that horizon.
- Appendix~\ref{app:note-evaluation} specifies the error measure and selection
- protocol. The theorem applies to A; B--C are empirical.}
- \label{fig:note-training}
-\end{figure}
+Increasing $\lambda$ from $1/32$ to $1/4$ raises the thirtieth relative
+eigenvalue by $1.4\times10^5$, versus only $1.3$ for the fourth
+(Figure~\ref{fig:note-spectrum}); the thirtieth mode carries about 2.5\%
+of target energy at both endpoints.
+At $\lambda=1/32$, a direct readout fit attains $6.2\times10^{-10}$ dense-grid
+relative error, yet five million GD updates retain training error $0.210$
+against the theorem's lower bound $0.2098$ (Figure~\ref{fig:note-training}A).
+At $\lambda=1/4$, GD reaches $3.88\times10^{-4}$ over the same budget.
+Across the four bandwidths, the bound remains at least 75\% of executed error
+throughout training: small slopes delay accuracy already available in the
+dictionary.
 
-\paragraph{Accurate readouts can remain slow to acquire.}
-At $\lambda=1/32$, a direct readout fit achieves $6.2\times10^{-10}$
-relative error on a dense evaluation grid. Yet GD retains training error
-$0.210$ after five million updates; the corollary predicts at least
-$0.2098$ (Figure~\ref{fig:note-training}A). At $\lambda=1/4$, GD reaches
-$3.88\times10^{-4}$ over the same budget. Across the four bandwidths,
-the lower bound is at least 75\% of executed error throughout training
-and 91--100\% at the endpoint. Thus the gamma-dependent spectral bounds
-quantify an optimization obstruction beyond attainable approximation error.
-
-\FloatBarrier
-\paragraph{Joint training must acquire useful slopes and centers together.}
-Joint Adam reaches median relative error $1.81\times10^{-3}$, whereas Adam
-on the supplied $\lambda=1/4$ features reaches $6.62\times10^{-7}$ over
-the same budget; joint GD remains at $0.244$
-(Figure~\ref{fig:note-training}B). Adam's upper slope percentile approaches
-the reference scale, but only 4--7 of 512 features reach it
-(Figure~\ref{fig:note-training}C). A few steep features do not establish
-that the useful geometry has been acquired. Moreover, refitting the learned
-readout barely improves its error, while steepening the learned features
-alone can worsen it. These observations motivate the next question: what
-training signal moves slopes and centers into a jointly useful configuration?
-The next analysis addresses this feature-acquisition step; the frozen theorem
-isolates the readout obstruction once geometry is fixed.
-
-The construction supplies both feature geometry and accurate readout weights,
-avoiding these two optimization tasks. This motivates embedding the resulting
-arithmetic primitives in larger networks. The underlying scale-dependent
-spectral bias is consistent with prior
-analysis~\citep{xu2020frequency,tancik2020fourier}; here its consequences are
-quantified for the finite quasi-interpolant dictionary.
+Over the same budget, joint Adam reaches median dense-grid relative error
+$1.81\times10^{-3}$, versus $6.62\times10^{-7}$ on the supplied
+$\lambda=1/4$ features, despite partial slope acquisition
+(Figure~\ref{fig:note-training}B--C).
+This motivates the next analysis: training must acquire useful slopes and
+centers together. The construction supplies both the feature geometry and
+the readout directly.

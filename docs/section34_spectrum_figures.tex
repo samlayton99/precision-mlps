@@ -1,0 +1,32 @@
+% Provisional figures; excluded from the compact subsection's text budget.
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/spectrum/relative_rates.pdf}
+ \caption{\textbf{Slope changes relative rates by very different amounts.}
+ Finite-kernel ratios (solid, dots) and theorem intervals (dashed boundaries,
+ shading) for three illustrative ordered ranks, at fixed width~512.
+ Four bandwidths are evaluated; connecting lines are guides. Rank~30 carries
+ 2.6\% and 2.5\% of target energy at the two endpoints, while its relative
+ rate increases by $1.4\times10^5$. Ordered rank does not identify the same
+ eigenvector across slopes. All figures use the target and geometry in
+ Appendix~\ref{app:note-evaluation}.}
+ \label{fig:note-spectrum}
+\end{figure}
+
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/section34_three_panel.pdf}
+ \caption{\textbf{From readout delay to feature acquisition.}
+ \textbf{A:} executed frozen-readout GD errors (solid) and the square roots of
+ the theorem's lower bounds (dashed).
+ \textbf{B:} joint Adam/GD errors, with frozen uniform $\lambda=1/4$
+ references over the same five-million-update budget.
+ \textbf{C:} RMS and 99th-percentile scaled slopes $h|a_j|$ from B's joint
+ runs. The reference bandwidth is a supplied geometry, not a necessary
+ threshold for heterogeneous features. Joint curves summarize five paired
+ seeds; shading retains seed variation and recorded within-bin extrema.
+ The full horizon is shown and cosine schedules span that horizon.
+ Appendix~\ref{app:note-evaluation} specifies the error measure and selection
+ protocol. The theorem applies to A; B--C are empirical.}
+ \label{fig:note-training}
+\end{figure}
