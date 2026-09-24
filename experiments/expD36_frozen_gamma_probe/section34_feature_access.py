@@ -16,9 +16,11 @@ import matplotlib.pyplot as plt
 try:
     from .adam_feature_probe_spectrum import slow_energy, CUTOFFS
     from .section34_analyze import binned_traces, json_safe, style
+    from .section34_figure import reference_display
 except ImportError:
     from adam_feature_probe_spectrum import slow_energy, CUTOFFS
     from section34_analyze import binned_traces, json_safe, style
+    from section34_figure import reference_display
 
 BANDWIDTH_COLORS = {
     .03125: '#332288', .0625: '#0072B2', .09375: '#56B4E9',
@@ -193,14 +195,17 @@ def uniform_trajectories(rows, curves, output):
     fig,axes=plt.subplots(2,1,figsize=(5.5,4.5),layout='constrained')
     for i in ids:
         row=rows[i];color=BANDWIDTH_COLORS[row['lambda_rms']]
-        t=curves[f'g{i}_steps']/1e6;y=curves[f'g{i}_median']
+        t,y,low,high=reference_display(*(curves[f'g{i}_{name}'] for name in ['steps','median','low','high','endpoint']))
+        t=t/1e6
         fraction=Fraction(row['lambda_rms']).limit_denominator(32)
         label=f'λ = {fraction}'
-        axes[0].plot(t,y,color=color,label=label)
-        axes[0].fill_between(t,curves[f'g{i}_low'],curves[f'g{i}_high'],color=color,alpha=.1,lw=0)
+        axes[0].plot(t,y,color=color,label=label,lw=.9)
+        axes[0].plot(t[-1],y[-1],'o',color=color,ms=2.5)
+        axes[0].fill_between(t,low,high,color=color,alpha=.055,lw=0)
         if any(np.isclose(row['lambda_rms'],v) for v in [.09375,.125,.25]):
-            axes[1].plot(t,y,color=color,label=label)
-            axes[1].fill_between(t,curves[f'g{i}_low'],curves[f'g{i}_high'],color=color,alpha=.1,lw=0)
+            axes[1].plot(t,y,color=color,label=label,lw=.9)
+            axes[1].plot(t[-1],y[-1],'o',color=color,ms=2.5)
+            axes[1].fill_between(t,low,high,color=color,alpha=.055,lw=0)
     axes[0].set_title('Uniform dictionaries, tuned frozen Adam')
     axes[1].set_title('Comparing bandwidth near 0.1 with 0.25')
     for ax in axes:
