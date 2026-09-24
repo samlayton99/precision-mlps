@@ -41,6 +41,13 @@ some states and conservative for others. Obtaining equally long
 initial-data certificates across all targets is an additional objective,
 not a requirement for the conditional mechanism-and-evidence result.
 
+**Theorem 17** makes one mechanism for persistence explicit: accumulated
+population travel produces only a limited increase in reinforcing feedback.
+A scalar smallness condition then closes the feedback loop between force,
+travel, and reinforcement. Its response-to-travel premise has useful sampled
+coverage, but is not proved from initialization. It refines the explanation
+without replacing Theorem 14's broader conditional claim.
+
 For the main argument, read the accumulated-feedback appendix containing
 Theorem 14 and Proposition 15, together with its empirical study. Section 2
 supplies the population-to-output connection. Sections 4–6 and Theorem 16
@@ -2408,3 +2415,238 @@ error floors. These shorter intervals expose the remaining conservatism
 in $L_*$. The arithmetic enclosures certify the encoded empirical ODE;
 they do not turn the numerical GD agreement or sampled feedback premises
 into certificates. No new Adam persistence guarantee is asserted.
+
+## Appendix. A population feedback condition that sustains slow movement
+
+**Example and question.** Starting at the 20k checkpoint, the effective
+force on the step target grows by about a factor of 2.19 over 100k further
+update-equivalent units. Relative output error remains about 49%. Persistence
+therefore cannot mean that force always decreases or the population returns
+to an equilibrium. The question is whether the population can reinforce its
+initially weak force quickly enough to escape slow learning within a useful
+budget. Theorem 14 bounds the consequences of limited accumulated feedback.
+Here we give a sufficient structural relation that limits feedback itself.
+
+The proposed mechanism is a closed loop: weak force supplies little population
+travel; little travel produces limited additional reinforcement; limited
+reinforcement preserves weak force. The following theorem proves this
+implication under an explicit response-to-travel premise. Establishing that
+premise from the network's initial state remains a stronger task.
+
+### The aggregate condition
+
+Keep the notation of Theorem 14. Introduce the actual accumulated feedback
+and accumulated fourth-norm travel
+
+$$
+\mathcal B_{\rm act}(t)=\int_0^t d(s)\,ds,\qquad
+\mathcal A_4(t)=\int_0^t I_F(s)^{1/4}f(s)\,ds.
+\tag{L1}
+$$
+
+Here $d$ can be the directional bound (F3); it is an upper rate of force
+amplification, not the force amplitude. The quantity $\mathcal A_4$ bounds
+growth of $M_4^{1/4}$ and accumulated travel of the hidden population.
+It counts movement even when trajectories reverse. Replacing it by the
+endpoint change in $M_4^{1/4}$ would discard that movement and is invalid.
+
+For constants $b_0,K\ge0$, assume, on every prefix of the interval,
+
+$$
+\boxed{\quad
+\mathcal B_{\rm act}(t)\le b_0t+
+K\int_0^t\mathcal A_4(s)\,ds,\qquad
+\mathcal C(t)\le C(t).
+\quad}
+\tag{L2}
+$$
+
+The baseline $b_0$ allows reinforcement already present at the checkpoint.
+The coefficient $K$ limits how much additional accumulated reinforcement
+population travel can produce. One stronger sufficient premise is
+$d(t)\le b_0+K\mathcal A_4(t)$; (L2) only requires its integrated version.
+Likewise, the concentration allowance is accumulated. Neither premise
+requires controlling the largest neuron, constant concentration, favorable
+feedback signs, or a fixed Jacobian.
+
+This is a substantive assumption about the coupled ODE. In particular,
+normalizing $F$ can reveal changes in force direction even when $\|F\|$
+is small. Residual relaxation can rotate that direction. Smooth activation
+functions and weak initial force alone do not establish a useful $K$.
+Theorem 16 gives a more conservative initial-data route using the entire
+residual-loaded curvature operator; (L2) instead retains the actual
+population response along the evolving direction.
+
+### Theorem and proof
+
+**Theorem 17 (persistence through limited feedback from population travel).**
+Consider the exact effective flow of Theorem 14, with $E_s(0)>0$, $f_0>0$
+and $Y_0>0$. Suppose (L2) holds for every $t\in[0,T]$, with a
+nondecreasing allowance $C(0)=0$. Define
+
+$$
+H_0(t)=\int_0^t e^{2b_0s}\,ds,\qquad
+G(T)=\int_0^T\sqrt{C(s)H_0(s)}\,ds.
+\tag{L3}
+$$
+
+If some $r>0$ satisfies
+
+$$
+Kf_0G(T)<r e^{-r},
+\tag{L4}
+$$
+
+then, throughout $[0,T]$,
+
+$$
+\begin{aligned}
+\mathcal B_{\rm act}(t)&<b_0t+r,\\
+f(t)&\le e^r f_0e^{b_0t},\\
+\int_0^t f(s)^2ds&\le e^{2r}f_0^2H_0(t),\\
+\mathcal A_4(t)&\le L(t):=e^r f_0\sqrt{C(t)H_0(t)},\\
+M_4(t)^{1/4}&\le M_4(0)^{1/4}+L(t),\\
+Y(t)^2&\ge[Y_0^2-2e^{2r}f_0^2H_0(t)]_+.
+\end{aligned}
+\tag{L5}
+$$
+
+The output-capacity and ever-acquired-fraction bounds (F7)--(F8) hold
+with $L$ in place of $L_4$ and the energy term in (L5). In particular,
+the raw relative output error stays above $\varepsilon$ throughout the
+interval whenever
+
+$$
+2e^{2r}f_0^2H_0(T)<Y_0^2-\varepsilon^2\|y\|^2.
+\tag{L6}
+$$
+
+**Proof.** Suppose $\mathcal B_{\rm act}(t)-b_0t$ first reaches $r$
+at $\tau\le T$. Until that time, (F2) and $d\ge\kappa_H+\kappa_C$
+give $f(s)\le e^r f_0e^{b_0s}$. Cauchy--Schwarz yields, for $s\le\tau$,
+
+$$
+\mathcal A_4(s)
+\le\sqrt{\mathcal C(s)\int_0^s f(u)^2du}
+\le e^r f_0\sqrt{C(s)H_0(s)}.
+$$
+
+The assumed integrated response then gives
+
+$$
+r=\mathcal B_{\rm act}(\tau)-b_0\tau
+\le K\int_0^\tau\mathcal A_4(s)ds
+\le Ke^r f_0G(T)<r,
+$$
+
+a contradiction. The first two lines of (L5) follow, and integrating the
+force bound proves the next two. Minkowski gives the population norm bound;
+the exact identity $(Y^2)'=-2f^2$ gives the error bound. The same capacity
+and particle-travel arguments as Theorem 14 give the stated consequences.
+Continuity and uniqueness handle a zero-force state as in that theorem.
+Finally $H_0$ is nondecreasing, so (L6) implies the uniform error floor.
+$\square$
+
+### What rate does this explain?
+
+The particularly simple choice $r=1$ requires
+
+$$
+eKf_0G(T)<1.
+\tag{L7}
+$$
+
+For an accumulated concentration allowance $C(t)=ct$,
+$H_0(t)\le t e^{2b_0t}$ gives
+$G(T)\le\sqrt c\,e^{b_0T}T^2/2$. Consequently
+
+$$
+\frac e2 K f_0\sqrt c\,e^{b_0T}T^2<1
+\tag{L8}
+$$
+
+is a simpler sufficient condition. When $b_0T$ is bounded, reinforcement
+can remain limited on a timescale proportional to
+$(Kf_0\sqrt c)^{-1/2}$, subject to the structural premises. Weak initial
+coupling delays the feedback loop's amplification. The baseline term also
+matters: small $K$ cannot prevent growth on the timescale $b_0^{-1}$ if
+initial reinforcement is already strong. A width exponent requires separate
+control of how $f_0,b_0,K,c$ depend on width; none is assumed here.
+
+The theorem describes finite-time slow evolution, not an equilibrium or
+permanent failure. It permits positive slope motion, individual escapes,
+and changing moments. Its conclusion concerns the population's available
+travel and integrated output improvement. For GD, Proposition 15 accounts
+for tracking and finite-step disturbances; the exact effective-flow
+statement must not be applied to GD without those allowances.
+
+**Disturbance corollary.** The same loop can include those allowances
+explicitly. On a path $\dot\theta=-F-S$, let
+$U(t)=\int_0^t u_S$, $V(t)=\int_0^t r_S$, and $Z(t)=\int_0^t z_S$
+use the quantities in Proposition 15, or nondecreasing upper budgets for
+their integrals. In (L2), replace $\mathcal A_4$ by
+$\mathcal A_{4,S}(t)=\int_0^t(I_F^{1/4}f+r_S)ds$. Put
+$f_*=f_0+U(T)$. If
+
+$$
+K\left[e^r f_*G(T)+\int_0^T V(s)ds\right]<r,
+\tag{L9}
+$$
+
+then $\mathcal B_{\rm act}(t)<b_0t+r$ and
+
+$$
+\begin{aligned}
+f(t)&\le e^r f_*e^{b_0t},\\
+\mathcal A_{4,S}(t)&\le e^r f_*\sqrt{C(t)H_0(t)}+V(t),\\
+Y(t)^2&\ge[Y_0^2-2e^{2r}f_*^2H_0(t)-2Z(t)]_+.
+\end{aligned}
+\tag{L10}
+$$
+
+To prove this, at a proposed first exit use Proposition 15 and
+$\mathcal B_{\rm act}\ge0$ to bound its integrating-factor bracket by
+$f_0+U(T)$. Cauchy--Schwarz bounds effective travel, and $V$ adds disturbed
+travel. Substituting into (L2) gives the contradiction (L9). Proposition 15
+then gives (L10) and the corresponding moment and acquisition bounds.
+Thus small tracking is used through its accumulated effect on force,
+population transport, and energy; it need not vanish. For a GD interpolant,
+$S$ must include the finite-step defect in (F9). The following sampled
+audit tests the undisturbed criterion, not a certificate of (L9) for GD.
+
+### Empirical check and remaining gap
+
+We tested the fixed choices $b_0=d_{\rm dir}(0)$ and
+$C(t)=2\sqrt{I_F(0)}t$ on saved trajectories. For each path we estimated
+the smallest nonnegative $K$ satisfying (L2) at retained prefixes and
+compared it with $K_{\rm crit}=1/(ef_0G(T))$. This is a retrospective
+feasibility check, not a value of $K$ predicted from the initial state.
+All integrals use scalar interpolants between saved states, not validated
+continuous-time enclosures.
+
+Across the 23-target, two-seed width-705 baseline, all 46 paths pass this
+sampled test for 20k further GD updates. The largest ratio
+$K/K_{\rm crit}$ is 0.1065. All 12 width-1409 reference paths pass too.
+Fresh, densely sampled effective-flow integrations pass for all six tested
+targets over the same duration. At 100k update-equivalent duration, three
+of six still pass: degree five, mixed sine, and the absolute-value kink.
+Gaussian, bump, and step give ratios 2.67, 3.12, and 2.24. Their integrated
+concentration allowances still pass; the feedback bootstrap is the limiting
+condition. The broader Theorem 14 remains informative on all six.
+
+Fitting $K$ only through the first 20k further updates gives another check.
+Doubling that fitted coefficient covers the sampled 100k response on five
+of six targets. The kink is the exception: its early excess feedback is
+zero but later becomes positive, so a multiplicative enlargement of zero
+cannot predict it. Thus the evidence supports bounded response over the
+tested intervals, but not a universal extrapolation rule based on early
+response alone. Even where $K$ changes little, the $T^2$ feedback loop
+criterion can expire before output learning becomes fast.
+
+The [aggregate feedback audit](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/feedback_loop_final/README.md)
+contains the plot, exact scope, and reproduction instructions. The useful
+paper claim remains Theorem 14 with empirical persistence and explicit GD
+disturbance checks. Theorem 17 supplies a clearer sufficient mechanism for
+that persistence. A uniform response-to-travel bound over an appropriate
+population region would strengthen it further; the present data and proof
+do not establish that invariant region.

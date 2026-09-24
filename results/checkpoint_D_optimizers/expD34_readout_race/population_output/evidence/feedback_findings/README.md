@@ -330,6 +330,24 @@ budgets, including within-step effects. These are further guarantees, not
 prerequisites for presenting the conditional theorem and its evidence.
 Adam and continuous-input generalization remain outside the new certificates.
 
+Theorem 17 now makes one sufficient persistence mechanism more explicit:
+limited accumulated population travel causes limited additional reinforcing
+feedback. A first-exit argument closes this loop and bounds subsequent force,
+acquisition, and output progress. Its response-to-travel coefficient is an
+empirical structural premise, not assumed future force smallness or a bound
+on each neuron. An explicit disturbance corollary includes tracking and
+finite-step effects in aggregate.
+
+The [population feedback audit](../feedback_loop_final/README.md) finds room
+for this stronger condition on all 46 baseline paths over 20k further updates,
+with the worst sampled response using about 11% of the allowed coefficient.
+Three of six dense effective-flow paths pass over 100k update-equivalent
+duration. The other three still satisfy useful bounds under Theorem 14.
+Thus this new result explains a sufficient route to persistence while the
+broader conditional theorem remains the main paper claim. The audit also
+reports where coefficients fitted on an early prefix fail to extrapolate;
+it does not present retrospective coefficient fitting as a prediction.
+
 ## Reproducibility and evidence roles
 
 The full statements and proofs are Theorems 14 and 16 and Proposition 15 in
