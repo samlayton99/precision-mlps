@@ -7,16 +7,42 @@ import hashlib
 import json
 from pathlib import Path
 import numpy as np
+import scipy.linalg
 from threadpoolctl import threadpool_limits
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 try:
-    from .adam_feature_probe_spectrum import spectrum, slow_energy, CUTOFFS
+    from .adam_feature_probe_spectrum import slow_energy, CUTOFFS
     from .section34_analyze import binned_traces, json_safe, style
 except ImportError:
-    from adam_feature_probe_spectrum import spectrum, slow_energy, CUTOFFS
+    from adam_feature_probe_spectrum import slow_energy, CUTOFFS
     from section34_analyze import binned_traces, json_safe, style
+
+
+
+def metric_spectrum(phi, target, residual, diagonal=None):
+    """Both vector energies use ||target||², including residual energy."""
+    if diagonal is not None:
+        phi = phi*np.sqrt(diagonal)[None,:]
+    j = phi/np.sqrt(len(target))
+    u,s,_ = scipy.linalg.svd(j,full_matrices=False,check_finite=True,lapack_driver='gesdd')
+    mu=s*s;rho=mu/mu[0];normalizer=target@target
+    weights=[];checks={}
+    for name,vector in [('target',target),('residual',residual)]:
+        projected=u.T@vector;w=projected**2/normalizer
+        complement=float(np.sum((vector-u@projected)**2)/normalizer)
+        total=float(vector@vector/normalizer)
+        np.testing.assert_allclose(np.sum(w)+complement,total,atol=2e-12*max(total,1e-25),rtol=2e-12)
+        direct=float(np.sum((j.T@vector)**2)/normalizer);spectral=float(mu@w)
+        np.testing.assert_allclose(direct,spectral,rtol=2e-10,atol=2e-13*mu[0]*max(total,1e-25))
+        checks[name]=dict(total_energy=total,complement_energy=complement,energy_closure=float(np.sum(w)+complement),direct_quadratic_form=direct,spectral_quadratic_form=spectral)
+        weights.append(w)
+    return mu,rho,weights[0],weights[1],checks
+
+
+def residual_slow_energy(rho, weights, total, cutoffs):
+    return np.clip(total-np.array([np.sum(weights[rho>c]) for c in cutoffs]),0.,total)
 
 
 def analyze(input_path, manifest_path, run_paths, output, kernels=True):
@@ -30,7 +56,7 @@ def analyze(input_path, manifest_path, run_paths, output, kernels=True):
     for path in run_paths:
         meta=json.loads((path/'metadata.json').read_text());state=np.load(path/'state.npz')
         if meta['input_sha256']!=digest:raise ValueError('Frozen run uses different input')
-        runs.append((path,meta,state['w'],int(state['count']),np.load(path/'relative_error.npy',mmap_mode='r')))
+        runs.append((path,meta,state['w'],int(state['count']),np.load(path/'relative_error.npy',mmap_mode='r'),state['v']))
     if len({r[3] for r in runs})!=1:raise ValueError('Frozen assay budgets differ')
     summaries=[];curves={};kernel_arrays={};thresholds=np.logspace(-14,0,281)
     for gi,row in enumerate(rows):
@@ -38,7 +64,7 @@ def analyze(input_path, manifest_path, run_paths, output, kernels=True):
         vphi=np.column_stack((np.tanh(vx[:,None]*a[gi]+b[gi]),np.ones(len(vx))))
         ephi=np.column_stack((np.tanh(ex[:,None]*a[gi]+b[gi]),np.ones(len(ex))))
         candidates=[]
-        for run_index,(path,meta,w,count,raw) in enumerate(runs):
+        for run_index,(path,meta,w,count,raw,v) in enumerate(runs):
             val=np.linalg.norm(vphi@w[gi]-vy[:,None],axis=0)/np.linalg.norm(vy)
             train=np.linalg.norm(phi@w[gi]-y[:,None],axis=0)/np.linalg.norm(y)
             finite=np.isfinite(train)
@@ -49,12 +75,13 @@ def analyze(input_path, manifest_path, run_paths, output, kernels=True):
         if not good:
             summaries.append(dict(**row,status='all frozen recipes nonfinite',candidates=candidates));continue
         selected=min(good,key=lambda r:r['validation_error']);run_index=selected['run_index'];ri=selected['recipe_index']
-        path,meta,w,count,raw=runs[run_index]
+        path,meta,w,count,raw,v=runs[run_index]
         eval_error=float(np.linalg.norm(ephi@w[gi,:,ri]-ey)/np.linalg.norm(ey))
         item=dict(**row,selected=selected,eval_error=eval_error,candidates=candidates,assay_steps=count)
         for field,arr in binned_traces(raw[:,gi:gi+1,:],ri).items():curves[f'g{gi}_{field}']=arr.squeeze() if field!='steps' else arr
         if kernels:
-            mu,rho,weights,checks=spectrum(phi,y)
+            residual=phi@w[gi,:,ri]-y
+            mu,rho,weights,residual_weights,checks=metric_spectrum(phi,y,residual)
             # A numerical resolution convention, not a proof of unrepresentability.
             resolved=rho>1e-18
             unresolved=float(np.clip(1-np.sum(weights[resolved]),0,1))
@@ -63,6 +90,23 @@ def analyze(input_path, manifest_path, run_paths, output, kernels=True):
                         resolved_projection_residual=float(np.sqrt(unresolved)))
             kernel_arrays[f'g{gi}_relative_rate']=rho;kernel_arrays[f'g{gi}_target_weights']=weights
             kernel_arrays[f'g{gi}_slow_energy']=slow_energy(rho,weights,thresholds)
+            residual_total=checks['residual']['total_energy']
+            kernel_arrays[f'g{gi}_residual_weights']=residual_weights
+            kernel_arrays[f'g{gi}_residual_slow_energy']=residual_slow_energy(rho,residual_weights,residual_total,thresholds)
+            item['raw_residual_energy_below_cutoff']={f'{c:g}':float(e) for c,e in zip(CUTOFFS,residual_slow_energy(rho,residual_weights,residual_total,CUTOFFS))}
+            epsilon=meta['config']['epsilon']
+            diagonal=1/(np.sqrt(v[gi,:,ri]/(1-.999**count))+epsilon)
+            amu,arho,aw,arw,achecks=metric_spectrum(phi,y,residual,diagonal)
+            item['frozen_second_moment_metric']=dict(mu_max=float(amu[0]),checks=achecks,
+                target_energy_below_cutoff={f'{c:g}':float(e) for c,e in zip(CUTOFFS,slow_energy(arho,aw,CUTOFFS))},
+                residual_energy_below_cutoff={f'{c:g}':float(e) for c,e in zip(CUTOFFS,residual_slow_energy(arho,arw,residual_total,CUTOFFS))},
+                bias_correction_count=count,epsilon=epsilon,learning_rate_included=False,
+                schedule=selected['schedule'],interpretation='Endpoint second-moment metric only; momentum and evolving preconditioners remain. Relative spectrum omits learning rate, including at cooled cosine endpoints.')
+            kernel_arrays[f'g{gi}_adaptive_relative_rate']=arho
+            kernel_arrays[f'g{gi}_adaptive_target_weights']=aw
+            kernel_arrays[f'g{gi}_adaptive_residual_weights']=arw
+            kernel_arrays[f'g{gi}_adaptive_slow_energy']=slow_energy(arho,aw,thresholds)
+            kernel_arrays[f'g{gi}_adaptive_residual_slow_energy']=residual_slow_energy(arho,arw,residual_total,thresholds)
         summaries.append(item)
         print(json.dumps(dict(geometry=row['name'],eval_error=eval_error,recipe=selected)),flush=True)
     comparisons = {}
@@ -86,6 +130,7 @@ def analyze(input_path, manifest_path, run_paths, output, kernels=True):
     np.savez_compressed(output/'assay_traces.npz',**curves)
     if kernels:np.savez_compressed(output/'kernel_diagnostics.npz',cutoffs=thresholds,**kernel_arrays)
     plots(summaries,kernel_arrays,thresholds,output)
+    if kernel_arrays:adaptive_plot(summaries,kernel_arrays,thresholds,output)
 
 
 def plots(rows,kernel_arrays,thresholds,output):
@@ -128,6 +173,36 @@ def plots(rows,kernel_arrays,thresholds,output):
             ax.set_title(optimizer.upper());ax.set_xscale('log');ax.set_yscale('log');ax.set_xlabel('Relative GD rate cutoff μ / μmax');ax.set_ylabel('Target energy below cutoff');ax.grid(alpha=.15);ax.legend(fontsize=8)
         for ext in ['png','pdf']:fig.savefig(output/f'target_weighted_kernel.{ext}',dpi=220)
         plt.close(fig)
+
+
+
+def adaptive_plot(rows, arrays, thresholds, output):
+    groups=[]
+    for lam in [.03125,.25]:
+        ids=[i for i,r in enumerate(rows) if r.get('family')=='uniform' and np.isclose(r['lambda_rms'],lam)]
+        if ids:groups.append((f'Uniform λ = {lam:g}',ids))
+    for optimizer in sorted({r['optimizer'] for r in rows if 'optimizer' in r}):
+        ids=[i for i,r in enumerate(rows) if r.get('optimizer')==optimizer and r.get('family')=='learned']
+        if ids:
+            final=max(rows[i]['snapshot_step'] for i in ids)
+            groups.append((f'Final {optimizer.upper()} features',[i for i in ids if rows[i]['snapshot_step']==final]))
+    if not groups:return
+    fig,axes=plt.subplots(2,len(groups),figsize=(4.2*len(groups),6.2),squeeze=False,layout='constrained')
+    for col,(label,ids) in enumerate(groups):
+        for row,suffix in enumerate(['slow_energy','residual_slow_energy']):
+            ax=axes[row,col]
+            for prefix,color,name in [('', '#0072B2','Raw kernel'),('adaptive_','#D55E00','Frozen second moments')]:
+                values=np.array([arrays[f'g{i}_{prefix}{suffix}'] for i in ids if f'g{i}_{prefix}{suffix}' in arrays])
+                if not len(values):continue
+                ax.plot(thresholds,np.median(values,axis=0),color=color,label=name)
+                ax.fill_between(thresholds,np.min(values,axis=0),np.max(values,axis=0),color=color,alpha=.12)
+            ax.set_xscale('log');ax.set_yscale('log');ax.set_xlabel('Relative metric eigenvalue cutoff')
+            ax.set_ylabel(('Target' if row==0 else 'Actual final residual')+' energy / ‖target‖²')
+            ax.grid(alpha=.15);ax.legend(fontsize=8)
+        axes[0,col].set_title(label)
+    fig.suptitle('Frozen second-moment geometry\nNot an Adam rate prediction',fontsize=11)
+    for ext in ['png','pdf']:fig.savefig(output/f'frozen_second_moment_diagnostic.{ext}',dpi=220)
+    plt.close(fig)
 
 
 def main():

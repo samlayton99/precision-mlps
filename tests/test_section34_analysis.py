@@ -44,3 +44,19 @@ def test_selection_uses_one_recipe_across_seeds(tmp_path, monkeypatch):
     np.testing.assert_allclose(curves['adam_error_endpoint'],.3)
     # An invalid per-seed selection would instead contain [.1,.1,.3,.3,.3].
     assert not np.allclose(curves['adam_error_endpoint'],np.min(endpoint_errors,axis=1))
+
+
+def test_frozen_second_moment_metric_preserves_target_and_residual_energy():
+    from experiments.expD36_frozen_gamma_probe.section34_feature_access import metric_spectrum, residual_slow_energy
+    q,_=np.linalg.qr(np.random.default_rng(32).normal(size=(9,9)))
+    phi=np.sqrt(9)*q[:,:3]*np.array([3.,1.,.1])
+    target=.5*q[:,0]+.4*q[:,2]+.7*q[:,5]
+    residual=.2*q[:,1]+.3*q[:,5]
+    mu,rho,w,rw,checks=metric_spectrum(phi,target,residual,np.array([1.,4.,100.]))
+    np.testing.assert_allclose(mu,[9.,4.,1.],atol=1e-12)
+    np.testing.assert_allclose(checks['target']['energy_closure'],1.,atol=1e-13)
+    np.testing.assert_allclose(checks['residual']['energy_closure'],.13/.9,atol=1e-13)
+    np.testing.assert_allclose(residual_slow_energy(rho,rw,.13/.9,[.2]),[.09/.9],atol=1e-13)
+    # Multiplying the endpoint learning rate cannot change relative eigenvalues.
+    scaled=metric_spectrum(phi,target,residual,7*np.array([1.,4.,100.]))
+    np.testing.assert_allclose(scaled[1],rho,atol=1e-13)
