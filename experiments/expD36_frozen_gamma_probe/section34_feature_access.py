@@ -137,9 +137,10 @@ def analyze(input_path, manifest_path, run_paths, output, kernels=True):
 
 def plots(rows,kernel_arrays,thresholds,output):
     style();optimizers=list(dict.fromkeys(r.get('optimizer','uniform') for r in rows))
+    plt.rcParams.update({'font.size':8,'axes.labelsize':8,'axes.titlesize':9,'legend.fontsize':7,'xtick.labelsize':7,'ytick.labelsize':7})
     learned=[r for r in rows if r.get('family')=='learned' and 'eval_error' in r]
     if learned:
-        fig,axes=plt.subplots(1,2,figsize=(10,3.6),layout='constrained')
+        fig,axes=plt.subplots(1,2,figsize=(5.5,2.65),layout='constrained')
         colors={'adam':'#0072B2','gd':'#D55E00'}
         for optimizer in optimizers:
             subset=[r for r in learned if r.get('optimizer')==optimizer]
@@ -153,18 +154,18 @@ def plots(rows,kernel_arrays,thresholds,output):
             vals=[np.array([r['eval_error'] for r in interventions if r.get('slope_multiplier',1.)==s]) for s in factors]
             axes[1].plot(factors,[np.median(v) for v in vals],'-o',color=color,label=optimizer.upper())
             axes[1].fill_between(factors,[min(v) for v in vals],[max(v) for v in vals],color=color,alpha=.12)
-        axes[0].set_xlabel('Source joint updates (millions)');axes[0].set_title('Readout restart on acquired features')
-        axes[1].set_xlabel('Slope and intercept multiplier');axes[1].set_xscale('log',base=4);axes[1].set_xticks([1,4,16],['1','4','16']);axes[1].set_title('Fixed centers, increased slopes')
-        for ax in axes:ax.set_yscale('log');ax.set_ylabel('Final relative output L2 error');ax.legend();ax.grid(alpha=.15)
+        axes[0].set_xlabel('Source joint updates (millions)');axes[0].set_title('Readout restart')
+        axes[1].set_xlabel('Slope and intercept multiplier');axes[1].set_xscale('log',base=4);axes[1].set_xticks([1,4,16],['1','4','16']);axes[1].set_title('Same centers, increased slopes')
+        for ax in axes:ax.set_yscale('log');ax.set_ylabel('Final relative output error');ax.legend();ax.grid(alpha=.15)
         for ext in ['png','pdf']:fig.savefig(output/f'feature_access_assays.{ext}',dpi=220)
         plt.close(fig)
     if kernel_arrays:
-        fig,axes=plt.subplots(1,len(optimizers),figsize=(5*len(optimizers),3.8),squeeze=False,layout='constrained')
+        fig,axes=plt.subplots(1,len(optimizers),figsize=(5.5,2.8),squeeze=False,layout='constrained')
         for ax,optimizer in zip(axes[0],optimizers):
             ids=[i for i,r in enumerate(rows) if r.get('optimizer','uniform')==optimizer and r.get('family')!='slope_intervention' and f'g{i}_slow_energy' in kernel_arrays]
             if ids and all(rows[i]['family']=='uniform' for i in ids):
                 for i,color in zip(ids,plt.cm.viridis(np.linspace(.05,.9,len(ids)))):
-                    ax.plot(thresholds,kernel_arrays[f'g{i}_slow_energy'],color=color,label=f"λ = {rows[i]['lambda_rms']:g}")
+                    ax.plot(thresholds,kernel_arrays[f'g{i}_slow_energy'],color=color,label=f"λ = {Fraction(rows[i]['lambda_rms']).limit_denominator(32)}")
                 stages=[]
             else:stages=sorted({rows[i].get('snapshot_step',0) or 0 for i in ids})
             for stage,color in zip(stages,plt.cm.viridis(np.linspace(.05,.9,len(stages)))):
@@ -172,7 +173,7 @@ def plots(rows,kernel_arrays,thresholds,output):
                 values=np.array([kernel_arrays[f'g{i}_slow_energy'] for i in chosen])
                 ax.plot(thresholds,np.median(values,axis=0),color=color,label=f'{stage/1e6:g}M source updates')
                 ax.fill_between(thresholds,np.min(values,axis=0),np.max(values,axis=0),color=color,alpha=.1)
-            ax.set_title(optimizer.upper());ax.set_xscale('log');ax.set_yscale('log');ax.set_xlabel('Relative GD rate cutoff μ / μmax');ax.set_ylabel('Target energy below cutoff');ax.grid(alpha=.15);ax.legend(fontsize=8)
+            ax.set_title('Uniform dictionaries' if optimizer=='uniform' else optimizer.upper());ax.set_xscale('log');ax.set_yscale('log');ax.set_xlabel(r'Relative GD rate cutoff $\mu/\mu_{\max}$');ax.set_ylabel('Target energy below cutoff');ax.grid(alpha=.15);ax.legend(fontsize=7)
         for ext in ['png','pdf']:fig.savefig(output/f'target_weighted_kernel.{ext}',dpi=220)
         plt.close(fig)
 
@@ -206,14 +207,15 @@ def adaptive_plot(rows, arrays, thresholds, output):
     groups=[]
     for lam in [.03125,.25]:
         ids=[i for i,r in enumerate(rows) if r.get('family')=='uniform' and np.isclose(r['lambda_rms'],lam)]
-        if ids:groups.append((f'Uniform λ = {lam:g}',ids))
+        if ids:groups.append((f'Uniform λ = {Fraction(lam).limit_denominator(32)}',ids))
     for optimizer in sorted({r['optimizer'] for r in rows if 'optimizer' in r}):
         ids=[i for i,r in enumerate(rows) if r.get('optimizer')==optimizer and r.get('family')=='learned']
         if ids:
             final=max(rows[i]['snapshot_step'] for i in ids)
             groups.append((f'Final {optimizer.upper()} features',[i for i in ids if rows[i]['snapshot_step']==final]))
     if not groups:return
-    fig,axes=plt.subplots(2,len(groups),figsize=(4.2*len(groups),6.2),squeeze=False,layout='constrained')
+    plt.rcParams.update({'font.size':7.5,'axes.labelsize':7.5,'axes.titlesize':8,'legend.fontsize':7,'xtick.labelsize':7,'ytick.labelsize':7})
+    fig,axes=plt.subplots(2,len(groups),figsize=(5.5,4.2),squeeze=False,layout='constrained')
     for col,(label,ids) in enumerate(groups):
         for row,suffix in enumerate(['slow_energy','residual_slow_energy']):
             ax=axes[row,col]
@@ -223,10 +225,10 @@ def adaptive_plot(rows, arrays, thresholds, output):
                 ax.plot(thresholds,np.median(values,axis=0),color=color,label=name)
                 ax.fill_between(thresholds,np.min(values,axis=0),np.max(values,axis=0),color=color,alpha=.12)
             ax.set_xscale('log');ax.set_yscale('log');ax.set_xlabel('Relative metric eigenvalue cutoff')
-            ax.set_ylabel(('Target' if row==0 else 'Actual final residual')+' energy / ‖target‖²')
-            ax.grid(alpha=.15);ax.legend(fontsize=8)
+            ax.set_ylabel(('Target' if row==0 else 'Residual')+' energy / target energy')
+            ax.grid(alpha=.15);ax.legend(fontsize=7)
         axes[0,col].set_title(label)
-    fig.suptitle('Frozen second-moment geometry\nNot an Adam rate prediction',fontsize=11)
+    fig.suptitle('Endpoint second-moment geometry',fontsize=9)
     for ext in ['png','pdf']:fig.savefig(output/f'frozen_second_moment_diagnostic.{ext}',dpi=220)
     plt.close(fig)
 
