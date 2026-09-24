@@ -13,5 +13,5 @@
     "validation_error": 6.620708302958729e-07
   },
   "horizon": 5000000,
-  "display": "Error and RMS lines use seedwise within-bin medians; their shading retains all raw seedwise extrema in each bin. The 99th-percentile slopes use saved parameter checkpoints and show their seed range. Slopes use fixed reference spacing 2/467."
+  "display": "Joint error and RMS lines use seedwise within-bin medians. Fixed Adam groups its compact display bins into 200 equal-width intervals and takes medians of their medians, preserving both endpoints. All error/RMS shading retains every raw seedwise extremum in each displayed bin. The 99th-percentile slopes use saved parameter checkpoints and show their seed range. Slopes use fixed reference spacing 2/467."
 }

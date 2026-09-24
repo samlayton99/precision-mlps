@@ -6,8 +6,8 @@ Section~3.3 identifies a useful relative bandwidth $\lambda=\gamma h$ for
 the construction. Holding it fixed as width increases requires
 $\gamma=\Theta(W)$. Training must acquire a useful feature geometry as well
 as fit its readout; the latter can remain slow even when the features already
-represent the target accurately. We quantify this distinction for the finite
-tanh construction. The underlying scale-dependent spectral bias is
+represent the target accurately. We derive a slope-dependent lower bound on
+output error for the finite tanh construction. The underlying scale-dependent spectral bias is
 established prior work~\citep{xu2020frequency,tancik2020fourier}.
 
 \paragraph{Slope controls access to representable corrections.}
@@ -95,23 +95,18 @@ to acquire.
  \label{fig:slope-acquisition}
 \end{figure}
 
-\paragraph{Proof sketch.}
-Interlacing transfers the projected-kernel upper bound to
-$\mu_i\le\beta_{i-1}+\delta_\gamma$ for $i\ge2$.
-Since $\ell_\gamma\le\mu_1$, this gives $\rho_i\le\bar\rho_i$.
-Substitute these upper rates into the exact squared relative output error
-$\sum_i p_i(1-\rho_i/2)^{2n}$, whose factors decrease with $\rho_i$.
-
-The bound uses the actual dictionary's target projections; its rate endpoints
-are computed from the slope-dependent integral kernel and finite-center
-corrections before training.
+Interlacing gives $\rho_i\le\bar\rho_i$; substituting into GD's exact squared relative error
+$\sum_i p_i(1-\rho_i/2)^{2n}$ proves the bound
+(Appendix~\ref{app:slope-proof}). Target projections use the actual
+dictionary; the rate bounds come from the slope-dependent integral and
+finite-center corrections before training.
 
 \paragraph{Accuracy can be representable but slow to acquire.}
 Figure~\ref{fig:slope-acquisition}A isolates the readout effect on a fixed
 width-512 geometry. At $\lambda=1/32$, a direct readout fit attains
 $6.2\times10^{-10}$ relative error on the dense evaluation grid, while GD
 retains training-sample error $0.210$ after five million updates; the theorem
-predicts at least $0.210$.
+predicts at least $0.2098$.
 At $\lambda=1/4$, the same GD protocol reaches $3.88\times10^{-4}$.
 Across all four bandwidths and every executed update, the theorem lower
 bound is at least 75\% of the actual error, and roughly 91--100\% at the
@@ -135,16 +130,13 @@ geometry has been acquired.
 
 Longer training helps: Adam's median endpoint error falls 28\% between the
 two- and five-million-update experiments and continues improving late in
-the latter. Yet a direct readout fit to the learned five-million-update
-features barely changes their median error. Separate interventions at two
+the latter. Yet checked FP64 direct fits to the learned five-million-update
+features barely improve their median error. Separate interventions at two
 million updates show that steepening those features or replacing their
 centers alone can worsen accuracy (Appendix~\ref{app:slope-experiments}).
 The joint-training gap therefore concerns acquisition of a useful combination
 of slopes and centers; the frozen theorem isolates how slope controls
-optimization once centers are fixed. The remaining joint residual also
-occupies weak local directions after Adam's coordinate scaling, including
-in a constant-rate control. This supports the optimization diagnosis
-without extending the GD theorem to Adam.
+optimization once centers are fixed.
 
 The construction supplies accurate feature geometry and readout weights
 directly. It therefore avoids both the search for that geometry and slow

@@ -9,9 +9,22 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 try:
-    from .section34_analyze import binned_traces, style
+    from .section34_analyze import binned_traces, relative_error, style
 except ImportError:
-    from section34_analyze import binned_traces, style
+    from section34_analyze import binned_traces, relative_error, style
+
+
+def reference_display(steps, median, low, high, endpoint, bins=200):
+    """Coarsen the display only; retain endpoints and every input-bin extremum."""
+    groups = np.minimum((steps / steps[-1] * bins).astype(int), bins - 1)
+    groups[0], groups[-1] = -1, bins
+    rows = [(0., 1., 1., 1.)]  # The frozen readout starts at zero.
+    for group in np.unique(groups):
+        selected = groups == group
+        rows.append((np.median(steps[selected]), np.median(median[selected]),
+                     np.min(low[selected]), np.max(high[selected])))
+    rows.append((steps[-1], endpoint, endpoint, endpoint))
+    return np.asarray(rows).T
 
 
 def main():
@@ -28,6 +41,11 @@ def main():
     args=p.parse_args();args.output.mkdir(parents=True,exist_ok=True)
     summary=json.loads((args.analysis/'summary.json').read_text())
     trace=np.load(args.analysis/'selected_traces.npz')
+    initial_error = None
+    if args.base is not None:
+        initial = np.load(args.base/'joint_input.npz')
+        initial_error = np.array([relative_error(p, initial['x'], initial['target'], summary['width'])
+                                  for p in initial['initial_parameters']])
     actual=np.load(args.gd/'raw_error.npy',mmap_mode='r')
     horizon=summary['horizon']
     if len(actual)!=horizon+1:raise ValueError('Panel A and joint horizons must match')
@@ -51,12 +69,23 @@ def main():
         color=colors.get(optimizer,'#009E73');label='Adam' if optimizer=='adam' else optimizer.upper()
         t=trace[f'{optimizer}_error_steps']/1e6
         y=trace[f'{optimizer}_error_median']
+        low=trace[f'{optimizer}_error_low'];high=trace[f'{optimizer}_error_high']
+        endpoint=trace[f'{optimizer}_error_endpoint']
+        t=np.r_[t,horizon/1e6];y=np.vstack((y,endpoint))
+        low=np.vstack((low,endpoint));high=np.vstack((high,endpoint))
+        if initial_error is not None:
+            t=np.r_[0,t];y=np.vstack((initial_error,y))
+            low=np.vstack((initial_error,low));high=np.vstack((initial_error,high))
         axes[1].plot(t,np.median(y,axis=1),color=color,lw=1.6,label=f'Joint {label}')
-        axes[1].fill_between(t,np.min(trace[f'{optimizer}_error_low'],axis=1),np.max(trace[f'{optimizer}_error_high'],axis=1),color=color,alpha=.12,lw=0)
+        axes[1].fill_between(t,np.min(low,axis=1),np.max(high,axis=1),color=color,alpha=.055,lw=0)
         for name,ls in [('rms','-'),('q99','--')]:
             if name=='rms':
                 ts=trace[f'{optimizer}_rms_steps'];ys=trace[f'{optimizer}_rms_median']
                 low=trace[f'{optimizer}_rms_low'];high=trace[f'{optimizer}_rms_high']
+                start=trace[f'{optimizer}_lambda_rms_checkpoints'][0]
+                end=trace[f'{optimizer}_rms_endpoint']
+                ts=np.r_[0,ts,horizon];ys=np.vstack((start,ys,end))
+                low=np.vstack((start,low,end));high=np.vstack((start,high,end))
             else:
                 ts=trace[f'{optimizer}_checkpoint_steps'];ys=trace[f'{optimizer}_lambda_q99']
                 low=high=ys
@@ -77,8 +106,9 @@ def main():
         arr=np.load(args.frozen_adam/'relative_error.npy',mmap_mode='r')
         if len(arr)!=horizon+1:raise ValueError('Frozen Adam horizon mismatch')
         values=binned_traces(arr,ri)
-        axes[1].plot(values['steps']/1e6,values['median'][:,gi],color='#333333',ls='--',lw=1.2,label='Fixed Adam')
-        axes[1].fill_between(values['steps']/1e6,values['low'][:,gi],values['high'][:,gi],color='#333333',alpha=.08,lw=0)
+        t, mid, low, high = reference_display(values['steps'], values['median'][:,gi], values['low'][:,gi], values['high'][:,gi], values['endpoint'][gi])
+        axes[1].plot(t/1e6,mid,color='#333333',ls='--',lw=.8,label='Fixed Adam')
+        axes[1].fill_between(t/1e6,low,high,color='#333333',alpha=.055,lw=0)
         reference=dict(source=str(args.frozen_adam),geometry_index=gi,recipe_index=ri,recipe=meta['recipes'][ri],validation_error=float(errors[ri]))
     if args.frozen_analysis:
         access=json.loads((args.frozen_analysis/'summary.json').read_text())
@@ -92,8 +122,9 @@ def main():
         curves=np.load(args.frozen_analysis/'assay_traces.npz')
         t=curves[f'g{gi}_steps']
         if t[-1]!=horizon:raise ValueError('Frozen Adam display trace is incomplete')
-        axes[1].plot(t/1e6,curves[f'g{gi}_median'],color='#333333',ls='--',lw=1.2,label='Fixed Adam')
-        axes[1].fill_between(t/1e6,curves[f'g{gi}_low'],curves[f'g{gi}_high'],color='#333333',alpha=.08,lw=0)
+        t, mid, low, high = reference_display(t, curves[f'g{gi}_median'], curves[f'g{gi}_low'], curves[f'g{gi}_high'], float(curves[f'g{gi}_endpoint']))
+        axes[1].plot(t/1e6,mid,color='#333333',ls='--',lw=.8,label='Fixed Adam')
+        axes[1].fill_between(t/1e6,low,high,color='#333333',alpha=.055,lw=0)
         reference=dict(source=str(args.frozen_analysis),geometry_index=gi,recipe_index=selected['recipe_index'],
             recipe={k:selected[k] for k in ['schedule','learning_rate']},validation_error=selected['validation_error'])
     axes[1].plot(indices/1e6,actual[indices,-1],color='#777777',ls=':',lw=1.2,label='Fixed GD')
@@ -102,13 +133,16 @@ def main():
     for ax in axes:
         ax.set_yscale('log');ax.grid(alpha=.13,which='major');ax.tick_params(labelsize=7)
     for ax in axes[1:]:
-        ax.set_xlim(0,horizon/1e6);ax.set_xlabel('Updates (millions)');ax.legend(loc='upper right' if ax==axes[1] else 'lower right')
-    for ax,title in zip(axes,['A  Frozen readout','B  Joint training','C  Slope acquisition']):ax.set_title(title,loc='left',pad=24)
+        ax.set_xlim(0,horizon/1e6);ax.set_xlabel('Updates (millions)')
+    axes[1].legend(loc='lower center',bbox_to_anchor=(.5,1.005),ncol=2,
+                   handlelength=1.3,columnspacing=.6,fontsize=6.5)
+    axes[2].legend(loc='lower right')
+    for ax,title in zip(axes,['A  Frozen readout','B  Joint training','C  Slope acquisition']):ax.set_title(title,loc='left',pad=36)
     axes[0].set_xlim(0,horizon)
     axes[0].set_xticks([0,100,10000,1000000],['0',r'$10^2$',r'$10^4$',r'$10^6$'])
     for suffix in ['pdf','png','svg']:fig.savefig(args.output/f'section34_three_panel.{suffix}',dpi=300)
     plt.close(fig)
-    (args.output/'figure_provenance.json').write_text(json.dumps(dict(joint_analysis=str(args.analysis),bound_source=str(args.bounds),executed_gd_source=str(args.gd),frozen_adam_reference=reference,horizon=horizon,display='Error and RMS lines use seedwise within-bin medians; their shading retains all raw seedwise extrema in each bin. The 99th-percentile slopes use saved parameter checkpoints and show their seed range. Slopes use fixed reference spacing 2/467.'),indent=2)+'\n')
+    (args.output/'figure_provenance.json').write_text(json.dumps(dict(joint_analysis=str(args.analysis),bound_source=str(args.bounds),executed_gd_source=str(args.gd),frozen_adam_reference=reference,horizon=horizon,display='Joint error and RMS lines use seedwise within-bin medians. Fixed Adam groups its compact display bins into 200 equal-width intervals and takes medians of their medians, preserving both endpoints. All error/RMS shading retains every raw seedwise extremum in each displayed bin. The 99th-percentile slopes use saved parameter checkpoints and show their seed range. Slopes use fixed reference spacing 2/467.'),indent=2)+'\n')
 
 
 if __name__=='__main__':
