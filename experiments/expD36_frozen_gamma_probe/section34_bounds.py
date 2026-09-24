@@ -68,13 +68,19 @@ def main():
             gi = INDICES.index(index)
             # Validate every recorded update in bounded-memory blocks.
             max_lower_violation, max_reference_discrepancy = 0., 0.
+            minimum_ratio, minimum_ratio_step = float('inf'), None
             for begin in range(0, args.steps+1, 4096):
                 ns = np.arange(begin, min(begin+4096, args.steps+1))
                 lower, reference, _ = curves(fine[0], fine[1], ns)
                 actual = observed[ns, gi]
                 max_lower_violation = max(max_lower_violation, float(np.max(lower-actual)))
                 max_reference_discrepancy = max(max_reference_discrepancy, float(np.max(np.abs(reference-actual))))
-            item.update(executed_max_lower_violation=max_lower_violation, executed_max_absolute_reference_discrepancy=max_reference_discrepancy, executed_final_error=float(observed[args.steps, gi]))
+                ratios = np.divide(lower, actual, out=np.full_like(lower, np.inf), where=actual>0)
+                local_minimum = int(np.argmin(ratios))
+                if ratios[local_minimum] < minimum_ratio:
+                    minimum_ratio = float(ratios[local_minimum])
+                    minimum_ratio_step = int(ns[local_minimum])
+            item.update(executed_max_lower_violation=max_lower_violation, executed_max_absolute_reference_discrepancy=max_reference_discrepancy, executed_final_error=float(observed[args.steps, gi]), every_update_minimum_lower_over_executed=minimum_ratio, minimum_ratio_step=minimum_ratio_step)
         all_summary.append(item)
         (args.output/'summary.json').write_text(json.dumps({'cases': all_summary, 'horizon': args.steps, 'numerical_status': 'FP64 checked evaluations, with quadrature refinement; not interval-arithmetic certificates'}, indent=2, allow_nan=False)+'\n')
 
