@@ -14,8 +14,7 @@ sixth-moment version gives a width-dependent window proportional to
 $W^{2/3}$ under bounded initial rescaled moments. A higher finite-moment
 version improves this to $W^{1-2/p}$ for fixed $p\ge6$.
 
-The preferred mechanistic refinement is **Theorem 12**, proved in the final
-appendix. An accumulated budget for concentration of the effective force
+The population refinement is **Theorem 12**. An accumulated budget for concentration of the effective force
 closes the fourth-moment evolution and gives a conditional time proportional
 to $W$. Brief concentration spikes are allowed. It assumes neither small
 future force, bounded future moments, nor a future coarse-conditioning
@@ -23,6 +22,15 @@ margin. This sharper result and the
 initial-data result answer different questions: the former identifies the
 population property whose preservation remains to be proved, while the
 latter supplies a shorter sufficient window without that future premise.
+
+The numerical audit exposes another important loss: replacing the measured
+initial effective force by a norm bound can discard most of its weakness.
+**Theorem 14** retains that initial force and assumes an accumulated feedback
+budget; it bounds output-error reduction without requiring a concentration
+budget. Concentration enters its additional population-movement conclusion.
+**Theorem 16** below derives a sufficient feedback-persistence interval from
+initial residual-loaded curvature and aggregate parameter travel. Its
+usefulness is tested separately from the conditional theorem.
 
 These are rigorous sufficient bounds, not yet claims of quantitatively useful
 certification on every experimental checkpoint. The cleanest theorem concerns
@@ -2166,3 +2174,210 @@ certified, derivative bounds remains a diagnostic. Step-size refinement
 and dense sampling can test that diagnostic but do not replace a validated
 path enclosure. The numerical work should distinguish conditional theorem,
 empirical premise coverage, and any actual certificate obtained.
+
+## Appendix: derive persistence from residual-loaded curvature
+
+### Example, mechanism, and the prediction to test
+
+A feature can have appreciable sensitivity to some output directions while
+having little coupling to the residual that remains. Replacing that coupling
+by the product of two norms loses the distinction. The same issue occurs
+one derivative later: a bound on all feature curvature can be much larger
+than the curvature actually loaded by the current residual and coarse
+compensation. This appendix retains that initial loading, then bounds how
+quickly the loading can change as the population moves.
+
+The feedback-budget theorem makes this change measurable. In the archived
+width-705 baseline panel, the initial force and accumulated directional
+feedback give useful effective-flow error floors across 23 targets. Those
+are evaluations on GD histories, not yet certificates for their dynamics.
+The present theorem addresses a different question: can an initial state
+alone imply a nonzero useful persistence interval for the effective ODE?
+
+The prediction is finite in time. Small initial force and small initial
+residual-loaded curvature delay reinforcement, because changing the latter
+requires population motion, and that motion is supplied by the former.
+The proof allows both quantities to grow. It assumes no frozen Jacobian,
+per-neuron confinement, or permanently bounded feedback rate.
+
+### The operator that governs reinforcement
+
+Write $Q_C\ell=\ell_0+\ell_1x/\sqrt v$ for the affine function with
+coarse coordinates $\ell$. Define the compensated residual and its loaded
+parameter Hessian by
+
+$$
+\psi=e_H-Q_C\ell,\qquad
+\mathscr H=\langle\psi,D^2f_\theta\rangle
+=\langle e_H,D^2e_H\rangle-\ell\cdot D^2e_C.
+\tag{S1}
+$$
+
+The brackets integrate over the input distribution, leaving a symmetric
+operator on parameter space. Its neuron blocks are $3\times3$; this is a
+way to calculate the operator, not an assumption about each neuron's
+trajectory. The output-bias row and column vanish. Equation (S1) uses
+the effective fine gradient, including coarse compensation. Tracking $R$
+remains absent only because this theorem concerns $\dot\theta=-F$.
+
+The exact identities are
+
+$$
+\frac12\frac{d}{dt}f^2
+=-\|J_HF\|^2-F^*\mathscr HF,\qquad
+\frac{d}{dt}Y^2=-2f^2.
+\tag{S2}
+$$
+
+Positive loaded curvature depletes force; negative loaded curvature can
+reinforce it. A Frobenius norm bounds the latter without relying on
+favorable signs or taking a largest-neuron statistic. Let
+$\chi_0\ge\|\mathscr H(0)\|_{\mathrm{Fr}}$. Keeping $\chi_0$ preserves
+the initial residual loading even though later changes will be bounded
+conservatively.
+
+### An initial-data theorem
+
+**Theorem 16 (reinforcement requires accumulated population motion).**
+Consider the effective ODE, with $f_0>0$, $Y_0>0$, and
+$\sigma_0=\sigma_{\min}(J_C(0))>0$. Choose a travel allowance $A_*>0$.
+All quantities below are calculated from this allowance and initial data:
+
+$$
+\begin{aligned}
+P_*&=\sqrt{M_0}+A_*,& b_*&=B_0+A_*,\\
+H_2&=\sqrt2+4P_*,& H_3&=4\sqrt2P_*+8/\sqrt3,\\
+\sigma_*&=\sigma_0-H_2A_*>0,& j_*&=3b_*^3,\\
+\ell_*&=3Y_0b_*^3/\sigma_*,&
+\Psi_*&=\sqrt{Y_0^2+\ell_*^2},\\
+D_*&=\frac{6H_2Y_0b_*^3}{\sigma_*^2}
++\frac{9b_*^6+6\sqrt2Y_0b_*^2}{\sigma_*},&
+L_*&=H_2(j_*+D_*)+H_3\Psi_*.
+\end{aligned}
+\tag{S3}
+$$
+
+Define
+
+$$
+U(A)=f_0+\chi_0A+\tfrac12L_*A^2,\qquad
+T_* =\int_0^{A_*}\frac{dA}{U(A)}.
+\tag{S4}
+$$
+
+Let $a(t)$ solve $\dot a=U(a)$ with $a(0)=0$. For $0\le t\le T_*$,
+the following statements hold for the actual evolving ODE:
+
+$$
+\begin{aligned}
+\int_0^t\|F(s)\|\,ds&\le a(t)\le A_*,\\
+\|F(t)\|&\le U(a(t)),\\
+\|\mathscr H(t)\|_{\mathrm{op}}&\le\chi_0+L_*a(t),\\
+Y(t)^2&\ge
+\left[Y_0^2-2\left(f_0a(t)+\frac{\chi_0a(t)^2}{2}
++\frac{L_*a(t)^3}{6}\right)\right]_+.
+\end{aligned}
+\tag{S5}
+$$
+
+The square root of the last expression divided by $\|y\|$ bounds the
+raw relative output error from below throughout this interval. In addition,
+
+$$
+M_4(t)^{1/4}\le M_4(0)^{1/4}+W^{1/4}a(t).
+\tag{S6}
+$$
+
+For $0\le\lambda_0<\lambda_*$, let $p_0$ be the initial fraction with
+$h|a_j(0)|>\lambda_0$. The fraction that ever reaches $h|a_j|\ge\lambda_*$
+by time $t$ obeys
+
+$$
+p_{\mathrm{ever}}(t)
+\le p_0+\frac{h^2a(t)^2}{W(\lambda_*-\lambda_0)^2}.
+\tag{S7}
+$$
+
+Both population conclusions may be loose. They express the desired aggregate
+restriction without requiring every neuron to remain below a common cap.
+
+**Proof.** Write $A(t)=\int_0^t f(s)\,ds$. Until the first exit from
+$A<A_*$, norm inequalities give $\sqrt M\le P_*$ and $B\le b_*$.
+The full network Hessian satisfies $\|D^2f_\theta\|\le H_2$ there.
+Since coarse projection is contractive, integration along the trajectory
+gives $\sigma_{\min}(J_C)\ge\sigma_0-H_2A\ge\sigma_*>0$.
+Thus the effective ODE and its exact energy identity remain valid, and
+$Y\le Y_0$.
+
+For completeness, the third-derivative bound used here is global in the
+activation argument. The inequalities $|\tanh'''u|\le2$ and
+$|\tanh''u|\le4/(3\sqrt3)$ imply a neuron trilinear bound
+$4\sqrt2|c_j|+8/\sqrt3$. Sum its products of direction-block norms,
+apply Hölder, and use $\|c\|_2\le P_*$. This gives
+$\|D^3f_\theta\|\le H_3$ without an individual-parameter hypothesis.
+The same argument for the second derivative yields $H_2$.
+
+The earlier fine-sensitivity bounds give $\|J_H\|\le j_*$,
+$\|D^2e_H\|\le6\sqrt2b_*^2$, and $|\ell|\le\ell_*$.
+Differentiating $\ell$ by the identity in Proposition 5 gives
+$\|D\ell\|\le D_*$. Orthogonality of coarse and fine output spaces
+gives $\|\psi\|^2=Y^2+|\ell|^2\le\Psi_*^2$.
+Consequently, along the effective ODE,
+
+$$
+\|\dot\psi\|\le(j_*+D_*)f,\qquad
+\|\dot{\mathscr H}\|_{\mathrm{op}}
+\le H_2\|\dot\psi\|+H_3\|\psi\|f\le L_*f.
+\tag{S8}
+$$
+
+Integration yields $\|\mathscr H(t)\|_{\mathrm{op}}\le\chi_0+L_*A(t)$.
+Drop the nonpositive relaxation term in (S2) to obtain
+$\dot f\le(\chi_0+L_*A)f$. Because $\dot A=f$, integration gives
+$f\le f_0+\chi_0A+L_*A^2/2=U(A)$. Scalar comparison proves
+$A\le a$ and $f\le U(a)$ until $a=A_*$. A first-exit argument and
+the strict coarse margin continue the inequalities through $T_*$.
+Zero force, if encountered, extends the inequalities by continuity and
+uniqueness of the smooth ODE.
+
+Finally, $\int_0^t f^2\le\int_0^t U(a)^2ds
+=\int_0^{a(t)}U(u)du$. Substitute this into (S2) to prove the energy
+bound. Minkowski gives (S6). If
+$d_j=\int_0^t|\dot a_j(s)|ds$, then
+$\sum_jd_j^2\le A(t)^2\le a(t)^2$. Each newly acquired neuron
+requires $d_j\ge(\lambda_*-\lambda_0)/h$. Counting that set proves
+(S7). $\square$
+
+### What the theorem establishes, and what it does not
+
+The sufficient persistence condition can be read without solving the scalar
+ODE. Choose $A_*=2f_0T$ and evaluate (S3) with that allowance. If the coarse
+margin is positive and
+
+$$
+2\chi_0T+2L_*f_0T^2\le1,
+\tag{S9}
+$$
+
+then $U(A_*)\le2f_0$, so $T_*\ge A_*/(2f_0)=T$. Hence the initial
+force can at most double through $T$, the total travel is at most $2f_0T$,
+and $Y(t)^2\ge[Y_0^2-8f_0^2t]_+$. This is a sufficient condition on
+initial data and derivative bounds, not a premise that the future force
+stays small. The two dimensionless obstructions are initial loaded
+curvature times duration and force-driven reinforcement over duration
+squared. Neither needs to remain small forever.
+
+This proof still bounds later changes of $\mathscr H$ by norm inequalities.
+If $L_*$ is large, the certified interval can remain short even when the
+initial loading is small. That would identify the remaining loss: the
+aggregate change of residual-loaded curvature, rather than the measured
+initial force or a need to confine every neuron. The accumulated-feedback
+theorem remains available with a weaker, empirically checked interval
+premise when this initial-data certificate is too conservative.
+
+Arb evaluation of initial quantities plus a lower Riemann sum for (S4)
+can certify a numerical instance of this theorem. It certifies the exact
+effective ODE for the empirical input measure and archived binary64 initial
+state. It does not certify ordinary GD, Adam, or continuous-distribution
+generalization; tracking and finite-step allowances require Proposition 15
+or a separate full-dynamics calculation.
