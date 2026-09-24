@@ -1,7 +1,7 @@
 """Six-target verification of effective flow, GD, and their feedback budgets.
 
 Only initial and final parameter vectors are retained. Scalar diagnostics
-are sampled every 0.2 flow-time units, including tracking derivative loading.
+include tracking derivative loading at a specified fixed flow-time spacing.
 """
 from __future__ import annotations
 
@@ -107,15 +107,20 @@ def run(args):
     with np.load(args.inputs,allow_pickle=False) as data:
         ps,x,ys=data['p'],data['x'],data['y']; cases=json.loads(str(data['cases']))
     x=jnp.asarray(x); rows=[]; summaries=[]; endpoints={}; comparisons=[]
+    samples=round(args.horizon/args.sample_interval)
+    if abs(samples*args.sample_interval-args.horizon)>1e-10 or samples%2:
+        raise ValueError('Use an even number of equally spaced sample intervals')
+    if any(abs(round(args.sample_interval/dt)*dt-args.sample_interval)>1e-10 for dt in (.02,.01,.002,.001)):
+        raise ValueError('Sampling spacing must be a multiple of every integration step')
     for p0,y,case in zip(ps,ys,cases):
         y=jnp.asarray(y); target=case['target']; traces={}
         for kind,dt in (('effective',.02),('effective',.01),('gd',.002),('gd',.001)):
             p=jnp.asarray(p0); path=[]
-            for k in range(201):
+            for k in range(samples+1):
                 raw=jax.device_get(diagnostics(p,x,y))
-                row=dict(target=target,kind=kind,dt=dt,time=.2*k,**{key:float(value) for key,value in raw.items()})
+                row=dict(target=target,kind=kind,dt=dt,time=args.sample_interval*k,**{key:float(value) for key,value in raw.items()})
                 path.append(row)
-                if k<200: p=advance(p,x,y,dt,steps=round(.2/dt),kind=kind)
+                if k<samples: p=advance(p,x,y,dt,steps=round(args.sample_interval/dt),kind=kind)
             summary=summarize(path); rows.extend(path); summaries.append(summary)
             traces[(kind,dt)]=path; endpoints[(target,kind,dt)]=np.asarray(p)
             print(json.dumps(summary),flush=True)
@@ -132,7 +137,7 @@ def run(args):
     with (args.output/'states.csv').open('w',newline='') as stream:
         writer=csv.DictWriter(stream,fieldnames=list(rows[0])); writer.writeheader(); writer.writerows(rows)
     facts=dict(scope='FP64 integrations and sampled feedback budgets, not trajectory certificates',
-               device=str(jax.devices()[0]),flow_horizon=40,sampling_interval=.2,
+               device=str(jax.devices()[0]),flow_horizon=args.horizon,sampling_interval=args.sample_interval,
                cases=cases,trajectories=summaries,comparisons=comparisons,seconds=time.monotonic()-started)
     (args.output/'facts.json').write_text(json.dumps(facts,indent=2)+'\n')
     np.savez_compressed(args.output/'endpoints.npz',p0=ps,
@@ -143,4 +148,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--inputs',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--horizon',type=float,default=40.)
+    parser.add_argument('--sample-interval',type=float,default=.2)
     run(parser.parse_args())

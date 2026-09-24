@@ -28,13 +28,14 @@ if modal.is_local():
 
 @app.function(image=image,gpu=['H100','H200'],cpu=4,memory=(2048,8192),
               timeout=3600,max_containers=1,retries=0)
-def run()->bytes:
+def run(horizon:float=40.,sample_interval:float=.2)->bytes:
     import resource
     import importlib.metadata
     started=time.time(); output=Path('/tmp/feedback-flow')
     commands=[[sys.executable,'-m','pytest','tests/test_population_feedback_flow.py','-q','-p','no:cacheprovider'],
               [sys.executable,'-m','experiments.expD34_readout_race.population_feedback_flow',
-               '--inputs',str(INPUT),'--output',str(output)]]
+               '--inputs',str(INPUT),'--output',str(output),
+               '--horizon',str(horizon),'--sample-interval',str(sample_interval)]]
     logs=[]
     for command in commands:
         with subprocess.Popen(command,cwd='/work',text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT) as process:
@@ -58,10 +59,11 @@ def run()->bytes:
 
 
 @app.local_entrypoint()
-def main(output:str):
+def main(output:str,horizon:float=40.,sample_interval:float=.2):
     destination=Path(output)
     if destination.exists(): raise ValueError('Use a new output directory')
-    data=run.remote()
+    if not 0<horizon<=200 or sample_interval<=0: raise ValueError('Bound the continuation to flow time 200')
+    data=run.remote(horizon,sample_interval)
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         if sum(item.file_size for item in archive.infolist()) > 16*1024**2: raise ValueError('Download cap exceeded')
         if any(Path(item.filename).name!=item.filename for item in archive.infolist()): raise ValueError('Flat files only')
