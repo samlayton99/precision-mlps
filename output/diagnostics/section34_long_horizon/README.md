@@ -4,13 +4,26 @@ This directory contains compact evidence for the proposed [Section 3.4](../../..
 
 ## Evidence and provenance
 
+- [Main three-panel figure](main_5m/section34_three_panel.pdf) compares five million executed updates. Its provenance records the exact analyses and display reduction. `main_5m/joint_analysis/` retains all candidate recipes, the globally selected trajectories, selected parameter arrays, and independently reconstructed endpoint errors.
 - `main_5m/bounds/` contains the slope-dependent spectral endpoints, target weights, predicted curves, and the two quadrature resolutions. These predictions use the theorem's rate upper bounds. Actual small eigenvalues are retained separately for numerical checks.
 - `main_5m/bound_diagnostics/` contains executed-GD comparisons, every-update extrema, and tolerance crossings. A missing crossing means it was not observed within the executed horizon.
 - `main_5m/uniform_access/` contains the full frozen-Adam bandwidth comparison, final-validation recipe selection, compact raw-error summaries, and kernel diagnostics.
 - `main_5m/harmonic_diagnostic/` projects executed GD residuals onto the three target harmonics and their orthogonal complement. These physical-frequency projections are distinct from kernel eigenmode projections.
+- `main_5m/joint_metrics/` uses the actual joint Adam second moments for readout and full-Jacobian metrics. It reports local target and residual projections, not an Adam convergence prediction.
+- `geometry_2m/` contains readout restarts and separate slope/center interventions on two-million-update source models. `main_5m/geometry_diagnostics/` contains the longer-source comparison and direct-fit evidence. Source-training and additional readout budgets remain distinct.
 - `attainability/` retains direct-fit coefficients and recomputed errors at three SVD cutoffs. These are numerical witnesses of attainable accuracy, not proofs of an approximation floor.
 - `protocol/` records the target, geometry, initialization, original optimizer grids, and the shared frozen-Adam grid expansion.
 - `main_2m/` retains the earlier complete comparison and its constant-rate Adam metric control. It must not be substituted for a five-million-update result.
+
+## What the main figure establishes
+
+Panel A answers whether the gamma-dependent theorem predicts a meaningful output-error obstruction. Its lower curve remains at least 75% of executed GD error at every update across the four bandwidths. At the smallest bandwidth, direct fitting attains $6.24\times10^{-10}$ dense-grid error, but five million GD updates leave $0.21013$ training error against a theorem lower bound of $0.20982$. This is evidence of difficult optimization access to already attainable accuracy.
+
+Panel B answers whether joint training obtains the accuracy available from a supplied geometry within the same update budget. The five-million-update median joint Adam error is $0.001815$, compared with $6.62\times10^{-7}$ for the predeclared uniform frozen-Adam reference; joint GD remains near $0.244$. Both schedules were tested, selection uses a complete recipe across all seeds, and the plot retains instability.
+
+Panel C measures slope acquisition in exactly B's runs. Adam's upper percentile approaches the reference, but only 4–7 of 512 features reach $h|a_j|\ge1/4$. This supports heterogeneous acquisition and a remaining accuracy gap; it does not establish a universal slope threshold for learned dictionaries. Direct fits and interventions show why the joint interpretation must include center placement and the distribution of slopes. Longer training improves Adam, so these curves establish a finite-budget cost, not permanent failure or a proved coarse-error tracking mechanism.
+
+The paper argument therefore connects the construction to an explicit frozen-GD obstruction, then measures the broader geometry-acquisition problem. It motivates supplying accurate primitives directly without claiming that a frozen-feature theorem governs Adam or all language-model training.
 
 The raw campaign is stored locally at `results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/` and durably on Runpod at `/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/`. Large raw trajectories remain outside Git. The records identify their input hashes; the source scripts and numerical inputs determine the experiment. Curated NumPy arrays preserve plotted curves and diagnostics without requiring the raw multi-gigabyte Adam traces.
 
@@ -33,6 +46,17 @@ python -m experiments.expD36_frozen_gamma_probe.section34_bound_diagnostics \
 ```
 
 `section34_analyze.py` selects one recipe per joint optimizer across all five seeds, reconstructs final errors, and exports the learned-feature assays. `section34_feature_access.py` analyzes the executed readout restarts and uniform references. `section34_joint_metric.py` uses the actual joint Adam moments for its adaptive-Jacobian diagnostic. Plotting does not replace executed trajectories with spectral forecasts.
+
+The final main figure uses the validated compact uniform-Adam traces:
+
+```sh
+python -m experiments.expD36_frozen_gamma_probe.section34_figure \
+  --analysis "$study_root/h5m/analysis" \
+  --bounds "$study_root/h5m/bounds" --gd "$study_root/h5m/frozen_gd" \
+  --base "$study_root/base" \
+  --frozen-analysis "$study_root/h5m/uniform_access" \
+  --output "$study_root/h5m/figure"
+```
 
 Compile the review document from the repository root with:
 
