@@ -1,5 +1,10 @@
 # Why scale acquisition can stall during GD
 
+For a self-contained introduction for external readers, see the
+[PI technical note](d34_scale_acquisition_pi_note.md). It develops the ODEs,
+empirical mechanism, population bound, and remaining proof obligations without
+requiring access to other repository documents.
+
 A network can keep reducing its fitting error while making little progress
 toward the slope scales required by the representation we seek. The question
 is why the remaining errors do not produce enough sustained outward slope
