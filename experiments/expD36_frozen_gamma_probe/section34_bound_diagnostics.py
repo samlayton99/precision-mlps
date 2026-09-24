@@ -104,36 +104,39 @@ def main():
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
-    plt.rcParams.update({'font.size': 9, 'axes.spines.top': False, 'axes.spines.right': False,
+    plt.rcParams.update({'font.size': 7.5, 'axes.titlesize': 8, 'axes.labelsize': 7.5,
+                         'xtick.labelsize': 7, 'ytick.labelsize': 7,
+                         'axes.spines.top': False, 'axes.spines.right': False,
                          'pdf.fonttype': 42, 'ps.fonttype': 42})
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.5), layout='constrained')
+    fig, axes = plt.subplots(1, 2, figsize=(5.5, 2.65), layout='constrained')
     colors = ['#0072B2', '#E69F00', '#009E73', '#CC79A7']
     for lam, color, (steps, ratio, pred, act) in zip(LAMBDAS, colors, plot_data):
         mask = steps>0
-        axes[0].plot(steps[mask], ratio[mask], color=color, lw=1.7, label=rf'$\lambda={lam:g}$')
-        axes[1].plot(TOLERANCES, [np.nan if h is None else h for h in act], color=color, marker='o', ms=4, lw=1.5)
-        axes[1].plot(TOLERANCES, [np.nan if h is None else h for h in pred], color=color, marker='s', ms=4, lw=1.3, ls='--')
+        axes[0].plot(steps[mask], ratio[mask], color=color, lw=1.25, label=rf'$\lambda=1/{round(1/lam)}$')
+        axes[1].plot(TOLERANCES, [np.nan if h is None else h for h in act], color=color, marker='o', ms=3, lw=1.1)
+        axes[1].plot(TOLERANCES, [np.nan if h is None else h for h in pred], color=color, marker='s', ms=3, mfc='white', lw=1, ls='--')
         for tol, ph, ah in zip(TOLERANCES, pred, act):
             if ph is None:
-                axes[1].scatter(tol, horizon, marker='^', s=42, facecolors='none', edgecolors=color, zorder=4)
+                axes[1].scatter(tol, horizon, marker='^', s=26, facecolors='none', edgecolors=color, zorder=4)
             if ah is None:
-                axes[1].scatter(tol, horizon*1.07, marker='^', s=24, color=color, zorder=4)
-    axes[0].set(xscale='log', xlabel='GD updates', ylabel='Theorem lower error / executed error', title='A  Tightness along the trajectory')
+                axes[1].scatter(tol, horizon*1.07, marker='^', s=15, color=color, zorder=4)
+    axes[0].set(xscale='log', xlabel='GD updates', ylabel='Lower bound / executed error', title='A  Trajectory tightness')
     axes[0].axhline(1, color='.45', lw=.8, ls=':')
     axes[0].set_ylim(bottom=0)
-    axes[0].legend(frameon=False, fontsize=8)
-    axes[1].set(xscale='log', yscale='log', xlabel='Relative output-error tolerance', ylabel='First crossing (updates)', title='B  Necessary versus executed crossings')
+    axes[0].legend(frameon=False, fontsize=7, handlelength=1.6, labelspacing=.25)
+    axes[1].set(xscale='log', yscale='log', xlabel='Relative output-error tolerance', ylabel='First crossing (updates)', title='B  Tolerance crossings')
     axes[1].invert_xaxis()
     axes[1].axhline(horizon, color='.6', lw=.8, ls=':')
     axes[1].set_ylim(top=horizon*2)
-    handles = [Line2D([], [], color='.25', marker='o', label='Executed'),
-               Line2D([], [], color='.25', ls='--', marker='s', label='Theorem necessary'),
-               Line2D([], [], color='.25', lw=0, marker='^', label='No crossing by horizon')]
-    axes[1].legend(handles=handles, frameon=False, fontsize=8, loc='lower right')
+    handles = [Line2D([], [], color='.25', marker='o', ms=3, label='Executed (filled)'),
+               Line2D([], [], color='.25', ls='--', marker='s', mfc='white', ms=3, label='Bound (open)'),
+               Line2D([], [], color='.25', lw=0, marker='^', ms=4, label='Beyond horizon')]
+    axes[1].legend(handles=handles, frameon=False, fontsize=7, loc='lower right',
+                   handlelength=1.6, labelspacing=.25)
     for ax in axes:
         ax.grid(alpha=.15, which='major')
-    fig.savefig(args.output/'bound_diagnostics.pdf', bbox_inches='tight')
-    fig.savefig(args.output/'bound_diagnostics.png', dpi=220, bbox_inches='tight')
+    fig.savefig(args.output/'bound_diagnostics.pdf')
+    fig.savefig(args.output/'bound_diagnostics.png', dpi=300)
     plt.close(fig)
     print(json.dumps({'output': str(args.output), 'horizon': horizon, 'cases': len(entries)}), flush=True)
 
