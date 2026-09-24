@@ -35,7 +35,8 @@ TERMS = ('residual_relaxation_rate', 'generated_geometry_rate', 'target_geometry
          'weighted_curvature_rate_bound', 'measured_ell_norm', 'ell_M4_bound')
 METRICS = TERMS + ('structural_to_directional', 'generated_target_cancellation',
                   'directional_to_positive_curvature', 'structural_to_positive_net_growth',
-                  'structural_to_weighted', 'weighted_to_directional')
+                  'structural_to_weighted', 'weighted_to_directional',
+                  'force_size_kurtosis', 'relaxation_redistribution_bound')
 
 
 def number(row, key):
@@ -54,6 +55,12 @@ def derive(row):
     generated, target = result['generated_rate'], result['target_rate']
     result['structural_to_directional'] = structural/directional if directional > 0 else np.nan
     weighted = result['weighted_curvature_rate_bound']
+    omega = result['force_weighted_second_moment']
+    omega2 = result['force_weighted_fourth_moment']
+    result['force_size_kurtosis'] = omega2/omega**2 if omega > 0 else np.nan
+    variance = omega2-omega**2
+    result['relaxation_redistribution_bound'] = (9*number(row, 'M6')*np.sqrt(max(variance, 0))/result['width']**2
+        if np.isfinite(variance) and result['width'] > 0 else np.nan)
     result['structural_to_weighted'] = structural/weighted if weighted > 0 else np.nan
     result['weighted_to_directional'] = weighted/directional if directional > 0 else np.nan
     denominator = abs(generated)+abs(target)
@@ -105,7 +112,7 @@ def trajectory_endpoints(paths):
                     final_bound_ratio=last['structural_to_directional'])
         for key in ('force_weighted_second_moment', 'force_weighted_fourth_moment',
                     'hidden_force_energy_concentration', 'weighted_curvature_rate_bound',
-                    'measured_ell_norm', 'ell_M4_bound'):
+                    'measured_ell_norm', 'ell_M4_bound', 'force_size_kurtosis'):
             initial = first[key]
             available = [r[key] for r in path if np.isfinite(r[key])]
             item['initial_'+key] = initial
@@ -260,7 +267,7 @@ def summarize(source, output):
     for row in endpoints:
         natural_groups[(row['width'], row['start'])].append(row)
     weighted_endpoint_keys = [key for key in endpoints[0] if any(part in key for part in
-        ('force_weighted_', 'hidden_force_energy_', 'omega_dot_', 'weighted_curvature_', 'ell_'))] if endpoints else []
+        ('force_weighted_', 'hidden_force_energy_', 'omega_dot_', 'weighted_curvature_', 'ell_', 'force_size_kurtosis'))] if endpoints else []
     natural_population_facts = {f'W{int(width)}_age{int(start)}': dict(
         trajectories=len(group), targets=sorted({r['target'] for r in group}),
         metrics={key: stats([r[key] for r in group]) for key in weighted_endpoint_keys})
@@ -272,7 +279,11 @@ def summarize(source, output):
     for (role, width, start), group in rate_groups.items():
         rate_facts[f'{role}_W{int(width)}_age{int(start)}'] = dict(
             states=len(group), metrics={key: stats([r[key] for r in group]) for key in
-                ('omega_dot_transport', 'omega_dot_redistribution', 'omega_dot_effective')})
+                ('omega_dot_transport', 'omega_dot_redistribution', 'omega_dot_effective',
+                 'omega_dot_redistribution_relaxation', 'omega_dot_redistribution_geometry_compensation',
+                 'kappaOmega_signed', 'kappaOmega_positive', 'kappaI_signed', 'kappaI_positive',
+                 'transport_saturation', 'dlogOmega_pertravel', 'force_size_kurtosis',
+                 'hidden_force_energy_concentration', 'relaxation_redistribution_bound')})
     result = dict(input_states=len(original), finite_states=len(rows), groups=facts, closure=closure,
                   natural_trajectories=len(endpoints), natural_population_endpoints=natural_population_facts,
                   omega_rate_statistics=rate_facts,
