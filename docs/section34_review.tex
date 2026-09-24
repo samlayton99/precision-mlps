@@ -9,6 +9,8 @@
 \titleformat{\subsection}{\normalfont\normalsize\scshape}{\thesubsection}{1em}{}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt plus 1pt minus 1pt}
+\widowpenalty=10000
+\clubpenalty=10000
 \newtheorem{theorem}{Theorem}[section]
 \DeclareMathOperator{\sech}{sech}
 \begin{document}
@@ -18,7 +20,6 @@
 \setcounter{equation}{8}
 \setcounter{figure}{2}
 \input{docs/section34_slope_acquisition.tex}
-\clearpage
 \appendix
 \numberwithin{equation}{section}
 \input{docs/section34_slope_appendix.tex}

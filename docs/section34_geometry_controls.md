@@ -1,6 +1,6 @@
 # What the learned geometry controls establish
 
-The controls distinguish access through a frozen readout from changes to the features themselves. At both two and five million source-training updates, joint Adam has learned a useful, co-adapted geometry: its final readout is already close to the accuracy found by the tested readout solvers, and simply increasing its slopes makes that geometry less accurate. This qualifies the joint-training interpretation without changing the theorem for uniform frozen dictionaries.
+The controls distinguish access through a frozen readout from changes to the features themselves. At both two and five million source-training updates, joint Adam has learned a useful, co-adapted geometry: its final readout is already close to the accuracy found by the tested readout solvers, and increasing its slopes reduces the accuracy reached by the matched readout assays. This qualifies the joint-training interpretation without changing the theorem for uniform frozen dictionaries.
 
 Here, **source optimizer** means the optimizer that learned the hidden features. **Readout restart** means two million additional Adam updates with those features frozen, starting from zero readout and zero moments. **Direct fit** means an executed FP64 truncated-SVD readout fit, not a certified capacity floor. All follow-up iterative readouts use Adam, including those whose features were acquired by GD.
 
