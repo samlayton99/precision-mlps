@@ -1,4 +1,4 @@
-% Drop-in section; load section34_spectrum_figures.tex for its figure definitions.
+% Drop-in section with its figure and caption inline.
 \subsection{Bandwidth controls optimization access to high precision}
 \label{sec:bandwidth-access}
 
@@ -40,7 +40,23 @@ where $d$ separates those points. Bounding the finite-center corrections
 gives $\overline\rho_i(\gamma)$; standard GD eigenmode decay then yields
 the output-error bound.
 
-\SectionSpectrumFigure
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/spectrum_readout.pdf}
+ \caption{\textbf{Small slopes weaken kernel directions and delay readout learning.}
+ Width $W=512$; target
+ $f(x)=[\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(14\pi x)]/\sqrt{21/32}$
+ on $[-1,1]$.
+ \textbf{(a)} Kernel ratios (dots) and theorem intervals (dashed boundaries,
+ shading) for three ranks carrying substantial target energy. Lines connect
+ ordered ranks; eigenvectors change with bandwidth.
+ \textbf{(b)} Executed frozen-readout GD errors (solid, hollow markers) and
+ square roots of the theorem's lower bounds (dashed). The error bound combines
+ theorem-derived rate bounds with all resolved target projections onto the
+ frozen kernel's eigenvectors. Errors are relative training RMS through five million
+ updates; geometry and protocol are in Appendix~\ref{app:note-evaluation}.}
+ \label{fig:note-spectrum}
+\end{figure}
 \FloatBarrier
 
 Figure~\ref{fig:note-spectrum}(a) selects ranks $4,14,30$ because together

@@ -7,7 +7,20 @@ After five million updates, joint Adam reaches median dense-grid relative
 error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$ on the supplied
 $\lambda=1/4$ features (Figure~\ref{fig:note-training}A).
 
-\SectionTrainingFigure
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/joint_acquisition.pdf}
+ \caption{\textbf{Partial slope acquisition leaves a precision gap.}
+ \textbf{A:} joint Adam/GD relative output errors and frozen uniform
+ $\lambda=1/4$ references under the same five-million-update budget.
+ \textbf{B:} RMS and 99th-percentile scaled slopes $h|a_j|$ in A's joint
+ runs. The reference is a supplied geometry, not a necessary slope threshold.
+ Joint curves summarize five paired seeds; shading retains seed variation
+ and recorded within-bin extrema. Cosine schedules span the full horizon.
+ These are empirical comparisons; Appendix~\ref{app:note-evaluation} gives
+ the protocol.}
+ \label{fig:note-training}
+\end{figure}
 \FloatBarrier
 
 Adam's 99th-percentile scaled slope approaches $1/4$, but only 4--7 of 512
