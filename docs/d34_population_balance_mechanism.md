@@ -17,6 +17,16 @@ These are sampled checks of structural
 conditions along trajectories, not guarantees from a checkpoint alone.
 The existing accumulated-feedback theorem remains our main paper claim.
 
+**Short-window update.** Sections 11–12 ask what changes when we also observe
+how reinforcement develops over a short post-transient interval. Allowing its
+coefficients to evolve with population travel substantially improves the
+conditional comparison over holding their allowances fixed. Across 23 targets
+and two seeds at width 705, a 5k observation window supplies a useful condition
+for a further 100k updates in 32 of 46 runs; a predeclared larger variation
+allowance covers 43. The larger allowance also covers all six fresh-seed
+confirmation cases. The conditions and their failures are checked explicitly;
+this does not turn a finite observation window into an unconditional guarantee.
+
 **Notation.** Parameters and time use the ordinary GD metric; population sums
 below are unnormalized sums over the $W$ neurons.
 
@@ -31,6 +41,9 @@ below are unnormalized sums over the $W$ neurons.
 | $m=\sum_j a_jc_j$, $\rho_{ac}=m/\sqrt{AC}$ | Linear-output coefficient and collective slope–readout alignment. |
 | $M=\sum_j(a_j^2+b_j^2+c_j^2)$ | Total hidden squared norm; the output bias is excluded. |
 | $h=2/N_{\rm ref}$, $\lambda_{\rm RMS}=h\sqrt{A/W}$ | Grid spacing and normalized population slope scale. |
+| $q=\|F\|$, $\kappa=\dot{\log q}$ | Effective-flow speed and its logarithmic growth rate. |
+| $\mathcal A=\int q$ | Accumulated effective-force travel; distinct from slope energy $A$. |
+| $r,c$ in Section 11 | Rotation contribution to $\dot\kappa$, and loaded-operator change per unit travel; $c$ is a scalar coefficient, distinct from readouts $c_j$. |
 
 ## 1. The example that identifies what the energy bound loses
 
@@ -1200,7 +1213,214 @@ This is a proved conditional discrete statement. Sampled diagnostics do not
 certify its between-sample premises. Zero-force GD states require a direct
 non-logarithmic treatment because tracking can reactivate their effective force.
 
-## Reproducibility and status
+For Corollary 7a's discrete version, use its aggregate premise (32c) with
+left-point sums, define $b_n=\sum_{j<n}\eta_j a_j$, and replace
+$\alpha t_j+Ka_j$ in (35) by
+$\alpha t_j+L_r b_j+Ka_j+L_c a_j^2/2$. The same induction proves the result.
+Pointwise discrete bounds on the coefficients still suffice because
+$\sum_{j<n}\eta_jq_j\mathcal A_j\le\mathcal A_n^2/2$; the omitted term is
+the nonnegative sum $\sum_{j<n}\eta_j^2q_j^2/2$. Thus the movement-dependent
+comparison also has an exact conditional GD formulation, rather than only a
+gradient-flow analogue.
+
+## 12. What the temporal-window experiment establishes
+
+### Example: an accurate-looking force forecast can still have an expired premise
+
+For the Gaussian development run, a 5k window ends with effective force norm
+about $1.28\times10^{-3}$. Over the next 100k updates, the force grows by a
+factor of 2.41. The movement-dependent comparison predicts a factor of 2.33:
+the discrepancy is modest, but its aggregate premise already expires after
+67k updates. The distinction matters. A close forecast does not validate an
+upper bound after its stated condition fails.
+
+Conversely, the absolute-value kink's force starts by declining and then
+grows. Its window records movement in a coefficient even while that
+coefficient is decreasing. Retaining the magnitude of that variation permits
+later reinforcement; discarding the decreasing part would leave an unjustified
+zero allowance. The resulting condition lasts 90k further updates in this
+development run, compared with 54.5k under the unnecessarily separate budgets.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/window_final_20260925/window_forecasts.png" alt="Six development targets compare effective-force evolution with a short-window initialized scalar comparison, marking when its premise fails" style="max-width:100%;">
+  <figcaption>Width 705, seed 30, ordinary GD. The shaded interval is the 5k-update calibration window after a 20k-update transient. The horizontal axis then covers 100k additional updates. Orange curves use Corollary 7a with twice the measured variation per unit travel; the separately measured tracking contributions are included. Red lines mark the end of the sampled aggregate premise. Continuing an orange curve beyond that line is a diagnostic extrapolation, not a validated bound. Absolute force scales appear inside the panels.</figcaption>
+</figure>
+
+### Theory-guided revision: bound the rate of change, and add the mechanisms before testing
+
+The first prescription gave the coefficients fixed allowances calculated from
+their signed window averages and variation. Across the 46 original width-705
+runs, only 18 satisfy its aggregate condition for the full next 100k updates;
+the median condition duration is 35,750 updates. This is a failure of assuming
+the allowance remains fixed, not evidence that the network suddenly acquires
+the desired slopes when the condition expires.
+
+The revised prescription uses the same short window to estimate how much each
+coefficient changes per unit effective-force travel. Corollary 7a then lets the
+allowance grow as the population moves. With twice the measured variation,
+32 of 46 conditions remain useful throughout the next 100k updates. Forty-five
+last at least 50k, and all last at least 24k. The predeclared factor-four check
+covers 43 of 46 for 100k and all 46 for at least 55.5k. These durations belong
+to the tested states and allowance prescriptions; 100k is the evaluation
+horizon, not a universal acquisition barrier.
+
+The three factor-four exceptions are the left exponential at seed 30
+(92k), the left bump at seed 30 (89k), and the ReLU kink at seed 31 (55.5k).
+The first two force curves remain below the comparison even after its premise
+expires. The kink eventually exceeds it by about 6.6%. These are different
+failures: an expired sufficient condition need not imply a failed forecast,
+and neither implies rapid acquisition of useful scales.
+
+The proof also prevents over-refinement of the premise. It needs the sum of
+reinforcement contributions in (32c), not independent bounds on both. At the
+factor-four setting, separate conditions would cover only 34 of 46 original
+runs for 100k; the aggregate condition covers 43 using exactly the same force
+envelope. The extra coverage comes from using the correct sum, without tuning
+another constant or controlling another neuron.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/window_final_20260925/reinforcement_sources.png" alt="Accumulated rotation and loaded-operator changes explain the evolution of the effective-force growth rate across six different targets" style="max-width:100%;">
+  <figcaption>The same six GD development runs. Blue and orange are the signed integrals of the two exact terms in (27); black is the observed change in the effective-force logarithmic growth rate. Rotation is a substantial contributor, so small force alone cannot justify ignoring direction changes. Positive change in growth rate does not necessarily mean growing force: the mixed-sine growth rate remains negative, and its force continues to decline. Vertical scales differ and are shown explicitly.</figcaption>
+</figure>
+
+### Scope: target breadth, fresh confirmation, and the quantity we actually care about
+
+The original panel contains 23 targets at two seeds: polynomial moments and
+mixtures, sine mixtures, a localized sine, a chirp, a rational target,
+exponentials, Gaussians, compact bumps, smooth steps, and two kinks. The six
+seed-30 examples were used to develop the prescription. The remaining 40
+trajectories are archived validation: they provide breadth but their existence
+and earlier outcomes were already known. Among these 40, the movement-dependent
+factor-two prescription covers 29 for the full horizon, and factor four covers
+37. Every target uses the same calibration rule and allowance factors; its
+numerical coefficients are measured from its own observation window.
+
+After fixing that prescription, we generated six seed-33 trajectories. Each
+new run supplies its own early window, while its subsequent states have no role
+in calibration. The primary factor-two condition lasts at least 60k further
+updates in all six, and the full 100k in four. Factor four covers all six for
+100k. This confirmation supports a transferable *measurement prescription*;
+it does not establish that every target satisfies the same numerical constants.
+
+The comparison remains useful after this slackening. Among the factor-four
+original width-705 runs whose conditions hold for 100k, the largest final
+normalized slope-RMS bound is $3.15\times10^{-4}$, versus the desired
+$\lambda=0.25$, and the smallest final relative output-error floor is above
+31.6%. In fresh confirmation the corresponding bounds are below
+$3.00\times10^{-4}$ and above 42.7%. The point is a restriction on population
+movement and output improvement, not a requirement to predict each force curve
+to high relative precision.
+
+Width matters to usefulness. At width 1409, all six seed-31 targets satisfy the
+primary condition and retain useful bounds for the full 100k further updates;
+the largest final slope-RMS bound is below $9.15\times10^{-5}$ and the smallest
+training-measure error floor exceeds 42.8%. At width 177, all six also satisfy
+the structural condition, but only the fifth moment and mixed sine retain
+useful comparisons for 100k. The other four lose usefulness after 24.5k–54k
+updates, as the scalar feedback comparison grows too rapidly. Their actual
+endpoint slope RMS remains below 0.005 and raw evaluation error above 9.5%.
+Thus we have identified a limitation of the comparison, rather than a
+counterexample to slow acquisition. Increasing the allowance cannot repair
+this limitation: it makes the comparison grow faster. The width experiment
+uses matched training ages, avoiding the earlier archive's age confound.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/window_final_20260925/population_output.png" alt="Observed population slope RMS and raw output error remain far from the desired scale and accuracy, with conditional bounds shown only during their valid intervals" style="max-width:100%;">
+  <figcaption>Six width-705 seed-30 development cases under the primary factor-two prescription. Solid curves show measured normalized slope RMS and raw relative output error; dashed curves show the conditional upper slope bounds and lower error bounds. Dashed curves stop when the sampled premise fails. Dotted horizontal lines mark scale 0.25 and relative error 1%. All theoretical norms use the 2048-point training probability measure; raw-error curves use an independent 8192-point evaluation grid with the same target normalization.</figcaption>
+</figure>
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/window_final_20260925/coverage.png" alt="Cross-target, seed, and width coverage of useful conditional bounds for two predeclared variation allowances" style="max-width:100%;">
+  <figcaption>Every colored cell is a target, width, and seed tested with the same 5k-window prescription. Color gives the useful conditional duration, capped at the 100k-update evaluation horizon. Left: twice the observed variation per unit travel. Right: the predeclared factor-four sensitivity check. Blank cells were not run. A cross marks cases where comparison usefulness ends before the aggregate premise does; that is a loose comparison, not a failed structural condition. The width-177 and width-1409 cases start at the same 20k-update training age as width 705.</figcaption>
+</figure>
+
+### What has been gained, and what remains to explain
+
+We now have an exact identity for how reinforcement changes, a proved
+conditional comparison for its coupled evolution with population travel, and
+an empirical way to initialize that comparison from a short temporal window.
+The experiment discriminates between two assumptions: keeping early
+reinforcement allowances fixed is often inadequate, while letting them evolve
+at a measured rate per unit motion remains informative much longer. It also
+shows that rotation contributes materially; a persistence explanation that
+only tracks changes of the residual-loaded operator would omit part of the
+mechanism.
+
+The remaining theoretical question is directional regularity over an evolving
+population: when does observed short-window variation control later accumulated
+reinforcement at comparable scale? Our evidence supports this condition broadly
+in the specified regime, and records where it fails. The next analytic
+strengthening should bound the aggregate directional derivatives using the
+weighted population sensitivities and target couplings already present in
+Sections 8–10. It should permit changing concentration and delayed growth.
+Requiring frozen coefficients, universal contraction, or individual-neuron caps
+would discard the behavior these experiments actually display.
+
+### Protocol and proof status
+
+Ordinary GD uses step size 0.002 on the original 2048 midpoint samples. The
+campaign continues from update 20k to update 130k so that the predeclared 2k,
+5k, and 10k windows can each be followed by 100k further updates. The primary
+5k-window results therefore end at total update 125k. We retain scalar
+diagnostics every 100 updates through the first 10k, then every 500 updates;
+only six parameter states per trajectory are retained. The target normalization
+is fitted on the original training grid and reused unchanged for evaluation.
+No checkpoint is selected for unusually low error or slow acquisition.
+
+The primary condition uses factor two; factors one and four and the alternative
+window lengths remain sensitivity analyses. The first development calculation
+used fixed allowances. The second used motion-dependent allowances and retained
+variation of either sign. The aggregate weakening (32c) follows directly from
+the proof and does not change any prediction coefficients. The prescription
+was fixed before the fresh confirmation trajectories were generated.
+
+A longer calibration window does not automatically help. At factor two, the
+2k, 5k, and 10k prescriptions cover 34, 32, and 31 of the 46 original runs for
+their respective next 100k updates. The endpoints, and hence the initial
+states being compared, differ. We retain the predeclared 5k primary window;
+these checks show why selecting whichever window later works best would
+overstate the evidence.
+
+For GD, the reported comparison includes the **measured future tracking**
+terms in (33), separately from its window-calibrated structural coefficients.
+This is not a completely window-only forecast of every contribution.
+Across the width-705 GD cases, the largest absolute endpoint tracking
+contribution to log force is about $1.09\times10^{-3}$, versus order-one log
+changes in the growing examples. The six paired effective-flow runs have the
+same primary condition durations as their GD counterparts and isolate the
+zero-tracking theorem. Numerical reconstruction defects and step/sampling
+refinement check the remaining
+discrete and quadrature effects; they are not interval enclosures of (34).
+The theorems and their discrete analogues are proved conditional statements.
+The numerical instances are sampled empirical validations, not rigorous
+trajectory certificates or proofs about the continuous population measure.
+
+Thirteen focused tests pass. They check the loaded operator against an
+independently differentiated Hessian, its symmetry, the directional and
+tracking identities, derivative convergence, solvable scalar comparisons,
+and absence of future-state leakage into calibration. Halving the GD step
+at four targets changes force norms by at most $1.06\times10^{-5}$ relative
+and slope RMS by less than $4.32\times10^{-7}$ relative over matched physical
+times. Halving the effective-flow RK4 step gives differences near roundoff.
+Halving the diagnostic sampling density changes final comparison force by
+less than $2.81\times10^{-8}$ relative; premise durations agree except for a
+single 500-update sampling interval in the bump example. The coarse Gram
+matrix remains nonsingular at every sampled state, with minimum eigenvalue
+above 1.26. These checks support the numerical interpretation without
+converting sampled premises into certified ones.
+
+All 78 continuations and all numerical analysis ran on Modal. The six
+successful GPU batches used about 782 GPU-seconds in total; verification
+and an interrupted download/repeated refinement add overhead, keeping the
+campaign well within the three-GPU-hour allowance. GPU workers had an 8 GiB
+host-memory cap and used less than 4.25 GiB peak child memory. Final CPU
+analysis used about 329 MiB under a 4 GiB cap. No scientific arrays were
+loaded or processed on the local computer. Each batch records its command,
+code hashes, elapsed time, scalar diagnostics, and six sparse states per run;
+the final evidence includes every tested allowance and window, including
+failures, and the four figures above.
+
+## Earlier balance-study reproducibility and status
 
 The identities, global remainder inequalities, and conditional comparisons
 are proved here. Their numerical application is ordinary floating-point

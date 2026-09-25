@@ -20,12 +20,13 @@ FILES = tuple(CODE/name for name in (
     'population_accumulated_audit.py', 'mechanism_persistence_kernel.py',
     'population_balance_dynamics.py', 'targets.py', 'adam_forces.py',
     'effective_feedback_holdout.py'))+(Path('tests/test_population_window.py'),)
-if modal.is_local():
-    FILES += tuple(p.relative_to(ROOT) for p in sorted((ROOT/INPUT).glob('*.npz')))
-    for name in ('population_window_run.py', 'population_window_analysis.py'):
-        if (ROOT/CODE/name).exists(): FILES += (CODE/name,)
-    for name in ('test_population_window_comparison.py',):
-        if (ROOT/'tests'/name).exists(): FILES += (Path('tests')/name,)
+# Discover the same mounted files remotely so execution hashes also include
+# the runner, comparison tests, analysis, and checkpoint inputs.
+FILES += tuple(p.relative_to(ROOT) for p in sorted((ROOT/INPUT).glob('*.npz')))
+for name in ('population_window_run.py', 'population_window_analysis.py'):
+    if (ROOT/CODE/name).exists(): FILES += (CODE/name,)
+if (ROOT/'tests/test_population_window_comparison.py').exists():
+    FILES += (Path('tests/test_population_window_comparison.py'),)
 
 app = modal.App('d34-temporal-window-persistence')
 image = (modal.Image.debian_slim(python_version='3.12')
@@ -107,20 +108,26 @@ def analyze(payload: bytes):
 
 
 @app.local_entrypoint()
-def main(output: str, study: str='verify', seconds: float=300, sources: str=''):
+def main(output: str, study: str='verify', seconds: float=300, sources: str='', recover: str=''):
     destination = Path(output)
     if destination.exists(): raise ValueError('Use a new output directory')
     if not 0 < seconds <= 10800: raise ValueError('Three GPU-hour campaign cap')
-    if study=='analysis':
+    if recover:
+        data=modal.FunctionCall.from_id(recover).get()
+    elif study=='analysis':
         payload=io.BytesIO()
         with zipfile.ZipFile(payload,'w',zipfile.ZIP_DEFLATED) as archive:
             for i,name in enumerate(sources.split(',')):
                 path=Path(name)/'states.csv'
                 if path.stat().st_size>16*1024**2: raise ValueError('Scalar input cap')
                 archive.write(path,f'part{i}.csv')
-        data=analyze.remote(payload.getvalue())
+        call=analyze.spawn(payload.getvalue())
+        print(f'Recoverable Modal call: {call.object_id}',flush=True)
+        data=call.get()
     else:
-        data = run.remote(study, seconds)
+        call=run.spawn(study,seconds)
+        print(f'Recoverable Modal call: {call.object_id}',flush=True)
+        data=call.get()
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         if sum(p.file_size for p in archive.infolist()) > 16*1024**2:
             raise ValueError('Artifact cap exceeded')

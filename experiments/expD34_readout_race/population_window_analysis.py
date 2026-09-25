@@ -139,7 +139,7 @@ def load(paths):
     return [sorted(rows,key=lambda r:r['offset']) for rows in groups.values()]
 
 
-def plots(primary, output):
+def plots(primary, output, summaries):
     import matplotlib.pyplot as plt
     dev=[(s,c) for s,c in primary if s['study']=='development' and s['kind']=='gd']
     if not dev: return
@@ -148,8 +148,9 @@ def plots(primary, output):
         ax.axvspan(-5,0,color='0.9',label='Calibration')
         ax.plot(c['window_time']/.002/1000,c['window_q']/s['q0'],color='0.4')
         ax.plot(c['time']/.002/1000,c['q']/s['q0'],label='Observed GD')
-        ax.plot(c['time']/.002/1000,c['force']/s['q0'],'--',label='Window bound + tracking')
+        ax.plot(c['time']/.002/1000,c['force']/s['q0'],'--',label='Comparison, tracking accounted')
         ax.set(title=s['target'],xlabel='Updates after 5k window (thousands)',ylabel='Effective force / window endpoint')
+        ax.text(.03,.94,f"Initial force norm: {s['q0']:.2g}",transform=ax.transAxes,va='top',fontsize=9)
         ax.set_ylim(bottom=0,top=min(10,max(1.1,1.15*np.nanmax(c['q']/s['q0']))))
         if s['premise_horizon']<100000: ax.axvline(s['premise_horizon']/1000,color='red',ls=':',label='Premise first fails')
     axes.flat[0].legend(fontsize=8)
@@ -178,26 +179,90 @@ def plots(primary, output):
     for ax in axes: ax.set_xlabel('Updates after window (thousands)')
     axes[0].legend(fontsize=7,ncol=2)
     fig.savefig(output/'population_output.png',dpi=170); plt.close(fig)
-    gd=[s for s,_ in primary if s['kind']=='gd' and s['dt']==.002]
+    gd=[s for s in summaries if s['kind']=='gd' and s['dt']==.002 and
+        s['offset']==5000 and s['method']=='motion' and s['factor'] in (2,4)]
     names=sorted({s['target'] for s in gd})
     columns=[(705,30),(705,31),(705,33),(177,31),(1409,31)]
-    values=np.full((len(names),len(columns)),np.nan)
-    for s in gd:
-        if (s['width'],s['seed']) in columns:
-            values[names.index(s['target']),columns.index((s['width'],s['seed']))]=s['premise_horizon']/1000
-    fig,ax=plt.subplots(figsize=(7,max(4,len(names)*.25)),layout='constrained')
-    im=ax.imshow(values,vmin=0,vmax=100,aspect='auto',cmap='viridis')
-    ax.set_yticks(range(len(names)),names)
-    ax.set_xticks(range(len(columns)),[f'W={w}\nseed {s}' for w,s in columns])
-    ax.set_title('Duration of the accumulated premise after the 5k window')
-    fig.colorbar(im,ax=ax,label='Thousands of additional updates (100 = full interval)')
+    fig,axes=plt.subplots(1,2,figsize=(11,max(4,len(names)*.25)),layout='constrained',sharey=True)
+    for ax,factor in zip(axes,(2,4)):
+        values=np.full((len(names),len(columns)),np.nan)
+        for s in gd:
+            if s['factor']==factor and (s['width'],s['seed']) in columns:
+                values[names.index(s['target']),columns.index((s['width'],s['seed']))]=s['useful_horizon']/1000
+        im=ax.imshow(values,vmin=0,vmax=100,aspect='auto',cmap='viridis')
+        ax.set_yticks(range(len(names)),names)
+        ax.set_xticks(range(len(columns)),[f'W={w}\nseed {s}' for w,s in columns])
+        ax.set_title(f'Measured variation allowance × {factor}')
+        for s in gd:
+            if s['factor']==factor and s['useful_horizon']<s['premise_horizon']:
+                ax.text(columns.index((s['width'],s['seed'])),names.index(s['target']),'×',
+                        ha='center',va='center',color='white',fontsize=12)
+    fig.colorbar(im,ax=axes,label='Thousands of further updates with an informative conditional bound')
     fig.savefig(output/'coverage.png',dpi=170); plt.close(fig)
+
+
+def summarize_evidence(summaries, trajectories):
+    cohorts={
+        'development':lambda s:s['study']=='development' and s['kind']=='gd',
+        'W705_archived_validation':lambda s:s['study'] in ('panel30','panel31'),
+        'W705_all_original':lambda s:s['width']==705 and s['seed'] in (30,31) and s['kind']=='gd' and s['dt']==.002,
+        'fresh_seed33':lambda s:s['study']=='confirmation',
+        'W177_seed31':lambda s:s['width']==177,
+        'W1409_seed31':lambda s:s['width']==1409,
+        'effective_flow':lambda s:s['kind']=='effective' and s['study']=='development'}
+    result=[]
+    for name,select in cohorts.items():
+        for offset in (2000,5000,10000):
+            for method,factor in (('instant',0.),('prefix',0.),('variation',2.),('motion',1.),('motion',2.),('motion',4.)):
+                rows=[s for s in summaries if select(s) and s['offset']==offset and s['method']==method and s['factor']==factor]
+                if not rows: continue
+                result.append(dict(cohort=name,offset=offset,method=method,factor=factor,count=len(rows),
+                    full_premise=int(sum(s['premise_horizon']==100000 for s in rows)),
+                    full_useful=int(sum(s['useful_horizon']==100000 for s in rows)),
+                    full_separate=int(sum(s['split_premise_horizon']==100000 for s in rows)),
+                    median_horizon=float(np.median([s['premise_horizon'] for s in rows])),
+                    minimum_horizon=float(min(s['premise_horizon'] for s in rows)),
+                    horizon_counts={str(h):int(sum(s['premise_horizon']>=h for s in rows)) for h in (10000,20000,50000,100000)},
+                    maximum_force_excess_ratio=max(s['maximum_force_excess_ratio'] for s in rows),
+                    max_valid_final_lambda=max((s['final_lambda_upper'] for s in rows if s['useful_horizon']==100000),default=None),
+                    min_valid_final_error_floor=min((s['final_error_floor'] for s in rows if s['useful_horizon']==100000),default=None)))
+    refinements=[]
+    for fine in trajectories:
+        if fine[0]['study']!='refinement':continue
+        coarse=next(r for r in trajectories if r[0]['study']=='development' and
+                    r[0]['target']==fine[0]['target'] and r[0]['kind']==fine[0]['kind'])
+        item=dict(target=fine[0]['target'],kind=fine[0]['kind'])
+        for key in ('q','lambda_rms','M','relative_eval_error','rotation','coefficient'):
+            v=np.array([r[key] for r in fine]);ref=np.array([r[key] for r in coarse])
+            item[key+'_relative_change']=float(np.max(abs(v-ref))/np.max(abs(ref)))
+        refinements.append(item)
+    sampling=[]
+    for rows in trajectories:
+        if rows[0]['study']!='development':continue
+        full,_=evaluate(rows,calibration(rows,method='motion'))
+        thin,_=evaluate(rows[::2],calibration(rows[::2],method='motion'))
+        sampling.append(dict(target=rows[0]['target'],kind=rows[0]['kind'],
+            full_horizon=full['premise_horizon'],thin_horizon=thin['premise_horizon'],
+            force_bound_relative_change=abs(full['final_force_upper_ratio']-thin['final_force_upper_ratio'])/full['final_force_upper_ratio'],
+            lambda_bound_relative_change=abs(full['final_lambda_upper']-thin['final_lambda_upper'])/full['final_lambda_upper']))
+    selected=[s for s in summaries if s['width']==705 and s['kind']=='gd' and s['dt']==.002
+              and s['offset']==5000 and s['method']=='motion' and s['factor']==2]
+    checks=dict(max_abs_tracking_log_budget=max(abs(s['final_tracking_log_budget']) for s in selected),
+                max_numerical_log_allowance=max(s['numerical_log_allowance'] for s in selected),
+                minimum_sampled_coarse_eigenvalue=min(r['coarse_min'] for rows in trajectories for r in rows),
+                maximum_rate_identity_error=max(abs(r['rate_identity_error']) for rows in trajectories for r in rows))
+    failures=[{k:s[k] for k in ('target','seed','width','premise_horizon','useful_horizon','maximum_force_excess_ratio')}
+              for s in summaries if s['width']==705 and s['kind']=='gd' and s['dt']==.002
+              and s['offset']==5000 and s['method']=='motion' and s['factor']==4 and s['premise_horizon']<100000]
+    return dict(cohorts=result,step_refinement=refinements,sampling_refinement=sampling,
+                checks=checks,larger_allowance_failures=failures)
 
 
 def run(inputs, output):
     output.mkdir(parents=True,exist_ok=True)
     summaries=[]; primary=[]
-    for rows in load(inputs):
+    trajectories=load(inputs)
+    for rows in trajectories:
         for offset in (2000,5000,10000):
             for method in ('instant','prefix','variation','motion'):
                 factors=(1.,2.,4.) if method in ('variation','motion') else (0.,)
@@ -208,13 +273,17 @@ def run(inputs, output):
                         primary.append((s,c))
     with (output/'comparisons.csv').open('w',newline='') as stream:
         writer=csv.DictWriter(stream,fieldnames=list(summaries[0])); writer.writeheader(); writer.writerows(summaries)
-    facts=dict(primary=[s for s,_ in primary],
+    overview=summarize_evidence(summaries,trajectories)
+    facts=dict(primary=[s for s,_ in primary],**overview,
         scope='Window-calibrated structural conditions; GD uses separately measured future tracking; sampled evidence, not interval certificates',
         full_premise=int(sum(s['premise_horizon']==100000 for s,_ in primary)),
         full_useful=int(sum(s['useful_horizon']==100000 for s,_ in primary)),count=len(primary))
     (output/'facts.json').write_text(json.dumps(facts,indent=2)+'\n')
-    plots(primary,output)
-    print(json.dumps(facts),flush=True)
+    plots(primary,output,summaries)
+    print(json.dumps(dict(count=facts['count'],full_premise=facts['full_premise'],
+        overview=[r for r in overview['cohorts'] if r['offset']==5000 and
+                  (r['method']=='variation' or r['method']=='motion' and r['factor'] in (2,4))],
+        step_refinement=overview['step_refinement'],sampling_refinement=overview['sampling_refinement'])),flush=True)
 
 
 if __name__=='__main__':

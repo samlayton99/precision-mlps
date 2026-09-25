@@ -1,0 +1,30 @@
+{
+  "platform": "Modal GPU",
+  "study": "verify",
+  "seconds": 24.570173407,
+  "memory_hard_limit_mib": 8192,
+  "child_peak_rss_mib": 4250.59765625,
+  "inputs_and_code": {
+    "experiments/expD34_readout_race/population_window.py": "d550cef4aa218ac622262d72d34528e65f6a22e9aaecca5f71435890fbf7ce7e",
+    "experiments/expD34_readout_race/population_window_modal.py": "2c92f4855fa6a7d27756097fc85ae947143cc5c06740e587d44cd61e656738f6",
+    "experiments/expD34_readout_race/population_feedback_flow.py": "b88c7e23f5e4314f2828bceec1bff24d62e713ae8b33ccd16ece0b178b4a0846",
+    "experiments/expD34_readout_race/population_feedback_budget.py": "23e4c72b55029f5dbb439cf00ec01d6953cbea1ff462b8a24204cb9a2d18b7af",
+    "experiments/expD34_readout_race/population_accumulated_audit.py": "9d020229fde16c60723beb6db6c942fd0ca47a77ee49c431f71abd842048d08a",
+    "experiments/expD34_readout_race/mechanism_persistence_kernel.py": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5",
+    "experiments/expD34_readout_race/population_balance_dynamics.py": "12a4e2580dd8d26e4b882ebd5c8b7722036b565b7325f9f532c35b3a1337c180",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/adam_forces.py": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6",
+    "tests/test_population_window.py": "5bc2e6559703d5d517a0699cbc0b9f9439699c5e7822d98ecede39b01a3f8a4c"
+  },
+  "command": [
+    "/usr/local/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_population_window.py",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "log": "....                                                                     [100%]\n4 passed in 23.54s\n"
+}
