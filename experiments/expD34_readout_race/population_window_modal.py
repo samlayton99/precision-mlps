@@ -24,12 +24,16 @@ FILES = tuple(CODE/name for name in (
 # the runner, comparison tests, analysis, and checkpoint inputs.
 FILES += tuple(p.relative_to(ROOT) for p in sorted((ROOT/INPUT).glob('*.npz')))
 for name in ('population_window_run.py', 'population_window_analysis.py',
-             'population_concentration.py', 'population_concentration_analysis.py'):
+             'population_concentration.py', 'population_concentration_analysis.py',
+             'population_energy_dynamics.py', 'population_energy_run.py',
+             'population_energy_analysis.py', 'population_energy_interventions.py'):
     if (ROOT/CODE/name).exists(): FILES += (CODE/name,)
 if (ROOT/'tests/test_population_window_comparison.py').exists():
     FILES += (Path('tests/test_population_window_comparison.py'),)
 if (ROOT/'tests/test_population_concentration.py').exists():
     FILES += (Path('tests/test_population_concentration.py'),)
+for name in ('test_population_energy_dynamics.py','test_population_energy_interventions.py'):
+    if (ROOT/'tests'/name).exists(): FILES += (Path('tests')/name,)
 
 app = modal.App('d34-temporal-window-persistence')
 image = (modal.Image.debian_slim(python_version='3.12')
@@ -90,9 +94,10 @@ def analyze(payload: bytes, study: str='analysis'):
         if sum(p.file_size for p in archive.infolist())>64*1024**2: raise ValueError('Input cap')
         archive.extractall(source)
     output=Path('/tmp/window-analysis')
-    concentration=study.startswith('concentration')
+    concentration=study.startswith(('concentration','energy'))
     environment=dict(os.environ, JAX_PLATFORMS='cpu') if concentration else None
     test_file='test_population_concentration.py' if concentration else 'test_population_window_comparison.py'
+    if study.startswith('energy'): test_file='test_population_energy_dynamics.py'
     test=subprocess.run([sys.executable,'-m','pytest',f'tests/{test_file}',
                          '-q','-p','no:cacheprovider'],cwd='/work',env=environment,
                          text=True,capture_output=True,timeout=180)
@@ -101,7 +106,7 @@ def analyze(payload: bytes, study: str='analysis'):
     module='population_concentration_analysis' if concentration else 'population_window_analysis'
     command=[sys.executable,'-m',f'experiments.expD34_readout_race.{module}',
              '--inputs',*map(str,sorted(source.glob('*.csv'))),'--output',str(output)]
-    if study=='concentration_verify':
+    if study in ('concentration_verify','energy_verify'):
         output.mkdir()
         command=test.args
     else:
@@ -129,7 +134,7 @@ def main(output: str, study: str='verify', seconds: float=300, sources: str='', 
     if not 0 < seconds <= 10800: raise ValueError('Three GPU-hour campaign cap')
     if recover:
         data=modal.FunctionCall.from_id(recover).get()
-    elif study in ('analysis','concentration','concentration_verify'):
+    elif study in ('analysis','concentration','concentration_verify','energy_verify'):
         payload=io.BytesIO()
         input_manifest=[]
         with zipfile.ZipFile(payload,'w',zipfile.ZIP_DEFLATED) as archive:
