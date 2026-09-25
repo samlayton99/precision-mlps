@@ -24,6 +24,14 @@ observed 100k-update continuations. It supplies a proved mechanism for the
 gap family, not a replacement for the broader conditional theorem used in
 the paper. Section 8 shows both the improvement and the remaining loss.
 
+The [signed population-balance follow-up](d34_population_balance_mechanism.md)
+examines what this energy bound discards. It derives an exact tanh identity
+motivated by the learning-timescale and layer-balance literature, retains
+generated-error signs and coarse compensation, and audits six trajectories'
+saved endpoints. Its conditional slope bound identifies an additional
+collective alignment premise; that premise is not yet verified throughout
+the interval, so the follow-up does not extend the durations proved here.
+
 **Notation.** All parameter coordinates use the ordinary GD metric.
 
 | Symbol | Meaning |

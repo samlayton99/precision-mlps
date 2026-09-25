@@ -61,6 +61,13 @@ uses a population fourth moment, with no future small-force or individual
 neuron premise. It includes ordinary GD and a target-leakage allowance;
 its numerical usefulness is assessed separately from the broader theorem.
 
+A [signed population-balance investigation](d34_population_balance_mechanism.md)
+uses the learning-timescale and layer-balance literature to seek a more
+structural closure. It proves an exact tanh balance identity and a conditional
+RMS-slope implication, then checks six saved trajectories' endpoints. The
+new alignment and signed-loading conditions are candidates for further
+validation, not replacements for Theorem 14's established assumptions.
+
 For the main argument, read the accumulated-feedback appendix containing
 Theorem 14 and Proposition 15, together with its empirical study. Section 2
 supplies the population-to-output connection. Sections 4–6 and Theorem 16
