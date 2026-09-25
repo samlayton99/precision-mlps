@@ -31,8 +31,9 @@ are given in Appendix~\ref{app:note-spectrum}.
 
 \paragraph{Proof sketch.}
 The readout kernel contains normalized inner products of feature vectors
-at pairs of training points. After removing the constant sample direction,
-its center-integral approximation depends explicitly on $d\coth(\gamma d)$,
+at pairs of training points. To bound its spectrum, we separate the constant
+sample direction and approximate the sum over centers by an integral.
+This approximation depends explicitly on $d\coth(\gamma d)$,
 where $d$ separates those points. Bounding the finite-center corrections
 gives $\overline\rho_i(\gamma)$; standard GD eigenmode decay then yields
 the output-error bound.
@@ -48,8 +49,8 @@ $1.3$, $47$, and $1.4\times10^5$, respectively.
 
 At $\lambda=1/32$, a direct readout fit attains $6.2\times10^{-10}$ dense-grid
 relative error, yet five million GD updates retain training error $0.210$
-against the theorem's lower bound $0.2098$ (Figure~\ref{fig:note-spectrum}(b)).
+against the resulting RMS lower bound $0.2098$ (Figure~\ref{fig:note-spectrum}(b)).
 At $\lambda=1/4$, GD reaches $3.88\times10^{-4}$ over the same budget.
-Across the four bandwidths, the bound remains at least 75\% of executed error
+Across the four bandwidths, the bound remains at least 75\% of measured RMS error
 throughout training: small slopes delay accuracy already available in the
 dictionary.
