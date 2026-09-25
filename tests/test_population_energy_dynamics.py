@@ -54,3 +54,45 @@ def test_equal_energy_has_zero_rate_but_variance_drives_acceleration():
     assert abs(float(rate(p))) < 1e-14
     second=jax.jvp(rate,(p,),(v,))[1]
     assert float(second) == pytest.approx(float(6*jnp.var(2*v[:3])),rel=2e-13)
+
+
+def test_weighted_cubic_contrast_explains_relative_growth_loading():
+    x=jnp.linspace(-1,1,41)
+    p=jnp.array([.2,.5,-.1, .3,-.2,.4, .6,.1,-.3, .1])
+    basis=kernel._basis(x)
+    def cubic(z):
+        a,b,c=z[:-1].reshape(3,-1)
+        return kernel._fine(-((x[:,None]*a+b)**3)@c/3,basis)
+    a,b,c=p[:-1].reshape(3,-1)
+    e=a*a+b*b+c*c
+    individual=kernel._fine(-c*(x[:,None]*a+b)**3/3,basis)
+    contrast=24*(individual@(e*e)/jnp.sum(e**3)-cubic(p)/jnp.sum(e))
+    exact=jax.jvp(cubic,(p,),(ed.score(p,6),))[1]
+    np.testing.assert_allclose(exact,contrast,rtol=2e-13,atol=2e-14)
+
+
+def test_joint_energy_concentration_gradient_has_orthogonal_budgets():
+    p=jnp.array([.2,.5,-.1, .3,-.2,.4, .6,.1,-.3, .1])
+    grad=jax.grad(lambda z:jnp.sum(z[:-1]**2)*jnp.sqrt(ed.shape(z,6)))(p)
+    m=jnp.sum(p[:-1]**2);chi=ed.shape(p,6);k=ed.shape(p,10)/chi**2
+    assert float(grad@grad)==pytest.approx(float(m*chi*(9*k-5)),rel=2e-13)
+
+
+def test_projected_scalar_comparison_bounds_positive_product_growth():
+    from experiments.expD34_readout_race import population_concentration as pc
+    x=jnp.linspace(-1,1,41)
+    p=jnp.array([.2,.5,-.1, .3,-.2,.4, .6,.1,-.3, .1])
+    grad=jax.grad(lambda z:jnp.sum(z[:-1]**2)*jnp.sqrt(ed.shape(z,6)))(p)
+    base=kernel.decomposition(p,x,jnp.zeros_like(x))
+    direction=kernel._project(grad,base['JC'],base['gram'])
+    y=kernel.output(p,x)+kernel._fine(base['J']@direction,base['basis'])
+    state=kernel.decomposition(p,x,y)
+    observed=grad@(-state['F'])
+    assert observed>0
+    m=jnp.sum(p[:-1]**2);chi=ed.shape(p,6);k=ed.shape(p,10)/chi**2
+    product=m*jnp.sqrt(chi);w=(len(p)-1)//3
+    mu2,mu4,mu6=(jnp.mean(x**i) for i in (2,4,6))
+    d3=jnp.sqrt(8*(mu4-mu2**2)/27+3*(mu6-mu4**2/mu2)/16)
+    e0=jnp.sqrt(jnp.mean(state['eH']**2))
+    upper=e0*jnp.sqrt(9*k-5)*(d3*product**2/w+pc.C5*jnp.sqrt(k)*product**3/w**2)
+    assert observed<=upper
