@@ -80,28 +80,32 @@ def main():
     axes[0].set_yticks([1e-8, 1e-5, 1e-2])
     axes[0].set_xlabel(r'Bandwidth $\lambda=\gamma h$')
     axes[0].set_ylabel(r'Relative rate $\rho_i=\mu_i/\mu_1$')
-    axes[0].set_title('A  Relative kernel rates', loc='left', pad=5)
+    axes[0].set_title('(a)', loc='left', pad=5)
     axes[0].legend(handles=[Line2D([], [], color='#222222', marker='o', ms=2.7, label='Kernel'),
                             Line2D([], [], color='#888888', ls='--', lw=.7, label='Bounds')],
                    loc='lower right', handlelength=1.3, labelspacing=.2)
 
+    marker_steps = np.unique(np.rint(np.geomspace(10, horizon, 12)).astype(int))
     for i, (bandwidth, color, bound) in enumerate(zip(bandwidths, palette, bounds)):
         axes[1].plot(indices, actual[indices, i], color=color, lw=1.2)
         axes[1].plot(bound['steps'], bound['lower_error'], color=color, ls='--', lw=.9)
+        axes[1].plot(marker_steps, actual[marker_steps, i], color=color, ls='none',
+                     marker='o', ms=2.5, mfc='white', mew=.7, clip_on=False)
     bandwidth_legend = axes[1].legend(handles=[Line2D([], [], color=c, label=label)
         for c, label in zip(palette, ['1/32', '1/16', '1/8', '1/4'])],
         title='Bandwidth λ', title_fontsize=6.3, loc='lower left', ncol=2,
         handlelength=1.2, columnspacing=.8, labelspacing=.2)
     axes[1].add_artist(bandwidth_legend)
-    axes[1].legend(handles=[Line2D([], [], color='black', label='GD'),
+    axes[1].legend(handles=[Line2D([], [], color='black', marker='o', ms=2.5,
+                                   mfc='white', mew=.7, label='GD'),
                             Line2D([], [], color='black', ls='--', label='Bound')],
                    loc='upper right', ncol=2, handlelength=1.3, columnspacing=.7)
     axes[1].set_xscale('symlog', linthresh=10)
     axes[1].set_xlim(0, horizon)
     axes[1].set_xticks([0, 100, 10000, 1000000], ['0', '$10^2$', '$10^4$', '$10^6$'])
     axes[1].set_xlabel('Readout updates')
-    axes[1].set_ylabel('Relative output error')
-    axes[1].set_title('B  Frozen readout', loc='left', pad=5)
+    axes[1].set_ylabel('Relative training error')
+    axes[1].set_title('(b)', loc='left', pad=5)
 
     for optimizer in summary['selected']:
         color = {'adam': '#0072B2', 'gd': '#D55E00'}[optimizer]
@@ -158,8 +162,12 @@ def main():
     (args.output/'provenance.json').write_text(json.dumps(dict(
         figure_size_inches=[5.5, 1.8], horizon=horizon, sources=fingerprints,
         spectral_rows=rows, bandwidths=bandwidths, frozen_adam_selection=selected,
+        selected_target_energy=np.sum([row['target_weights'] for row in rows], axis=0).tolist(),
+        gd_marker_steps=marker_steps.tolist(),
         display='Same executed curves and extrema-preserving display reduction as section34_figure.py; '
-                'spectrum uses saved theorem intervals, with ordered ranks recomputed at each bandwidth.'),
+                'spectrum uses saved theorem intervals, with ordered ranks recomputed at each bandwidth. '
+                'Hollow markers identify executed GD at 12 log-spaced updates; bounds use every '
+                'resolved target projection, not only the three ranks displayed in the spectral panel.'),
         indent=2) + '\n')
     print(json.dumps(dict(figure_size_inches=[5.5, 1.8], checked_spectral_intervals=12,
                           frozen_adam_recipe=selected['recipe_index'], horizon=horizon)))
