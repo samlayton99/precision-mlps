@@ -53,18 +53,18 @@ def render() -> bytes:
     assert summary['width'] == 512
     assert manifest['input_sha256'] == access['input_sha256']
     horizon, width = summary['horizon'], summary['width']
-    plt.rcParams.update({'font.size': 8, 'axes.titlesize': 9, 'axes.labelsize': 8,
+    plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8,
                          'legend.fontsize': 7, 'legend.frameon': False,
                          'svg.fonttype': 'none', 'pdf.fonttype': 42})
 
     def save(fig, name):
-        for suffix in ('png', 'svg'):
+        for suffix in ('png', 'svg', 'pdf'):
             fig.savefig(output/f'{name}.{suffix}', dpi=300)
         svg = output/f'{name}.svg'
         svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
         plt.close(fig)
 
-    fig, axes = plt.subplots(1, 2, figsize=(7, 2.65), layout='constrained')
+    fig, axes = plt.subplots(1, 2, figsize=(5.5, 2.05), layout='constrained')
     record = {'observation': {}, 'tracking': {}, 'reinforcement': {}}
     with np.load(source/BASE/'base/joint_input.npz', allow_pickle=False) as initial:
         x, y = initial['x'], initial['target']
@@ -119,19 +119,19 @@ def render() -> bytes:
     axes[0].plot(indices/1e6, actual[indices, -1], color='#777777', ls=':', label='Fixed GD')
     axes[1].axhline(.25, color='#333333', ls=':', lw=.9, label='Supplied geometry: 1/4')
     axes[0].set(title='(a) Output accuracy', ylabel='Relative training error')
-    axes[1].set(title='(b) Population slope scale', ylabel=r'RMS relative slope $h\|\gamma\|_2/\sqrt{W}$')
+    axes[1].set(title='(b) Population slope scale', ylabel=r'RMS relative slope $\lambda_{\rm RMS}$')
     for ax in axes:
         ax.set(xlabel='Updates (millions)', xlim=(0, 5), yscale='log')
         ax.grid(axis='y', alpha=.15)
         ax.spines[['top', 'right']].set_visible(False)
     axes[0].legend(loc='upper right', ncol=2, columnspacing=.8, handlelength=1.5)
-    axes[1].legend(loc='lower right')
+    axes[1].legend(loc='lower right', fontsize=6.5)
     record['observation'].update(width=width, spacing=summary['spacing'], seeds=5, updates=horizon,
         fixed_gd_final_training_error=float(actual[-1, -1]), fixed_adam_final_training_error=endpoint,
         fixed_adam_selection=selected)
     save(fig, 'joint_acquisition_rms')
 
-    fig, axes = plt.subplots(1, 2, figsize=(7, 2.85), layout='constrained')
+    transition, transition_ax = plt.subplots(figsize=(5.5, 2.05), layout='constrained')
     names = ['raw_total_norm', 'raw_effective_norm', 'raw_tracking_norm']
     channels = []
     for seed in range(5):
@@ -156,41 +156,58 @@ def render() -> bytes:
     for j, (label, color) in enumerate((('Full slope gradient', '#111827'),
                                       ('Effective fine', '#0072B2'), ('Coarse tracking', '#D55E00'))):
         values = channels[:, :, j]
-        axes[0].plot(updates, np.median(values, axis=0), color=color, lw=1.2, label=label)
-        axes[0].fill_between(updates, values.min(axis=0), values.max(axis=0), color=color, alpha=.12, lw=0)
-    axes[0].set(xscale='log', yscale='log', xlabel='Total GD updates', ylabel='Slope-gradient norm',
-                title='(a) Tracking fades: mixed sine, W = 177')
-    axes[0].legend(loc='lower left')
+        transition_ax.plot(updates, np.median(values, axis=0), color=color, lw=1.2, label=label)
+        transition_ax.fill_between(updates, values.min(axis=0), values.max(axis=0), color=color, alpha=.12, lw=0)
+    transition_ax.set(xscale='log', yscale='log', xlabel='Total GD updates', ylabel='Slope-gradient norm')
+    transition_ax.legend(loc='lower left')
+    transition_ax.grid(alpha=.15)
+    transition_ax.spines[['top', 'right']].set_visible(False)
     record['tracking'] = dict(target='mixed_sine', width=177, seeds=5, final_update=int(updates[-1]),
                               final_tracking_to_fine_ratio=(channels[:, -1, 2]/channels[:, -1, 1]).tolist())
 
+    save(transition, 'tracking_transition')
+    fig, axes = plt.subplots(1, 2, figsize=(5.5, 2.15), layout='constrained')
     with (Path('/work')/FLOW).open(newline='') as stream:
-        rows = [row for row in csv.DictReader(stream)
-                if row['target'] == 'step_right' and row['kind'] == 'effective' and float(row['dt']) == .01]
+        all_rows = list(csv.DictReader(stream))
+    rows = [row for row in all_rows
+            if row['target'] == 'step_right' and row['kind'] == 'effective' and float(row['dt']) == .01]
+    gd = sorted([row for row in all_rows if row['target'] == 'step_right'
+                 and row['kind'] == 'gd' and float(row['dt']) == .002], key=lambda row: float(row['time']))
     rows.sort(key=lambda row: float(row['time']))
     get = lambda name: np.array([float(row[name]) for row in rows])
     t, force = get('time'), get('f')
     assert len(t) == 201 and t[-1] == 200
+    gd_force = np.array([float(row['f']) for row in gd])
+    gd_tracking = np.array([float(row['R_norm']) for row in gd])
+    np.testing.assert_array_equal(t, [float(row['time']) for row in gd])
+    np.testing.assert_allclose(gd_force[0], force[0], rtol=1e-12)
+    age = 20+t/.002/1000
+    axes[0].plot(age, gd_force, color='#0072B2', label='Effective fine F')
+    axes[0].plot(age, gd_tracking, color='#D55E00', label='Coarse tracking R')
+    axes[0].set(yscale='log', ylabel='Full parameter-gradient norm', title='(a) After the tracking transient')
+    axes[0].legend(loc='center right', fontsize=6.5)
     integral = lambda values: np.r_[0., np.cumsum(np.diff(t)*(values[1:]+values[:-1])/2)]
     feedback = integral(get('geometry')+get('compensation'))
     depletion = -integral(get('relaxation'))
     growth = np.log(force/force[0])
     defect = float(np.max(np.abs(feedback+depletion-growth)))
     assert defect < 1e-4, defect
-    axes[1].plot(t/.002/1000, feedback, color='#009E73', label='Geometry + compensation feedback')
-    axes[1].plot(t/.002/1000, depletion, color='#CC6677', label='Residual relaxation')
-    axes[1].plot(t/.002/1000, growth, color='#111827', ls='--', label='Net log force change')
+    axes[1].plot(age, feedback, color='#009E73', label='Geometry + compensation')
+    axes[1].plot(age, depletion, color='#CC6677', label='Residual relaxation')
+    axes[1].plot(age, growth, color='#111827', ls='--', label='Net log force change')
     axes[1].axhline(0, color='#999999', lw=.5)
-    axes[1].set(xlabel='Updates since 20k restart (thousands)', ylabel='Accumulated contribution to log force',
-                title='(b) Slow reinforcement: smooth step, W = 705', xlim=(0, 100))
-    axes[1].legend(loc='upper left', fontsize=6.7)
+    axes[1].set(ylabel='Contribution to log force change', title='(b) Limited force reinforcement')
+    axes[1].legend(loc='upper left', fontsize=6.1)
     for ax in axes:
+        ax.set(xlabel='Total GD updates (thousands)', xlim=(20, 120), xticks=[20, 60, 100, 120])
         ax.grid(alpha=.15)
         ax.spines[['top', 'right']].set_visible(False)
     record['reinforcement'] = dict(target='step_right', width=705, seed=30, restart=20000,
         additional_updates=100000, initial_force=float(force[0]), final_force_ratio=float(force[-1]/force[0]),
         feedback=float(feedback[-1]), relaxation=float(depletion[-1]), quadrature_identity_defect=defect,
-        final_relative_error=float(get('relative_error')[-1]))
+        final_relative_error=float(get('relative_error')[-1]),
+        gd_max_tracking_to_fine_ratio=float(np.max(gd_tracking/gd_force)),
+        gd_effective_max_relative_force_difference=float(np.max(np.abs(gd_force-force)/force)))
     save(fig, 'tracking_and_reinforcement')
     record['sources'] = []
     for prefix, paths in (('/work', LOCAL), ('/spectrum', EXTERNAL)):

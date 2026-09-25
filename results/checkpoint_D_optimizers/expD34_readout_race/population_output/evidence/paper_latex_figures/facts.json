@@ -1,0 +1,137 @@
+{
+  "observation": {
+    "adam": {
+      "final_rms": 0.058183238203493005,
+      "final_relative_training_error": 0.001814322704091557,
+      "final_relative_dense_error": 0.0018148249745477592,
+      "schedule": "cosine",
+      "learning_rate": 0.05
+    },
+    "gd": {
+      "final_rms": 0.007176737854449787,
+      "final_relative_training_error": 0.24393136789613948,
+      "final_relative_dense_error": 0.24393487475699221,
+      "schedule": "cosine",
+      "learning_rate": 0.2
+    },
+    "width": 512,
+    "spacing": 0.004282655246252677,
+    "seeds": 5,
+    "updates": 5000000,
+    "fixed_gd_final_training_error": 0.00038785560212100463,
+    "fixed_adam_final_training_error": 6.624580669938711e-07,
+    "fixed_adam_selection": {
+      "run_index": 0,
+      "recipe_index": 10,
+      "schedule": "cosine",
+      "learning_rate": 0.0001,
+      "validation_error": 6.620708302958729e-07,
+      "train_error": 6.624580670221147e-07
+    }
+  },
+  "tracking": {
+    "target": "mixed_sine",
+    "width": 177,
+    "seeds": 5,
+    "final_update": 599999,
+    "final_tracking_to_fine_ratio": [
+      1.3289859072093894e-05,
+      0.00029167256249951304,
+      0.0002816060783476832,
+      9.977594745443714e-05,
+      7.091631424290779e-05
+    ]
+  },
+  "reinforcement": {
+    "target": "step_right",
+    "width": 705,
+    "seed": 30,
+    "restart": 20000,
+    "additional_updates": 100000,
+    "initial_force": 0.0016283708936776532,
+    "final_force_ratio": 2.1866136815915715,
+    "feedback": 0.7916400487052094,
+    "relaxation": -0.009282815145086202,
+    "quadrature_identity_defect": 3.1505452743330054e-06,
+    "final_relative_error": 0.4896771819408597,
+    "gd_max_tracking_to_fine_ratio": 0.0019624996793706404,
+    "gd_effective_max_relative_force_difference": 0.0007943983292758293
+  },
+  "sources": [
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/feedback_flow_100k/states.csv",
+      "sha256": "7d8a4ef9b0c313dd14f8c0840c1b57c6bc4a06e42e46d3469651311ccdc0f184"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_0/trace.npz",
+      "sha256": "1e3c91759fc9adc96a102bbae64740ec62f6b8aa65bdd2554ac9af7f1a45b774"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_0/manifest.json",
+      "sha256": "5a344a728a9cd9d06e81cdc49af4637c33550710063d31e5c393dd54a4732da6"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_1/trace.npz",
+      "sha256": "364b549a6160d8d2956ce9540c210dbbf9b1087065f625047cef15b95551d1ed"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_1/manifest.json",
+      "sha256": "9ab81d06b903ceb19df45db64ef6932a34df64b1e419544f1bd74951eb4b3d45"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_2/trace.npz",
+      "sha256": "6d6ab89ff1d8498655d3aa5d9c4550d68d1c0c6e435b1fc8033765ab8abd7113"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_2/manifest.json",
+      "sha256": "7efe84ace7b878930ffe7011e7dddd8ee58d16e403bb7a681201ebc3159680cb"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_3/trace.npz",
+      "sha256": "3f9c0ca15a8f37e5593742161c0f6fbeb93fbec303a3bf35f29751581d0f511f"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_3/manifest.json",
+      "sha256": "5d6e4b989b1937475c824bb6f98226546c2ac6678ee865a78384c467394e7b62"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_4/trace.npz",
+      "sha256": "38e460023d69144e371b2118cf6871f81e988a160e8e4cc9908d34522f191316"
+    },
+    {
+      "path": "/work/results/checkpoint_D_optimizers/expD34_readout_race/adam_force_extension/curated/primary_4/manifest.json",
+      "sha256": "af864918552ead9f46a0f015deea862ea58ef0f2f83c4d227519de7186f78673"
+    },
+    {
+      "path": "/spectrum/output/diagnostics/section34_long_horizon/main_5m/joint_analysis/summary.json",
+      "sha256": "355b7b163e8d87febe9f73923f70b0c5b042a9ea6d83e77558ce6027f6f79b26"
+    },
+    {
+      "path": "/spectrum/output/diagnostics/section34_long_horizon/main_5m/joint_analysis/selected_traces.npz",
+      "sha256": "fe45be106f930a3144648be1c23c4d89de0a78f1881ffb503ad41b7d8a7d61c4"
+    },
+    {
+      "path": "/spectrum/output/diagnostics/section34_long_horizon/main_5m/uniform_access/summary.json",
+      "sha256": "b1754952f2ca79ad0c55aadefe2f8241d189f2daf54a25a753959043c7dfc4f6"
+    },
+    {
+      "path": "/spectrum/output/diagnostics/section34_long_horizon/main_5m/uniform_access/assay_traces.npz",
+      "sha256": "448061a741447ca42bcb28c26aface722f8fc71e383629ba82df32d7ee09bc55"
+    },
+    {
+      "path": "/spectrum/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/base/joint_input.npz",
+      "sha256": "be357924d77d60c51c1720d3ceaf55723be2e41205f70678e8a7e1a173a563cc"
+    },
+    {
+      "path": "/spectrum/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/base/manifest.json",
+      "sha256": "99c59b36d8d20d86a0390e4f55f6e4b4176acf9f6ab8b04edad97a3d919e6b31"
+    },
+    {
+      "path": "/spectrum/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/frozen_gd/raw_error.npy",
+      "sha256": "0e6768584474ad154335c09b72b154a9c4ce3eb0fd60ef9fb58581411b9d1ee0"
+    }
+  ],
+  "platform": "Modal CPU",
+  "memory_hard_limit_mib": 4096,
+  "peak_rss_mib": 339.0234375
+}

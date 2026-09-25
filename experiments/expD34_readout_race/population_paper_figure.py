@@ -31,9 +31,11 @@ def run(root, output):
         endpoints = dict(zip([ast.literal_eval(s) for s in data['labels']], data['endpoints']))
     width, h, eta, alpha = 705, 2/512, .002, 4.
     assert initial.shape == (6, 3*width+1)
-    plt.rcParams.update({'font.size': 8, 'axes.titlesize': 9, 'axes.labelsize': 8,
-                         'legend.fontsize': 7, 'svg.fonttype': 'none'})
-    fig, axes = plt.subplots(2, 2, figsize=(7, 5.2))
+    plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8,
+                         'legend.fontsize': 7, 'svg.fonttype': 'none', 'pdf.fonttype': 42})
+    premise, top = plt.subplots(1, 2, figsize=(5.5, 2.5))
+    consequences, bottom = plt.subplots(1, 2, figsize=(5.5, 2.8))
+    axes = np.array([top, bottom])
     colors = plt.get_cmap('tab10').colors
     summaries = []
     for j, (target, label) in enumerate(zip(targets, labels)):
@@ -79,32 +81,34 @@ def run(root, output):
             initial_max_lambda=float(h*max(abs(initial[j,:width]))),
             conditional_ever_fraction_for_increment0125=float(min(1., (move_bound/.125)**2))))
     axes[0,0].axhline(1, color='black', lw=.8, ls='--')
-    axes[0,0].set(title='(a) Feedback condition persists', ylabel='Accumulated feedback / allowance', ylim=(0,1.08))
-    axes[0,1].set(title='(b) Effective force reinforces slowly', ylabel='Effective force / restart force')
+    axes[0,0].set(title='(a) Feedback allowance', ylabel='Accumulated feedback / allowance', ylim=(0,1.08))
+    axes[0,1].set(title='(b) Effective force evolution', ylabel='Effective force / restart force')
     for ax in axes[0]:
-        ax.set_xlabel('Additional GD updates (thousands)')
+        ax.set_xlabel('Additional updates (thousands)')
         ax.set_xlim(0,100)
     axes[1,0].axhline(.125, color='black', ls='--', lw=.8)
     axes[1,0].text(.02,.86,'Reference increment: 0.125',transform=axes[1,0].transAxes,va='top',fontsize=7)
-    axes[1,0].set(title='(c) Population slope motion stays small', ylabel='RMS change in relative slope', yscale='log', ylim=(1e-9,.5))
+    axes[1,0].set(title='(a) RMS slope displacement', ylabel='RMS change in relative slope', yscale='log', ylim=(1e-9,.5))
     axes[1,1].axhline(1, color='black', ls='--', lw=.8)
     axes[1,1].text(.02,.045,'1% accuracy requirement',transform=axes[1,1].transAxes,fontsize=7)
-    axes[1,1].set(title='(d) Raw output error remains large', ylabel='Relative output error (%)', ylim=(0,100))
+    axes[1,1].set(title='(b) Conditional output floor', ylabel='Relative output error (%)', ylim=(0,100))
     for ax in axes[1]:
         ax.set_xticks(range(6), labels, rotation=35, ha='right', fontsize=7)
     for ax in axes.flat:
         ax.grid(alpha=.15)
         ax.spines[['top','right']].set_visible(False)
     handles, legend_labels = axes[0,0].get_legend_handles_labels()
-    fig.legend(handles, legend_labels, loc='upper center', ncol=6, frameon=False,
-               columnspacing=1.3, bbox_to_anchor=(.51,1.005))
-    fig.text(.52,.017,'Endpoints: × GD   ○ effective flow   — conditional effective-flow bound',ha='center',fontsize=7)
-    fig.subplots_adjust(left=.095,right=.985,top=.91,bottom=.16,wspace=.32,hspace=.43)
-    fig.savefig(output/'population_persistence_paper.png', dpi=300)
-    fig.savefig(output/'population_persistence_paper.svg')
-    svg_path = output/'population_persistence_paper.svg'
-    svg_path.write_text('\n'.join(line.rstrip() for line in svg_path.read_text().splitlines())+'\n')
-    plt.close(fig)
+    premise.legend(handles, legend_labels, loc='upper center', ncol=3, frameon=False,
+                   columnspacing=1.3, bbox_to_anchor=(.52,1.01))
+    premise.subplots_adjust(left=.12,right=.965,top=.77,bottom=.20,wspace=.50)
+    consequences.text(.52,.017,'× GD   ○ effective flow   — conditional effective-flow bound',ha='center',fontsize=7)
+    consequences.subplots_adjust(left=.105,right=.985,top=.90,bottom=.30,wspace=.44)
+    for fig, name in ((premise, 'feedback_force_check'), (consequences, 'population_error_check')):
+        for suffix in ('png', 'svg', 'pdf'):
+            fig.savefig(output/f'{name}.{suffix}', dpi=300)
+        svg_path = output/f'{name}.svg'
+        svg_path.write_text('\n'.join(line.rstrip() for line in svg_path.read_text().splitlines())+'\n')
+        plt.close(fig)
     with (output/'paper_summary.csv').open('w', newline='') as stream:
         writer=csv.DictWriter(stream,fieldnames=list(summaries[0]))
         writer.writeheader(); writer.writerows(summaries)
