@@ -1,0 +1,38 @@
+{
+  "platform": "Modal CPU",
+  "seconds": 32.88778853416443,
+  "memory_hard_limit_mib": 4096,
+  "child_peak_rss_mib": 1501.04296875,
+  "files": {
+    "experiments/expD34_readout_race/population_balance_archive.py": "a86ed253c10847eddf5360d6a5284ed9b32881dbbc2d0ce23435f32243472f8b",
+    "experiments/expD34_readout_race/population_balance_archive_modal.py": "cb065e551dcac302d2cfa1ff82253e8e95163f7e7182023495b5df1421ad7e35",
+    "experiments/expD34_readout_race/population_balance_dynamics.py": "12a4e2580dd8d26e4b882ebd5c8b7722036b565b7325f9f532c35b3a1337c180",
+    "experiments/expD34_readout_race/mechanism_persistence_kernel.py": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/late_development.npz": "db4daefef766b38e21418831a7a930d6fc2b93d684925759a8625c518a232fb9",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/late_development_run/manifest.json": "ff5b24a5629e53a35b6608051d4f884245d67ada514d9a0c93a95cc4f99ea2e9",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/late_development_run/000000000.npz": "3c1304f2375e0404e8e18af482b264c155c0c74aab1b3f1b514900250fd6d2c4",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/late_development_run/000020000.npz": "f25e2010149d9e6a891b9187f2a556f7fc7b10bc05b9269edf00c505886b579c",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/late_confirmation.npz": "c77ae5f60d4a78cd6dc8df197e523a7902bf49ea260b91050e999f077bc48669",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/late_confirmation_run/manifest.json": "0115c4c6aa7076231bd6fd5e336f8a4b7294d3c72662446ac50212099dad3738",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/late_confirmation_run/000000000.npz": "25ba3a3a671aae844d13723755f42d2cdd0c45a9329784d964bf1bfc0436831e",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/late_confirmation_run/000020000.npz": "c9379965b489ec283373179ef865cd218283c97aaf8735d8c8e9316173c7db90",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/wide_N512.npz": "9273060d45a87749bc2315d533994af9818e46ac43f51db8dace3b23ce206eb2",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/wide_N512_run/manifest.json": "ff553a49077cda2fd46dfca0136bd1be0e83b4a1bc809d04808ca87749f7311e",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/wide_N512_run/000000000.npz": "708aa33d06d3e4b142e529eddd4eca89b676768100034fee909602d01236aac0",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/wide_N512_run/000020000.npz": "d97cb89e2c0bf20f173a82115673b6411dfd8be45e265c8b04169e8b4e575de3",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/wide_N1024.npz": "0b40d753fe44ef070850261b2fdb8ced362b504a53f71b7ac34f97e19bac05ab",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/wide_N1024_run/manifest.json": "15c117ab89189d6c1bd2596eb3b5030ff36d8cddd2e41124f0db4b9ccf94bb8f",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/wide_N1024_run/000000000.npz": "0b0c805dc4c8e6851f8ecf0c5711a9f3d27b96de050184e88bed18a3903b954a",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence/wide_N1024_run/000020000.npz": "726cc0ba8d44c9c770a780421fe39111c9b08a792ab981849bbf633860698c9e"
+  },
+  "command": [
+    "/usr/local/bin/python",
+    "-m",
+    "experiments.expD34_readout_race.population_balance_archive",
+    "--base",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_dilation/evidence",
+    "--output",
+    "/tmp/balance-archive"
+  ],
+  "stdout": "late_development count=0: 138 rows, 0 skipped\nlate_development count=20000: 276 rows, 0 skipped\nlate_confirmation count=0: 414 rows, 0 skipped\nlate_confirmation count=20000: 552 rows, 0 skipped\nwide_N512 count=0: 624 rows, 0 skipped\nwide_N512 count=20000: 696 rows, 0 skipped\nwide_N1024 count=0: 768 rows, 0 skipped\nwide_N1024 count=20000: 840 rows, 0 skipped\n{\n  \"rows\": 840,\n  \"unique_states\": 834,\n  \"targets\": [\n    \"blend_m010\",\n    \"blend_p001\",\n    \"blend_p010\",\n    \"blend_p030\",\n    \"bump_left\",\n    \"bump_right\",\n    \"chirp\",\n    \"exp_left\",\n    \"exp_right\",\n    \"gauss_left\",\n    \"gauss_right\",\n    \"kink_abs\",\n    \"kink_relu\",\n    \"localized_sine\",\n    \"mixed_sine\",\n    \"moment3\",\n    \"moment4\",\n    \"moment5\",\n    \"moment9\",\n    \"runge\",\n    \"sine\",\n    \"step_left\",\n    \"step_right\"\n  ],\n  \"widths\": [\n    177,\n    705,\n    1409\n  ],\n  \"seeds\": [\n    0,\n    20,\n    22,\n    23,\n    30,\n    31\n  ],\n  \"scales\": [\n    1.0,\n    1.25,\n    2.0\n  ],\n  \"skipped\": [],\n  \"max_delta_bound_violation\": -1.8297492774381485e-06,\n  \"max_relative_force_bound_violation\": -0.1361714695271952,\n  \"natural_panels\": {\n    \"late_development\": {\n      \"rows\": 46,\n      \"targets\": 23,\n      \"static_budget_time_min\": 6.006071399309013e-17,\n      \"static_budget_time_median\": 1.5611903789123798e-10,\n      \"alignment_min\": 0.0501110929974865\n    },\n    \"late_confirmation\": {\n      \"rows\": 46,\n      \"targets\": 23,\n      \"static_budget_time_min\": 5.2227675797344334e-17,\n      \"static_budget_time_median\": 3.5464456274744564e-10,\n      \"alignment_min\": 0.025845806350634274\n    },\n    \"wide_N512\": {\n      \"rows\": 24,\n      \"targets\": 6,\n      \"static_budget_time_min\": 159.85149165530586,\n      \"static_budget_time_median\": 235.5138303464942,\n      \"alignment_min\": 0.19288263969461558\n    },\n    \"wide_N1024\": {\n      \"rows\": 24,\n      \"targets\": 6,\n      \"static_budget_time_min\": 397.63869793518097,\n      \"static_budget_time_median\": 540.9256174004068,\n      \"alignment_min\": 0.19991012610492007\n    }\n  },\n  \"stress_selection_rule\": \"Shortest static comparison duration among width705 original seed31 checkpoints; four distinct families. Diagnostic selection, not independent held-out evaluation.\",\n  \"selected\": [\n    {\n      \"target\": \"step_right\",\n      \"seed\": 31,\n      \"width\": 705.0,\n      \"start\": 20000,\n      \"static_budget_time\": 177.66873903873588,\n      \"tracking_ratio\": 0.001021150464368514\n    },\n    {\n      \"target\": \"kink_abs\",\n      \"seed\": 31,\n      \"width\": 705.0,\n      \"start\": 20000,\n      \"static_budget_time\": 214.99802572651822,\n      \"tracking_ratio\": 0.0006954012502286343\n    },\n    {\n      \"target\": \"gauss_left\",\n      \"seed\": 31,\n      \"width\": 705.0,\n      \"start\": 20000,\n      \"static_budget_time\": 215.1223335829621,\n      \"tracking_ratio\": 0.0006971205578918466\n    },\n    {\n      \"target\": \"bump_right\",\n      \"seed\": 31,\n      \"width\": 705.0,\n      \"start\": 20000,\n      \"static_budget_time\": 262.20991400058944,\n      \"tracking_ratio\": 0.0006069986414508028\n    }\n  ],\n  \"scope\": \"Initial and 20k-additional-update snapshots only; static durations freeze shape for diagnosis and are not persistence guarantees\"\n}\n"
+}

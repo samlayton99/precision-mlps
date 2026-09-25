@@ -11,8 +11,9 @@ The literature suggests how to do this. We derive an exact tanh balance
 identity and a population growth comparison that permits positive growth.
 The new comparison uses the evolving population's concentration, polynomial
 output, and coupling to the target; it does not freeze the training dynamics.
-Matched replays support useful conditional bounds over 71k–100k additional
-GD updates for six target families. These are sampled checks of structural
+Matched replays support useful conditional bounds over 100k additional
+GD updates for six target families after refining the scalar comparison.
+These are sampled checks of structural
 conditions along trajectories, not guarantees from a checkpoint alone.
 The existing accumulated-feedback theorem remains our main paper claim.
 
@@ -110,7 +111,8 @@ L=\tfrac12\|f_\theta-y\|^2,\qquad
 e_C=P_C(f_\theta-y),\qquad g=P_Hy.
 $$
 
-Let $J_C=D_\theta(P_Cf_\theta)$ and $J_H=D_\theta f_H$. When
+Identify coarse functions with their coefficients in an orthonormal affine
+basis. Let $J_C=D_\theta(P_Cf_\theta)$ and $J_H=D_\theta f_H$. When
 $K=J_CJ_C^*$ is invertible, our existing decomposition is
 
 $$
@@ -270,7 +272,7 @@ $s\in[0,T]$,
 
 $$
 \int_0^s\mathcal I(\theta(t))\,dt\le B(s),\qquad
-|m(s)|\le M,\qquad |\rho_{ac}(s)|\ge\alpha>0.
+|m(s)|\le m_*,\qquad |\rho_{ac}(s)|\ge\alpha>0.
 \tag{7}
 $$
 
@@ -279,7 +281,7 @@ Let $D(s)=\Delta(0)+B(s)$. Then
 $$
 \boxed{
 \operatorname{RMS}(a(s))^2
-\le\frac{D(s)+\sqrt{D(s)^2+M^2/\alpha^2}}{W}.
+\le\frac{D(s)+\sqrt{D(s)^2+m_*^2/\alpha^2}}{W}.
 }
 \tag{8}
 $$
@@ -290,8 +292,8 @@ neuron or individual slope–readout ratio.
 
 **Proof.** Proposition 1 gives $\Delta(s)\le D(s)$. Since
 $A-C=2\Delta-\sum_jb_j^2$, we have $C\ge A-2D$. Also
-$AC=m^2/\rho_{ac}^2\le M^2/\alpha^2$. Thus
-$A(A-2D)\le M^2/\alpha^2$; solving this quadratic gives (8). $\square$
+$AC=m^2/\rho_{ac}^2\le m_*^2/\alpha^2$. Thus
+$A(A-2D)\le m_*^2/\alpha^2$; solving this quadratic gives (8). $\square$
 
 With a bounded coarse linear coefficient, substantial RMS-slope acquisition
 requires a large increase of geometry relative to readouts, or a substantial
@@ -299,7 +301,7 @@ loss of their collective alignment. Small coarse tracking alone excludes
 neither route. The alignment condition allows neurons to move and exchange
 influence; it does not track any particular neuron.
 
-For scale, illustrative allowances $D\le2$, $M\le2$, and $\alpha\ge0.1$
+For scale, illustrative allowances $D\le2$, $m_*\le2$, and $\alpha\ge0.1$
 would imply slope RMS below 0.18 at width 705. All twelve principal saved
 endpoints satisfy these loose allowances. They were chosen after inspecting
 the endpoints and have not been established throughout the interval. If the
@@ -373,7 +375,7 @@ directly. This does not establish alignment persistence or a useful loading
 budget. Adam changes the coordinate weighting and carries optimizer memory,
 so the unweighted GF identity is not its dynamical balance law.
 
-## 7. Which assumptions to keep, and what would improve the proof
+## 7. Which assumptions the strengthening should use
 
 Keep the post-transient start, accumulated effects of tracking, and
 population rather than maximum-neuron control. Keep target orthogonality
@@ -387,14 +389,13 @@ compensation, or a frozen sensitivity operator. Do not assume that every
 fine mode relaxes rapidly. The evidence also does not establish alignment
 preservation merely because its two endpoint values are similar.
 
-The next useful tests have specific consequences:
+Three questions guided the proof and its tests:
 
 1. **Recover balance and alignment along saved trajectories.** Measure
    $\Delta,m,\rho_{ac}$ and the signed terms of (4)–(5), including the exact
-   GD increment. The stored dense CSV lacks these new observables; the saved
-   endpoints alone cannot supply their integrals. If alignment collapses
-   during still-slow training, this closure is unnecessarily restrictive and
-   should not become the main theorem.
+   GD increment. The old dense CSV lacked these observables, so new matched
+   replays recover them. Alignment persists in the replayed cases, but the
+   primary growth theorem below does not require it as a separate premise.
 2. **Bound the first surviving loading term for a specified target family.**
    Start with the polynomial-gap family, retaining the negative generated
    term. Determine whether the signed budget is substantially smaller than
@@ -538,12 +539,36 @@ g_k=W^{(k-1)/2}\|G_k\|/M^{k/2},\quad k=3,5.
 \tag{15}
 $$
 
-These quantities do not change under a common rescaling of all hidden
+The lowercase $q_k,j_k,g_k$ are scalar norms, not additional forces in the
+gradient decomposition. These quantities do not change under a common
+rescaling of all hidden
 parameters. Bounding them therefore does not assume that $M$, the slopes,
 or the future effective force stay small. They describe population shape,
 low-order output coherence, and coupling to specified target moments. In
 particular, $G_3=0$ when $g\perp\mathcal P_3$, and also $G_5=0$ when
 $g\perp\mathcal P_5$. For other targets those terms remain explicit.
+
+There is also a version whose target dependence is specified entirely by
+the target family. Put $\tau_k=\|P_{\mathcal P_k}g\|$. Since every column
+of $J_k$ is a polynomial of degree at most $k$,
+
+$$
+g_k\le j_k\tau_k,\qquad
+q_k\le A_k\chi_{k+1},\qquad
+j_k\le C_k\sqrt{\chi_{2k}},\qquad k=3,5.
+\tag{15a}
+$$
+
+The first inequality follows by projecting the target before applying
+$J_k^*$; the other two follow from the same fixed-radius polynomial bounds
+used in (14). Thus the small loading can be **derived from population
+concentration and target moments**, rather than assumed as a small future
+fine force. The sharper comparisons below retain measured polynomial
+coherence and target coupling; substituting (15a) gives a simpler but
+potentially looser concentration-only condition. Its quantitative usefulness
+has not been substituted for the reported sharper results. A spectral gap
+sets the corresponding $\tau_k$ exactly to zero; sine and localized targets
+generally retain nonzero low-degree loading.
 
 ### A first-exit theorem for the evolving population
 
@@ -563,6 +588,9 @@ $$
 The shapes in (16) evolve; only the allowed radius is fixed. No Jacobian is
 frozen. Products are retained inside the time integral, avoiding separate
 maximum-over-time bounds on concentration and coherence.
+Compensation remains inside the exact orthogonal projection. This population
+comparison uses its contractivity, so it needs no quantitative lower bound
+on the coarse singular value beyond the decomposition being defined.
 
 **Theorem 4 — slow population growth from accumulated structural loading.**
 For effective flow, set $r=0$; for ordinary gradient flow set $r=\|R\|$.
@@ -607,6 +635,77 @@ shapes, moment concentration, and tracking. Its conclusion is a bound on
 physical size and force. Establishing useful structural budgets remains a
 substantive empirical or theoretical task; inserting the future true force
 in place of $V_*$ would not establish this mechanism.
+
+### Refine the comparison by allowing its radius to evolve
+
+The fixed-radius test charges early training at the largest radius allowed
+at the end. For targets with positive low-order loading, this can exhaust
+the sufficient budget even while actual growth remains modest. A scalar
+comparison equation removes this loss without changing the assumptions.
+
+**Corollary 4a — a growing population envelope.** Write $V(t,M)$ for (16)
+with $M_*$ replaced by $M$, using the same evolving shapes or nonnegative
+upper envelopes for their coefficients. Let
+
+$$
+\dot b=V(t,b^2)+r(t),\qquad b(0)=\sqrt{M(0)}.
+\tag{18a}
+$$
+
+On any interval where this scalar solution is finite,
+
+$$
+\sqrt{M(t)}\le b(t),\qquad
+\operatorname{length}(\theta_{\rm hidden};[0,t])\le b(t)-b(0),
+\qquad \lambda_{\rm RMS}(t)\le\frac{h b(t)}{\sqrt W}.
+\tag{18b}
+$$
+
+For GD the corresponding statement uses the actual step sizes:
+
+$$
+b_{n+1}=b_n+\eta_n[V(n,b_n^2)+\|R_n\|].
+\tag{18c}
+$$
+
+**Proof.** The radius satisfies
+$D^+\sqrt M\le V(t,M)+r(t)$. The right side is nondecreasing and locally
+Lipschitz in the radius, with nonnegative coefficients. Scalar differential
+inequality comparison gives (18b); integrating the same speed bound gives
+the travel conclusion. For GD, monotonicity and the triangle inequality give
+$\sqrt{M_{n+1}}\le b_{n+1}$ by induction, and summing step lengths gives
+the travel bound. Locally integrable, bounded coefficient envelopes suffice
+on each compact radius interval. Blow-up of the scalar comparison ends its
+usefulness; it is not a claim that the network itself diverges. $\square$
+
+This is a property of the evolving exact ODE. A scalar upper comparison is
+different from an approximate model that predicts each parameter's motion.
+It permits growth and eventual exit. If $M(0)=O(1)$ and the dimensionless
+coefficients and target norm have width-independent bounds, (16) gives
+$V=O(W^{-1})$ on a fixed mass interval. With negligible accumulated tracking,
+an order-one radius change therefore takes at least order $W$ flow time.
+For targets with $g\perp\mathcal P_3$, the $g_3$ term vanishes and the same
+argument gives order $W^2$. These are conditional width scalings, not a
+uniform empirical law or a claim about a particular update count. Higher
+target gaps alone do not improve this particular $W^2$ bound: its unsigned
+generated-output term can still be order $W^{-2}$. Retaining more of the
+signed dissipation would be needed for that strengthening.
+
+**Output-error consequence.** Orthogonality and the reverse triangle
+inequality give, under either comparison,
+
+$$
+\frac{\|f_\theta-y\|}{\|y\|}
+\ge \frac{[\|g\|-Q(t,b(t)^2)]_+}{\|y\|},
+\tag{18d}
+$$
+
+where $Q$ is the capacity bound in (16); use $M_*$ in the fixed-radius
+version. This connects the same aggregate conditions to unusable output
+accuracy, rather than inferring output failure from small slopes alone.
+The inequality concerns the measure used in the theorem. A computation
+on the training grid is not an automatic certificate for a continuous
+population measure.
 
 ### Coarse fitting preserves the product, which preserves alignment
 
@@ -655,6 +754,24 @@ useful alignment control does not by itself refute slow scale acquisition.
 
 ## 9. Matched replays test a useful duration
 
+All replays use the uniform empirical measure on 2,048 midpoint samples
+of $[-1,1]$, width $W=705$ including the halo, and reference grid size
+$N_{\rm ref}=512$, hence $h=1/256$. The original parameters come from
+full-batch GD after 20k updates at learning rate 0.002. Each continuation
+covers another 100k updates at that rate. No readout refitting or geometry
+intervention is applied to these continuations.
+
+For clarity, the six target labels in the figures mean the following.
+The degree-five target is $0.3P_0+0.4P_1+\sqrt{0.75}P_5$, where the
+$P_k$ are orthonormal polynomials for this empirical measure. Mixed sine is
+$\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(14\pi x)$.
+Gaussian is $\exp(-((x+0.35)/0.22)^2)$; step is
+$\tanh(14(x-0.31))$; kink is $|x+0.23|$.
+The bump is $\exp(1-1/(1-u^2))$ for $|u|<1$, zero otherwise, with
+$u=(x-0.35)/0.22$. Each nonpolynomial target is divided by its RMS on
+the original 2,048-point grid. These definitions make the mixture's
+low-degree loading and the localized targets' different structures explicit.
+
 The degree-five example makes the gain concrete. Its hidden squared norm
 increases by only 0.003% during 100k additional GD updates. The structural
 comparison allows a 2% increase and consumes about 13% of the corresponding
@@ -692,38 +809,148 @@ remaining assumption is persistence of dimensionless population structure,
 which is less restrictive than assuming small future force or small future
 slopes, but is still a condition to validate.
 
+### The growing comparison removes the two shortfalls
+
+Corollary 4a is useful for all six full intervals. For degree five it allows
+only a 0.24% increase in total hidden squared norm; for the step target it
+allows about 82%. Both are meaningful because the normalized slopes start
+so far below the required scale. At the end of 100k additional updates,
+the six slope-RMS bounds range from $3.63\times10^{-4}$ to
+$5.18\times10^{-4}$, while actual RMS scales range from
+$2.09\times10^{-4}$ to $2.51\times10^{-4}$.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_evolving_verified_20260924/evolving_comparison.png" alt="Growing scalar comparison bounds the population norm and normalized slope RMS through all six 100k-update continuations" style="max-width:100%;">
+  <figcaption>The same six width-705, seed-30 GD continuations. Solid curves use the discrete growing comparison (18c), evaluated at the native GD step with coefficients interpolated between saved scalar diagnostics; dotted curves show actual motion. Allowing the comparison radius to grow gradually closes the full interval for the Gaussian and step targets as well. These are empirical conditional envelopes, not validated numerical certificates.</figcaption>
+</figure>
+
+The output consequence is also substantial: the minimum sampled relative
+error floors over these intervals are approximately 86.6% for degree five,
+91.2% for mixed sine, 78.4% for Gaussian, 88.0% for bump, 47.9% for step,
+and 42.7% for kink. All concern the training measure, and all greatly exceed
+a 1% criterion. The conclusion comes from a capacity bound under the
+population envelope, not from asserting that small slope RMS alone makes
+an accurate readout impossible.
+
+This does **not** upgrade the old 793-update checkpoint certificate into a
+100k-update initial-data guarantee. It replaces its loose neighborhood
+estimate with a proved conditional growth comparison, then checks the
+structural quantities along the interval. That is the paper's intended
+standard of a mechanistic conditional theorem with supporting trajectories.
+
+## 10. Broader coverage and the boundary of the explanation
+
+The archive audit evaluates 840 labeled states, comprising 834 distinct
+parameter/input/target states: 23 targets, widths 177, 705, and 1409, and
+six seeds across the panels. Each panel has initial and 20k-additional-update
+snapshots. There are no skipped or failed states in this audit. All satisfy
+the analytic instantaneous force and imbalance inequalities to numerical
+precision. This verifies formulas across a much broader collection than
+degree nine and sine; it does not establish useful persistence on every
+target–width combination.
+
+The distinction is decisive. The late width-177 panels start after 600k
+updates and include many populations whose high-order moments make the
+global polynomial remainder extremely large. Their median static-shape
+comparison durations are below one update. The inequalities remain valid
+but explain no useful interval there. The width-705 and width-1409 panels
+contain six target families and two seeds, starting after 20k updates. Their
+median static-shape diagnostics correspond to about 118k and 270k updates,
+respectively. Those diagnostic durations hold the measured coefficients
+fixed to expose slack; only a trajectory audit can check their persistence.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_archive_20260924/archive_coverage.png" alt="Static comparison usefulness across widths and force-bound slack in natural and dilated archived populations" style="max-width:100%;">
+  <figcaption>Archived states across 23 targets. Left: static-shape diagnostic durations for unmodified checkpoints, not persistence guarantees. Width 177 uses a later training regime than the wider panels, so the comparison is not a controlled width-scaling experiment. Right: bound-to-force ratios across original, readout-repaired, and geometrically dilated states. The archived dilation factors here are 1.25 and 2, with two readout-repair references; this audit contains no factor-ten intervention.</figcaption>
+</figure>
+
+Four additional matched continuations test the weakest starting margins
+among the width-705 seed-31 original checkpoints, with one target from each
+of four distinct families: step, kink, Gaussian, and bump. Selection used the
+static comparison duration, not the continuation outcome. All four growing
+comparisons remain useful through the full 100k additional updates, with
+final normalized slope-RMS bounds between $4.38\times10^{-4}$ and
+$5.35\times10^{-4}$. Their minimum sampled output-error floors range from
+42.7% to 87.8%. These are stress cases selected diagnostically, not an
+independent statistical test of generalization to new target families.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_stress_comparison_20260924/evolving_comparison.png" alt="Four second-seed stress cases retain useful growing population and slope bounds over 100k additional updates" style="max-width:100%;">
+  <figcaption>Width 705, seed 31, four original checkpoints chosen for the weakest static structural margins. Solid curves are the growing GD comparison; dotted curves show actual populations. Every comparison remains finite and informative for 100k additional updates. As in the first seed, the conclusion allows positive growth and does not require contraction.</figcaption>
+</figure>
+
+**Persistence does not mean nearly frozen statistics.** In the seed-30
+Gaussian run, $\chi_{14}$ grows by about 246 times, and in the step run by
+about 102 times. Nevertheless, the time-average structural loading evaluated
+at the starting mass is only about 1.36 and 1.40 times its initial value.
+The high-order moment enters with its width-dependent factor and alongside
+the target and generated-output terms; its isolated relative increase is
+not the relevant budget. The successful comparison therefore tolerates
+large changes in a population statistic that a frozen-neighborhood or
+uniform-relative-change requirement would reject. Across the ten principal
+GD runs, the analogous average-loading ratios lie between about 0.96 and
+1.42. This is empirical support for an accumulated structural condition,
+not a proof that these ratios remain bounded indefinitely.
+
+The mechanism is therefore best scoped to post-transient populations with
+small total hidden norm and moderate accumulated concentration and low-order
+target coupling. It is not a theorem about every plateau, nor does the
+present evidence establish the same useful condition for all 23 targets.
+Large moments can make this sufficient condition fail while scale
+acquisition remains slow for other reasons. A more useful theorem in that
+regime would need bounded tanh sensitivities or a tail-sensitive population
+decomposition, rather than another constant improvement to a seventh-order
+remainder. Adam also needs a separate optimizer-metric argument; the
+ordinary-GD transfer proved here does not establish its quantitative rates.
+
+**Current proof status.** The signed balance, generated-correction allowance,
+global polynomial remainder bounds, fixed and growing population
+comparisons, alignment consequence, and output consequence are proved
+conditional statements. The ten replayed starting states support their
+usefulness over the specified finite interval. What remains conditional is
+the accumulated dimensionless concentration and target-coupling structure,
+plus the tracking allowance. There is no proof here that those conditions
+hold for arbitrary post-transient states or arbitrary durations. A numerical
+certificate would additionally need enclosures between stored diagnostics;
+the present step and sampling refinements are evidence, not such enclosures.
+
 ## Reproducibility and status
 
 The identities, global remainder inequalities, and conditional comparisons
 are proved here. Their numerical application is ordinary floating-point
 evidence, not an interval certificate or an initial-data-only guarantee.
-The replay study has six targets, effective-flow RK4 steps 0.02 and 0.01,
+The replay study has ten starts across six targets and two seeds, with
+effective-flow RK4 steps 0.02 and 0.01,
 and GD steps 0.002 and 0.001, each through physical time 200. Scalar
 diagnostics are recorded every unit of flow time; exact GD moment increments
 are accumulated at every update. Only starting and ending parameter vectors
 are retained.
 
-Seven focused tests passed, including independent automatic derivatives,
+Nine focused tests passed, including independent automatic derivatives,
 global remainder bounds at three parameter scales, exact finite-step moment
-identities, a zero-alignment case, and a stationary exact fit. Across the
+identities, a zero-alignment case, a stationary exact fit, and a solvable
+positive-growth comparison with its exact GD recurrence. Across the
 replays, accumulated balance discrepancies are below $7\times10^{-14}$.
 Halving the GD step changes population size and normalized slope RMS by
-less than $4.4\times10^{-7}$ relative; RK4 differences are near floating-point
+less than $4.8\times10^{-7}$ relative across both seeds; RK4 differences are near floating-point
 roundoff. Halving the structural sampling density changes the integrated
 budget by less than $2.7\times10^{-5}$ relative in the six principal runs.
-This tests numerical resolution but does not enclose every unsampled state.
+For the growing comparison, decimating the structural diagnostics changes
+the endpoint radius by less than $9\times10^{-6}$ relative in the principal
+GD runs. The replays also reproduce all twelve archived GD endpoint vectors
+exactly; the effective-flow endpoint coordinates differ by at most
+$2.3\times10^{-16}$. This tests numerical resolution and replay consistency
+but does not enclose every unsampled state.
 
-The replay used 495 GPU-seconds on Modal with an 8 GiB memory cap and about
-4.23 GiB measured peak child memory. Budget analysis runs on Modal CPU with
-a 4 GiB cap. No numerical analysis or archive-array loading ran locally.
+The two replay batches used about 840 GPU-seconds in total, or 0.234 GPU-hours,
+within the one-GPU-hour cap. Both ran on Modal with an 8 GiB memory cap and
+less than 4.24 GiB measured peak child memory. The broader archive audit used
+about 1.47 GiB on Modal CPU under its 4 GiB cap; it reads one panel at a time
+and evaluates one state at a time. No numerical analysis or archive-array
+loading ran locally.
 The prior endpoint audit remains a separate correctness check; the new
-replays supply the missing time-resolved balances.
-
-Sources, commands, environment, and hashes are recorded in
-[execution.json](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/population_balance_verified_20260924/execution.json).
-Numerical outputs are
-[balance.csv](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/population_balance_verified_20260924/balance.csv)
-and [summary.json](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/population_balance_verified_20260924/summary.json).
-The existing [target-gap theorem](d34_target_gap_persistence.md) and
-[accumulated-feedback theorem](d34_population_output_persistence.md) retain
-their separate assumptions and empirical coverage.
+replays supply the missing time-resolved balances. Machine-readable evidence
+records the exact commands, package versions where recorded, source/input
+hashes, sampled states, and numerical comparisons. The earlier target-gap
+and accumulated-feedback theorems retain their separate assumptions and
+empirical coverage; the new lemmas do not silently replace the paper claim.

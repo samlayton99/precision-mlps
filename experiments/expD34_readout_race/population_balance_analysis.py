@@ -9,8 +9,56 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
 
-from .population_balance_dynamics import comparison, C3
+from .population_balance_dynamics import comparison, A7, C3, C7
+
+
+def gd_scalar_comparison(rows,stride=1):
+    """Native-step monotone recurrence, using interpolated sampled coefficients."""
+    knots=rows[::stride]; dt=rows[0]['dt']; r=np.sqrt(rows[0]['M']); r0=r
+    result=[r]; times=[rows[0]['time']]; sample_spacing=rows[1]['time']-rows[0]['time']
+    def coefficients(row):
+        w=row['width']; rem=C7*np.sqrt(row['C14'])/w**3
+        return [row['q3']/w,row['q5']/w**2,A7*row['C8']/w**3,
+                row['j3']/w,row['j5']/w**2,rem,
+                row['g3']/w,row['g5']/w**2,rem*row['target_fine'],row['R_norm']]
+    for left,right in zip(knots[:-1],knots[1:],strict=True):
+        count=round((right['time']-left['time'])/dt)
+        current=coefficients(left); end=coefficients(right)
+        increments=[(b-a)/count for a,b in zip(current,end,strict=True)]
+        for step in range(count):
+            q3,q5,q7,j3,j5,j7,g3,g5,g7,track=current
+            r2=r*r; r3=r2*r; r4=r2*r2; r5=r3*r2; r6=r4*r2; r7=r5*r2; r8=r6*r2
+            speed=(j3*r3+j5*r5+j7*r7)*(q3*r4+q5*r6+q7*r8)+g3*r3+g5*r5+g7*r7+track
+            r+=dt*speed
+            if not np.isfinite(r) or r>100*r0: return np.array(times),np.array(result),False
+            current=[v+dv for v,dv in zip(current,increments,strict=True)]
+            if (step+1)%round(sample_spacing/dt)==0:
+                times.append(left['time']+(step+1)*dt); result.append(r)
+    return np.array(times),np.array(result),True
+
+
+def scalar_comparison(rows, stride=1):
+    """Numerical comparison ODE with interpolated shape data; not a rigorous enclosure."""
+    if rows[0]['kind']=='gd': return gd_scalar_comparison(rows,stride)
+    sampled=rows[::stride]
+    t=np.array([r['time'] for r in sampled])
+    keys=('q3','q5','n3','n5','j3','j5','g3','g5','C8','C14','target_fine')
+    shapes={k:np.array([r[k] for r in sampled]) for k in keys}
+    track=np.array([r['R_norm'] if r['kind']=='gd' else 0. for r in sampled])
+    width=sampled[0]['width']; r0=np.sqrt(sampled[0]['M'])
+    def rhs(time,radius):
+        row={k:float(np.interp(time,t,v)) for k,v in shapes.items()}
+        row['width']=width
+        return [comparison(row,float(radius[0])**2)['force']+float(np.interp(time,t,track))]
+    # Stop a numerical diagnostic before polynomial overflow; hitting this cap is an uninformative bound.
+    def stop(time,radius): return 100*r0-radius[0]
+    stop.terminal=True; stop.direction=-1
+    times=np.array([r['time'] for r in rows])
+    sol=solve_ivp(rhs,(0.,t[-1]),[r0],t_eval=times,rtol=2e-10,atol=2e-12,
+                  max_step=1.,events=stop)
+    return sol.t,sol.y[0],sol.success and len(sol.t)==len(times)
 
 
 def cumulative(values, times):
@@ -53,7 +101,7 @@ def run(args):
             groups[(row['target'],row['kind'],float(row['dt']))].append(parsed)
     with np.load(args.capsule,allow_pickle=False) as pack:
         variance=float(np.mean(pack['x']**2))
-    summaries=[]; curves={}; bounds=[]
+    summaries=[]; curves={}; bounds=[]; scalar_curves={}
     factors=(1.02,1.05,1.1,1.2,1.5,2.,3.,4.,6.,8.)
     for key,rows in groups.items():
         rows.sort(key=lambda r:r['time'])
@@ -81,6 +129,21 @@ def run(args):
                      max_balance_error=max(r['moment_balance_error'] for r in rows),
                      min_Delta_bound_slack=min(r['delta_bound_slack'] for r in rows),
                      relative_error=rows[-1]['relative_error'])
+        st,sr,complete=scalar_comparison(rows)
+        ct,cr,ccomplete=scalar_comparison(rows,2)
+        scalar_curves[key]=(st,sr)
+        actual_M=np.array([r['M'] for r in rows[:len(st)]])
+        q=np.array([comparison(r,float(radius)**2)['capacity'] for r,radius in zip(rows,sr)])
+        floor=np.maximum((np.array([r['target_fine'] for r in rows[:len(st)]])-q)/rows[0]['target_norm'],0.)
+        summary.update(scalar_complete=complete,scalar_duration=float(st[-1]),
+                       scalar_final_mass_ratio=float(sr[-1]**2/rows[0]['M']),
+                       scalar_final_lambda_bound=float(rows[0]['h']*sr[-1]/np.sqrt(rows[0]['width'])),
+                       scalar_min_M_slack=float(np.min(sr**2-actual_M)),
+                       scalar_output_error_floor_min=float(np.min(floor)),
+                       scalar_quadrature_relative_difference=(float(abs(sr[-1]-cr[-1])/sr[-1]) if complete and ccomplete else None))
+        structural=np.array([comparison(r,m0)['force'] for r in rows])
+        summary.update(average_structural_loading_over_initial=float(cumulative(structural,t)[-1]/(t[-1]*structural[0])),
+                       final_concentration14_over_initial=rows[-1]['C14']/rows[0]['C14'])
         summaries.append(summary)
         for p in trials:
             bounds.append(dict(target=key[0],kind=key[1],dt=key[2],factor=p['factor'],
@@ -121,7 +184,7 @@ def run(args):
     for ax in axes.flat: ax.set_xlabel('Additional GD updates (thousands)'); ax.grid(alpha=.2)
     fig.savefig(args.output/'population_comparison.png',dpi=180); plt.close(fig)
     fig,axes=plt.subplots(1,2,figsize=(11,3.8),layout='constrained')
-    labels=[s['target'] for s in principal]; x=np.arange(len(labels)); bottom=np.zeros(len(labels))
+    labels=[s['target'] for s in principal]; x=np.arange(len(labels))
     # Keep each signed contribution visible; do not stack unlike signs on a shared baseline.
     for i,name in enumerate(('generated','target','higher','compensation','tracking')):
         values=[groups[(s['target'],'gd',.002)][-1]['int_'+name] for s in principal]
@@ -134,6 +197,19 @@ def run(args):
     axes[1].set_xticks(x,labels,rotation=20); axes[1].set(ylabel='Imbalance change',title='Positive-growth allowance includes compensation')
     axes[1].legend(fontsize=8)
     fig.savefig(args.output/'signed_growth.png',dpi=180); plt.close(fig)
+    fig,axes=plt.subplots(1,2,figsize=(11,3.8),layout='constrained')
+    for color,s in zip(colors,principal,strict=True):
+        key=(s['target'],'gd',.002); rows=groups[key]; t,radius=scalar_curves[key]
+        x=t/.002/1000; initial=rows[0]['M']
+        axes[0].plot(x,radius**2/initial,color=color,label=s['target'])
+        axes[0].plot(x,[r['M']/initial for r in rows[:len(t)]],color=color,linestyle=':',alpha=.8)
+        axes[1].plot(x,rows[0]['h']*radius/np.sqrt(rows[0]['width']),color=color)
+        axes[1].plot(x,[r['lambda_rms'] for r in rows[:len(t)]],color=color,linestyle=':',alpha=.8)
+    axes[0].set(ylabel='Total hidden squared norm / starting value',title='Evolving comparison allows slow growth')
+    axes[0].legend(fontsize=8,ncol=2)
+    axes[1].set(ylabel='Normalized slope RMS',title='Conditional upper bound; actual scale dotted')
+    for ax in axes: ax.set_xlabel('Additional GD updates (thousands)'); ax.grid(alpha=.2)
+    fig.savefig(args.output/'evolving_comparison.png',dpi=180); plt.close(fig)
     print(json.dumps(dict(principal=principal,refinement=refinements),indent=2),flush=True)
 
 
