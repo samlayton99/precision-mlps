@@ -2,13 +2,15 @@
 \subsection{Bandwidth controls optimization access to high precision}
 \label{sec:bandwidth-access}
 
-The construction's nearly width-independent relative bandwidth
-$\lambda=\gamma h$ requires $\gamma=\Theta(W)$.
-Even though larger widths admit smaller $\lambda$ at comparable construction
-error (Figure~2b), small slopes can delay readout optimization.
-We quantify this spectral-bias mechanism~\citep{xu2020frequency,tancik2020fourier}
-in the dictionary of Section~3.1, replacing the direct normalized
-least-squares solve with GD while keeping the features fixed.
+The construction's nearly width-independent relative bandwidth $\lambda=\gamma h$ requires
+$\gamma=\Theta(W)$, yet trained RMS slopes fall short (Figure~\ref{fig:note-training}).
+Even though larger widths admit smaller $\lambda$ at comparable construction error
+(Figure~\ref{fig:construction}b), small slopes can delay readout learning by weakening
+target-relevant kernel directions. We quantify this delay by replacing
+Section~3.1's direct least-squares solve with GD on fixed features.
+This connects prior analysis of spectral bias
+\citep{xu2020frequency,tancik2020fourier} to readout optimization
+in the quasi-interpolant dictionary.
 
 \begin{theorem}[Slope-dependent output-error lower bound]
 \label{thm:note-output}
