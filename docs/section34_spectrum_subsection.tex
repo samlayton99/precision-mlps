@@ -3,7 +3,7 @@
 \label{sec:bandwidth-access}
 
 The construction's nearly width-independent relative bandwidth $\lambda=\gamma h$ requires
-$\gamma=\Theta(W)$, yet trained slopes fall short (Figure~\ref{fig:note-training}).
+$\gamma=\Theta(W)$, yet trained mean slopes fall short (Figure~\ref{fig:note-training}).
 Even though larger widths admit smaller $\lambda$ at comparable construction error
 (Figure~\ref{fig:construction}b), small slopes can delay readout learning by weakening
 target-relevant kernel directions. We quantify this delay by replacing
@@ -58,19 +58,15 @@ the output-error bound.
  updates; geometry and protocol are in Appendix~\ref{app:note-evaluation}.}
  \label{fig:note-spectrum}
 \end{figure}
-\FloatBarrier
-
 The spectral bounds of Theorem~\ref{thm:note-rates} track how bandwidth
 changes target-relevant ratios $\mu_i/\mu_1$
-(Figure~\ref{fig:note-spectrum}, left). Since $\mu_1$ limits a stable GD
-step, the tiny ratios at small bandwidths leave needed target components
-slow to decay. Theorem~\ref{thm:note-output} converts these rate bounds into
+(Figure~\ref{fig:note-spectrum}, left). GD's step size is limited by the
+largest eigenvalue $\mu_1$. At small bandwidths, target-relevant eigenvalues
+are much smaller, so the corresponding error components decay slowly.
+Theorem~\ref{thm:note-output} converts these rate bounds into
 output-error lower bounds that closely track executed GD
 (Figure~\ref{fig:note-spectrum}, right): small slopes delay accuracy
 already available in the dictionary.
 
-Joint training shows an empirical acquisition shortfall under both GD and
-Adam: the population's mean bandwidth remains below the supplied
-construction scale, with a substantial output-error gap over the same
-training budget (Figure~\ref{fig:note-training}). We next examine why
-training fails to acquire useful slopes and centers together.
+Joint training can change this spectrum by moving the slopes and centers.
+We next examine whether it acquires useful features within the training budget.

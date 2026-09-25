@@ -1,6 +1,6 @@
 # Section 3.5 writing and integration record
 
-The proposed subsection explains a conditional mechanism for slow joint feature acquisition: weak low-order target coupling and controlled population concentration limit joint parameter growth, which limits non-affine output and leaves an explicit output-error floor. The existing long-horizon Adam/GD comparison motivates this question; the theorem is checked on a separate set of GD continuations. Figure 4's revision remains a separate deliverable.
+Sections 3.4 and 3.5 now form a single argument: small bandwidth can delay learning an accurate readout already available in a fixed dictionary; joint training must acquire useful features to overcome that obstruction. The proposed Section 3.5 explains a conditional mechanism for slow acquisition: weak low-order target coupling and controlled population concentration limit joint parameter growth, which limits non-affine output and leaves an explicit output-error floor. The existing long-horizon Adam/GD comparison motivates this question; the theorem is checked on a separate set of GD continuations. Figure 4's revision remains a separate deliverable.
 
 **Notation correspondence with the source mechanism note.**
 
@@ -33,15 +33,23 @@ The numerical checks interpolate diagnostics sampled along the continuations. Th
 
 All main-text endpoint comparisons use relative training RMS error. Dense-grid refit assays are identified separately. The reported minimum theorem floors and executed endpoint errors are different summaries; their difference is not presented as trajectory-wide tightness. The new tightness figure instead compares bound and error at matching diagnostic times. No new width-scaling claim is made.
 
+## Integration with submission draft (24)
+
+Keep the frozen-readout theorem, proof sketch, and spectral figure in Section 3.4. Its final paragraph now asks whether joint training acquires useful features within the training budget. Place the joint-training figure after Section 3.5's empirical opening; the drop-in source marks this location. Use `fig:note-training` for that figure, replacing the duplicate `fig:note-spectrum` label in the pasted draft. The spectral figure alone owns `fig:note-spectrum`.
+
+Section 3.5 then introduces the cubic target coupling, states the existing output-error theorem, and displays its completed validation figure. The closing sentence connects supplying the feature geometry and readout to Section 4's arithmetic circuits. The heading retains slow acquisition rather than asserting a universal failure of self-reinforcement. The theorem allows positive growth and eventual escape.
+
+The mean-slope wording is consistent with the agreed Figure 4 revision. The current source comment reserves panels (a) width scaling, (b) output error, and (c) mean bandwidth; the old RMS/99th-percentile image is not relabeled or included. The combined review retains working optimization-figure numbers 3--5 and references draft (24)'s construction as Figure 1. The manuscript must determine its own numbering through the actual figure environments.
+
 ## Three writing reviews
 
-1. **Argument:** organized the subsection around useful feature acquisition and output accuracy. Chose the growing comparison over a contraction claim, retained the joint slope/center/readout issue, and ended with the construction supplying that geometry directly.
-2. **Mathematics and evidence:** checked the coarse-compensation decomposition, global tanh and Jacobian constants, monotone discrete recurrence, and reverse-triangle output bound. Made the generated-output contribution explicit, retained tracking, defined the positive part, and distinguished observed coefficients from uniform structural assumptions. Checked the ten comparison rows and the selected training endpoints against their saved records.
-3. **Density and integration:** kept the main theorem to the output-error statement and its bandwidth consequence; moved coefficients and full derivations to the appendix. Removed duplicated joint-training discussion and obsolete percentile/figure references from the Section 3.4 appendix. Rendered the PDFs to inspect equations, page breaks, and figure placement. No word-count target was used.
+1. **Argument:** separated the fixed-dictionary access question from the joint-acquisition question. Moved the empirical interpretation to Section 3.5, retained the slope/center refit evidence, and closed with the construction's role in supplying primitives for arithmetic circuits.
+2. **Mathematics and evidence:** preserved both theorem statements and full proofs. Checked the selected training endpoints and the minimum matched-time bound/error fraction against the saved evidence. The cubic discussion describes the small-parameter mechanism; the appendix retains the exact-tanh global remainder proof. The text identifies trajectory-evaluated coefficients and distinguishes the GD theorem from the Adam observations.
+3. **Density and integration:** removed the repeated joint-training paragraph from Section 3.4, retained the figures and inline captions, and made the construction-to-training-to-circuits progression explicit. Rendered the combined and standalone notes, kept each main subsection with its figure on one page, and moved the review-only pending-figure notice to the appendix opening. No word-count target was used.
 
 ## Figure 4 handoff
 
-The drop-in text references `fig:note-training`; the review wrappers resolve it to external Figure 4 and explicitly disclose that the artwork is pending. Its intended ordering remains width scaling (a), joint training error (b), and mean bandwidth with neuron-spread shading (c), as recorded in [the pending figure note](section34_pending_figure_updates.md). The new theorem does not depend on the unfinished width sweep. Do not carry the wrapper's external-label declaration into the paper: use the actual figure label there.
+The drop-in text references `fig:note-training`; the review wrappers resolve it to external Figure 4 and disclose at the appendix opening that the artwork is pending. Its intended ordering remains width scaling (a), joint training error (b), and mean bandwidth with neuron-spread shading (c), as recorded in [the pending figure note](section34_pending_figure_updates.md). The new theorem does not depend on the unfinished width sweep. Do not carry the wrapper's external-label declaration into the paper: use the actual figure label there.
 
 No training was needed to add these theorem-validation plots. The separate Figure 4 width sweep has now been launched; its status and resource limits are in [the execution record](figure4_width_sweep_execution.md). Its results are not used in the current theorem figures.
 
@@ -57,6 +65,6 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=tmp/pdfs/section35 
 latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=tmp/pdfs/section34_compact docs/section34_spectrum_note.tex
 ```
 
-Final PDFs are copied from those build directories into `output/pdf/`. Both documents compile without undefined references, duplicate labels, or overfull boxes. Hyperref reports deliberately unlinked external manuscript figures. The wrappers provide review layout; the drop-in subsection and appendix contain no forced page breaks. The standalone includes a small review-only disclosure that should not be inserted into the manuscript.
+Final PDFs are copied from those build directories into `output/pdf/`. Both documents compile without undefined references, duplicate labels, or overfull boxes. Hyperref reports deliberately unlinked external manuscript figures. The wrappers provide review layout; the drop-in subsections contain no forced page breaks or float barriers. Both wrappers include a small review-only disclosure at the appendix opening that should not be inserted into the manuscript.
 
 The plot revision removes the optional gradient-flow, signed-balance, and conditional width-scaling discussion from this note. The full proof of the stated discrete-GD theorem remains. The original mechanism note retains those additional results.

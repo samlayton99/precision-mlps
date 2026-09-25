@@ -16,33 +16,35 @@
 \newtheorem{theorem}{Theorem}[section]
 \DeclareMathOperator{\sech}{sech}
 \DeclareMathOperator{\sign}{sign}
-\hypersetup{pdftitle={Bandwidth controls optimization access to high precision}}
-% Figure 2 is in the submission, outside this excerpt. An empty target
+\hypersetup{pdftitle={Optimization access and joint feature acquisition}}
+% Figure 1 is the construction figure in submission draft (24), outside this excerpt.
+% An empty target
 % deliberately leaves this external figure reference without an internal link.
 \makeatletter
-\newlabel{fig:construction}{{2}{4}{}{}{}}
+\newlabel{fig:construction}{{1}{3}{}{}{}}
 % Figure 4's revised artwork is external until the pending width study is complete.
 \newlabel{fig:note-training}{{4}{}{}{}{}}
 \makeatother
 \begin{document}
-% Section/Figure references continue submission draft (19).
+% Sections follow submission draft (24). Retain working optimization-figure
+% numbers 3--5; the manuscript's actual figure environments set its numbering.
 \setcounter{section}{3}
 \setcounter{subsection}{3}
 \setcounter{theorem}{1}
 \setcounter{figure}{2}
 \input{docs/section34_spectrum_subsection.tex}
 \FloatBarrier
-% Review copy: start Section 3.5 on its own page. Its figure is external;
+% Review copy: start Section 3.5 on its own page. Figure 4 is external;
 % drop-in sources contain no forced page break.
 \clearpage
 \setcounter{figure}{4}
 \input{docs/section35_feature_acquisition.tex}
-\par\medskip
-{\footnotesize\emph{Review copy.} Figure 4's three-panel revision is pending
-and is not included here. The Section 3.5 theorem and proof use completed evidence.}
 \FloatBarrier
 \clearpage
 \typeout{SECTION34-APPENDIX-START-PAGE: \thepage}
+{\footnotesize\emph{Review copy.} Figure 4's three-panel revision is pending
+and is not included here. The Section 3.5 theorem and proof use completed evidence.}
+\par\medskip
 \appendix
 \input{docs/section34_spectrum_appendix.tex}
 \input{docs/section35_population_appendix.tex}

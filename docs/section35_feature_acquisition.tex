@@ -2,19 +2,29 @@
 \subsection{Why joint training acquires useful feature scales slowly}
 \label{sec:feature-acquisition}
 
-Joint training must acquire useful slopes and centers together.
-After five million updates on mixed sine at $W=512$, joint Adam reaches
-median relative training error $1.81\times10^{-3}$, versus
-$6.62\times10^{-7}$ with supplied $\lambda=1/4$ features;
+Allowing the features to evolve leaves a substantial accuracy gap over the
+tested training budget. After five million updates on mixed sine at
+$W=512$, joint Adam reaches median relative training error
+$1.81\times10^{-3}$, compared with $6.62\times10^{-7}$ using the supplied
+$\lambda=1/4$ dictionary;
 joint GD remains at $0.244$ (Figure~\ref{fig:note-training}b).
 Numerically resolved readout refits barely improve the learned Adam
 dictionary, and increasing its slopes at fixed centers does not close the
 gap (Appendix~\ref{app:feature-evidence}).
+These interventions indicate that useful slopes and centers must be
+acquired together.
 
-We bound how much non-affine output an evolving population can produce.
-The leading nonlinear term of tanh couples only to the target's projection
-onto polynomials of degree at most three. Controlling this coupling, higher-order remainders,
-and population concentration yields an output-error lower bound.
+% Insert the revised joint-training figure here, with label fig:note-training.
+% Its panels are width scaling (a), output error (b), and mean bandwidth (c).
+% The old RMS/99th-percentile artwork must not be relabeled as population means.
+
+We quantify one mechanism that limits this acquisition.
+In the small-parameter regime, tanh's leading non-affine term is cubic,
+so its target-driven growth depends on the target's low-degree polynomial
+projection. Bounding this coupling, higher-order contributions, and
+population concentration controls the growth of slopes, biases, and
+readouts. The resulting bound on non-affine output yields an output-error
+lower bound.
 
 \begin{theorem}[Output error under slow feature acquisition]
 \label{thm:feature-output}
@@ -45,16 +55,20 @@ The recurrence, coefficients, and precise conditions are given in the appendix.
  and the theorem's lower bound. Solid curves and markers show GD;
  dashed curves show bounds. Archived $W=705$, seed-30 continuations start
  after 20,000 updates and run 100,000 more at step size 0.002.
- Mixed sine connects to Figure~\ref{fig:note-training}; smooth step has the
- largest growth allowance among the six principal targets.
+ Mixed sine is the target used in Figure~\ref{fig:note-training}; smooth step
+ has the largest growth allowance among the six principal targets.
  Bounds use structural coefficients evaluated along the saved trajectories.}
  \label{fig:feature-population-output}
 \end{figure}
 
-Figure~\ref{fig:feature-population-output} connects the growth allowance
-to persistent output error. Across all ten continuations and six target
-families, the lower bound captures at least 97.7\% of executed error at
-every stored diagnostic time (Appendix~\ref{app:feature-evidence}).
-This validates a conditional GD mechanism; the longer Adam/GD experiments
-in Figure~\ref{fig:note-training} establish the broader empirical gap.
-The construction supplies the geometry and readout directly.
+The conditional bounds closely track the separate GD continuation
+experiments: across ten continuations spanning six target families, the
+output-error lower bound captures at least 97.7\% of executed error at
+every stored diagnostic time (Figure~\ref{fig:feature-population-output};
+Appendix~\ref{app:feature-evidence}). The structural coefficients are
+evaluated along these trajectories. The longer Adam experiments establish
+a corresponding empirical acquisition gap; the theorem concerns GD.
+
+QUILL supplies the feature geometry and readout directly, avoiding this
+acquisition stage. We next compose these constructed primitives into
+arithmetic circuits.
