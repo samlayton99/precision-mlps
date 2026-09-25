@@ -78,7 +78,10 @@ def evaluate(rows, spec):
     cbudget=spec['K']*actual_travel+.5*spec['Lc']*actual_travel**2
     dr=ir-rbudget; dc=ic-cbudget
     numerical_scale = np.maximum(np.abs(ir)+np.abs(ic)+spec['alpha']*t+spec['K']*actual_travel,1e-300)
-    valid=(dr <= 128*np.finfo(float).eps*numerical_scale)&(dc <= 128*np.finfo(float).eps*numerical_scale)
+    split_valid=(dr <= 128*np.finfo(float).eps*numerical_scale)&(dc <= 128*np.finfo(float).eps*numerical_scale)
+    # The proof needs the sum. Separate conditions are useful diagnostics but
+    # needlessly reject compensation between their available budgets.
+    valid=dr+dc <= 128*np.finfo(float).eps*numerical_scale
     is_gd = future[0]['kind']=='gd'
     delta = get('tracking_kappa_drift') if is_gd else np.zeros_like(t)
     zeta = get('tracking_log_rate') if is_gd else np.zeros_like(t)
@@ -90,6 +93,8 @@ def evaluate(rows, spec):
     lamb = future[0]['lambda_rms']+future[0]['h']*(travel+tracking_path)/np.sqrt(future[0]['width'])
     bad = np.flatnonzero(~valid)
     horizon = t[bad[0]-1]/.002 if len(bad) else t[-1]/.002
+    split_bad=np.flatnonzero(~split_valid)
+    split_horizon=t[split_bad[0]-1]/.002 if len(split_bad) else t[-1]/.002
     reconstructed_k = spec['kappa0']+ir+ic+cumulative(t,delta)
     reconstructed_log = cumulative(t,get('kappa')+zeta)
     numerical_log_allowance = (np.maximum.accumulate(abs(np.log(q/q[0])-reconstructed_log))
@@ -99,7 +104,7 @@ def evaluate(rows, spec):
     failed = np.flatnonzero(~good)
     useful = t[failed[0]-1]/.002 if len(failed) else t[-1]/.002
     summary = {k:future[0][k] for k in ('study','target','seed','width','nref','kind','dt')}
-    summary.update(**spec,premise_horizon=horizon,useful_horizon=useful,
+    summary.update(**spec,premise_horizon=horizon,split_premise_horizon=split_horizon,useful_horizon=useful,
         final_force_ratio=float(q[-1]/q[0]),final_force_upper_ratio=float(force[-1]/q[0]),
         maximum_force_excess_ratio=float(np.nanmax(q/force)),
         final_pure_force_upper_ratio=float(pure_force[-1]/q[0]),

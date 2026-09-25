@@ -933,7 +933,9 @@ window alone cannot establish an arbitrary future duration.
 ### Two ways reinforcement can change
 
 Use the existing full effective fine force $F$, including coarse compensation.
-Write $q=\|F\|$, $u=F/q$, and $A(t)=\int_0^t q(s)\,ds$. These use the full
+Write $q=\|F\|$, $u=F/q$, and $\mathcal A(t)=\int_0^t q(s)\,ds$. The calligraphic
+$\mathcal A$ denotes travel; $A=\sum_j a_j^2$ continues to denote slope energy.
+These use the full
 Euclidean parameter norm; they are population quantities, not individual slope
 conditions. Suppose the coarse Gram matrix is nonsingular and $q>0$. Define
 
@@ -1003,7 +1005,7 @@ and $q_0>0$. Suppose nonnegative constants $\alpha,K$ satisfy, for every prefix,
 
 $$
 \int_0^t r(s)\,ds\le\alpha t,\qquad
-\int_0^t q(s)c(s)\,ds\le K A(t).
+\int_0^t q(s)c(s)\,ds\le K\mathcal A(t).
 \tag{28}
 $$
 
@@ -1019,7 +1021,7 @@ $$
 As long as this comparison is finite,
 
 $$
-A(t)\le a(t),\qquad q(t)\le v(t),\qquad
+\mathcal A(t)\le a(t),\qquad q(t)\le v(t),\qquad
 \|e_H(t)\|^2\ge
 \left[\|e_H(0)\|^2-2\int_0^t v(s)^2\,ds\right]_+.
 \tag{30}
@@ -1040,15 +1042,15 @@ same meaning as (18). The square root of (30), divided by $\|y\|$, is a lower
 bound on raw relative output error in the theorem's probability measure.
 
 **Proof.** Integrate (27) and use (28):
-$\kappa\le\kappa_0+\alpha t+KA$. Hence
-$\dot q\le(\kappa_0+\alpha t+KA)q$ and $\dot A=q$.
+$\kappa\le\kappa_0+\alpha t+K\mathcal A$. Hence
+$\dot q\le(\kappa_0+\alpha t+K\mathcal A)q$ and $\dot{\mathcal A}=q$.
 The comparison system is cooperative on $a\ge0,v>0$: its off-diagonal
 derivatives are $1$ and $Kv\ge0$. Differential inequality comparison, or its
 equivalent Volterra integral comparison with a positive perturbation, proves
-$A\le a$ and $q\le v$ on each compact interval of existence. Negative
+$\mathcal A\le a$ and $q\le v$ on each compact interval of existence. Negative
 $\kappa_0$ does not affect this monotonicity and is not discarded. Integrate
 the exact identity $(\|e_H\|^2)'=-2q^2$ to prove (30).
-Minkowski bounds slope-RMS change by $hA/\sqrt W$, and the aggregate travel
+Minkowski bounds slope-RMS change by $h\mathcal A/\sqrt W$, and the aggregate travel
 counting proof of (18) gives the second part of (31). A zero force, if reached,
 extends the effective-flow conclusions by uniqueness and continuity. $\square$
 
@@ -1084,8 +1086,8 @@ that permits the reinforcement coefficients to increase as the population moves.
 (28) by the weaker, evolving conditions
 
 $$
-\int_0^t r\le\alpha t+L_r\int_0^t A(s)\,ds,\qquad
-\int_0^t qc\le K A(t)+\tfrac12 L_c A(t)^2,
+\int_0^t r\le\alpha t+L_r\int_0^t\mathcal A(s)\,ds,\qquad
+\int_0^t qc\le K\mathcal A(t)+\tfrac12 L_c\mathcal A(t)^2,
 \tag{32a}
 $$
 
@@ -1099,15 +1101,15 @@ $$
 $$
 
 **Proof.** Integrating the exact reinforcement identity bounds $\kappa$ by
-the expression in parentheses with $A$ and $\int A$ in place of $a,b$.
+the expression in parentheses with $\mathcal A$ and $\int\mathcal A$ in place of $a,b$.
 The three-dimensional system is cooperative on nonnegative travel and positive
 force: every off-diagonal derivative is nonnegative. The comparison proof of
 Theorem 7 applies unchanged, as do its energy and population consequences.
 $\square$
 
 Sufficient structural conditions for (32a) are
-$r(t)\le\alpha+L_rA(t)$ and $c(t)\le K+L_cA(t)$, because
-$\int_0^t qA=A(t)^2/2$. The integrated conditions permit more cancellation
+$r(t)\le\alpha+L_r\mathcal A(t)$ and $c(t)\le K+L_c\mathcal A(t)$, because
+$\int_0^t q\mathcal A=\mathcal A(t)^2/2$. The integrated conditions permit more cancellation
 than these pointwise sufficient conditions. We do not assume that $r,c$ or
 high population moments remain frozen. The feedback can strengthen, but its
 strengthening is charged to accumulated motion.
@@ -1128,6 +1130,25 @@ The first is a short-window calculation; the second is the empirical premise
 test. It remains a conditional theorem, with a mechanistic hypothesis about
 directional regularity per unit population movement.
 
+**Use the aggregate premise, rather than enforcing separate budgets.** The
+proof only adds the two conditions. Consequently the same conclusions follow
+from the single, weaker condition
+
+$$
+\int_0^t(r+qc)\,ds\le
+\alpha t+L_r\int_0^t\mathcal A(s)\,ds
+ +K\mathcal A(t)+\tfrac12L_c\mathcal A(t)^2.
+\tag{32c}
+$$
+
+This follows by the identical integration and comparison proof, with no changed
+constants or fitted force values. One mechanism can use the other's unused
+allowance. Separate accumulated curves diagnose a failure of (32c), but they
+are not two additional requirements for the theorem. The empirical study
+reports both the aggregate and the stricter separate tests; its force envelope
+is identical for the two tests. The same weakening applies to Theorem 7 with
+$L_r=L_c=0$.
+
 ### Ordinary GD: retain tracking and the discrete defects
 
 Along ordinary gradient flow $\dot\theta=-F-R$, retain the same state function
@@ -1146,7 +1167,7 @@ The latter must be measured; it is not silently set to zero.
 
 An exact finite-step statement avoids assuming that the continuous comparison
 automatically applies to GD. For step sizes $\eta_n$, let
-$t_n=\sum_{j<n}\eta_j$, $A_n=\sum_{j<n}\eta_jq_j$, and define
+$t_n=\sum_{j<n}\eta_j$, $\mathcal A_n=\sum_{j<n}\eta_jq_j$, and define
 
 $$
 \epsilon_n=\log(q_{n+1}/q_n)-\eta_n\kappa_n,\qquad
@@ -1168,7 +1189,7 @@ a_{n+1}&=a_n+\eta_n v_n
 \tag{35}
 $$
 
-gives $q_n\le v_n$ and $A_n\le a_n$ by induction: first sum the $d_j$
+gives $q_n\le v_n$ and $\mathcal A_n\le a_n$ by induction: first sum the $d_j$
 identity to bound $\kappa_n$, then sum the $\epsilon_j$ identity to bound
 $\log(q_n/q_0)$, and use $K\ge0$. The GD population travel bound adds
 $\sum_{j<n}\eta_j\|R_j\|$ to $a_n$. For an output-error consequence also

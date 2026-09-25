@@ -1,7 +1,7 @@
 """Comparison accuracy and separation of calibration from future evaluation."""
 import numpy as np
 
-from experiments.expD34_readout_race.population_window_analysis import calibration,comparison
+from experiments.expD34_readout_race.population_window_analysis import calibration,comparison,evaluate
 
 
 def test_comparison_on_exact_constant_log_growth():
@@ -54,3 +54,31 @@ def test_motion_allowance_retains_decreasing_channel_variation():
                coefficient=.03-.003*i,q=.001,kappa=-.01) for i in range(6)]
     spec=calibration(rows,method='motion',factor=2.)
     np.testing.assert_allclose([spec['Lr'],spec['Lc']],[.002,6.])
+
+
+def test_positive_feedback_matches_exact_riccati_solution():
+    t=np.linspace(0,20,101); q0=.003; K=.1
+    a,q,_=comparison(t,q0,0.,0.,K)
+    omega=np.sqrt(q0*K/2)
+    np.testing.assert_allclose(a,np.sqrt(2*q0/K)*np.tan(omega*t),rtol=3e-9,atol=1e-13)
+    np.testing.assert_allclose(q,q0/np.cos(omega*t)**2,rtol=3e-9,atol=1e-13)
+
+
+def test_quadratic_movement_feedback_matches_separable_travel_integral():
+    from scipy.integrate import quad
+    t=np.linspace(0,20,101); q0=.003; Lc=2.
+    a,q,_=comparison(t,q0,0.,0.,0.,Lc=Lc)
+    np.testing.assert_allclose(q,q0+Lc*a**3/6,rtol=3e-9)
+    implicit=quad(lambda s:1/(q0+Lc*s**3/6),0,a[-1],epsabs=1e-11)[0]
+    np.testing.assert_allclose(implicit,t[-1],rtol=3e-9)
+
+
+def test_aggregate_condition_does_not_require_separate_channel_bounds():
+    rows=[dict(study='synthetic',target='cancellation',seed=0,width=705,nref=512,
+               kind='effective',dt=.002,time=.002*i,offset=i,q=1.,kappa=0.,rotation=1.,
+               coefficient=-1.,state_change=-1.,Y2=1000.,target_norm=1.,lambda_rms=.001,
+               h=2/512,relative_eval_error=30.) for i in range(0,110001,1000)]
+    spec=dict(offset=5000,method='synthetic',factor=0.,q0=1.,kappa0=0.,alpha=0.,K=0.,Lr=0.,Lc=0.)
+    result,_=evaluate(rows,spec)
+    assert result['premise_horizon']==100000
+    assert result['split_premise_horizon']==0
