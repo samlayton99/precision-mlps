@@ -261,37 +261,9 @@ FP64 updates with $\eta=1/(2\mu_1)$ at each bandwidth.
 Figure~\ref{fig:note-spectrum} (right) displays training error. Its spectral
 reference agrees with executed GD within $2.9\times10^{-14}$.
 
-Joint training optimizes all slopes, centers (through affine biases), and
-readout parameters for five million updates on five paired seeds. One
-recipe per optimizer is selected by median final validation error over all
-five seeds. The selected Adam and GD schedules are full-horizon cosine
-decays with initial learning rates 0.05 and 0.2, respectively.
-Frozen Adam uses the same final-validation selection criterion.
-Figure~\ref{fig:note-training} (left) shows raw training errors summarized for display; quoted joint and
-frozen-Adam endpoint values use the dense grid. Display bins retain extrema,
-including spikes, rather than replacing the comparison with first tolerance
-crossings. Figure~\ref{fig:note-training} (right) measures $h|a_j|$ for learned features
-$\tanh(a_jx+b_j)$, using the original reference spacing $h$.
-
-\paragraph{What the joint experiment establishes.}
-Adam's median scaled RMS slope is $0.0582$, and its 99th percentile is
-$0.2466$; the five seeds have $6,5,5,4,7$ features at or above $1/4$.
-These statistics describe heterogeneous geometry, not an effective uniform
-bandwidth. The uniform $1/4$ dictionary is an empirical comparison, not a
-necessary scale for every target or learned dictionary.
-
-Joint Adam continues improving late in training; its median endpoint error
-falls about 28\% between the two- and five-million-update experiments.
-The result is a precision gap under a large finite budget, not permanent
-failure. Checked direct fits and an additional two-million-update readout
-restart on the learned five-million-update features barely improve their
-error. Multiplying the learned slopes by 4 or 16 at fixed centers worsens
-the median refitted error to 0.0916 or 0.139, respectively. These interventions
-change nonnested feature spaces: they support investigating slopes and
-centers together, not a theorem that increasing slopes always helps.
-Neither the fixed-kernel proof nor its scalar GD rates apply to evolving
-features or Adam's adaptive preconditioner. The next theoretical question
-is how evolving features acquire a useful geometry.
+The joint-training comparison and feature interventions are documented in
+Appendix~\ref{app:feature-evidence}. Neither the fixed-kernel proof nor its
+scalar GD rates apply to evolving features or Adam's adaptive preconditioner.
 
 \paragraph{Reproducibility.}
 Figure sources, numerical provenance, protocols, and checks are indexed in

@@ -1,34 +1,58 @@
-% Empirical lead-in to the analysis of evolving features.
-\subsection{Training must acquire useful slopes and centers}
+% Drop-in main text; Figure 4 is supplied separately after its revision.
+\subsection{Why joint training acquires useful feature scales slowly}
 \label{sec:feature-acquisition}
 
-Joint training also leaves a substantial precision gap over this budget.
-After five million updates, joint Adam reaches median dense-grid relative
-error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$ on the supplied
-$\lambda=1/4$ features (Figure~\ref{fig:note-training}, left).
+Joint training must acquire useful slopes and centers together.
+After five million updates on mixed sine at $W=512$, joint Adam reaches
+median relative training error $1.81\times10^{-3}$, versus
+$6.62\times10^{-7}$ with supplied $\lambda=1/4$ features;
+joint GD remains at $0.244$ (Figure~\ref{fig:note-training}b).
+Numerically resolved readout refits barely improve the learned Adam
+dictionary, and increasing its slopes at fixed centers does not close the
+gap (Appendix~\ref{app:feature-evidence}).
 
-\begin{figure}[!htbp]
- \centering
- % Population-mean artwork and matching caption are queued in
- % docs/section34_pending_figure_updates.md; retain the current caption until replacement.
- \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/joint_acquisition.png}
- \caption{\textbf{Partial slope acquisition leaves a precision gap.}
- \textbf{Left:} Joint Adam/GD relative output errors and frozen uniform
- $\lambda=1/4$ references under the same five-million-update budget.
- \textbf{Right:} RMS and 99th-percentile scaled slopes $h|a_j|$ in the same joint
- runs. The reference is a supplied geometry, not a necessary slope threshold.
- Joint curves summarize five paired seeds; shading retains seed variation
- and recorded within-bin extrema. Cosine schedules span the full horizon.
- These are empirical comparisons; Appendix~\ref{app:note-evaluation} gives
- the protocol.}
- \label{fig:note-training}
-\end{figure}
-\FloatBarrier
+After coarse fitting, feature acquisition depends on nonlinear output error.
+The cubic term of tanh couples to the target only through its projection
+onto polynomials of degree at most three; weak projection suppresses this
+leading target contribution. Bounding that coupling, the network's own
+nonlinear output, and higher-order remainders controls the growth of slopes,
+biases, and readouts together. For populations with small total parameter
+norm and controlled concentration, this yields an output-error lower bound.
 
-The population's mean bandwidth remains below the supplied reference
-(Figure~\ref{fig:note-training}, right). Refitting the readout on the learned
-features barely improves their error (Appendix~\ref{app:note-evaluation}),
-so unfinished readout optimization alone does not explain the gap.
-The next analysis therefore concerns the joint acquisition of useful slopes
-and centers. The construction supplies both this geometry and the readout
-directly.
+\begin{theorem}[Output error under slow feature acquisition]
+\label{thm:feature-output}
+Let $f\ne0$ be the sampled target and $f_\perp$ its component orthogonal
+to affine functions. Under the population-concentration, target-coupling,
+and coarse-tracking bounds of Appendix~\ref{app:feature-theory},
+joint GD satisfies
+\begin{equation}
+ \frac{\|f-q_n\|_{2,Z}}{\|f\|_{2,Z}}
+ \ge
+ \frac{[\|f_\perp\|_{2,Z}-\mathcal Q_n(B_n)]_+}{\|f\|_{2,Z}}.
+ \label{eq:feature-main-error}
+\end{equation}
+Here $B_n$ is an explicit scalar upper bound on the joint norm of hidden
+slopes, biases, and readouts, and $\mathcal Q_n(B_n)$ bounds their
+non-affine output. The same comparison gives
+$\overline\lambda_n\le hB_n/\sqrt W$, with reference spacing $h$ and
+$\overline\lambda_n=W^{-1}\sum_j h|\gamma_{j,n}|$.
+The recurrence, coefficients, and precise conditions are given in the appendix.
+\end{theorem}
+
+\paragraph{Proof sketch.}
+Separate the gradient preserving affine output from the remaining tracking
+gradient. Global tanh remainder bounds express nonlinear output and target
+coupling through population moments. An upper bound on parameter movement
+propagates $B_n$ by a scalar recurrence; subtracting the resulting
+non-affine output bound from $\|f_\perp\|_{2,Z}$ yields
+\eqref{eq:feature-main-error}. All parameters evolve, and the comparison
+allows positive growth.
+
+On ten post-transient GD continuations across six target families, minimum
+evaluated error floors range from $0.427$ to $0.912$ over 100,000 further updates.
+These checks use structural quantities sampled along training
+(Appendix~\ref{app:feature-evidence}); they establish a useful conditional
+mechanism in that regime. Figure~\ref{fig:note-training}'s longer Adam/GD
+runs establish the broader empirical precision gap. The construction
+supplies the geometry and readout directly, avoiding the need to acquire
+them through this slow process.

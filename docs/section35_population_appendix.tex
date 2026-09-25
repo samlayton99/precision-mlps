@@ -1,0 +1,390 @@
+% Source: d34_population_balance_mechanism.md, Sections 8--10, precision-mlps 7a12986.
+\section{Joint feature acquisition: conditions and full proof}
+\label{app:feature-theory}
+
+The result controls an evolving tanh network in the ordinary Euclidean GD
+metric. A scalar comparison bounds the collective size of slopes, hidden
+biases, and readouts; a global remainder inequality converts that bound
+into output error. Its coefficients can be supplied as structural upper
+bounds or evaluated along a trajectory. The latter use is a conditional
+explanation, not a forecast from the initial parameters alone.
+
+\subsection{Network, measure, and coarse compensation}
+Let $\nu$ be a probability measure on $[-1,1]$ with positive input variance,
+and write $\|\cdot\|=\|\cdot\|_{L^2(\nu)}$ throughout this appendix.
+For the training measure, this is the sample RMS norm $\|\cdot\|_{2,Z}$.
+Consider
+\begin{align}
+ q_\theta(x)&=d+\sum_{j=1}^W c_j\tanh(\gamma_jx+b_j),&
+ L(\theta)&=\tfrac12\|q_\theta-f\|^2,\notag\\
+ \theta_{n+1}&=\theta_n-\eta_n\nabla L(\theta_n),& \eta_n&\ge0.
+ \label{eq:feature-network}
+\end{align}
+The target lies in $L^2(\nu)$ with $\|f\|>0$, and $[a]_+=\max(a,0)$.
+Let $P_C$ project onto affine functions,
+$P_H=I-P_C$, $f_\perp=P_Hf$, $q_H=P_Hq_\theta$, and
+$e_C=P_C(q_\theta-f)$, $e_H=q_H-f_\perp$.
+Jacobians $J_C=D_\theta(P_Cq_\theta)$ and $J_H=D_\theta q_H$ map the
+Euclidean parameter space into these output spaces. Their adjoints use
+the stated output measure; empirical adjoints therefore include the
+sample normalization.
+
+At the iterates under consideration assume $K_C=J_CJ_C^*$ is invertible
+on the two-dimensional affine space. Define
+\begin{align}
+ \Pi&=I-J_C^*K_C^{-1}J_C,&
+ \ell&=K_C^{-1}J_CJ_H^*e_H,\notag\\
+ F&=\Pi J_H^*e_H,& R&=J_C^*(e_C+\ell).
+ \label{eq:feature-split}
+\end{align}
+Then $\nabla L=F+R$, $\Pi$ is an orthogonal projection, and $J_CF=0$.
+Thus $F$ includes the compensation needed to preserve affine output to
+first order. Small tracking $R$ does not mean that compensation vanishes,
+or that $e_C$ is exactly zero. The proof uses $\|\Pi\|\le1$;
+it needs no quantitative lower singular-value bound on $J_C$.
+At a singular coarse Gram matrix this formulation is not invoked.
+
+Write $\vartheta=(\gamma,b,c)$ for the hidden parameter blocks, omitting
+the output bias, and set
+\begin{equation}
+ r_j=(\gamma_j^2+b_j^2+c_j^2)^{1/2},\qquad
+ S_k=\sum_j r_j^k,\qquad s=\|\vartheta\|_2=\sqrt{S_2}>0.
+ \label{eq:feature-radius}
+\end{equation}
+The slope and center parameters are free to evolve. Here $b_j$ is the
+hidden intercept; a center, when $\gamma_j\ne0$, is $-b_j/\gamma_j$.
+No bound on center displacement is inferred by dividing by a small slope.
+
+\subsection{Global tanh and derivative remainder bounds}
+Put $u_j=\gamma_jx+b_j$ and define
+\begin{equation}
+ \Psi_3=-\tfrac13\sum_j c_ju_j^3,\qquad
+ \Psi_5=\tfrac2{15}\sum_j c_ju_j^5,\qquad
+ J_k=D_\theta(P_H\Psi_k),\quad G_k=J_k^*f_\perp\quad(k=3,5).
+ \label{eq:feature-polynomials}
+\end{equation}
+Set $t_3=1/3$, $t_5=2/15$, $t_7=17/315$ and
+\begin{equation}
+ A_k=t_k\,\frac{2^{k/2}k^{k/2}}{(k+1)^{(k+1)/2}},\qquad
+ C_k=(k+1)A_k,\qquad k=3,5,7.
+ \label{eq:feature-constants}
+\end{equation}
+In particular $A_3=\sqrt6/8$. For every real $u$, the remainders after
+the linear, cubic, and quintic tanh polynomials satisfy
+\begin{equation}
+ |\mathcal R_k(u)|\le t_k|u|^k,\qquad
+ |\mathcal R_k'(u)|\le kt_k|u|^{k-1},\qquad k=3,5,7.
+ \label{eq:feature-scalar-remainders}
+\end{equation}
+Here $\mathcal R_3=\tanh u-u$, $\mathcal R_5=\tanh u-u+u^3/3$,
+and $\mathcal R_7=\tanh u-u+u^3/3-2u^5/15$.
+
+\paragraph{Proof of the scalar bounds.}
+Since $|\tanh u|\le|u|$, $|\mathcal R_3'|=\tanh^2u\le u^2$;
+integration gives the cubic bound. Next,
+$\mathcal R_5'=u^2-\tanh^2u$, whose magnitude is at most
+$|u-\tanh u|\,|u+\tanh u|\le2|u|^4/3$; integrate again.
+For the last pair, $\sup_{u\in\mathbb R}|\tanh^{(7)}u|\le272$.
+To check this constant explicitly, write $z=\tanh^2u\in[0,1]$:
+\[
+ \tanh^{(7)}u=-272+3968z-12096z^2+13440z^3-5040z^4.
+\]
+The degree-four Bernstein coefficients on $[0,1/2]$ and $[1/2,1]$ are
+$(-272,224,216,124,53)$ and $(53,-18,-68,8,0)$, respectively.
+The Bernstein basis is nonnegative and sums to one, proving the bound.
+Taylor's integral remainder for tanh through degree six and its derivative
+through degree five gives $272/7!=17/315$ and $272/6!=17/45$.
+The intervening coefficients vanish by parity.
+
+\paragraph{From neurons to output and Jacobians.}
+On $[-1,1]$, $|u_j|\le\sqrt2(\gamma_j^2+b_j^2)^{1/2}$.
+At fixed $r_j$, maximizing
+$t_k2^{k/2}|c_j|(\gamma_j^2+b_j^2)^{k/2}$ gives $A_kr_j^{k+1}$.
+The squared norm of that neuron's three derivative columns is bounded
+pointwise by
+\[
+ t_k^22^k\left[k^2c_j^2(\gamma_j^2+b_j^2)^{k-1}
+                    +(\gamma_j^2+b_j^2)^k\right]\le C_k^2r_j^{2k}.
+\]
+The maximum occurs at $(\gamma_j^2+b_j^2)/r_j^2=k/(k+1)$.
+Sum output bounds and squared column bounds, integrate against the
+probability measure, and use contractivity of $P_H$. With the
+Hilbert--Schmidt norm bounding the operator norm, this proves
+\begin{align}
+ \|q_H-P_H(\Psi_3+\Psi_5)\|&\le A_7S_8,\notag\\
+ \|J_H-J_3-J_5\|_{\rm HS}&\le C_7\sqrt{S_{14}},\notag\\
+ \|J_H^*f_\perp-G_3-G_5\|_2&\le C_7\|f_\perp\|\sqrt{S_{14}}.
+ \label{eq:feature-remainders}
+\end{align}
+The same argument gives $\|q_H\|\le A_3S_4$ and
+$\|J_H\|_{\rm HS}\le C_3\sqrt{S_6}$.
+These are global inequalities for the exact tanh network: no neuronwise
+small-argument hypothesis or polynomial replacement of training is used.
+
+\subsection{Structural coefficients and target dependence}
+For $s>0$ define
+\begin{align}
+ \chi_k&=W^{k/2-1}S_k/s^k,\notag\\
+ \alpha_k&=W^{(k-1)/2}\|P_H\Psi_k\|/s^{k+1},\notag\\
+ \beta_k&=W^{(k-1)/2}\|J_k\|_{\rm HS}/s^k,\qquad
+ \zeta_k=W^{(k-1)/2}\|G_k\|_2/s^k,\quad k=3,5.
+ \label{eq:feature-shapes}
+\end{align}
+These coefficients describe concentration, polynomial output, sensitivity,
+and target coupling. They are invariant under common positive rescaling
+of $\vartheta$; bounding them does not itself bound $s$.
+For equal neuron norms, $\chi_k=1$; for the moments $k>2$ used here,
+concentration in fewer neurons increases it.
+Let $\tau_k=\|P_{\mathcal P_k}f_\perp\|$, where $\mathcal P_k$ is the
+space of polynomials of degree at most $k$ for the same measure. Then
+\begin{equation}
+ \zeta_k\le\beta_k\tau_k,\qquad
+ \alpha_k\le A_k\chi_{k+1},\qquad
+ \beta_k\le C_k\sqrt{\chi_{2k}},\qquad k=3,5.
+ \label{eq:feature-target-loading}
+\end{equation}
+Each column of $J_k$ is a polynomial of degree at most $k$, so
+$J_k^*f_\perp=J_k^*P_{\mathcal P_k}f_\perp$. The other inequalities
+follow from the fixed-radius bounds just proved. Thus cubic target
+orthogonality makes $G_3=0$, and quintic orthogonality also makes $G_5=0$.
+The mixed-sine and localized targets generally have nonzero low-degree
+coupling. The numerical evaluations retain $\alpha_k,\beta_k,\zeta_k$;
+substituting their concentration-only bounds gives a different, potentially
+looser evaluation, whose tightness is not claimed here.
+
+At each GD iterate $n$, take finite nonnegative upper bounds
+$\widehat\alpha_{k,n},\widehat\beta_{k,n},\widehat\zeta_{k,n}$,
+$\widehat\chi_{8,n},\widehat\chi_{14,n}$ on these coefficients, and
+$\widehat r_n\ge\|R_n\|_2$. Exact coefficients are allowed.
+For a candidate radius $B\ge0$, define
+\begin{align}
+ \mathcal Q_n(B)&=
+ \widehat\alpha_{3,n}\frac{B^4}{W}
+ +\widehat\alpha_{5,n}\frac{B^6}{W^2}
+ +A_7\widehat\chi_{8,n}\frac{B^8}{W^3},\notag\\
+ \mathcal J_n(B)&=
+ \widehat\beta_{3,n}\frac{B^3}{W}
+ +\widehat\beta_{5,n}\frac{B^5}{W^2}
+ +C_7\sqrt{\widehat\chi_{14,n}}\frac{B^7}{W^3},\notag\\
+ \mathcal T_n(B)&=
+ \widehat\zeta_{3,n}\frac{B^3}{W}
+ +\widehat\zeta_{5,n}\frac{B^5}{W^2}
+ +C_7\|f_\perp\|\sqrt{\widehat\chi_{14,n}}\frac{B^7}{W^3},\notag\\
+ \mathcal V_n(B)&=\mathcal J_n(B)\mathcal Q_n(B)+\mathcal T_n(B).
+ \label{eq:feature-envelopes}
+\end{align}
+For $s_n\le B$, these bound $\|q_{H,n}\|$, $\|J_{H,n}\|$,
+$\|J_{H,n}^*f_\perp\|_2$, and $\|F_n\|_2$, respectively. For the last,
+\begin{equation}
+ \|F_n\|_2
+ \le\|J_{H,n}\|\,\|q_{H,n}\|+\|J_{H,n}^*f_\perp\|_2
+ \le\mathcal V_n(B).
+ \label{eq:feature-force}
+\end{equation}
+All four polynomials are nondecreasing in $B$. Their coefficients may evolve;
+neither the Jacobian nor the target coupling is frozen.
+
+\subsection{Precise GD theorem and proof}
+\begin{theorem}[Population growth and output error for joint GD]
+\label{thm:feature-precise}
+Consider \eqref{eq:feature-network} from an arbitrary restart, indexed by
+$n=0$. Suppose $K_{C,n}$ is invertible, $s_n>0$, and the structural
+upper bounds above hold for every iterate $0\le n\le N$.
+Define
+\begin{equation}
+ B_0=s_0,\qquad
+ B_{n+1}=B_n+\eta_n[\mathcal V_n(B_n)+\widehat r_n].
+ \label{eq:feature-recurrence}
+\end{equation}
+Whenever these quantities are finite, for $0\le n\le N$,
+\begin{align}
+ s_n&\le B_n,\qquad
+ \sum_{k<n}\|\vartheta_{k+1}-\vartheta_k\|_2\le B_n-B_0,
+ \label{eq:feature-travel}\\
+ \frac{\|f-q_n\|}{\|f\|}
+ &\ge\frac{[\|f_\perp\|-\mathcal Q_n(B_n)]_+}{\|f\|},\qquad
+ \overline\lambda_n\le\lambda_{{\rm RMS},n}\le\frac{hB_n}{\sqrt W}.
+ \label{eq:feature-consequences}
+\end{align}
+Here $h>0$ is the reference spacing,
+$\lambda_{{\rm RMS},n}=h\|\gamma_n\|_2/\sqrt W$, and
+$\overline\lambda_n=hW^{-1}\sum_j|\gamma_{j,n}|$.
+\end{theorem}
+
+\begin{proof}
+Initially $s_0=B_0$. If $s_n\le B_n$, the exact GD update and
+\eqref{eq:feature-force} give
+\[
+ \|\vartheta_{n+1}-\vartheta_n\|_2
+ \le\eta_n\|F_n+R_n\|_2
+ \le\eta_n[\mathcal V_n(B_n)+\widehat r_n]=B_{n+1}-B_n.
+\]
+The triangle inequality implies $s_{n+1}\le B_{n+1}$; induction and summation
+prove \eqref{eq:feature-travel}. Orthogonal projection and the reverse
+triangle inequality yield
+\[
+ \|q_n-f\|\ge\|q_{H,n}-f_\perp\|
+ \ge[\|f_\perp\|-\|q_{H,n}\|]_+
+ \ge[\|f_\perp\|-\mathcal Q_n(B_n)]_+.
+\]
+Finally Cauchy--Schwarz and $\|\gamma_n\|_2\le s_n$ prove both bandwidth
+bounds. These arguments use the discrete updates directly, with no
+continuous-time approximation or unmeasured finite-step correction.
+\end{proof}
+
+The result holds for any nonnegative step sizes for which its premises
+hold. Large steps can make the comparison uninformative. Small post-transient
+tracking makes it useful but is not silently set to zero. A large value
+of $B_n$ or a zero output floor signals loss of this sufficient explanation;
+it does not establish successful acquisition. Coefficient bounds checked only
+at stored times do not certify their values at every intervening GD step.
+For a pooled mean across equal-sized seeds, the per-seed bounds average;
+the theorem does not interpret neuron spread as uncertainty across seeds.
+
+\subsection{Mechanistic interpretation and conditional width scaling}
+For gradient flow the same proof uses
+$\dot B=\mathcal V_t(B)+\widehat r(t)$, $B(0)=s(0)$.
+Locally bounded measurable coefficients make the right side locally Lipschitz
+and nondecreasing in $B$. Since $D^+s\le\mathcal V_t(s)+\widehat r(t)$,
+scalar comparison proves the radius, travel, and output bounds until the
+comparison ceases to be finite. Effective flow sets $R=0$; full flow retains it.
+
+Suppose $s(0)=O(1)$ and the structural coefficients and target norm have
+width-independent bounds while $s$ stays in a fixed bounded interval.
+Then $\mathcal Q=O(W^{-1})$, $\mathcal J=O(W^{-1})$, and the leading
+target term in $\mathcal T$ is $O(W^{-1})$.
+With tracking accumulation below a fixed fraction of the radius change,
+an order-one increase of radius requires $\Omega(W)$ flow time.
+If $f_\perp\perp\mathcal P_3$, the cubic target term vanishes,
+$\mathcal V=O(W^{-2})$, and the analogous time is $\Omega(W^2)$.
+The same reasoning applies to cumulative GD time $\sum_n\eta_n$.
+It does not establish width-independent conditions empirically or a
+universal update-count scaling under width-dependent learning rates.
+Higher target gaps alone do not improve this particular $W^2$ conclusion:
+the unsigned product $\mathcal J\mathcal Q$ can remain $O(W^{-2})$.
+
+The signed balance identity provides complementary interpretation.
+For $\Delta=\frac12\sum_j(\gamma_j^2+b_j^2-c_j^2)$, set
+\[
+ k_\theta=\sum_jc_j(\tanh u_j-u_j\operatorname{sech}^2u_j),\qquad
+ E_\theta=\sum_jc_j(3\tanh u_j-u_j\operatorname{sech}^2u_j-2u_j).
+\]
+Since $Dq_\theta[\nabla\Delta]=-k_\theta$ and
+$P_Hk_\theta=-2q_H+P_HE_\theta$, effective flow satisfies exactly
+\begin{equation}
+ \dot\Delta=-2\|q_H\|^2+2\langle f_\perp,q_H\rangle
+ +\langle e_H,P_HE_\theta\rangle-\langle\ell,P_Ck_\theta\rangle.
+ \label{eq:feature-balance}
+\end{equation}
+Full flow adds $\langle e_C+\ell,P_Ck_\theta\rangle$.
+The negative term corrects network-generated non-affine output; target
+coupling can drive positive growth. Neither the net sign nor slope decay
+is asserted. Theorem~\ref{thm:feature-precise} uses the norm comparison
+\eqref{eq:feature-force}, not an assumption that this signed correction
+dominates. Controlling readouts together with geometry is essential:
+small slopes alone do not imply the output limitation proved here.
+
+\section{Evidence and interpretation for Section 3.5}
+\label{app:feature-evidence}
+
+\subsection{Five-million-update observation and feature assays}
+The primary target is
+$[\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(14\pi x)]/\sqrt{21/32}$
+on $[-1,1]$. Total width is 512, including 22 halo nodes per side;
+the reference spacing is $h=2/467$. Full-batch FP64 training uses 2,048
+midpoints and five paired initializations. One recipe per joint optimizer
+is selected by median final error on 4,096 validation midpoints, requiring
+finite endpoints for every seed. The 8,192-point evaluation grid is a
+previously inspected resolution check, not an untouched test set.
+The selected joint Adam and GD recipes use initial rates 0.05 and 0.2,
+respectively, with cosine decay over all five million updates.
+The supplied-feature Adam comparison uses $\lambda=1/4$, zero readout
+initialization, and the selected full-horizon cosine rate $10^{-4}$.
+Both constant and cosine candidates are retained in the study records.
+
+Median joint training errors are $1.8143227\times10^{-3}$ for Adam and
+$0.24393137$ for GD. Supplied-feature Adam reaches $6.6245807\times10^{-7}$.
+The corresponding dense-grid values are $1.8148250\times10^{-3}$,
+$0.24393487$, and $6.6198225\times10^{-7}$.
+Joint Adam's median endpoint error falls about 28\% between the two- and
+five-million-update experiments. This is a precision gap within the stated
+budget, not permanent failure.
+The pooled endpoint mean bandwidths are 0.0168845 for Adam and 0.00135795
+for GD. Their neuron population standard deviations are 0.0541204 and
+0.00703476. The supplied bandwidth is a comparison geometry, not a
+target-independent necessary threshold. The revised three-panel Figure 4
+is external to this review copy; no new width-scaling result is asserted here.
+
+Freezing the five-million-update Adam features and training new readouts
+for two million additional updates gives median dense-grid error
+$1.8147369\times10^{-3}$. SVD readout fits at relative cutoffs
+$10^{-12}$ and $10^{-14}$ also yield only small improvements; lowering the
+cutoff to $10^{-16}$ exposes sensitivity to floating-point cancellation.
+These assays support a limitation of the learned dictionary at the checked
+numerical precision, not an exact-arithmetic approximation floor.
+Multiplying both slope and intercept by 4 or 16 preserves each learned
+center. After the same readout-training assay, median dense-grid errors
+are 0.0916060 and 0.138935, respectively. Thus simple slope amplification
+does not repair this geometry. These interventions change nonnested feature
+spaces; they do not establish that larger slopes always help.
+The assay's additional optimization budget
+is separate from the end-to-end five-million-update comparison.
+
+\subsection{Conditional theorem evaluation on evolving GD populations}
+The mechanism study uses a separate cohort: total width 705, reference
+spacing $h=1/256$, 2,048 uniform midpoint samples, and restarts after
+20,000 ordinary-GD updates at step size 0.002. Each continuation runs
+another 100,000 updates, or 200 units of flow time.
+Seed 30 covers six targets: an orthogonal degree-five mixture, mixed sine,
+a shifted Gaussian, a compact bump, a smooth step, and an absolute-value kink.
+The mixture is $0.3P_0+0.4P_1+\sqrt{0.75}P_5$, with $P_k$ orthonormal
+for the empirical measure. The other unnormalized targets are
+\[
+ \begin{gathered}
+ \sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(14\pi x),\\
+ e^{-((x+0.35)/0.22)^2},\qquad \tanh(14(x-0.31)),\qquad |x+0.23|,\\
+ f_{\rm bump}(x)=
+ \begin{cases}
+ \exp\!\left(1-\dfrac1{1-u^2}\right),& |u|<1,\quad u=(x-0.35)/0.22,\\
+ 0,&|u|\ge1.
+ \end{cases}
+ \end{gathered}
+\]
+Each is divided by its RMS on the original training grid.
+Four additional seed-31 restarts cover step, kink, Gaussian, and bump;
+they were selected for weak initial comparison margins before their
+continuation outcomes were inspected.
+
+The discrete scalar recurrence uses structural diagnostics sampled every
+unit of flow time, interpolating its nonnegative polynomial coefficients
+and tracking norm to native GD steps. This implements a numerical evaluation
+of the conditional theorem; interpolation is not a proved upper enclosure
+between stored samples. In the six principal GD runs the minimum sampled
+relative-error floors are, in the target order above,
+$0.865734$, $0.912194$, $0.784451$, $0.879212$, $0.479360$, and $0.426952$.
+The corresponding executed endpoint errors are
+$0.866025$, $0.912564$, $0.788073$, $0.881027$, $0.489675$, and $0.427513$.
+The minimum floors and endpoint errors are distinct summaries, not an
+every-step tightness statistic. All ten growing comparisons remain useful
+over the full continuation, with seed-31 minimum floors from 0.426695 to
+0.878467. Principal endpoint RMS-bandwidth bounds range from
+$3.63\times10^{-4}$ to $5.18\times10^{-4}$, versus observed values from
+$2.09\times10^{-4}$ to $2.51\times10^{-4}$.
+
+The saved verification includes independent automatic derivatives, global
+remainder checks, exact discrete moment identities, and a solvable
+positive-growth comparison. Step refinement changes population size and
+normalized slope RMS by less than $4.8\times10^{-7}$ relatively across both
+seeds. Decimating the structural diagnostics changes the final GD comparison
+radius by less than $9\times10^{-6}$ relatively. These checks support
+numerical resolution; they do not supply interval-arithmetic certificates
+for the conditional premises.
+
+The theorem explains this post-transient regime through evolving population
+structure. The older width-177 archive includes regimes where large moments
+make the polynomial comparison uninformative. No coverage claim for all
+23 archived targets, all training ages, or the full five-million-update
+Figure 4 trajectories follows. Adam's coordinate-dependent scaling and
+momentum also fall outside the ordinary-GD proof. Its observed precision
+gap motivates the same empirical question without establishing the same
+quantitative mechanism.
