@@ -1,10 +1,35 @@
 # Integrating the scale-acquisition argument into the paper
 
-The [manuscript draft](d34_scale_acquisition_paper_draft.md) now follows the
-reader's questions: what fails, what drives the remaining motion, why that
-force strengthens slowly, and what can be proved and checked. It is
-self-contained; operational provenance stays in this memo and the figure
-records. Section, theorem, equation, and figure numbers remain provisional.
+The [compiled paper section](../output/pdf/d34_scale_acquisition_paper.pdf)
+is the current typeset deliverable: two pages of main text and seven pages
+of appendix. The [main LaTeX inclusion](d34_scale_acquisition_paper_main.tex)
+and [appendix inclusion](d34_scale_acquisition_paper_appendix.tex) can be
+imported into the manuscript. They follow the reader's questions: what
+fails, what drives the remaining motion, why that force strengthens slowly,
+and what can be proved and checked. Reader-facing text is self-contained;
+operational provenance stays in this memo and the figure records.
+
+The [review wrapper](d34_scale_acquisition_paper_review.tex) matches the
+spectrum note's 10-point Times, 5.5-by-9-inch text area. It sets the proposed
+insertion to Section 3.5, Theorem 3.3, and Figures 4–5; the inclusion files
+use automatic labels and contain no hard-coded counters. This is a review
+layout, not verification of the complete paper's nine-page fit. The
+[Markdown companion](d34_scale_acquisition_paper_draft.md) carries the same
+argument and evidence, with a more segmented appendix and local equation
+numbering. The older `output/pdf/scale_acquisition.pdf` is an archived
+technical note, not this draft.
+
+Build from the repository root:
+
+```sh
+latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=tmp/pdfs/scale_acquisition_review docs/d34_scale_acquisition_paper_review.tex
+cp tmp/pdfs/scale_acquisition_review/d34_scale_acquisition_paper_review.pdf output/pdf/d34_scale_acquisition_paper.pdf
+```
+
+The final PDF was rendered page by page and inspected for clipping, figure
+legibility, mathematical layout, and reading order. The build has no
+unresolved references or overfull/underfull boxes. Its two-page main
+footprint includes both captions, the theorem, and the empirical check.
 
 ## Placement and chronology
 
@@ -24,7 +49,8 @@ The revised argument has five steps:
    budget and selection protocol visible. A supplied geometry is a useful
    comparison, not a universally necessary geometry.
 2. **Identify the surviving force.** Explain $\nabla L=R+F$ before using
-   either symbol in a theorem. Figure 5a shows the GD tracking transition.
+   either symbol in a theorem. Figure 5a shows small tracking during the
+   actual post-transient continuation used in panel (b).
    Coarse compensation remains in $F$ after tracking $R$ becomes small.
 3. **Explain persistence under evolving geometry.** Introduce residual
    relaxation and geometry/compensation feedback through their effects on
@@ -34,13 +60,13 @@ The revised argument has five steps:
 4. **State the conditional theorem.** Its visible conclusions bound raw
    output improvement and RMS slope growth. The variables match the opening
    figure. Explain the force-amplification and collective-travel proof in
-   three sentences; move the derivative formulas and disturbances to the
+   a short paragraph; move the derivative formulas and disturbances to the
    appendix.
 5. **Check the condition and its usefulness.** State the cross-target
-   coverage and six-target bounds after the theorem. Figure S1 gives the
-   detailed premise, force, displacement, and error comparisons in the
-   appendix. Distinguish these 20k-to-120k GD audits from the much longer
-   observation and from Adam.
+   coverage and six-target bounds after the theorem. Figure S2 pairs the
+   premise check with force evolution; Figure S3 pairs RMS displacement
+   with output error. Distinguish these 20k-to-120k GD audits from the much
+   longer observation and from Adam.
 
 This order puts the phenomenon before the explanation and the explanation
 before the assumption. It avoids asking the reader to interpret a feedback
@@ -59,39 +85,47 @@ Adam endpoint: its $1.81\times10^{-3}$ error already passes that threshold.
 The relevant observation is its precision gap to $6.62\times10^{-7}$ on
 supplied features.
 
-**Figure 5: mechanisms.** Panel (a) shows full, effective fine, and coarse
-tracking slope-gradient norms for mixed sine at width 177 over 600k GD
-updates. Panel (b) uses the smooth-step effective continuation at width 705,
-from age 20k through age 120k. It integrates the signed terms in the exact
-log-force identity, separating positive feedback from negative relaxation.
-The sum matches the actual log-force change. Caption and titles identify
-the different studies; neither the force components nor the times are
-spliced together. In particular, panel (a)'s crossing does not establish
-panel (b)'s post-transient premise. That premise is separately audited.
+**Figure 5: mechanisms.** Both panels use smooth step, width 705, seed 30,
+and the same unmodified checkpoint at 20k GD updates, followed to 120k.
+Panel (a) shows full-parameter effective fine and tracking norms on the
+GD path. Panel (b) integrates the exact signed force-growth identity along
+the paired effective flow, separating positive feedback from negative
+relaxation. Both axes show total training age. This replaces the earlier
+pairing of different targets and widths, and uses the same full-gradient
+norm as the force identity. Tracking is below 0.1963% of effective force
+at sampled times; the GD/effective-flow force discrepancy is below 0.0795%.
 
 The smooth-step example is useful because it prevents a misleading
 contraction explanation: reinforcement dominates relaxation, force grows
 2.187-fold, yet error remains near 49%. Limited amplification of initially
-weak force is the point. Panel (a)'s late force increase likewise rules out
-describing all trajectories as permanently flat.
+weak force is the point. No panel supports a universal contraction claim.
 
-**Figure S1: theorem evaluation.** The previous four-panel figure is retained
-in Appendix D. It checks accumulated feedback against its allowance,
-compares GD and effective force, bounds RMS displacement from the restart,
-and compares output floors with errors. The displacement is explicitly
-distinguished from Figure 4's RMS level. The 1% line is useful for this
-six-target audit; it is not carried into the long Adam comparison.
+**Figure S1: the earlier tracking transition.** The width-177, five-seed
+mixed-sine history is retained as a separate appendix figure. It uses
+slope-block norms over 600k updates. Its crossing does not determine the
+restart time for the matched mechanism figure. Keeping it separate preserves
+the informative early history without mixing cohorts or norm definitions.
+
+**Figures S2–S3: theorem evaluation in two pairs.** The former four-panel
+composite is absent from the new note. Figure S2 checks accumulated feedback
+against its allowance beside GD/effective-force agreement. Figure S3 bounds
+RMS displacement from the restart beside output-error floors. Displacement
+is explicitly distinguished from Figure 4's RMS level. The 1% line belongs
+to this six-target audit; it is not carried into the long Adam comparison.
 
 The new figures and source/input hashes are documented in the
-[narrative figure record](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_narrative_final/README.md).
+[narrative figure record](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/README.md).
 The retained conditional evaluations have their own
-[bound figure record](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_draft_final/README.md).
-No new training was required. Function-preserving cloning and geometry
-interventions remain in Appendix E as tests of competing explanations.
+[bound figure record](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_bounds_final/README.md).
+No new training was required. Post-processing ran on Modal with a 4-GiB
+limit; the final narrative and bound jobs peaked at 339.1 and 152.7 MiB,
+respectively. The plotter exports vector PDFs plus SVG/PNG previews.
+Function-preserving cloning and geometry interventions remain in the
+appendix as tests of competing explanations.
 
 ## The theorem presented to the reader
 
-Theorem 4.2 remains a conditional result after tracking becomes unimportant.
+Theorem 3.3 remains a conditional result after tracking becomes unimportant.
 Its assumption bounds accumulated reinforcement through evolving output
 derivatives. Its conclusion allows evolving slopes, biases, and readouts,
 positive force growth, and isolated neuron escapes. Neither a frozen
@@ -107,7 +141,7 @@ premise is introduced.
 Keep the exact force-growth identity and its labeled terms in the main
 text. Defer the projector, compensation multiplier, Hessian contractions,
 GD interpolant, and explicit tracking/discretization allowances. The RMS
-allowance is $\Delta_{\rm scale}=hD_A/\sqrt W$ in the appendix's notation.
+allowance is $\Delta_{\rm scale}=h[t e^{B_t}U(t)+V(t)]/\sqrt W$.
 Output error supplies an independent success criterion because RMS alone
 does not specify center coverage or useful output geometry.
 
@@ -123,9 +157,10 @@ motivation here, without a quantitative transfer of the GD theorem.
 The draft has two main figures, each with two panels. They replace the old
 main four-panel bound figure and absorb the spectrum note's joint-training
 observation. Do not include a duplicate version of that observation or the
-99th-percentile discussion. Keep the full six-target comparison, detailed
-protocols, and numerical constants in the appendix. Final page fit requires
-the full manuscript's LaTeX source and a compiled layout.
+99th-percentile discussion. The main inclusion now occupies two pages in
+the review layout, with no reduced font sizes. Its seven-page appendix
+holds the six-target comparison, protocols, and full proof. Final page fit
+still requires the complete manuscript's LaTeX source and its actual style.
 
 Version 19's main content reaches page 12, so the nine-page target still
 requires compression elsewhere. Move the long primitive inventory and

@@ -1,32 +1,22 @@
-## 4.2. Why joint training acquires scale slowly
+## 3.5. Why joint training acquires scale slowly
 
-The frozen-feature result raises a natural question: can joint training
-learn a geometry that makes high precision accessible? Figure 4 follows
-output accuracy and population slope scale together. It establishes the
-precision gap we seek to explain; we then identify the driving force and
-give a conditional explanation for its persistence under GD.
-
-**Observation: learning slopes leaves a substantial precision gap.** On a
-mixed-sine target, five million updates give median relative output errors
-$1.81\times10^{-3}$ for joint Adam and $0.244$ for joint GD. Training only
-the readouts on supplied $\lambda=1/4$ features gives $6.62\times10^{-7}$
-and $3.88\times10^{-4}$, respectively. The joint networks' RMS relative
-slopes, $\lambda_{\rm RMS}=h\|\gamma\|_2/\sqrt W$, reach only $0.0582$
-and $0.00718$. Here $h$ is the construction's reference spacing, not the
-spacing between learned centers.
+Can joint training learn features that make high precision accessible?
+Figure 4 compares learning all parameters with learning readouts on
+supplied features. After five million updates, joint Adam reaches relative
+error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$ with supplied
+features. Its RMS relative slope reaches only $0.0582$, compared with the
+supplied scale $1/4$; GD acquires still less scale. This is a finite-budget
+precision gap: Adam already passes 1% accuracy. The supplied geometry is
+a benchmark, not a necessary condition for every accurate network. We
+therefore seek to explain both limited population movement and limited
+output improvement.
 
 <figure>
-  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_narrative_final/joint_acquisition_rms.png" alt="Joint Adam and GD retain a precision gap relative to training readouts on supplied features; the accompanying RMS slope levels remain below the supplied geometry's scale." style="max-width: 100%;">
-  <figcaption><strong>Figure 4: Joint training improves accuracy without recovering the supplied geometry's precision.</strong> Mixed sine, width 512, five paired seeds, five million updates from initialization. (a) Relative training errors of the attached networks; fixed Adam/GD optimize readouts on uniform $\lambda=1/4$ features. (b) RMS relative slopes of the same joint runs. Lines summarize seeds and display bins; shading retains seed variation and within-bin extrema. Joint and fixed-Adam recipes use final-validation selection. The horizontal line marks the supplied geometry, not a necessary scale threshold. Appendix D gives the target and protocol.</figcaption>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/joint_acquisition_rms.png" alt="Joint and fixed-feature Adam/GD output errors beside the RMS slope levels of the same joint runs." style="max-width: 100%;">
+  <figcaption><strong>Figure 4: The precision gap accompanies limited population scale acquisition.</strong> Mixed sine, width 512, five paired seeds, five million full-batch updates. Left: relative training error with the trained readouts; fixed Adam/GD train readouts on uniform $\lambda=1/4$ features. Right: RMS relative slope $\lambda_{\rm RMS}=h\|\gamma\|_2/\sqrt W$, with reference spacing $h=2/467$. Lines summarize seeds and display bins; bands retain seed variation and within-bin extrema. Joint and fixed-Adam recipes use final-validation selection; Appendix D specifies the protocol.</figcaption>
 </figure>
 
-Success must specify both a relative-error tolerance and a training budget.
-For example, this Adam endpoint passes 1% accuracy but remains far from
-the supplied features' precision. RMS describes collective scale; it does
-not determine accuracy independently of centers and readouts. Accordingly,
-our theory will bound both population acquisition and output improvement.
-
-**Which force remains after coarse fitting?** For
+**Identify the force that remains after coarse fitting.** For
 $q_\theta(x)=b+\sum_j w_j\tanh(\gamma_jx+\beta_j)$ and half mean-squared
 loss, gradient flow is $\dot\theta=-\nabla L$. Splitting output into its
 affine part, spanned by $1,x$, and the orthogonal remainder gives the exact
@@ -35,17 +25,12 @@ from coarse equilibrium. The **effective fine gradient** $F$ combines the
 non-affine residual gradient with the compensation needed to preserve
 coarse output. Compensation remains even when tracking becomes small.
 
-In the GD example in Figure 5a, tracking initially dominates, then falls
-well below the effective fine slope gradient. This motivates studying
-intervals after tracking's effects become small, starting while RMS slopes
-are still small. The reduction is checked separately on those intervals;
-neither the early transient nor Adam's adaptive dynamics is covered by
-assuming small GD tracking.
+In Figure 5, tracking is below 0.2% of effective force on the sampled GD
+continuation. This motivates studying effective flow $\dot\theta=-F$,
+with tracking and GD discretization retained as explicit disturbances in
+the theorem.
 
-**Why can weak force persist as the features evolve?** The smooth-step
-example in Figure 5b shows that persistence need not mean decay: effective
-force grows about 2.2-fold over 100k additional updates, yet relative error
-remains near 49%. To explain this, write $e_H$ for the non-affine residual,
+**Explain persistence while the features evolve.** Write $e_H$ for the non-affine residual,
 $J_H=D_\theta e_H$ for its output Jacobian, and $v=F/\|F\|$. Along effective
 flow $\dot\theta=-F$, the exact identity
 
@@ -53,82 +38,69 @@ $$
 \frac{d}{dt}\log\|F\|
 =-\underbrace{\|J_Hv\|^2}_{\text{residual relaxation}}
 +\underbrace{\kappa_H+\kappa_C}_{\text{geometry and compensation feedback}}
-\tag{10}
+\tag{1}
 $$
 
-separates two mechanisms. **Residual relaxation** means fitting away the
-error that currently drives the force; this contribution always reduces its
-norm. **Geometry and compensation feedback** changes sensitivity to the
-remaining error as all parameters evolve; it can reinforce the force. In
-the smooth-step example relaxation is small, and reinforcement is positive
-but too slow to turn the initially weak force into rapid learning.
+separates two mechanisms. **Residual relaxation** fits away the error
+currently driving the force. **Feedback** changes sensitivity to the
+remaining error as geometry and readouts move; it can strengthen the force.
+The smooth-step example has positive feedback and little relaxation:
+force grows 2.19-fold, yet error remains near 49%. Thus persistence need
+not mean contraction or equilibrium. The question is whether initially
+weak force can reinforce itself enough within the budget.
 
 <figure>
-  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_narrative_final/tracking_and_reinforcement.png" alt="A GD trajectory transitions from tracking-dominated to effective-fine-dominated slope gradients; a separate post-transient continuation accumulates modest positive force reinforcement." style="max-width: 100%;">
-  <figcaption><strong>Figure 5: Identify the surviving force, then explain its reinforcement.</strong> (a) Mixed-sine GD, width 177, five seeds, learning rate 0.002, through 600k updates: median slope-gradient norms with seed ranges. Late force growth remains possible. (b) Smooth-step effective flow, width 705, one seed, restarted from GD at 20k updates and followed for 100k additional equivalent updates: integrals of the signed terms in (10). Their sum gives the log change in the full effective-force norm. These are separate experiments; panel (a) does not set panel (b)'s restart time. Numerical checks and target definitions are in Appendix D.</figcaption>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/tracking_and_reinforcement.png" alt="Matched smooth-step continuations show negligible GD tracking and modest positive reinforcement of initially weak effective force." style="max-width: 100%;">
+  <figcaption><strong>Figure 5: Weak effective force survives positive reinforcement.</strong> Both panels use the same smooth-step target, width 705, and checkpoint at 20k GD updates, continued to 120k. Left: full-parameter gradient norms during GD. Right: cumulative terms in (1) along the paired effective flow; their sum gives $\log(\|F\|/\|F_0\|)$. Both axes use total GD updates, converting flow time with $\eta=0.002$. The paired GD and effective-force norms differ by less than 0.08% at saved times.</figcaption>
 </figure>
 
-This suggests a measurable condition: limit **accumulated reinforcing
-feedback**, while allowing geometry, readouts, and compensation to move.
-We upper-bound that feedback using the population's second output response
-in direction $v$, weighted by residual and compensation norms. This quantity
-comes from evolving output derivatives, not from assuming that observed
-force growth is small. Its accumulated allowance is denoted $B_t$; the
-appendix gives the formula.
+**A conditional population bound.** We upper-bound feedback by the second
+output response in direction $v$, weighted by residual and compensation
+norms. Let $B_t$ bound its accumulation. This is a condition on evolving
+output derivatives; it does not assume that net force growth or slope
+movement is small.
 
-**Theorem 4.2 (Conditional slow scale acquisition; informal).** Restart
-noiseless full-batch GD after the tracking transient, and write $t=n\eta$
+**Theorem 3.3 (Slow scale acquisition; informal).** Restart
+full-batch GD after tracking becomes small, and write $t=n\eta$
 for elapsed training time. Let $F_0$ be the effective fine gradient at the
 restart and $E_0$ the non-affine residual norm. Suppose accumulated
 reinforcing feedback is bounded by $B_t$ throughout the interval. Under
 the coarse-regularity and disturbance conditions in the appendix,
 
 $$
-\begin{aligned}
 \|q_{\theta_n}-f\|^2
-&\ge E_0^2-\underbrace{2t e^{2B_t}\|F_0\|^2}_{\text{available error reduction}}
--\Delta_{\rm err}(t),\\
+\ge E_0^2-2t e^{2B_t}\|F_0\|^2-\Delta_{\rm err}(t).
+\tag{2}
+$$
+
+$$
 \lambda_{\rm RMS}(t)
-&\le\lambda_{\rm RMS}(0)
-+\underbrace{\frac{h}{\sqrt W}t e^{B_t}\|F_0\|}_{\text{available population scale growth}}
+\le\lambda_{\rm RMS}(0)
++\frac{h}{\sqrt W}t e^{B_t}\|F_0\|
 +\Delta_{\rm scale}(t).
-\end{aligned}
-\tag{11}
+\tag{3}
 $$
 
 The nonnegative allowances $\Delta_{\rm err},\Delta_{\rm scale}$ account
 for tracking and finite GD steps; both vanish for exact effective flow.
-Output norms use the training measure; parameter and gradient norms are
-Euclidean. The appendix also bounds the fraction of neurons that ever
-acquire a specified scale increment.
 
-**Proof sketch.** Bounded feedback limits effective-force amplification to
-$e^{B_t}\|F_0\|$, up to the stated disturbances. Integrating its square
-bounds output improvement; integrating its magnitude bounds collective
-parameter travel and hence RMS slope growth. The appendix proves the GD
-statement using its exact interpolated path.
+Bounded feedback limits force amplification. Integrating its square bounds
+output improvement; integrating its magnitude bounds collective travel
+and hence RMS scale growth. Individual neurons may escape: the appendix
+also bounds the fraction ever acquiring a specified increment. Output norms
+use the training measure; parameter norms are Euclidean.
 
-Thus a weak restart force and limited amplification restrict how much RMS
-scale can be acquired over the budget. Individual slopes may escape and
-population scale may grow. The separate output bound tests a requested
-accuracy directly, without assuming QUILL's geometry is necessary for it.
-
-**The conditions persist over the measured training budget.** Across 23
-targets and two seeds at width 705, twice the restart feedback rate supplies
-an accumulated allowance covering every saved prefix over 20k additional
-updates. Six targets are checked densely from age 20k through age 120k,
-using a factor-four allowance. Accumulated feedback uses at most 55% of
-that allowance. The resulting effective-flow allowances for RMS scale
-growth are below $8\times10^{-4}$, and the relative-error floors remain
-above 39% on all six targets. GD closely follows these effective dynamics;
-measured tracking effects and step refinement support the reduction.
-Appendix D and Figure S1 give the comparisons and numerical qualifications.
-These are empirical checks of the conditions, not interval certificates.
-
-The five-million-update observation motivates the problem; these shorter,
-cross-target audits test the proposed GD mechanism. The theorem applies
-over intervals where its measured conditions persist. It does not assert
-that the same allowance covers the entire long Adam or GD experiment.
+**Check the condition, then its consequences.** Across 23 targets and two
+seeds at width 705, twice the restart feedback rate covers accumulated
+feedback at every saved prefix over 20k further updates. Six targets are
+checked densely over 100k further updates using a factor-four allowance.
+They use at most 55% of that allowance; the effective-flow RMS growth
+bounds are below $8\times10^{-4}$ and relative-error floors exceed 39%.
+GD closely follows these effective dynamics (Appendix D, Figures S2–S3).
+These are numerical checks of the conditional mechanism, not interval
+certificates. They cover the measured post-transient GD intervals; they do
+not extend the same allowance to all five million updates or to Adam's
+adaptive dynamics.
 
 ## Appendix: Conditional persistence under evolving geometry
 
@@ -208,7 +180,7 @@ $$
 \tag{A3}
 $$
 
-**Derivation of (10).** Write $g_H=J_H^*e_H$. Differentiating $F=\Pi g_H$
+**Derivation of (1).** Write $g_H=J_H^*e_H$. Differentiating $F=\Pi g_H$
 along effective flow gives
 
 $$
@@ -219,7 +191,7 @@ $$
 Since $\Pi$ is an orthogonal projector, $\Pi D\Pi[F]\Pi=0$.
 Differentiating $\Pi J_C^*=0$ and substituting $g_H=F+J_C^*\ell$ gives
 $F^*D\Pi[F]g_H=-\ell\cdot D^2e_C[F,F]$. Dividing by $\|F\|^2$
-proves (10). Independently,
+proves (1). Independently,
 
 $$
 \frac{d}{dt}\|e_H\|^2=-2\langle J_H^*e_H,F\rangle=-2\|F\|^2.
@@ -269,7 +241,7 @@ p_\delta(t)&\le\min\left\{1,\frac{h^2A(t)^2}{W\delta^2}\right\}.
 \tag{A6}
 $$
 
-In particular (11) holds with the explicit nonnegative allowances
+In particular (2)–(3) hold with the explicit nonnegative allowances
 
 $$
 \begin{aligned}
@@ -296,10 +268,11 @@ force-concentration assumption is needed for these population conclusions.
 Centers may move freely; the proof works in the regular coordinates
 $(\gamma,\beta,w)$ without division by a slope.
 
-**Proof.** The directional identity implies, along the disturbed path,
+**Proof.** The directional identity implies, almost everywhere along the
+disturbed path,
 
 $$
-D^+\|F\|\le d_{\rm dir}\|F\|+\|DF[S]\|.
+\frac{d}{dt}\|F\|\le d_{\rm dir}\|F\|+\|DF[S]\|.
 $$
 
 Write $\mathcal B(t)=\int_0^t d_{\rm dir}(s)ds$. The integrating-factor inequality
@@ -311,9 +284,10 @@ $$
 \le e^{B_t}[s_0+U(t)].
 $$
 
-At a zero of $F$, the same Dini-derivative inequality holds with the
-effective-flow term zero; the nonnegative directional rate can be set to
-zero there. Monotonicity of $B,U$ and triangle inequality now yield
+The inequality extends across zeros of $F$ in the absolutely continuous
+norm inequality: $DF[F]$ vanishes there, and the remaining contribution
+has norm at most $\|DF[S]\|$. Set the directional rate to zero at these
+zeros. Monotonicity of $B,U$ and triangle inequality now yield
 $\int_0^t\|\dot\theta\|\le t e^{B_t}[s_0+U(t)]+V(t)=A(t)$.
 
 For output error, (A1) gives the exact disturbed energy identity
@@ -358,7 +332,7 @@ effective-flow bounds and compare the actual GD trajectories separately.
 envelope instead of replacing it by its terminal value improves (A6).
 Accumulated fourth-power concentration can also sharpen population counting.
 The second-power counting bound and RMS bound above avoid adding that
-structural premise. Figure S1c displays endpoint RMS displacement, for which
+structural premise. Figure S3a displays endpoint RMS displacement, for which
 
 $$
 \left(\frac1W\sum_j|\lambda_j(t)-\lambda_j(0)|^2\right)^{1/2}
@@ -381,8 +355,9 @@ small amount of error reduction.
 
 **Evidence has three roles.** Figure 4 establishes a full-training
 observation. Figure 5 illustrates the force decomposition and its evolution
-using two separate studies. Figure S1 tests the conditional bounds across
-six targets after the transient. Their different widths, schedules, and
+on matched smooth-step continuations. Figure S1 shows the earlier tracking
+transition in a separate experiment. Figures S2–S3 test the conditional
+bounds across six targets after the transient. Their different widths, schedules, and
 horizons are not pooled into one trajectory or one theorem interval.
 
 **The full-training observation.** Figure 4 uses
@@ -423,7 +398,7 @@ relative error here; its remaining precision gap must not be described as
 failure at that tolerance. The RMS statistic uses all neurons, with no
 percentile or maximum-slope curve.
 
-**The tracking illustration.** Figure 5a uses separate mixed-sine runs at
+**The tracking illustration.** Figure S1 uses separate mixed-sine runs at
 width 177, five seeds, 2,048 training inputs, and constant GD rate 0.002.
 The target is the same sine mixture, normalized by its training-grid RMS.
 Curves show Euclidean norms of the slope blocks of $F$, $R$, and their sum,
@@ -433,6 +408,11 @@ the numerical unresolved channel is zero. Tracking falls far below the
 effective fine slope gradient, which can still strengthen late in training.
 The crossing is an illustration of changing dominance, not a certificate
 of small accumulated disturbance or a universal restart rule.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/tracking_transition.png" alt="The coarse tracking slope gradient loses its early dominance in a separate five-seed mixed-sine GD experiment." style="max-width: 100%;">
+  <figcaption><strong>Figure S1: Tracking loses its early dominance under GD.</strong> A separate mixed-sine experiment at width 177, five seeds, and learning rate 0.002 over 600k updates. Curves show median slope-block norms; shading shows seed ranges. This full-history illustration does not determine the restart time for Figure 5. Late effective-force growth remains possible.</figcaption>
+</figure>
 
 **The post-transient theorem audit.** The claim begins at a post-transient
 checkpoint. It does not prove that initialization enters the regime or that
@@ -482,22 +462,24 @@ diagnostics are retained at 201 equally spaced times. These comparisons
 test the effective reduction and discretization sensitivity, rather than
 equating optimizer update counts across different learning rates.
 
-Figure 5b selects the smooth-step effective continuation from this six-target
-study. Trapezoidal integration of the saved geometry, compensation, and
+Both panels of Figure 5 select the smooth-step continuation from this
+six-target study. GD tracking norm is at most 0.1963% of effective-force
+norm at saved times. The maximum relative discrepancy between GD and paired
+effective-flow force norms is 0.0795%. Trapezoidal integration of the saved geometry, compensation, and
 relaxation rates reconstructs the observed log force change to within
 $3.16\times10^{-6}$. The integrated feedback is about $0.792$, relaxation
 contributes about $-0.00928$, and the force increases by a factor 2.187.
 Its initial norm is $0.001628$, and endpoint relative error is $0.4897$.
 The rates describe the full effective-force norm. They neither assume nor
-establish contraction of each slope. The displayed effective-flow time is
-divided by 0.002 to compare with additional GD updates.
+establish contraction of each slope. Both horizontal axes give total
+training age, adding the 20k restart age to elapsed flow time divided by 0.002.
 
-**A common allowance, with visible slack.** Figure S1 uses
+**A common allowance, with visible slack.** Figures S2–S3 use
 $B_t=4d_{\rm dir}(0)t$ on every target. The factor four comes from the
 previously tested sensitivity family $1,2,4,8$; its coverage is an empirical
 finding, not an initial-data prediction. The largest sampled ratio of actual
 accumulated feedback to the allowance is 0.5436. The conditional
-effective-flow relative-error floors from (11) range from 0.3928 to 0.9124.
+effective-flow relative-error floors from (2) range from 0.3928 to 0.9124.
 Their RMS slope-movement allowances range from $2.51\times10^{-7}$ to
 $7.74\times10^{-4}$. Observed GD RMS changes range from
 $2.61\times10^{-8}$ to $5.25\times10^{-5}$. For increment $0.125$, the
@@ -514,8 +496,13 @@ well before machine precision. This criterion and cohort differ from the
 five-million-update observation, where joint Adam reaches below 1%.
 
 <figure>
-  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_draft_final/population_persistence_paper.png" alt="Six post-transient continuations satisfy the sampled feedback allowance; conditional bounds limit RMS slope displacement and maintain relative output error above 39 percent." style="max-width: 100%;">
-  <figcaption><strong>Figure S1: Check the feedback premise and its conditional consequences.</strong> Width 705, six targets, one seed, restarted at 20k updates and continued for 100k updates at learning rate 0.002. (a) Accumulated directional feedback divided by the allowance $4d_{\rm dir}(0)t$. (b) GD (solid) and effective flow (dotted) nearly overlap despite differing signs of force growth. (c) Endpoint RMS changes in relative slopes and their effective-flow upper bounds; these are displacements from the restart, not the RMS levels in Figure 4. (d) Raw relative errors and effective-flow lower bounds with attached readouts. The 1% reference applies to this audit. All bounds use the same factor-four allowance and are empirically evaluated, not certified between samples.</figcaption>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_bounds_final/feedback_force_check.png" alt="Six targets satisfy the sampled feedback allowance; GD and effective flow show closely matched force evolution." style="max-width: 100%;">
+  <figcaption><strong>Figure S2: The feedback condition permits either force decay or growth.</strong> Six targets at width 705, from the 20k restart through 100k additional GD updates. Left: accumulated directional feedback divided by its common allowance $4d_{\rm dir}(0)t$. Right: normalized force along GD (solid) and effective flow (dotted). Their agreement checks the reduction; it is distinct from checking the feedback allowance.</figcaption>
+</figure>
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_bounds_final/population_error_check.png" alt="Effective-flow upper bounds limit RMS slope displacement and lower bounds maintain relative output error above 39 percent." style="max-width: 100%;">
+  <figcaption><strong>Figure S3: The condition gives useful population and output bounds.</strong> The same six continuations as Figure S2. Left: endpoint RMS displacement of relative slopes, with its effective-flow upper bound; this is displacement from the restart, not the RMS level in Figure 4. Right: relative output errors with attached readouts and effective-flow lower bounds. These rounded numerical evaluations set $S=0$; GD agreement is measured separately. None is an interval certificate.</figcaption>
 </figure>
 
 **Breadth and robustness.** The separate width-705 baseline contains 23
@@ -573,6 +560,6 @@ successful training.
 These tests constrain the mechanism without requiring that every target
 share one signed force contribution. Correcting generated low-order error
 can oppose expansion, but neither net slope contraction nor that particular
-error pattern is an assumption of Theorem 4.2. Its claim is limited useful
+error pattern is an assumption of Theorem 3.3. Its claim is limited useful
 reinforcement over a stated interval, with the observed domain and failures
 of that premise reported separately.

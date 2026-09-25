@@ -1,0 +1,116 @@
+% Manuscript inclusion: requires the packages/environments in the review wrapper.
+\subsection{Why joint training acquires scale slowly}
+\label{sec:scale-acquisition}
+
+Can joint training learn features that make high precision accessible?
+Figure~\ref{fig:scale-observation} compares learning all parameters with
+learning readouts on supplied features. After five million updates, joint
+Adam reaches relative error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$
+with supplied features. Its RMS relative slope reaches only $0.0582$,
+compared with the supplied scale $1/4$; GD acquires still less scale.
+This is a finite-budget precision gap: Adam already passes 1\% accuracy.
+The supplied geometry is a benchmark, not a necessary condition for every
+accurate network. We therefore seek to explain both limited population
+movement and limited output improvement.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/joint_acquisition_rms.pdf}
+  \caption{\textbf{The precision gap accompanies limited population scale acquisition.}
+  Mixed sine, width 512, five paired seeds, five million full-batch updates.
+  Left: relative training error with the trained readouts; fixed Adam/GD
+  train readouts on uniform $\lambda=1/4$ features. Right: RMS relative
+  slope $\lambda_{\mathrm{RMS}}=h\|\gamma\|_2/\sqrt W$, with reference
+  spacing $h=2/467$. Lines summarize seeds and display bins; bands retain
+  seed variation and within-bin extrema. Joint and fixed-Adam recipes use final-validation
+  selection; Appendix~\ref{app:scale-experiments} specifies the protocol.}
+  \label{fig:scale-observation}
+\end{figure}
+
+\paragraph{Identify the force that remains after coarse fitting.}
+For $q_\theta(x)=b+\sum_{j=1}^W w_j\tanh(\gamma_jx+\beta_j)$ and
+$L=\frac12\|q_\theta-f\|^2$, gradient flow is $\dot\theta=-\nabla L$.
+Splitting output into its affine part and orthogonal remainder gives the
+exact decomposition $\nabla L=R+F$. The \emph{tracking gradient} $R$
+measures departure from coarse equilibrium. The \emph{effective fine
+gradient} $F$ combines the non-affine residual gradient with the
+compensation needed to preserve coarse output. Compensation remains when
+tracking becomes small. In Figure~\ref{fig:scale-mechanism}, tracking is
+below 0.2\% of effective force on the sampled GD continuation. This
+motivates studying effective flow $\dot\theta=-F$, with tracking and GD
+discretization retained as explicit disturbances in the theorem.
+
+\paragraph{Explain persistence while the features evolve.}
+Write $e_H$ for the non-affine residual, $J_H=D_\theta e_H$ for its
+Jacobian, and $v=F/\|F\|$. Effective flow obeys the exact identity
+\begin{equation}
+\frac{d}{dt}\log\|F\|
+=-\underbrace{\|J_Hv\|^2}_{\text{residual relaxation}}
++\underbrace{\kappa_H+\kappa_C}_{\text{geometry and compensation feedback}}.
+\label{eq:scale-force-identity}
+\end{equation}
+Residual relaxation fits away the error currently driving the force.
+Feedback changes sensitivity to the remaining error as geometry and
+readouts move; it can strengthen the force. The smooth-step example has
+positive feedback and little relaxation: force grows 2.19-fold, yet error
+remains near 49\%. Thus persistence need not mean contraction or equilibrium.
+The question is whether initially weak force can reinforce itself enough
+within the budget.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/tracking_and_reinforcement.pdf}
+  \caption{\textbf{Weak effective force survives positive reinforcement.}
+  Both panels use the same smooth-step target, width 705, and checkpoint
+  at 20k GD updates, continued to 120k. Left: full-parameter gradient norms
+  during GD. Right: cumulative terms in~\eqref{eq:scale-force-identity}
+  along the paired effective flow; their sum gives $\log(\|F\|/\|F_0\|)$.
+  Both axes use total GD updates, converting flow time with $\eta=0.002$.
+  The paired GD and effective-force norms differ by less than 0.08\%
+  at saved times.}
+  \label{fig:scale-mechanism}
+\end{figure}
+
+\paragraph{A conditional population bound.}
+We upper-bound feedback by the second output response in direction $v$,
+weighted by residual and compensation norms. Let $B_t$ bound its
+accumulation. This is a condition on evolving output derivatives; it does
+not assume that net force growth or slope movement is small.
+
+\begin{theorem}[Slow scale acquisition, informal]
+\label{thm:scale-informal}
+Restart full-batch GD after tracking becomes small, and let $t=n\eta$ be
+elapsed training time. Let $F_0$ be the restart effective fine gradient
+and $E_0$ the non-affine residual norm. If accumulated feedback is bounded
+by $B_t$, then, under the regularity and disturbance conditions in
+Appendix~\ref{app:scale-theory},
+\begin{align}
+\|q_{\theta_n}-f\|^2
+&\ge E_0^2-2t e^{2B_t}\|F_0\|^2-\Delta_{\mathrm{err}}(t),
+\label{eq:scale-main-error}\\
+\lambda_{\mathrm{RMS}}(t)
+&\le\lambda_{\mathrm{RMS}}(0)
++\frac{h}{\sqrt W}t e^{B_t}\|F_0\|+\Delta_{\mathrm{scale}}(t).
+\label{eq:scale-main-rms}
+\end{align}
+The nonnegative allowances account for tracking and finite GD steps;
+both vanish for exact effective flow.
+\end{theorem}
+
+Bounded feedback limits force amplification. Integrating its square bounds
+output improvement; integrating its magnitude bounds collective travel
+and hence RMS scale growth. Individual neurons may escape: the appendix
+also bounds the fraction ever acquiring a specified increment. Output norms
+use the training measure; parameter norms are Euclidean.
+
+\paragraph{Check the condition, then its consequences.}
+Across 23 targets and two seeds at width 705, twice the restart feedback
+rate covers accumulated feedback at every saved prefix over 20k further
+updates. Six targets are checked densely over 100k further updates using
+a factor-four allowance. They use at most 55\% of that allowance; the
+effective-flow RMS growth bounds are below $8\times10^{-4}$ and relative-error
+floors exceed 39\%. GD closely follows these effective dynamics
+(Appendix~\ref{app:scale-experiments}). These are numerical checks of the
+conditional mechanism, not interval certificates. They cover the measured
+post-transient GD intervals; they do not extend the same allowance to all
+five million updates or to Adam's adaptive dynamics.
