@@ -241,49 +241,6 @@ at stored times do not certify their values at every intervening GD step.
 For a pooled mean across equal-sized seeds, the per-seed bounds average;
 the theorem does not interpret neuron spread as uncertainty across seeds.
 
-\subsection{Mechanistic interpretation and conditional width scaling}
-For gradient flow the same proof uses
-$\dot B=\mathcal V_t(B)+\widehat r(t)$, $B(0)=s(0)$.
-Locally bounded measurable coefficients make the right side locally Lipschitz
-and nondecreasing in $B$. Since $D^+s\le\mathcal V_t(s)+\widehat r(t)$,
-scalar comparison proves the radius, travel, and output bounds until the
-comparison ceases to be finite. Effective flow sets $R=0$; full flow retains it.
-
-Suppose $s(0)=O(1)$ and the structural coefficients and target norm have
-width-independent bounds while $s$ stays in a fixed bounded interval.
-Then $\mathcal Q=O(W^{-1})$, $\mathcal J=O(W^{-1})$, and the leading
-target term in $\mathcal T$ is $O(W^{-1})$.
-With tracking accumulation below a fixed fraction of the radius change,
-an order-one increase of radius requires $\Omega(W)$ flow time.
-If $f_\perp\perp\mathcal P_3$, the cubic target term vanishes,
-$\mathcal V=O(W^{-2})$, and the analogous time is $\Omega(W^2)$.
-The same reasoning applies to cumulative GD time $\sum_n\eta_n$.
-It does not establish width-independent conditions empirically or a
-universal update-count scaling under width-dependent learning rates.
-Higher target gaps alone do not improve this particular $W^2$ conclusion:
-the unsigned product $\mathcal J\mathcal Q$ can remain $O(W^{-2})$.
-
-The signed balance identity provides complementary interpretation.
-For $\Delta=\frac12\sum_j(\gamma_j^2+b_j^2-c_j^2)$, set
-\[
- k_\theta=\sum_jc_j(\tanh u_j-u_j\operatorname{sech}^2u_j),\qquad
- E_\theta=\sum_jc_j(3\tanh u_j-u_j\operatorname{sech}^2u_j-2u_j).
-\]
-Since $Dq_\theta[\nabla\Delta]=-k_\theta$ and
-$P_Hk_\theta=-2q_H+P_HE_\theta$, effective flow satisfies exactly
-\begin{equation}
- \dot\Delta=-2\|q_H\|^2+2\langle f_\perp,q_H\rangle
- +\langle e_H,P_HE_\theta\rangle-\langle\ell,P_Ck_\theta\rangle.
- \label{eq:feature-balance}
-\end{equation}
-Full flow adds $\langle e_C+\ell,P_Ck_\theta\rangle$.
-The negative term corrects network-generated non-affine output; target
-coupling can drive positive growth. Neither the net sign nor slope decay
-is asserted. Theorem~\ref{thm:feature-precise} uses the norm comparison
-\eqref{eq:feature-force}, not an assumption that this signed correction
-dominates. Controlling readouts together with geometry is essential:
-small slopes alone do not imply the output limitation proved here.
-
 \section{Evidence and interpretation for Section 3.5}
 \label{app:feature-evidence}
 
@@ -370,6 +327,24 @@ over the full continuation, with seed-31 minimum floors from 0.426695 to
 0.878467. Principal endpoint RMS-bandwidth bounds range from
 $3.63\times10^{-4}$ to $5.18\times10^{-4}$, versus observed values from
 $2.09\times10^{-4}$ to $2.51\times10^{-4}$.
+
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section35_population/figures/output_tightness.pdf}
+ \caption{\textbf{The output-error bound remains informative across all ten continuations.}
+ The theorem's lower bound divided by executed relative training RMS error
+ at each stored diagnostic time, every 500 GD updates. Solid curves are
+ seed 30; dashed curves are the four seed-31 stress cases.
+ The smallest ratio is 0.97714. These are evaluations with interpolated
+ structural coefficients from the trajectories, not initial-state forecasts
+ or certified bounds between diagnostic samples.}
+ \label{fig:feature-output-tightness}
+\end{figure}
+
+Figure~\ref{fig:feature-output-tightness} compares bound and error at matching
+times throughout the trajectories. The relative shortfall never exceeds
+2.29\% at stored diagnostic times. This statistic directly measures
+output-bound tightness, separately from the endpoint summaries above.
 
 The saved verification includes independent automatic derivatives, global
 remainder checks, exact discrete moment identities, and a solvable

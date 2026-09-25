@@ -11,13 +11,10 @@ Numerically resolved readout refits barely improve the learned Adam
 dictionary, and increasing its slopes at fixed centers does not close the
 gap (Appendix~\ref{app:feature-evidence}).
 
-After coarse fitting, feature acquisition depends on nonlinear output error.
-The cubic term of tanh couples to the target only through its projection
-onto polynomials of degree at most three; weak projection suppresses this
-leading target contribution. Bounding that coupling, the network's own
-nonlinear output, and higher-order remainders controls the growth of slopes,
-biases, and readouts together. For populations with small total parameter
-norm and controlled concentration, this yields an output-error lower bound.
+We bound how much non-affine output an evolving population can produce.
+The leading nonlinear term of tanh couples only to the target's projection
+onto polynomials of degree at most three. Controlling this coupling, higher-order remainders,
+and population concentration yields an output-error lower bound.
 
 \begin{theorem}[Output error under slow feature acquisition]
 \label{thm:feature-output}
@@ -39,20 +36,25 @@ $\overline\lambda_n=W^{-1}\sum_j h|\gamma_{j,n}|$.
 The recurrence, coefficients, and precise conditions are given in the appendix.
 \end{theorem}
 
-\paragraph{Proof sketch.}
-Separate the gradient preserving affine output from the remaining tracking
-gradient. Global tanh remainder bounds express nonlinear output and target
-coupling through population moments. An upper bound on parameter movement
-propagates $B_n$ by a scalar recurrence; subtracting the resulting
-non-affine output bound from $\|f_\perp\|_{2,Z}$ yields
-\eqref{eq:feature-main-error}. All parameters evolve, and the comparison
-allows positive growth.
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section35_population/figures/population_output.pdf}
+ \caption{\textbf{Limited population growth leaves a substantial output-error floor.}
+ \textbf{Left:} Joint parameter norm and its upper bound $B_n$, normalized
+ by the initial norm. \textbf{Right:} Executed GD relative training RMS error
+ and the theorem's lower bound. Solid curves and markers show GD;
+ dashed curves show bounds. Archived $W=705$, seed-30 continuations start
+ after 20,000 updates and run 100,000 more at step size 0.002.
+ Mixed sine connects to Figure~\ref{fig:note-training}; smooth step has the
+ largest growth allowance among the six principal targets.
+ Bounds use structural coefficients evaluated along the saved trajectories.}
+ \label{fig:feature-population-output}
+\end{figure}
 
-On ten post-transient GD continuations across six target families, minimum
-evaluated error floors range from $0.427$ to $0.912$ over 100,000 further updates.
-These checks use structural quantities sampled along training
-(Appendix~\ref{app:feature-evidence}); they establish a useful conditional
-mechanism in that regime. Figure~\ref{fig:note-training}'s longer Adam/GD
-runs establish the broader empirical precision gap. The construction
-supplies the geometry and readout directly, avoiding the need to acquire
-them through this slow process.
+Figure~\ref{fig:feature-population-output} connects the growth allowance
+to persistent output error. Across all ten continuations and six target
+families, the lower bound captures at least 97.7\% of executed error at
+every stored diagnostic time (Appendix~\ref{app:feature-evidence}).
+This validates a conditional GD mechanism; the longer Adam/GD experiments
+in Figure~\ref{fig:note-training} establish the broader empirical gap.
+The construction supplies the geometry and readout directly.

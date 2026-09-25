@@ -15,11 +15,13 @@ The proposed subsection explains a conditional mechanism for slow joint feature 
 
 ## Deliverables
 
-- [Main-text LaTeX](section35_feature_acquisition.tex): empirical motivation, compact output-error theorem, proof sketch, validation, and return to the construction.
+- [Main-text LaTeX](section35_feature_acquisition.tex): empirical motivation, compact output-error theorem, paired validation figure, and return to the construction.
 - [Full proof and evidence appendix](section35_population_appendix.tex): exact discrete-GD proof, global remainder constants, target dependence, evolving structural conditions, and empirical protocols.
-- [Standalone PDF](../output/pdf/section35_population_note.pdf) and [wrapper](section35_population_note.tex): six pages, with the proposed subsection on page 1.
+- [Standalone PDF](../output/pdf/section35_population_note.pdf) and [wrapper](section35_population_note.tex): the proposed subsection and its validation pair on page 1, followed by the discrete-GD proof and evidence appendix.
 - [Combined Sections 3.4–3.5 PDF](../output/pdf/section34_spectrum_note.pdf) and [wrapper](section34_spectrum_note.tex): Figure 3 and the existing frozen-readout result followed by the new subsection and both proofs.
 - [Selected evidence and source hashes](../output/diagnostics/section35_population/evidence.json): ten native-step GD comparisons and the completed width-512 training endpoints. This is an extraction of existing records, not a new experiment.
+- [Population/output figure](../output/diagnostics/section35_population/figures/population_output.pdf) and [all-ten tightness figure](../output/diagnostics/section35_population/figures/output_tightness.pdf), also available as 600-DPI PNGs. The main pair uses mixed sine and smooth step; the latter has the largest principal population-growth allowance. Dashed bounds remain distinguishable from solid executed curves and hollow markers.
+- [Matched-time curves](../output/diagnostics/section35_population/figures/curves.csv) and [verification](../output/diagnostics/section35_population/figures/facts.json): all ten saved summaries are reproduced, and the smallest bound/error ratio over the 500-update diagnostic grid is 0.9771404.
 
 The source result is Corollary 4a and its output-error consequence (18d) in `precision-mlps/docs/d34_population_balance_mechanism.md`, as of commit `7a12986`. The source checkout advanced during review; its later changes concern the separate reinforcement analysis, not the population comparison used here. The evidence file records the inspected source hashes and checkout revision.
 
@@ -29,7 +31,7 @@ The scalar recurrence allows the population to grow. It uses polynomial output, 
 
 The numerical checks interpolate diagnostics sampled along the continuations. They support a conditional explanation of those trajectories, not a forecast from initial parameters or a certified upper enclosure between saved samples. The legacy mechanism cohort has width 705 and ten continuations across six targets. It is distinct from the five-million-update width-512 comparison, and it does not establish the same mechanism for Adam.
 
-All main-text endpoint comparisons use relative training RMS error. Dense-grid refit assays are identified separately. The reported minimum theorem floors and executed endpoint errors are different summaries; their difference is not presented as trajectory-wide tightness. Conditional width scalings are confined to the appendix and are not claimed as measured laws.
+All main-text endpoint comparisons use relative training RMS error. Dense-grid refit assays are identified separately. The reported minimum theorem floors and executed endpoint errors are different summaries; their difference is not presented as trajectory-wide tightness. The new tightness figure instead compares bound and error at matching diagnostic times. No new width-scaling claim is made.
 
 ## Three writing reviews
 
@@ -41,15 +43,20 @@ All main-text endpoint comparisons use relative training RMS error. Dense-grid r
 
 The drop-in text references `fig:note-training`; the review wrappers resolve it to external Figure 4 and explicitly disclose that the artwork is pending. Its intended ordering remains width scaling (a), joint training error (b), and mean bandwidth with neuron-spread shading (c), as recorded in [the pending figure note](section34_pending_figure_updates.md). The new theorem does not depend on the unfinished width sweep. Do not carry the wrapper's external-label declaration into the paper: use the actual figure label there.
 
-No experiments were launched for this writing task. The earlier Figure 4 run launch was paused before execution; it is not a running background dependency of this note.
+No training was needed to add these theorem-validation plots. The separate Figure 4 width sweep has now been launched; its status and resource limits are in [the execution record](figure4_width_sweep_execution.md). Its results are not used in the current theorem figures.
 
 ## Build and verification
 
 From this checkout's root:
 
 ```sh
+python experiments/expD36_frozen_gamma_probe/section35_population_figures.py \
+  --evidence ../precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence \
+  --output output/diagnostics/section35_population/figures
 latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=tmp/pdfs/section35 docs/section35_population_note.tex
 latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=tmp/pdfs/section34_compact docs/section34_spectrum_note.tex
 ```
 
 Final PDFs are copied from those build directories into `output/pdf/`. Both documents compile without undefined references, duplicate labels, or overfull boxes. Hyperref reports deliberately unlinked external manuscript figures. The wrappers provide review layout; the drop-in subsection and appendix contain no forced page breaks. The standalone includes a small review-only disclosure that should not be inserted into the manuscript.
+
+The plot revision removes the optional gradient-flow, signed-balance, and conditional width-scaling discussion from this note. The full proof of the stated discrete-GD theorem remains. The original mechanism note retains those additional results.
