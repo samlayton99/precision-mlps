@@ -1,0 +1,54 @@
+{
+  "platform": "Modal CPU",
+  "memory_hard_limit_mib": 4096,
+  "child_peak_rss_mib": 168.6484375,
+  "started_unix": 1790309170.8520637,
+  "finished_unix": 1790309191.881604,
+  "commands": [
+    {
+      "command": [
+        "/usr/local/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_population_target_gap.py",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "returncode": 0,
+      "stdout": ".......                                                                  [100%]\n7 passed in 0.26s\n"
+    },
+    {
+      "command": [
+        "/usr/local/bin/python",
+        "-m",
+        "experiments.expD34_readout_race.population_target_gap",
+        "--source",
+        "results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/force_moment_archive/states.csv",
+        "--dense",
+        "results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/feedback_flow_100k/states.csv",
+        "--capsule",
+        "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/energy_baseline_arb/inputs/N512_seed30_20k.npz",
+        "--output",
+        "/tmp/target-gap"
+      ],
+      "returncode": 0,
+      "stdout": "{\n  \"scope\": \"FP64 evaluation of proved formulas; not an outward-rounded certificate\",\n  \"rows_read\": 543,\n  \"distinct_states\": 503,\n  \"duplicate_states\": 40,\n  \"targets\": [\n    \"blend_m010\",\n    \"blend_p001\",\n    \"blend_p010\",\n    \"blend_p030\",\n    \"bump_left\",\n    \"bump_right\",\n    \"chirp\",\n    \"exp_left\",\n    \"exp_right\",\n    \"gauss_left\",\n    \"gauss_right\",\n    \"kink_abs\",\n    \"kink_relu\",\n    \"localized_sine\",\n    \"mixed_sine\",\n    \"moment3\",\n    \"moment4\",\n    \"moment5\",\n    \"moment9\",\n    \"runge\",\n    \"sine\",\n    \"step_left\",\n    \"step_right\"\n  ],\n  \"widths\": [\n    177.0,\n    705.0,\n    1409.0\n  ],\n  \"counts\": {\n    \"sine\": 21,\n    \"runge\": 7,\n    \"moment3\": 7,\n    \"moment5\": 61,\n    \"moment9\": 21,\n    \"mixed_sine\": 61,\n    \"localized_sine\": 7,\n    \"chirp\": 7,\n    \"moment4\": 7,\n    \"blend_m010\": 7,\n    \"blend_p001\": 7,\n    \"blend_p010\": 7,\n    \"blend_p030\": 7,\n    \"exp_right\": 6,\n    \"exp_left\": 6,\n    \"gauss_left\": 60,\n    \"gauss_right\": 6,\n    \"bump_left\": 6,\n    \"bump_right\": 60,\n    \"step_left\": 6,\n    \"step_right\": 60,\n    \"kink_abs\": 60,\n    \"kink_relu\": 6\n  },\n  \"invalid_gd\": 408,\n  \"capsule_identity_error\": 7.150313327541902e-17,\n  \"dense\": [\n    {\n      \"target\": \"bump_right\",\n      \"degree\": 3,\n      \"method\": \"separate_moments\",\n      \"guaranteed_updates\": 80,\n      \"fourth_only_updates\": 58,\n      \"relative_floor\": 0.8033485021694389,\n      \"saved_updates\": 100000.0,\n      \"saved_peak_M4_ratio\": 1.2865063895750635,\n      \"allowed_M4_ratio\": 3.758198016397451,\n      \"saved_endpoint_relative_error\": 0.8810269881105441,\n      \"first_saved_moment_violation_updates\": null,\n      \"sampled_region_holds\": true\n    },\n    {\n      \"target\": \"gauss_left\",\n      \"degree\": 3,\n      \"method\": \"separate_moments\",\n      \"guaranteed_updates\": 70,\n      \"fourth_only_updates\": 56,\n      \"relative_floor\": 0.7003924732855468,\n      \"saved_updates\": 100000.0,\n      \"saved_peak_M4_ratio\": 1.494159136684171,\n      \"allowed_M4_ratio\": 4.024921876249465,\n      \"saved_endpoint_relative_error\": 0.7880727373351466,\n      \"first_saved_moment_violation_updates\": null,\n      \"sampled_region_holds\": true\n    },\n    {\n      \"target\": \"kink_abs\",\n      \"degree\": 5,\n      \"method\": \"separate_moments\",\n      \"guaranteed_updates\": 109,\n      \"fourth_only_updates\": 105,\n      \"relative_floor\": 0.3163464126569066,\n      \"saved_updates\": 100000.0,\n      \"saved_peak_M4_ratio\": 1.1210010892613573,\n      \"allowed_M4_ratio\": 4.960292007428805,\n      \"saved_endpoint_relative_error\": 0.42751286430177476,\n      \"first_saved_moment_violation_updates\": null,\n      \"sampled_region_holds\": true\n    },\n    {\n      \"target\": \"mixed_sine\",\n      \"degree\": 3,\n      \"method\": \"separate_moments\",\n      \"guaranteed_updates\": 89,\n      \"fourth_only_updates\": 55,\n      \"relative_floor\": 0.835809145260629,\n      \"saved_updates\": 100000.0,\n      \"saved_peak_M4_ratio\": 1.0,\n      \"allowed_M4_ratio\": 3.585641743588472,\n      \"saved_endpoint_relative_error\": 0.912564316580032,\n      \"first_saved_moment_violation_updates\": null,\n      \"sampled_region_holds\": true\n    },\n    {\n      \"target\": \"moment5\",\n      \"degree\": 3,\n      \"method\": \"separate_moments\",\n      \"guaranteed_updates\": 793,\n      \"fourth_only_updates\": 113,\n      \"relative_floor\": 0.8273220345225824,\n      \"saved_updates\": 100000.0,\n      \"saved_peak_M4_ratio\": 1.0001001303147803,\n      \"allowed_M4_ratio\": 1.7706354201833594,\n      \"saved_endpoint_relative_error\": 0.8660252490928297,\n      \"first_saved_moment_violation_updates\": null,\n      \"sampled_region_holds\": true\n    },\n    {\n      \"target\": \"step_right\",\n      \"degree\": 3,\n      \"method\": \"separate_moments\",\n      \"guaranteed_updates\": 95,\n      \"fourth_only_updates\": 73,\n      \"relative_floor\": 0.37432816309159833,\n      \"saved_updates\": 100000.0,\n      \"saved_peak_M4_ratio\": 1.6838811007765664,\n      \"allowed_M4_ratio\": 3.8707699670481492,\n      \"saved_endpoint_relative_error\": 0.48967547603981026,\n      \"first_saved_moment_violation_updates\": null,\n      \"sampled_region_holds\": true\n    }\n  ],\n  \"gap_target_summaries\": [\n    {\n      \"target\": \"moment5\",\n      \"degree\": 3,\n      \"method\": \"fourth_only\",\n      \"width\": 177.0,\n      \"count\": 25,\n      \"valid\": 25,\n      \"min_updates\": 25,\n      \"median_updates\": 26.0,\n      \"max_updates\": 31,\n      \"leakage\": 3.3738931421501e-16,\n      \"min_R_over_F\": 1.1072288706002027e-05,\n      \"max_R_over_F\": 4.508846692645503e-05\n    },\n    {\n      \"target\": \"moment5\",\n      \"degree\": 3,\n      \"method\": \"fourth_only\",\n      \"width\": 705.0,\n      \"count\": 18,\n      \"valid\": 18,\n      \"min_updates\": 100,\n      \"median_updates\": 110.0,\n      \"max_updates\": 113,\n      \"leakage\": 3.3738931421501e-16,\n      \"min_R_over_F\": 1.1878205404113273e-06,\n      \"max_R_over_F\": 1.557510437654044e-06\n    },\n    {\n      \"target\": \"moment5\",\n      \"degree\": 3,\n      \"method\": \"fourth_only\",\n      \"width\": 1409.0,\n      \"count\": 18,\n      \"valid\": 18,\n      \"min_updates\": 210,\n      \"median_updates\": 216.0,\n      \"max_updates\": 219,\n      \"leakage\": 3.3738931421501e-16,\n      \"min_R_over_F\": 3.2266872997662646e-07,\n      \"max_R_over_F\": 4.398477667831838e-07\n    },\n    {\n      \"target\": \"moment5\",\n      \"degree\": 3,\n      \"method\": \"separate_moments\",\n      \"width\": 177.0,\n      \"count\": 25,\n      \"valid\": 25,\n      \"min_updates\": 110,\n      \"median_updates\": 119.0,\n      \"max_updates\": 139,\n      \"leakage\": 3.3738931421501e-16,\n      \"min_R_over_F\": 1.1072288706002027e-05,\n      \"max_R_over_F\": 4.508846692645503e-05\n    },\n    {\n      \"target\": \"moment5\",\n      \"degree\": 3,\n      \"method\": \"separate_moments\",\n      \"width\": 705.0,\n      \"count\": 18,\n      \"valid\": 18,\n      \"min_updates\": 707,\n      \"median_updates\": 785.0,\n      \"max_updates\": 793,\n      \"leakage\": 3.3738931421501e-16,\n      \"min_R_over_F\": 1.1878205404113273e-06,\n      \"max_R_over_F\": 1.557510437654044e-06\n    },\n    {\n      \"target\": \"moment5\",\n      \"degree\": 3,\n      \"method\": \"separate_moments\",\n      \"width\": 1409.0,\n      \"count\": 18,\n      \"valid\": 18,\n      \"min_updates\": 1910,\n      \"median_updates\": 1946.5,\n      \"max_updates\": 1986,\n      \"leakage\": 3.3738931421501e-16,\n      \"min_R_over_F\": 3.2266872997662646e-07,\n      \"max_R_over_F\": 4.398477667831838e-07\n    },\n    {\n      \"target\": \"moment9\",\n      \"degree\": 5,\n      \"method\": \"fourth_only\",\n      \"width\": 177.0,\n      \"count\": 21,\n      \"valid\": 21,\n      \"min_updates\": 32,\n      \"median_updates\": 34.0,\n      \"max_updates\": 40,\n      \"leakage\": 1.2000976987466812e-16,\n      \"min_R_over_F\": 1.4172375442867068e-05,\n      \"max_R_over_F\": 4.879278838331433e-05\n    },\n    {\n      \"target\": \"moment9\",\n      \"degree\": 5,\n      \"method\": \"separate_moments\",\n      \"width\": 177.0,\n      \"count\": 21,\n      \"valid\": 21,\n      \"min_updates\": 787,\n      \"median_updates\": 886.0,\n      \"max_updates\": 1201,\n      \"leakage\": 1.2000976987466812e-16,\n      \"min_R_over_F\": 1.4172375442867068e-05,\n      \"max_R_over_F\": 4.879278838331433e-05\n    }\n  ],\n  \"constants\": {\n    \"A3\": 0.30618621784789724,\n    \"A5\": 0.1952023247017518,\n    \"A7\": 0.13527780395758218\n  }\n}\n"
+    }
+  ],
+  "sources": {
+    "results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/force_moment_archive/states.csv": "202ad412f2f4bc37aee80b5e387553cb5461c8322db2591dadf728686017cb46",
+    "results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/feedback_flow_100k/states.csv": "7d8a4ef9b0c313dd14f8c0840c1b57c6bc4a06e42e46d3469651311ccdc0f184",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/energy_baseline_arb/inputs/N512_seed30_20k.npz": "ce6aae30f8772a9fdac3600fb4d1dab1216963abb2b45fc0d0eeec481fbd18fd",
+    "experiments/expD34_readout_race/population_target_gap.py": "d05586b2e7a29259f638a9ce3ba46387c773eec5f1a60318df00557ec77fa421",
+    "tests/test_population_target_gap.py": "63d131cba7ffe652f263e13118c765862d20efa96d69bf73bc3f4348786470d7",
+    "experiments/expD34_readout_race/population_target_gap_modal.py": "6f393185b73aa65c169a22485d6c27ae9c5dea384c6ea4a9d6821a4a1e2e6043",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "matplotlib": "3.10.3",
+    "pytest": "8.4.0"
+  }
+}
