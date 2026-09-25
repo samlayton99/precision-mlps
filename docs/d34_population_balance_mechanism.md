@@ -36,6 +36,12 @@ original width-705 cases; at width 1409, projection alone covers all six tested
 targets for 100k. These results condition on measured population structure,
 not on a measured future force-growth allowance. The new note separates that
 structural assumption from the unresolved question of proving its persistence.
+It now also derives exact concentration-growth identities and a coupled
+comparison driven by aggregate energy dispersion. Matched energy-redistribution
+experiments test the mechanism while preserving initial population scales;
+they distinguish sensitivity gain from outward motion and retain coarse
+compensation explicitly. The concentration note is the consolidated account
+of these results and their proofs.
 
 **Notation.** Parameters and time use the ordinary GD metric; population sums
 below are unnormalized sums over the $W$ neurons.

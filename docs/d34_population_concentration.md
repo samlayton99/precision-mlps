@@ -1,29 +1,56 @@
 # Persistence from population concentration and target moments
 
 The question is why a wide population keeps learning its slopes slowly after
-the coarse tracking transient. A bound on future force reinforcement leaves
-part of that question inside its premise. Here the premise concerns how
-parameter energy is distributed across neurons. We derive the fine sensitivity
-and population-growth bounds from that structure, using exact tanh inequalities
-and fixed target moments. On the saved width-705 runs, analytic projection and
-target-moment refinements give useful conditional population and output bounds
-for at least 79k additional updates across all 23 targets and two seeds, and
-for 100k in 32 of 46 cases. At width 1409, projection alone covers all six
-tested targets for 100k. The population moments are measured along the
-subsequent trajectories; their persistence is validated empirically, not proved
-from the starting state.
+the coarse tracking transient. Our explanation has two parts. First, spreading
+a fixed amount of parameter energy over many neurons limits their combined
+nonlinear sensitivity. Second, concentration can reinforce this sensitivity
+when relative growth favors already energetic neurons. Common expansion alone does not change
+concentration. These are statements about population dynamics, with no bound
+on an individual neuron's scale.
+
+The useful theorem assumes that a few population moments accumulate
+moderately over the interval. It derives small sensitivity, slow population
+growth, and an output-error floor from those moments and the target. The
+assumption is about energy distribution, not future force or its reinforcement.
+It is checked along the subsequent trajectories; it is not inferred from the
+starting state. Analytic projection and target-moment refinements give useful
+conditional bounds for at least 79k additional updates across all 23 targets
+and two width-705 seeds, and for 100k in 32 of 46 cases. At width 1409,
+projection alone covers all six tested targets for 100k.
+
+The new signed identities explain how that distribution changes. A coupled
+comparison derives concentration growth from an aggregate energy-dispersion
+condition; a separate theorem reduces the radius guarantee to three
+accumulated moments. Matched redistribution experiments distinguish the
+availability of nonlinear sensitivity from its ability to produce expansion.
+Neither theory assumes universal contraction or permanent stagnation.
+
+**Reading guide.** Sections 1–3 give the structural mechanism and its simplest
+proof. Sections 4–5 explain why affine removal and target moments make the
+bound useful; Section 7 shows the broad empirical coverage. Section 9 derives
+the signed concentration dynamics and the coupled theorem. Section 10 gives
+the accumulated-moment version. The final experimental discussion tests the
+mechanism and identifies what remains unresolved.
 
 | Symbol | Meaning |
 |---|---|
 | $a_j,b_j,c_j$ | Physical slope, hidden bias, and readout of neuron $j$; $a_j=\gamma_j$. |
 | $r_j^2=a_j^2+b_j^2+c_j^2$, $M=\sum_jr_j^2$ | Individual and total hidden parameter energy. |
 | $S_k=\sum_jr_j^k$, $\chi_k=W^{k/2-1}S_k/M^{k/2}$ | Population moment and its dimensionless concentration. |
+| $K=\chi_{10}/\chi_6^2$, $Y=M\sqrt{\chi_6}$ | Energy-weighted dispersion ratio and joint energy–concentration product. |
 | $P_C,P_H$ | Orthogonal projections onto affine outputs and their complement. |
 | $g=P_Hy$, $f_H=P_Hf$, $e_H=f_H-g$ | Fine target, output, and residual. |
 | $F,R$ | Effective fine gradient, including compensation, and tracking gradient. |
 | $E_0$ | Initial fine-residual norm for effective flow; initial full-residual norm for GD. |
 | $\tau_k=\|P_{\mathcal P_k}g\|$ | Fixed target loading through polynomial degree $k$. |
 | $h=2/N_{\rm ref}$, $\lambda_{\rm RMS}=h\|a\|/\sqrt W$ | Reference spacing and normalized population slope scale. |
+
+The experimental widths include halo neurons: $W=705$ uses
+$N_{\rm ref}=512$, and $W=1409$ uses $N_{\rm ref}=1024$. The construction
+benchmark $\lambda_*=0.25$ therefore corresponds to physical slope magnitudes
+64 and 128, respectively. It is a reference for comparing population scale,
+not an independently assumed accuracy threshold; output accuracy is bounded
+separately.
 
 ## 1. An assumption about organization, rather than motion
 
@@ -32,6 +59,20 @@ $\chi_6=1$. If the same total energy is equally spread over $k$ active
 neurons, $\chi_6=(W/k)^2$. This motivates the effective count
 $W/\sqrt{\chi_6}$: it measures how many neurons share the energy in this
 third-moment sense. It is not a literal count of neurons with nonzero weights.
+
+A controlled Gaussian example shows why this is a useful starting point and
+why it is not a complete state description. Two redistributions preserve
+total energy and starting slope RMS while giving exactly the same twofold
+increase in $\sqrt{\chi_6}$. One barely changes subsequent slope motion;
+the other more than doubles the endpoint slope RMS relative to baseline.
+Both still have large output error. The theory should explain how distributed
+energy limits sensitivity while allowing the target and feature arrangement
+to determine which way the population moves.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/energy_final_20260925/causal_evolution.png" alt="Two equal concentration doses follow different coupled concentration, dispersion, slope, and error trajectories for the Gaussian target" style="max-width:100%;">
+  <figcaption>Gaussian target, width 705/seed 30, native GD starting at total update 25k. Both perturbed populations have identical starting total energy, slope RMS, and concentration. Their later trajectories differ. The dispersion ratio measures capacity for differential growth; it can fall after energy has already concentrated and is not itself an effective neuron count. The dotted output-error line is 1%. Section 11 gives the mixing controls and the broader experiment.</figcaption>
+</figure>
 
 Multiplying every hidden parameter by any common factor changes $M$ and the
 slopes, but leaves $\chi_6$ unchanged. A bound on concentration therefore
@@ -118,17 +159,31 @@ the derivative of $-1/M$ to obtain (3). A first-exit argument gives the same
 conclusion without assuming in advance that the mass stays bounded.
 The slope bound follows from $\sum_j a_j^2\le M$. $\square$
 
-For example, if $B_6(t)\le Kt$, order-one population growth requires flow time
-of order $W/(E_0M_0K)$. This is a conditional width scaling, not a universal
+This is a population statement even when a few neurons escape. For any
+construction scale $\lambda_*>0$,
+
+$$
+\frac{\#\{j:h|a_j(t)|\ge\lambda_*\}}{W}
+\le\frac{\lambda_{\rm RMS}(t)^2}{\lambda_*^2}.
+$$
+
+Each counted neuron contributes at least $\lambda_*^2$ to the sum of
+squared normalized slopes, which proves the inequality. Thus a small RMS
+bound limits the fraction that can acquire the reference scale; it needs
+neither a bound on the largest slope nor a ban on individual escape.
+
+For example, if $B_6(t)\le\bar z\,t$ for a constant average allowance $\bar z$,
+order-one population growth requires flow time
+of order $W/(E_0M_0\bar z)$. This is a conditional width scaling, not a universal
 update count. The denominator can eventually vanish. The theorem asserts
 slow growth while its budget lasts; it does not assert equilibrium.
 
 **Tracking and native GD.** Let $S_R(t)$ bound accumulated tracking travel
-$\int_0^t\|R\|$. Set $b_0(t)=\sqrt{M_0}+S_R(t)$. Then (3) generalizes to
+$\int_0^t\|R\|$. Set $\beta(t)=\sqrt{M_0}+S_R(t)$. Then (3) generalizes to
 
 $$
 \sqrt{M(t)}\le
-\frac{b_0(t)}{\sqrt{1-2C_3E_0b_0(t)^2B_6(t)/W}}.
+\frac{\beta(t)}{\sqrt{1-2C_3E_0\beta(t)^2B_6(t)/W}}.
 \tag{4}
 $$
 
@@ -428,9 +483,9 @@ This identifies a remaining source of slack: scalar energy concentrations
 discard polynomial cancellation and orientation. It does not justify
 silently attributing the reference's coverage to the simpler hypotheses.
 
-## 8. Verification, scope, and the next theoretical question
+## 8. Verification of the concentration-bound evaluation
 
-The audit uses 72 saved trajectories: 58 native-GD wide-network cases,
+The original concentration-bound audit uses 72 saved trajectories: 58 native-GD wide-network cases,
 six paired effective-flow cases, and eight step-refinement cases. There is
 no new training. The primary interval is total updates 25k–125k at GD step
 size 0.002, or 200 units of flow time. The 5k preceding window only supplies
@@ -459,15 +514,586 @@ are bounded by their initial value. These are numerical checks, not
 interval enclosures between saved states. The native-GD theorem is exact
 conditionally; its plotted evaluation uses interpolated structural data.
 
-All numerical computation ran on Modal CPU with a 4 GiB memory cap.
+That post-processing ran on Modal CPU with a 4 GiB memory cap.
 The evidence records input hashes, source hashes, commands, tests, and
 per-case comparisons, including failures. No scientific arrays were loaded
-on the local computer, and no new GPU training was needed.
+on the local computer. The later replays and interventions described below
+use new, separately accounted Modal GPU computation.
 
 The main gain is a structural implication: distributed parameter energy,
 affine removal, and specified target moments yield small sensitivity and
 slow population growth. Persistence of that energy distribution remains an
-empirically supported condition. The next analytic problem is to bound its
-accumulation from the coupled moment dynamics, retaining aggregate tail
-contributions and polynomial orientation. Replacing that problem by another
-assumption about future force reinforcement would undo the gain made here.
+empirically supported condition. We next examine its coupled dynamics and
+test the consequences of changing the distribution at fixed population scale.
+
+## 9. Relative growth advantage and a coupled concentration theorem
+
+If every neuron's energy increases by the same fractional amount, the
+population expands without concentrating. Concentration changes when some
+neurons gain energy faster relative to what they already have. The following
+identities make that distinction exact and identify the aggregate quantities
+needed to study it.
+
+Write $e_j=r_j^2$ and $\alpha=k/2$. Where $M>0$,
+
+$$
+\frac{d}{dt}\log\chi_k
+=\alpha\left(
+\frac{\sum_j e_j^{\alpha-1}\dot e_j}{\sum_j e_j^\alpha}
+-\frac{\dot M}{M}\right).
+\tag{11}
+$$
+
+The first term weights the fractional growth of energy-rich neurons more
+heavily; the second is the population's energy-weighted fractional growth.
+The formula remains defined when some neurons have zero energy. It requires
+no individual fractional rate at those neurons.
+
+**Exact signed decomposition.** The four velocity components are
+
+$$
+v_{\rm generated}=-J_H^*f_H,\quad
+v_{\rm target}=J_H^*g,\quad
+v_{\rm compensation}=(I-\Pi)J_H^*e_H,\quad
+v_{\rm tracking}=-R.
+\tag{12}
+$$
+
+Their sum is the GD gradient-flow velocity. Effective fine flow omits only
+the last component. Dotting each component with $\nabla\log\chi_k$ gives
+its signed contribution to (11). Generated-output correction need not have
+the same sign for concentration as it has for geometry–readout imbalance.
+The observable must determine the sign calculation.
+
+**Example: positive feedback can remain slow.** In the degree-five
+development run, $\chi_6$ increases by only 0.012% over 100k further updates.
+In the Gaussian run it increases by a factor 2.57, and its instantaneous
+logarithmic growth rate increases about tenfold. Both are in the slow
+population-motion regime. Persistence therefore cannot mean that the
+concentration, its growth rate, or the local acceleration stays frozen.
+
+Across the 58 native-GD cases, generated-output correction makes a negative
+integrated contribution to $\log\chi_6$ in every case. Nevertheless,
+concentration grows in 41 cases: target-driven growth commonly exceeds
+correction. Compensation opposes concentration in 38 cases and supports it
+in the others. The median ratio of net change to the sum of absolute signed
+contributions is 0.592, so universal near-cancellation would also be an
+inaccurate explanation. The largest observed concentration ratio is 6.44;
+the median is 1.07.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/energy_final_20260925/relative_growth.png" alt="Signed target, generated-output, compensation, and tracking contributions to population concentration across six targets" style="max-width:100%;">
+  <figcaption>Width 705, seed 30, starting at total update 25k. Each curve is accumulated along the evolving trajectory, not a frozen-force prediction. The black dashed line is the actual change in log concentration. Native-step defects close the identity and are numerically negligible here. Panel scales differ: the degree-five change is thousands of times smaller than the Gaussian and step changes. Tracking is retained in the audit and is small on these intervals.</figcaption>
+</figure>
+
+Generated-output correction is especially small in the Gaussian, bump, and
+step examples. Their target contribution and compensating coarse response
+are the larger competing terms. For mixed sine, the target contribution to
+concentration is negative and compensation partly offsets it. Thus the
+empirics support a signed, target-dependent balance inside the same general
+framework; they do not support assigning each component a universal role.
+
+**Which feature difference gives an advantage?** Write $s=\nabla\log\chi_6$.
+The effective-flow rate is exactly
+$\langle g,J_H\Pi s\rangle-\langle f_H,J_H\Pi s\rangle$.
+For the leading cubic output $f_3=\sum_j f_{3,j}$, homogeneity gives
+
+$$
+J_3s=24\left(\frac{\sum_j e_j^2f_{3,j}}{\sum_j e_j^3}
+-\frac{f_3}{M}\right).
+$$
+
+To see this, use the score in the proof below and
+$D f_{3,j}(a_j,b_j,c_j)=4f_{3,j}$. The quantity in parentheses compares
+energy-rich neurons' nonlinear output with the population average per unit
+energy. Target alignment with this difference favors concentration;
+alignment with the network's generated output favors its correction.
+Coarse compensation contributes the separate projection correction
+$J_H(\Pi-I)s$, and exact tanh contributes its controlled higher-order
+remainder. This identity explains what the signed audit measures without
+asserting that either contribution always dominates.
+
+**Lemma 3 — sensitivity of concentration to population motion.** Define
+
+$$
+K=\frac{\chi_{10}}{\chi_6^2}\ge1.
+$$
+
+Then
+
+$$
+\|\nabla\log\chi_6\|^2=\frac{36}{M}(K-1),\qquad
+\langle\nabla\log\chi_6,\theta\rangle=0.
+\tag{13}
+$$
+
+**Proof.** The hidden block of the gradient for neuron $j$ is
+$6(e_j^2/\sum_i e_i^3-1/M)(a_j,b_j,c_j)$, and the output-bias entry is
+zero. Squaring and summing gives
+$36[\sum_j e_j^5/(\sum_j e_j^3)^2-1/M]$, which is (13).
+The radial pairing vanishes by direct summation. Cauchy–Schwarz gives
+$(\sum e_j^3)^2\le M\sum e_j^5$, hence $K\ge1$. $\square$
+
+There is an independent interpretation of $K$. Give neuron $j$ probability
+$e_j/M$ and observe $e_j^2$. Then $K-1$ is the variance of this observation
+divided by its squared mean. It measures dispersion under energy weighting.
+Equal energy on any active subset gives $K=1$, regardless of how small that
+subset is. Thus controlling $K$ does not itself assume small concentration.
+
+Equal energies also do not imply an invariant state. At a state with all
+$e_j=M/W>0$, the first derivative of $\log\chi_6$ vanishes, but
+
+$$
+\frac{d^2}{dt^2}\log\chi_6
+=6\,\operatorname{Var}_j(\dot e_j/e_j).
+\tag{14}
+$$
+
+To prove this, differentiate $\sum_j(e_j/M)^3$ twice. Terms involving the
+second derivative of the normalized energies sum to zero at equal energies;
+the remaining term is six times the stated variance. Differential growth can
+therefore create concentration at second order, even when its initial rate
+is zero.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/energy_final_20260925/growth_evolution.png" alt="Concentration growth rates and aggregate energy dispersion evolve across the six development targets" style="max-width:100%;">
+  <figcaption>The relative growth advantage and the dispersion ratio are measured on the changing population. Gaussian, bump, and step targets develop increasing advantage; the degree-five trajectory changes very little. The coupled theorem below permits these increases. It needs an allowance for their aggregate dispersion, not contraction or a constant local Taylor model.</figcaption>
+</figure>
+
+**Theorem 2 — coupled growth from aggregate energy dispersion.** For effective
+fine flow, put $z=\sqrt{\chi_6}$, $Y=Mz$, and $a_0=C_3E_0/W$. Then
+
+$$
+\dot M\le2a_0M^2z,\qquad
+\dot z\le3a_0\sqrt{K-1}\,Mz^2,
+$$
+$$
+Y(t)\le
+\frac{Y_0}{1-a_0Y_0\int_0^t\sqrt{9K(s)-5}\,ds}
+\tag{15}
+$$
+
+while the denominator is positive. This theorem derives the evolution of
+concentration from a condition on accumulated dispersion; it does not take
+the concentration trajectory as an input.
+In particular, if $\overline Y$ denotes the right side of (15), then
+$z(t)\le z_0\exp(3a_0\int_0^t\sqrt{K-1}\,\overline Y\,ds)$ follows
+by integrating the second component inequality in logarithmic form.
+
+**Proof.** Equation (13) and Cauchy–Schwarz give
+$\dot z\le3z\sqrt{K-1}\|F\|/\sqrt M$. Combine this with (2) and the
+mass inequality from Theorem 1 to obtain the component inequalities.
+For the sharper product bound, write
+$\nabla Y=2z\theta_{\rm hidden}+(Mz/2)\nabla\log\chi_6$.
+The two vectors are orthogonal by (13), so
+$\|\nabla Y\|^2=Mz^2(9K-5)$ and
+$\dot Y\le a_0\sqrt{9K-5}\,Y^2$. Integrating the reciprocal and applying
+the first-exit argument proves (15). The orthogonality matters: radial growth
+and concentration cannot both use the entire velocity norm simultaneously.
+$\square$
+
+The premise remains a future structural condition. Its role is different:
+energy dispersion limits how rapidly concentration can reinforce energy
+growth. A numerical test must determine whether the resulting allowance is
+useful and whether the measured dispersion supports it.
+
+The same product also admits a scalar comparison retaining the affine
+projection. Since $M\le Y$ and $\sqrt{S_6}=Y\sqrt M/W$,
+
+$$
+\dot Y\le E_0\sqrt{9K-5}
+\left(\frac{D_3}{W}Y^2+\frac{C_5\sqrt K}{W^2}Y^3\right).
+\tag{15a}
+$$
+
+This follows by multiplying the projected force bound by
+$\|\nabla Y\|=Y\sqrt{9K-5}/\sqrt M$; the factors of $M$ cancel.
+For a target-aware alternative, define
+$Q_Y=\min\{A_3Y^2/W,B_3Y^2/W+A_5Y^3/W^2\}$ and replace the right side by
+$\sqrt{9K-5}[D_3Y^2(\tau_3+Q_Y)/W+C_5E_0\sqrt K Y^3/W^2]$.
+Either expression and the generic bound in (15) are valid, so their minimum
+is valid. A scalar solution starting at $Y_0$ bounds $Y$ by first crossing.
+It gives $\lambda_{\rm RMS}\le h\sqrt{Y/W}$ and output floor
+$[\|g\|-Q_Y]_+/\|y\|$. Tracking adds $Y\tau_{Y,R}$, where
+$\tau_{Y,R}\ge[\dot M_R/M+\tfrac12(\log\chi_6)'_R]_+$.
+These remain population quantities. The scalar comparison uses the
+orthogonality of the two growth directions, while substituting $M\le Y$
+loses some information about radius. The two-variable version below keeps
+radius and concentration separate. The comparisons preserve different
+information, so their useful durations must be compared empirically.
+
+**Rate corollary — a condition on dispersion alone can delay reinforcement.**
+For effective flow, fix a product cap $Y_*>Y_0$ and define
+
+$$
+G_1(t)=\int_0^t\sqrt{9K-5}\,ds,\qquad
+G_2(t)=\int_0^t\sqrt{K(9K-5)}\,ds,
+$$
+$$
+H_{Y_*}(t)=\min\left\{
+\frac{C_3E_0G_1}{W},\quad
+\frac{D_3E_0G_1}{W}+\frac{C_5E_0Y_* G_2}{W^2},\quad
+\frac{D_3(\tau_3+Q_{Y_*})G_1}{W}+\frac{C_5E_0Y_* G_2}{W^2}
+\right\},
+\quad Q_{Y_*}=\min\{A_3Y_*^2/W,B_3Y_*^2/W+A_5Y_*^3/W^2\}.
+$$
+
+If $Y_0/(1-Y_0H_{Y_*}(T))<Y_*$ with positive denominator, then $Y$ remains
+below $Y_*$ through $T$. Before first exit, each scalar force allowance is
+at most a nonnegative coefficient times $Y^2$. Integrating the reciprocal
+with $Y\le Y_*$ in the higher powers gives the three terms in $H_{Y_*}$ and
+contradicts a first exit. Thus only two accumulated dispersion quantities
+are needed for this version, with no maximum-over-time constraint on $K$.
+
+If $G_1,G_2$ grow at width-independent average rates and $Y_0,E_0,Y_*$ are
+order one, the permitted time is order $W$ for fixed nonzero low-degree
+loading. When $\tau_3=0$, the target-aware allowance instead gives an
+order-$W^2$ time scale. The constants and the required dispersion allowances
+matter for finite instances. These conditional rates derive slow evolution
+of concentration and energy together; they do not assume that either is
+frozen. A bounded accumulated tracking contribution to $\log Y$ is included
+by replacing $Y_0$ with $Y_0\exp(\int\tau_{Y,R})$ and reserving that growth
+at the start, using the same first-exit proof.
+
+**A complementary two-variable comparison.** Let $b=\sqrt M$. Cauchy–Schwarz gives
+$\chi_4\le\sqrt{\chi_6}=z$, and $\chi_{10}=Kz^4$. Define
+
+$$
+Q(b,z)=\min\{A_3zb^4/W,\ B_3zb^4/W+A_5z^2b^6/W^2\},
+$$
+$$
+V(b,z,K)=\min\left\{
+\frac{C_3E_0zb^3}{W},\quad
+E_0\left(\frac{D_3zb^3}{W}+\frac{C_5\sqrt K z^2b^5}{W^2}\right),\quad
+\frac{D_3zb^3}{W}(\tau_3+Q)+\frac{C_5E_0\sqrt K z^2b^5}{W^2}
+\right\}.
+\tag{16}
+$$
+
+For ordinary gradient flow, let $r\ge\|R\|$ and
+$\tau_R\ge[\langle\nabla\log\chi_6,-R\rangle]_+$. The cooperative system
+
+$$
+\dot B=V(B,Z,K)+r,\qquad
+\dot Z=3Z\sqrt{K-1}\,V(B,Z,K)/B+\tfrac12Z\tau_R
+\tag{17}
+$$
+
+with $B(0)=b_0,Z(0)=z_0$ bounds $b,z$. Indeed, the right sides bound the
+actual derivatives and are nondecreasing in the other coordinate. Both
+$V$ and $V/B$ are minima of nonnegative polynomials with nonnegative powers
+of $B$ and $Z$. Standard first-crossing comparison proves the claim.
+The slope bound is $hB/\sqrt W$, and the output floor is
+$[\|g\|-Q(B,Z)]_+/\|y\|$.
+
+**Native-step version.** For GD, define the exact concentration defect
+
+$$
+d_n=\log\chi_6(\theta_{n+1})-\log\chi_6(\theta_n)
+-\eta_n\langle\nabla\log\chi_6(\theta_n),-\nabla L(\theta_n)\rangle.
+$$
+
+An exact conditional comparison is
+
+$$
+B_{n+1}=B_n+\eta_n[V(B_n,Z_n,K_n)+r_n],
+$$
+$$
+Z_{n+1}=Z_n\exp\left\{
+3\eta_n\sqrt{K_n-1}\frac{V(B_n,Z_n,K_n)}{B_n}
++\frac{\eta_n\tau_{R,n}}2+\frac{[d_n]_+}2\right\}.
+\tag{18}
+$$
+
+The triangle inequality proves the radius step. The definition of $d_n$,
+(13), and monotonicity prove the concentration step by induction. No
+continuous-flow trajectory-closeness claim is needed for this formula.
+Numerically integrating (17) using saved GD data is a separate diagnostic;
+it is not an evaluation of the exact discrete comparison (18).
+
+## 10. A theorem using three accumulated population moments
+
+A full history of concentration is more information than some conditional
+claims need. For a fixed interval, define three clocks
+
+$$
+I_6=\int\sqrt{\chi_6}\,dt,\qquad
+I_{10}=\int\sqrt{\chi_{10}}\,dt,\qquad
+I_{46}=\int\chi_4\sqrt{\chi_6}\,dt.
+$$
+
+**Theorem 3 — a finite radius cap from accumulated structure.** Fix a trial
+radius $B>b_0$ and accumulated tracking allowance $S_R$. Put
+$\beta=b_0+S_R$ and
+
+$$
+\mathcal A_B=\min\left\{
+\frac{C_3E_0}{W}I_6,\quad
+\frac{D_3E_0}{W}I_6+\frac{C_5E_0B^2}{W^2}I_{10},\quad
+\frac{D_3\tau_3}{W}I_6+\frac{C_5E_0B^2}{W^2}I_{10}
++\frac{D_3A_3B^4}{W^2}I_{46}
+\right\}.
+\tag{19}
+$$
+
+If
+
+$$
+1-2\beta^2\mathcal A_B>0,\qquad
+\frac{\beta}{\sqrt{1-2\beta^2\mathcal A_B}}<B,
+\tag{20}
+$$
+
+then the radius never reaches $B$ on that interval, and its endpoint is at
+most the fraction in (20). Nonnegative upper allowances for the clocks may
+replace their measured values. Left-point sums give the native-GD statement,
+with the residual-norm condition stated earlier.
+
+**Proof.** Before the first crossing of $B$, each of the generic, projected,
+and cubic target-moment force bounds has the form
+$\|F\|\le a_i(t,B)b^3$, using $Q\le A_3\chi_4b^4/W$ for the third
+bound. Their integrated coefficients are the three entries in (19).
+Reserve all tracking travel at the start as in (4). The enlarged radius
+satisfies each cubic comparison until first exit. Reciprocal integration
+therefore bounds it by the fraction in (20), using the minimum of the three
+integrated coefficients. This contradicts a first crossing. For GD the
+exact cubic flow dominates each Euler increment, giving the same result.
+$\square$
+
+This theorem needs accumulated structural budgets, not a frozen Jacobian or
+a force forecast. It yields a slope bound directly. An output-capacity floor
+also requires the relevant instantaneous population moment at the evaluation
+time; the three clocks alone do not supply that additional statement.
+
+## 11. Change concentration while holding population scale fixed
+
+Increasing every slope cannot distinguish concentration from total scale:
+it changes both the network and the theorem's initial energy budget. Instead,
+we mix the hidden parameter columns. If $H$ has columns $(a_j,b_j,c_j)^T$,
+replace it by $HO$ for an orthogonal neuron-mixing matrix $O$. This preserves
+$HH^T$, hence total energy, all three parameter-block norms, their pairwise
+inner products, and the affine output
+$d+(c^Ta)x+c^Tb$. Starting slope RMS is identical in every arm. The nonlinear
+output need not be identical; its change is recorded, and there is no readout
+refitting.
+
+The baseline and eight interventions start at total update 25k. Two mixing
+paths each produce equal neuron energies, or increase $\sqrt{\chi_6}$ by
+factors 2, 4, and 10. A tenfold dose therefore means a hundredfold increase
+in $\chi_6$, at unchanged total energy. Under the sensitivity bound (2),
+it increases the available force allowance tenfold. This is a substantial
+perturbation of population organization, not a small slope dilation.
+
+We continue each state under native GD and effective fine flow for the same
+200 units of physical time: 100k GD updates at step size 0.002, or 10k
+RK4 steps at size 0.02. The three cohorts are width 705/seed 30, width
+705/seed 33, and width 1409/seed 31. All use the same six targets:
+
+| Target | Unnormalized shape |
+|---|---|
+| Degree five | $0.3q_0+0.4q_1+\sqrt{0.75}\,q_5$, with orthonormal polynomial modes $q_k$. |
+| Mixed sine | $\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(14\pi x)$. |
+| Left Gaussian | $\exp(-((x+0.35)/0.22)^2)$. |
+| Right bump | $\exp(1-1/(1-u^2))$ for $|u|<1$, zero otherwise, with $u=(x-0.35)/0.22$. |
+| Right step | $\tanh(14(x-0.31))$. |
+| Absolute-value kink | $|x+0.23|$. |
+
+Each target uses its original RMS normalization on the 2048-point midpoint
+training grid. The independent 8192-point evaluation uses that same fixed
+normalization. Error always refers to the raw trained network output.
+
+**What distinguishes the hypotheses.** If redistribution changes sensitivity
+but not expansion, concentration limits the available coupling without
+determining its direction. If both GD and effective flow accelerate, the
+response belongs to effective fine dynamics and cannot be attributed solely
+to renewed tracking. If two paths with identical concentration doses differ,
+scalar concentration alone omits relevant orientation. A fixed-baseline-residual
+force probe separates changes in the Jacobian and compensation projection
+from the instantaneous change in residual. Permutations and simultaneous
+sign changes of individual columns provide exact null controls.
+
+Orthogonal mixing also changes feature orientation. It is therefore a causal
+intervention on the energy distribution and feature arrangement together,
+with strong controls on population scale. It does not identify a universal
+causal effect of the scalar $\chi_6$ in isolation. The two paths and the
+signed identities are needed to interpret that distinction.
+
+### More sensitivity can produce expansion, correction, or little motion
+
+For degree five at width 705/seed 30, the tenfold concentration dose increases
+initial fine sensitivity 8.66–8.68 times and effective force 234–240 times.
+Holding the original residual fixed gives an even larger force gain, so the
+effect is present in the changed feature coupling itself. Yet final slope RMS
+is only 0.59–0.63% larger than the baseline, and relative output error remains
+86.6%. For seed 33 the slope gain is only 0.20–0.25%. Increased sensitivity
+is not sufficient for rapid acquisition.
+
+The Gaussian, bump, and step development cases respond differently: the
+tenfold dose produces final slope RMS roughly 2.16–2.33 times baseline.
+Their final relative errors are about 50%, 70%, and 19%, respectively.
+These are measurable changes in the dynamics, while the networks still
+miss the 1% output requirement by a large margin. Mixed sine and the
+absolute-value kink instead end with slightly smaller slope RMS than their
+baselines. The second width-705 seed reproduces this division of responses.
+
+The wider cohort also shows why this division should not become a fixed
+classification of targets. At width 1409, the tenfold kink intervention has
+one path ending near $7.48\times10^{-5}$ normalized slope RMS with 42.8%
+error, and another near $1.32\times10^{-4}$ with 11.5% error. Arrangement
+matters within a target as well as between targets. Across all 324 baseline
+and intervention continuations, the smallest error at a saved checkpoint is
+11.52%, and the largest normalized slope RMS is below $5.48\times10^{-4}$.
+Even the accelerated cases remain far from the output requirement and
+construction scale.
+
+Across all 162 matched GD/effective-flow pairs, final slope RMS differs by
+at most 0.283% relatively, and final raw relative error differs by at most
+0.00101 absolutely. The same accelerated and unresponsive cases appear
+without tracking. Within this campaign, renewed coarse disequilibrium is
+therefore not the explanation for the intervention response; the effective
+fine dynamics already produce it.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/energy_final_20260925/concentration_dose.png" alt="Controlled changes in initial concentration increase sensitivity but yield target-dependent changes in final slope RMS across two widths and three seeds" style="max-width:100%;">
+  <figcaption>Top: sensitivity immediately after redistribution, relative to each cohort's baseline. Bottom: slope RMS after 100k equivalent updates, relative to its baseline at the same endpoint. All arms start with identical slope RMS and total parameter energy. Solid curves use GD; dashed curves use effective fine flow. Each target has two mixing paths. The equal-energy point is below one on the horizontal axis; doses 2, 4, and 10 multiply the square root of concentration. The common row scales permit comparison across cohorts.</figcaption>
+</figure>
+
+### The same concentration dose does not specify the coupling
+
+The Gaussian development example makes the missing information visible.
+Two paths produce the same twofold $\sqrt{\chi_6}$ dose, at identical
+population energy and slope scale. One raises initial sensitivity by 2.11
+times and ends at 2.23 times baseline slope RMS. The other leaves initial
+sensitivity almost unchanged and ends only 0.33% above baseline. Their
+final raw errors are about 49.9% and 78.7%. Energy concentration determines
+a valid sensitivity allowance; how energy is divided between slopes,
+biases, and readouts within each neuron still affects the realized
+Jacobian and its alignment with the target.
+
+This is consistent with the weighted feature contrast following (12).
+Concentration controls the magnitude of an available coupling; the signed
+target and generated-output pairings determine how it is used. Future
+mechanistic refinements should retain a few such collective orientations,
+rather than impose bounds on every neuron.
+
+## 12. Locate the remaining slack before adding assumptions
+
+The generic sensitivity estimate is about 9.84 times the exact fine
+Hilbert–Schmidt sensitivity at the median audited case. Retaining affine
+projection reduces this ratio to 1.58; for the leading cubic Jacobian alone,
+the concentration estimate is about 1.38 times its exact norm. These are
+medians of within-run median ratios over the 58 native-GD trajectories.
+The scalar concentration estimate therefore captures much of the available
+sensitivity once the affine directions are removed.
+
+There are larger losses in subsequent norm inequalities. The median
+residual-alignment factor is 0.263. Compensation retains a median 0.858 of
+the raw fine-force norm, and the slope block retains 0.844 of the effective
+fine-force norm. Only a median signed fraction 0.165 of fine velocity points
+outward in total hidden radius. The corresponding median absolute fraction
+in the concentration direction is 0.334. None of these factors is inserted
+into a proved coefficient merely because its measured median is small.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/energy_final_20260925/slack_sources.png" alt="Sensitivity estimates become tight after affine projection, while residual alignment and direction of motion account for additional slack" style="max-width:100%;">
+  <figcaption>Six development targets. Top left: sensitivity allowances at the starting checkpoint; the cubic-only point compares cubic quantities on both sides. Top right: separate factors for residual alignment, retained norm after compensation, and slope-block fraction. They are not cumulative fractions. Bottom: signed projections of effective fine velocity onto radial and concentration-growth directions as the population evolves. Positive values support the named growth; negative values oppose it. These are aggregate diagnostics, not neuronwise controls.</figcaption>
+</figure>
+
+The justified refinement is to retain population direction, especially the
+target-loaded cubic contrast and radial pairing. Assuming universal
+contraction, perfect cancellation, or negligible compensation would contradict
+these measurements. The product theorem already removes one avoidable loss:
+radial growth and concentration growth cannot both use the full velocity
+because their gradient directions are orthogonal.
+
+## 13. Which theorem should carry the claim?
+
+The concentration-history theorem remains the broadest validated result:
+at least 79k additional updates across 23 targets and two width-705 seeds,
+using measured structural moments and fixed target data. The new coupled
+theorem addresses a different part of the explanation. It derives energy
+and concentration growth together from $K=\chi_{10}/\chi_6^2$, rather than
+supplying the concentration trajectory to the comparison.
+
+On the six width-705 development cases, the separate radius/concentration
+comparison remains useful for 44.3k–100k additional updates, with median
+60.7k. Retaining their joint product and its orthogonal gradient budget
+improves this to 53.6k–100k, with median 77.8k. The corresponding effective-flow
+comparisons give essentially the same durations. At width 1409 both
+comparisons cover all six targets through 100k. For the scalar product
+comparison evaluated on GD data, the largest final normalized slope bound
+is below $2.60\times10^{-4}$ and the smallest final output-error floor
+exceeds 42.1%.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/energy_final_20260925/coupled_coverage.png" alt="Joint energy and concentration comparison extends useful duration at width 705 and both coupled comparisons cover all six width-1409 cases" style="max-width:100%;">
+  <figcaption>Both comparisons receive the measured dispersion history and the appropriate tracking allowance, together with the starting state and fixed target moments. They do not receive a future effective-force forecast or concentration trajectory as an independent input. Bars stop when the continuous comparison ceases to establish both the slope bound and the 1% output-error floor, or at 100k. The plotted GD evaluation is a sampled gradient-flow diagnostic. Equation (18) is the separate exact native-step statement; these bars are not certified evaluations of its positive discrete-defect allowance.</figcaption>
+</figure>
+
+The three-clock radius theorem tests a further simplification of the
+premises. At width 705, the sixth-moment clock stays within 1.363 times its
+preceding-window average times elapsed time, but the tenth-moment clock can
+reach 3.40 times that reference. A factor-two allowance for all three clocks
+therefore fails in some cases after 75k. A factor-four allowance holds at
+every sampled prefix in all 58 native cases, but yields a median useful
+radius duration of only 20k at width 705. At width 1409, factor-two allowances
+hold throughout all six cases and give slope-bound durations of 80k–100k.
+These are slope-only results. They demonstrate the cost of simplifying the
+structural input and using a fixed trial-radius cap; they do not supersede
+the longer comparisons.
+
+The paper claim can therefore remain direct: **distributed population
+energy limits fine sensitivity; measured aggregate structural persistence
+turns that limit into a finite-time population-scale and output-error bound.**
+The coupled theorem explains a route to persistence through limited
+differential growth, while the interventions identify the target orientation
+that a sharper version should retain. The accumulated structural conditions
+are empirically supported over stated intervals. Their unconditional
+preservation for arbitrary later times is not part of the claim.
+
+## 14. Verification and reproducibility of the new campaign
+
+The campaign completed 72 archived-trajectory replays, 324 matched baseline
+and intervention continuations, and 16 step-refinement continuations. All
+152 attempted redistribution constructions passed their Gram and dose
+checks; no trajectory was truncated or rejected. The largest relative
+Gram error was $8.25\times10^{-16}$. Native-GD replays matched archived
+parameters bitwise; the largest relative discrepancy across all replays was
+$3.05\times10^{-16}$. Accumulating the four signed concentration rates and
+the native-step defects closed the observed log-moment changes within
+$1.23\times10^{-12}$.
+
+The 22 focused tests cover the exact concentration scores, their aggregate
+norm identities, the velocity split, acceleration at equal energy, the
+weighted cubic contrast, the joint-product derivative bound, native-step
+bookkeeping, finite mixing controls, null symmetries, and independently
+solved comparison equations. Halving the continuation step at matched
+physical times changes final slope RMS by at most $6.47\times10^{-7}$
+relatively, concentration by $1.62\times10^{-5}$ relatively, and raw error
+by $7.02\times10^{-8}$ absolutely. All sampled residual norms satisfy the
+initial-residual bound used by the comparisons.
+
+Halving the density of the audited dispersion histories changes the
+two-variable comparison's stopping time by at most 40 equivalent updates
+and the scalar comparison's by at most 59. Where both resolutions cover
+the full interval, endpoint slope bounds change by at most 0.017%
+relatively. These tests support the numerical evaluation. They do not
+provide interval enclosures between stored states or evaluate the
+positive-part defect sum needed by (18).
+
+All numerical computation ran remotely on Modal. The five GPU jobs used
+7403.5 seconds of recorded function time, about 2.06 GPU-hours within the
+approved three-hour campaign. Remote host memory stayed below 4.5 GiB
+under an 8 GiB hard cap; CPU analysis used a 4 GiB hard cap. Only scalar
+diagnostics and sparse initial/final intervention states were retained.
+Scientific arrays were not loaded on the local computer. This campaign
+tests the GD metric and effective fine flow; its quantitative statements
+do not extend to Adam's adaptive metric without a separate derivation.
+
+The evidence accompanying this note contains the raw scalar histories,
+construction diagnostics, signed balances, comparison failures as well as
+successes, step-refinement comparisons, plots, and execution/source hashes.
+The remaining theoretical refinement is collective orientation: constrain
+the target-loaded nonlinear contrast and radial pairing while allowing
+energy redistribution. That would use the slack identified in Section 12
+without returning to neuronwise control or assuming a future weak force.
