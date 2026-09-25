@@ -27,6 +27,16 @@ allowance covers 43. The larger allowance also covers all six fresh-seed
 confirmation cases. The conditions and their failures are checked explicitly;
 this does not turn a finite observation window into an unconditional guarantee.
 
+**Population-structure follow-up.** The short-window condition still bounds
+future force reinforcement. The [concentration and target-moment note](d34_population_concentration.md)
+instead derives sensitivity and growth bounds from scale-invariant population
+energy moments. Analytic use of the affine projection and fixed target
+moments gives useful bounds for at least 79k further updates across all 46
+original width-705 cases; at width 1409, projection alone covers all six tested
+targets for 100k. These results condition on measured population structure,
+not on a measured future force-growth allowance. The new note separates that
+structural assumption from the unresolved question of proving its persistence.
+
 **Notation.** Parameters and time use the ordinary GD metric; population sums
 below are unnormalized sums over the $W$ neurons.
 

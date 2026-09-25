@@ -114,6 +114,8 @@ def analyze(payload: bytes, study: str='analysis'):
                 code={str(p):hashlib.sha256((Path('/work')/p).read_bytes()).hexdigest()
                       for p in FILES if p.suffix=='.py'})
     (output/'execution.json').write_text(json.dumps(record,indent=2)+'\n')
+    if (source/'inputs_manifest.json').exists():
+        (output/'inputs_manifest.json').write_bytes((source/'inputs_manifest.json').read_bytes())
     result=io.BytesIO()
     with zipfile.ZipFile(result,'w',zipfile.ZIP_DEFLATED) as archive:
         for path in output.iterdir(): archive.write(path,path.name)
@@ -129,15 +131,21 @@ def main(output: str, study: str='verify', seconds: float=300, sources: str='', 
         data=modal.FunctionCall.from_id(recover).get()
     elif study in ('analysis','concentration','concentration_verify'):
         payload=io.BytesIO()
+        input_manifest=[]
         with zipfile.ZipFile(payload,'w',zipfile.ZIP_DEFLATED) as archive:
             for i,name in enumerate(sources.split(',') if sources else ()):
                 path=Path(name)/'states.csv'
                 if path.stat().st_size>16*1024**2: raise ValueError('Scalar input cap')
                 archive.write(path,f'part{i}.csv')
+                input_manifest.append(dict(member=f'part{i}.csv',source=str(path),
+                                           sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
                 if study=='concentration':
                     sparse=Path(name)/'sparse_states.npz'
                     if sparse.stat().st_size>16*1024**2: raise ValueError('Sparse input cap')
                     archive.write(sparse,f'part{i}.npz')
+                    input_manifest.append(dict(member=f'part{i}.npz',source=str(sparse),
+                                               sha256=hashlib.sha256(sparse.read_bytes()).hexdigest()))
+            archive.writestr('inputs_manifest.json',json.dumps(input_manifest,indent=2)+'\n')
         call=analyze.spawn(payload.getvalue(),study)
         print(f'Recoverable Modal call: {call.object_id}',flush=True)
         data=call.get()
