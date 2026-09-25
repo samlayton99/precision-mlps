@@ -81,7 +81,7 @@ def main():
     axes[0].set_xticks(bandwidths, ['1/32', '1/16', '1/8', '1/4'])
     axes[0].set_yticks([1e-8, 1e-5, 1e-2])
     axes[0].set_xlabel(r'Bandwidth $\lambda=\gamma h$')
-    axes[0].set_ylabel(r'Relative rate $\rho_i=\mu_i/\mu_1$')
+    axes[0].set_ylabel(r'$\mu_i/\mu_1$')
     axes[0].legend(handles=[Line2D([], [], color='#222222', marker='o', ms=2.7, label='Kernel'),
                             Line2D([], [], color='#888888', ls='--', lw=.7, label='Bounds')],
                    loc='lower right', handlelength=1.3, labelspacing=.2)

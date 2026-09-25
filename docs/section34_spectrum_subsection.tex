@@ -3,7 +3,7 @@
 \label{sec:bandwidth-access}
 
 The construction's nearly width-independent relative bandwidth $\lambda=\gamma h$ requires
-$\gamma=\Theta(W)$, yet trained RMS slopes fall short (Figure~\ref{fig:note-training}).
+$\gamma=\Theta(W)$, yet trained slopes fall short (Figure~\ref{fig:note-training}).
 Even though larger widths admit smaller $\lambda$ at comparable construction error
 (Figure~\ref{fig:construction}b), small slopes can delay readout learning by weakening
 target-relevant kernel directions. We quantify this delay by replacing
@@ -27,8 +27,8 @@ zero with $\eta=1/(2\mu_1)$ satisfies
 Here $\|\cdot\|_{2,Z}$ is the training-sample RMS norm,
 $p_i$ is the fraction of sampled target energy projected onto kernel
 eigenvector $i$, and $\mu_i/\mu_1\le\overline\rho_i(\gamma)\le1$.
-The explicit gamma-dependent rate bounds and finite-geometry allowances
-are given in Appendix~\ref{app:note-spectrum}.
+The gamma-dependent upper bounds $\overline\rho_i$ come from the spectral
+Theorem~\ref{thm:note-rates} in Appendix~\ref{app:note-spectrum}.
 \end{theorem}
 
 \paragraph{Proof sketch.}
@@ -47,11 +47,12 @@ the output-error bound.
  Width $W=512$; target
  $f(x)=[\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(14\pi x)]/\sqrt{21/32}$
  on $[-1,1]$.
- \textbf{Left:} Kernel ratios (dots) and theorem intervals (dashed boundaries,
+ \textbf{Left:} Kernel ratios $\mu_i/\mu_1$ (dots) and intervals from
+ Theorem~\ref{thm:note-rates} (dashed boundaries,
  shading) for three ranks carrying substantial target energy. Lines connect
  ordered ranks; eigenvectors change with bandwidth.
  \textbf{Right:} Executed frozen-readout GD errors (solid, hollow markers) and
- square roots of the theorem's lower bounds (dashed). The error bound combines
+ square roots of Theorem~\ref{thm:note-output}'s lower bounds (dashed). The error bound combines
  theorem-derived rate bounds with all resolved target projections onto the
  frozen kernel's eigenvectors. Errors are relative training RMS through five million
  updates; geometry and protocol are in Appendix~\ref{app:note-evaluation}.}
@@ -59,16 +60,17 @@ the output-error bound.
 \end{figure}
 \FloatBarrier
 
-Figure~\ref{fig:note-spectrum} (left) selects ranks $4,14,30$ because together
-they carry 59--63\% of sampled target energy across the four bandwidths,
-including at least 8\% in rank~14 and 2.5\% in rank~30.
-Increasing $\lambda$ from $1/32$ to $1/4$ raises their relative rates by factors of
-$1.3$, $47$, and $1.4\times10^5$, respectively.
+Figure~\ref{fig:note-spectrum} (left) shows that small bandwidths leave
+target-relevant eigenvalues tiny relative to $\mu_1$, as captured by the
+appendix's spectral bounds. Since $\mu_1$ limits the stable GD step size,
+these target components decay slowly even when the dictionary admits an
+accurate fit. Theorem~\ref{thm:note-output} converts those rate bounds into
+output-error lower bounds that closely track executed GD
+(Figure~\ref{fig:note-spectrum}, right): bandwidth controls how quickly
+training accesses the dictionary's accuracy.
 
-At $\lambda=1/32$, a direct readout fit attains $6.2\times10^{-10}$ dense-grid
-relative error, yet five million GD updates retain training error $0.210$
-against the resulting RMS lower bound $0.2098$ (Figure~\ref{fig:note-spectrum}, right).
-At $\lambda=1/4$, GD reaches $3.88\times10^{-4}$ over the same budget.
-Across the four bandwidths, the bound remains at least 75\% of measured RMS error
-throughout training: small slopes delay accuracy already available in the
-dictionary.
+The acquisition shortfall also appears empirically under Adam:
+joint training leaves a bandwidth-acquisition gap and output error above
+its frozen-feature counterpart
+(Figure~\ref{fig:note-training}). This motivates the next question:
+why does joint training fail to acquire useful slopes and centers together?

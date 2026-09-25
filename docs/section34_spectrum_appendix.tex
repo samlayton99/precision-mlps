@@ -82,8 +82,8 @@ The following require only matrix-vector products with the finite dictionary:
  \label{eq:note-normalization}
 \end{align}
 Set $\underline\rho_1=\overline\rho_1=1$ and $\beta_M=0$.
-The relative-rate endpoints, including the upper bounds used in
-Theorem~\ref{thm:note-output}, are
+\begin{theorem}[Slope-dependent relative-eigenvalue bounds]
+\label{thm:note-rates}
 \begin{equation}
  \boxed{\underline\rho_i=
  \frac{[\beta_i-\delta_\gamma-\tau_\gamma]_+}{L_\gamma},
@@ -93,11 +93,13 @@ Theorem~\ref{thm:note-output}, are
  \quad 2\le i\le M.}
  \label{eq:note-endpoints}
 \end{equation}
-They enclose every finite-kernel ratio:
-$\underline\rho_i\le\rho_i\le\overline\rho_i$.
+For the finite setup above, these endpoints enclose every kernel ratio:
+$\underline\rho_i\le\mu_i/\mu_1\le\overline\rho_i$.
 Exact zeros known from $\operatorname{rank}K_\gamma\le W+1$ may have both
-endpoints set to zero. No target or optimization trajectory enters these
-spectral bounds.
+endpoints set to zero.
+\end{theorem}
+No target or optimization trajectory enters these spectral bounds.
+The upper endpoints supply Theorem~\ref{thm:note-output}'s output-error lower bound.
 
 \subsection{Derivation of the explicit gamma dependence}
 The identity
@@ -292,10 +294,6 @@ features or Adam's adaptive preconditioner. The next theoretical question
 is how evolving features acquire a useful geometry.
 
 \paragraph{Reproducibility.}
-The source and numerical provenance for the two paired figures are
-\path{experiments/expD36_frozen_gamma_probe/section34_paired_figures.py}
-and \path{output/diagnostics/section34_long_horizon/main_5m/paired/provenance.json}.
-The full protocols, checks, earlier figure layouts, and evidence links
-are indexed in \path{output/diagnostics/section34_long_horizon/README.md}.
-Both figures reuse completed runs; preparing this note launches no new
-training experiments.
+Figure sources, numerical provenance, protocols, and checks are indexed in
+\path{output/diagnostics/section34_long_horizon/README.md}.
+The figures reuse completed runs.
