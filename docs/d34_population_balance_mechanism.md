@@ -8,11 +8,13 @@ coupled population moments before bounding their size.** A small energy
 reservoir alone does not preserve enough of that structure.
 
 The literature suggests how to do this. We derive an exact tanh balance
-identity, prove a conditional RMS-slope bound, and check the proposed
-observables at six saved trajectories' starting and ending states. This gives
-a more specific proof route. It does not establish the new assumptions
-throughout those trajectories or extend the checkpoint-only guarantee to 100k
-updates. The existing accumulated-feedback theorem remains our main claim.
+identity and a population growth comparison that permits positive growth.
+The new comparison uses the evolving population's concentration, polynomial
+output, and coupling to the target; it does not freeze the training dynamics.
+Matched replays support useful conditional bounds over 71k–100k additional
+GD updates for six target families. These are sampled checks of structural
+conditions along trajectories, not guarantees from a checkpoint alone.
+The existing accumulated-feedback theorem remains our main paper claim.
 
 **Notation.** Parameters and time use the ordinary GD metric; population sums
 below are unnormalized sums over the $W$ neurons.
@@ -26,6 +28,8 @@ below are unnormalized sums over the $W$ neurons.
 | $\Delta=\tfrac12\sum_j(a_j^2+b_j^2-c_j^2)$ | Population geometry–readout imbalance, not slope energy. |
 | $A=\sum_j a_j^2$, $C=\sum_j c_j^2$ | Slope and readout squared norms. |
 | $m=\sum_j a_jc_j$, $\rho_{ac}=m/\sqrt{AC}$ | Linear-output coefficient and collective slope–readout alignment. |
+| $M=\sum_j(a_j^2+b_j^2+c_j^2)$ | Total hidden squared norm; the output bias is excluded. |
+| $h=2/N_{\rm ref}$, $\lambda_{\rm RMS}=h\sqrt{A/W}$ | Grid spacing and normalized population slope scale. |
 
 ## 1. The example that identifies what the energy bound loses
 
@@ -308,7 +312,9 @@ explanation of persistence. Its value depends on bounding (6) using signed
 generated correction, target-family structure, and aggregate moments, then
 establishing an alignment allowance. Replacing that work by a measured small
 $B$ would recreate the weakness we are trying to remove. Proposition 2 is
-not a completed replacement for the main theorem.
+not a completed replacement for the main theorem. Section 8 supplies a
+structural growth comparison and derives alignment control from it; Section
+9 tests its usefulness along matched replays.
 
 Fitting the coarse output does not exactly fix $m$ for nonlinear features.
 For a symmetric input measure with $v_x=\|x\|^2>0$, write
@@ -412,22 +418,306 @@ into the unresolved target. Slow-gradient-flow theory supplies a proof
 pattern, but its dissipation and coupling assumptions must be tested here.
 Neither approach needs a per-neuron persistence theorem.
 
+## 8. Growth lemmas: retain dissipation and close a population comparison
+
+The useful strengthening allows growth. Two operations make the proof more
+informative: retain the negative generated-error term before bounding its
+defect, and bound the evolving population through scale-invariant polynomial
+observables. This section uses exact tanh throughout. The polynomials supply
+global inequalities; they are not a substitute training ODE.
+
+Write $r_j^2=a_j^2+b_j^2+c_j^2$, $S_k=\sum_jr_j^k$, and $M=S_2$.
+Define
+
+$$
+A_3=\frac{\sqrt6}{8},\quad
+A_5=\frac2{15}\frac{2^{5/2}5^{5/2}}{6^3},\quad
+A_7=\frac{17}{315}\frac{2^{7/2}7^{7/2}}{8^4},\qquad
+C_k=(k+1)A_k.
+\tag{12}
+$$
+
+**Lemma 3 — a positive allowance for generated-error correction.** Let
+$\sigma=\sigma_{\min}(J_C)>0$, $K_0=2A_3S_4$,
+$E_0=2A_5S_6$, and $J_0=C_3\sqrt{S_6}$. Split
+$F=\Pi J_H^*f_H-\Pi J_H^*g$. The contribution of the first term to
+$\dot\Delta$ is at most
+
+$$
+\mathcal D_{\rm gen}
+\le\frac18\left(E_0+\frac{K_0J_0}{\sigma}\right)^2.
+\tag{13}
+$$
+
+**Proof.** For $k(u)=\tanh u-u\operatorname{sech}^2u$,
+$k'(u)=2u\tanh u\operatorname{sech}^2u$, so $|k(u)|\le2|u|^3/3$.
+For $E(u)=3\tanh u-u\operatorname{sech}^2u-2u$,
+$E'(u)=-2\tanh u\,k(u)$, giving $|E(u)|\le4|u|^5/15$.
+Optimizing $|c|(a^2+b^2)^{k/2}$ at fixed $r$ gives
+$\|k_\theta\|\le K_0$ and $\|E_\theta\|\le E_0$.
+The Jacobian estimate below gives $\|J_H\|\le J_0$.
+The generated part of $\ell$ has norm at most $J_0\|f_H\|/\sigma$.
+Writing $s=\|f_H\|$, (4) therefore bounds its total contribution by
+
+$$
+-2s^2+\left(E_0+K_0J_0/\sigma\right)s
+\le\left(E_0+K_0J_0/\sigma\right)^2/8.
+$$
+
+This completes the square rather than requiring the expression to be
+negative. Compensation is included. $\square$
+
+For well-distributed populations with $M=O(1)$, $S_4=O(W^{-1})$ and
+$S_6=O(W^{-2})$. If the coarse singular value has an order-one lower bound,
+the allowance in (13) is $O(W^{-4})$. Target loading can be larger and
+positive. This explains why failure of universal contraction does not defeat
+the growth argument. A width-independent conditioning margin is an additional
+condition for this scaling statement, not a consequence of the identity.
+
+### Exact remainders and scale-invariant population structure
+
+Let
+$\Psi_3=-\sum_jc_ju_j^3/3$ and
+$\Psi_5=2\sum_jc_ju_j^5/15$.
+Set $J_k=D_\theta(P_H\Psi_k)$ and $G_k=J_k^*g$. Global remainder bounds give
+
+$$
+\begin{aligned}
+\|f_H-P_H(\Psi_3+\Psi_5)\|&\le A_7S_8,\\
+\|J_H-J_3-J_5\|&\le C_7\sqrt{S_{14}},\\
+\|J_H^*g-G_3-G_5\|&\le C_7\|g\|\sqrt{S_{14}}.
+\end{aligned}
+\tag{14}
+$$
+
+**Proof of the constants.** The scalar tanh remainders after degrees one,
+three, and five are bounded by $|u|^3/3$, $2|u|^5/15$, and
+$17|u|^7/315$. Their derivative remainders are bounded by the corresponding
+$k$ times coefficient times $|u|^{k-1}$. For the final bound,
+$\sup|\tanh^{(7)}|\le272$ suffices. In $z=\tanh^2u$, that derivative is
+$-272+3968z-12096z^2+13440z^3-5040z^4$; its Bernstein coefficients on
+$[0,1/2]$ and $[1/2,1]$ are respectively
+$(-272,224,216,124,53)$ and $(53,-18,-68,8,0)$, proving the bound.
+The lower remainders follow by integrating
+$|\tanh u-u|\le|u|^3/3$ and
+$|u^2-\tanh^2u|\le2|u|^4/3$.
+
+For a scalar coefficient $t_k$, a neuron output remainder is at most
+$t_k2^{k/2}|c|(a^2+b^2)^{k/2}$. Its maximum at fixed $r$ is $A_kr^{k+1}$.
+The sum of squared derivative-column remainders is at most
+$t_k^22^k[k^2c^2(a^2+b^2)^{k-1}+(a^2+b^2)^k]$.
+Maximizing at $(a^2+b^2)/r^2=k/(k+1)$ gives $C_k^2r^{2k}$.
+Summing columns bounds the Hilbert–Schmidt norm; projection cannot increase
+it. This proves (14) and the $J_0$ bound in Lemma 3. $\square$
+
+For a directly testable signed imbalance bound, put
+$v=\nabla\Delta=(a,b,-c,0)$. Combining Lemma 3 and (14) gives
+
+$$
+\dot\Delta_F\le
+\frac18(E_0+K_0J_0/\sigma)^2+
+\langle\Pi v,G_3+G_5\rangle+
+\|\Pi v\|C_7\|g\|\sqrt{S_{14}}.
+\tag{14a}
+$$
+
+The polynomial target pairing retains its sign. Add $-v\cdot R$ for full
+flow and the exact quadratic correction (10) for GD. This distinguishes a
+negative generated correction from positive target-driven growth without
+requiring either effect to dominate universally.
+
+For $M>0$, define the dimensionless shapes
+
+$$
+\begin{aligned}
+\chi_k&=W^{k/2-1}S_k/M^{k/2},\\
+q_k&=W^{(k-1)/2}\|P_H\Psi_k\|/M^{(k+1)/2},\\
+j_k&=W^{(k-1)/2}\|J_k\|_{\rm HS}/M^{k/2},\qquad
+g_k=W^{(k-1)/2}\|G_k\|/M^{k/2},\quad k=3,5.
+\end{aligned}
+\tag{15}
+$$
+
+These quantities do not change under a common rescaling of all hidden
+parameters. Bounding them therefore does not assume that $M$, the slopes,
+or the future effective force stay small. They describe population shape,
+low-order output coherence, and coupling to specified target moments. In
+particular, $G_3=0$ when $g\perp\mathcal P_3$, and also $G_5=0$ when
+$g\perp\mathcal P_5$. For other targets those terms remain explicit.
+
+### A first-exit theorem for the evolving population
+
+Choose an allowed total hidden squared norm $M_*>M(0)$. At each time define
+
+$$
+\begin{aligned}
+Q_*&=q_3M_*^2/W+q_5M_*^3/W^2+A_7\chi_8M_*^4/W^3,\\
+J_*&=j_3M_*^{3/2}/W+j_5M_*^{5/2}/W^2+C_7\sqrt{\chi_{14}}M_*^{7/2}/W^3,\\
+G_*&=g_3M_*^{3/2}/W+g_5M_*^{5/2}/W^2
+       +C_7\|g\|\sqrt{\chi_{14}}M_*^{7/2}/W^3,\\
+V_*&=J_*Q_*+G_*.
+\end{aligned}
+\tag{16}
+$$
+
+The shapes in (16) evolve; only the allowed radius is fixed. No Jacobian is
+frozen. Products are retained inside the time integral, avoiding separate
+maximum-over-time bounds on concentration and coherence.
+
+**Theorem 4 — slow population growth from accumulated structural loading.**
+For effective flow, set $r=0$; for ordinary gradient flow set $r=\|R\|$.
+Suppose an upper budget $B_T$ satisfies
+
+$$
+\int_0^T[V_*(t)+r(t)]\,dt\le B_T
+<\sqrt{M_*}-\sqrt{M(0)}.
+\tag{17}
+$$
+
+Then $M(t)<M_*$ throughout $[0,T]$, total hidden parameter travel is at most
+$B_T$, and $\lambda_{\rm RMS}(t)<h\sqrt{M_*/W}$.
+The same result holds for ordinary GD with the integral replaced by
+$\sum_{n<N}\eta_n(V_{*,n}+\|R_n\|)$, at every iterate through $N$.
+
+**Proof.** While $M\le M_*$, (14)–(16) and $\|\Pi\|\le1$ give
+$\|F\|\le\|J_H\|\|f_H\|+\|J_H^*g\|\le V_*$.
+Consequently $D^+\sqrt M\le V_*+r$. At a first exit, integration contradicts
+(17). The same bound then controls travel on the entire interval. For GD,
+the exact triangle inequality
+$\|p_{n+1}\|\le\|p_n\|+\eta_n(V_{*,n}+\|R_n\|)$ for the hidden blocks
+gives the conclusion by induction. There is no continuous-trajectory
+approximation or enlarged step tube in this discrete argument. $\square$
+
+If an initial fraction $p_0$ has $h|a_j(0)|\ge\lambda_0<\lambda_*$, the
+travel conclusion also implies
+
+$$
+p_{\rm ever}(T)\le p_0+
+\frac{h^2B_T^2}{W(\lambda_*-\lambda_0)^2}.
+\tag{18}
+$$
+
+Indeed the squared accumulated slope travels sum to at most $B_T^2$ by
+Minkowski; count the labels requiring travel at least
+$(\lambda_*-\lambda_0)/h$. This is an aggregate counting argument, not an
+individual-neuron premise. A bound above one may be clipped at one.
+
+The theorem's premise is an integral of explicit dimensionless polynomial
+shapes, moment concentration, and tracking. Its conclusion is a bound on
+physical size and force. Establishing useful structural budgets remains a
+substantive empirical or theoretical task; inserting the future true force
+in place of $V_*$ would not establish this mechanism.
+
+### Coarse fitting preserves the product, which preserves alignment
+
+**Lemma 5 — product and alignment preservation.** Assume Theorem 4's
+conditions and a symmetric input measure with $v_x=\|x\|^2>0$. Let
+
+$$
+J_{N,*}=C_3\sqrt{\chi_6}M_*^{3/2}/W,\qquad
+B_m(T)=\frac1{\sqrt{v_x}}\int_0^T
+\left[\sqrt{1+2M_*}\,r+J_{N,*}(V_*+r)\right]dt.
+\tag{19}
+$$
+
+Then $|m(t)-m(0)|\le B_m(T)$ and
+
+$$
+|\rho_{ac}(t)|\ge\frac{2[|m(0)|-B_m(T)]_+}{M_*}
+\tag{20}
+$$
+
+where $A,C>0$. Equivalently $m^2\ge\alpha_T^2AC$ with the right side of
+(20) as $\alpha_T$. A positive lower bound follows when $B_m<|m(0)|$;
+small-coarse-component targets need not meet that additional condition.
+
+**Proof.** With $\mathcal N_\theta$ from (9), the linear output coefficient
+is $\sqrt{v_x}m+\langle\mathcal N_\theta,x/\sqrt{v_x}\rangle$.
+Its derivative under effective flow is zero because $J_CF=0$; under full
+flow its absolute derivative is at most $\|J_C\|\|R\|$.
+The same global cubic remainder proof gives
+$\|D\mathcal N\|\le C_3\sqrt{S_6}\le J_{N,*}$, and
+$\|J_C\|\le\sqrt{1+2M_*}$. Differentiating the coefficient and integrating
+proves (19). Finally $\sqrt{AC}\le(A+C)/2\le M_*/2$ proves (20).
+$\square$
+
+For GD use the corresponding left-point sum in (19) and add
+$\tfrac12\sum_n\eta_n^2(V_{*,n}+\|R_n\|)^2$.
+This follows from the exact identity
+$m_{n+1}-m_n=-\eta_n(c_n\cdot G_{a,n}+a_n\cdot G_{c,n})+
+\eta_n^2G_{a,n}\cdot G_{c,n}$ and
+$|G_a\cdot G_c|\le\|G\|^2/2$.
+
+Thus alignment can be a consequence of a growth theorem rather than an
+independent assumed invariant. The primary population conclusion still
+applies when the alignment lower bound is zero. In particular, a loss of
+useful alignment control does not by itself refute slow scale acquisition.
+
+## 9. Matched replays test a useful duration
+
+The degree-five example makes the gain concrete. Its hidden squared norm
+increases by only 0.003% during 100k additional GD updates. The structural
+comparison allows a 2% increase and consumes about 13% of the corresponding
+radius budget. This closes the implication of Theorem 4 over the measured
+interval without assuming the actual force stays at its starting value.
+For mixed sine, the analogous allowance is 10%. For the bump and kink,
+a factor-two allowance closes over the whole interval. Gaussian and step
+loading exhaust this particular sufficient comparison after approximately
+84k and 71k updates, respectively; their observed population growth is
+still only about 9.3% by 100k updates.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_comparison_verified_20260924/population_comparison.png" alt="Accumulated structural budgets, RMS slope bounds, population growth and alignment along six GD continuations" style="max-width:100%;">
+  <figcaption>Width 705, seed 30, starting after 20k GD updates; another 100k updates at learning rate 0.002. A compares the structural integral to the available radius increase; the theorem applies while the curve stays below one. B shows actual normalized slope RMS and the corresponding upper bound, drawn only over its supported duration. C shows that the result allows positive population growth. D compares alignment to the lower bound derived from coarse fitting and limited travel. Bounds use sampled structural quadrature, not interval arithmetic.</figcaption>
+</figure>
+
+Over their supported durations, the normalized slope-RMS bounds lie between
+$3.7\times10^{-4}$ and $5.5\times10^{-4}$, far below $\lambda=0.25$.
+These numbers describe this width and initialization. The dependence on
+width is explicit in the theorem, but uniform structural allowances across
+widths still require evidence. The radius allowance was selected from a
+reported finite grid to assess usefulness; it was not fixed as a prediction
+before observing the trajectories.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_comparison_verified_20260924/signed_growth.png" alt="Signed generated, target, higher-order, compensation and tracking contributions to imbalance change, with analytic upper allowances" style="max-width:100%;">
+  <figcaption>The same six 100k-update GD continuations. Left: integrated terms in the exact imbalance identity. Right: actual imbalance change and the allowance from (14a), including tracking and the exact discrete correction. Mixed sine has a negative upper allowance; the localized targets permit positive growth. A small allowance does not imply universal contraction.</figcaption>
+</figure>
+
+The signed bound explains more than a small measured derivative: it
+identifies which generated correction can be adverse, bounds that defect,
+and leaves target loading explicit. The population comparison then limits
+how much size can build up under the accumulated structural loading. Its
+remaining assumption is persistence of dimensionless population structure,
+which is less restrictive than assuming small future force or small future
+slopes, but is still a condition to validate.
+
 ## Reproducibility and status
 
-The identities and conditional implication above are proved here. Their
-interpretation as a long-duration closure remains a hypothesis. The audit is
-ordinary floating-point evidence, not an interval certificate. Across six
-starts and 24 saved continuation endpoints, the maximum absolute identity
-discrepancy was below $4.6\times10^{-17}$. Tests at three parameter scales
-also check an independent finite difference of the loss and the exact
-finite-step balance identity. Together with existing target-gap checks, all
-10 tests passed.
+The identities, global remainder inequalities, and conditional comparisons
+are proved here. Their numerical application is ordinary floating-point
+evidence, not an interval certificate or an initial-data-only guarantee.
+The replay study has six targets, effective-flow RK4 steps 0.02 and 0.01,
+and GD steps 0.002 and 0.001, each through physical time 200. Scalar
+diagnostics are recorded every unit of flow time; exact GD moment increments
+are accumulated at every update. Only starting and ending parameter vectors
+are retained.
 
-The audit ran on Modal CPU with a 4 GiB memory cap and about 185 MiB measured
-peak child memory. It processed a 166 KiB starting capsule and a 403 KiB
-endpoint archive, without loading a training trajectory archive or performing
-training. The runner also mounts the two small CSVs used by its separate
-target-gap study. No numerical analysis ran locally.
+Seven focused tests passed, including independent automatic derivatives,
+global remainder bounds at three parameter scales, exact finite-step moment
+identities, a zero-alignment case, and a stationary exact fit. Across the
+replays, accumulated balance discrepancies are below $7\times10^{-14}$.
+Halving the GD step changes population size and normalized slope RMS by
+less than $4.4\times10^{-7}$ relative; RK4 differences are near floating-point
+roundoff. Halving the structural sampling density changes the integrated
+budget by less than $2.7\times10^{-5}$ relative in the six principal runs.
+This tests numerical resolution but does not enclose every unsampled state.
+
+The replay used 495 GPU-seconds on Modal with an 8 GiB memory cap and about
+4.23 GiB measured peak child memory. Budget analysis runs on Modal CPU with
+a 4 GiB cap. No numerical analysis or archive-array loading ran locally.
+The prior endpoint audit remains a separate correctness check; the new
+replays supply the missing time-resolved balances.
 
 Sources, commands, environment, and hashes are recorded in
 [execution.json](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/population_balance_verified_20260924/execution.json).
