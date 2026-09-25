@@ -4,12 +4,16 @@
  \centering
  \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/spectrum_readout.pdf}
  \caption{\textbf{Small slopes weaken kernel directions and delay readout learning.}
- \textbf{A:} finite-kernel ratios (dots) and theorem intervals (dashed
- boundaries, shading) at four bandwidths. Lines connect ordered ranks;
- eigenvectors change with bandwidth. \textbf{B:} executed frozen-GD relative
- output errors (solid) and square roots of the theorem's lower bounds
- (dashed), through five million updates. Both panels use width~512 and the
- same target and geometry (Appendix~\ref{app:note-evaluation}).}
+ Width $W=512$; target
+ $f(x)=[\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(14\pi x)]/\sqrt{21/32}$
+ on $[-1,1]$.
+ \textbf{(a)} Kernel ratios (dots) and theorem intervals (dashed boundaries,
+ shading) for three ranks carrying substantial target energy. Lines connect
+ ordered ranks; eigenvectors change with bandwidth.
+ \textbf{(b)} Executed frozen-readout GD errors (solid, hollow markers) and
+ square roots of the theorem's lower bounds (dashed), using all resolved
+ target projections. Errors are relative training RMS through five million
+ updates; geometry and protocol are in Appendix~\ref{app:note-evaluation}.}
  \label{fig:note-spectrum}
 \end{figure}
 }

@@ -6,14 +6,16 @@ The construction's nearly width-independent relative bandwidth
 $\lambda=\gamma h$ requires $\gamma=\Theta(W)$.
 Even though larger widths admit smaller $\lambda$ at comparable construction
 error (Figure~2b), small slopes can delay readout optimization.
-We quantify this in the dictionary of Section~3.1, replacing the direct
-normalized least-squares solve with GD while keeping the features fixed.
+We quantify this spectral-bias mechanism~\citep{xu2020frequency,tancik2020fourier}
+in the dictionary of Section~3.1, replacing the direct normalized
+least-squares solve with GD while keeping the features fixed.
 
 \begin{theorem}[Slope-dependent output-error lower bound]
 \label{thm:note-output}
 For the fixed-center construction of Section~3.1 with common slope
-$\gamma>0$ and nonzero sampled target, readout GD from zero with
-$\eta=1/(2\mu_1)$ satisfies
+$\gamma>0$, let $\mu_1\ge\mu_2\ge\cdots\ge0$ be the normalized
+readout-kernel eigenvalues. For a nonzero sampled target, readout GD from
+zero with $\eta=1/(2\mu_1)$ satisfies
 \begin{equation}
  \frac{\|f-q_n\|_{2,Z}^{2}}{\|f\|_{2,Z}^{2}}
  \ge\sum_i p_i(\gamma)
@@ -21,30 +23,32 @@ $\eta=1/(2\mu_1)$ satisfies
  \label{eq:note-output-bound}
 \end{equation}
 Here $\|\cdot\|_{2,Z}$ is the training-sample RMS norm,
-$\mu_i$ are the descending readout-kernel eigenvalues, $p_i$ is the fraction
-of target energy in eigenvector $i$, and
-$\overline\rho_i(\gamma)\in[0,1]$ bounds $\mu_i/\mu_1$ from above.
+$p_i$ is the fraction of sampled target energy projected onto kernel
+eigenvector $i$, and $\mu_i/\mu_1\le\overline\rho_i(\gamma)\le1$.
 The explicit gamma-dependent rate bounds and finite-geometry allowances
 are given in Appendix~\ref{app:note-spectrum}.
 \end{theorem}
 
 \paragraph{Proof sketch.}
-Gamma enters the feature correlations through $d\coth(\gamma d)$, where
-$d$ is the separation between training points.
-Controlling the finite-center corrections gives the relative-rate bounds;
-a standard spectral argument then yields the output-error inequality.
+The readout kernel contains normalized inner products of feature vectors
+at pairs of training points. After removing the constant sample direction,
+its center-integral approximation depends explicitly on $d\coth(\gamma d)$,
+where $d$ separates those points. Bounding the finite-center corrections
+gives $\overline\rho_i(\gamma)$; standard GD eigenmode decay then yields
+the output-error bound.
 
 \SectionSpectrumFigure
 \FloatBarrier
 
-Increasing $\lambda$ from $1/32$ to $1/4$ raises the thirtieth relative
-eigenvalue by $1.4\times10^5$, versus only $1.3$ for the fourth
-(Figure~\ref{fig:note-spectrum}A); the thirtieth mode carries about 2.5\%
-of target energy at both endpoints.
+Figure~\ref{fig:note-spectrum}(a) selects ranks $4,14,30$ because together
+they carry 59--63\% of sampled target energy across the four bandwidths,
+including at least 8\% in rank~14 and 2.5\% in rank~30.
+Increasing $\lambda$ from $1/32$ to $1/4$ raises their relative rates by factors of
+$1.3$, $47$, and $1.4\times10^5$, respectively.
 
 At $\lambda=1/32$, a direct readout fit attains $6.2\times10^{-10}$ dense-grid
 relative error, yet five million GD updates retain training error $0.210$
-against the theorem's lower bound $0.2098$ (Figure~\ref{fig:note-spectrum}B).
+against the theorem's lower bound $0.2098$ (Figure~\ref{fig:note-spectrum}(b)).
 At $\lambda=1/4$, GD reaches $3.88\times10^{-4}$ over the same budget.
 Across the four bandwidths, the bound remains at least 75\% of executed error
 throughout training: small slopes delay accuracy already available in the

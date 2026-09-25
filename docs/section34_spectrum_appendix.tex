@@ -216,8 +216,10 @@ The theorem endpoints use the explicit center integral, exterior-center
 subtraction, and scalar normalization bounds. A separate SVD of the actual
 finite feature matrix supplies the validation eigenvalues and target weights
 $p_i$. The plotted lower error uses the theorem's upper rates, not actual
-rates. The spectral figure selects three ranks for readability; the error
-bound includes every numerically resolved target projection.
+rates. In Figure~\ref{fig:note-spectrum}(a), ranks $4,14,30$ carry approximately
+46--48\%, 8--14\%, and 2.5--4.4\% of sampled target energy, respectively,
+across the four evaluated bandwidths. The error bound uses all numerically
+resolved target projections.
 
 The integral is evaluated through a positive quadrature factor rather than
 by subtracting nearly equal entries of \eqref{eq:note-H}. There is no Fourier
@@ -254,7 +256,7 @@ $L^2$ error on its stated grid, not squared loss or an EMA.
 The dense grid checks resolution; it is not an untouched generalization test.
 Frozen GD starts its readout at zero and executes five million full-batch
 FP64 updates with $\eta=1/(2\mu_1)$ at each bandwidth.
-Figure~\ref{fig:note-spectrum}B displays training error. Its spectral
+Figure~\ref{fig:note-spectrum}(b) displays training error. Its spectral
 reference agrees with executed GD within $2.9\times10^{-14}$.
 
 Joint training optimizes all slopes, centers (through affine biases), and
