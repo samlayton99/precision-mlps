@@ -1073,6 +1073,61 @@ where persistence fails. Theorem 16 in the output-persistence note instead
 bounds a full loaded-curvature operator and its derivative; it remains a
 separate, more conservative initial-state comparison.
 
+### Let the reinforcement allowances evolve with the population
+
+A constant allowance can expire because its coefficient slowly changes, even
+when the change is itself controlled. The short window provides information
+about that change per unit population travel. This suggests a second comparison
+that permits the reinforcement coefficients to increase as the population moves.
+
+**Corollary 7a — reinforcement with a movement-dependent allowance.** Replace
+(28) by the weaker, evolving conditions
+
+$$
+\int_0^t r\le\alpha t+L_r\int_0^t A(s)\,ds,\qquad
+\int_0^t qc\le K A(t)+\tfrac12 L_c A(t)^2,
+\tag{32a}
+$$
+
+where $\alpha,K,L_r,L_c\ge0$. Then the conclusions of Theorem 7 hold with
+
+$$
+\dot a=v,\quad \dot b=a,\quad
+\dot v=(\kappa_0+\alpha t+L_r b+Ka+\tfrac12 L_c a^2)v,
+\qquad (a,b,v)(0)=(0,0,q_0).
+\tag{32b}
+$$
+
+**Proof.** Integrating the exact reinforcement identity bounds $\kappa$ by
+the expression in parentheses with $A$ and $\int A$ in place of $a,b$.
+The three-dimensional system is cooperative on nonnegative travel and positive
+force: every off-diagonal derivative is nonnegative. The comparison proof of
+Theorem 7 applies unchanged, as do its energy and population consequences.
+$\square$
+
+Sufficient structural conditions for (32a) are
+$r(t)\le\alpha+L_rA(t)$ and $c(t)\le K+L_cA(t)$, because
+$\int_0^t qA=A(t)^2/2$. The integrated conditions permit more cancellation
+than these pointwise sufficient conditions. We do not assume that $r,c$ or
+high population moments remain frozen. The feedback can strengthen, but its
+strengthening is charged to accumulated motion.
+
+For the empirical comparison, set $\alpha=[r(0)]_+$ and $K=[c(0)]_+$ at the
+end of the short window. Estimate $L_r,L_c$ as twice each coefficient's total
+variation **inside that window**, divided by its effective-force travel.
+These are observed secant-scale allowances, not rigorous derivative suprema.
+Total variation retains changes of either sign: a decreasing coefficient may
+later turn upward, and discarding its negative changes would recreate the
+early-zero failure. Factors one and four are sensitivity checks. The baseline
+comparison instead uses signed window-prefix averages plus twice the measured
+variation, with $L_r=L_c=0$. Neither prescription accesses later states.
+
+Corollary 7a consequently separates two questions. Does the measured variation
+suggest a useful feedback budget? Does that budget remain valid afterward?
+The first is a short-window calculation; the second is the empirical premise
+test. It remains a conditional theorem, with a mechanistic hypothesis about
+directional regularity per unit population movement.
+
 ### Ordinary GD: retain tracking and the discrete defects
 
 Along ordinary gradient flow $\dot\theta=-F-R$, retain the same state function
