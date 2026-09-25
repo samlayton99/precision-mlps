@@ -54,6 +54,13 @@ travel, and reinforcement. Its response-to-travel premise has useful sampled
 coverage over the reported intervals. It refines the explanation
 without replacing Theorem 14's broader conditional claim.
 
+The companion [target-gap persistence theorem](d34_target_gap_persistence.md)
+derives a duration of weak sensitivity for exact tanh dynamics when the
+target has little low-degree fine content. Its energy and first-exit proof
+uses a population fourth moment, with no future small-force or individual
+neuron premise. It includes ordinary GD and a target-leakage allowance;
+its numerical usefulness is assessed separately from the broader theorem.
+
 For the main argument, read the accumulated-feedback appendix containing
 Theorem 14 and Proposition 15, together with its empirical study. Section 2
 supplies the population-to-output connection. Sections 4–6 and Theorem 16
