@@ -1,13 +1,22 @@
 # Integrating the scale-acquisition argument into the paper
 
 The [compiled paper section](../output/pdf/d34_scale_acquisition_paper.pdf)
-is the current typeset deliverable: two pages of main text and seven pages
-of appendix. The [main LaTeX inclusion](d34_scale_acquisition_paper_main.tex)
+is the current typeset deliverable: one page of prose, equations, and theorem;
+one separate page holding the two figure pairs; and nine appendix pages.
+The main-material footprint is still two pages with figures included.
+The [main LaTeX inclusion](d34_scale_acquisition_paper_main.tex)
 and [appendix inclusion](d34_scale_acquisition_paper_appendix.tex) can be
 imported into the manuscript. They follow the reader's questions: what
 fails, what drives the remaining motion, why that force strengthens slowly,
 and what can be proved and checked. Reader-facing text is self-contained;
 operational provenance stays in this memo and the figure records.
+
+The main file includes [the two figure floats](d34_scale_acquisition_paper_figures.tex)
+at its end. In the review PDF they occupy a separate float page; in the full
+paper they can be placed near the relevant discussion. This exposes the
+writing budget directly without shrinking plots or counting their space as
+free. The observation pair should replace the existing joint-training
+figure, so it is counted only once in the complete manuscript.
 
 The [review wrapper](d34_scale_acquisition_paper_review.tex) matches the
 spectrum note's 10-point Times, 5.5-by-9-inch text area. It sets the proposed
@@ -29,7 +38,9 @@ cp tmp/pdfs/scale_acquisition_review/d34_scale_acquisition_paper_review.pdf outp
 The final PDF was rendered page by page and inspected for clipping, figure
 legibility, mathematical layout, and reading order. The build has no
 unresolved references or overfull/underfull boxes. Its two-page main
-footprint includes both captions, the theorem, and the empirical check.
+footprint comprises one writing page and one figure page. The writing page
+includes the force identity, theorem, feedback-loop interpretation, and
+empirical check at normal 10-point size.
 
 ## Placement and chronology
 
@@ -56,7 +67,9 @@ The revised argument has five steps:
    relaxation and geometry/compensation feedback through their effects on
    force. Figure 5b shows positive but limited reinforcement on the smooth
    step. This motivates the accumulated-feedback condition; it does not
-   assume force decay or a stationary slope equilibrium.
+   assume force decay or a stationary slope equilibrium. Briefly state the
+   complementary loop mechanism: weak force permits little travel, limited
+   travel produces limited extra reinforcement, and weak force persists.
 4. **State the conditional theorem.** Its visible conclusions bound raw
    output improvement and RMS slope growth. The variables match the opening
    figure. Explain the force-amplification and collective-travel proof in
@@ -131,6 +144,20 @@ derivatives. Its conclusion allows evolving slopes, biases, and readouts,
 positive force growth, and isolated neuron escapes. Neither a frozen
 Jacobian nor an initial-data-only guarantee is required.
 
+Theorem A.2 now contains the population feedback-loop theorem and its full
+first-exit proof, corresponding to Theorem 17 in the longer population note.
+It also states a disturbance extension for GD. Its stronger premises control
+additional reinforcement per accumulated population travel and accumulated
+force concentration. The main text gives the mechanism in a short paragraph;
+the constants, timescale, and proof remain in Appendix A.4.
+
+The stronger sufficient criterion has narrower coverage: all 46 broad paths
+and six dense paths pass over 20k further updates; three of the six dense
+paths pass at 100k. The broader feedback-budget theorem remains useful on all
+six longer continuations. This is why the loop theorem supplements the main
+result instead of replacing it. The appendix reports the retrospective
+fitting of the response coefficient and its longer-interval failures.
+
 The main scale conclusion is now RMS growth, obtained directly from the
 existing collective parameter-travel bound by triangle inequality. This
 changes the presentation, not the assumptions or dynamics. The appendix
@@ -157,9 +184,10 @@ motivation here, without a quantitative transfer of the GD theorem.
 The draft has two main figures, each with two panels. They replace the old
 main four-panel bound figure and absorb the spectrum note's joint-training
 observation. Do not include a duplicate version of that observation or the
-99th-percentile discussion. The main inclusion now occupies two pages in
-the review layout, with no reduced font sizes. Its seven-page appendix
-holds the six-target comparison, protocols, and full proof. Final page fit
+99th-percentile discussion. The main argument now occupies one page in
+the review layout, with no reduced font sizes; the two figure pairs add one
+separate page. Its nine-page appendix holds both proofs, the six-target
+comparison, and protocols. Final page fit
 still requires the complete manuscript's LaTeX source and its actual style.
 
 Version 19's main content reaches page 12, so the nine-page target still

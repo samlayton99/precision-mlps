@@ -1,36 +1,28 @@
 ## 3.5. Why joint training acquires scale slowly
 
-Can joint training learn features that make high precision accessible?
-Figure 4 compares learning all parameters with learning readouts on
-supplied features. After five million updates, joint Adam reaches relative
-error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$ with supplied
-features. Its RMS relative slope reaches only $0.0582$, compared with the
-supplied scale $1/4$; GD acquires still less scale. The preceding arguments
-establish the accuracy cost of insufficient scale. We now ask why joint
-training acquires scale so slowly.
+Can joint training acquire the scales needed for high precision?
+After five million updates on mixed sine, joint Adam reaches relative error
+$1.81\times10^{-3}$, versus $6.62\times10^{-7}$ on supplied features.
+Its RMS relative slope reaches $0.0582$, compared with the supplied $1/4$;
+GD acquires less scale (Figure 4). The preceding accuracy results motivate
+explaining this slow population movement.
 
 <figure>
   <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/joint_acquisition_rms.png" alt="Joint and fixed-feature Adam/GD output errors beside the RMS slope levels of the same joint runs." style="max-width: 100%;">
-  <figcaption><strong>Figure 4: The precision gap accompanies limited population scale acquisition.</strong> Mixed sine, width 512, five paired seeds, five million full-batch updates. Left: relative training error with the trained readouts; fixed Adam/GD train readouts on uniform $\lambda=1/4$ features. Right: RMS relative slope $\lambda_{\rm RMS}=h\|\gamma\|_2/\sqrt W$, with reference spacing $h=2/467$. Lines summarize seeds and display bins; bands retain seed variation and within-bin extrema. Joint and fixed-Adam recipes use final-validation selection; Appendix D specifies the protocol.</figcaption>
+  <figcaption><strong>Figure 4: Limited scale acquisition accompanies the precision gap.</strong> Mixed sine, width 512, five paired seeds, five million full-batch updates. Left: relative training errors with trained readouts; fixed Adam/GD use uniform $\lambda=1/4$ features. Right: RMS relative slopes, $h=2/467$. Bands retain seed variation and within-bin extrema. Joint and fixed-Adam recipes use final-validation selection (Appendix D).</figcaption>
 </figure>
 
-**Identify the force that remains after coarse fitting.** For
-$q_\theta(x)=b+\sum_j w_j\tanh(\gamma_jx+\beta_j)$ and half mean-squared
-loss, gradient flow is $\dot\theta=-\nabla L$. Splitting output into its
-affine part, spanned by $1,x$, and the orthogonal remainder gives the exact
-decomposition $\nabla L=R+F$. The **tracking gradient** $R$ measures departure
-from coarse equilibrium. The **effective fine gradient** $F$ combines the
-non-affine residual gradient with the compensation needed to preserve
-coarse output. Compensation remains even when tracking becomes small.
+**The surviving force.** For squared loss $L=\frac12\|q_\theta-f\|^2$,
+splitting output into its affine part and orthogonal remainder gives
+$\nabla L=R+F$. The **tracking gradient** $R$ measures departure from coarse
+equilibrium. The **effective fine gradient** $F$ combines the non-affine
+residual gradient with the compensation needed to preserve coarse output.
+In the audited GD regime, tracking is small; compensation remains within $F$.
+We study the ensuing effective flow $\dot\theta=-F$ and account for tracking
+and finite GD steps through explicit disturbance allowances.
 
-In Figure 5, tracking is below 0.2% of effective force on the sampled GD
-continuation. This motivates studying effective flow $\dot\theta=-F$,
-with tracking and GD discretization retained as explicit disturbances in
-the theorem.
-
-**Explain persistence while the features evolve.** Write $e_H$ for the non-affine residual,
-$J_H=D_\theta e_H$ for its output Jacobian, and $v=F/\|F\|$. Along effective
-flow $\dot\theta=-F$, the exact identity
+**Why weak force persists.** Let $e_H$ be the non-affine residual,
+$J_H=D_\theta e_H$, and $v=F/\|F\|$. Along effective flow,
 
 $$
 \frac{d}{dt}\log\|F\|
@@ -39,37 +31,23 @@ $$
 \tag{1}
 $$
 
-separates two mechanisms. **Residual relaxation** fits away the error
-currently driving the force. **Feedback** changes sensitivity to the
-remaining error as geometry and readouts move; it can strengthen the force.
-The smooth-step example has positive feedback and little relaxation:
-force grows 2.19-fold, yet error remains near 49%. Thus persistence need
-not mean contraction or equilibrium. The question is whether initially
-weak force can reinforce itself enough within the budget.
+Relaxation fits away the error driving the force; feedback changes
+sensitivity to the remaining error. Small $F$ means weak residual coupling
+after compensation. Rapid acquisition requires this coupling to strengthen.
+On smooth step, force grows 2.19-fold while error remains near 49%
+(Figure 5): reinforcement occurs, but remains limited. We bound its
+accumulation by $B_t$, using the population's second output response
+weighted by residual and compensation norms.
 
 <figure>
   <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/tracking_and_reinforcement.png" alt="Matched smooth-step continuations show negligible GD tracking and modest positive reinforcement of initially weak effective force." style="max-width: 100%;">
-  <figcaption><strong>Figure 5: Weak effective force survives positive reinforcement.</strong> Both panels use the same smooth-step target, width 705, and checkpoint at 20k GD updates, continued to 120k. Left: full-parameter gradient norms during GD. Right: cumulative terms in (1) along the paired effective flow; their sum gives $\log(\|F\|/\|F_0\|)$. Both axes use total GD updates, converting flow time with $\eta=0.002$. The paired GD and effective-force norms differ by less than 0.08% at saved times.</figcaption>
+  <figcaption><strong>Figure 5: Weak effective force survives positive reinforcement.</strong> Matched smooth-step continuations, width 705, from age 20k to 120k. Left: GD full-parameter gradient norms; tracking stays below 0.2% of effective force at saved times. Right: cumulative terms in (1) along paired effective flow. Both axes use total GD updates with $\eta=0.002$; paired force norms differ by less than 0.08%.</figcaption>
 </figure>
 
-**A conditional population bound.** The small effective gradient means
-that, after coarse compensation, the features couple weakly to the remaining
-error. Rapid acquisition would require the evolving geometry and readouts
-to strengthen this coupling. Equation (1) identifies the route: geometry
-and compensation feedback must overcome residual relaxation. We bound this
-reinforcement using the second output response in direction $v$, weighted
-by residual and compensation norms. This quantity measures how moving
-along the effective gradient can change sensitivity to the remaining
-error. Let $B_t$ bound its accumulation. The condition therefore limits
-how quickly the population can rebuild a strong learning signal while
-allowing all parameters to evolve.
-
-**Theorem 3.3 (Slow scale acquisition; informal).** Restart
-full-batch GD after tracking becomes small, and write $t=n\eta$
-for elapsed training time. Let $F_0$ be the effective fine gradient at the
-restart and $E_0$ the non-affine residual norm. Suppose accumulated
-reinforcing feedback is bounded by $B_t$ throughout the interval. Under
-the coarse-regularity and disturbance conditions in the appendix,
+**Theorem 3.3 (Slow scale acquisition; informal).** Restart GD after
+tracking becomes small. Let $F_0$ and $E_0$ be the restart effective gradient
+and non-affine residual norm, and $t=n\eta$. If accumulated feedback is
+bounded by $B_t$, then, under the conditions in Appendix C,
 
 $$
 \|q_{\theta_n}-f\|^2
@@ -85,25 +63,25 @@ $$
 \tag{3}
 $$
 
-The nonnegative allowances $\Delta_{\rm err},\Delta_{\rm scale}$ account
-for tracking and finite GD steps; both vanish for exact effective flow.
+Here $\lambda_{\rm RMS}=h\|\gamma\|_2/\sqrt W$; $h$ is the reference
+spacing. The allowances cover tracking and finite steps and vanish for
+effective flow.
 
-Bounded feedback limits force amplification. Integrating its square bounds
-output improvement; integrating its magnitude bounds collective travel
-and hence RMS scale growth. Individual neurons may escape: the appendix
-also bounds the fraction ever acquiring a specified increment. Output norms
-use the training measure; parameter norms are Euclidean.
+The proof bounds force amplification, then integrates force to bound
+population travel and its square to bound output improvement.
+A complementary theorem closes the mechanism: if population travel
+produces limited additional reinforcement and accumulated force
+concentration is controlled, weak force supplies too little movement to
+amplify itself rapidly. Its finite-time condition and first-exit proof are
+in Appendix C.1; parameters remain free to evolve.
 
-**Check the condition, then its consequences.** Across 23 targets and two
-seeds at width 705, twice the restart feedback rate covers accumulated
-feedback at every saved prefix over 20k further updates. Six targets are
-checked densely over 100k further updates using a factor-four allowance.
-They use at most 55% of that allowance; the effective-flow RMS growth
-bounds are below $8\times10^{-4}$ and relative-error floors exceed 39%.
-GD closely follows these effective dynamics (Appendix D, Figures S2–S3).
-These numerical checks show that the feedback condition persists over the
-measured post-transient GD intervals, including trajectories on which
-effective force grows.
+**Empirical check.** The broader feedback condition covers all 46 sampled
+paths across 23 targets over 20k further updates. Six dense continuations
+over 100k further updates give RMS growth bounds below $8\times10^{-4}$
+and relative-error floors above 39%, with close GD/effective-flow agreement.
+The stronger loop criterion passes all six shorter continuations and three
+longer ones (Appendix D). It explains a sufficient mechanism for persistence;
+the broader theorem retains longer coverage.
 
 ## Appendix: Conditional persistence under evolving geometry
 
@@ -354,6 +332,128 @@ The numerical lower bounds are deliberately conservative. Their purpose is
 to rule out useful output accuracy over a budget, not to forecast the exact
 small amount of error reduction.
 
+#### C.1. How limited population travel sustains weak reinforcement
+
+The preceding theorem turns a feedback budget into acquisition and error
+bounds. This companion result supplies a sufficient mechanism for that
+budget. Its assumption measures how much additional reinforcement population
+movement can generate. The proof couples movement and reinforcement without
+freezing either.
+
+Write $s(t)=\|F(\theta(t))\|$ and $p_j=(\gamma_j,\beta_j,w_j)$.
+Let $F_j$ denote the corresponding hidden-parameter block of $F$, and set
+
+$$
+I_F=\frac{W\sum_j\|F_j\|^4}{s^4},\qquad
+\mathcal C(t)=\int_0^t\sqrt{I_F(u)}\,du,\qquad
+\mathcal A_4(t)=\int_0^t I_F(u)^{1/4}s(u)\,du.
+\tag{L1}
+$$
+
+Set $I_F=0$ at zero force. The denominator includes output-bias force.
+The quantity $\mathcal A_4$ counts accumulated population travel in a
+fourth-power norm, including reversals; it is not endpoint displacement.
+It bounds the increase of $M_4^{1/4}$, where $M_4=W\sum_j\|p_j\|^4$.
+
+Let $\mathcal B(t)=\int_0^t d_{\rm dir}(u)\,du$. Assume, for constants
+$b_0,K\ge0$ and a finite nondecreasing allowance $C$ with $C(0)=0$,
+
+$$
+\mathcal B(t)\le b_0t+K\int_0^t\mathcal A_4(u)\,du,
+\qquad \mathcal C(t)\le C(t),\qquad 0\le t\le T.
+\tag{L2}
+$$
+
+The baseline $b_0$ allows reinforcement already present at the restart;
+$K$ limits the additional reinforcement generated by population travel.
+Both assumptions are accumulated conditions. Small force alone does not
+imply a useful $K$: changing force direction can expose different output
+curvature. The empirical audit below tests this response relation.
+
+**Theorem A.2 (Persistence through limited feedback from population travel).**
+Consider effective flow on $[0,T]$ with a defined coarse projector,
+$s_0=\|F(0)\|>0$, and (L2). Define
+
+$$
+H_0(t)=\int_0^t e^{2b_0u}\,du,\qquad
+G(T)=\int_0^T\sqrt{C(u)H_0(u)}\,du.
+$$
+
+If $Ks_0G(T)<re^{-r}$ for some $r>0$, then, throughout $[0,T]$,
+
+$$
+\begin{aligned}
+\mathcal B(t)&<b_0t+r,\qquad s(t)\le e^r s_0e^{b_0t},\\
+\mathcal A_4(t)&\le e^r s_0\sqrt{C(t)H_0(t)},\\
+M_4(t)^{1/4}&\le M_4(0)^{1/4}+e^r s_0\sqrt{C(t)H_0(t)},\\
+\|q_{\theta(t)}-f\|^2&\ge[E_0^2-2e^{2r}s_0^2H_0(t)]_+.
+\end{aligned}
+\tag{L3}
+$$
+
+Moreover, $\lambda_{\rm RMS}(t)-\lambda_{\rm RMS}(0)
+\le h e^r s_0\int_0^t e^{b_0u}\,du/\sqrt W$.
+
+**Proof.** Suppose $\mathcal B(t)-b_0t$ first reaches $r$ at $\tau\le T$.
+The force identity implies $s(u)\le e^r s_0e^{b_0u}$ up to that time.
+For $t\le\tau$, Cauchy–Schwarz gives
+
+$$
+\mathcal A_4(t)\le\sqrt{\mathcal C(t)\int_0^t s(u)^2\,du}
+\le e^r s_0\sqrt{C(t)H_0(t)}.
+$$
+
+The response premise then gives the contradiction
+
+$$
+r=\mathcal B(\tau)-b_0\tau
+\le K\int_0^\tau\mathcal A_4(u)\,du
+\le Ke^r s_0G(T)<r.
+$$
+
+Thus the force and travel bounds hold throughout the interval. Minkowski's
+inequality proves the moment bound. Integrating
+$\frac{d}{dt}\|e_H\|^2=-2s^2$ proves the error bound; integrating $s$
+bounds Euclidean travel and hence RMS growth as in Theorem A.1. At a zero
+of $F$, effective flow remains stationary by uniqueness, and the conclusions
+continue to hold. $\square$
+
+For $C(t)=ct$ and $r=1$, a simpler sufficient condition is
+
+$$
+\frac e2 Ks_0\sqrt c\,e^{b_0T}T^2<1.
+\tag{L4}
+$$
+
+Indeed $H_0(t)\le te^{2b_0t}$, so $G(T)\le\sqrt c\,e^{b_0T}T^2/2$.
+With $b_0T$ bounded and the other structural constants fixed, this permits
+durations proportional to $(Ks_0\sqrt c)^{-1/2}$. Weak initial coupling
+delays the reinforcement loop; the population need not contract or approach
+equilibrium.
+
+**Disturbances and GD.** On $\dot\theta=-F-S$, keep $U,V,Z$ from (A5)
+and define
+
+$$
+V_4(t)=\int_0^t\left(W\sum_j\|S_j(u)\|^4\right)^{1/4}\,du.
+$$
+
+Replace $\mathcal A_4$ in (L2) by $\mathcal A_4+V_4$, and put
+$s_*=s_0+U(T)$. If
+
+$$
+K\left[e^r s_*G(T)+\int_0^T V_4(u)\,du\right]<r,
+\tag{L5}
+$$
+
+the same first-exit proof gives $\mathcal B(t)<b_0t+r$ and
+$s(t)\le e^r s_*e^{b_0t}$. The error floor becomes
+$[E_0^2-2e^{2r}s_*^2H_0(t)-2Z(t)]_+$; Euclidean travel is at most
+$e^r s_*\int_0^t e^{b_0u}\,du+V(t)$. To see this, the integrating-factor
+bracket is bounded by $s_*$ up to the proposed exit; Cauchy–Schwarz bounds
+$\mathcal A_4$, and $V_4$ adds disturbed population travel. Substitution
+in (L2) contradicts (L5). For GD, $S$ includes both terms in (A9).
+
 ### D. Empirical scope and methods
 
 **Evidence has three roles.** Figure 4 establishes a full-training
@@ -536,6 +636,39 @@ premises; the conditional implication in Theorem A.1 is exact. All reported
 force and error quantities use the training measure and actual attached
 readouts. No continuous-input generalization or quantitative Adam guarantee
 is asserted.
+
+**Coverage of the population feedback loop.** The stronger theorem uses
+$b_0=d_{\rm dir}(0)$ and $C(t)=2\sqrt{I_F(0)}t$. At saved prefixes,
+the smallest required response coefficient is
+
+$$
+K_{\rm req}=\max_{t_i>0}
+\frac{[\mathcal B(t_i)-b_0t_i]_+}{\int_0^{t_i}\mathcal A_4(u)\,du}.
+$$
+
+We compare it with $K_{\rm crit}=1/(es_0G(T))$. This is a retrospective
+check that useful constants exist, rather than a prediction from the restart
+alone. Integrals use scalar interpolants between saved states. The accumulated
+concentration allowance passes on all reported paths.
+
+All 46 width-705 paths across 23 targets pass the sampled loop criterion over
+20k further updates; the largest $K_{\rm req}/K_{\rm crit}$ is 0.1065.
+All 12 width-1409 reference paths pass too. All six densely sampled
+effective-flow continuations pass over that shorter duration. At 100k
+further update-equivalent units, degree five, mixed sine, and kink still
+pass. Gaussian, bump, and step give ratios 2.67, 3.12, and 2.24; the broader
+feedback-budget bounds remain informative on all six.
+
+For these three longer failures, the required $K$ rises only by factors
+1.184, 1.131, and 1.002 compared with its first-20k estimate. The
+duration-dependent sufficient criterion can therefore expire while the
+response relation changes little. Doubling a coefficient fitted only on
+the first 20k further updates covers the longer response on five of six
+targets. Kink is the exception: its early excess feedback is zero, but later
+becomes positive. These results support finite-interval response conditions
+without supplying a universal extrapolation rule. Halving RK4 and GD steps
+preserves the pass/fail classifications. GD diagnostics test the premises
+numerically; they do not certify the disturbed criterion (L5).
 
 ### E. Mechanism checks and the domain of the explanation
 

@@ -1,96 +1,46 @@
-% Manuscript inclusion: requires the packages/environments in the review wrapper.
+% One-page argument; figures are separate floats for manuscript placement.
 \subsection{Why joint training acquires scale slowly}
 \label{sec:scale-acquisition}
 
-Can joint training learn features that make high precision accessible?
-Figure~\ref{fig:scale-observation} compares learning all parameters with
-learning readouts on supplied features. After five million updates, joint
-Adam reaches relative error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$
-with supplied features. Its RMS relative slope reaches only $0.0582$,
-compared with the supplied scale $1/4$; GD acquires still less scale.
-The preceding arguments establish the accuracy cost of insufficient scale.
-We now ask why joint training acquires scale so slowly.
+Can joint training acquire the scales needed for high precision?
+After five million updates on mixed sine, joint Adam reaches relative error
+$1.81\times10^{-3}$, versus $6.62\times10^{-7}$ on supplied features.
+Its RMS relative slope reaches $0.0582$, compared with the supplied $1/4$;
+GD acquires less scale (Figure~\ref{fig:scale-observation}). The preceding
+accuracy results motivate explaining this slow population movement.
 
-\begin{figure}[htb]
-  \centering
-  \includegraphics[width=\linewidth]{results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/joint_acquisition_rms.pdf}
-  \caption{\textbf{The precision gap accompanies limited population scale acquisition.}
-  Mixed sine, width 512, five paired seeds, five million full-batch updates.
-  Left: relative training error with the trained readouts; fixed Adam/GD
-  train readouts on uniform $\lambda=1/4$ features. Right: RMS relative
-  slope $\lambda_{\mathrm{RMS}}=h\|\gamma\|_2/\sqrt W$, with reference
-  spacing $h=2/467$. Lines summarize seeds and display bins; bands retain
-  seed variation and within-bin extrema. Joint and fixed-Adam recipes use final-validation
-  selection; Appendix~\ref{app:scale-experiments} specifies the protocol.}
-  \label{fig:scale-observation}
-\end{figure}
+\paragraph{The surviving force.}
+For squared loss $L=\frac12\|q_\theta-f\|^2$, splitting output into its
+affine part and orthogonal remainder gives $\nabla L=R+F$. The
+\emph{tracking gradient} $R$ measures departure from coarse equilibrium.
+The \emph{effective fine gradient} $F$ combines the non-affine residual
+gradient with the compensation needed to preserve coarse output.
+In the audited GD regime, tracking is small; compensation remains within $F$.
+We study the ensuing effective flow $\dot\theta=-F$ and account for
+tracking and finite GD steps through explicit disturbance allowances.
 
-\paragraph{Identify the force that remains after coarse fitting.}
-For $q_\theta(x)=b+\sum_{j=1}^W w_j\tanh(\gamma_jx+\beta_j)$ and
-$L=\frac12\|q_\theta-f\|^2$, gradient flow is $\dot\theta=-\nabla L$.
-Splitting output into its affine part and orthogonal remainder gives the
-exact decomposition $\nabla L=R+F$. The \emph{tracking gradient} $R$
-measures departure from coarse equilibrium. The \emph{effective fine
-gradient} $F$ combines the non-affine residual gradient with the
-compensation needed to preserve coarse output. Compensation remains when
-tracking becomes small. In Figure~\ref{fig:scale-mechanism}, tracking is
-below 0.2\% of effective force on the sampled GD continuation. This
-motivates studying effective flow $\dot\theta=-F$, with tracking and GD
-discretization retained as explicit disturbances in the theorem.
-
-\paragraph{Explain persistence while the features evolve.}
-Write $e_H$ for the non-affine residual, $J_H=D_\theta e_H$ for its
-Jacobian, and $v=F/\|F\|$. Effective flow obeys the exact identity
+\paragraph{Why weak force persists.}
+Let $e_H$ be the non-affine residual, $J_H=D_\theta e_H$, and
+$v=F/\|F\|$. Along effective flow,
 \begin{equation}
 \frac{d}{dt}\log\|F\|
 =-\underbrace{\|J_Hv\|^2}_{\text{residual relaxation}}
 +\underbrace{\kappa_H+\kappa_C}_{\text{geometry and compensation feedback}}.
 \label{eq:scale-force-identity}
 \end{equation}
-Residual relaxation fits away the error currently driving the force.
-Feedback changes sensitivity to the remaining error as geometry and
-readouts move; it can strengthen the force. The smooth-step example has
-positive feedback and little relaxation: force grows 2.19-fold, yet error
-remains near 49\%. Thus persistence need not mean contraction or equilibrium.
-The question is whether initially weak force can reinforce itself enough
-within the budget.
-
-\begin{figure}[htb]
-  \centering
-  \includegraphics[width=\linewidth]{results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/tracking_and_reinforcement.pdf}
-  \caption{\textbf{Weak effective force survives positive reinforcement.}
-  Both panels use the same smooth-step target, width 705, and checkpoint
-  at 20k GD updates, continued to 120k. Left: full-parameter gradient norms
-  during GD. Right: cumulative terms in~\eqref{eq:scale-force-identity}
-  along the paired effective flow; their sum gives $\log(\|F\|/\|F_0\|)$.
-  Both axes use total GD updates, converting flow time with $\eta=0.002$.
-  The paired GD and effective-force norms differ by less than 0.08\%
-  at saved times.}
-  \label{fig:scale-mechanism}
-\end{figure}
-
-\begin{samepage}
-\paragraph{A conditional population bound.}
-The small effective gradient means that, after coarse compensation, the
-features couple weakly to the remaining error. Rapid acquisition would
-require the evolving geometry and readouts to strengthen this coupling.
-Equation~\eqref{eq:scale-force-identity} identifies the route: geometry and
-compensation feedback must overcome residual relaxation. We bound this
-reinforcement using the second output response in direction $v$, weighted
-by residual and compensation norms. This quantity measures how moving
-along the effective gradient can change sensitivity to the remaining
-error. Let $B_t$ bound its accumulation. The condition therefore limits
-how quickly the population can rebuild a strong learning signal while
-allowing all parameters to evolve.
-\par
-\end{samepage}
+Relaxation fits away the error driving the force; feedback changes
+sensitivity to the remaining error. Small $F$ means weak residual coupling
+after compensation. Rapid acquisition requires this coupling to strengthen.
+On smooth step, force grows 2.19-fold while error remains near 49\%
+(Figure~\ref{fig:scale-mechanism}): reinforcement occurs, but remains limited.
+We bound its accumulation by $B_t$, using the population's second output
+response weighted by residual and compensation norms.
 
 \begin{theorem}[Slow scale acquisition, informal]
 \label{thm:scale-informal}
-Restart full-batch GD after tracking becomes small, and let $t=n\eta$ be
-elapsed training time. Let $F_0$ be the restart effective fine gradient
-and $E_0$ the non-affine residual norm. If accumulated feedback is bounded
-by $B_t$, then, under the regularity and disturbance conditions in
+Restart GD after tracking becomes small. Let $F_0$ and $E_0$ be the
+restart effective gradient and non-affine residual norm, and $t=n\eta$.
+If accumulated feedback is bounded by $B_t$, then, under the conditions in
 Appendix~\ref{app:scale-theory},
 \begin{align}
 \|q_{\theta_n}-f\|^2
@@ -101,23 +51,26 @@ Appendix~\ref{app:scale-theory},
 +\frac{h}{\sqrt W}t e^{B_t}\|F_0\|+\Delta_{\mathrm{scale}}(t).
 \label{eq:scale-main-rms}
 \end{align}
-The nonnegative allowances account for tracking and finite GD steps;
-both vanish for exact effective flow.
+Here $\lambda_{\mathrm{RMS}}=h\|\gamma\|_2/\sqrt W$; $h$ is the
+reference spacing. The allowances cover tracking and finite steps and
+vanish for effective flow.
 \end{theorem}
 
-Bounded feedback limits force amplification. Integrating its square bounds
-output improvement; integrating its magnitude bounds collective travel
-and hence RMS scale growth. Individual neurons may escape: the appendix
-also bounds the fraction ever acquiring a specified increment. Output norms
-use the training measure; parameter norms are Euclidean.
+The proof bounds force amplification, then integrates force to bound
+population travel and its square to bound output improvement.
+A complementary theorem closes the mechanism: if population travel
+produces limited additional reinforcement and accumulated force
+concentration is controlled, weak force supplies too little movement
+to amplify itself rapidly. Its finite-time condition and first-exit proof
+are in Appendix~\ref{app:scale-loop}; parameters remain free to evolve.
 
-\paragraph{Check the condition, then its consequences.}
-Across 23 targets and two seeds at width 705, twice the restart feedback
-rate covers accumulated feedback at every saved prefix over 20k further
-updates. Six targets are checked densely over 100k further updates using
-a factor-four allowance. They use at most 55\% of that allowance; the
-effective-flow RMS growth bounds are below $8\times10^{-4}$ and relative-error
-floors exceed 39\%. GD closely follows these effective dynamics
-(Appendix~\ref{app:scale-experiments}). These numerical checks show that
-the feedback condition persists over the measured post-transient GD
-intervals, including trajectories on which effective force grows.
+\paragraph{Empirical check.}
+The broader feedback condition covers all 46 sampled paths across 23
+targets over 20k further updates. Six dense continuations over 100k further
+updates give RMS growth bounds below $8\times10^{-4}$ and relative-error
+floors above 39\%, with close GD/effective-flow agreement. The stronger
+loop criterion passes all six shorter continuations and three longer ones
+(Appendix~\ref{app:scale-experiments}). It explains a sufficient mechanism
+for persistence; the broader theorem retains longer coverage.
+
+\input{docs/d34_scale_acquisition_paper_figures.tex}
