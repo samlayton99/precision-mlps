@@ -216,7 +216,7 @@ The theorem endpoints use the explicit center integral, exterior-center
 subtraction, and scalar normalization bounds. A separate SVD of the actual
 finite feature matrix supplies the validation eigenvalues and target weights
 $p_i$. The plotted lower error uses the theorem's upper rates, not actual
-rates. In Figure~\ref{fig:note-spectrum}(a), ranks $4,14,30$ carry approximately
+rates. In Figure~\ref{fig:note-spectrum} (left), ranks $4,14,30$ carry approximately
 46--48\%, 8--14\%, and 2.5--4.4\% of sampled target energy, respectively,
 across the four evaluated bandwidths. The error bound uses all numerically
 resolved target projections.
@@ -256,7 +256,7 @@ $L^2$ error on its stated grid, not squared loss or an EMA.
 The dense grid checks resolution; it is not an untouched generalization test.
 Frozen GD starts its readout at zero and executes five million full-batch
 FP64 updates with $\eta=1/(2\mu_1)$ at each bandwidth.
-Figure~\ref{fig:note-spectrum}(b) displays training error. Its spectral
+Figure~\ref{fig:note-spectrum} (right) displays training error. Its spectral
 reference agrees with executed GD within $2.9\times10^{-14}$.
 
 Joint training optimizes all slopes, centers (through affine biases), and
@@ -265,10 +265,10 @@ recipe per optimizer is selected by median final validation error over all
 five seeds. The selected Adam and GD schedules are full-horizon cosine
 decays with initial learning rates 0.05 and 0.2, respectively.
 Frozen Adam uses the same final-validation selection criterion.
-Figure~\ref{fig:note-training}A shows raw training errors summarized for display; quoted joint and
+Figure~\ref{fig:note-training} (left) shows raw training errors summarized for display; quoted joint and
 frozen-Adam endpoint values use the dense grid. Display bins retain extrema,
 including spikes, rather than replacing the comparison with first tolerance
-crossings. Figure~\ref{fig:note-training}B measures $h|a_j|$ for learned features
+crossings. Figure~\ref{fig:note-training} (right) measures $h|a_j|$ for learned features
 $\tanh(a_jx+b_j)$, using the original reference spacing $h$.
 
 \paragraph{What the joint experiment establishes.}

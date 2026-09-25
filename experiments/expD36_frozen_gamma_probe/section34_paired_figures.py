@@ -53,8 +53,10 @@ def main():
                          'xtick.labelsize': 6.5, 'ytick.labelsize': 6.5,
                          'legend.fontsize': 6.3, 'legend.frameon': False,
                          'lines.linewidth': 1.1, 'pdf.fonttype': 42})
-    mechanism, axes = plt.subplots(1, 2, figsize=(5.5, 1.8), layout='constrained')
-    acquisition, joint = plt.subplots(1, 2, figsize=(5.5, 1.8), layout='constrained')
+    figure_size = (5.5, 1.65)
+    png_dpi = 600
+    mechanism, axes = plt.subplots(1, 2, figsize=figure_size, layout='constrained')
+    acquisition, joint = plt.subplots(1, 2, figsize=figure_size, layout='constrained')
     for ax in [*axes, *joint]:
         ax.set_yscale('log')
         ax.grid(axis='y', alpha=.15, which='major')
@@ -80,7 +82,6 @@ def main():
     axes[0].set_yticks([1e-8, 1e-5, 1e-2])
     axes[0].set_xlabel(r'Bandwidth $\lambda=\gamma h$')
     axes[0].set_ylabel(r'Relative rate $\rho_i=\mu_i/\mu_1$')
-    axes[0].set_title('(a)', loc='left', pad=5)
     axes[0].legend(handles=[Line2D([], [], color='#222222', marker='o', ms=2.7, label='Kernel'),
                             Line2D([], [], color='#888888', ls='--', lw=.7, label='Bounds')],
                    loc='lower right', handlelength=1.3, labelspacing=.2)
@@ -105,7 +106,6 @@ def main():
     axes[1].set_xticks([0, 100, 10000, 1000000], ['0', '$10^2$', '$10^4$', '$10^6$'])
     axes[1].set_xlabel('Readout updates')
     axes[1].set_ylabel('Relative training error')
-    axes[1].set_title('(b)', loc='left', pad=5)
 
     for optimizer in summary['selected']:
         color = {'adam': '#0072B2', 'gd': '#D55E00'}[optimizer]
@@ -144,15 +144,14 @@ def main():
     joint[1].axhline(.25, color='#333333', ls=':', lw=.8, label='Reference 1/4')
     joint[0].set_ylabel('Relative output error')
     joint[1].set_ylabel(r'Scaled slope $h|a_j|$')
-    for ax, title in zip(joint, ['A  Joint training', 'B  Slope acquisition']):
+    for ax in joint:
         ax.set_xlim(0, horizon/1e6)
         ax.set_xlabel('Updates (millions)')
-        ax.set_title(title, loc='left', pad=5)
     joint[0].legend(loc='upper right', ncol=2, handlelength=1.4, columnspacing=.7, labelspacing=.2)
     joint[1].legend(loc='lower right', ncol=2, handlelength=1.4, columnspacing=.7, labelspacing=.2)
     for fig, name in [(mechanism, 'spectrum_readout'), (acquisition, 'joint_acquisition')]:
         for suffix in ['pdf', 'png']:
-            fig.savefig(args.output/f'{name}.{suffix}', dpi=300)
+            fig.savefig(args.output/f'{name}.{suffix}', dpi=png_dpi)
         plt.close(fig)
     fingerprints = []
     for path in sources:
@@ -160,7 +159,9 @@ def main():
             digest = hashlib.file_digest(stream, 'sha256').hexdigest()
         fingerprints.append(dict(path=str(path), sha256=digest))
     (args.output/'provenance.json').write_text(json.dumps(dict(
-        figure_size_inches=[5.5, 1.8], horizon=horizon, sources=fingerprints,
+        figure_size_inches=list(figure_size), png_dpi=png_dpi,
+        panel_identification='Left and right in the LaTeX caption; no panel titles in the artwork.',
+        horizon=horizon, sources=fingerprints,
         spectral_rows=rows, bandwidths=bandwidths, frozen_adam_selection=selected,
         selected_target_energy=np.sum([row['target_weights'] for row in rows], axis=0).tolist(),
         gd_marker_steps=marker_steps.tolist(),
@@ -169,7 +170,8 @@ def main():
                 'Hollow markers identify executed GD at 12 log-spaced updates; bounds use every '
                 'resolved target projection, not only the three ranks displayed in the spectral panel.'),
         indent=2) + '\n')
-    print(json.dumps(dict(figure_size_inches=[5.5, 1.8], checked_spectral_intervals=12,
+    print(json.dumps(dict(figure_size_inches=list(figure_size), png_dpi=png_dpi,
+                          checked_spectral_intervals=12,
                           frozen_adam_recipe=selected['recipe_index'], horizon=horizon)))
 
 
