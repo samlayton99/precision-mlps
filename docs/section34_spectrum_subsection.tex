@@ -60,17 +60,17 @@ the output-error bound.
 \end{figure}
 \FloatBarrier
 
-Figure~\ref{fig:note-spectrum} (left) shows that small bandwidths leave
-target-relevant eigenvalues tiny relative to $\mu_1$, as captured by the
-appendix's spectral bounds. Since $\mu_1$ limits the stable GD step size,
-these target components decay slowly even when the dictionary admits an
-accurate fit. Theorem~\ref{thm:note-output} converts those rate bounds into
+The spectral bounds of Theorem~\ref{thm:note-rates} track how bandwidth
+changes target-relevant ratios $\mu_i/\mu_1$
+(Figure~\ref{fig:note-spectrum}, left). Since $\mu_1$ limits a stable GD
+step, the tiny ratios at small bandwidths leave needed target components
+slow to decay. Theorem~\ref{thm:note-output} converts these rate bounds into
 output-error lower bounds that closely track executed GD
-(Figure~\ref{fig:note-spectrum}, right): bandwidth controls how quickly
-training accesses the dictionary's accuracy.
+(Figure~\ref{fig:note-spectrum}, right): small slopes delay accuracy
+already available in the dictionary.
 
-The acquisition shortfall also appears empirically under Adam:
-joint training leaves a bandwidth-acquisition gap and output error above
-its frozen-feature counterpart
-(Figure~\ref{fig:note-training}). This motivates the next question:
-why does joint training fail to acquire useful slopes and centers together?
+Joint training shows an empirical acquisition shortfall under both GD and
+Adam: the population's mean bandwidth remains below the supplied
+construction scale, with a substantial output-error gap over the same
+training budget (Figure~\ref{fig:note-training}). We next examine why
+training fails to acquire useful slopes and centers together.

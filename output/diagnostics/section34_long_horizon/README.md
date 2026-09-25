@@ -4,6 +4,8 @@ The [paper excerpt](../../pdf/section34_spectrum_subsection.pdf) separates two q
 
 The [full note](../../pdf/section34_spectrum_note.pdf) adds the proof and evaluation appendix. Each subsection contains its own standard LaTeX figure environment, including the image path, full caption, and label; the [LaTeX wrapper](../../../docs/section34_spectrum_note.tex) compiles the note. Both pairs reuse completed computations and preserve the full five-million-update horizon.
 
+The [population-bandwidth figure revision](../../../docs/section34_pending_figure_updates.md) is deferred until Runpod is available. The prose now develops the agreed population-mean argument; Figure 4's current artwork and caption still show the previous RMS and 99th-percentile summaries. The pending record specifies the neuron-standard-deviation shading, required checkpoints, verification, and replacement caption.
+
 This directory contains compact evidence for the proposed [Section 3.4](../../../docs/section34_slope_acquisition.md), its [proof](../../../docs/section34_slope_appendix.md), and the [experimental protocol](../../../docs/section34_empirical_appendix.md). The study uses width 512 including halos, five paired joint-training seeds, full-horizon cosine and constant schedules, and raw relative output error. The theorem concerns frozen GD; Adam and evolving features are evaluated empirically.
 
 The [compiled review PDF](../../pdf/section34_slope_acquisition_review.pdf) combines the proposed subsection, full proof, and empirical appendices. The [drop-in LaTeX subsection](../../../docs/section34_slope_acquisition.tex) is separate from the review wrapper.
