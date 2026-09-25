@@ -914,6 +914,216 @@ hold for arbitrary post-transient states or arbitrary durations. A numerical
 certificate would additionally need enclosures between stored diagnostics;
 the present step and sampling refinements are evidence, not such enclosures.
 
+## 11. What a short observation window can tell us about persistence
+
+The preceding comparison works when we supply the accumulated structural
+coefficients along training. The next question is whether a short observation
+window tells us enough about their evolution to explain a much longer interval.
+The earlier kink example makes this question concrete: an initially inactive
+reinforcement channel later becomes active. Multiplying an early zero estimate
+by a safety factor cannot anticipate that change. We therefore measure how the
+reinforcement itself is changing, retaining signs and coupling.
+
+The objective is a conditional ODE statement, not a Taylor approximation to the
+network trajectory. An observation window supplies initial values and candidate
+allowances. The theorem states precisely which accumulated conditions must
+continue to hold; the subsequent trajectory tests those conditions. A finite
+window alone cannot establish an arbitrary future duration.
+
+### Two ways reinforcement can change
+
+Use the existing full effective fine force $F$, including coarse compensation.
+Write $q=\|F\|$, $u=F/q$, and $A(t)=\int_0^t q(s)\,ds$. These use the full
+Euclidean parameter norm; they are population quantities, not individual slope
+conditions. Suppose the coarse Gram matrix is nonsingular and $q>0$. Define
+
+$$
+\psi=e_H-Q_C\ell,\qquad
+\mathscr H=\langle\psi,D^2f_\theta\rangle,\qquad
+B=J_H^*J_H+\mathscr H.
+\tag{24}
+$$
+
+Here $Q_C$ maps the two coarse coefficients to an output function. Both $B$
+and $\mathscr H$ are symmetric operators; neither needs to be materialized.
+The fine Jacobian is $J_H=D(P_H f_\theta)$. The existing force-energy identity
+gives the logarithmic force growth rate
+
+$$
+\kappa=\frac{\dot q}{q}=-u^*Bu
+=-\|J_Hu\|^2-\langle e_H,D^2f_\theta[u,u]\rangle
+ +\ell^*Q_C^*D^2f_\theta[u,u].
+\tag{25}
+$$
+
+The three terms are residual relaxation, geometry, and compensation in the
+existing terminology. Relaxation retains its negative sign. In particular,
+small $\|F\|$ does not by itself make the normalized direction $u$ change slowly.
+
+**Lemma 6 — exact directional reinforcement identity.** Along effective flow
+$\dot\theta=-F$, set
+
+$$
+\begin{aligned}
+\dot u&=-(I-uu^*)DF[u],\\
+r&=-2\dot u^*Bu,\qquad c=u^*(DB[u])u.
+\end{aligned}
+\tag{26}
+$$
+
+Then
+
+$$
+\dot\kappa=r+qc.
+\tag{27}
+$$
+
+**Proof.** Differentiate $F/q$ and use $\dot F=-DF[F]$ to obtain (26).
+Differentiate $-u^*B u$. Symmetry combines its two direction derivatives into
+$r$. The remaining term is $-u^*\dot B u=q u^*(DB[u])u$, since
+$\dot B=-q DB[u]$. This proves (27). All derivatives include the evolution of
+the residual, the coarse compensating coefficient, and the Jacobians. $\square$
+
+Equation (27) separates rotation of the force direction from changes of the
+loaded operator along actual motion. Neither contribution is a new slope-force
+channel. Neither is assumed negative. Even a fixed symmetric operator can
+produce positive reinforcement as the force rotates toward a less dissipative
+direction. Measuring this contribution prevents us from equating small force
+with slow evolution of every normalized diagnostic.
+
+### A conditional theorem that permits delayed growth
+
+Reset time to the **end** of the observation window. The next theorem assumes
+bounds on two accumulated, signed contributions, rather than a bound on every
+instantaneous curvature or every neuron's coordinates.
+
+**Theorem 7 — short-window initialized population comparison.** Consider a
+smooth effective-flow solution on $[0,T]$, with nonsingular coarse Gram matrix
+and $q_0>0$. Suppose nonnegative constants $\alpha,K$ satisfy, for every prefix,
+
+$$
+\int_0^t r(s)\,ds\le\alpha t,\qquad
+\int_0^t q(s)c(s)\,ds\le K A(t).
+\tag{28}
+$$
+
+Let the scalar comparison solve
+
+$$
+\dot a=v,\qquad
+\dot v=(\kappa_0+\alpha t+Ka)v,\qquad
+a(0)=0,\quad v(0)=q_0.
+\tag{29}
+$$
+
+As long as this comparison is finite,
+
+$$
+A(t)\le a(t),\qquad q(t)\le v(t),\qquad
+\|e_H(t)\|^2\ge
+\left[\|e_H(0)\|^2-2\int_0^t v(s)^2\,ds\right]_+.
+\tag{30}
+$$
+
+Consequently
+
+$$
+\lambda_{\rm RMS}(t)\le\lambda_{\rm RMS}(0)
+ +\frac{h a(t)}{\sqrt W},\qquad
+p_{\rm ever}(t)\le p_0+
+\frac{h^2 a(t)^2}{W(\lambda_*-\lambda_0)^2}.
+\tag{31}
+$$
+
+The initial fraction $p_0$ and thresholds in the second inequality have the
+same meaning as (18). The square root of (30), divided by $\|y\|$, is a lower
+bound on raw relative output error in the theorem's probability measure.
+
+**Proof.** Integrate (27) and use (28):
+$\kappa\le\kappa_0+\alpha t+KA$. Hence
+$\dot q\le(\kappa_0+\alpha t+KA)q$ and $\dot A=q$.
+The comparison system is cooperative on $a\ge0,v>0$: its off-diagonal
+derivatives are $1$ and $Kv\ge0$. Differential inequality comparison, or its
+equivalent Volterra integral comparison with a positive perturbation, proves
+$A\le a$ and $q\le v$ on each compact interval of existence. Negative
+$\kappa_0$ does not affect this monotonicity and is not discarded. Integrate
+the exact identity $(\|e_H\|^2)'=-2q^2$ to prove (30).
+Minkowski bounds slope-RMS change by $hA/\sqrt W$, and the aggregate travel
+counting proof of (18) gives the second part of (31). A zero force, if reached,
+extends the effective-flow conclusions by uniqueness and continuity. $\square$
+
+This theorem permits positive reinforcement and eventual rapid growth. The
+relevant obstructions are $\kappa_0 T$, the rotation allowance $\alpha T^2$,
+and the movement-induced feedback $Kq_0T^2$, rather than universal contraction.
+For example, until $q\le2q_0$, integration yields
+
+$$
+\log(q(t)/q_0)\le\kappa_0t+\tfrac12\alpha t^2+Kq_0t^2.
+\tag{32}
+$$
+
+If the maximum of the right side on $[0,T]$ is strictly below $\log2$,
+a first-exit argument proves $q<2q_0$ throughout. Solving (29) usually wastes
+less margin than this simple sufficient test.
+
+The substantive premise is (28). Calibrating $\alpha,K$ from a short window
+does not prove it. Its advantage over a force forecast is that we can inspect
+two mechanistic, signed accumulations, allow fluctuations, and test exactly
+where persistence fails. Theorem 16 in the output-persistence note instead
+bounds a full loaded-curvature operator and its derivative; it remains a
+separate, more conservative initial-state comparison.
+
+### Ordinary GD: retain tracking and the discrete defects
+
+Along ordinary gradient flow $\dot\theta=-F-R$, retain the same state function
+$\kappa=-u^*Bu$. Define
+
+$$
+\zeta=-F^*DF[R]/q^2,\qquad \delta=D\kappa[-R].
+\tag{33}
+$$
+
+Then $\dot{\log q}=\kappa+\zeta$ and
+$\dot\kappa=r+qc+\delta$. Thus the additional log-force budget is
+$\int_0^t\zeta(s)ds+\int_0^t(t-s)\delta(s)ds$.
+This distinguishes a small tracking force from its effect on reinforcement.
+The latter must be measured; it is not silently set to zero.
+
+An exact finite-step statement avoids assuming that the continuous comparison
+automatically applies to GD. For step sizes $\eta_n$, let
+$t_n=\sum_{j<n}\eta_j$, $A_n=\sum_{j<n}\eta_jq_j$, and define
+
+$$
+\epsilon_n=\log(q_{n+1}/q_n)-\eta_n\kappa_n,\qquad
+d_n=\kappa_{n+1}-\kappa_n-\eta_n(r_n+q_nc_n).
+\tag{34}
+$$
+
+Assume the left-point versions of (28), and prefix allowances
+$\sum_{j<n}d_j\le D_n$ and $\sum_{j<n}\epsilon_j\le E_n$.
+These include tracking and finite-step effects. The recursion
+
+$$
+\begin{aligned}
+a_0&=0,\\
+v_n&=q_0\exp\left\{\kappa_0t_n+
+ \sum_{j<n}\eta_j(\alpha t_j+Ka_j+D_j)+E_n\right\},\\
+a_{n+1}&=a_n+\eta_n v_n
+\end{aligned}
+\tag{35}
+$$
+
+gives $q_n\le v_n$ and $A_n\le a_n$ by induction: first sum the $d_j$
+identity to bound $\kappa_n$, then sum the $\epsilon_j$ identity to bound
+$\log(q_n/q_0)$, and use $K\ge0$. The GD population travel bound adds
+$\sum_{j<n}\eta_j\|R_j\|$ to $a_n$. For an output-error consequence also
+bound the adverse accumulated energy defect
+$-\sum_{j<n}(\|e_{H,j+1}\|^2-\|e_{H,j}\|^2+2\eta_jq_j^2)$;
+subtract that allowance from the discrete version of (30).
+This is a proved conditional discrete statement. Sampled diagnostics do not
+certify its between-sample premises. Zero-force GD states require a direct
+non-logarithmic treatment because tracking can reactivate their effective force.
+
 ## Reproducibility and status
 
 The identities, global remainder inequalities, and conditional comparisons
