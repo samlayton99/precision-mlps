@@ -2130,6 +2130,26 @@ Testing $\mathcal B(t)=\alpha d_{\rm dir}(0)t$ for specified factors $\alpha$
 is a test of persistence of an aggregate response, not a fit of future
 force amplitude. Such a premise can fail, and its failure must be reported.
 
+**A simpler population conclusion needs no concentration premise.** The
+feedback allowance alone gives total effective-flow travel
+$A_2(t):=\int_0^t\|F(s)\|ds\le t f_0e^{\mathcal B(t)}$. Minkowski bounds
+the sum of squared accumulated slope travels by $A_2(t)^2$. Counting labels
+that require physical slope travel at least $(\lambda_*-\lambda_0)/h$
+therefore gives
+
+$$
+p_{\rm ever}(t)\le\min\left\{1,p_0+
+\frac{h^2t^2f_0^2e^{2\mathcal B(t)}}{W(\lambda_*-\lambda_0)^2}\right\}.
+$$
+
+This can be weaker than (F8), but it removes $\mathcal C$ from the hypothesis
+while retaining an aggregate acquisition bound. It is sufficient for the
+compact [manuscript formulation](d34_scale_acquisition_paper_draft.md),
+whose appendix also proves the corresponding GD disturbance allowances.
+The main-text empirical figure checks this simpler bound on all six dense
+continuations. Neither formulation assumes a maximum slope or bounds every
+neuron's future path as a separate hypothesis.
+
 An observed large value of $\kappa_H+\kappa_C$ is not automatically a
 large change in force: its time integral matters. Conversely, reusing the
 observed net $d\log f/dt$ as a forecast would mostly reconstruct the force
