@@ -23,10 +23,13 @@ FILES = tuple(CODE/name for name in (
 # Discover the same mounted files remotely so execution hashes also include
 # the runner, comparison tests, analysis, and checkpoint inputs.
 FILES += tuple(p.relative_to(ROOT) for p in sorted((ROOT/INPUT).glob('*.npz')))
-for name in ('population_window_run.py', 'population_window_analysis.py'):
+for name in ('population_window_run.py', 'population_window_analysis.py',
+             'population_concentration.py', 'population_concentration_analysis.py'):
     if (ROOT/CODE/name).exists(): FILES += (CODE/name,)
 if (ROOT/'tests/test_population_window_comparison.py').exists():
     FILES += (Path('tests/test_population_window_comparison.py'),)
+if (ROOT/'tests/test_population_concentration.py').exists():
+    FILES += (Path('tests/test_population_concentration.py'),)
 
 app = modal.App('d34-temporal-window-persistence')
 image = (modal.Image.debian_slim(python_version='3.12')
@@ -78,7 +81,8 @@ def run(study: str, seconds: float):
 
 
 @app.function(image=image,cpu=2,memory=(1024,4096),timeout=1800,max_containers=1,retries=0)
-def analyze(payload: bytes):
+def analyze(payload: bytes, study: str='analysis'):
+    import os
     import resource
     started=time.monotonic()
     source=Path('/tmp/window-inputs'); source.mkdir()
@@ -86,15 +90,24 @@ def analyze(payload: bytes):
         if sum(p.file_size for p in archive.infolist())>64*1024**2: raise ValueError('Input cap')
         archive.extractall(source)
     output=Path('/tmp/window-analysis')
-    test=subprocess.run([sys.executable,'-m','pytest','tests/test_population_window_comparison.py',
-                         '-q','-p','no:cacheprovider'],cwd='/work',text=True,capture_output=True,timeout=120)
+    concentration=study.startswith('concentration')
+    environment=dict(os.environ, JAX_PLATFORMS='cpu') if concentration else None
+    test_file='test_population_concentration.py' if concentration else 'test_population_window_comparison.py'
+    test=subprocess.run([sys.executable,'-m','pytest',f'tests/{test_file}',
+                         '-q','-p','no:cacheprovider'],cwd='/work',env=environment,
+                         text=True,capture_output=True,timeout=180)
     if test.returncode: raise RuntimeError(test.stdout+test.stderr)
     print(test.stdout,flush=True)
-    command=[sys.executable,'-m','experiments.expD34_readout_race.population_window_analysis',
+    module='population_concentration_analysis' if concentration else 'population_window_analysis'
+    command=[sys.executable,'-m',f'experiments.expD34_readout_race.{module}',
              '--inputs',*map(str,sorted(source.glob('*.csv'))),'--output',str(output)]
-    checked=subprocess.run(command,cwd='/work',text=True,capture_output=True,timeout=1500)
-    if checked.returncode: raise RuntimeError(checked.stdout+checked.stderr)
-    print(checked.stdout,flush=True)
+    if study=='concentration_verify':
+        output.mkdir()
+        command=test.args
+    else:
+        checked=subprocess.run(command,cwd='/work',env=environment,text=True,capture_output=True,timeout=1500)
+        if checked.returncode: raise RuntimeError(checked.stdout+checked.stderr)
+        print(checked.stdout,flush=True)
     record=dict(platform='Modal CPU',seconds=time.monotonic()-started,memory_hard_limit_mib=4096,
                 child_peak_rss_mib=resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss/1024,
                 command=command,tests=test.stdout,input_sha256=hashlib.sha256(payload).hexdigest(),
@@ -114,14 +127,18 @@ def main(output: str, study: str='verify', seconds: float=300, sources: str='', 
     if not 0 < seconds <= 10800: raise ValueError('Three GPU-hour campaign cap')
     if recover:
         data=modal.FunctionCall.from_id(recover).get()
-    elif study=='analysis':
+    elif study in ('analysis','concentration','concentration_verify'):
         payload=io.BytesIO()
         with zipfile.ZipFile(payload,'w',zipfile.ZIP_DEFLATED) as archive:
-            for i,name in enumerate(sources.split(',')):
+            for i,name in enumerate(sources.split(',') if sources else ()):
                 path=Path(name)/'states.csv'
                 if path.stat().st_size>16*1024**2: raise ValueError('Scalar input cap')
                 archive.write(path,f'part{i}.csv')
-        call=analyze.spawn(payload.getvalue())
+                if study=='concentration':
+                    sparse=Path(name)/'sparse_states.npz'
+                    if sparse.stat().st_size>16*1024**2: raise ValueError('Sparse input cap')
+                    archive.write(sparse,f'part{i}.npz')
+        call=analyze.spawn(payload.getvalue(),study)
         print(f'Recoverable Modal call: {call.object_id}',flush=True)
         data=call.get()
     else:
