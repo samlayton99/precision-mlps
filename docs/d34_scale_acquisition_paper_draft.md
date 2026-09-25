@@ -5,11 +5,9 @@ Figure 4 compares learning all parameters with learning readouts on
 supplied features. After five million updates, joint Adam reaches relative
 error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$ with supplied
 features. Its RMS relative slope reaches only $0.0582$, compared with the
-supplied scale $1/4$; GD acquires still less scale. This is a finite-budget
-precision gap: Adam already passes 1% accuracy. The supplied geometry is
-a benchmark, not a necessary condition for every accurate network. We
-therefore seek to explain both limited population movement and limited
-output improvement.
+supplied scale $1/4$; GD acquires still less scale. The preceding arguments
+establish the accuracy cost of insufficient scale. We now ask why joint
+training acquires scale so slowly.
 
 <figure>
   <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/paper_latex_figures/joint_acquisition_rms.png" alt="Joint and fixed-feature Adam/GD output errors beside the RMS slope levels of the same joint runs." style="max-width: 100%;">
@@ -54,11 +52,17 @@ weak force can reinforce itself enough within the budget.
   <figcaption><strong>Figure 5: Weak effective force survives positive reinforcement.</strong> Both panels use the same smooth-step target, width 705, and checkpoint at 20k GD updates, continued to 120k. Left: full-parameter gradient norms during GD. Right: cumulative terms in (1) along the paired effective flow; their sum gives $\log(\|F\|/\|F_0\|)$. Both axes use total GD updates, converting flow time with $\eta=0.002$. The paired GD and effective-force norms differ by less than 0.08% at saved times.</figcaption>
 </figure>
 
-**A conditional population bound.** We upper-bound feedback by the second
-output response in direction $v$, weighted by residual and compensation
-norms. Let $B_t$ bound its accumulation. This is a condition on evolving
-output derivatives; it does not assume that net force growth or slope
-movement is small.
+**A conditional population bound.** The small effective gradient means
+that, after coarse compensation, the features couple weakly to the remaining
+error. Rapid acquisition would require the evolving geometry and readouts
+to strengthen this coupling. Equation (1) identifies the route: geometry
+and compensation feedback must overcome residual relaxation. We bound this
+reinforcement using the second output response in direction $v$, weighted
+by residual and compensation norms. This quantity measures how moving
+along the effective gradient can change sensitivity to the remaining
+error. Let $B_t$ bound its accumulation. The condition therefore limits
+how quickly the population can rebuild a strong learning signal while
+allowing all parameters to evolve.
 
 **Theorem 3.3 (Slow scale acquisition; informal).** Restart
 full-batch GD after tracking becomes small, and write $t=n\eta$
@@ -97,10 +101,9 @@ checked densely over 100k further updates using a factor-four allowance.
 They use at most 55% of that allowance; the effective-flow RMS growth
 bounds are below $8\times10^{-4}$ and relative-error floors exceed 39%.
 GD closely follows these effective dynamics (Appendix D, Figures S2–S3).
-These are numerical checks of the conditional mechanism, not interval
-certificates. They cover the measured post-transient GD intervals; they do
-not extend the same allowance to all five million updates or to Adam's
-adaptive dynamics.
+These numerical checks show that the feedback condition persists over the
+measured post-transient GD intervals, including trajectories on which
+effective force grows.
 
 ## Appendix: Conditional persistence under evolving geometry
 

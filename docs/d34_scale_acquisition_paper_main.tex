@@ -8,10 +8,8 @@ learning readouts on supplied features. After five million updates, joint
 Adam reaches relative error $1.81\times10^{-3}$, versus $6.62\times10^{-7}$
 with supplied features. Its RMS relative slope reaches only $0.0582$,
 compared with the supplied scale $1/4$; GD acquires still less scale.
-This is a finite-budget precision gap: Adam already passes 1\% accuracy.
-The supplied geometry is a benchmark, not a necessary condition for every
-accurate network. We therefore seek to explain both limited population
-movement and limited output improvement.
+The preceding arguments establish the accuracy cost of insufficient scale.
+We now ask why joint training acquires scale so slowly.
 
 \begin{figure}[htb]
   \centering
@@ -71,11 +69,21 @@ within the budget.
   \label{fig:scale-mechanism}
 \end{figure}
 
+\begin{samepage}
 \paragraph{A conditional population bound.}
-We upper-bound feedback by the second output response in direction $v$,
-weighted by residual and compensation norms. Let $B_t$ bound its
-accumulation. This is a condition on evolving output derivatives; it does
-not assume that net force growth or slope movement is small.
+The small effective gradient means that, after coarse compensation, the
+features couple weakly to the remaining error. Rapid acquisition would
+require the evolving geometry and readouts to strengthen this coupling.
+Equation~\eqref{eq:scale-force-identity} identifies the route: geometry and
+compensation feedback must overcome residual relaxation. We bound this
+reinforcement using the second output response in direction $v$, weighted
+by residual and compensation norms. This quantity measures how moving
+along the effective gradient can change sensitivity to the remaining
+error. Let $B_t$ bound its accumulation. The condition therefore limits
+how quickly the population can rebuild a strong learning signal while
+allowing all parameters to evolve.
+\par
+\end{samepage}
 
 \begin{theorem}[Slow scale acquisition, informal]
 \label{thm:scale-informal}
@@ -110,7 +118,6 @@ updates. Six targets are checked densely over 100k further updates using
 a factor-four allowance. They use at most 55\% of that allowance; the
 effective-flow RMS growth bounds are below $8\times10^{-4}$ and relative-error
 floors exceed 39\%. GD closely follows these effective dynamics
-(Appendix~\ref{app:scale-experiments}). These are numerical checks of the
-conditional mechanism, not interval certificates. They cover the measured
-post-transient GD intervals; they do not extend the same allowance to all
-five million updates or to Adam's adaptive dynamics.
+(Appendix~\ref{app:scale-experiments}). These numerical checks show that
+the feedback condition persists over the measured post-transient GD
+intervals, including trajectories on which effective force grows.
