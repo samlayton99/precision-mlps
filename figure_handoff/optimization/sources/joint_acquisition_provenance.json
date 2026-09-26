@@ -1,0 +1,1089 @@
+{
+  "figure_size_inches": [
+    5.5,
+    2.2
+  ],
+  "png_dpi": 600,
+  "horizon": 5000000,
+  "endpoints": {
+    "adam": {
+      "mean_slopes": [
+        4.324424472995887,
+        4.992968901972605,
+        3.9425265146138044,
+        2.294850329416056
+      ],
+      "mean_bandwidths": [
+        0.08236998996182643,
+        0.04438194579531205,
+        0.016884481861301093,
+        0.004775963224591168
+      ],
+      "median_training_errors": [
+        0.002624228634881043,
+        0.001680847745338868,
+        0.0018143227040915435,
+        0.002683591496714908
+      ]
+    },
+    "gd": {
+      "mean_slopes": [
+        2.3045711827888304,
+        1.0720251821371967,
+        0.317081012405855,
+        0.15802433528351695
+      ],
+      "mean_bandwidths": [
+        0.04389659395788249,
+        0.009529112730108416,
+        0.0013579486612670451,
+        0.0003288747872705868
+      ],
+      "median_training_errors": [
+        0.09215847972113296,
+        0.11223535033001714,
+        0.24393136789613942,
+        0.2573686579987675
+      ]
+    }
+  },
+  "frozen_adam": {
+    "run_index": 0,
+    "recipe_index": 10,
+    "schedule": "cosine",
+    "learning_rate": 0.0001,
+    "validation_error": 6.620708302958729e-07,
+    "train_error": 6.624580670221147e-07
+  },
+  "frozen_gd_endpoint": 0.00038785560212100463,
+  "selection": "One recipe per optimizer minimizing median final 4096-midpoint validation error across all seeds; requires finite endpoints in every seed.",
+  "bandwidth_shading": "Population standard deviation across all neurons of five equally sized seeds; lower edge clipped at zero.",
+  "error_display": "Median of per-seed bin medians, with exact endpoint; shading spans seed/bin extrema. Frozen Adam retains within-bin extrema.",
+  "comparison": "Frozen training arrays, target, sampling grids, and reference spacing match the rerun exactly; frozen runs are archived executions.",
+  "sources": [
+    {
+      "path": "output/diagnostics/figure4_scratch_20260926/analysis/width_summary.json",
+      "sha256": "a55a3ec26c39377ad4a32886c2dc230085f5cea7fcbd50609b61c27479da9fd8"
+    },
+    {
+      "path": "output/diagnostics/figure4_scratch_20260926/analysis/w512/selected_traces.npz",
+      "sha256": "22bb7d659646e997c67299e1d892c3f654636b44ab09d935c72112e07832292e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/base/manifest.json",
+      "sha256": "99c59b36d8d20d86a0390e4f55f6e4b4176acf9f6ab8b04edad97a3d919e6b31"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/base/input.npz",
+      "sha256": "eaba106586d281be9c0ea2d13d8b958dc4b35dec2a7227c6b1533547eb3ddecc"
+    },
+    {
+      "path": "output/diagnostics/section34_long_horizon/main_5m/uniform_access/summary.json",
+      "sha256": "b1754952f2ca79ad0c55aadefe2f8241d189f2daf54a25a753959043c7dfc4f6"
+    },
+    {
+      "path": "output/diagnostics/section34_long_horizon/main_5m/uniform_access/assay_traces.npz",
+      "sha256": "448061a741447ca42bcb28c26aface722f8fc71e383629ba82df32d7ee09bc55"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/frozen_gd/summary.json",
+      "sha256": "0d1c9b4cb14097ffe7eeed0f4f21e13ed6fdf646d3d1febcd4683843f5e23181"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/frozen_gd/raw_error.npy",
+      "sha256": "0e6768584474ad154335c09b72b154a9c4ce3eb0fd60ef9fb58581411b9d1ee0"
+    },
+    {
+      "path": "output/diagnostics/figure4_scratch_20260926/analysis/w128/summary.json",
+      "sha256": "9e1ce0faa04ca75db97f453cb09ed8d9c1a37c33908b0fe4e7d47fb42a11285a"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/w128/base/manifest.json",
+      "sha256": "4fa727e16562f44a4e5bdfa937b6a9403c5612172a5b59aabcc9b3f162a0757b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step00250000/manifest.json",
+      "sha256": "6d8ec18470e318cfcb5780f8c02bb35b9bdc55bad47c379e25185807afff5869"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step00500000/manifest.json",
+      "sha256": "44c6322f586e579da6e3ad4f17dc93693b0fb3b13d33a466eac6330b7d833054"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step00750000/manifest.json",
+      "sha256": "1aa566409f33ab14b01430b44a2cd5cbde3ffa2f32e9285d3be7761e13d2294d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step01000000/manifest.json",
+      "sha256": "c265e882f5be41de64d3c178295a16c77465fee9cdd76ef42d7878708b36379b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step01250000/manifest.json",
+      "sha256": "e81797ea96667e89ef1727e85b3f6f5817fc30598a8f382519781a29e72a6d81"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step01500000/manifest.json",
+      "sha256": "5ed9ca7c8e6c6ebf1e1c9a85c2d96a7a54cda4b2c21f367d244903313e15543a"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step01750000/manifest.json",
+      "sha256": "3ba3c161f5406e8264c177b5e59bc2dbbde16602d0802bfaec58d5c0b7f8f7b5"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step02000000/manifest.json",
+      "sha256": "6d83f6342ed3c99605bc0e47c57bd6d4fe9383b438f83a5a31df55388be7e3dc"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step02250000/manifest.json",
+      "sha256": "72dae423e4cf4e369b45a8c11e1d6f4e8330b28f480d4c17b790cf0e8a25b333"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step02500000/manifest.json",
+      "sha256": "23784d981f5455dd9f09ae12cfb0adfc6b9e46d86f655cbb4dd64b057c7a660d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step02750000/manifest.json",
+      "sha256": "2aae41f238fdf593e0bf9873f736d484fd31e8187d60fea1479632f34bbdd810"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step03000000/manifest.json",
+      "sha256": "aecaed824a3e9a720cc269bca72e96890dc2e6d9e86dd4eca27e57d216d44c09"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step03250000/manifest.json",
+      "sha256": "62ffcd3fd24131edffc0e72ef55ccc464391fd013437ba36b4091804e984e72f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step03500000/manifest.json",
+      "sha256": "1e44572ae5520d9caf08a78ebf26896c1a5903324b568a2b777c2392957fdba6"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step03750000/manifest.json",
+      "sha256": "009e2c1292b85b77aa3d35423a57aeab4501e7a8b3735635ab6b3877e4a39f63"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step04000000/manifest.json",
+      "sha256": "ee899c87c4297fd3e5b60801c87f71a8266bf92244a76afb7f96768e27a35350"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step04250000/manifest.json",
+      "sha256": "f1fe41480c89ecb2b28ed8d96191e366e1c97c34aa4a5859ae908a24566edba0"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step04500000/manifest.json",
+      "sha256": "19490bf4a0b31e707a349eaa7f63b7aa6331007755d7cacff59e88f116e0d5ca"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step04750000/manifest.json",
+      "sha256": "8844990c314ac695cbfb15502174d1986d9504d72a10e03efc303c4ba0429d6b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_constant/step05000000/manifest.json",
+      "sha256": "2c8d5ff80441aec667889b77e5b7ac0f2509a2da1037300f4ba1e0443d6617aa"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step00250000/manifest.json",
+      "sha256": "583e62863de57c5928ae438c3e30e79e5b05de9706016d501bf372f78b84304c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step00500000/manifest.json",
+      "sha256": "4b98e5f938839bb80ba97c68c6d0b70efc5c52a59051c73d570f8b727eb78065"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step00750000/manifest.json",
+      "sha256": "f4c578159146b89c501fb8ad87e8c1bd669861c0473adc212a3fec02d85bdbbd"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step01000000/manifest.json",
+      "sha256": "dd23087bc80770f42515916a1de2b6fbe4f5eeb8b5d7c0a036b9a8d3d3927810"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step01250000/manifest.json",
+      "sha256": "11850cd3f4544a433f2b3ac59da6a6aa9299503fec5d5aa61bad317fa052f957"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step01500000/manifest.json",
+      "sha256": "ddaf0012a54c72905c849b534fa62721122edafe2b73956510222211dec18321"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step01750000/manifest.json",
+      "sha256": "1508b7b8773db3cd45b0114e9575aefeb10f4b2ac68e243cc06cb3518c1a0184"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step02000000/manifest.json",
+      "sha256": "87e6baea0e848441494f4f7d4738570e31c87d47ce9bcbf8e6ce6dcdeda6977b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step02250000/manifest.json",
+      "sha256": "c948ec8f47e79d22acef14b2cc618a7836ddb919cb6d42f74d4296d1cfb8a2df"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step02500000/manifest.json",
+      "sha256": "1eb03f05b0dde5762448d47253c39688c1f27da0ec10f5684cdceb1af2ced020"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step02750000/manifest.json",
+      "sha256": "2e6597f5bab6794fe16caaa07f80c5acee8a87e5ee572737a39f60e094e1574e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step03000000/manifest.json",
+      "sha256": "5264ee2055c474f9e7c694901d30becdd3978e37d7055f1f3b8ab49ff0791756"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step03250000/manifest.json",
+      "sha256": "9d93384f0181165cbeba43cb445ca432557fa27f5da879b632f65affd475b3f8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step03500000/manifest.json",
+      "sha256": "34611acbe06c49f99a8840354730eceae163acf787dececd6cebe65a9db85aff"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step03750000/manifest.json",
+      "sha256": "80456c441c53b48d261e47438d389b6fc6ef86ce97c3a14ff2c831cff37a1b34"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step04000000/manifest.json",
+      "sha256": "f087702b99ad412925351f4f631113e9eaf858ba70fa2ab9f9ec91ce32229656"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step04250000/manifest.json",
+      "sha256": "9f3d5a4cb189e13d08a7155d78eece313a76886e3c54034366c51b77b3e42219"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step04500000/manifest.json",
+      "sha256": "2430b8a5658bf2a16563b04048b79d42df1bfc7bdd7732e0519e17ac05fcd4bb"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step04750000/manifest.json",
+      "sha256": "7eb23b365defc44a4fb4bfcab234d5028497fb5be53e6acf5d42b030e020cfe9"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_adam_cosine/step05000000/manifest.json",
+      "sha256": "705f1cf4fa416da0f32404208eb6a67ef5167127515babb7633e7b6d596335ce"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step00250000/manifest.json",
+      "sha256": "05da4c6dd21be076dd5ebb2c01f2bc7666b624931ab43ad81761050fa860ab36"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step00500000/manifest.json",
+      "sha256": "0e1b7e2a493d9e17f9113f55d6dfe0445569c41a02f5fb9052527b05a733a6d2"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step00750000/manifest.json",
+      "sha256": "1ccc83bfb2ccfdac101886c5f782efa2a594555158cb0ed0e85247a294669789"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step01000000/manifest.json",
+      "sha256": "2d34947edddbe36718c85ed178d0bb92d4e618387ab0d12a3245bc5e9d950aae"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step01250000/manifest.json",
+      "sha256": "03d1b216b85f9c1a0a42e0c6af340bbe402e86f39a53b5166b14c809c3b47860"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step01500000/manifest.json",
+      "sha256": "9869b8fcd121595d297cd3a67680c2f6d9ac6e75ff6752325033ae6417a01808"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step01750000/manifest.json",
+      "sha256": "a1dc74ebe1d368f62ca822a708fb0e256ac737ffb063df445f18d066026a3e09"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step02000000/manifest.json",
+      "sha256": "78b5a8460958c6c5867d9495ea19d9e2ca82fc2e8a0ffb8b2cce6cc132c8a449"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step02250000/manifest.json",
+      "sha256": "dbee454ca1ee2eda5c82bd04aca532223b1c71d36d6334a97b50824e1721c3f0"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step02500000/manifest.json",
+      "sha256": "83a937604cabc045c6fcfe59b3bff316c9d37f7caeb7adb9a1804b6dcc95a8ff"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step02750000/manifest.json",
+      "sha256": "3cfb0818c3e155071938d7a5a4f6e874188706e3f858e2a1defc7dd837b5857e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step03000000/manifest.json",
+      "sha256": "03f0f74f2ee6f6fc68ee4b5e4a02cf0aa7eb6014044bd47323302b39f8820ec4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step03250000/manifest.json",
+      "sha256": "505dbec130c2ef15d5870ebeb561a96e70d31fde0b65fe7fd718ff14a0fdbdd0"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step03500000/manifest.json",
+      "sha256": "d28d2b629ae868c51d4c0b81df1a5426b4d8123a18c740d72fddd026c1e7e21d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step03750000/manifest.json",
+      "sha256": "218989debc979741b25ab14fe81851487895f0674e233ab476aa851e78012d7f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step04000000/manifest.json",
+      "sha256": "d18754c9916c364311e6f87f20b70d0cce822ae4d9c55d773a543d70fbf65cd9"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step04250000/manifest.json",
+      "sha256": "ae533937b552e1017cd22828fa7fd1a36fc94f9200ae869f12cfcddbd2954915"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step04500000/manifest.json",
+      "sha256": "f2aa296138d3d5e11d1f0fa93d3d761c920f92a12789446d97a6bad910ee5918"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step04750000/manifest.json",
+      "sha256": "99b1edb0160fd270c9e2f7bdacd0adcc60e1d6b27e12cd21fe9e2f898c8b9697"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w128/joint_gd/step05000000/manifest.json",
+      "sha256": "be071e8e72679dc8924973ffa6d4d11b6678a80c0bcac0e0a2dab61fb5f685bd"
+    },
+    {
+      "path": "output/diagnostics/figure4_scratch_20260926/analysis/w256/summary.json",
+      "sha256": "a45255aa2e25bc7c6a9f57747d65cf6b85bfdf3089d66d1f9581965858757484"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/w256/base/manifest.json",
+      "sha256": "2df99d723fdecfb104e5a0a1a2430f59ed874b8d16b5e61c464d4364c5447653"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step00250000/manifest.json",
+      "sha256": "1022908c6a6046981d2807d4ed4f1e6219666742d8f9c1addb6519eb3a50266c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step00500000/manifest.json",
+      "sha256": "63628cefb35ef49a7bcf8efb0a68861872fd2a7a67c63d91f213a908886755f4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step00750000/manifest.json",
+      "sha256": "dda1d53714f9e8170fb242283553210bcae258ba714206a3ecdf5e84467c5690"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step01000000/manifest.json",
+      "sha256": "1550b658910764630145dbb579127c01a0c55993915a0ba6ba0434501e778d88"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step01250000/manifest.json",
+      "sha256": "97e22fa03915c62487e1200fb0a2430f54c322685b4a7b95dfd35eea4af5222d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step01500000/manifest.json",
+      "sha256": "3b18e7704511bf31104d0f9eec1111e65a51a9af8585bb7a006607ea839d0bc6"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step01750000/manifest.json",
+      "sha256": "12de9f09f74f1ea04d25252a6aa73e361231a1e4d3cc893986b8c4a73ec2d850"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step02000000/manifest.json",
+      "sha256": "3969d35c90f17d9304afe8ea8d22dc1e74d0b1817cc064601c3aeb7899c4c7d4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step02250000/manifest.json",
+      "sha256": "6ed0676c0ea00d630fd277146aa6388a6289bcf036e26cf6fc1e6dcee82069d4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step02500000/manifest.json",
+      "sha256": "8ec921cdd7b1042ae784e328bbd8e1d7ad67b75b5c2861bc6d78e14054fd699b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step02750000/manifest.json",
+      "sha256": "307c5f8975111a8dc9ae5af65c6bb30807bc030d11ddb67b8fea3f3e01cf3b63"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step03000000/manifest.json",
+      "sha256": "b29a8f0274b78c7fab2506d9819b2e433ef8823cf56b73769726c449d1e685fe"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step03250000/manifest.json",
+      "sha256": "968df55190b33bbbdb8c1feeea5d5b4c853f9212696b290c8cf8197128d1122d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step03500000/manifest.json",
+      "sha256": "aaf8139d17ef42779ede509cfab9630e09817c4c276940997bda114ca335c255"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step03750000/manifest.json",
+      "sha256": "69b571782e28dfcbc456d1fc3fc73f1cf8458cd102c43d9e74e7c78ecc94e0ab"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step04000000/manifest.json",
+      "sha256": "bc6b4a8028ae7a861a89c44cf7b5ff8feb0bb70c36a7237a250a9685ec536b51"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step04250000/manifest.json",
+      "sha256": "c65439241ed0e6ff372c6ea5e80fb9a08bbc1412f839b5c828d577e4276528c0"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step04500000/manifest.json",
+      "sha256": "00a499c5022e41d481e73c9e3eb8d604c40b954f0f7f7d288692475f8162c0da"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step04750000/manifest.json",
+      "sha256": "c96102f6f0cdc281ce7d1621a4ad7db09363d460bec7d6ae416e8dbfd9ab0fc8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_constant/step05000000/manifest.json",
+      "sha256": "b074996ec14fcf5fb9b6d1e69a3bef2a5b5afe3b9b67ee917476afe1299e9a51"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step00250000/manifest.json",
+      "sha256": "2b9cd1c1a8fd55cfa6a67be7d006a0272f64cc4809da7af2eecd5d5a0f192b32"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step00500000/manifest.json",
+      "sha256": "9d8ad0a019a78fc62ee2e0fd412faa09a591e122d3092b2a9ed2d07e053d376c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step00750000/manifest.json",
+      "sha256": "07f11ff1fab52556d046f1d51237c8b58b1b217f910f2a3ff9defd820fc47acf"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step01000000/manifest.json",
+      "sha256": "67b129dd42aadca67f11363430a61b6cf9fb75e4776d4ae009a78f3045859249"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step01250000/manifest.json",
+      "sha256": "b9e2942d4f61b740eaa20cd3450795406dbe3738f35dbb76eac916b34e57fe7d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step01500000/manifest.json",
+      "sha256": "8c3b321b0668ac21132b56c6e961dc3b545a8df5e97ebaab3a2aeb0066c0a18f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step01750000/manifest.json",
+      "sha256": "26b38f147acd89b007c03687cf70de506d495c771a388ea978d8cff1e438ea32"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step02000000/manifest.json",
+      "sha256": "d9491f2dd32dc394d0fc16b7cdf77a52447c3d75a3cbb2f3368c629aeb292bdc"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step02250000/manifest.json",
+      "sha256": "b052cb61acdab7603ccbd6fa87a6cb4b650a2e6766e314cd7f618b271a7f91e1"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step02500000/manifest.json",
+      "sha256": "e440159349be0532f0419a184c514ae59023b6121287a0b1a8f92210509c4acd"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step02750000/manifest.json",
+      "sha256": "0ac8ceaf76e1fc4ad4417df4a6d8e47f9ebd5510257aa9f5fde18bfe4bcb648f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step03000000/manifest.json",
+      "sha256": "55fee82c508b5b5cbef0a1ce87ffda64514cc534c50a0939faf915795ea7303f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step03250000/manifest.json",
+      "sha256": "04fd16c93f355d5fdcbc73d561aad63c98513f0ffaf3ad1c4b24b032141a3437"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step03500000/manifest.json",
+      "sha256": "2ff02959df06e2ec8db1c49a44de7fe92e1cedd3658643cc1c1a2a6e018cf699"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step03750000/manifest.json",
+      "sha256": "70c585df8cd628266f4187ae4d54c779808dfa74d54eb0be1825337fdf854c68"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step04000000/manifest.json",
+      "sha256": "3368517955c54a93997d20433b1fbb463cbfcedd567e1497c2fd32127e2ed1b4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step04250000/manifest.json",
+      "sha256": "3cecc34cf99c50424b76d2e85f3a24381dd93c4b5b52f871f36463fb9abe554f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step04500000/manifest.json",
+      "sha256": "c1a0674f07930c72c53584f3c17807e83d2df1a97aaf66428ba423ba6c13109b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step04750000/manifest.json",
+      "sha256": "683b2723414c9559302d92f054606d078a62bef149003a5afec0fdf961e50f3d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_adam_cosine/step05000000/manifest.json",
+      "sha256": "6677c22b522a2aa9468f15872a43d8a6d888fd206a0c74e5d1ac618323b71b3f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step00250000/manifest.json",
+      "sha256": "bbdcd3ccf4041b94fdfb0bd58c73cb78d29221c4023dbe40dfa12dec9b3b99ea"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step00500000/manifest.json",
+      "sha256": "ead2f2d1174e818a97af609bdb34a6522576bd7e5662a02c8aaa298adc1e72c5"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step00750000/manifest.json",
+      "sha256": "cd3cb55b57820097c535a106e3dd81b6b9f9da1904c09bd5a4b7169ffa5711f8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step01000000/manifest.json",
+      "sha256": "dd3712823625af603dd509288b8ce44c87690fc44ce8c1eb20e81757dec18be7"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step01250000/manifest.json",
+      "sha256": "8c746e96e8322caf8963e9c72332d77cc00d194ad61a631ed1e6b42fa9725c93"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step01500000/manifest.json",
+      "sha256": "e023df79fe4fd57f5a989d8f02352c73d87224f645c81309efb0ffa7c8dd4d84"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step01750000/manifest.json",
+      "sha256": "96445c8c2eb442b6e9902c4f17421c668514c63f8baf7e5926d6a4570747e717"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step02000000/manifest.json",
+      "sha256": "13115ed8871b1407597fc327b318393ac2edaf7571d2dd93332a7232634a0076"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step02250000/manifest.json",
+      "sha256": "7ef65ba4ae2b31f2cbeb165d6a2c7b851c55454cddfb4bff1d2debd854e8d006"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step02500000/manifest.json",
+      "sha256": "bf1274623a1f892de1538cf18bd99efe7855dcd07718e8fcda2347eff6779a9f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step02750000/manifest.json",
+      "sha256": "f6141ddba5f5f66f281a61d46e4e9cefb3b0823feda2e15d6a32002ba7215c2b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step03000000/manifest.json",
+      "sha256": "cf581fc03d8dee02d79f1fa7df93297e827b423af672a33f43fd1a9e2535cc19"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step03250000/manifest.json",
+      "sha256": "844b87ee256f50df8f50d341c4074a43a93b34d9b45fb8ab0111e875c31487da"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step03500000/manifest.json",
+      "sha256": "663d9a7a8f0932d86558cdfdbbfd48a4a160e0380c4c09f3329df767948eab89"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step03750000/manifest.json",
+      "sha256": "396089aa1b16d3a63269d227cfc8483ccf5200fd4c8f04d2145d4d0e938a1d6d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step04000000/manifest.json",
+      "sha256": "fb61edbf29e4f16de03eef0b09702b493eabcab557784f6b47ab65ffbb2dbb51"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step04250000/manifest.json",
+      "sha256": "8b40343f3f721a315f8f3f9f1c2824f0927a8bc8c1cc06138a1eb1dc8a3c5263"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step04500000/manifest.json",
+      "sha256": "1e0b7c32423cb21a5af4bce478cc5ec5b3cb8693c2d284cfca144f887cb70386"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step04750000/manifest.json",
+      "sha256": "95937883988c4276f4e1e7843727119f9e18acb20938d6768a548a8465483d1c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w256/joint_gd/step05000000/manifest.json",
+      "sha256": "c090f71061155aa2e25f3f52daf73ba51e69ddce5dc3935772c2fc121f9cff62"
+    },
+    {
+      "path": "output/diagnostics/figure4_scratch_20260926/analysis/w512/summary.json",
+      "sha256": "e98d65eb0c8ac868e7913c3e4c07bd6543ba326fc427e8eb6655371cba2a16e7"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/w512/base/manifest.json",
+      "sha256": "21aae94df328574febc0f51a1a5e0ca79f0a70ea872c562b8e96b1ddc8b0cdb0"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step00250000/manifest.json",
+      "sha256": "b724b937ab25eb0e4a664bc11fb89b3a7db0d735a766e2b90a8fc4d92d312b2d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step00500000/manifest.json",
+      "sha256": "5f334c95a75870e5a28c0a39a7cbadb56551f0c2a1fecc3d6607ce98cc951759"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step00750000/manifest.json",
+      "sha256": "101432a58c2b119ff02436be70329f06cf70e25236ff23e674b2f740fbc83d4c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step01000000/manifest.json",
+      "sha256": "51623a415ab65839516257b876d0fdf4f7a8f59dfc3d070536d335592cace5b7"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step01250000/manifest.json",
+      "sha256": "d5010d8e6fad84e1471c04f158056371a5468bbcfa291c4260badb867b8f5615"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step01500000/manifest.json",
+      "sha256": "2d07158e98028f2870722cd258d5dad6a7de8a8ab9461bb8e91fa69a93464417"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step01750000/manifest.json",
+      "sha256": "e62591c3842948efe926e07adee4aa752748a1256241ab5c07cda51044cdf14a"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step02000000/manifest.json",
+      "sha256": "9def2c7caf60bc590e24ccff7cde520c792c94e2011a240c82e91954c0d29794"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step02250000/manifest.json",
+      "sha256": "9a8d42c14463a9eb952a7c99d943a41562d296240b159bf37b86a62b1584c655"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step02500000/manifest.json",
+      "sha256": "68b289c912de52818ea3b261f240f80e29ed5f524d96a050f347aba41f76fe36"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step02750000/manifest.json",
+      "sha256": "4d8faa5c847526216509c442abaf882227f0a88620b3557b9e8b7e608124276e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step03000000/manifest.json",
+      "sha256": "5f0c355dc891a8602247abd82a30d069dad18617e2307ac74f46e4ad7e14c5b6"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step03250000/manifest.json",
+      "sha256": "c5e3be0d3469b2e25d76c2681a3e96946e5dd6c1a4088398c5f90ff94b722ddf"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step03500000/manifest.json",
+      "sha256": "51f08281860d30c336339b0782e39257b147262f8c7f12b04b0a84ba6fc02e1d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step03750000/manifest.json",
+      "sha256": "abe681a47112aef8014b67fb60f73a003a441637b12d742c64409556462f601f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step04000000/manifest.json",
+      "sha256": "d1fd812070c7e16770489314bbb143007c4e98b51b2198ec3780444303d23760"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step04250000/manifest.json",
+      "sha256": "bd0f81a93fbfdcb91219e113f13ea751aa25a443a127aa0d4b0e3d7d9c2bc737"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step04500000/manifest.json",
+      "sha256": "47e0093b7b509c203afcb93e8b62cb1d0bad649d4bd56fc55eb489f9f0a51781"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step04750000/manifest.json",
+      "sha256": "3c6d9f0d697e011530e43afd651302dd95b7584ce2b2f80d8b2ea6d35490834e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_constant/step05000000/manifest.json",
+      "sha256": "2a9b1c2028dc0b5b294c7aab2637a4e80f81bbe6a66a750b145ed9c77fdea8b3"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step00250000/manifest.json",
+      "sha256": "701976b6a4c7488cc175861575f381a2bafa84e6430ac23dc261479bbd416086"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step00500000/manifest.json",
+      "sha256": "0c9b0abb66301b7397271f26c2f455f0dd7b543f32b9e0fdb266d56d58b0e591"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step00750000/manifest.json",
+      "sha256": "3c43c02e95ff28da04dc76f1caa9db45403906c4928d800b0d25eac1efe9fb51"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step01000000/manifest.json",
+      "sha256": "e0468d1664e66e6b3d226d948b39c60989133081a716d39f602d10205e3f565e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step01250000/manifest.json",
+      "sha256": "bedac305dd79c4e04dda10feeffccb9ecb2b0086371e2c0078da88b941b837cb"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step01500000/manifest.json",
+      "sha256": "9e971ff5ce651cdf03423e5f932721c268c607703213f78f0fe07914fcc1b05a"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step01750000/manifest.json",
+      "sha256": "b338ec2bb14c5789fe28ca6b9c6501d2fc341dc358c8416484b05c8306491c27"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step02000000/manifest.json",
+      "sha256": "b63b818c9d18a065d40f7f5a1416968cdf68a5397550db1bf8d217c64ee7ea05"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step02250000/manifest.json",
+      "sha256": "36586abed1908faf130898ef53cc5c2d48cb0bbca9cc048049d8bcd45f7f2fa4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step02500000/manifest.json",
+      "sha256": "c0999430f2f72c4d0812d2a61fbe5ee9cf72d8642c158ce0eacfacab36c36470"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step02750000/manifest.json",
+      "sha256": "8ba346ffd9a1430832281d8199770601c264a6a489b2ecdf308bafd5d36fb4d5"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step03000000/manifest.json",
+      "sha256": "ce93fe15334caee9369ed38c36de870c23ec36e047b9bf5b64d9e401f3a19978"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step03250000/manifest.json",
+      "sha256": "182de276ba604712520989b1bc0172bbd6a736b4c356265652bf851ba04a4651"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step03500000/manifest.json",
+      "sha256": "8144ceb43e484befb94468663e831234d9d0426ed9858b76fb8ca6b2cf2d8381"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step03750000/manifest.json",
+      "sha256": "b92202f0f64b85906a9c1914073bdcb2caedeff307dd3bad874616ebface1be4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step04000000/manifest.json",
+      "sha256": "27b2850ff3f72f702b7784038baf534dae947b5de5353ee964f4ba032cb1f613"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step04250000/manifest.json",
+      "sha256": "868c580f8f677674da93951c8552b157085bafb52a4721737f7e514671e2d3f8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step04500000/manifest.json",
+      "sha256": "6c7df53df28921d711e47c3fd91b648d42365aa85ce15f33a20feeb12cbef232"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step04750000/manifest.json",
+      "sha256": "98732b5756fdc0960292eb4ba4cd186fd72f0faf7aa5f445a26b002e6e1884b8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_adam_cosine/step05000000/manifest.json",
+      "sha256": "42372049edb82b0ad331f3cedc4eeda986608c0e1a1cf1f4e8fc521e0094ab04"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step00250000/manifest.json",
+      "sha256": "dc2fa6f42ce8fc7325f9b7ea3191f6696a008d77ad37545b83fa3935971d33b7"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step00500000/manifest.json",
+      "sha256": "c2c1dae27664c05f6a09ffc30509818521fda859ae0f56b0e5b1874979619693"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step00750000/manifest.json",
+      "sha256": "4f175b496e99a268f2c0a8429ccaf948a977a916b29d429d081fdb3f46269a3d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step01000000/manifest.json",
+      "sha256": "74a0931507b52a93c9d2893f6c7be72eb1980d231f08e2c1765ef7f4ff9ed9dd"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step01250000/manifest.json",
+      "sha256": "16c17ebd6220d0bd0363974af4077b62544c27d05e45d27eb331e68f519868f8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step01500000/manifest.json",
+      "sha256": "263c096500af1b69fc76c43ae4247143c813879eb17dee62c6ed100e25908e36"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step01750000/manifest.json",
+      "sha256": "97f169be3234d6d2ee198dfe4aa2719f8402a7f1aa3f567b3561b3cc96c0e7e5"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step02000000/manifest.json",
+      "sha256": "c48649f0f2be166adce5b7c4b4e8a98a1faf144bfc28d34d79914bc83ce990fc"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step02250000/manifest.json",
+      "sha256": "16b0648d60f051e116aa467abc77f4241ce60121b34073eddb06ab40f2ec426d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step02500000/manifest.json",
+      "sha256": "979a3c20b9023753dcd1fd41c2f3132ac4ad46a537588b69bb11fda91b3d4ff9"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step02750000/manifest.json",
+      "sha256": "82780eecc8eefcc6cf4fa0c0ca7b538753e3b2decde83474af913909e3776578"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step03000000/manifest.json",
+      "sha256": "4fa93b17200871307b4cf99a233a605f245ff08441e3c3986bce1513a776ab77"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step03250000/manifest.json",
+      "sha256": "2700251728e4beeb7b944de20f304ebc43f12b601266510304566d2120c837f4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step03500000/manifest.json",
+      "sha256": "f27a9f5200515e5927bcc70707db4d754232e28c58d095e79632f6ecfb68b031"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step03750000/manifest.json",
+      "sha256": "dbb8489b0671803f31c83e6308fa776cffb813913acf6519e94341eb17bdcf2b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step04000000/manifest.json",
+      "sha256": "960b827b8a4309be6df4d656374833875296df410df889eccd2bf8fd031f69c8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step04250000/manifest.json",
+      "sha256": "a251bc28bd87de3af71e6b815f849975f7a62067d184f567d8dc4e929154dc6d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step04500000/manifest.json",
+      "sha256": "9a1d2aa8df83734114e68e505aad90fc410e152aa1ec08d23a98bf0c25cbc7f8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step04750000/manifest.json",
+      "sha256": "5674247c7038fa1471511c5ae2813584e54c543a72addeb4575822477c97eeb2"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w512/joint_gd/step05000000/manifest.json",
+      "sha256": "36b9bf7ea645c3d461c31d4e01a3e9a13af4f8050e5ae3fe15b733ad4e86ca44"
+    },
+    {
+      "path": "output/diagnostics/figure4_scratch_20260926/analysis/w1024/summary.json",
+      "sha256": "c561c84523b8571411c33e0616dec0029e3da5f69c9f1581e613299ae3897a2e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/w1024/base/manifest.json",
+      "sha256": "72e2237f526328db43476543529116394e788771815cbfedd61fca02e60581e2"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step00250000/manifest.json",
+      "sha256": "aa1a92793268bacf299aef6d2c5405ec1f1a7ee483705a4b00e2ca738ce4780f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step00500000/manifest.json",
+      "sha256": "2bdbbe4f0fe380aaaff698cee38909ff462344ec786dafbdc2696291aaf35ff2"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step00750000/manifest.json",
+      "sha256": "58c083de5ec99fc36daa9246e3846344b31bb6da32092e65a58136167e435245"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step01000000/manifest.json",
+      "sha256": "707fba4c73b86df69400caa7844617c0bf62e50dde83a85871e7db130f144c31"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step01250000/manifest.json",
+      "sha256": "68328876c7f4e1dc1e6f40575477b1cfd5cf41479e8f4147f20c6ca74835dd9b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step01500000/manifest.json",
+      "sha256": "b0844ac358326e2981518d9ee3b0906bcd978e0565e4c831876b62bea5d37182"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step01750000/manifest.json",
+      "sha256": "bb4bc370866938bba915b2db85b3c696069ea2732dd4d950ec347144b971257c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step02000000/manifest.json",
+      "sha256": "02402881074bd12acafce1c4c711b82e7e4cd0487accf6e95e9213aeae60757c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step02250000/manifest.json",
+      "sha256": "e7832d77088c671dd4b98e544281787bfe702cdbcb6ad4093cba1cf8fb9e0524"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step02500000/manifest.json",
+      "sha256": "364d06f44af6bc5f9eea3d024e6ff25d54c1805d2a9ee5f482d6c4d493e45be9"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step02750000/manifest.json",
+      "sha256": "e7b5ff3a8f239927b5b0d90b7dd3788f81121c5e040d74ae5f30e33a5aa11921"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step03000000/manifest.json",
+      "sha256": "785cf42c043d2497149063e7337ef4f93e74fc277222f79543ccbfe6143206b3"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step03250000/manifest.json",
+      "sha256": "65866a16ad204dbde8a38ee27876275671bec658d013e354d993d85e61e73190"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step03500000/manifest.json",
+      "sha256": "345581d4e47925bd42c986f59d2eb44edd6892611c40a6df1682ba6f603052d4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step03750000/manifest.json",
+      "sha256": "7df49e5dcab43f8a8006993a9cfcfbfb703e1d2a4377e8d3ab6c25f0c4b7f932"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step04000000/manifest.json",
+      "sha256": "b888b8114ac4fc678deb9048802152db625f41cb9c4cf7fd6527f79bb39baa06"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step04250000/manifest.json",
+      "sha256": "4bc67df174e97df6148551f7dae36b4551c890783d54eaf3a44a95ad87d4cc9b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step04500000/manifest.json",
+      "sha256": "3f7378b5ee4cba2fcd87cf4fd6fee9288d4e122fc55b8030e6a467c3d829a5cf"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step04750000/manifest.json",
+      "sha256": "caea03314cc545c23038d89c31b0f90846e81cf2d4cb591354f1b1608f36fd93"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_constant/step05000000/manifest.json",
+      "sha256": "2dadcd3f36b44cbb5203b3866348ffe01fa2465f19329906576b28c70dc08df9"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step00250000/manifest.json",
+      "sha256": "8ea33f6e3b1774fe1d4ca883a1de1eb229a727a4bcda3be07e1bff2e86dd614c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step00500000/manifest.json",
+      "sha256": "f051f1af706f359948ca83e64838062a4a26ac04ba16af4a7e16d119fcf76e53"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step00750000/manifest.json",
+      "sha256": "d8b6fa520699e98b68a18e61eebaf90c3e54f0b900c95d557b4a6daf27aa4a27"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step01000000/manifest.json",
+      "sha256": "6972d67812e262ce60571c2dfc2422eb08f65086b7c19b5a6126e3b4bbf49d30"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step01250000/manifest.json",
+      "sha256": "f02423553e6a227eb1ba17e0617fddb66c615a29cb32921a0bbb7a9e6e4067e4"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step01500000/manifest.json",
+      "sha256": "1ab77ebd09f32647016f493e3fd9abb5354631e6d1476db90bfa2398201cb02c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step01750000/manifest.json",
+      "sha256": "3461865a807a6112e78674cf43f2a2363824d490e169fa5549e5f40c1ad8623d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step02000000/manifest.json",
+      "sha256": "9e0aa125e4b489bdd365e888e34e102af33351ca9ba1472ee3f1a64cc5d97a56"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step02250000/manifest.json",
+      "sha256": "35eb6b841f4d7c43958a7f0bd04b77358ee8e7979c1cd3c47b2d59a8d61973eb"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step02500000/manifest.json",
+      "sha256": "ba3b77befc452d5e79847549593e7354662038876e79e9b04d8b9fd3ce7f5d9d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step02750000/manifest.json",
+      "sha256": "1ae5bcf533ff21b1c134e596478e96f3a073a8cacadf375ce93eb163d2acdc36"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step03000000/manifest.json",
+      "sha256": "367bf177245277a7429c9fdb357011ab2ecc63ebdd3d154d2035bb53a36da97b"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step03250000/manifest.json",
+      "sha256": "01cd991386838ef32e3fe4da917cc61bbcb203bb770d5ce89fc2e824018083d3"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step03500000/manifest.json",
+      "sha256": "a47155fb2bb913fb5a0b7f375edaaa553ef4f15412c497f9ca77f6e932600e2a"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step03750000/manifest.json",
+      "sha256": "2e9813e40eb5879b900274c31a91cf5193ff5aa59c99557f589b0ba78b8f0ad0"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step04000000/manifest.json",
+      "sha256": "3aedadd64b7dfde63f4bf5e2c88c3b85bb19f965ba74041a93388d9baef88fef"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step04250000/manifest.json",
+      "sha256": "08f1b51b8fdb708a29a8ab878d27670dd5da1d22e51894b21043a276563046a6"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step04500000/manifest.json",
+      "sha256": "7ac75db904f8f155a907a0659978936aa6093051ce3e9f2635d6460aa590d207"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step04750000/manifest.json",
+      "sha256": "e141a9c9886896188368d6de126cfdb0842fc7ca90986eb2d5db2dbfe890a5ca"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_adam_cosine/step05000000/manifest.json",
+      "sha256": "078a321643df2d2b6ecd24c7c98a3f3b5b09c805ce0668c4e3e4edf04be5b1f5"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step00250000/manifest.json",
+      "sha256": "ae067f04d4e88b5f9f5d9a557aaacab97b5d5d15f581a5445df8207474c6f5e6"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step00500000/manifest.json",
+      "sha256": "e2cb9a20f35e0f2f0f0b81e2355efde7beef24a8aa7b830a5b814f12b089725f"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step00750000/manifest.json",
+      "sha256": "466d705cf98b9b3e1e57c0357bad5b3c3d2e8a49947132d5f2804947c68dc01d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step01000000/manifest.json",
+      "sha256": "496f29fa5f99c9562079e872409ae9f703c75a42da6b640ad3fd719e9298cea1"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step01250000/manifest.json",
+      "sha256": "186fde0bef5407a9d1c17ac371a425b086f0dc6ce849c7b5fcfd26f7d70fd30a"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step01500000/manifest.json",
+      "sha256": "0b701c6230e33a99f6403c90742c30ad550fbccbeb225e3877ce66558aba0b6c"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step01750000/manifest.json",
+      "sha256": "7d40e1db10f8be184d5dbde22e81cc2e416c1194d7c6f2088d7dd57b9e1efa03"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step02000000/manifest.json",
+      "sha256": "29d2511b68785a0b57fd01866d7a9eed61f364294c356cc1e4de0ba6c83649a8"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step02250000/manifest.json",
+      "sha256": "a876c6352259e9b4c0838c7030c1595a129a6dbef054ef34e10e6f6aed69a8eb"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step02500000/manifest.json",
+      "sha256": "8bf8305978cf442bdc7cd19633b92bea8d726bee5eecd9b672c565661492cad1"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step02750000/manifest.json",
+      "sha256": "b666ab4cbb10874cc0be10c17ad3513227a23ec3d26c3672180a27c582cdbb9a"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step03000000/manifest.json",
+      "sha256": "72c08a86daf26d81613658b9fc8ef32bbbca4a96846f393a11498f226bb3e677"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step03250000/manifest.json",
+      "sha256": "e66e511460bf797568d313521605a49242cd6577ee1a3dff7feeddf89f960ee7"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step03500000/manifest.json",
+      "sha256": "19fa6d90a294b2c372151962b446650238de81e440b7f14bc7aa7d7fcec518c1"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step03750000/manifest.json",
+      "sha256": "4f431aa90c62b50c089eb87d3cfe57f4ba1ea7f8dced020be03091a04a15963d"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step04000000/manifest.json",
+      "sha256": "4dd3ad980ec3d3f1482bb7fb05be9bea9bcdb7199fc1d8d4bdd391593e88d815"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step04250000/manifest.json",
+      "sha256": "73423232c39430c023f78520d83e56e1d1667cb35c4e5e375d3c2471805ac74e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step04500000/manifest.json",
+      "sha256": "95c9c8f774e0d6616c1bb7655e3bb1499d094249c5615ee47c2bc380ab2a044e"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step04750000/manifest.json",
+      "sha256": "13952a1c6cfc3f785110af7d1f66df58d854ee6fb365f8d8dffba9179a478190"
+    },
+    {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step05000000/manifest.json",
+      "sha256": "d240e1d3d0e956c2ea808c8751a03eb8460569327fb2e4060aa4beba24268e10"
+    }
+  ]
+}
