@@ -636,6 +636,16 @@ accumulated fine path length and attached-network raw error. Use the unchanged
 normalization. Increased scale without improved output is reported as scale
 growth, not useful acquisition. Opposing or null responses remain evidence.
 
+The scalar analysis also compares mean fine slope activity in the first and
+final 10k windows of each 100k native continuation. This tests reinforcement
+of the actual motion magnitude separately from direction persistence and
+from growth of total parameter energy. Instantaneous outward-cosine summaries
+use 1000-update samples; they are not every-update averages. For the
+interventions, a supplemental comparison interpolates slope RMS at the
+smaller of the two endpoint cumulative fine path lengths, using the saved
+1000-update rows. This descriptive comparison separates elapsed updates from
+accumulated motion budget; it is not an exact matched-trajectory experiment.
+
 The Modal GPU campaign has a 1.8-hour aggregate cap and 8 GiB host-memory cap.
 Cases run in fixed target, seed, and width order; each case contains the
 native trajectory and all paired forks. A measured timing allowance prevents
