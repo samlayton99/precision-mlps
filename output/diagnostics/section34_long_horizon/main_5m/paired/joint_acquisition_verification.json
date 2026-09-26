@@ -2,53 +2,119 @@
   "python": "3.12.10",
   "numpy": "2.5.1",
   "matplotlib": "3.11.0",
-  "platform": "macOS-27.0-arm64-arm-64bit",
-  "render_sha256": "7bf3ae4c7a53b2d4c26bb1b9e5937639341cba80f0fa8a6f1ecb22dac42e9582",
-  "comparison_baseline": "d89561c:figure_handoff/optimization/render.py",
+  "render_sha256": "6d611b93456412fededbd8daf77a872b8b83843211812119176ebf7503c11bc2",
+  "comparison_baseline": "2c9ed77:figure_handoff/optimization/render.py",
   "comparisons": [
     {
       "panel": "a",
-      "changed_pixels": 0,
-      "pixel_identical": true,
-      "axes_bounds": [
-        0.082,
-        0.29000000000000004,
-        0.22014563106796114,
-        0.5449999999999999
+      "data_coordinates_equal": true,
+      "axis_limits_scales_ticks_equal": true,
+      "colors_line_styles_markers_equal": true,
+      "previous_axes_inches": [
+        1.2108009708737864,
+        1.199
+      ],
+      "current_axes_inches": [
+        1.328684210526316,
+        0.9805000000000001
       ]
     },
     {
       "panel": "b",
-      "changed_pixels": 0,
-      "pixel_identical": true,
-      "axes_bounds": [
-        0.42542718446601946,
-        0.29000000000000004,
-        0.22014563106796114,
-        0.5449999999999999
-      ]
+      "data_coordinates_equal": true,
+      "axis_limits_scales_ticks_equal": true,
+      "colors_line_styles_markers_equal": true,
+      "previous_axes_inches": [
+        1.2108009708737864,
+        1.199
+      ],
+      "current_axes_inches": [
+        1.328684210526316,
+        0.9805000000000001
+      ],
+      "ylabel_clearance_from_previous_axes_pt": 7.784230263157906
     },
     {
-      "figure": "spectrum_readout",
-      "changed_pixels": 0,
-      "pixel_identical": true
+      "panel": "c",
+      "data_coordinates_equal": true,
+      "axis_limits_scales_ticks_equal": true,
+      "colors_line_styles_markers_equal": true,
+      "previous_axes_inches": [
+        1.210800970873786,
+        1.199
+      ],
+      "current_axes_inches": [
+        1.328684210526316,
+        0.9805000000000001
+      ],
+      "ylabel_clearance_from_previous_axes_pt": 7.3861052631578605
     }
   ],
+  "figure3_pixel_identical": true,
   "scatter_points": 48,
   "scatter_coordinates_exactly_match_csv": true,
-  "error_case_checks": [
-    "duplicate match rejected",
-    "missing match rejected",
-    "zero native path rejected",
-    "wrong endpoint rejected"
-  ],
-  "pixel_comparison": "600-DPI common canvas crops include axes, labels, ticks, and titles; export tight cropping can change surrounding margins",
+  "legend_point_collisions_with_3pt_margin": 0,
   "png_dpi": [
     599.9988,
     599.9988
   ],
   "png_size": [
-    3392,
-    1314
-  ]
+    3362,
+    1062
+  ],
+  "unchanged_csv_sha256": "50e04a9681365c3a976ed0c401b771ea3ad9c378b01678eb254dc7700bd56481",
+  "prior_intervention_validation": {
+    "python": "3.12.10",
+    "numpy": "2.5.1",
+    "matplotlib": "3.11.0",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "render_sha256": "7bf3ae4c7a53b2d4c26bb1b9e5937639341cba80f0fa8a6f1ecb22dac42e9582",
+    "comparison_baseline": "d89561c:figure_handoff/optimization/render.py",
+    "comparisons": [
+      {
+        "panel": "a",
+        "changed_pixels": 0,
+        "pixel_identical": true,
+        "axes_bounds": [
+          0.082,
+          0.29000000000000004,
+          0.22014563106796114,
+          0.5449999999999999
+        ]
+      },
+      {
+        "panel": "b",
+        "changed_pixels": 0,
+        "pixel_identical": true,
+        "axes_bounds": [
+          0.42542718446601946,
+          0.29000000000000004,
+          0.22014563106796114,
+          0.5449999999999999
+        ]
+      },
+      {
+        "figure": "spectrum_readout",
+        "changed_pixels": 0,
+        "pixel_identical": true
+      }
+    ],
+    "scatter_points": 48,
+    "scatter_coordinates_exactly_match_csv": true,
+    "error_case_checks": [
+      "duplicate match rejected",
+      "missing match rejected",
+      "zero native path rejected",
+      "wrong endpoint rejected"
+    ],
+    "pixel_comparison": "600-DPI common canvas crops include axes, labels, ticks, and titles; export tight cropping can change surrounding margins",
+    "png_dpi": [
+      599.9988,
+      599.9988
+    ],
+    "png_size": [
+      3392,
+      1314
+    ]
+  }
 }
