@@ -444,6 +444,39 @@ authorized compute balance; no new multi-hour budget is assumed here.
 All numerical execution is on Modal. No dense local checkpoint loading or
 new million-update traces are needed.
 
+### Secondary controls motivated by the first completed panel
+
+The width-705, seed-30 development panel creates two sharper questions.
+Balancing at native amplitude eliminates $J_Cu^F$ but changes accumulated
+tracking little in these six cases. Freezing the fine denominator at tenfold
+amplitude makes five of the six target cases leave the numerically resolved
+regime in both balanced and unbalanced branches. These observations do not
+establish that ongoing fine disturbance sustains native tracking, or that a
+frozen denominator would be unstable at native amplitude.
+
+We therefore add four paired branches, using the same 130k checkpoints,
+10k pulse, and 10k native release: native; zero fine displacement; a fine
+denominator frozen at its fork value with gain one; and the same unit-gain
+frozen proposal with coarse balancing. This is a follow-up chosen after the
+development results, separate from the original six-arm comparison. Apply
+it across the same six targets, two widths, and two seeds within the approved
+three additional GPU-hours.
+
+The predictions distinguish two explanations. If continuing fine displacement
+is necessary to maintain tracking, removing that displacement should substantially
+deplete tracking during the pulse. If tracking remains comparable to native,
+the proposed fine-forcing loop is not necessary for its persistence on this
+interval. The full native gradient still updates the passive moments, and
+tracking motion still changes the parameters: this test removes active fine
+displacement, not every dependence on the fine residual.
+
+The unit-gain frozen branches distinguish failure caused by tenfold
+amplification from a need for denominator adaptation already at the native
+amplitude. Record early exits as outcomes, not missing successful comparisons.
+If both frozen branches fail, their long-horizon acquisition difference is
+not an identified mediation effect. In all branches, retain the signed fine
+and tracking terms and the shared squared-step term in the exact $A$ balance.
+
 ## 6. How Section 3.5 should tell the argument
 
 Use the title **Why joint training acquires useful geometry slowly**. The

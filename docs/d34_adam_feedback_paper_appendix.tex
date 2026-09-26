@@ -1,0 +1,211 @@
+\section{Coarse feedback and optimizer-dependent population motion}
+\label{app:coarse-feedback}
+
+The question in this appendix is whether coarse tracking can restrict useful
+fine motion even when its signed contribution to slope growth is small.
+We retain the effective fine and tracking gradients used in the GD analysis.
+Adam processes these gradients differently, so a constraint on the raw fine
+gradient need not constrain the update that actually moves the parameters.
+The exact identities below explain what the interventions remove. The
+fixed-preconditioner model illustrates a possible restriction; it is not a
+persistence theorem for Adam.
+
+\paragraph{Model and decomposition.}
+On the fixed training grid, write
+\[
+ q_\theta(x)=d+\sum_{j=1}^W c_j\tanh(a_jx+b_j),\qquad
+ L(\theta)=\tfrac12\|q_\theta-y\|^2.
+\]
+Inner products are normalized sample averages. Let $P_C$ project onto the
+constant and linear sample directions, and put $P_H=I-P_C$.
+In an orthonormal basis of the two-dimensional coarse space, define
+$C=P_Cq_\theta$, $H=P_Hq_\theta$, $e_C=C-P_Cy$, and $e_H=H-P_Hy$.
+Their Jacobians are $J_C=DC$ and $J_H=DH$. In particular, for a coarse basis
+function $\phi_\ell$, the corresponding row of $J_C$ contains the averages
+of $\phi_\ell$ times
+\[
+ \left(c_jx\operatorname{sech}^2(a_jx+b_j),\;
+ c_j\operatorname{sech}^2(a_jx+b_j),\;
+ \tanh(a_jx+b_j),\;1\right),
+\]
+with the first three blocks indexed by $j$ and a single output-bias entry.
+When $K=J_CJ_C^\top$ is invertible, let
+\begin{align}
+ g_H&=J_H^\top e_H,&
+ F&=(I-J_C^\top K^{-1}J_C)g_H,\label{eq:feedback-fine}\\
+ z&=e_C+K^{-1}J_Cg_H,&R&=J_C^\top z.
+\end{align}
+Then $\nabla L=F+R$ and $J_CF=0$. The compensating coarse gradient remains
+part of $F$; $R$ measures departure from the compensating equilibrium.
+
+\paragraph{Two sources of renewed tracking.}
+Let $e_C^*(\theta)=-K^{-1}J_Cg_H$, so $z=e_C-e_C^*$.
+For any finite parameter increment $u$,
+\begin{equation}
+ z(\theta+u)-z(\theta)
+ =J_Cu+\mathcal E_C(\theta,u)
+   -\big[e_C^*(\theta+u)-e_C^*(\theta)\big],
+ \label{eq:feedback-renewal}
+\end{equation}
+where
+\[
+ \mathcal E_C(\theta,u)=\int_0^1(1-s)D^2C(\theta+su)[u,u]\,ds.
+\]
+This follows by Taylor's formula with integral remainder and subtraction
+of the two equilibrium values. A GD fine step $u=-\eta F$ has $J_Cu=0$.
+Its equilibrium can nevertheless move at first order. In Adam,
+$u^F=-\eta D\widehat m^F$ generally has $J_Cu^F\ne0$, where
+$D=\operatorname{diag}(\sqrt{\widehat v}+\epsilon)^{-1}$ and $\widehat m^F$
+is the bias-corrected fine first moment. Equation~\eqref{eq:feedback-renewal}
+therefore separates direct coarse disturbance, moving equilibrium, and a
+finite-step remainder. It does not infer their relative sizes.
+
+\paragraph{Population accounting.}
+For $A=\sum_j a_j^2$, with $u_a^F,u_a^R$ the slope blocks of the updates,
+\begin{equation}
+ A_{n+1}-A_n=2\langle a_n,u_{a,n}^F\rangle
+ +2\langle a_n,u_{a,n}^R\rangle
+ +\|u_{a,n}^F+u_{a,n}^R\|^2.
+ \label{eq:feedback-population}
+\end{equation}
+The first two terms are signed linear contributions; the last term is
+shared and must be retained when interpreting oscillations. Computations
+also retain the numerically unresolved gradient channel in this identity.
+We measure population scale by $\lambda_{\rm RMS}=h\sqrt{A/W}$, rather than
+the largest slope. The reference $1/4$ is a construction scale, not a
+target-independent necessary condition for accuracy.
+
+\paragraph{An illustrative restriction with persistent motion.}
+Consider collective coordinates $(x,s)$ and the local loss
+$L(x,s)=\kappa x^2/2+fs$, with $\kappa>0$ and a fixed positive definite
+preconditioner
+$B=\left(\begin{smallmatrix}d_c&d_{cf}\\d_{cf}&d_f\end{smallmatrix}\right)$.
+If $0<\eta\kappa d_c<2$, set
+$x_*=-d_{cf}f/(\kappa d_c)$, $\alpha=1-\eta\kappa d_c$, and
+$\mu=d_f-d_{cf}^2/d_c>0$. Preconditioned GD satisfies
+\begin{equation}
+ s_N-s_0=-N\eta\mu f
+ -\frac{d_{cf}}{d_c}(1-\alpha^N)(x_0-x_*).
+ \label{eq:feedback-mobility}
+\end{equation}
+Indeed, the coarse recurrence gives $x_n-x_*=\alpha^n(x_0-x_*)$;
+substitution in $s_{n+1}-s_n=-\eta(\kappa d_{cf}x_n+d_ff)$ and summation
+prove the formula. Correction reduces the direct fine mobility $d_f$ to
+its Schur complement $\mu$. Motion continues when $f\ne0$.
+Neither small $\mu$ nor a negative slope response follows automatically.
+For ordinary GD, $B=I$ and this separable example has no such restriction:
+coarse oscillation alone does not slow the fine coordinate.
+
+\paragraph{Stability diagnostic.}
+For locally fixed $D$, an eigenmode of $D^{1/2}\nabla^2L D^{1/2}$ with
+positive eigenvalue $\ell$ and EMA momentum coefficient $0\le\beta_1<1$ has
+characteristic polynomial
+\[
+ r^2-[1+\beta_1-\eta(1-\beta_1)\ell]r+\beta_1.
+\]
+Its roots lie inside the unit circle precisely when
+$0<\eta\ell<2(1+\beta_1)/(1-\beta_1)$.
+Thus the reference is $2$ for GD and $38$ for $\beta_1=0.9$.
+For moving Adam this is a local diagnostic, not a stability theorem.
+We use the full loss Hessian. For its leading scaled unit eigenvector $v$,
+the coarse contribution to its curvature is
+\[
+ \frac{\|J_CD^{1/2}v\|^2}
+ {v^\top D^{1/2}\nabla^2L D^{1/2}v}.
+\]
+We also project $v$ onto $\operatorname{range}(D^{1/2}J_C^\top)$.
+These measurements distinguish coarse stiffness from a merely similar
+oscillatory trace. Negative-curvature modes are recorded separately;
+failure to resolve their smallest eigenvalue is not reported as convexity.
+Related analyses describe GD self-stabilization and Adam's adaptive
+stability boundary
+(\href{https://arxiv.org/abs/2209.15594}{Damian, Nichani, and Lee, 2023};
+\href{https://arxiv.org/abs/2207.14484}{Cohen et al., 2024}).
+
+\paragraph{Interventions that distinguish direction from denominator effects.}
+Given the processed fine update $u^F$, we form
+\begin{equation}
+ u^{F,\mathrm{bal}}=u^F-DJ_C^\top(J_CDJ_C^\top)^{-1}J_Cu^F.
+ \label{eq:feedback-balanced}
+\end{equation}
+Multiplication by $J_C$ proves its zero first-order coarse response. We
+then scale the entire vector, including its output-bias entry, to match
+the designated hidden-update norm; this preserves the constraint.
+The six Adam branches are native, fine amplification by ten, balanced
+fine motion at native amplitude, balanced fine motion at tenfold
+amplitude, and the last two tenfold comparisons with the fine denominator
+frozen at the fork. The frozen branches use that same fixed denominator
+throughout the pulse, rather than matching a future native denominator.
+Tracking uses native Adam processing in every branch. Full-gradient
+first and second moments, and the decomposed first moments, continue
+to evolve at each branch's own parameters. They are retained on release.
+
+A passive second-moment comparison uses
+\[
+ v_{n+1}^{\rm shadow}=\beta_2v_n^{\rm shadow}
+ +(1-\beta_2)(\nabla L_n-0.9R_n)^{\odot2}.
+\]
+Its fine-update norm gain uses the same fine first moment as the native
+denominator. Squaring the combined gradient retains coordinatewise cross
+terms; this is not a sum of independently squared fine and tracking norms.
+This comparison diagnoses denominator restriction. The actual trajectory
+interventions test whether releasing or avoiding it improves acquisition.
+
+\paragraph{Targets, budgets, and evaluation.}
+The panel contains six targets, widths $705$ and $1409$, and two seeds.
+Training uses 2048 equally weighted points on $[-1,1]$ in full-batch
+float64 arithmetic. Apart from the degree-five mixture below, targets
+are divided by their training-grid RMS. They are mixed sine
+$\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(14\pi x)$;
+a Gaussian $\exp(-((x+0.35)/0.22)^2)$; a compact bump
+$\exp(1-1/(1-u^2))$ for $|u|<1$, zero otherwise, with $u=(x-0.35)/0.22$;
+a smooth step $\tanh(14(x-0.31))$; and a kink $|x+0.23|$.
+The polynomial target is $0.3q_0+0.4q_1+\sqrt{0.75}q_5$, where $q_j$
+are orthonormal polynomials for the training measure.
+
+Saved-state audits use updates 25,000 and 130,000 under both optimizers.
+Continuations fork at 130,000. GD starts from both GD and Adam geometries
+and runs for 10,000 updates at its native rate $0.002$ or at
+$0.25,0.5,0.9,1.05,1.25$ times the initial $2/\lambda_{\max}(\nabla^2L)$.
+Two further branches replace $F+R$ by $F+0.1R$ at the $0.9$ and $1.05$
+rates. These are modified-force interventions, not ordinary GD.
+Adam uses $(\eta,\beta_1,\beta_2,\epsilon)=(0.002,0.9,0.999,10^{-8})$,
+with a 10,000-update pulse followed by 10,000 native updates.
+The same six policies are applied to every target--width--seed case.
+
+We record attached-network raw relative RMS error every update, retaining
+the minimum separately from the current endpoint. There is no readout
+refit. Endpoints are also evaluated on an independent 8192-point grid
+with the original target normalization. These are optimization and
+quadrature comparisons, not a held-out model-selection claim. The targets
+and checkpoints come from previous development work; the second seed
+and wider networks test transfer of the fixed intervention matrix.
+Equal-update comparisons are primary. Interpolation on the common recorded
+GD flow-time interval is a supplementary diagnostic, with its interpolation
+bracket retained; it is not an additional finely sampled run.
+The $1\%$ threshold is reported separately from the $10^{-6}$ diagnostic
+and from the supplied geometry's target-dependent accuracy.
+
+\paragraph{Secondary controls.}
+After inspecting the first width-705, seed-30 panel, we add a matched native
+control, zero fine displacement, a unit-gain frozen fine denominator, and a
+unit-gain frozen balanced proposal. These use the same pulse and release
+budgets on all 24 Adam starting states. The first test asks whether tracking
+persists without continuing fine displacement; the latter two distinguish
+tenfold-amplification failures from instability already at native amplitude.
+All full-gradient moment recurrences remain active, so suppressing fine
+displacement does not remove the fine gradient from the second moment.
+This is a result-motivated follow-up, not part of the original fixed matrix.
+
+\paragraph{Verification and outcome handling.}
+Tests compare native checkpoint continuation and release against the original
+optimizer, check the coarse projection, verify the exact population balance,
+compare full Hessian products with automatic differentiation of the loss,
+and compare batched branches with independent execution. Each branch stops
+if parameters become nonfinite or the coarse solve is no longer numerically
+resolved. These exits are retained with their last error and update count;
+they are not silently omitted from the run totals. Endpoint plots distinguish
+completed comparisons from these failures. Eigenvalue residuals, source
+checkpoint hashes, execution receipts, and sparse parameter endpoints are
+retained. All numerical execution uses Modal, with a three-GPU-hour ceiling;
+no large arrays are loaded on the local machine.
