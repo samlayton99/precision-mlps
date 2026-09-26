@@ -1,4 +1,4 @@
-"""Launch the missing Figure 4 widths using the completed W=512 protocol.
+"""Launch Figure 4 widths using the completed W=512 protocol.
 
 Prepare with GPUs disabled. Run each lane under an external 10,790-second
 timeout (five-second kill grace), exposing exactly one authorized GPU.
@@ -19,6 +19,7 @@ from adam_feature_probe_prepare import geometry, grid, initial_parameters, targe
 
 GROUPS = ('joint_adam_cosine', 'joint_adam_constant', 'joint_gd')
 LANES = {0: (128, 256), 1: (1024,)}
+RERUN_LANES = {0: (1024,), 1: (512, 128, 256)}
 HORIZON = 5_000_000
 
 
@@ -26,12 +27,13 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2) + '\n')
 
 
-def prepare(root, reference):
+def prepare(root, reference, rerun_all=False):
     """Reuse target arrays and recipe grids; change only the width geometry."""
     if (root / 'manifest.json').exists():
         raise FileExistsError('Use a fresh sweep directory')
     with np.load(reference / 'base/joint_input.npz') as saved:
         x, y = saved['x'].copy(), saved['target'].copy()
+        reference_parameters = saved['initial_parameters'].copy()
         _, info512 = geometry(512)
         expected = np.array([initial_parameters(512, info512['interior_intervals'], s)
                              for s in range(5)])
@@ -52,12 +54,15 @@ def prepare(root, reference):
         assert json.loads((old / 'summary.json').read_text())['completed_updates'] == HORIZON
         configs[name] = config
     manifests = []
-    for width in (128, 256, 1024):
+    widths = (128, 256, 512, 1024) if rerun_all else (128, 256, 1024)
+    for width in widths:
         _, info = geometry(width)
         base = root / f'w{width}' / 'base'
         base.mkdir(parents=True, exist_ok=False)
         parameters = np.array([initial_parameters(width, info['interior_intervals'], s)
                                for s in range(5)])
+        if width == 512:
+            parameters = reference_parameters.copy()
         np.savez_compressed(base / 'joint_input.npz', x=x, target=y,
                             initial_parameters=parameters)
         np.savez_compressed(base / 'input.npz', **evaluation)
@@ -72,14 +77,17 @@ def prepare(root, reference):
         for name, config in configs.items():
             write_json(root / f'w{width}' / f'{name}.json', config)
     write_json(root / 'manifest.json', dict(
-        horizon=HORIZON, widths=[128, 256, 512, 1024], new_widths=[128, 256, 1024],
-        reused_width512=str(reference), lanes=LANES, configs=configs,
+        horizon=HORIZON, widths=[128, 256, 512, 1024], new_widths=list(widths),
+        reused_width512=None if rerun_all else str(reference),
+        reference_protocol=str(reference), lanes=RERUN_LANES if rerun_all else LANES,
+        configs=configs, durable_exports=rerun_all,
         selection='One recipe per width and optimizer by median final validation error across five seeds; all endpoints finite.',
         recipe_scope='Same final five-million-update candidate grid as W=512; no new per-width LR screening.',
         raw_traces='Every update error/RMS; full parameters every 10000 updates.',
-        total_gpu_hour_limit=6, lane_timeout_seconds=10790, kill_grace_seconds=5,
+        total_gpu_hour_limit=6, lane_timeout_seconds=10400 if rerun_all else 10790,
+        kill_grace_seconds=5,
         geometries=manifests))
-    print(json.dumps(dict(prepared=str(root), widths=[128, 256, 1024])), flush=True)
+    print(json.dumps(dict(prepared=str(root), widths=list(widths))), flush=True)
 
 
 def run_lane(root, lane):
@@ -91,12 +99,12 @@ def run_lane(root, lane):
     if len(devices) != 1 or devices[0].platform != 'gpu':
         raise RuntimeError(f'Expected one GPU, got {devices}')
     manifest = json.loads((root / 'manifest.json').read_text())
-    assert manifest['lane_timeout_seconds'] == 10790
+    assert manifest['lane_timeout_seconds'] in (10400, 10790)
     print(json.dumps(dict(lane=lane, gpu_mask=mask, devices=[str(d) for d in devices],
                           pid=os.getpid(), started_unix=time.time())), flush=True)
     runner = Path(__file__).with_name('adam_joint_probe_run.py')
     records = []
-    for width in LANES[lane]:
+    for width in manifest['lanes'][str(lane)]:
         for name in GROUPS:
             case = root / f'w{width}'
             output = case / name
@@ -104,6 +112,8 @@ def run_lane(root, lane):
             print(json.dumps(dict(starting=record)), flush=True)
             command = [sys.executable, '-u', str(runner), '--input', str(case / 'base/joint_input.npz'),
                        '--config', str(case / f'{name}.json'), '--output', str(output), '--self-test']
+            if manifest.get('durable_exports'):
+                command += ['--export-dir', str(root / 'durable' / f'w{width}' / name)]
             with (case / f'{name}.log').open('x') as log:
                 result = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT)
             record.update(exit_code=result.returncode, ended_unix=time.time())
@@ -125,10 +135,12 @@ if __name__ == '__main__':
     action.add_argument('--prepare', action='store_true')
     action.add_argument('--lane', type=int, choices=LANES)
     parser.add_argument('--reference', type=Path)
+    parser.add_argument('--rerun-all', action='store_true',
+                        help='Rerun all four widths with acknowledged off-pod exports.')
     args = parser.parse_args()
     if args.prepare:
         if args.reference is None:
             parser.error('--prepare needs --reference')
-        prepare(args.root, args.reference)
+        prepare(args.root, args.reference, args.rerun_all)
     else:
         run_lane(args.root, args.lane)

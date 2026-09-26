@@ -23,3 +23,17 @@ After moving the original trial outputs aside, the laptop copies were uploaded i
 The environment uses Python 3.12, JAX/JAXlib 0.11.1, NumPy 2.5.1, and SciPy 1.18.0 with CUDA 12 packages. Direct SSH uses `root@213.181.111.129`, port `16865`, and the user's existing Ed25519 key. The user authorized direct execution without Slurm. GPU concurrency remains capped at two.
 
 RAM scratch is temporary. The protection is the verified laptop copy, not the remote export directory. A pod failure can still lose work since the most recent acknowledged segment. The collector runs under `caffeinate` to prevent idle sleep; a network interruption or unavailable laptop causes training to wait and then stop rather than continue without backups.
+
+## Full sweep
+
+The full rerun launched at **2026-09-26 05:18:33 UTC**. GPU 0 runs width 1024. GPU 1 runs widths 512, 128, and 256 in that order. Each width executes Adam cosine, Adam constant, and the combined GD candidate batch. These are 160 seed/recipe trajectories, each with five million planned updates. GPU 2 is unused.
+
+Each worker is enclosed by a 10,400-second timeout with a five-second process-group kill grace. Together these allow at most 20,810 GPU-seconds; reserving another 790 seconds for the completed trials and restoration checks keeps the total within six GPU-hours. Both workers have an outer deadline of **08:11:58 UTC**. The expected completion is earlier, but only complete exported groups count as completed experiments.
+
+- Remote run root: `/dev/shm/figure4_scratch_20260926/production`.
+- [Local inputs and durable exports](../results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/).
+- [Launch record](../output/diagnostics/figure4_scratch_20260926/launch.json), including worker PIDs, commands, resource bounds, and the hashes of all four executed source files.
+- [Input and geometry checks](../output/diagnostics/figure4_scratch_20260926/preflight.json).
+- [Local backup process](../output/diagnostics/figure4_scratch_20260926/backup_process.json) and [live backup log](../output/diagnostics/figure4_scratch_20260926/backup.log).
+
+An export contains the contiguous raw error/RMS segment, every parameter snapshot in that segment, the complete terminal optimizer state, and a manifest with configuration and input hash. Concatenating segments in update order reconstructs the original arrays without interpolation. `step05000000/ack_sent` indicates a verified final segment; the collector exits after all twelve final groups have been acknowledged. The early trial directories are separate and must not be used as paper evidence.
