@@ -94,6 +94,12 @@ def analyze(base, runs, output, export=None):
         traces[f'{optimizer}_lambda_q99'] = np.quantile(slopes, .99, axis=-1)
         traces[f'{optimizer}_lambda_max'] = np.max(slopes, axis=-1)
         traces[f'{optimizer}_lambda_rms_checkpoints'] = np.sqrt(np.mean(slopes**2, axis=-1))
+        traces[f'{optimizer}_lambda_seed_mean'] = np.mean(slopes, axis=-1)
+        traces[f'{optimizer}_lambda_mean'] = np.mean(slopes, axis=(1, 2))
+        traces[f'{optimizer}_lambda_population_std'] = np.std(slopes, axis=(1, 2), ddof=0)
+        selected[optimizer]['endpoint_mean_bandwidth'] = float(traces[f'{optimizer}_lambda_mean'][-1])
+        selected[optimizer]['endpoint_population_std'] = float(traces[f'{optimizer}_lambda_population_std'][-1])
+        selected[optimizer]['endpoint_seed_mean_slope'] = (traces[f'{optimizer}_lambda_seed_mean'][-1]/h).tolist()
         np.testing.assert_allclose(traces[f'{optimizer}_lambda_rms_checkpoints'], rms[steps, :, ri]*h, atol=2e-15, rtol=2e-13)
         for step in sorted({0, min(200000, horizon), min(600000, horizon), horizon}):
             if step not in steps:
@@ -173,19 +179,15 @@ def plot_joint(traces, selected, horizon, output):
         y = traces[f'{optimizer}_error_median']
         axes[0].plot(t,np.median(y,axis=1),color=color,label=label)
         axes[0].fill_between(t,np.min(traces[f'{optimizer}_error_low'],axis=1),np.max(traces[f'{optimizer}_error_high'],axis=1),color=color,alpha=.13,lw=0)
-        for name, ls in [('rms','-'),('q99','--')]:
-            if name == 'rms':
-                ts=traces[f'{optimizer}_rms_steps'];ys=traces[f'{optimizer}_rms_median']
-                low=traces[f'{optimizer}_rms_low'];high=traces[f'{optimizer}_rms_high']
-            else:
-                ts=traces[f'{optimizer}_checkpoint_steps'];ys=traces[f'{optimizer}_lambda_q99']
-                low=high=ys
-            axes[1].plot(ts/1e6,np.median(ys,axis=1),color=color,ls=ls,label=f'{label} '+('RMS' if name=='rms' else '99th'))
-            axes[1].fill_between(ts/1e6,np.min(low,axis=1),np.max(high,axis=1),color=color,alpha=.09,lw=0)
+        ts=traces[f'{optimizer}_checkpoint_steps']
+        mean=traces[f'{optimizer}_lambda_mean'];sd=traces[f'{optimizer}_lambda_population_std']
+        axes[1].plot(ts/1e6,mean,color=color,label=label)
+        axes[1].fill_between(ts/1e6,np.maximum(0,mean-sd),mean+sd,color=color,alpha=.12,lw=0)
     axes[1].axhline(.25,color='#444444',ls=':',lw=1,label='Uniform reference 1/4')
-    axes[0].set_ylabel('Relative output L2 error');axes[1].set_ylabel(r'Scaled slope, $h|a_j|$')
+    axes[0].set_ylabel('Relative output L2 error');axes[1].set_ylabel(r'Bandwidth $\lambda$')
+    axes[0].set_yscale('log')
     for ax in axes:
-        ax.set_yscale('log');ax.set_xlim(0,horizon/1e6);ax.set_xlabel('Updates (millions)');ax.grid(alpha=.15);ax.legend(fontsize=7)
+        ax.set_xlim(0,horizon/1e6);ax.set_xlabel('Updates (millions)');ax.grid(alpha=.15);ax.legend(fontsize=7)
     axes[1].legend(fontsize=7,loc='upper right',bbox_to_anchor=(1,.92))
     for suffix in ['png','pdf']:fig.savefig(output/f'joint_error_and_slopes.{suffix}',dpi=220)
     plt.close(fig)

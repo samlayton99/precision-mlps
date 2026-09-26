@@ -1,0 +1,402 @@
+{
+  "horizon": 5000000,
+  "width": 128,
+  "spacing": 0.01904761904761905,
+  "candidates": [
+    {
+      "optimizer": "adam",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_adam_cosine",
+      "recipe_index": 0,
+      "schedule": "cosine",
+      "learning_rate": 0.05,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.0026707885317693945,
+        0.004553825405005879,
+        0.0020996127520261903,
+        0.0019192884938982414,
+        0.003976395813398499
+      ],
+      "median_validation_error": 0.0026707885317693945,
+      "train_errors": [
+        0.0026702529687113847,
+        0.00455355212067479,
+        0.002099033076405035,
+        0.0019182866598739577,
+        0.003976158523367218
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "adam",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_adam_cosine",
+      "recipe_index": 1,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.002597070173067852,
+        0.0016378793235926128,
+        0.007773435095002702,
+        0.010578572159118647,
+        0.0026245132513337275
+      ],
+      "median_validation_error": 0.0026245132513337275,
+      "train_errors": [
+        0.0025970027256246603,
+        0.0016374384308859772,
+        0.0077731727887938576,
+        0.010577873085422886,
+        0.002624228634881043
+      ],
+      "all_seeds_finite": true,
+      "selected": true
+    },
+    {
+      "optimizer": "adam",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_adam_constant",
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.02,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.003120448562319886,
+        0.03413928734404891,
+        0.03874637219046084,
+        0.018104812081657328,
+        0.0047197316189668695
+      ],
+      "median_validation_error": 0.018104812081657328,
+      "train_errors": [
+        0.003120425367910238,
+        0.034139208164591185,
+        0.03874616080092909,
+        0.018104177668068978,
+        0.0047192071516473965
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "adam",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_adam_constant",
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.002,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.004134276124379586,
+        0.006196005807851336,
+        0.01305138299634476,
+        0.005814857491757132,
+        0.04346841864160535
+      ],
+      "median_validation_error": 0.006196005807851336,
+      "train_errors": [
+        0.004133523428294859,
+        0.006194706382633341,
+        0.0130511403970587,
+        0.005814735821721705,
+        0.04346841681418137
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "gd",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_gd",
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.0887086000425041,
+        0.20439614128603026,
+        0.08433063875064337,
+        0.09216176083814281,
+        0.1052964076047317
+      ],
+      "median_validation_error": 0.09216176083814281,
+      "train_errors": [
+        0.08870843071537422,
+        0.2043940489402994,
+        0.08432717839939298,
+        0.09215847972113296,
+        0.10529341362893706
+      ],
+      "all_seeds_finite": true,
+      "selected": true
+    },
+    {
+      "optimizer": "gd",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_gd",
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.5,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.25853398799786037,
+        0.2585427090088648,
+        0.2603978049563266,
+        0.25861952986378656,
+        0.25855607729449775
+      ],
+      "median_validation_error": 0.25855607729449775,
+      "train_errors": [
+        0.2585305042748099,
+        0.25853897645123164,
+        0.26039406610157295,
+        0.2586160501900929,
+        0.25855259460866914
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "gd",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_gd",
+      "recipe_index": 2,
+      "schedule": "cosine",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.1241586356752242,
+        0.11966051289759441,
+        0.07806984600751117,
+        0.0836040536816508,
+        0.1271219779057121
+      ],
+      "median_validation_error": 0.11966051289759441,
+      "train_errors": [
+        0.12415750681204184,
+        0.11965830458772517,
+        0.07806873099003642,
+        0.08360138253866753,
+        0.12711886583100737
+      ],
+      "all_seeds_finite": true
+    },
+    {
+      "optimizer": "gd",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_gd",
+      "recipe_index": 3,
+      "schedule": "cosine",
+      "learning_rate": 0.5,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.24649182972619063,
+        0.24653718285630763,
+        0.24654302351678103,
+        0.24656021275813203,
+        0.2470531116815229
+      ],
+      "median_validation_error": 0.24654302351678103,
+      "train_errors": [
+        0.24648886687567867,
+        0.2465342186597475,
+        0.2465400591548791,
+        0.2465572479422244,
+        0.2470501327118985
+      ],
+      "all_seeds_finite": true
+    }
+  ],
+  "selected": {
+    "adam": {
+      "optimizer": "adam",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_adam_cosine",
+      "recipe_index": 1,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.002597070173067852,
+        0.0016378793235926128,
+        0.007773435095002702,
+        0.010578572159118647,
+        0.0026245132513337275
+      ],
+      "median_validation_error": 0.0026245132513337275,
+      "train_errors": [
+        0.0025970027256246603,
+        0.0016374384308859772,
+        0.0077731727887938576,
+        0.010577873085422886,
+        0.002624228634881043
+      ],
+      "all_seeds_finite": true,
+      "eval_errors": [
+        0.0025970870644650965,
+        0.0016379897875643372,
+        0.007773500834643949,
+        0.01057874723556964,
+        0.0026245845718510853
+      ],
+      "endpoint_mean_bandwidth": 0.08236998996182643,
+      "endpoint_population_std": 0.16381412261462486,
+      "endpoint_seed_mean_slope": [
+        5.403970957733698,
+        4.522680294437653,
+        4.553770979604006,
+        3.091005440827712,
+        4.050694692376367
+      ],
+      "final_fifth_error_decrease": 0.16902379450903615,
+      "final_fifth_q99_increase": -0.03622303016767736
+    },
+    "gd": {
+      "optimizer": "gd",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_gd",
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.0887086000425041,
+        0.20439614128603026,
+        0.08433063875064337,
+        0.09216176083814281,
+        0.1052964076047317
+      ],
+      "median_validation_error": 0.09216176083814281,
+      "train_errors": [
+        0.08870843071537422,
+        0.2043940489402994,
+        0.08432717839939298,
+        0.09215847972113296,
+        0.10529341362893706
+      ],
+      "all_seeds_finite": true,
+      "eval_errors": [
+        0.08870864239868871,
+        0.20439666435141768,
+        0.08433150379118694,
+        0.09216258106934809,
+        0.10529715608352548
+      ],
+      "endpoint_mean_bandwidth": 0.04389659395788249,
+      "endpoint_population_std": 0.13024705298890046,
+      "endpoint_seed_mean_slope": [
+        2.7093572736014018,
+        1.2895358670416026,
+        2.4648719975154885,
+        2.503879111166929,
+        2.55521166461873
+      ],
+      "final_fifth_error_decrease": 0.006200020412325369,
+      "final_fifth_q99_increase": 0.005690162278292554
+    }
+  },
+  "best_by_schedule": {
+    "adam_constant": {
+      "optimizer": "adam",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_adam_constant",
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.002,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.004134276124379586,
+        0.006196005807851336,
+        0.01305138299634476,
+        0.005814857491757132,
+        0.04346841864160535
+      ],
+      "median_validation_error": 0.006196005807851336,
+      "train_errors": [
+        0.004133523428294859,
+        0.006194706382633341,
+        0.0130511403970587,
+        0.005814735821721705,
+        0.04346841681418137
+      ],
+      "all_seeds_finite": true,
+      "final_fifth_error_decrease": 0.15250893414012034,
+      "final_fifth_q99_increase": 0.0019306144500728095,
+      "rate_at_search_boundary": true
+    },
+    "adam_cosine": {
+      "optimizer": "adam",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_adam_cosine",
+      "recipe_index": 1,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.002597070173067852,
+        0.0016378793235926128,
+        0.007773435095002702,
+        0.010578572159118647,
+        0.0026245132513337275
+      ],
+      "median_validation_error": 0.0026245132513337275,
+      "train_errors": [
+        0.0025970027256246603,
+        0.0016374384308859772,
+        0.0077731727887938576,
+        0.010577873085422886,
+        0.002624228634881043
+      ],
+      "all_seeds_finite": true,
+      "selected": true,
+      "final_fifth_error_decrease": 0.16902379450903615,
+      "final_fifth_q99_increase": -0.03622303016767736,
+      "rate_at_search_boundary": true
+    },
+    "gd_constant": {
+      "optimizer": "gd",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_gd",
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.0887086000425041,
+        0.20439614128603026,
+        0.08433063875064337,
+        0.09216176083814281,
+        0.1052964076047317
+      ],
+      "median_validation_error": 0.09216176083814281,
+      "train_errors": [
+        0.08870843071537422,
+        0.2043940489402994,
+        0.08432717839939298,
+        0.09215847972113296,
+        0.10529341362893706
+      ],
+      "all_seeds_finite": true,
+      "selected": true,
+      "final_fifth_error_decrease": 0.006200020412325369,
+      "final_fifth_q99_increase": 0.005690162278292554,
+      "rate_at_search_boundary": true
+    },
+    "gd_cosine": {
+      "optimizer": "gd",
+      "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/reconstructed/w128/joint_gd",
+      "recipe_index": 2,
+      "schedule": "cosine",
+      "learning_rate": 0.2,
+      "horizon": 5000000,
+      "validation_errors": [
+        0.1241586356752242,
+        0.11966051289759441,
+        0.07806984600751117,
+        0.0836040536816508,
+        0.1271219779057121
+      ],
+      "median_validation_error": 0.11966051289759441,
+      "train_errors": [
+        0.12415750681204184,
+        0.11965830458772517,
+        0.07806873099003642,
+        0.08360138253866753,
+        0.12711886583100737
+      ],
+      "all_seeds_finite": true,
+      "final_fifth_error_decrease": 0.022042919865032373,
+      "final_fifth_q99_increase": 0.000974463601244091,
+      "rate_at_search_boundary": true
+    }
+  },
+  "selection": "One recipe per optimizer minimizing median final 4096-midpoint validation error across all seeds; requires finite endpoints in every seed.",
+  "evaluation": "8192-midpoint resolution check, not an untouched test set.",
+  "display": "Within-bin median per seed with exact min/max; full training horizon retained."
+}
