@@ -91,8 +91,12 @@ def curvature(p,x,y,config,inverse):
             rows[name+'_lambda']=float('nan');continue
         i=int(np.argmax(values));lam=float(values[i]);direction=np.asarray(root)*vectors[:,i]
         overlap=jc.T@np.linalg.solve(gram,jc@direction)
+        scaled_jc=jc*np.asarray(root)
+        metric_overlap=scaled_jc.T@np.linalg.solve(scaled_jc@scaled_jc.T,scaled_jc@vectors[:,i])
         rows.update({name+'_lambda':lam,name+'_second_lambda':float(values[1-i]),
-            name+'_residual':float(residual),name+'_coarse_overlap':float(overlap@overlap/(direction@direction))})
+            name+'_residual':float(residual),name+'_coarse_overlap':float(overlap@overlap/(direction@direction)),
+            name+'_metric_coarse_overlap':float(metric_overlap@metric_overlap),
+            name+'_coarse_rayleigh_fraction':float((jc@direction)@(jc@direction)/lam)})
         try:
             small=eigsh(op,k=1,which='SA',tol=1e-6,maxiter=160,ncv=12,v0=v0,return_eigenvectors=False)
             rows[name+'_min_lambda']=float(small[0])
@@ -155,27 +159,33 @@ def run(args):
                 policies += [(f'rate_{r:g}_tracking01',r*reference,.1,0) for r in (.9,1.05)]
             duration=10000
         else:policies=[(name,.002,1.,i) for i,name in enumerate(cf.ARMS)];duration=20000
-        stopped=False
-        for name,eta,rho,arm in policies:
-            if time.monotonic()-start>args.seconds-30:stopped=True;break
-            cfg=config.at[0].set(eta);s=cf.initialize(saved,x,y,cfg)
-            if args.stage=='gd':s=cf.initialize(saved,x,y,cfg.at[1].set(0.).at[4].set(False))
-            b=dict(**base,arm=name,eta=eta,tracking_factor=rho,optimizer=args.stage)
-            runtime=time.monotonic();status='complete';last=0
-            for offset in range(0,duration+1,1000):
-                policy=arm if offset<=10000 else 0
+        stopped=False;runtime=time.monotonic()
+        configs=jnp.stack([config.at[0].set(eta) for _,eta,_,_ in policies])
+        initialized=[cf.initialize(saved,x,y,cfg) for cfg in configs]
+        batch=jax.tree.map(lambda *v:jnp.stack(v),*initialized)
+        arms=jnp.array([arm for _,_,_,arm in policies]);rhos=jnp.array([rho for _,_,rho,_ in policies])
+        finished=set();latest={};statuses={};trace=None
+        for offset in range(0,duration+1,1000):
+            active=arms if offset<=10000 else jnp.zeros_like(arms)
+            if offset:
+                batch,trace=cf.advance_many(batch,x,y,configs,active,rhos,steps=1000)
+                trace=np.asarray(trace)
+            for pi,(name,eta,rho,arm) in enumerate(policies):
+                if pi in finished:continue
+                cfg=configs[pi];policy=int(active[pi]);s=jax.tree.map(lambda v:v[pi],batch)
+                b=dict(**base,arm=name,eta=eta,tracking_factor=rho,optimizer=args.stage)
                 if offset:
-                    s,trace=cf.advance(s,x,y,cfg,policy,rho,steps=1000)
-                    trace=np.asarray(trace)
                     for k in range(1000):
                         n=offset-1000+k
                         if n<128 or 9872<=n<10000 or 19872<=n<20000:
-                            if np.isfinite(trace[k,0]):bursts.append(dict(**b,offset=n,**dict(zip(cf.BURST,map(float,trace[k])))))
+                            if np.isfinite(trace[pi,k,0]):bursts.append(dict(**b,offset=n,**dict(zip(cf.BURST,map(float,trace[pi,k])))))
                 d=scalar(cf.diagnostics(s,x,y,cfg,policy,rho));last=int(s['offset'])
+                latest[pi]=(b,d,last)
                 row=dict(**b,offset=last,flow_time=last*eta,**d,lambda_rms=c['h']*d['slope_rms'])
                 if offset in (0,10000,20000):row['relative_eval_error']=float(error(s['p'],xe,ye))
                 rows.append(row)
-                if not bool(s['alive']):status='nonfinite' if int(s['failure'])==1 else 'unresolved';break
+                if not bool(s['alive']):
+                    statuses[pi]='nonfinite' if int(s['failure'])==1 else 'unresolved';finished.add(pi);continue
                 if offset in (0,2000,10000,20000):
                     z=cf.proposal(s,x,y,cfg,policy,rho)
                     curves.append(dict(**b,offset=offset,**curvature(s['p'],x,y,cfg,z['inverse'])))
@@ -183,12 +193,14 @@ def run(args):
                     pp,_=state_probes(s,x,y,cfg);probes.extend(dict(**b,offset=offset,**r) for r in pp)
                 if offset in (10000,20000):
                     np.savez_compressed(args.output/f"{base['case_key']}_{name}_{offset}.npz",**jax.device_get({k:s[k] for k in ('p','m','v','cm','count','shadow_v')}))
-                if time.monotonic()-start>args.seconds-30 and offset<duration:status='budget_stopped';stopped=True;break
+            if time.monotonic()-start>args.seconds-30 and offset<duration:stopped=True;break
+        for pi in range(len(policies)):
+            b,d,last=latest[pi];status=statuses.get(pi,'budget_stopped' if stopped else 'complete')
             runs.append(dict(**b,status=status,end_offset=last,complete=status=='complete' and last==duration,
-                seconds=time.monotonic()-runtime,relative_error=d['relative_error'],slope_rms=d['slope_rms'],
+                batch_seconds=time.monotonic()-runtime,relative_error=d['relative_error'],slope_rms=d['slope_rms'],
                 A_closure=d['A_closure'],component_error=d['component_error'],norm_error=d['norm_error']))
-            flush();print(json.dumps(dict(**runs[-1],elapsed=time.monotonic()-start)),flush=True)
-            if stopped:break
+            print(json.dumps(dict(**runs[-1],elapsed=time.monotonic()-start)),flush=True)
+        flush()
         times.append(time.monotonic()-begun)
         if stopped:break
     flush()

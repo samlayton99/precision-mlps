@@ -131,6 +131,12 @@ def advance(state,x,y,config,arm=0,tracking_factor=1.,steps=1000):
     return jax.lax.scan(step,state,None,length=steps)
 
 
+@partial(jax.jit,static_argnames=('steps',))
+def advance_many(states,x,y,configs,arms,tracking_factors,steps=1000):
+    return jax.vmap(lambda s,c,a,r:advance(s,x,y,c,a,r,steps=steps))(
+        states,configs,arms,tracking_factors)
+
+
 @jax.jit
 def diagnostics(state,x,y,config,arm=0,tracking_factor=1.):
     z=proposal(state,x,y,config,arm,tracking_factor);p=state['p'];w=(len(p)-1)//3

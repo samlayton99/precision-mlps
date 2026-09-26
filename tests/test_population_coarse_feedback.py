@@ -93,3 +93,14 @@ def test_sparse_gd_checkpoint_advance(tmp_path):
               beta2=.999,epsilon=1e-8,adaptive=False)
     actual=load(spec,x,y);expected=pa.advance(saved,x,y,c,5)
     for k in ('p','m','v','cm','count'):np.testing.assert_array_equal(actual[k],expected[k])
+
+
+def test_batched_independent_branches():
+    jax.clear_caches()
+    saved,x,y,c=example();single=cf.initialize(saved,x,y,c)
+    states=jax.tree.map(lambda v:jnp.stack([v]*6),single)
+    actual,_=cf.advance_many(states,x,y,jnp.stack([c]*6),jnp.arange(6),jnp.ones(6),steps=12)
+    for arm in range(6):
+        expected,_=cf.advance(single,x,y,c,arm,steps=12)
+        for key in ('p','m','v','cm','accounts'):
+            np.testing.assert_allclose(actual[key][arm],expected[key],rtol=2e-11,atol=2e-13)
