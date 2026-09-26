@@ -226,13 +226,15 @@ def plot(output,all_groups,summaries):
     save(fig,'signed_growth')
     fig,axes=plt.subplots(2,2,figsize=(10,6),layout='constrained')
     for j,w in enumerate(widths):
-        for target in SIX:
+        for ti,target in enumerate(SIX):
             rr=[[s for s in r if 25000<=s['step']<=125000] for r in selected if r[0]['width']==w and r[0]['optimizer']=='adam' and r[0]['target']==target]
             if not rr:continue
-            common=sorted(set.intersection(*[{s['step'] for s in r} for r in rr]));t=(np.asarray(common)-25000)/1000
-            for key,style in [('balanced_raw_access','--'),('balanced_adaptive_access','-')]:
-                values=np.asarray([[{s['step']:s for s in r}[step][key]*.002 for step in common] for r in rr])
-                axes[0,j].plot(t,np.median(values,axis=0),color=colors[target],ls=style,lw=1.)
+            for key,offset,marker,fill in [('balanced_raw_access',-.12,'o','white'),
+                                          ('balanced_adaptive_access',.12,'D',colors[target])]:
+                values=[s[key]*.002 for r in rr for s in r if np.isfinite(s[key])]
+                low,mid,high=np.quantile(values,[.1,.5,.9])
+                axes[0,j].errorbar(ti+offset,mid,yerr=[[mid-low],[high-mid]],fmt=marker,
+                    color=colors[target],markerfacecolor=fill,capsize=3,ms=4)
             x=[];y=[]
             for r in rr:
                 for s in r:
@@ -240,13 +242,17 @@ def plot(output,all_groups,summaries):
                         norm=.5*s['fine_residual_norm']**2
                         if norm>0:x.append(s['current_gradient_descent']/norm);y.append(-s['actual_loss_change']/norm)
             axes[1,j].scatter(x,y,s=10,color=colors[target],alpha=.45)
-        axes[0,j].set_title(f'Width {w}');axes[0,j].set_yscale('log');axes[0,j].set_xlabel('Updates after 25k (thousands)')
-        axes[1,j].set_xscale('symlog',linthresh=1e-8);axes[1,j].set_yscale('symlog',linthresh=1e-8)
-        axes[1,j].axhline(0,color='gray',lw=.7);axes[1,j].set_xlabel('Current-gradient descent / fine residual loss')
-    axes[0,0].set_ylabel('Instantaneous balanced fine access × step size')
-    axes[1,0].set_ylabel('Actual next-step loss reduction / fine residual loss')
-    fig.legend(handles=legend+[Line2D([],[],color='black',ls='--',label='Raw metric'),Line2D([],[],color='black',label='Adaptive metric')],loc='outside lower center',ncol=4,fontsize=8)
-    fig.suptitle('Adaptive access and realized progress; checkpoint diagnostics, not hitting times')
+        axes[0,j].set_title(f'Width {w}');axes[0,j].set_yscale('log')
+        axes[0,j].set_xticks(range(6),[LABELS[t] for t in SIX],rotation=25)
+        axes[1,j].set_xscale('log');axes[1,j].set_yscale('symlog',linthresh=1e-6)
+        axes[1,j].set_yticks([-10,-.1,-.001,-.00001,0,.00001,.001,.1,10])
+        axes[1,j].axhline(0,color='gray',lw=.7)
+        axes[1,j].set_xlabel('Current-gradient descent\n/ fine residual loss')
+    axes[0,0].set_ylabel('Balanced fine access × step size\n(median and 10–90% checkpoint range)')
+    axes[1,0].set_ylabel('Actual next-step loss reduction\n/ fine residual loss')
+    fig.legend(handles=legend+[Line2D([],[],color='black',ls='',marker='o',markerfacecolor='white',label='Raw metric'),
+        Line2D([],[],color='black',ls='',marker='D',label='Adaptive metric')],loc='outside lower center',ncol=4,fontsize=8)
+    fig.suptitle('Adaptive access does not determine actual next-step progress')
     save(fig,'adaptive_access')
 
 
