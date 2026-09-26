@@ -114,6 +114,8 @@ def main():
     parser.add_argument('--export-dir',type=Path)
     parser.add_argument('--export-every',type=int,default=250000)
     parser.add_argument('--backup-timeout',type=int,default=300)
+    parser.add_argument('--resume-exports',type=Path)
+    parser.add_argument('--resume-step',type=int)
     args=parser.parse_args()
     if args.require_gpu:
         for key in ['SLURM_JOB_ID','SLURM_STEP_ID','CUDA_VISIBLE_DEVICES']:
@@ -139,11 +141,20 @@ def main():
     if width<1 or width&(width-1): raise ValueError('Total hidden width must be a power of two')
     args.output.mkdir(parents=True,exist_ok=True)
     if (args.output/'relative_error.npy').exists(): raise FileExistsError('Use a fresh output directory')
+    start = 0
+    if args.resume_exports:
+        from figure4_restore import restore_arrays
+        start, old_metadata = restore_arrays(args.resume_exports, args.output, args.resume_step, steps)
+        if not 0 < start < steps or start % config.get('chunk_size',100):
+            raise ValueError('Resume count must precede endpoint and align with chunks')
+        if old_metadata['config'] != config or old_metadata['input_sha256'] != hashlib.sha256(args.input.read_bytes()).hexdigest():
+            raise ValueError('Resume input/config differs from original experiment')
     rec=recipes(config); shape=(steps+1,len(parameters),len(rec))
-    errors=np.lib.format.open_memmap(args.output/'relative_error.npy',mode='w+',dtype=np.float64,shape=shape)
-    rms=np.lib.format.open_memmap(args.output/'slope_rms.npy',mode='w+',dtype=np.float64,shape=shape)
+    mode = 'r+' if start else 'w+'
+    errors=np.lib.format.open_memmap(args.output/'relative_error.npy',mode=mode,dtype=np.float64,shape=shape)
+    rms=np.lib.format.open_memmap(args.output/'slope_rms.npy',mode=mode,dtype=np.float64,shape=shape)
     snapshot_steps=np.unique(np.r_[np.arange(0,steps+1,10000),steps])
-    snapshots=np.lib.format.open_memmap(args.output/'parameter_checkpoints.npy',mode='w+',dtype=np.float64,shape=(len(snapshot_steps),len(parameters),len(rec),parameters.shape[1]))
+    snapshots=np.lib.format.open_memmap(args.output/'parameter_checkpoints.npy',mode=mode,dtype=np.float64,shape=(len(snapshot_steps),len(parameters),len(rec),parameters.shape[1]))
     np.save(args.output/'checkpoint_steps.npy',snapshot_steps)
     metadata=dict(config=config,optimizer=config.get('optimizer','adam'),recipes=rec,planned_horizon=config['horizon'],actual_steps=steps,width=width,
                   input_sha256=hashlib.sha256(args.input.read_bytes()).hexdigest(),parameter_layout='a[W],b[W],c[W],d',
@@ -152,12 +163,17 @@ def main():
                   loss='0.5 * mean((sum(c*tanh(a*x+b))+d-target)**2)',devices=[str(d) for d in jax.devices()],
                   cosine_formula='eta0 * (1 + cos(pi*n/horizon))/2; n=0,...,horizon-1')
     (args.output/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
-    state,e0,r0=initial_state(parameters,x,y,config); errors[0]=np.asarray(e0); rms[0]=np.asarray(r0); snapshots[0]=np.asarray(state[0])
+    if start:
+        with np.load(args.output/'state.npz') as saved:
+            state=tuple(jnp.asarray(saved[key]) for key in ['p','m','v','gradient','count'])
+        assert int(state[-1]) == start and state[0].shape == (len(parameters),len(rec),parameters.shape[1])
+    else:
+        state,e0,r0=initial_state(parameters,x,y,config); errors[0]=np.asarray(e0); rms[0]=np.asarray(r0); snapshots[0]=np.asarray(state[0])
     chunk_size=min(config.get('chunk_size',100),steps)
     if 10000%chunk_size and steps>chunk_size: raise ValueError('Chunk size must divide 10000')
     t0=time.perf_counter(); chunk=make_chunk(x,y,config,chunk_size).lower(state).compile(); compilation=time.perf_counter()-t0
-    t0=time.perf_counter(); compute=0.; exported_through=-1
-    for left in range(0,steps,chunk_size):
+    t0=time.perf_counter(); compute=0.; exported_through=start if start else -1
+    for left in range(start,steps,chunk_size):
         size=min(chunk_size,steps-left); fn=chunk if size==chunk_size else make_chunk(x,y,config,size)
         tick=time.perf_counter(); state,(e,r)=fn(state); eh,rh=np.asarray(e),np.asarray(r); compute+=time.perf_counter()-tick
         count=left+size; errors[left+1:count+1]=eh; rms[left+1:count+1]=rh
@@ -173,8 +189,8 @@ def main():
                 exported_through=count
         if count%1000==0 or count==steps:
             print(json.dumps(dict(update=count,elapsed_seconds=time.perf_counter()-t0,min_error=float(np.nanmin(eh[-1])),max_error=float(np.nanmax(eh[-1])),finite_cases=int(np.isfinite(eh[-1]).sum()))),flush=True)
-    summary=dict(completed_updates=steps,compilation_seconds=compilation,elapsed_seconds=time.perf_counter()-t0,synchronized_compute_seconds=compute,
-                 updates_per_second=steps/compute,final_relative_error=np.asarray(errors[-1]).tolist(),final_slope_rms=np.asarray(rms[-1]).tolist())
+    summary=dict(completed_updates=steps,resumed_from=start,compilation_seconds=compilation,elapsed_seconds=time.perf_counter()-t0,synchronized_compute_seconds=compute,
+                 updates_per_second=(steps-start)/compute,final_relative_error=np.asarray(errors[-1]).tolist(),final_slope_rms=np.asarray(rms[-1]).tolist())
     (args.output/'summary.json').write_text(json.dumps(summary,indent=2)+'\n'); print(json.dumps(summary),flush=True)
 
 

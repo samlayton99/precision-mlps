@@ -37,3 +37,11 @@ Each worker is enclosed by a 10,400-second timeout with a five-second process-gr
 - [Local backup process](../output/diagnostics/figure4_scratch_20260926/backup_process.json) and [live backup log](../output/diagnostics/figure4_scratch_20260926/backup.log).
 
 An export contains the contiguous raw error/RMS segment, every parameter snapshot in that segment, the complete terminal optimizer state, and a manifest with configuration and input hash. Concatenating segments in update order reconstructs the original arrays without interpolation. `step05000000/ack_sent` indicates a verified final segment; the collector exits after all twelve final groups have been acknowledged. The early trial directories are separate and must not be used as paper evidence.
+
+## Finishing the interrupted batch
+
+Eleven groups completed within the initial worker timeouts. Width-256 GD reached update 4,426,000 before its worker deadline; its most recent acknowledged export was update 4,250,000. The continuation starts from that verified export, preserving the original input, configuration, cached gradient, optimizer state, and global update counter. The interrupted ordinary arrays remain untouched. A fresh directory reconstructs the verified prefix, then appends updates through five million using the original schedule.
+
+The resume implementation was checked on the archived Adam and GD trials: restoring update 10,000 and continuing through 20,000 reproduced the full output-error trace and terminal state bit-for-bit. The RMS diagnostic differed by at most $3.24\times10^{-16}$ relative, consistent with floating-point reduction rounding; it does not enter the updates. Figure 4's population means and standard deviations are calculated from saved parameters.
+
+The finishing job uses GPU 0 alone with a 900-second timeout and the same off-pod acknowledgment gate. [Resume validation](../output/diagnostics/figure4_scratch_20260926/resume_cli_verification.json) and the [launch record](../output/diagnostics/figure4_scratch_20260926/resume_launch.json) record the executed checks, code hashes, and resource limits. [Array reconstruction](../experiments/expD36_frozen_gamma_probe/figure4_restore.py) verifies checksums, contiguous update intervals, input/configuration agreement, and checkpoint alignment before restoring the standard analysis layout.
