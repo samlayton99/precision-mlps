@@ -311,6 +311,67 @@ the neural feedback loop requires explaining the endogenous tracking that
 produces those inputs. Orthogonality alone does not control each
 coordinate's squared-gradient cross term in general.
 
+### Proposition 3: tracking can maintain the denominator without fine forcing
+
+There is a second way to close the illustrative calculation: a deterministic
+coarse oscillation can sustain its own adaptive denominator. This matters
+because eliminating $J_Cu^F$ need not eliminate an existing tracking
+oscillation. The following model isolates that possibility; it does not
+assert convergence to the oscillation in the neural network.
+
+Use the collective loss $L(x,s)=\kappa x^2/2+fs$ again, now with EMA
+momentum and a **shared scalar RMS denominator**:
+
+$$
+m_{n+1}=\beta m_n+(1-\beta)(\kappa x_n,f),\qquad
+v_{n+1}=\beta_2v_n+(1-\beta_2)\frac{\kappa^2x_n^2+f^2}{2},
+$$
+
+$$
+(x_{n+1},s_{n+1})=(x_n,s_n)-\eta m_{n+1}/\sqrt{v_{n+1}}.
+$$
+
+Assume $0\le\beta,\beta_2<1$, $\eta,\kappa>0$, no denominator offset,
+and the stationary, uncorrected EMA convention. Put
+$T_\beta=2(1+\beta)/(1-\beta)$. Whenever
+$|f|<\sqrt{2}\eta\kappa/T_\beta$, this system has the exact solution
+
+$$
+x_n=(-1)^n b,\qquad
+b^2=\frac{2\eta^2}{T_\beta^2}-\frac{f^2}{\kappa^2},\qquad
+\sqrt{v_n}=\frac{\eta\kappa}{T_\beta},\qquad
+s_{n+1}-s_n=-\frac{T_\beta f}{\kappa}.
+$$
+
+**Proof.** Initialize $x_0=b$, $v_0=(\eta\kappa/T_\beta)^2$,
+$m_0^s=f$, and
+$m_0^x=-[(1-\beta)/(1+\beta)]\kappa b$.
+The constant squared-gradient input preserves $v_n$. Induction in the
+moment recurrence gives
+$m_{n+1}^x=[(1-\beta)/(1+\beta)]\kappa x_n$ and $m_{n+1}^s=f$.
+The coarse update subtracts $2x_n$, and the fine update is the displayed
+constant increment. $\square$
+
+This solution explains a rate restriction rather than a fine equilibrium.
+At $f=0$, tracking oscillates with no fine motion at all. At small nonzero
+$f$, that oscillation keeps the denominator at the coarse stability scale,
+and fine motion proceeds at a rate proportional to $f/\kappa$. Increasing
+$\eta$ enlarges the oscillation and its denominator while leaving this
+particular fine drift unchanged. That conclusion concerns the displayed
+solution, not arbitrary initial conditions or all Adam learning rates.
+
+The shared denominator is an explicit simplification. In orthonormal
+physical coordinates $(s+x,s-x)/\sqrt2$, the gradients are
+$(f+\kappa x,f-\kappa x)/\sqrt2$. Along an alternating coarse input, their
+coordinatewise EMA second moments equal the shared value plus opposite
+alternating corrections. The correction relative to the shared value is
+at most $(1-\beta_2)/(1+\beta_2)$, by
+$2|f\kappa b|\le f^2+\kappa^2b^2$; at $\beta_2=0.999$ this is about
+$0.0005$. This input calculation motivates the reduced model but does not
+prove stability or long-horizon shadowing of its exact cycle by Adam.
+The fine-off experiment below tests the qualitative prediction directly
+on the actual networks.
+
 ## 5. The missing tests, in an order that can change our conclusion
 
 ### First: determine what renews tracking at the saved states

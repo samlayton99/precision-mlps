@@ -120,3 +120,17 @@ def test_secondary_controls():
     final,_=cf.advance(s,x,y,c,6,steps=100)
     assert abs(float(cf.diagnostics(final,x,y,c,6)['A_fine']))==0
     assert abs(float(cf.diagnostics(final,x,y,c,6)['A_closure']))<1e-11
+
+
+def test_shared_rms_coarse_cycle():
+    beta,beta2,eta,kappa,f=.9,.999,.01,3.,.0001
+    threshold=2*(1+beta)/(1-beta)
+    amplitude=np.sqrt(2*eta**2/threshold**2-f**2/kappa**2)
+    x,s=amplitude,0.;mx=-(1-beta)/(1+beta)*kappa*x;ms=f
+    v=(eta*kappa/threshold)**2
+    for n in range(40):
+        mx=beta*mx+(1-beta)*kappa*x;ms=beta*ms+(1-beta)*f
+        v=beta2*v+(1-beta2)*(kappa**2*x*x+f*f)/2
+        x,s=x-eta*mx/np.sqrt(v),s-eta*ms/np.sqrt(v)
+        np.testing.assert_allclose(x,(-1)**(n+1)*amplitude,rtol=2e-10,atol=1e-14)
+        np.testing.assert_allclose(s,-(n+1)*threshold*f/kappa,rtol=2e-12,atol=1e-14)

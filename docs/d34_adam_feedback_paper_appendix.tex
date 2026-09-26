@@ -122,6 +122,43 @@ stability boundary
 (\href{https://arxiv.org/abs/2209.15594}{Damian, Nichani, and Lee, 2023};
 \href{https://arxiv.org/abs/2207.14484}{Cohen et al., 2024}).
 
+\paragraph{An endogenous oscillation in a reduced model.}
+A coarse oscillation can also maintain the adaptive denominator without
+continuing fine disturbance. To isolate this possibility, use the same
+loss $L(x,s)=\kappa x^2/2+fs$ with EMA momentum $m$ and a shared scalar
+RMS denominator, with no offset or bias correction:
+\begin{align*}
+ m_{n+1}&=\beta m_n+(1-\beta)(\kappa x_n,f),\\
+ v_{n+1}&=\beta_2v_n+(1-\beta_2)(\kappa^2x_n^2+f^2)/2,\\
+ (x_{n+1},s_{n+1})&=(x_n,s_n)-\eta m_{n+1}/\sqrt{v_{n+1}}.
+\end{align*}
+Let $T_\beta=2(1+\beta)/(1-\beta)$ and
+$|f|<\sqrt2\eta\kappa/T_\beta$. There is an exact solution
+\[
+ x_n=(-1)^n b,\qquad
+ b^2=2\eta^2/T_\beta^2-f^2/\kappa^2,\qquad
+ \sqrt{v_n}=\eta\kappa/T_\beta,\qquad
+ s_{n+1}-s_n=-T_\beta f/\kappa.
+\]
+To verify it, initialize $x_0=b$, $v_0=(\eta\kappa/T_\beta)^2$,
+$m_0^s=f$, and $m_0^x=-(1-\beta)\kappa b/(1+\beta)$.
+The squared-gradient input is constant, while
+$m_{n+1}^x=(1-\beta)\kappa x_n/(1+\beta)$, so each coarse update
+subtracts $2x_n$. The fine update gives the stated drift.
+
+At $f=0$, tracking persists without fine motion. At small $f\ne0$, it
+sets the denominator at the coarse stability scale, and fine motion
+continues at a rate proportional to $f/\kappa$. This is an exact solution
+of the stated reduced model, not an attraction or persistence theorem
+for coordinatewise Adam. In the orthonormal physical coordinates
+$(s+x,s-x)/\sqrt2$, the two gradients are $(f\pm\kappa x)/\sqrt2$.
+For the prescribed alternating input, their stationary coordinatewise
+second moments differ from the shared mean by a relative amount at most
+$(1-\beta_2)/(1+\beta_2)$, about $0.0005$ at $\beta_2=0.999$.
+This motivates the shared-scale simplification but supplies no
+long-horizon shadowing guarantee. The network fine-off test checks its
+qualitative prediction directly.
+
 \paragraph{Interventions that distinguish direction from denominator effects.}
 Given the processed fine update $u^F$, we form
 \begin{equation}
