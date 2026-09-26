@@ -1109,6 +1109,10 @@ the measurement interval, Adam has accumulated much more parameter energy,
 shared by a much smaller effective part of the population than under GD.
 The population conditions that yield small sensitivity cannot be transferred
 merely because the subsequent concentration history is stable.
+In particular, these measurements do not establish insufficient concentration
+as Adam's bottleneck. What transfers empirically is moderate concentration
+accumulation and fine-driven expansion; a structural explanation of Adam's
+limited acquisition must additionally account for its adaptive updates.
 
 ### Start with the accuracy and scale observations
 
@@ -1198,6 +1202,18 @@ The Gaussian cases require a different qualification: tracking opposes
 67–193% of their fine contribution and can determine the sign of their
 small net motion. A blanket negligible-tracking assumption would fail there.
 
+The size of that exception depends on the comparison. In the four Gaussian
+runs, tracking's integrated contribution is −3.15% to −5.63% of the starting
+slope energy, and observed slope RMS changes by −0.632% to +2.219%.
+For example, width 705 at seed 30 has fine, tracking, and finite-step
+contributions of +2.19%, −4.23%, and +0.78% of starting slope energy.
+Tracking changes the sign of a small motion. Conversely, for mixed sine at
+width 1409, seed 31, tracking subtracts 12.56% of starting slope energy
+while fine updates add 1115.36%. A measurable absolute contribution can
+still be a small part of the measured growth. The
+[relative-versus-absolute tracking comparison](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/ADAM_POPULATION.md#is-tracking-large-relative-to-fine-growth-or-large-in-absolute-scale)
+gives the exact accounting and a plot of all 24 runs.
+
 A separate width-177 panel continues 13 targets at two seeds from their
 stored 20k Adam states. Effective fine updates contribute positively to
 slope energy in all 26 continuations, whereas tracking is positive in 15
@@ -1208,6 +1224,13 @@ a universal negative-tracking explanation. They are new checkpoint
 continuations: their median per-run maximum parameter difference from
 shared archived checkpoints is 0.083%, with a largest difference of 23.5%.
 Their signed accounts are not reconstructions of the original archived paths.
+
+The degree-nine continuations also prevent generalizing the modest absolute
+tracking effect of the wide panel: tracking subtracts 71.6% and 81.2% of
+starting slope energy, against fine contributions of +52.8% and +64.0%.
+The positive squared-update terms account for much of the remaining balance.
+This is strong cancellation at a small acquired scale, rather than uniformly
+negligible tracking under Adam.
 
 Concentration has a different signed balance. Tracking favors concentration
 in all 24 runs, whereas effective fine updates oppose it in 17. Generated

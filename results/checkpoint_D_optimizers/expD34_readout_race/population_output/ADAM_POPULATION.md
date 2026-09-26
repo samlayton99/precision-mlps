@@ -7,7 +7,10 @@ over updates 25k–125k. There is also a substantive difference from GD: Adam
 already has much higher energy, concentrated into a much smaller effective
 part of the population, when this interval begins. Its population statistics
 persist, but they do not supply the small raw-sensitivity bound used by the
-GD theorem. This is partial qualitative transfer, without an Adam rate theorem.
+GD theorem. The shared observations are moderate concentration accumulation
+and fine-driven net expansion. They do **not** yet establish that insufficient
+energy concentration is the cause of Adam's limited acquisition. That is the
+precise meaning of partial qualitative transfer here.
 
 **Quantities used throughout this study.**
 
@@ -109,6 +112,59 @@ in the earlier GD panel therefore does not carry over. Neither universal
 restoration nor uniformly negligible tracking explains all these Adam
 population statistics.
 
+### Is tracking large relative to fine growth, or large in absolute scale?
+
+The Gaussian illustrates the distinction. At width 705, seed 30, the
+integrated effective fine contribution adds 2.19% of the starting slope
+energy, tracking subtracts 4.23%, and the finite-step term adds 0.78%.
+Their sum is a 1.26% energy decrease, corresponding to only a 0.632%
+decrease in slope RMS. Physical slope RMS changes from 0.5561 to 0.5525.
+Tracking determines the sign of this small motion because the positive
+fine contribution is also small.
+
+These percentages use $A_0=\sum_j a_j(25\mathrm{k})^2$. If
+$\Delta a_n^{F}$ and $\Delta a_n^{R}$ are the actual-denominator updates
+from the effective fine and tracking moment buffers, define
+
+$$
+B_F=\sum_n2a_n^\top\Delta a_n^F,\qquad
+B_R=\sum_n2a_n^\top\Delta a_n^R,\qquad
+B_{\rm step}=\sum_n\|\Delta a_n\|^2.
+$$
+
+The measured identity, including all inherited effective momentum and with
+no unresolved components in these runs, is
+
+$$
+A_T-A_0=B_F+B_R+B_{\rm step},\qquad
+\lambda_{\rm RMS}(T)^2-\lambda_{\rm RMS}(0)^2
+=\frac{h^2}{W}(B_F+B_R+B_{\rm step}).
+$$
+
+Thus $B_R/B_F$ measures tracking relative to fine-driven growth, while
+$B_R/A_0$ measures it relative to the existing squared slope scale. Neither
+ratio alone determines the actual RMS change. These are signed contributions
+along the observed trajectory, not predicted effects of removing tracking.
+
+<figure>
+  <img src="evidence/adam_tracking_scale_20260926/tracking_relative_absolute.png" alt="Tracking is large relative to fine-driven growth for Gaussian targets but modest relative to starting slope energy in the wide Adam panel" style="max-width:100%;">
+  <figcaption>All 24 wide Adam runs over updates 25k–125k, with each seed displayed separately. Left: signed tracking contribution divided by the effective fine contribution; −100% means equal and opposite integrated contributions. Right: the same tracking contribution divided by starting slope energy. These are two normalizations of the same measured quantity. The Gaussian's large cancellation ratio corresponds to 3.2–5.6% of starting energy. The largest absolute relative-to-start contribution occurs for mixed sine, where fine-driven growth is much larger still.</figcaption>
+</figure>
+
+Across the four Gaussians, $B_R/A_0$ ranges from −5.63% to −3.15%,
+and the observed RMS changes range from −0.632% to +2.219%. Tracking
+matters to their small net growth; it does not hide a large measured
+expansion channel. Across the 20 non-Gaussian wide runs, median signed
+$B_R/B_F$ is −1.13%, and its magnitude never exceeds 12.06%.
+
+The mixed-sine run at width 1409, seed 31, is a useful converse example.
+Tracking subtracts 12.56% of starting slope energy, the largest magnitude
+in the wide panel, but effective fine updates add 1115.36%. Tracking is
+only 1.13% of that fine contribution. Slope RMS grows by 246.90% and
+ends at $\lambda_{\rm RMS}=0.00347$. Here tracking is measurable on the
+starting-energy scale, yet it accounts for little of the difference between
+the observed population scale and the construction reference.
+
 ### The broader target panel preserves the fine contribution, not tracking's sign
 
 The 26 width-177 checkpoint continuations cover 13 targets and two seeds.
@@ -137,6 +193,19 @@ execution is not established. Consequently, these signed contributions
 belong to the newly executed continuations. They must not be assigned to
 the original archived endpoints or counted as additional independent
 initializations of that archive.
+
+Tracking can be large on the starting-energy scale in these narrower
+continuations. For degree nine, seeds zero and one respectively give
+$(B_F,B_R,B_{\rm step})/A_0=(52.84,-71.60,17.17)\%$ and
+$(64.02,-81.22,17.46)\%$. The resulting RMS changes are −0.794%
+and +0.133%. This is substantial cancellation relative to the existing
+slope energy, not just a large ratio with a small denominator. It still
+occurs at a small normalized slope scale, about 0.0015. Positive tracking
+also occurs: for the degree-three target its contribution is 10.3% and
+14.0% of fine-driven growth, or 1.22% and 2.60% of starting slope energy.
+The broader panel therefore supports a target- and state-dependent tracking
+role, with effective fine updates providing the larger positive contribution
+in every measured continuation.
 
 ## Adaptive sensitivity is not a forecast of realized progress
 
@@ -190,6 +259,17 @@ right-hand side when Adam starts with much larger values of both quantities.
 Adaptive scaling introduces a further distinction between this raw
 sensitivity and realized optimizer motion.
 
+At the wide Adam starting states, this particular upper bound evaluates
+to 170–12,236. A large upper bound does not show that the actual sensitivity
+is large; it shows that this concentration estimate supplies no smallness
+certificate there. The effective energy-sharing count is already small,
+so the GD suppression associated with broadly shared modest energy cannot
+simply be invoked. Moreover, the ratio of each run's median adaptively
+balanced access to its median raw balanced access ranges from 58 to 6092.
+These diagnostics make an Adam extension depend on how energy, target
+sensitivity, and the adaptive update interact, rather than concentration
+persistence alone.
+
 The width-512 mixed-sine archive gives a concrete example of growth without
 further concentration. Between 20k and 120k, total energy grows by a median
 factor 3.76 across the five constant-rate seeds, while concentration falls
@@ -198,6 +278,17 @@ from about 7.0 to 9.8. Endpoint relative error remains 10.5–18.0%. This
 example supports studying population growth and concentration separately;
 it does not support equating slow concentration growth with slow growth of
 every other quantity.
+
+The remaining mechanistic question is whether Adam fails to reinforce the
+**outward population motion** generated by its effective fine updates. The
+present accounting identifies the positive driver and measures the tracking
+correction. It does not yet derive why that driver remains insufficient over
+a long interval from independently interpretable population conditions.
+A concentration-based explanation remains a candidate, but would need to
+control adaptive coupling or the allocation and target alignment of the
+concentrated energy. Concentration alone cannot distinguish these states.
+In particular, the modest late tracking intervention below does not test
+that candidate.
 
 ## What is being compared
 
@@ -334,7 +425,7 @@ Put $g_H=J_H^*e_H$. Using the actual next-step denominator, define
 
 $$
 \mathcal A_D=
-\frac{g_H^*Dg_H-ell^*(J_CD J_C^*)^{-1}\ell}{\|e_H\|^2},
+\frac{g_H^*Dg_H-\ell^*(J_CD J_C^*)^{-1}\ell}{\|e_H\|^2},
 \qquad \ell=J_CDg_H.
 $$
 
@@ -467,3 +558,19 @@ The neighboring cohort directories preserve the scalar histories and sparse
 states. The four PNG figures in this report also have SVG versions. Superseded
 intermediate analyses can be reproduced from these inputs and are removed
 after the final analysis is checked.
+
+The relative-versus-absolute tracking follow-up uses only the 110 KiB
+per-run comparison CSV, with no checkpoint arrays or new training. Its
+[Modal analysis](../../../../experiments/expD34_readout_race/population_adam_tracking.py)
+produces the [normalized contributions](evidence/adam_tracking_scale_20260926/tracking_scale.csv)
+and [summary statistics](evidence/adam_tracking_scale_20260926/facts.json).
+The converted squared-scale identities agree with observed endpoints to
+$2.80\times10^{-10}$ relative to the larger of starting squared scale and
+its net change. The [execution receipt](evidence/adam_tracking_scale_20260926/execution.json)
+records a 1 GiB memory cap, 136 MiB peak use, and the input checksum.
+
+```sh
+.venv-modal/bin/modal run experiments/expD34_readout_race/population_adam_tracking.py \
+  --source results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_population_final_20260926/population_comparisons.csv \
+  --output results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_tracking_scale_reproduction
+```
