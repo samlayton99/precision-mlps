@@ -35,7 +35,8 @@ def proposals(state, x, y, settings, fixed_inverse, arm):
     delta = jnp.where(arm != 0, native_delta + fine - native_fine, native_delta)
     return dict(m=m, v=v, cm=cm, count=count, delta=delta, components=components,
                 fine=fine, native_fine=native_fine, inverse=inverse,
-                raw_fine=FINE @ parts, residual=residual, resolved=info['resolved'],
+                raw_fine=FINE @ parts, raw_tracking=parts[3], gradient=g,
+                norm_target=jnp.linalg.norm(native_fine[:-1]),residual=residual, resolved=info['resolved'],
                 scale=scale, candidate_norm=jnp.linalg.norm(candidate_fine[:-1]))
 
 
@@ -61,8 +62,13 @@ def initialize(saved, x, y, settings):
 
 
 def step(state, x, y, settings, arm):
-    p = state['p']; w = (len(p)-1)//3
     z = proposals(state, x, y, settings, state['fixed_inverse'], arm)
+    return apply_proposal(state,z,settings,arm)
+
+
+def apply_proposal(state,z,settings,arm):
+    """Account for a specified update, including an explicitly chosen norm budget."""
+    p = state['p']; w = (len(p)-1)//3
     delta = z['delta']; fine = z['fine']; tracking = z['components'][3]
     unresolved = z['components'][4]
     block = p[:-1].reshape(3, w)
@@ -84,7 +90,7 @@ def step(state, x, y, settings, arm):
         ratio(jnp.sum(first*fine[:-1], axis=1), jnp.linalg.norm(first, axis=1)*hidden_norm),
         alignment/(WINDOWS-1)), axis=1)
     mismatch = jnp.linalg.norm(z['components'].sum(axis=0)-delta)
-    norm_mismatch = jnp.abs(hidden_norm-jnp.linalg.norm(z['native_fine'][:-1]))
+    norm_mismatch = jnp.abs(hidden_norm-z['norm_target'])
     native_bias_delta = -settings[0]*z['inverse'][-1]*z['m'][-1]/(1-settings[1]**z['count'])
     new = dict(state)
     new.update(p=p+delta, m=z['m'], v=z['v'], cm=z['cm'], count=z['count'],

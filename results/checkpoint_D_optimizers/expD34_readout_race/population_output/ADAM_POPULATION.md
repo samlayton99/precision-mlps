@@ -655,3 +655,48 @@ trace is written. Eleven focused tests pass on Modal CPU before launch,
 including native recurrence preservation, component identities, local norm
 matching, unaltered tracking/output-bias proposals, release with historical
 moments, and the geometry/residual finite-difference identity.
+
+### Targeted follow-up: tracking can affect fine motion through the denominator
+
+The first completed degree-five and sine continuations show persistent fine
+directions but decreasing fine-update magnitude. This motivates a separate
+test of amplitude. It was added after inspecting those continuations and
+uses the remaining portion of the same 1.8 GPU-hour budget.
+
+Tracking can have a small signed contribution to slope growth while still
+affecting the denominator used by every Adam component. Alongside the native
+second moment, evolve a shadow second moment
+
+$$
+v^{\rm shadow}_{n+1}
+=\beta_2v^{\rm shadow}_n+(1-\beta_2)(g_n-0.9R_n)^2.
+$$
+
+The square is coordinatewise. This retains the cross terms in the gradient
+square and attenuates tracking to one tenth only in this alternative
+denominator. Start the shadow buffer from the stored full second moment at
+125k, then run 5000 native updates before forking. Thus the comparison begins
+at 130k with identical parameters and complete native optimizer history;
+the incoming shadow-buffer weight is approximately 0.0067. This is neither
+a moment reset nor a change to the tracking update itself.
+
+Compare three policies: native; multiplying the native fine hidden update
+by a scalar gain; and using the shadow denominator for the fine hidden
+update. At each clone's state, the latter two policies have the same fine
+norm budget: the shadow proposal's norm, capped at ten times the native
+fine norm. The scalar policy preserves native coordinate weighting. The
+shadow policy changes that weighting while using the same local norm budget.
+The gain may be below one. Keep the tracking and output-bias proposals and
+all native moment recurrences unchanged. After a 10k pulse, return to native
+updates for 10k, retaining the moments accumulated during the intervention.
+
+Use all six targets, both widths, and both seeds. Measure available gains
+on native trajectories, paired slope RMS and raw error, accumulated fine
+and tracking contributions, and persistence after release. Improvement under
+both altered policies would support an amplitude restriction; an additional
+shadow-policy benefit would implicate coordinate weighting. Neither result
+alone would establish that Adam's original small direct tracking contribution
+was the cause. Instability, worse error, or a transient response must be
+reported. The shadow-denominator and matched-gain identities, native
+continuation, preserved tracking and bias updates, and release history pass
+the expanded twelve-test suite on Modal CPU before this follow-up launches.

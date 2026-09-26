@@ -1,0 +1,36 @@
+{
+  "platform": "Modal CPU",
+  "stage": "verify",
+  "seconds": 21.32490175,
+  "memory_hard_limit_mib": 4096,
+  "peak_child_rss_mib": 3946.09765625,
+  "tests": "............                                                             [100%]\n12 passed in 19.39s\n",
+  "command": [
+    "/usr/local/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_population_adam.py",
+    "tests/test_population_adam_motion.py",
+    "tests/test_population_adam_variance.py",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "log": "............                                                             [100%]\n12 passed in 19.39s\n",
+  "source_hashes": {
+    "experiments/expD34_readout_race/population_adam_motion.py": "825c61f8fc37b9a4ef1ee67c777736a38564d76a86f3ef1ae740a116be1275d4",
+    "experiments/expD34_readout_race/population_adam_motion_run.py": "054c486678e6e25f48a69c27628e045ff21c2332d8569fc70cc0d6b69ebfe248",
+    "experiments/expD34_readout_race/population_adam_motion_modal.py": "392668e722246a40ab2c55009a2403f82eb7b13db8742b827e40d2ce9bedc622",
+    "experiments/expD34_readout_race/population_adam_motion_analysis.py": "0303ebe4c716e16da968e36898be5015f033805b38117fc8455bf2a4bc100deb",
+    "experiments/expD34_readout_race/population_adam.py": "f77142348c34de139a05604f140527253e351778e7bed73e484e35db071ee9a7",
+    "experiments/expD34_readout_race/population_adam_run.py": "ebecba587996e5333ce2ac0034373ca5b1eca8eff05c09bec556f92b70a8ecdc",
+    "experiments/expD34_readout_race/population_adam_variance.py": "96c6e6051e5b6862783faf88b044b0c9d26301c7db0f5c22b930f13e58032733",
+    "experiments/expD34_readout_race/population_adam_variance_run.py": "d551da20d1ca22c0e800825e107df8d7ba47eb32b17b6a4fec2b9bbb1d2c31ad",
+    "experiments/expD34_readout_race/adam_forces.py": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6",
+    "tests/test_population_adam.py": "d5ac0ea1f5f1aba518d0aea063a683c95c32cede6194e7b846471839de524045",
+    "tests/test_population_adam_motion.py": "738e2969803366d1de0e840f9e014c1686ec44ec10dcc423efba6828bc4ca36b",
+    "tests/test_population_adam_variance.py": "5ccaae0cedf1d8e00a7b7e9cadad02b1afd6d2df9a58b9604a426ec17a0b7a88"
+  }
+}

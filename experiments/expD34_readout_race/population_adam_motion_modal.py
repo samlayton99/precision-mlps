@@ -16,9 +16,10 @@ CODE=Path('experiments/expD34_readout_race')
 EVIDENCE=Path('results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence')
 NAMES=('population_adam_motion.py','population_adam_motion_run.py','population_adam_motion_modal.py',
        'population_adam_motion_analysis.py','population_adam.py','population_adam_run.py',
+       'population_adam_variance.py','population_adam_variance_run.py','population_adam_variance_analysis.py',
        'adam_forces.py','targets.py','effective_feedback_holdout.py')
 FILES=[CODE/n for n in NAMES if (ROOT/CODE/n).exists()]+[
-    Path('tests/test_population_adam.py'),Path('tests/test_population_adam_motion.py')]
+    Path('tests/test_population_adam.py'),Path('tests/test_population_adam_motion.py'),Path('tests/test_population_adam_variance.py')]
 app=modal.App('d34-adam-population-motion')
 image=(modal.Image.debian_slim(python_version='3.12')
     .pip_install('jax[cuda12]==0.11.1','numpy==2.5.1','scipy==1.18.0','matplotlib==3.10.3','pytest==8.4.0')
@@ -37,9 +38,10 @@ if modal.is_local():
 def execute(stage,seconds,payload=b''):
     import resource
     start=time.monotonic();output=Path('/tmp/motion-output');output.mkdir()
-    env=dict(os.environ,JAX_PLATFORMS='cuda' if stage=='run' else 'cpu')
+    on_gpu=stage in ('run','variance')
+    env=dict(os.environ,JAX_PLATFORMS='cuda' if on_gpu else 'cpu')
     command=[sys.executable,'-m','pytest','tests/test_population_adam.py',
-             'tests/test_population_adam_motion.py','-q','-p','no:cacheprovider']
+             'tests/test_population_adam_motion.py','tests/test_population_adam_variance.py','-q','-p','no:cacheprovider']
     checked=subprocess.run(command,cwd='/work',env=env,text=True,capture_output=True,timeout=300)
     print(checked.stdout,flush=True)
     if checked.returncode:raise RuntimeError(checked.stdout+checked.stderr)
@@ -51,14 +53,15 @@ def execute(stage,seconds,payload=b''):
             with zipfile.ZipFile(io.BytesIO(payload)) as z:
                 if sum(i.file_size for i in z.infolist())>64*1024**2:raise ValueError('Scalar input cap')
                 z.extractall(source)
-        name='population_adam_motion_run' if stage=='run' else 'population_adam_motion_analysis'
+        name={'run':'population_adam_motion_run','variance':'population_adam_variance_run',
+              'analyze':'population_adam_motion_analysis','analyze_variance':'population_adam_variance_analysis'}[stage]
         command=[sys.executable,'-m',f'experiments.expD34_readout_race.{name}',
                  '--inputs',source,'--output',str(output),'--seconds',str(max(1,seconds-(time.monotonic()-start)-30))]
         with subprocess.Popen(command,cwd='/work',env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT) as p:
             for line in p.stdout:print(line,end='',flush=True);logs+=line
             if p.wait():raise RuntimeError(logs[-10000:])
-    receipt=dict(platform='Modal GPU' if stage=='run' else 'Modal CPU',stage=stage,
-        seconds=time.monotonic()-start,memory_hard_limit_mib=8192 if stage=='run' else 4096,
+    receipt=dict(platform='Modal GPU' if on_gpu else 'Modal CPU',stage=stage,
+        seconds=time.monotonic()-start,memory_hard_limit_mib=8192 if on_gpu else 4096,
         peak_child_rss_mib=resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss/1024,
         tests=checked.stdout,command=command,log=logs,
         source_hashes={str(p):hashlib.sha256((Path('/work')/p).read_bytes()).hexdigest() for p in FILES})
@@ -77,15 +80,15 @@ def cpu(stage:str,seconds:float,payload:bytes=b''):
 
 
 @app.function(image=image,gpu=['H100','H200'],cpu=4,memory=(2048,8192),timeout=6480,max_containers=1,retries=0)
-def gpu(seconds:float):
-    return execute('run',seconds)
+def gpu(stage:str,seconds:float):
+    return execute(stage,seconds)
 
 
 @app.local_entrypoint()
 def main(output:str,stage:str='verify',seconds:float=300,source:str='',recover:str=''):
     destination=Path(output)
     if destination.exists():raise ValueError('Use a fresh output path')
-    if stage=='run' and not 0<seconds<=6300:raise ValueError('1.8 GPU-hour total cap; allow teardown reserve')
+    if stage in ('run','variance') and not 0<seconds<=6300:raise ValueError('1.8 GPU-hour total cap; allow teardown reserve')
     if recover:data=modal.FunctionCall.from_id(recover).get()
     else:
         payload=io.BytesIO()
@@ -93,7 +96,7 @@ def main(output:str,stage:str='verify',seconds:float=300,source:str='',recover:s
             with zipfile.ZipFile(payload,'w',zipfile.ZIP_DEFLATED) as z:
                 for p in Path(source).iterdir():
                     if p.suffix in ('.csv','.json'):z.write(p,p.name)
-        call=gpu.spawn(seconds) if stage=='run' else cpu.spawn(stage,seconds,payload.getvalue())
+        call=gpu.spawn(stage,seconds) if stage in ('run','variance') else cpu.spawn(stage,seconds,payload.getvalue())
         print(f'Recoverable Modal call: {call.object_id}',flush=True)
         data=call.get()
     with zipfile.ZipFile(io.BytesIO(data)) as z:
