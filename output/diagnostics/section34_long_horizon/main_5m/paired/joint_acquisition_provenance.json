@@ -57,7 +57,6 @@
   },
   "frozen_gd_endpoint": 0.00038785560212100463,
   "selection": "One recipe per optimizer minimizing median final 4096-midpoint validation error across all seeds; requires finite endpoints in every seed.",
-  "bandwidth_shading": "Population standard deviation across all neurons of five equally sized seeds; lower edge clipped at zero.",
   "error_display": "Median of per-seed bin medians, with exact endpoint; shading spans seed/bin extrema. Frozen Adam retains within-bin extrema.",
   "comparison": "Frozen training arrays, target, sampling grids, and reference spacing match the rerun exactly; frozen runs are archived executions.",
   "sources": [
@@ -1084,6 +1083,37 @@
     {
       "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/figure4_scratch_20260926/production/durable/w1024/joint_gd/step05000000/manifest.json",
       "sha256": "d240e1d3d0e956c2ea808c8751a03eb8460569327fb2e4060aa4beba24268e10"
+    },
+    {
+      "path": "output/diagnostics/section34_long_horizon/main_5m/paired/joint_acquisition_interventions.csv",
+      "sha256": "50e04a9681365c3a976ed0c401b771ea3ad9c378b01678eb254dc7700bd56481"
+    },
+    {
+      "path": "output/diagnostics/section34_long_horizon/main_5m/paired/joint_acquisition_intervention_provenance.json",
+      "sha256": "205227821241da5bff80c4339b96dc44a81d63ea2eb7d826a86069303e081743"
     }
-  ]
+  ],
+  "historical_bandwidth_shading": "Population standard deviation across all neurons of five equally sized seeds; lower edge clipped at zero.",
+  "panel_c": {
+    "cohort": "Six targets, widths 705/1409, seeds 30/31; Adam denominator intervention campaign",
+    "fork_age": 130000,
+    "endpoint_age": 140000,
+    "points": 48,
+    "values": "joint_acquisition_interventions.csv",
+    "input_mapping": "joint_acquisition_intervention_provenance.json",
+    "verification": "joint_acquisition_verification.json",
+    "x": "intervention/native cumulative actual fine-slope path",
+    "y": "100*(intervention/native endpoint RMS slope - 1)",
+    "maximum_endpoint_bandwidth": 0.01285942847295753
+  },
+  "renderer": {
+    "branch": "figure/optimization-style-handoff",
+    "commit": "2c9ed77",
+    "path": "figure_handoff/optimization/render.py",
+    "note": "Rebuild from the compact handoff bundle; original figure4_figure.py documents the preceding bandwidth panel."
+  },
+  "rendered_files": {
+    "joint_acquisition.png": "4a1d3bfb76772fadbd64beb4585526da6eddd5c8228ab378f5c1d70ef50a39a5",
+    "joint_acquisition.pdf": "a2756fc9b176a8a9fd271e89f8a5fba1fac7327967d8a7e2c37021a6c1b3640a"
+  }
 }
