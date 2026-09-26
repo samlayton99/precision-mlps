@@ -20,28 +20,43 @@ overlap with the scaled coarse-normal subspace has median $0.9992$.
 Native GD's median ratio to its own threshold is $0.00524$.
 These are local diagnostics on the full Hessian, with definitions below.
 
-The currently consolidated intervention snapshot contains 288 GD branches
-and 72 Adam branches; the remaining cohorts and secondary controls are
-pending. From the 18 completed Adam-geometry starts, GD at $1.05$ times its
-initial threshold produces 65--159 loss increases over 10k updates and
-reduces its final normalized sharpness to median $0.9599$. Attenuating
+The complete intervention panel contains 384 GD branches, 144 primary Adam
+branches, and 96 secondary-control branches, with no budget stops. Respectively
+381, 101, and 80 reach their full endpoints; numerical failures are retained
+as outcomes. From all 24 Adam-geometry starts, GD at $1.05$ times its
+initial threshold produces 65--160 loss increases over 10k updates and
+reduces its final normalized sharpness to median $0.9606$. Attenuating
 tracking to one tenth at the same rate eliminates loss increases in all
-18 cases. For the modified update, native-loss curvature is a reference
+24 cases. For the modified update, native-loss curvature is a reference
 diagnostic, not its actual stability threshold.
 
-Across the 12 completed native-amplitude Adam balancing pairs, the
+Across all 24 native-amplitude Adam balancing pairs, the
 pulse-end slope RMS ratio has median $1.00012$ and range
-$0.99953$--$1.00118$. The median accumulated tracking-energy ratio is
-$1.0124$. Balancing therefore achieves its immediate coarse constraint
+$0.99938$--$1.00139$. The median accumulated tracking-energy ratio is
+$1.0146$. Balancing therefore achieves its immediate coarse constraint
 without materially increasing native acquisition. At tenfold amplitude,
 the response is target dependent: the mixed-sine development case reduces
 tracking energy by $96.9\%$ and best raw error by $36.1\%$, with a $3.31\%$
-RMS increase, whereas the median RMS increase across all 12 amplified
-pairs is $0.145\%$. Both frozen tenfold variants fail for all five
-non-polynomial targets in both width-705 seeds, yielding 20 failures among
-24 frozen branches; all 48 dynamic-denominator branches complete.
-Fine-off and unit-gain frozen controls distinguish continuing fine forcing
-from autonomous coarse activity and amplification-induced instability.
+RMS increase, whereas the median RMS increase across all 24 amplified
+pairs is $0.254\%$. There are 43 failures among the 48 tenfold frozen
+branches; all 96 dynamic-denominator branches complete. At unit gain,
+10 of 24 unbalanced frozen branches and 6 of 24 balanced branches fail.
+Balancing rescues three bump cases and one step case; the remaining six
+failures occur in both variants. Adaptation therefore matters in some
+native-amplitude cases, rather than only under tenfold amplification.
+
+All 24 fine-off controls complete. Whole-pulse tracking energy has median
+ratio $0.9672$ to native, and removing fine motion worsens best raw error in
+every case, by median $3.54\%$. A late-window check distinguishes ongoing
+activity from an inherited transient: over pulse updates 8k--10k, median
+tracking-energy ratios are $0.923$, $0.624$, and $0.902$ for degree five,
+sine, and kink. Seven localized cases have no resolved increment of the
+stored tracking-energy accumulator in that window; ten cases have endpoint
+$\|z\|<10^{-14}$. The latter is a numerical diagnostic, not an analytical
+zero claim. Thus continuing fine displacement is not universally necessary
+for late tracking, although some localized cases settle when it is removed.
+The full fine residual still enters the moving equilibrium and passive
+moments, so this intervention does not isolate a purely coarse subsystem.
 
 All comparisons retain raw attached-network output. Best training error
 within the same update budget is distinct from current endpoint error;
@@ -49,7 +64,20 @@ independent-grid error is measured at common endpoints. Oscillation phase
 can change endpoint error substantially without a comparable change in
 best error. Failures are counted as outcomes rather than excluded from
 the reported coverage. The completed evidence supports a coarse adaptive
-stability constraint; the stronger native fine-forcing loop remains open.
+stability constraint with target-dependent persistence. It does not establish
+a universal neural limit cycle or an Adam population rate theorem.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/coarse_feedback_20260926/release_analysis/secondary_controls.pdf}
+\caption{Secondary controls across six targets, two widths, and two seeds.
+Left: tracking energy over the final 2k updates of the 10k pulse, relative
+to native training. Zero denotes no resolved increment in the stored
+cumulative statistic. Right: pulse updates reached, retaining failures.
+All fine-off controls complete; 10 unbalanced and 6 balanced unit-gain
+frozen branches fail. Frozen columns on the left show survivors only.}
+\label{fig:feedback-secondary}
+\end{figure}
 
 \paragraph{Model and decomposition.}
 On the fixed training grid, write

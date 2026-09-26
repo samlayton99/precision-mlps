@@ -1,0 +1,41 @@
+{
+  "platform": "Modal CPU",
+  "stage": "analyze",
+  "cohort": "all",
+  "seconds": 10.565177697,
+  "returncode": 0,
+  "memory_hard_limit_mib": 4096,
+  "peak_child_rss_mib": 222.56640625,
+  "source_hashes": {
+    "experiments/expD34_readout_race/adam_forces.py": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6",
+    "experiments/expD34_readout_race/population_adam.py": "f77142348c34de139a05604f140527253e351778e7bed73e484e35db071ee9a7",
+    "experiments/expD34_readout_race/population_adam_run.py": "ebecba587996e5333ce2ac0034373ca5b1eca8eff05c09bec556f92b70a8ecdc",
+    "experiments/expD34_readout_race/population_coarse_feedback.py": "b5ee9404ad0938e59ff7b46e9eb195a662214d8e23820c22a889685ec965a82f",
+    "experiments/expD34_readout_race/population_coarse_feedback_run.py": "5e574bb43c2e9cf158d8d2594aa64bae854b1846b2d0070ff419b1e6c7f20f32",
+    "experiments/expD34_readout_race/population_coarse_feedback_analysis.py": "cb3ef079b846d27b4d92930d8a614adb8f0e916a621d46ba9e36399ca5a01707",
+    "experiments/expD34_readout_race/population_coarse_feedback_modal.py": "792b435a02961e14b4732078a52ded1bc2e1bf8f790611ea7901128e9b2acf09",
+    "tests/test_population_coarse_feedback.py": "e2b0726def927aad2fd234b3dd286a6d851ff50330a6612cb1ac8e39ed8f41d6"
+  },
+  "command": [
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=5",
+    "269",
+    "/usr/local/bin/python",
+    "-m",
+    "experiments.expD34_readout_race.population_coarse_feedback_analysis",
+    "--inputs",
+    "/tmp/feedback-scalars",
+    "--output",
+    "/tmp/feedback-output",
+    "--stage",
+    "analyze",
+    "--cohort",
+    "all",
+    "--seconds",
+    "254.57580169800002"
+  ],
+  "log": "{\n  \"coverage\": {\n    \"audit\": {\n      \"states\": 96,\n      \"runs\": 0,\n      \"complete\": 0,\n      \"statuses\": {\n        \"complete\": 0,\n        \"nonfinite\": 0,\n        \"unresolved\": 0,\n        \"budget_stopped\": 0\n      }\n    },\n    \"gd\": {\n      \"states\": 4197,\n      \"runs\": 384,\n      \"complete\": 381,\n      \"statuses\": {\n        \"complete\": 381,\n        \"nonfinite\": 0,\n        \"unresolved\": 3,\n        \"budget_stopped\": 0\n      }\n    },\n    \"adam\": {\n      \"states\": 2231,\n      \"runs\": 144,\n      \"complete\": 101,\n      \"statuses\": {\n        \"complete\": 101,\n        \"nonfinite\": 3,\n        \"unresolved\": 40,\n        \"budget_stopped\": 0\n      }\n    },\n    \"followup\": {\n      \"states\": 1769,\n      \"runs\": 96,\n      \"complete\": 80,\n      \"statuses\": {\n        \"complete\": 80,\n        \"nonfinite\": 0,\n        \"unresolved\": 16,\n        \"budget_stopped\": 0\n      }\n    }\n  },\n  \"gpu_seconds\": 5393.033340289,\n  \"checks\": {\n    \"component_error\": {\n      \"n\": 8231,\n      \"minimum\": 0.0,\n      \"median\": 2.4546088967302202e-17,\n      \"maximum\": 1.5293760191869305e-15\n    },\n    \"norm_error\": {\n      \"n\": 8231,\n      \"minimum\": 0.0,\n      \"median\": 1.6940658945086007e-21,\n      \"maximum\": 8.881784197001252e-16\n    },\n    \"coarse_identity_error\": {\n      \"n\": 8231,\n      \"minimum\": 0.0,\n      \"median\": 6.938893903907228e-18,\n      \"maximum\": 1.4210854715202004e-14\n    },\n    \"balanced_response_error\": {\n      \"n\": 8231,\n      \"minimum\": 0.0,\n      \"median\": 0.0,\n      \"maximum\": 2.4978044246263792e-14\n    },\n    \"A_closure\": {\n      \"n\": 8231,\n      \"minimum\": -3.114308810836519e-11,\n      \"median\": 0.0,\n      \"maximum\": 6.969003152335063e-11\n    }\n  }\n}\n"
+}

@@ -2,15 +2,20 @@
 
 **Current synthesis.** The self-contained
 [extended theory and evidence note](../../../../docs/d34_scale_acquisition_consolidated.md)
-now combines the GD population proof with these Adam studies and the new
-coarse-stability campaign. Its September 26 partial campaign snapshot finds
+now combines the GD population proof with these Adam studies and the completed
+coarse-stability campaign. The September 26 audit finds
 predominantly coarse adaptive curvature near the local stability boundary in
 24 late Adam states. Removing fine coarse disturbance at native amplitude
-barely changes acquisition in the 12 completed paired starts. This weakens
-the claim that ongoing fine displacement sustains native tracking, while
-leaving the measured denominator restriction intact. The
+barely changes acquisition in all 24 paired starts. Turning off active fine
+motion retains substantial late tracking in degree five, sine, and kink;
+several localized cases settle. Whole-pulse tracking energy has median ratio
+0.967 to native, but that integral alone would hide the late collapses.
+The final-2k median ratio is 0.740, with seven cases below the resolution of
+the accumulated statistic. Freezing the fine denominator at unit gain causes
+10 of 24 unbalanced and 6 of 24 balanced branches to fail. The
 [detailed feedback note](../../../../docs/d34_adam_coarse_feedback.md)
-records the controls, negative results, and pending tests; the completed
+records the controls, negative results, and remaining theoretical questions;
+all planned tests have finished. The completed
 studies below remain the source for the earlier population and motion claims.
 
 Adam has concentrated parameter energy, but this does not mean that its

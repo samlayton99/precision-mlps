@@ -12,14 +12,15 @@ The new tests support a coarse adaptive stability constraint: the leading
 scaled curvature in late Adam states is predominantly coarse and close to the
 local momentum stability boundary. They also revise our initial hypothesis.
 Removing the processed fine update's first-order coarse disturbance at native
-amplitude barely changes acquisition. Continuing fine disturbance is therefore
-not yet an established explanation of tracking persistence. A reduced model
-proves that coarse oscillation can maintain an adaptive denominator without
-fine displacement; the neural test of that alternative is in progress.
+amplitude barely changes acquisition. Turning off active fine displacement
+leaves substantial late tracking in degree-five, sine, and kink cases, while
+several localized-target cases settle. A reduced model proves that coarse
+oscillation can maintain an adaptive denominator without fine displacement.
+The controls support this as a possible mechanism, not a universal cycle.
 
 This extended note contains the identities, reduced-model proofs, intervention
 protocols, and completed results, including negative results. Section 7 records
-the current campaign snapshot explicitly. The companion
+the complete campaign and late-window qualification explicitly. The companion
 [consolidated account](d34_scale_acquisition_consolidated.md) starts from the
 network ODE, gives the GD population theorem and proof, and places these Adam
 findings in the overall paper argument.
@@ -388,7 +389,11 @@ prove stability or long-horizon shadowing of its exact cycle by Adam.
 The fine-off experiment below tests the qualitative prediction directly
 on the actual networks.
 
-## 5. The missing tests, in an order that can change our conclusion
+## 5. Experimental protocol and the predictions it tested
+
+This section preserves the protocol and its original discriminating
+predictions. All planned controls have now been attempted; Section 7 reports
+their results, including failed runs and hypotheses that need revision.
 
 ### First: determine what renews tracking at the saved states
 
@@ -593,10 +598,12 @@ A main-text paragraph supported by the evidence already available is:
 > a renewed tracking response. Thus concentrated parameter energy and large
 > update activity do not by themselves ensure useful population growth.
 
-If the proposed tests support the full loop, the stronger explanatory sentence
-would be: **Adaptive fine motion repeatedly renews coarse tracking, whose
-second-moment contribution limits subsequent fine acquisition.** This is a
-prediction to validate, not yet a paper conclusion.
+The completed fine-off test rules out a universal necessity claim for ongoing
+fine displacement. The stronger explanatory sentence should instead be:
+**Coarse adaptive activity can persist without active fine displacement and
+restrict its available mobility; its persistence depends on the target and
+state.** Several localized cases settle during the intervention, so neither
+an autonomous cycle nor a continuously forced cycle is a universal account.
 
 For figures, retain the two observation panels: raw error and RMS scale.
 The GD figure should continue to show the population upper bound and output
@@ -614,17 +621,16 @@ predicted population consequence.
 
 ## 7. Completed evidence and its implications
 
-### Coverage and interpretation of this snapshot
+### Complete coverage and comparison rules
 
-This section records the completed `mid_analysis` snapshot of the September
-26 campaign: 96 saved-state audits, 288 GD branches, and 72 Adam branches.
-The audits cover six targets, two widths, two seeds, two ages, and both
-optimizers. The GD branches cover three of the four width–seed cohorts;
-the Adam comparisons below cover both width-705 seeds. The remaining cohorts
-and the secondary fine-off/unit-gain-frozen controls are running. Consequently
-the full-panel curvature result and the partially completed intervention
-result have different coverage. We will replace this snapshot with the final
-analysis, retaining early exits as outcomes.
+The September 26 campaign contains 96 saved-state audits, 384 GD branches,
+144 primary Adam branches, and 96 secondary-control branches. The panel
+covers six targets, two widths, and two seeds. The audits use two ages under
+both optimizers; interventions restart at 130k. All planned branches were
+attempted, with no budget stops. The numbers reaching full endpoints are
+381, 101, and 80 in the three continuation groups. Divergences are retained
+as outcomes. Branches sharing a checkpoint, including repeated native
+controls, are not independent training runs.
 
 All results use the raw attached-network output, with no readout refit.
 Comparisons distinguish current endpoint error from best training error
@@ -633,6 +639,11 @@ endpoints; it is not an independent-grid evaluation of the best training
 checkpoint. This distinction matters in Adam, where oscillation phase can
 substantially change endpoint error without comparably changing the best
 error attained.
+
+Tracking energy means $\sum_n\|z_n\|^2$ over the named update window,
+with $z$ defined in (1). The fixed step size cancels in paired ratios. The
+archive also retains $\sum_n\|R_n\|^2$, which measures parameter-gradient
+energy rather than coarse disequilibrium itself.
 
 ### The coarse mode sets Adam's measured local stability scale
 
@@ -652,7 +663,7 @@ the threshold is a frozen-coefficient diagnostic, not a theorem about its
 changing nonlinear update. It is still strong evidence for the proposed
 coarse constraint because the location and direction agree independently.
 
-![Adaptive curvature and tracking activity](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/coarse_feedback_20260926/mid_analysis/stability_and_tracking.png)
+![Adaptive curvature and tracking activity](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/coarse_feedback_20260926/release_analysis/stability_and_tracking.png)
 
 The left panel compares curvature and its coarse contribution across the
 full late-state panel. The right panel concerns the completed Adam
@@ -664,10 +675,10 @@ the squared-step term in the exact population balance.
 
 Starting GD at Adam's geometry with a rate 1.05 times the initial GD
 threshold produces loss oscillations and a decrease in sharpness. Across
-the 18 completed starts, ordinary GD's final normalized sharpness has median
-**0.9599**, and the runs have **65–159 loss increases**. Attenuating tracking
+the 24 starts, ordinary GD's final normalized sharpness has median
+**0.9606**, and the runs have **65–160 loss increases**. Attenuating tracking
 to one tenth at the same initial step size produces **zero loss increases
-in all 18 cases**. Its final reference sharpness remains near **1.0502**.
+in all 24 cases**. Its final reference sharpness remains near **1.0501**.
 
 Thus tracking is causally involved in this large-step response. The last
 number is curvature of the native loss, not the stability ratio of the
@@ -682,9 +693,9 @@ At an isolated late Adam state, a processed fine step can change coarse
 output to first order. Balancing removes that term to roundoff, so the
 intervention succeeds at its intended immediate action. Yet over a 10k pulse,
 balanced/native slope RMS has median **1.00012** and range
-**0.99953–1.00118** across the 12 completed starts. Best raw error has median
-ratio **0.99845**, while accumulated tracking energy has median ratio
-**1.0124**. This is a material negative result: removing the first-order fine
+**0.99938–1.00139** across all 24 starts. Best raw error has median
+ratio **0.99891**, while accumulated tracking energy has median ratio
+**1.0146**. This is a material negative result: removing the first-order fine
 disturbance does not substantially release native acquisition in this panel.
 
 The amplified comparison is target dependent. For mixed sine, width 705,
@@ -692,27 +703,76 @@ seed 30, balancing at tenfold fine amplitude reduces accumulated tracking
 energy by **96.9%** and fine slope path by **72.9%**, while improving best
 error by **36.1%** and increasing slope RMS by **3.31%**, relative to the
 unbalanced tenfold arm. The same balancing operation at native amplitude
-has almost no effect. Across all 12 amplified pairs, however, the median
-RMS increase is only **0.145%**. The example shows a coupling that can become
+has almost no effect. Across all 24 amplified pairs, however, the median
+RMS increase is only **0.254%**. The example shows a coupling that can become
 important under stronger forcing; it is not evidence that this coupling
 explains native persistence for every target.
 
 ### Frozen-denominator failures are informative, but do not identify mediation
 
-In the two completed width-705 cohorts, both tenfold frozen-denominator
-variants survive for degree five. Both fail for each of the other five
-targets: **20 failures among 24 frozen branches**. Eighteen leave the
-numerically resolved regime and two become nonfinite. All **48 dynamic
-denominator branches** complete. These are actual divergent responses,
-not omitted successful checkpoints.
+There are **43 failures among 48 tenfold frozen branches**: 40 leave the
+numerically resolved regime and three become nonfinite. All **96 dynamic
+denominator branches** complete. The degree-five survival seen in the
+width-705 development panel does not transfer uniformly to larger width.
+These are divergent responses, not omitted successful checkpoints.
 
-Freezing plus tenfold amplification is therefore a strong intervention.
-Its failure supports caution about treating the denominator as removable,
-but cannot establish that adaptation is necessary at native amplitude.
-Nor can two failed frozen arms identify a long-horizon mediation effect.
-The unit-gain frozen controls address that ambiguity. The fine-off control
-addresses a separate question: whether ongoing fine displacement is needed
-to maintain the coarse activity at all.
+The unit-gain follow-up separates amplification from freezing. **10 of 24**
+unbalanced frozen branches fail between updates 954 and 9,338; **6 of 24**
+balanced frozen branches fail between 691 and 5,349. Degree five and kink
+survive all these native-amplitude tests. Balancing rescues all three failed
+bump cases and one step case, but the remaining six failures occur in both
+variants. Thus coarse disturbance matters for some frozen-policy failures;
+it is not their sole explanation.
+
+The fine denominator alone is frozen, while tracking remains natively
+adaptive. Among survivors, median RMS/native ratios are 0.99992 and 1.00048
+for the unbalanced and balanced variants. Because survivor sets differ,
+these medians are descriptive rather than an all-case mediation estimate.
+No universal need for adaptation at native amplitude follows, but its role
+cannot be dismissed as an artifact of tenfold amplification either.
+
+### Fine-off separates continuing forcing from persistent coarse activity
+
+All 24 fine-off branches complete the pulse and release. They suppress active
+fine displacement while retaining full-gradient passive moments and the
+native tracking proposal. Whole-pulse tracking energy relative to native
+has median **0.9672** and range **0.5219–4.3054**. Best raw error is worse
+in every case, by a median **3.54%**, so the removed fine motion was useful.
+
+The late-window audit is essential. Over the final 2k pulse updates,
+tracking-energy ratios have medians **0.923** for degree five, **0.624** for
+sine, and **0.902** for kink, with all four cases in each family retaining
+substantial activity. Seven localized cases have no resolved increase in
+the stored tracking-energy accumulator in that window: two Gaussian, two
+bump, and three step. Ten cases have endpoint $\|z\|<10^{-14}$.
+The whole-panel median late-window ratio is **0.740**; measuring
+parameter-gradient energy $\sum\|R\|^2$ gives a similar median **0.727**.
+The near-zero
+diagnostics are numerical observations, not analytical zero claims.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/coarse_feedback_20260926/release_analysis/secondary_controls.png" alt="Late tracking persists without fine motion for several targets, while some localized cases settle and some frozen controls fail" style="max-width:100%;">
+  <figcaption>All six targets, two widths, two seeds. Left: tracking energy during pulse updates 8k–10k relative to native; unlike a whole-pulse integral this tests late survival. Zero denotes no resolved increment in the stored accumulator. Right: updates reached in the 10k pulse. All fine-off branches survive. The frozen columns on the left contain survivors only; failures remain visible on the right.</figcaption>
+</figure>
+
+These outcomes rule out a universal claim that continuing fine displacement
+is necessary to sustain tracking. They also rule out presenting the reduced
+cycle as every target's behavior. Removing fine displacement allows some
+localized cases to settle, while coarse activity persists without it in
+others. Fine-off still retains the fine residual inside the moving
+equilibrium and passive moments; it does not isolate a purely coarse neural
+subsystem. Proposition 3 demonstrates one possible mechanism for the
+persistent cases, rather than proving their attraction to that exact orbit.
+
+Comparing these tests refines the remaining mechanism question. Balancing
+removes $J_Cu^F$ while retaining fine-induced equilibrium, geometry, and
+history changes. Fine-off removes the displacement that produces those
+changes as well. A case that settles only under fine-off therefore calls
+for the other coupled terms in (6) and the evolving stability scale, rather
+than attributing persistence solely to the immediate coarse-output change.
+The controls do not yet separate moving equilibrium from changing curvature
+or denominator history. This is the remaining structural question; a
+universal attracting cycle is not the appropriate next theorem assumption.
 
 ### What is established, and what remains open
 
@@ -723,13 +783,19 @@ including native replay, retention of optimizer history, balance projection,
 full Hessian products, and exact finite-step population accounting.
 
 The empirical evidence supports a coarse adaptive stability constraint and
-an indirect tracking effect through the denominator. It does **not** yet
-prove that ongoing fine disturbance maintains that constraint, that a single
-restoring force explains every target, or that Adam obeys the GD population
-rate bound. The strongest current paper theorem remains the conditional GD
+an indirect tracking effect through the denominator. It does **not**
+establish a single source of tracking persistence across targets or imply
+that Adam obeys the GD population rate bound. The strongest current paper
+theorem remains the conditional GD
 population-to-output theorem. The strongest Adam interpretation is a
 separation between useful fine motion and a coarse stability scale that
 limits how the optimizer can amplify it.
+
+All campaign jobs have finished. GPU execution, including the per-receipt
+packaging reserve, totals **5,393 seconds (1.50 hours)** against the approved
+three-hour budget. The largest scaled population-accounting defect on
+recorded valid states is $1.74\times10^{-14}$. The late-window audit uses
+only saved scalar records on Modal CPU and adds no training runs.
 
 ## Evidence and source record
 
@@ -737,10 +803,12 @@ limits how the optimizer can amplify it.
   [Adam population study](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/ADAM_POPULATION.md).
 - GD concentration theorem and its empirical coverage:
   [population concentration note](d34_population_concentration.md).
+- Final control analysis and per-target failures:
+  [completion details](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/coarse_feedback_20260926/release_analysis/completion_details.json).
 - Manuscript inspected: version 27, Section 3.5, Theorem 3.3, and Figures 4--5
   on pages 7--8. The older `d34_scale_acquisition_paper_main.tex` retains a
   previous theorem and is not the source of this latest section.
 - Literature is used for stability mechanisms and diagnostics, not as evidence
   about these particular networks. The propositions in this note have the
-  explicit proofs above; the neural Adam feedback and persistence claims
-  remain experimental hypotheses.
+  explicit proofs above; the neural measurements support the qualified
+  mechanisms stated here, with no quantitative neural Adam persistence theorem.

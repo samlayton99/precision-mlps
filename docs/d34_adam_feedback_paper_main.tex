@@ -8,11 +8,13 @@ that scales the effective fine update. Across six targets, two widths, and two
 seeds at update 130k, the leading adaptive curvature has median 98.7\% of the
 local momentum stability threshold; the coarse contribution accounts for a
 median 98.8\% of this curvature. Large-step GD provides a causal comparison:
-attenuating tracking removes the observed loss oscillations in the completed
-comparison panel. Yet removing the fine update's first-order coarse disturbance
-barely changes native Adam acquisition. Thus the evidence identifies a coarse
-stability constraint, without establishing that ongoing fine disturbance is
-what sustains it. A reduced adaptive model illustrates how coarse oscillation
-can maintain a denominator that limits fine drift even without such forcing
+attenuating tracking removes the observed loss oscillations in all 24 paired
+starts. Removing the fine update's first-order coarse disturbance barely
+changes native Adam acquisition. Turning off fine displacement altogether
+preserves substantial late tracking for degree five, sine, and kink, while
+several localized cases settle. Thus continuing fine displacement is not a
+universal requirement for the observed coarse activity. A reduced adaptive
+model illustrates how coarse oscillation can maintain a denominator that
+limits fine drift even without such forcing
 (Appendix~\ref{app:coarse-feedback}). These optimizer-specific results complement
 the GD population theorem; they do not provide an Adam rate bound.
