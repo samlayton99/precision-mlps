@@ -85,11 +85,12 @@ def spectrum(data, output):
 
 
 def acquisition(data, output, interventions):
-    """Figure 4: unchanged scaling/error panels and matched Adam pulse responses."""
+    """Figure 4: slope scaling, output error, and matched Adam pulse responses."""
     plt.rcdefaults()
-    plt.rcParams.update(STYLE | {'savefig.pad_inches': .025})
-    fig, axes = plt.subplots(1, 3, figsize=(5.5, 2.2))
-    fig.subplots_adjust(left=.082, right=.989, top=.835, bottom=.29, wspace=.56)
+    plt.rcParams.update(STYLE | {'savefig.pad_inches': .025, 'axes.labelpad': 1,
+                                'xtick.major.pad': 2, 'ytick.major.pad': 2})
+    fig, axes = plt.subplots(1, 3, figsize=(5.5, 1.85))
+    fig.subplots_adjust(left=.074, right=.992, top=.85, bottom=.32, wspace=.40)
     widths = data['widths']; colors = OPTIMIZER_COLORS
     for optimizer, marker in [('adam', 'o'), ('gd', 's')]:
         color = colors[optimizer]
@@ -130,7 +131,7 @@ def acquisition(data, output, interventions):
     axes[1].set_xlim(0, 5); axes[1].set_xticks([0, 2, 4, 5]); axes[1].set_xlabel('Updates (millions)')
 
     policy_styles = [
-        ('gain_only', 'o', '#0072B2', 'Scalar\namplification'),
+        ('gain_only', 'o', '#0072B2', 'Scalar amplification'),
         ('tracking_attenuated_variance', '^', '#AA4499', 'Tracking-attenuated\ndenominator'),
     ]
     for policy, marker, color, label in policy_styles:
@@ -148,10 +149,11 @@ def acquisition(data, output, interventions):
     axes[2].axhline(0, color='#666666', ls=(0, (2, 2)), lw=.8, zorder=2)
     axes[2].set_xlabel('Fine-slope path / native')
     axes[2].set_ylabel('Final RMS slope\nvs. native (%)')
+    axes[2].yaxis.label.set_linespacing(1.0)
     axes[2].legend(loc='upper right', fontsize=6.1, handlelength=.9,
                    handletextpad=.35, borderaxespad=.2, labelspacing=.5)
-    for ax, title in zip(axes, ['a) Slope scaling', 'b) Output accuracy',
-                               '(c) More motion need\nnot yield larger slopes']):
+    for ax, title in zip(axes, ['(a) Slope scaling', '(b) Output accuracy',
+                               '(c) Motion vs. scale']):
         ax.set_title(title); ax.minorticks_off()
         ax.grid(axis='y', color='#D8D8D8', lw=.45); ax.set_axisbelow(True)
     handles = [Line2D([], [], color=colors[o], lw=1.3, marker=m, ms=3.5,
