@@ -259,6 +259,31 @@ The supplied-feature Adam comparison uses $\lambda=1/4$, zero readout
 initialization, and the selected full-horizon cosine rate $10^{-4}$.
 Both constant and cosine candidates are retained in the study records.
 
+Figure~\ref{fig:note-training}a extends the same target, sampling grids,
+seed convention, and update budget to total widths
+$W\in\{128,256,512,1024\}$. The corresponding numbers of interior
+intervals are $N\in\{105,225,467,961\}$, with $h_W=2/N$ and
+$R\in\{11,15,22,31\}$ halo nodes per side; thus $W=N+1+2R$.
+The initialization is the affine Xavier convention used above, with its
+random-number generator keyed by seed and the budget-derived interval count.
+Each width tests Adam cosine rates $\{0.02,0.05\}$, Adam constant rates
+$\{0.002,0.02\}$, and GD rates $\{0.2,0.5\}$ under both schedules.
+Cosine decay spans the full five-million-update horizon.
+Selected Adam uses cosine rate 0.02 at width 128 and 0.05 otherwise.
+Selected GD uses rate 0.2 throughout, constant at widths 128 and 256 and
+cosine at widths 512 and 1024. These selections use the final validation
+criterion above, with no seed-specific recipe choice.
+
+In increasing width order, mean absolute slopes are
+4.324, 4.993, 3.943, and 2.295 for Adam, and
+2.305, 1.072, 0.3171, and 0.1580 for GD. The supplied $\lambda=1/4$
+construction has slopes 13.125, 28.125, 58.375, and 120.125.
+The means do not keep pace with this reference over the tested widths.
+This comparison is conditional on the initialization, candidate grid,
+and budget; it does not establish an asymptotic growth law or a universal
+necessary slope. The fixed $h_W$ is a reference spacing, not the spacing
+between learned centers.
+
 Median joint training errors are $1.8143227\times10^{-3}$ for Adam and
 $0.24393137$ for GD. Supplied-feature Adam reaches $6.6245807\times10^{-7}$.
 The corresponding dense-grid values are $1.8148250\times10^{-3}$,
@@ -269,8 +294,18 @@ budget, not permanent failure.
 The pooled endpoint mean bandwidths are 0.0168845 for Adam and 0.00135795
 for GD. Their neuron population standard deviations are 0.0541204 and
 0.00703476. The supplied bandwidth is a comparison geometry, not a
-target-independent necessary threshold. The revised three-panel Figure 4
-is external to this review copy; no new width-scaling result is asserted here.
+target-independent necessary threshold. Figure~\ref{fig:note-training}c
+uses the mean over all $5W$ neurons and its population standard deviation
+(divisor $5W$), not the standard deviation of the five seed means.
+The displayed lower edge is clipped at zero. Parameter snapshots are
+stored every 10,000 updates. Panel (b) retains within-bin error extrema
+and exact endpoints; its shaded region is not a confidence interval.
+
+All 160 seed/recipe trajectories reached the full horizon.
+An independent NumPy evaluation verified endpoint output errors.
+The selected width-512 Adam slopes and
+intercepts reproduce the five archived feature-assay dictionaries exactly,
+so the following interventions concern the same learned features.
 
 Freezing the five-million-update Adam features and training new readouts
 for two million additional updates gives median dense-grid error

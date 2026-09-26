@@ -1,9 +1,10 @@
-% Drop-in main text; Figure 4 is supplied separately after its revision.
+% Drop-in main text with figures and captions inline.
 \subsection{Why joint training acquires useful feature scales slowly}
 \label{sec:feature-acquisition}
 
-Allowing the features to evolve leaves a substantial accuracy gap over the
-tested training budget. After five million updates on mixed sine at
+Over five million updates, trained mean slopes do not keep pace with the
+construction scale as width grows (Figure~\ref{fig:note-training}a).
+On mixed sine at
 $W=512$, joint Adam reaches median relative training error
 $1.81\times10^{-3}$, compared with $6.62\times10^{-7}$ using the supplied
 $\lambda=1/4$ dictionary;
@@ -14,9 +15,25 @@ gap (Appendix~\ref{app:feature-evidence}).
 These interventions indicate that useful slopes and centers must be
 acquired together.
 
-% Insert the revised joint-training figure here, with label fig:note-training.
-% Its panels are width scaling (a), output error (b), and mean bandwidth (c).
-% The old RMS/99th-percentile artwork must not be relabeled as population means.
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/joint_acquisition.png}
+ \caption{\textbf{Joint training leaves a scale and accuracy gap.}
+ Mixed-sine target on $[-1,1]$; five million updates.
+ Joint training uses five seeds and one recipe per width and optimizer,
+ selected by median final validation error.
+ \textbf{(a)} Mean absolute slope versus total width, including halos.
+ Faint curves show seed means; outlined markers show pooled means.
+ \textbf{(b)} At $W=512$, relative training RMS error for joint training
+ (solid) and frozen readouts on the supplied $\lambda=1/4$ dictionary (dashed).
+ Joint curves show seed medians after binning. Shading preserves temporal
+ extrema and, for joint training, seed spread.
+ \textbf{(c)} Mean bandwidth $\lambda=h_W|\gamma|$ for the same joint runs,
+ with one population standard deviation across neurons and seeds, clipped at zero.
+ Dotted lines in (a,c) mark the supplied construction scale, not a universal
+ acquisition threshold. Protocol and target are in Appendix~\ref{app:feature-evidence}.}
+ \label{fig:note-training}
+\end{figure}
 
 We quantify one mechanism that limits this acquisition.
 In the small-parameter regime, tanh's leading non-affine term is cubic,

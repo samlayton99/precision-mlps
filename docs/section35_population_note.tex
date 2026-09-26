@@ -10,20 +10,17 @@
 \clubpenalty=10000
 \newtheorem{theorem}{Theorem}[section]
 \hypersetup{pdftitle={Why joint training acquires useful feature scales slowly}}
+% Keep a carried figure at the top of its review page.
 \makeatletter
-\newlabel{fig:note-training}{{4}{}{}{}{}}
+\setlength{\@fptop}{0pt}
 \makeatother
 \begin{document}
 \setcounter{section}{3}
 \setcounter{subsection}{4}
 \setcounter{theorem}{2}
-\setcounter{figure}{4}
+\setcounter{figure}{3}
 \input{docs/section35_feature_acquisition.tex}
 \clearpage
-{\footnotesize\emph{Review copy.} Figure 4 is an external manuscript figure.
-Its three-panel revision is pending and is not included here. The text uses
-completed width-512 observations and separate mechanism experiments.}
-\par\medskip
 \appendix
 \numberwithin{equation}{section}
 \input{docs/section35_population_appendix.tex}
