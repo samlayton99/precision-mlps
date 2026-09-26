@@ -73,6 +73,7 @@ def summarize(rows):
             value=last['sum_'+q+'_'+c]-first['sum_'+q+'_'+c]
             result[q+'_'+c]=value;parts.append(value)
         result[q+'_fine']=sum(result[q+'_'+c] for c in ('generated','target','compensation','inherited'))
+        result[q+'_direct_fine']=result[q+'_generated']+result[q+'_target']
         result[q+'_closure_max']=max(abs(r[q+'_closure']) for r in future)
         result[q+'_signed_budget']=sum(abs(v) for v in parts)
         result[q+'_closure_relative']=result[q+'_closure_max']/max(1.,result[q+'_signed_budget'])
@@ -84,6 +85,7 @@ def summarize(rows):
                 'jacobian_fine_hs','jacobian_adaptive_fine_hs'):
         result[key+'_start']=first[key];result[key+'_end']=last[key]
         result[key+'_ratio']=last[key]/first[key] if first[key] else np.nan
+        result[key+'_median']=float(np.nanmedian([r[key] for r in future]))
     result['virtual_next_loss_increase_share']=float(np.mean([r['actual_loss_change']>0 for r in future]))
     replay=[r.get('archive_parameter_relative_difference',np.nan) for r in future]
     result['archive_relative_difference_max']=max((v for v in replay if np.isfinite(v)),default=np.nan)
@@ -98,13 +100,14 @@ def aggregate(summaries):
         fields=('M_start','M_ratio','C6_start','C6_ratio','effective_count_start','effective_count_end',
                 'lambda_end','slope_ratio','error_end','eval_error_end','clock_ratio_max',
                 'tracking_slope_activity_share','balanced_adaptive_access_start','balanced_adaptive_access_ratio',
+                'balanced_adaptive_access_median','balanced_raw_access_median',
                 'M_closure_relative','A_closure_relative','logC6_closure_relative','archive_relative_difference_max')
         result[key]=dict(cases=len(rr),**{f:stats([r.get(f,np.nan) for r in rr]) for f in fields})
         for field in ('clock_factor_two_all_saved_prefixes','any_1pct','any_0p1pct','any_1e4'):
             observed=[r for r in rr if field in r]
             result[key][field]=dict(measured=len(observed),count=sum(bool(r[field]) for r in observed))
         for q in ('logC6','M','A'):
-            for c in ('generated','target','compensation','tracking','fine','defect'):
+            for c in ('generated','target','direct_fine','compensation','tracking','fine','defect'):
                 field=q+'_'+c;observed=[r for r in rr if field in r]
                 result[key][field]=dict(measured=len(observed),positive=sum(r[field]>0 for r in observed),
                                        negative=sum(r[field]<0 for r in observed),**stats([r[field] for r in observed]))
@@ -168,22 +171,27 @@ def plot(output,all_groups,summaries):
         axes[1,j].set_xlabel('Updates after 25k (thousands)')
     axes[0,0].set_ylabel('Raw relative output error');axes[1,0].set_ylabel('Normalized slope RMS')
     fig.legend(handles=legend+styles,loc='outside lower center',ncol=4,fontsize=8)
-    fig.suptitle('Same targets and initializations; shading spans two Adam seeds')
+    fig.suptitle('Same targets and initializations; shading spans available Adam seeds')
     save(fig,'output_and_scale')
-    fig,axes=plt.subplots(2,2,figsize=(10,6),layout='constrained')
+    for rr in selected:
+        for r in rr:r['effective_count']=r['width']/np.sqrt(r['C6'])
+    fig,axes=plt.subplots(3,2,figsize=(10,8),layout='constrained')
     for j,w in enumerate(widths):
-        curves(axes[0,j],w,'M',normalize=True);curves(axes[1,j],w,'accumulated_concentration_ratio',adam_only=True)
-        axes[0,j].set_title(f'Width {w}');axes[0,j].set_yscale('log')
-        axes[1,j].axhline(2,color='black',ls=':',label='GD reference allowance')
-        axes[1,j].axhline(1,color='gray',ls=':',lw=.7)
-        axes[1,j].set_xlabel('Updates after 25k (thousands)')
-    axes[0,0].set_ylabel('Total energy / energy at 25k');axes[1,0].set_ylabel('Accumulation / preceding-window reference')
+        curves(axes[0,j],w,'M');curves(axes[1,j],w,'effective_count')
+        curves(axes[2,j],w,'accumulated_concentration_ratio',adam_only=True)
+        axes[0,j].set_title(f'Width {w}');axes[0,j].set_yscale('log');axes[1,j].set_yscale('log')
+        axes[2,j].axhline(2,color='black',ls=':',label='GD reference allowance')
+        axes[2,j].axhline(1,color='gray',ls=':',lw=.7)
+        axes[2,j].set_xlabel('Updates after 25k (thousands)')
+    axes[0,0].set_ylabel('Total hidden parameter energy')
+    axes[1,0].set_ylabel('Effective energy-sharing count')
+    axes[2,0].set_ylabel('Accumulation / window reference')
     fig.legend(handles=legend+styles,loc='outside lower center',ncol=4,fontsize=8)
-    fig.suptitle('Energy growth and concentration accumulation are separate questions')
+    fig.suptitle('A stable concentration history need not mean broadly shared, modest energy')
     save(fig,'population_structure')
     fig,axes=plt.subplots(2,2,figsize=(11,7),layout='constrained')
-    components=('generated','target','compensation','tracking','defect')
-    component_labels=('Generated output','Target','Coarse compensation','Coarse tracking','Finite-step remainder')
+    components=('direct_fine','compensation','tracking','defect')
+    component_labels=('Direct fine residual','Coarse compensation','Coarse tracking','Finite-step remainder')
     for j,w in enumerate(widths):
         for i,q in enumerate(('logC6','A')):
             ax=axes[i,j];positive=np.zeros(6);negative=np.zeros(6);net=[]
@@ -204,7 +212,7 @@ def plot(output,all_groups,summaries):
             ax.set_title(f'Width {w}');ax.set_yscale('symlog',linthresh=.02)
     axes[0,0].set_ylabel('Change in log concentration');axes[1,0].set_ylabel('Slope energy change / initial slope energy')
     handles,labels=axes[0,0].get_legend_handles_labels();fig.legend(handles,labels,loc='outside lower center',ncol=3,fontsize=8)
-    fig.suptitle('Signed actual-update contributions, 25k–125k; averages across two seeds')
+    fig.suptitle('Signed actual-update contributions, 25k–125k; averages across available seeds')
     save(fig,'signed_growth')
     fig,axes=plt.subplots(2,2,figsize=(10,6),layout='constrained')
     for j,w in enumerate(widths):
