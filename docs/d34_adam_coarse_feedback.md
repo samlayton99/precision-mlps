@@ -8,15 +8,21 @@ growth. Adam's measured energy and concentration make that estimate
 uninformative. This does not invalidate the GD mechanism, but it prevents
 using it as the explanation of Adam.
 
-The most useful next hypothesis is a feedback loop: processed fine updates
-disturb coarse balance; the resulting tracking activity contributes to Adam's
-second moment; the shared denominator then restricts subsequent fine motion.
-We have measured the last link and some responses to releasing that
-restriction. We have not established the first link as the dominant source
-of tracking, or that the loop explains persistence. This note derives the
-identities needed to test those claims, proves an illustrative coupled model,
-and specifies experiments whose negative outcomes would change the paper's
-interpretation. No new training results are reported here.
+The new tests support a coarse adaptive stability constraint: the leading
+scaled curvature in late Adam states is predominantly coarse and close to the
+local momentum stability boundary. They also revise our initial hypothesis.
+Removing the processed fine update's first-order coarse disturbance at native
+amplitude barely changes acquisition. Continuing fine disturbance is therefore
+not yet an established explanation of tracking persistence. A reduced model
+proves that coarse oscillation can maintain an adaptive denominator without
+fine displacement; the neural test of that alternative is in progress.
+
+This extended note contains the identities, reduced-model proofs, intervention
+protocols, and completed results, including negative results. Section 7 records
+the current campaign snapshot explicitly. The companion
+[consolidated account](d34_scale_acquisition_consolidated.md) starts from the
+network ODE, gives the GD population theorem and proof, and places these Adam
+findings in the overall paper argument.
 
 **Notation.** All output inner products use the same normalized training
 measure as the squared loss. Coarse outputs are represented in an orthonormal
@@ -359,6 +365,16 @@ and fine motion proceeds at a rate proportional to $f/\kappa$. Increasing
 $\eta$ enlarges the oscillation and its denominator while leaving this
 particular fine drift unchanged. That conclusion concerns the displayed
 solution, not arbitrary initial conditions or all Adam learning rates.
+Suppressing only the $s$ update also leaves the coarse cycle unchanged when
+$f\ne0$, including its contribution to the passive second moment. This
+matches the distinction tested by the fine-off intervention.
+
+The same example clarifies signed motion accounting. In the scalar coarse
+mode, $x_{n+1}=-x_n$ preserves $x_n^2$, even though
+$2x_n(x_{n+1}-x_n)=-4x_n^2$. The positive squared-step term cancels it
+exactly. Large negative linear tracking contributions can therefore coexist
+with little persistent change in an oscillating mode's energy, while its
+squared gradient continues to affect the denominator.
 
 The shared denominator is an explicit simplification. In orthonormal
 physical coordinates $(s+x,s-x)/\sqrt2$, the gradients are
@@ -595,6 +611,125 @@ theorem to fit Adam, or label a bookkeeping identity as an Adam persistence
 theorem. The added value would be identifying which part of the coupled
 response restricts useful motion and demonstrating that changing it has the
 predicted population consequence.
+
+## 7. Completed evidence and its implications
+
+### Coverage and interpretation of this snapshot
+
+This section records the completed `mid_analysis` snapshot of the September
+26 campaign: 96 saved-state audits, 288 GD branches, and 72 Adam branches.
+The audits cover six targets, two widths, two seeds, two ages, and both
+optimizers. The GD branches cover three of the four width–seed cohorts;
+the Adam comparisons below cover both width-705 seeds. The remaining cohorts
+and the secondary fine-off/unit-gain-frozen controls are running. Consequently
+the full-panel curvature result and the partially completed intervention
+result have different coverage. We will replace this snapshot with the final
+analysis, retaining early exits as outcomes.
+
+All results use the raw attached-network output, with no readout refit.
+Comparisons distinguish current endpoint error from best training error
+within the same update budget. Independent-grid error is measured at the
+endpoints; it is not an independent-grid evaluation of the best training
+checkpoint. This distinction matters in Adam, where oscillation phase can
+substantially change endpoint error without comparably changing the best
+error attained.
+
+### The coarse mode sets Adam's measured local stability scale
+
+Across all 24 late Adam states, the adaptive sharpness divided by the frozen
+momentum threshold has median **0.9865**, with range **0.2728–1.0277**.
+The median coarse contribution to the leading scaled Rayleigh curvature is
+**0.9880**; the range is **0.6094–0.9992**. The leading eigenvector's overlap
+with the correctly scaled coarse-normal subspace has median **0.9992**.
+These measurements use the full loss Hessian and the actual Adam denominator.
+They identify the stiff direction; a visual impression of oscillation alone
+would not do so.
+
+Native GD's corresponding ratio to its threshold is only **0.00524** at
+the median, with range **0.00493–0.00584**. The two native optimizers therefore
+operate in very different stability regimes at these checkpoints. For Adam,
+the threshold is a frozen-coefficient diagnostic, not a theorem about its
+changing nonlinear update. It is still strong evidence for the proposed
+coarse constraint because the location and direction agree independently.
+
+![Adaptive curvature and tracking activity](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/coarse_feedback_20260926/mid_analysis/stability_and_tracking.png)
+
+The left panel compares curvature and its coarse contribution across the
+full late-state panel. The right panel concerns the completed Adam
+continuations and separates temporal oscillation from the signed linear
+tracking contribution to slope energy. The latter must be interpreted with
+the squared-step term in the exact population balance.
+
+### Large-step GD supplies a causal comparison
+
+Starting GD at Adam's geometry with a rate 1.05 times the initial GD
+threshold produces loss oscillations and a decrease in sharpness. Across
+the 18 completed starts, ordinary GD's final normalized sharpness has median
+**0.9599**, and the runs have **65–159 loss increases**. Attenuating tracking
+to one tenth at the same initial step size produces **zero loss increases
+in all 18 cases**. Its final reference sharpness remains near **1.0502**.
+
+Thus tracking is causally involved in this large-step response. The last
+number is curvature of the native loss, not the stability ratio of the
+modified-force algorithm. Removing a gradient component changes its dynamics.
+The experiment does not establish a universal sign for slope growth, and
+larger GD steps substantially accelerate some targets. Comparisons at equal
+update count also have unequal gradient-flow time; we retain that distinction.
+
+### Removing fine disturbance barely changes native acquisition
+
+At an isolated late Adam state, a processed fine step can change coarse
+output to first order. Balancing removes that term to roundoff, so the
+intervention succeeds at its intended immediate action. Yet over a 10k pulse,
+balanced/native slope RMS has median **1.00012** and range
+**0.99953–1.00118** across the 12 completed starts. Best raw error has median
+ratio **0.99845**, while accumulated tracking energy has median ratio
+**1.0124**. This is a material negative result: removing the first-order fine
+disturbance does not substantially release native acquisition in this panel.
+
+The amplified comparison is target dependent. For mixed sine, width 705,
+seed 30, balancing at tenfold fine amplitude reduces accumulated tracking
+energy by **96.9%** and fine slope path by **72.9%**, while improving best
+error by **36.1%** and increasing slope RMS by **3.31%**, relative to the
+unbalanced tenfold arm. The same balancing operation at native amplitude
+has almost no effect. Across all 12 amplified pairs, however, the median
+RMS increase is only **0.145%**. The example shows a coupling that can become
+important under stronger forcing; it is not evidence that this coupling
+explains native persistence for every target.
+
+### Frozen-denominator failures are informative, but do not identify mediation
+
+In the two completed width-705 cohorts, both tenfold frozen-denominator
+variants survive for degree five. Both fail for each of the other five
+targets: **20 failures among 24 frozen branches**. Eighteen leave the
+numerically resolved regime and two become nonfinite. All **48 dynamic
+denominator branches** complete. These are actual divergent responses,
+not omitted successful checkpoints.
+
+Freezing plus tenfold amplification is therefore a strong intervention.
+Its failure supports caution about treating the denominator as removable,
+but cannot establish that adaptation is necessary at native amplitude.
+Nor can two failed frozen arms identify a long-horizon mediation effect.
+The unit-gain frozen controls address that ambiguity. The fine-off control
+addresses a separate question: whether ongoing fine displacement is needed
+to maintain the coarse activity at all.
+
+### What is established, and what remains open
+
+The exact decomposition, tracking-renewal identity, fixed-preconditioner
+mobility proposition, and reduced shared-RMS oscillation are proved above.
+Fifteen focused remote tests verify implementation and the reduced cycle,
+including native replay, retention of optimizer history, balance projection,
+full Hessian products, and exact finite-step population accounting.
+
+The empirical evidence supports a coarse adaptive stability constraint and
+an indirect tracking effect through the denominator. It does **not** yet
+prove that ongoing fine disturbance maintains that constraint, that a single
+restoring force explains every target, or that Adam obeys the GD population
+rate bound. The strongest current paper theorem remains the conditional GD
+population-to-output theorem. The strongest Adam interpretation is a
+separation between useful fine motion and a coarse stability scale that
+limits how the optimizer can amplify it.
 
 ## Evidence and source record
 

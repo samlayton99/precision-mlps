@@ -1,5 +1,18 @@
 # Does the population persistence mechanism carry to Adam?
 
+**Current synthesis.** The self-contained
+[extended theory and evidence note](../../../../docs/d34_scale_acquisition_consolidated.md)
+now combines the GD population proof with these Adam studies and the new
+coarse-stability campaign. Its September 26 partial campaign snapshot finds
+predominantly coarse adaptive curvature near the local stability boundary in
+24 late Adam states. Removing fine coarse disturbance at native amplitude
+barely changes acquisition in the 12 completed paired starts. This weakens
+the claim that ongoing fine displacement sustains native tracking, while
+leaving the measured denominator restriction intact. The
+[detailed feedback note](../../../../docs/d34_adam_coarse_feedback.md)
+records the controls, negative results, and pending tests; the completed
+studies below remain the source for the earlier population and motion claims.
+
 Adam has concentrated parameter energy, but this does not mean that its
 useful motion is large or self-reinforcing. The follow-up now separates
 energy distribution, update activity, and outward slope movement. Across
