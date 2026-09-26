@@ -135,6 +135,7 @@ def analyze(args):
         'amplitude_processed_slope_norm_late_over_early','amplitude_product_relative_error')
     facts=dict(native_cases=len(native),runs=len(runs),complete_runs=len(complete),
         native={k:stats([r[k] for r in native]) for k in fields},interventions={},force_changes={})
+    facts['native_by_target']={t:{k:stats([r[k] for r in native if r['target']==t]) for k in fields} for t in SIX}
     for age in (25000,125000):
         for arm in POLICIES:
             for offset in (10000,20000):
@@ -154,6 +155,8 @@ def analyze(args):
         ('component_error','norm_error','bias_error','A_closure','bias_closure','readout_closure','unresolved','zero_candidate')}
     facts['verification'].update({k:max(abs(r[k]) for r in crossed) for k in ('crossed_closure','current_force_error')})
     facts['verification']['crossed_unresolved']=sum(r['crossed_resolved']!=1 for r in crossed)
+    facts['verification']['nonfinite_state_rows']=sum(not all(np.isfinite(r[k]) for k in ('M','A','C6','relative_error','fine_slope_path')) for r in rows)
+    facts['verification']['incomplete_amplitude_samples']=sum(r['amplitude_samples_early']!=10 or r['amplitude_samples_late']!=10 for r in native)
     facts['verification']['archive_relative_difference']=stats([r['archive_relative_difference'] for r in runs if np.isfinite(r.get('archive_relative_difference',np.nan))])
     facts['verification']['max_grid_error_difference']=max(abs(r['relative_eval_error']-r['relative_error']) for r in rows if np.isfinite(r.get('relative_eval_error',np.nan)))
     facts['execution']=json.loads((args.inputs/'execution.json').read_text())

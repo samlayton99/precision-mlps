@@ -1,0 +1,37 @@
+{
+  "platform": "Modal CPU",
+  "stage": "analyze",
+  "seconds": 29.243707413,
+  "memory_hard_limit_mib": 4096,
+  "peak_child_rss_mib": 3955.140625,
+  "tests": "............                                                             [100%]\n12 passed in 18.23s\n",
+  "command": [
+    "/usr/local/bin/python",
+    "-m",
+    "experiments.expD34_readout_race.population_adam_motion_analysis",
+    "--inputs",
+    "/tmp/scalar-inputs",
+    "--output",
+    "/tmp/motion-output",
+    "--seconds",
+    "250.35892876499997"
+  ],
+  "log": "............                                                             [100%]\n12 passed in 18.23s\n{\"native_cases\": 24, \"complete_runs\": 192, \"contrasts\": 288, \"verification\": {\"component_error\": 5.109023195065465e-15, \"norm_error\": 4.999473057765158e-15, \"bias_error\": 8.673617379884035e-19, \"A_closure\": 1.0277290130034089e-10, \"bias_closure\": 1.0629719326971099e-11, \"readout_closure\": 1.1977530078866039e-11, \"unresolved\": 0.0, \"zero_candidate\": 0.0, \"crossed_closure\": 1.987825099747927e-18, \"current_force_error\": 1.3636632220087747e-15, \"crossed_unresolved\": 0, \"nonfinite_state_rows\": 0, \"incomplete_amplitude_samples\": 0, \"archive_relative_difference\": {\"n\": 24, \"min\": 0.0, \"median\": 7.473491872773159e-05, \"max\": 0.015558460095924811}, \"max_grid_error_difference\": 5.5892770694232485e-06}}\n",
+  "source_hashes": {
+    "experiments/expD34_readout_race/population_adam_motion.py": "825c61f8fc37b9a4ef1ee67c777736a38564d76a86f3ef1ae740a116be1275d4",
+    "experiments/expD34_readout_race/population_adam_motion_run.py": "054c486678e6e25f48a69c27628e045ff21c2332d8569fc70cc0d6b69ebfe248",
+    "experiments/expD34_readout_race/population_adam_motion_modal.py": "392668e722246a40ab2c55009a2403f82eb7b13db8742b827e40d2ce9bedc622",
+    "experiments/expD34_readout_race/population_adam_motion_analysis.py": "11dc51d49313e5e8d412ed6ddc5f507350dd608fde24f78959c067fcde916de9",
+    "experiments/expD34_readout_race/population_adam.py": "f77142348c34de139a05604f140527253e351778e7bed73e484e35db071ee9a7",
+    "experiments/expD34_readout_race/population_adam_run.py": "ebecba587996e5333ce2ac0034373ca5b1eca8eff05c09bec556f92b70a8ecdc",
+    "experiments/expD34_readout_race/population_adam_variance.py": "96c6e6051e5b6862783faf88b044b0c9d26301c7db0f5c22b930f13e58032733",
+    "experiments/expD34_readout_race/population_adam_variance_run.py": "d3d9fab71404ddf4458023c98c085c25a3980eec3aa10c62446ab052a32ec822",
+    "experiments/expD34_readout_race/population_adam_variance_analysis.py": "3b24c194ea5b69320dcde2f02ba08e774e8637b4de6fd7aa8b251f6dbb61d562",
+    "experiments/expD34_readout_race/adam_forces.py": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6",
+    "tests/test_population_adam.py": "d5ac0ea1f5f1aba518d0aea063a683c95c32cede6194e7b846471839de524045",
+    "tests/test_population_adam_motion.py": "738e2969803366d1de0e840f9e014c1686ec44ec10dcc423efba6828bc4ca36b",
+    "tests/test_population_adam_variance.py": "5ccaae0cedf1d8e00a7b7e9cadad02b1afd6d2df9a58b9604a426ec17a0b7a88"
+  }
+}

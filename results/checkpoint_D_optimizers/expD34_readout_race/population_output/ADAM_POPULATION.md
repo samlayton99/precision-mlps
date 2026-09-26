@@ -1,16 +1,24 @@
 # Does the population persistence mechanism carry to Adam?
 
-The new wide panel supports two parts of the explanation under Adam:
-population concentration accumulates moderately, and effective fine updates
-supply positive slope-energy growth. All 24 runs support both observations
-over updates 25k–125k. There is also a substantive difference from GD: Adam
-already has much higher energy, concentrated into a much smaller effective
-part of the population, when this interval begins. Its population statistics
-persist, but they do not supply the small raw-sensitivity bound used by the
-GD theorem. The shared observations are moderate concentration accumulation
-and fine-driven net expansion. They do **not** yet establish that insufficient
-energy concentration is the cause of Adam's limited acquisition. That is the
-precise meaning of partial qualitative transfer here.
+Adam has concentrated parameter energy, but this does not mean that its
+useful motion is large or self-reinforcing. The follow-up now separates
+energy distribution, update activity, and outward slope movement. Across
+the twelve degree-five, mixed-sine, and bump cases that miss 1% accuracy
+in the native panel, fine motion is substantially coherent while its late
+magnitude falls to 12–42% of its early level. Energy nevertheless grows.
+Replacing fine momentum with the current fine gradient reduces early slope
+RMS in all 24 target–width–seed cases, despite matching the available fine
+hidden-update norm locally. A simple loss of useful direction is therefore
+not the common explanation supported by these tests.
+
+The shared GD–Adam observation is limited reinforcement of useful fine
+motion. The supporting conditions differ. Adam has much greater absolute
+energy and concentration, so the GD population bound cannot simply be
+reused. The results below establish fine-driven expansion, distinguish
+direct tracking motion from its possible effect through the denominator,
+and test the relevant optimizer mechanisms. They do not establish
+insufficient energy concentration as Adam's bottleneck or provide an Adam
+rate theorem.
 
 **Quantities used throughout this study.**
 
@@ -232,6 +240,190 @@ coupling through its evolving denominator and moment history using aggregate
 quantities. Reusing the raw GD concentration bound alone would miss the
 observed regime. The present measurements identify this gap; they do not
 close an Adam persistence proof.
+
+## Concentrated energy does not determine the useful motion budget
+
+Consider degree five at width 705, seed 30. From 25k to 125k updates,
+hidden energy grows by 29.1%, but fine slope activity in the final 10k
+updates is only 26.6% of its level in the first 10k. Within 10k windows,
+the net fine slope displacement averages 85.8% of its accumulated path
+length. The useful component is becoming quieter despite retaining a
+substantial common direction. Describing this state only by its effective
+energy-sharing count would miss that distinction.
+
+A population with the energy of seventeen equally weighted neurons could
+be stationary, expanding coherently, or repeatedly reversing. The effective
+count distinguishes none of these possibilities. It measures the current
+distribution of $a_j^2+b_j^2+c_j^2$, whereas acquisition depends on the
+updates to the slopes and their alignment with the existing slope vector.
+The follow-up therefore measures energy distribution, update activity, and
+outward motion separately, retaining the same effective fine gradient $F$
+and tracking gradient $R$ as above.
+
+Relative concentration also says nothing about the absolute energy required
+for the construction benchmark. Since $A\le M$,
+$\lambda_{\rm RMS}^2=h^2A/W\le h^2M/W$. Reaching
+$\lambda_{\rm RMS}=0.25$ would require at least 2.89 million units of
+slope energy at width 705, or 23.1 million at width 1409 with the respective
+$h$ used here. A concentrated population with hidden energy of hundreds or
+thousands remains far from those budgets. This is a statement about the
+construction scale, not a claim that such energy is necessary for 1% error.
+
+Write $\Delta a_n^F$ and $\Delta a_n^R$ for their actual Adam-processed
+slope updates. When the decomposition is resolved, the exact identity is
+
+$$
+A_{n+1}-A_n
+=2\langle a_n,\Delta a_n^F\rangle
++2\langle a_n,\Delta a_n^R\rangle
++\|\Delta a_n\|^2.
+$$
+
+The fine term is
+$2\|a_n\|\,\|\Delta a_n^F\|\cos\theta_n$, where $\theta_n$
+is its angle with the outward slope direction. This separates the amount
+of fine motion from its usefulness for expansion. A large parameter energy
+does not guarantee either a large fine update or favorable alignment.
+Likewise, the activity share $\sum_n\|\Delta\theta_{j,n}\|^2$ can be
+large even if the updates cancel. Over a window, the ratio
+$\|\sum_n\Delta a_n^F\|/\sum_n\|\Delta a_n^F\|$ detects such
+cancellation in the fine component itself. It is not the ratio for the full
+Adam update, whose tracking component can behave differently.
+
+<figure>
+  <img src="evidence/adam_motion_final_20260926/energy_and_activity.png" alt="Parameter energy allocation and fixed-group shares of energy and update activity" style="max-width:100%;">
+  <figcaption>Top: the fractions of hidden parameter energy in slopes, hidden biases, and readouts at 125k, averaged over two seeds. Bottom: individual seeds, retaining the identities of the top 5% of neurons by energy at 25k. Their later energy share, fine activity share, and total activity share are different observables. Activity sums squared updates over all three hidden parameter blocks from 25k to 125k. The green triangles measure overlap of the full normalized energy distribution between the two endpoints; they can reveal redistribution despite a stable effective count. A high activity share does not by itself show net or outward movement.</figcaption>
+</figure>
+
+Across the 24 continuations, the initial top 5% retain a median 98.5% of
+energy at 125k, but supply only a median 3.63% of total squared update
+activity. Their median share of signed fine-driven slope growth is 98.4%.
+Thus the population carrying energy and net fine expansion is not the
+population carrying most of the total activity. Nor is energy generally
+stored only in readouts: slopes hold 77–93% of final hidden energy in the
+twenty non-degree-five cases. Degree five is an exception, with only
+28–42% in slopes. The relevant distinction is useful motion versus existing
+energy, rather than a universal readout-storage explanation.
+
+Fixed identities also require qualification. For sine, the full normalized
+energy distributions have only 0.331–0.582 overlap between 25k and 125k,
+despite 90–99% of final energy remaining in the initial top 5%. Substantial
+redistribution can occur within an energy-dominant group. An effective count
+alone cannot resolve that movement.
+
+### Direction is often persistent while the available motion declines
+
+All twelve continuations for degree five, mixed sine, and compact bump show
+the same combination over 25k–125k. Their average 10k-window fine slope
+coherence ranges from 0.661 to 0.924, while final-window fine slope activity
+is only 0.123–0.418 of its first-window level. Total hidden energy increases
+by factors of 1.29–11.4. The activity comparison uses the sum of fine slope
+update norms in equal-length windows, so it measures the actual processed
+motion budget rather than a raw-gradient proxy. These are the three target
+families that fail the 1% criterion in the preceding native panel.
+
+The Gaussian is different: its corresponding coherence is only 0.172–0.234,
+and its small fine-driven expansion is substantially opposed by tracking.
+It already meets the 1% criterion. A universal assertion that fine motion
+is coherent, or that tracking never matters, would therefore overstate the
+evidence.
+
+<figure>
+  <img src="evidence/adam_motion_final_20260926/fine_direction.png" alt="Fine motion coherence, outward alignment, and declining activity compared with growing parameter energy across six targets" style="max-width:100%;">
+  <figcaption>Each point represents one seed, with separate columns for widths 705 and 1409. Top: average fine slope displacement divided by path length in disjoint windows of 100, 1000, and 10,000 updates; every update enters these measurements. Middle: median cosine with the outward slope direction for the raw fine proposal, the adaptively scaled current fine proposal, and the actual momentum-processed fine proposal, sampled every 1000 updates. Bottom: total energy at 125k divided by energy at 25k, compared with accumulated fine slope path in 115k–125k divided by that in 25k–35k. The ratios compare different observables; they are not forecasts.</figcaption>
+</figure>
+
+Decreasing processed motion should not be renamed decreasing raw sensitivity.
+In the same degree-five example, raw fine slope force per unit total error
+actually rises by 23%. Error roughly halves, the adaptive norm gain falls
+by 17%, and the ratio of momentum-processed to scaled-current magnitude
+roughly halves. Their product gives a processed-magnitude ratio of 0.260.
+These factors use geometric means of the ten 1000-update samples in each
+endpoint window, preserving their multiplicative identity. The raw-force
+ratio depends on residual alignment and is not an operator-norm estimate.
+Nor does the smaller momentum ratio show that removing momentum would help:
+the omitted instantaneous activity may point in unhelpful directions. The
+direction interventions are needed to resolve that question.
+
+### Direction interventions show that fine momentum is useful
+
+At the 25k fork, replacing fine momentum by the current fine gradient lowers
+slope RMS in every one of the 24 cases after the 10k pulse. The median
+decrease is 2.93%, with decreases ranging from 0.038% to 20.8%. The
+supplemental comparison at equal accumulated fine slope path is also
+negative in all 24 cases. Signed accounting shows a smaller fine contribution
+in every case. This supports a useful filtering role for momentum rather
+than an interpretation in which stale fine momentum commonly blocks an
+otherwise favorable current direction.
+
+Freezing fine adaptive scaling has mixed early effects. One sine case gains
+24.7% RMS and improves endpoint error by 29.0%, but accumulates 3.51 times
+the native fine slope path. Its equal-path RMS comparison is negative.
+Local norm matching does not force two evolving clones to receive identical
+future motion budgets. This example is evidence of coupled trajectory
+feedback, not a uniform benefit from fixing the diagonal.
+
+At the 125k fork, all three direction policies have small scale effects:
+the 72 pulse comparisons range from −1.51% to +0.204% in slope RMS.
+After 10k native release they range from −1.59% to +0.0292%. These are
+finite intervention results at the specified ages, not a claim that a
+different step magnitude could never accelerate acquisition. Endpoint error
+responses are more variable, particularly when the native error is already
+small; both absolute error differences and relative changes are retained.
+
+<figure>
+  <img src="evidence/adam_motion_final_20260926/intervention_responses.png" alt="Paired effects of changing fine momentum and adaptive scaling at early and late forks" style="max-width:100%;">
+  <figcaption>Three fine-only policies, each matched to the native fine hidden-update norm at its own current state. Filled markers show the 10k pulse endpoint and open markers show the endpoint after 10k native release. Points are medians over the four width–seed combinations, and bars span those combinations; they are not confidence intervals. Top: percentage change in slope RMS against the native clone at the same update age. Bottom: percentage change in its raw relative output error, where negative is better. A large percentage error change can be small in absolute terms for an already-accurate target. Axes use symmetric logarithmic scales. Tracking updates and native moment recurrences are retained throughout.</figcaption>
+</figure>
+
+### The crossed-force test does not establish a universal restoring balance
+
+The four geometry–residual combinations give an exact attribution of each
+sampled raw fine-force change into geometry and residual changes, pairing
+both with the same ending slope and adaptive diagonal. However, they do
+not support a universal sign rule. Over 25k–125k, the median fraction of
+intervals with a positive geometry contribution is 72.5%; the median
+fraction with a negative residual contribution is 55.5%. Some runs have
+no positive geometry contributions under this pairing.
+
+Moreover, the median ratio of accumulated absolute combined changes to
+accumulated absolute component changes is 0.979 over the early interval and 0.994
+over the late interval. Ratios near zero would indicate strong cancellation;
+these values do not. In many cases residual variation dominates the sampled
+force change. This diagnostic neither proves universal restoration nor
+attributes the derivative of the actual momentum-processed update, whose
+denominator and history also change. The more robust evidence here is the
+population motion account and the paired interventions.
+
+### An indirect tracking mechanism that the signed balance cannot test
+
+The signed tracking term answers whether tracking itself moves slope energy
+up or down. It does not answer whether tracking changes the denominator
+through which fine motion passes. Both components share the second moment
+of the full gradient. Consequently, a nearly cancelling tracking signal can
+still change the size of the useful fine updates.
+
+A two-coordinate example makes this distinction explicit while preserving
+orthogonality of the raw components. Let $F=(f,f)$ and
+$R_n=(-1)^n(r,-r)$, so $F\cdot R_n=0$. Each coordinate sees
+$g_n=f\pm(-1)^nr$. After moment transients decay, its fine first moment
+is $f$, while its second moment is
+
+$$
+v_n=f^2+r^2
+\pm2fr\frac{1-\beta_2}{1+\beta_2}(-1)^n.
+$$
+
+With $\beta_2=0.999$, the alternating cross term is strongly attenuated.
+Ignoring the denominator offset for this illustration, the processed fine
+update is approximately $-\eta f/\sqrt{f^2+r^2}$. When $|r|\gg|f|$,
+it is much smaller than the update available without tracking in the second
+moment, even though tracking's alternating first moment has small mean.
+This calculation describes a possible optimizer mechanism; it does not
+assert that every measured trajectory has this form. The shadow-denominator
+experiment below tests its relevance while retaining the native tracking
+update. The matched scalar-gain control distinguishes a larger motion budget
+from a change in its allocation across coordinates.
 
 ## The archive already distinguishes the two population regimes
 
@@ -700,3 +892,51 @@ was the cause. Instability, worse error, or a transient response must be
 reported. The shadow-denominator and matched-gain identities, native
 continuation, preserved tracking and bias updates, and release history pass
 the expanded twelve-test suite on Modal CPU before this follow-up launches.
+
+### Completed direction-and-activity campaign
+
+All 192 runs completed: 24 native 25k–125k continuations and the paired
+early and late policies described above. The run used 4168.6 recorded GPU
+seconds (1.16 hours), including its eleven-test GPU verification. Peak child
+host-memory use was 4592 MiB under the 8192 MiB remote cap. Scalar analysis
+and figure generation ran separately on Modal CPU. No scientific arrays
+were loaded for local numerical analysis.
+
+The largest absolute component-update discrepancy is
+$5.11\times10^{-15}$, the largest local norm-match discrepancy is
+$5.00\times10^{-15}$, and the largest accumulated slope-energy closure
+error is $1.03\times10^{-10}$. No coarse solve was unresolved, no norm
+match had a zero candidate, and no saved state diagnostic was nonfinite.
+The crossed-force identity closes to $1.99\times10^{-18}$ in force norm.
+The largest discrepancy between relative errors on the 2048- and 8192-point
+grids is $5.59\times10^{-6}$.
+
+These are fresh continuations from saved optimizer states, rather than
+bitwise reconstructions of the earlier archive. Their 125k parameter-vector
+differences from the archived states have median 0.00747% and maximum 1.56%
+relative norm. Every intervention comparison uses its newly computed native
+control at the same age. The raw-error thresholds established earlier from
+every-update counters remain identified with that earlier panel.
+
+The retained evidence comprises
+[native population and motion summaries](evidence/adam_motion_final_20260926/native_motion.csv),
+[paired intervention comparisons](evidence/adam_motion_final_20260926/intervention_contrasts.csv),
+[crossed-force summaries](evidence/adam_motion_final_20260926/force_changes.csv),
+and [aggregate checks and execution provenance](evidence/adam_motion_final_20260926/facts.json).
+The [run directory](evidence/adam_motion_runs_20260926/) contains scalar
+histories, execution receipts, and final optimizer states for reproduction;
+it occupies about 44 MiB and contains no dense parameter trace. PNG and SVG
+versions of the three new figures accompany the summaries.
+
+```sh
+.venv-modal/bin/modal run experiments/expD34_readout_race/population_adam_motion_modal.py \
+  --stage run --seconds 6300 \
+  --output /tmp/adam_motion_reproduction
+.venv-modal/bin/modal run experiments/expD34_readout_race/population_adam_motion_modal.py \
+  --stage analyze --seconds 300 --source /tmp/adam_motion_reproduction \
+  --output /tmp/adam_motion_analysis_reproduction
+```
+
+The first command's cap applies to that run. A combined campaign must
+subtract its recorded GPU time before allocating a denominator follow-up;
+the two commands are not permission to exceed the aggregate 1.8-hour budget.
