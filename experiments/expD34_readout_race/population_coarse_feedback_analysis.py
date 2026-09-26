@@ -167,6 +167,42 @@ def analyze(args):
                 fine_A=r['A_fine'],tracking_A=r['A_tracking'],step_A=r['A_step'],
                 tracking_lag=ratio(r['z_lag_dot'],r['z2_sum']),mean_shadow_gain=r['shadow_gain_sum']/end))
     write(output/'followup_pairs.csv',followup)
+    # Late-window rates distinguish sustained tracking from a large inherited transient.
+    indexed={(r['case_key'],r['arm'],r['offset']):r for r in states if r['stage']=='followup' and r['alive']}
+    windows=[]
+    for case in sorted(set(r['case_key'] for r in followup)):
+        for arm in ('native','fine_off','frozen','frozen_balanced'):
+            for left,right in ((0,2000),(8000,10000),(18000,20000)):
+                keys=[(case,a,t) for a in (arm,'native') for t in (left,right)]
+                if not all(k in indexed for k in keys):continue
+                s,e,ns,ne=[indexed[k] for k in keys]
+                z=e['z2_sum']-s['z2_sum']; nz=ne['z2_sum']-ns['z2_sum']
+                windows.append(dict(case_key=case,target=e['target'],width=e['width'],seed=e['seed'],arm=arm,
+                    left=left,right=right,z2_ratio=ratio(z,nz),z2_rate=z/(right-left),
+                    endpoint_z_norm=e['z_norm'],
+                    tracking_lag=ratio(e['z_lag_dot']-s['z_lag_dot'],z),
+                    lambda_ratio=ratio(e['lambda_rms'],indexed[(case,arm,0)]['lambda_rms']),
+                    raw_tracking_ratio=ratio(e['raw_tracking2_sum']-s['raw_tracking2_sum'],ne['raw_tracking2_sum']-ns['raw_tracking2_sum'])))
+    write(output/'followup_windows.csv',windows)
+    outcomes=[dict(stage=stage,arm=arm,target=target,n=len(rr),
+        complete=sum(r['complete'] for r in rr),
+        failure_updates=distribution([r['end_offset'] for r in rr if not r['complete']]))
+        for stage in ('gd','adam','followup') for arm in sorted(set(r['arm'] for r in runs if r['stage']==stage))
+        for target in ('all',*TARGETS)
+        if (rr:=[r for r in runs if r['stage']==stage and r['arm']==arm and (target=='all' or r['target']==target)])]
+    late=[dict(arm=arm,target=target,left=left,right=right,n=len(rr),
+        unresolved_z_increment=sum(r['z2_rate']==0 for r in rr),
+        endpoint_z_below_1e14=sum(r['endpoint_z_norm']<1e-14 for r in rr),
+        **{k:distribution([r[k] for r in rr]) for k in ('z2_ratio','z2_rate','endpoint_z_norm','tracking_lag','lambda_ratio','raw_tracking_ratio')})
+        for arm in ('native','fine_off','frozen','frozen_balanced') for left,right in ((0,2000),(8000,10000),(18000,20000))
+        for target in ('all',*TARGETS)
+        if (rr:=[r for r in windows if r['arm']==arm and r['left']==left and (target=='all' or r['target']==target)])]
+    rescues=[]
+    for r in runs:
+        if r['stage']=='followup' and r['arm']=='frozen' and not r['complete']:
+            other=next(v for v in runs if v['stage']=='followup' and v['case_key']==r['case_key'] and v['arm']=='frozen_balanced')
+            rescues.append(dict(case_key=r['case_key'],target=r['target'],frozen_stop=r['end_offset'],balanced_stop=other['end_offset'],balanced_complete=other['complete']))
+    (output/'completion_details.json').write_text(json.dumps(dict(outcomes=outcomes,windows=late,frozen_rescues=rescues),indent=2)+'\n')
     write(output/'run_outcomes.csv',runs)
     coverage={stage:dict(states=sum(r['stage']==stage for r in states),runs=sum(r['stage']==stage for r in runs),
         complete=sum(r['stage']==stage and r['complete'] for r in runs),
@@ -279,12 +315,13 @@ def analyze(args):
         names=('fine_off','frozen','frozen_balanced')
         for ti,target in enumerate(TARGETS):
             for i,arm in enumerate(names):
-                rr=[r for r in followup if r['target']==target and r['arm']==arm and r['offset']==10000]
-                if rr:ax[0].scatter(np.full(len(rr),i)+(ti-2.5)*.04,[r['z2_sum'] for r in rr],color=colors[ti],s=20,label=LABELS[ti] if i==0 else None)
+                rr=[r for r in windows if r['target']==target and r['arm']==arm and r['left']==8000]
+                if rr:ax[0].scatter(np.full(len(rr),i)+(ti-2.5)*.04,[r['z2_ratio'] for r in rr],color=colors[ti],s=20,label=LABELS[ti] if i==0 else None)
                 rr=[r for r in runs if r['stage']=='followup' and r['target']==target and r['arm']==arm]
                 if rr:ax[1].scatter(np.full(len(rr),i)+(ti-2.5)*.04,[min(r['end_offset'],10000) for r in rr],color=colors[ti],s=20)
-        for a in ax:a.set(xticks=range(3),xticklabels=['No fine motion','Frozen fine\ndenominator','Frozen +\nbalanced']);a.set_yscale('log')
-        ax[0].axhline(1,color='.7',ls=':');ax[0].set(ylabel='Tracking energy / native tracking energy',title='A. Does tracking require fine forcing?');ax[0].legend(fontsize=8)
+        for a in ax:a.set(xticks=range(3),xticklabels=['No fine motion','Frozen fine\ndenominator','Frozen +\nbalanced'])
+        ax[0].set_yscale('symlog',linthresh=.05);ax[1].set_yscale('log')
+        ax[0].axhline(1,color='.7',ls=':');ax[0].set(ylabel='Tracking energy in final 2k / native',title='A. Does tracking persist without fine motion?');ax[0].set_ylim(bottom=-.003);ax[0].legend(fontsize=8,loc='lower right')
         ax[1].axhline(10000,color='.7',ls=':');ax[1].set(ylabel='Updates reached in the 10k pulse',title='B. Are unit-gain frozen controls stable?')
         save(fig,output,'secondary_controls')
 
