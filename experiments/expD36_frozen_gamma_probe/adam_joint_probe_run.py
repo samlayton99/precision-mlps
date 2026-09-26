@@ -111,6 +111,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input',type=Path); parser.add_argument('--config',type=Path); parser.add_argument('--output',type=Path)
     parser.add_argument('--steps',type=int); parser.add_argument('--require-gpu',action='store_true'); parser.add_argument('--self-test',action='store_true')
+    parser.add_argument('--export-dir',type=Path)
+    parser.add_argument('--export-every',type=int,default=250000)
+    parser.add_argument('--backup-timeout',type=int,default=300)
     args=parser.parse_args()
     if args.require_gpu:
         for key in ['SLURM_JOB_ID','SLURM_STEP_ID','CUDA_VISIBLE_DEVICES']:
@@ -125,6 +128,8 @@ def main():
         if args.input is None: return
     if not all([args.input,args.config,args.output]): parser.error('Training requires --input --config --output')
     config=json.loads(args.config.read_text()); steps=args.steps if args.steps is not None else config['horizon']
+    if args.export_dir and (args.export_every <= 0 or args.export_every % 10000 or steps % 10000):
+        raise ValueError('Durable export intervals and trial steps must be multiples of 10000')
     if not 0<steps<=config['horizon'] or set(config['schedules'])-{'constant','cosine'}: raise ValueError('Invalid steps/schedule')
     with np.load(args.input) as data:
         x=np.asarray(data['x'],dtype=np.float64); y=np.asarray(data['target'],dtype=np.float64); parameters=np.asarray(data['initial_parameters'],dtype=np.float64)
@@ -151,15 +156,21 @@ def main():
     chunk_size=min(config.get('chunk_size',100),steps)
     if 10000%chunk_size and steps>chunk_size: raise ValueError('Chunk size must divide 10000')
     t0=time.perf_counter(); chunk=make_chunk(x,y,config,chunk_size).lower(state).compile(); compilation=time.perf_counter()-t0
-    t0=time.perf_counter(); compute=0.
+    t0=time.perf_counter(); compute=0.; exported_through=-1
     for left in range(0,steps,chunk_size):
         size=min(chunk_size,steps-left); fn=chunk if size==chunk_size else make_chunk(x,y,config,size)
         tick=time.perf_counter(); state,(e,r)=fn(state); eh,rh=np.asarray(e),np.asarray(r); compute+=time.perf_counter()-tick
         count=left+size; errors[left+1:count+1]=eh; rms[left+1:count+1]=rh
         if count in snapshot_steps:
             snapshots[int(np.searchsorted(snapshot_steps,count))]=np.asarray(state[0]); errors.flush(); rms.flush(); snapshots.flush()
-            p,m,v,_,_=state; temporary=args.output/'state.tmp.npz'
-            np.savez(temporary,p=np.asarray(p),m=np.asarray(m),v=np.asarray(v),count=count); temporary.replace(args.output/'state.npz')
+            p,m,v,gradient,_=state; temporary=args.output/'state.tmp.npz'
+            np.savez(temporary,p=np.asarray(p),m=np.asarray(m),v=np.asarray(v),
+                     gradient=np.asarray(gradient),count=count); temporary.replace(args.output/'state.npz')
+            if args.export_dir and (count % args.export_every == 0 or count == steps):
+                from figure4_durable import export_checkpoint
+                export_checkpoint(args.output,args.export_dir,exported_through+1,count,
+                                  errors,rms,snapshots,snapshot_steps,metadata,args.backup_timeout)
+                exported_through=count
         if count%1000==0 or count==steps:
             print(json.dumps(dict(update=count,elapsed_seconds=time.perf_counter()-t0,min_error=float(np.nanmin(eh[-1])),max_error=float(np.nanmax(eh[-1])),finite_cases=int(np.isfinite(eh[-1]).sum()))),flush=True)
     summary=dict(completed_updates=steps,compilation_seconds=compilation,elapsed_seconds=time.perf_counter()-t0,synchronized_compute_seconds=compute,
