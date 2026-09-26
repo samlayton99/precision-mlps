@@ -86,6 +86,8 @@ def summarize(rows):
         result[key]=last['sum_'+key]-first['sum_'+key]
     total=result['fine_slope_path']+result['tracking_slope_path']
     result['tracking_slope_activity_share']=result['tracking_slope_path']/total if total else np.nan
+    result['tracking_to_fine_slope_energy']=abs(result['A_tracking']/result['A_fine']) if result['A_fine'] else np.nan
+    result['loss_increase_fraction']=(last['sum_loss_increases']-first['sum_loss_increases'])/(last['step']-first['step'])
     for key in ('raw_access','balanced_raw_access','adaptive_access','balanced_adaptive_access',
                 'jacobian_fine_hs','jacobian_adaptive_fine_hs'):
         result[key+'_start']=first[key];result[key+'_end']=last[key]
@@ -105,7 +107,8 @@ def aggregate(summaries):
         fields=('M_start','M_ratio','C6_start','C6_ratio','effective_count_start','effective_count_end',
                 'lambda_end','slope_ratio','error_end','eval_error_end','clock_ratio_max',
                 'K_start','K_end','dispersion_ratio_max',
-                'tracking_slope_activity_share','balanced_adaptive_access_start','balanced_adaptive_access_ratio',
+                'tracking_slope_activity_share','tracking_to_fine_slope_energy','loss_increase_fraction',
+                'balanced_adaptive_access_start','balanced_adaptive_access_ratio',
                 'balanced_adaptive_access_median','balanced_raw_access_median',
                 'M_closure_relative','A_closure_relative','logC6_closure_relative','archive_relative_difference_max')
         result[key]=dict(cases=len(rr),**{f:stats([r.get(f,np.nan) for r in rr]) for f in fields})
@@ -280,6 +283,15 @@ def main():
         incomplete_cases=[r for r in cases if r['status']!='complete'],
         input_execution_records=execution,
         intervention_snapshot_cohorts=sorted({r['cohort'] for r in interventions}))
+    measured=[r for r in summaries if 'identity_max' in r]
+    facts['verification']={key:stats([r[key] for r in measured]) for key in
+        ('identity_max','unresolved','M_closure_max','A_closure_max','logC6_closure_max',
+         'M_closure_relative','A_closure_relative','logC6_closure_relative')}
+    facts['archived_interventions']={}
+    for am,av in ((.9,1.),(1.,.9),(.9,.9)):
+        rr=[r for r in intervention_contrasts if (r['alpha_m'],r['alpha_v'])==(am,av)]
+        facts['archived_interventions'][f'{am}_{av}']={k:stats([r[k] for r in rr])
+            for k in ('M_ratio','C6_ratio','slope_ratio')}
     (args.output/'facts.json').write_text(json.dumps(facts,indent=2,allow_nan=False)+'\n')
     plot(args.output,grouped,summaries)
     print(json.dumps(dict(completed_cases=facts['completed_cases'],gpu_seconds=facts['gpu_seconds'],groups=list(facts['aggregate']))),flush=True)
