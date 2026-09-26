@@ -47,11 +47,11 @@ the output-error bound.
  Width $W=512$; target
  $f(x)=[\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(14\pi x)]/\sqrt{21/32}$
  on $[-1,1]$.
- \textbf{Left:} Kernel ratios $\mu_i/\mu_1$ (dots) and intervals from
+ \textbf{(a)} Kernel ratios $\mu_i/\mu_1$ (outlined markers) and intervals from
  Theorem~\ref{thm:note-rates} (dashed boundaries,
  shading) for three ranks carrying substantial target energy. Lines connect
  ordered ranks; eigenvectors change with bandwidth.
- \textbf{Right:} Executed frozen-readout GD errors (solid, hollow markers) and
+ \textbf{(b)} Executed frozen-readout GD errors (solid, hollow markers) and
  square roots of Theorem~\ref{thm:note-output}'s lower bounds (dashed). The error bound combines
  theorem-derived rate bounds with all resolved target projections onto the
  frozen kernel's eigenvectors. Errors are relative training RMS through five million
@@ -60,12 +60,12 @@ the output-error bound.
 \end{figure}
 The spectral bounds of Theorem~\ref{thm:note-rates} track how bandwidth
 changes target-relevant ratios $\mu_i/\mu_1$
-(Figure~\ref{fig:note-spectrum}, left). GD's step size is limited by the
+(Figure~\ref{fig:note-spectrum}a). GD's step size is limited by the
 largest eigenvalue $\mu_1$. At small bandwidths, target-relevant eigenvalues
 are much smaller, so the corresponding error components decay slowly.
 Theorem~\ref{thm:note-output} converts these rate bounds into
 output-error lower bounds that closely track executed GD
-(Figure~\ref{fig:note-spectrum}, right): small slopes delay accuracy
+(Figure~\ref{fig:note-spectrum}b): small slopes delay accuracy
 already available in the dictionary.
 
 Joint training can change this spectrum by moving the slopes and centers.
