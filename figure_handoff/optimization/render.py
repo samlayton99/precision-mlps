@@ -1,5 +1,6 @@
 """Restyle Figures 3 and 4 from their exact plotted data; see README.md."""
 import argparse
+import csv
 from pathlib import Path
 
 import matplotlib
@@ -83,8 +84,8 @@ def spectrum(data, output):
     plt.close(fig)
 
 
-def acquisition(data, output):
-    """Figure 4: slope scaling, output error, and neuron-population bandwidth."""
+def acquisition(data, output, interventions):
+    """Figure 4: unchanged scaling/error panels and matched Adam pulse responses."""
     plt.rcdefaults()
     plt.rcParams.update(STYLE | {'savefig.pad_inches': .025})
     fig, axes = plt.subplots(1, 3, figsize=(5.5, 2.2))
@@ -108,15 +109,6 @@ def acquisition(data, output):
         axes[1].plot(t[marks], median[marks], color=color, ls='none', marker=marker,
                      ms=3.1, mfc='white', mec=color, mew=.85, zorder=5, clip_on=False)
 
-        steps = data[f'{optimizer}_bandwidth_steps']
-        mean = data[f'{optimizer}_bandwidth_mean']; sd = data[f'{optimizer}_bandwidth_std']
-        axes[2].fill_between(steps/1e6, np.maximum(0, mean-sd), mean+sd,
-                             color=color, alpha=.17, lw=0)
-        axes[2].plot(steps/1e6, mean, color=color, lw=1.35)
-        marks = np.arange(0, len(steps), 100)
-        axes[2].plot(steps[marks]/1e6, mean[marks], ls='none', marker=marker,
-                     ms=3.1, mfc='white', mec=color, mew=.85, zorder=5, clip_on=False)
-
     construction = data['construction_slopes']
     axes[0].plot(widths, construction, color='#444444', ls=(0, (2, 2)), lw=1)
     axes[0].annotate(r'Supplied $\lambda=1/4$', (widths[-1], construction[-1]),
@@ -135,14 +127,31 @@ def acquisition(data, output):
                   *(float(np.max(data[f'{o}_error_high'])) for o in colors))
     axes[1].set_yscale('log'); axes[1].set_ylim(1e-7, highest*1.3)
     axes[1].set_yticks([1e1, 1e-1, 1e-3, 1e-5, 1e-7]); axes[1].set_ylabel('Relative training error')
-    axes[2].axhline(.25, color='#444444', ls=(0, (2, 2)), lw=1)
-    axes[2].text(4.9, .257, r'Supplied $\lambda=1/4$', ha='right', fontsize=6.6)
-    upper = max(float(np.max(data[f'{o}_bandwidth_mean']+data[f'{o}_bandwidth_std'])) for o in colors)
-    axes[2].set_ylim(0, max(.3, upper*1.05))
-    axes[2].set_yticks([0, .1, .2, .3]); axes[2].set_ylabel(r'Bandwidth $\lambda$')
-    for ax in axes[1:]:
-        ax.set_xlim(0, 5); ax.set_xticks([0, 2, 4, 5]); ax.set_xlabel('Updates (millions)')
-    for ax, title in zip(axes, ['a) Slope scaling', 'b) Output accuracy', 'c) Acquired bandwidth']):
+    axes[1].set_xlim(0, 5); axes[1].set_xticks([0, 2, 4, 5]); axes[1].set_xlabel('Updates (millions)')
+
+    policy_styles = [
+        ('gain_only', 'o', '#0072B2', 'Scalar\namplification'),
+        ('tracking_attenuated_variance', '^', '#AA4499', 'Tracking-attenuated\ndenominator'),
+    ]
+    for policy, marker, color, label in policy_styles:
+        points = [r for r in interventions if r['policy'] == policy]
+        axes[2].scatter([float(r['fine_path_ratio']) for r in points],
+                        [float(r['slope_effect_percent']) for r in points],
+                        marker=marker, s=17, facecolors='none', edgecolors=color,
+                        linewidths=.85, zorder=4, label=label)
+    x = np.array([float(r['fine_path_ratio']) for r in interventions])
+    y = np.array([float(r['slope_effect_percent']) for r in interventions])
+    axes[2].set_xscale('log'); axes[2].set_xlim(x.min()/1.2, x.max()*1.5)
+    axes[2].set_ylim(y.min()-.08*np.ptp(y), y.max()+.1*np.ptp(y))
+    axes[2].set_xticks([10, 100, 1000], ['$10^1$', '$10^2$', '$10^3$'])
+    axes[2].set_yticks([0, 5, 10, 15])
+    axes[2].axhline(0, color='#666666', ls=(0, (2, 2)), lw=.8, zorder=2)
+    axes[2].set_xlabel('Fine-slope path / native')
+    axes[2].set_ylabel('Final RMS slope\nvs. native (%)')
+    axes[2].legend(loc='upper right', fontsize=6.1, handlelength=.9,
+                   handletextpad=.35, borderaxespad=.2, labelspacing=.5)
+    for ax, title in zip(axes, ['a) Slope scaling', 'b) Output accuracy',
+                               '(c) More motion need\nnot yield larger slopes']):
         ax.set_title(title); ax.minorticks_off()
         ax.grid(axis='y', color='#D8D8D8', lw=.45); ax.set_axisbelow(True)
     handles = [Line2D([], [], color=colors[o], lw=1.3, marker=m, ms=3.5,
@@ -165,5 +174,10 @@ if __name__ == '__main__':
     args.output.mkdir(parents=True, exist_ok=True)
     for name, draw in [('spectrum_readout', spectrum), ('joint_acquisition', acquisition)]:
         with np.load(root/'data'/f'{name}.npz', allow_pickle=False) as data:
-            draw(data, args.output)
+            if name == 'joint_acquisition':
+                with (root/'data'/'adam_intervention.csv').open(newline='') as stream:
+                    interventions = list(csv.DictReader(stream))
+                draw(data, args.output, interventions)
+            else:
+                draw(data, args.output)
     print(f'Wrote PNG and PDF figures to {args.output.resolve()}')

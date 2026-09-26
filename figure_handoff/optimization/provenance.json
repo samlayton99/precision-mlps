@@ -1,9 +1,9 @@
 {
   "research_commit": "98c9bdd",
-  "purpose": "Compact exact plotting inputs and original source for Figures 3 and 4; no retraining or statistical recomputation.",
+  "purpose": "Compact exact plotting inputs for Figures 3 and 4; Figure 4(c) replaced with measured Adam intervention responses. No training.",
   "files": {
-    "figures/joint_acquisition.pdf": "0a8e3460d2f6e4d081f805d6c21f168134491479773bdbbeac871752fafe78e2",
-    "figures/joint_acquisition.png": "0acf2fe3acd992a1ba05375acf86b126215729bc50902051993add64957de172",
+    "figures/joint_acquisition.pdf": "a2756fc9b176a8a9fd271e89f8a5fba1fac7327967d8a7e2c37021a6c1b3640a",
+    "figures/joint_acquisition.png": "4a1d3bfb76772fadbd64beb4585526da6eddd5c8228ab378f5c1d70ef50a39a5",
     "figures/spectrum_readout.pdf": "3a4f85af2bdf1244b4e7d170093462b7020efd2b8897717eae2bbc58cf1f4717",
     "figures/spectrum_readout.png": "54931145dfae2e248a469860b21685a82b28a91ecb49e60bba39ed5026e28f13",
     "sources/figure4_figure.py": "7f6c1ee1150ef33daf65b33b7d1975e09ac4a99b46b48d5e5c75cbf332bc904f",
@@ -11,6 +11,20 @@
     "sources/section34_paired_figures.py": "ba6fc0350345568fe7fa91388d34ccc7c33dd1a736e5698586341e23378d1090",
     "sources/joint_acquisition_provenance.json": "5201028e76f016c66aee5a38da85fd604ea632f6881c89b6aeea7480e09b2af0",
     "data/joint_acquisition.npz": "070d95198ccea5af315972e236eb423509f00ae7c3fd9f83a85edb13de552fe0",
-    "data/spectrum_readout.npz": "043d315260f646b3490b8937e469f9c44b61495674f19c1315ee30b22b440be8"
+    "data/spectrum_readout.npz": "043d315260f646b3490b8937e469f9c44b61495674f19c1315ee30b22b440be8",
+    "render.py": "7bf3ae4c7a53b2d4c26bb1b9e5937639341cba80f0fa8a6f1ecb22dac42e9582",
+    "prepare_adam_intervention.py": "6cb85367658216b0f80b81c58bbb0b90fc3faeffd67f6544c544fd3cfe3d716c",
+    "data/adam_intervention.csv": "50e04a9681365c3a976ed0c401b771ea3ad9c378b01678eb254dc7700bd56481",
+    "data/adam_intervention_provenance.json": "205227821241da5bff80c4339b96dc44a81d63ea2eb7d826a86069303e081743"
+  },
+  "panel_c": {
+    "extraction_record": "data/adam_intervention_provenance.json",
+    "notes": "adam_intervention.md",
+    "plot_csv": "data/adam_intervention.csv",
+    "preserved_panels": [
+      "4(a)",
+      "4(b)"
+    ],
+    "historical_sources": "sources/ retains original experiment renderers and pre-intervention provenance"
   }
 }
