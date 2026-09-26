@@ -10,6 +10,47 @@ The exact identities below explain what the interventions remove. The
 fixed-preconditioner model illustrates a possible restriction; it is not a
 persistence theorem for Adam.
 
+\paragraph{Current evidence.}
+The saved-state audit is complete: 96 states cover six targets, two widths,
+two seeds, two ages, and both optimizers. Across the 24 Adam states at update
+130k, the ratio of adaptive sharpness to the frozen momentum threshold has
+median $0.9865$ and range $0.2728$--$1.0277$. The coarse contribution to the
+leading scaled Rayleigh curvature has median $0.9880$; the leading vector's
+overlap with the scaled coarse-normal subspace has median $0.9992$.
+Native GD's median ratio to its own threshold is $0.00524$.
+These are local diagnostics on the full Hessian, with definitions below.
+
+The currently consolidated intervention snapshot contains 288 GD branches
+and 72 Adam branches; the remaining cohorts and secondary controls are
+pending. From the 18 completed Adam-geometry starts, GD at $1.05$ times its
+initial threshold produces 65--159 loss increases over 10k updates and
+reduces its final normalized sharpness to median $0.9599$. Attenuating
+tracking to one tenth at the same rate eliminates loss increases in all
+18 cases. For the modified update, native-loss curvature is a reference
+diagnostic, not its actual stability threshold.
+
+Across the 12 completed native-amplitude Adam balancing pairs, the
+pulse-end slope RMS ratio has median $1.00012$ and range
+$0.99953$--$1.00118$. The median accumulated tracking-energy ratio is
+$1.0124$. Balancing therefore achieves its immediate coarse constraint
+without materially increasing native acquisition. At tenfold amplitude,
+the response is target dependent: the mixed-sine development case reduces
+tracking energy by $96.9\%$ and best raw error by $36.1\%$, with a $3.31\%$
+RMS increase, whereas the median RMS increase across all 12 amplified
+pairs is $0.145\%$. Both frozen tenfold variants fail for all five
+non-polynomial targets in both width-705 seeds, yielding 20 failures among
+24 frozen branches; all 48 dynamic-denominator branches complete.
+Fine-off and unit-gain frozen controls distinguish continuing fine forcing
+from autonomous coarse activity and amplification-induced instability.
+
+All comparisons retain raw attached-network output. Best training error
+within the same update budget is distinct from current endpoint error;
+independent-grid error is measured at common endpoints. Oscillation phase
+can change endpoint error substantially without a comparable change in
+best error. Failures are counted as outcomes rather than excluded from
+the reported coverage. The completed evidence supports a coarse adaptive
+stability constraint; the stronger native fine-forcing loop remains open.
+
 \paragraph{Model and decomposition.}
 On the fixed training grid, write
 \[
