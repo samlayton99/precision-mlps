@@ -69,6 +69,23 @@ def analyze(args):
             early=lookup[10000]['A_fine'];late=last['A_fine']-lookup[90000]['A_fine']
             s['fine_A_early_over_start']=early/first['A'];s['fine_A_late_over_start']=late/first['A']
             s['fine_A_late_over_early']=late/early if early>0 else np.nan
+            # Geometric means preserve the multiplicative identity exactly.
+            # The error is total relative error, not an operator sensitivity.
+            def amplitude_factors(offsets):
+                values=[]
+                for off in offsets:
+                    r=lookup[off];e=r['relative_error']
+                    raw,scaled,processed=[r[p+'_hidden_norm']*r[p+'_slope_fraction'] for p in ('raw','scaled_current','processed')]
+                    if min(e,raw,scaled,processed)<=0:continue
+                    values.append([e,raw/e,scaled/raw,processed/scaled,processed])
+                return np.exp(np.mean(np.log(values),axis=0)),len(values)
+            before,nb=amplitude_factors(range(1000,10001,1000))
+            after,na=amplitude_factors(range(91000,100001,1000))
+            factors=after/before
+            for name,value in zip(('error','raw_fine_per_error','adaptive_gain','momentum_gain','processed_slope_norm'),factors):
+                s['amplitude_'+name+'_late_over_early']=float(value)
+            s['amplitude_samples_early']=nb;s['amplitude_samples_late']=na
+            s['amplitude_product_relative_error']=float(abs(np.prod(factors[:4])/factors[4]-1))
             native.append(s)
         if first['arm']=='native':continue
         baseline_key=(*key[:-1],'native')
@@ -112,7 +129,10 @@ def analyze(args):
         'slope_fraction_end','bias_fraction_end','readout_fraction_end',
         'slope_coherence_100','slope_coherence_1000','slope_coherence_10000','adjacent_alignment_1000',
         'raw_outward_cosine_median','scaled_current_outward_cosine_median','processed_outward_cosine_median',
-        'processed_current_alignment_median','raw_slope_fraction_median','processed_slope_fraction_median')
+        'processed_current_alignment_median','raw_slope_fraction_median','processed_slope_fraction_median',
+        'amplitude_error_late_over_early','amplitude_raw_fine_per_error_late_over_early',
+        'amplitude_adaptive_gain_late_over_early','amplitude_momentum_gain_late_over_early',
+        'amplitude_processed_slope_norm_late_over_early','amplitude_product_relative_error')
     facts=dict(native_cases=len(native),runs=len(runs),complete_runs=len(complete),
         native={k:stats([r[k] for r in native]) for k in fields},interventions={},force_changes={})
     for age in (25000,125000):
