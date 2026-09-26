@@ -148,8 +148,7 @@ def acquisition(data, output, interventions):
     axes[2].set_yticks([0, 5, 10, 15])
     axes[2].axhline(0, color='#666666', ls=(0, (2, 2)), lw=.8, zorder=2)
     axes[2].set_xlabel('Fine-slope path / native')
-    axes[2].set_ylabel('Final RMS slope\nvs. native (%)')
-    axes[2].yaxis.label.set_linespacing(1.0)
+    axes[2].set_ylabel('RMS slope change (%)')
     axes[2].legend(loc='upper right', fontsize=6.1, handlelength=.9,
                    handletextpad=.35, borderaxespad=.2, labelspacing=.5)
     for ax, title in zip(axes, ['(a) Slope scaling', '(b) Output accuracy',
