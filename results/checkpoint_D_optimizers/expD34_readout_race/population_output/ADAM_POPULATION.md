@@ -574,3 +574,74 @@ records a 1 GiB memory cap, 136 MiB peak use, and the input checksum.
   --source results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_population_final_20260926/population_comparisons.csv \
   --output results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_tracking_scale_reproduction
 ```
+
+## Follow-up protocol: distinguish energy, activity, and outward motion
+
+Concentrated parameter energy is not concentrated movement. A stationary
+network can have a small effective energy-sharing count. The follow-up asks
+whether Adam's fine updates are weakly coupled to outward slope motion,
+whether they repeatedly reverse, and whether momentum history or changing
+adaptive scaling suppresses otherwise available expansion. These are
+empirical mechanism questions; the campaign does not seek an Adam theorem.
+
+The fixed matrix uses the same six targets, both widths, and both seeds.
+Native continuations from the complete 25k states run to 125k. Separate
+forks at 25k and 125k receive 10k intervention updates followed by 10k native
+updates. The native 25k control is the first 20k of its longer continuation.
+Every fork preserves parameters, both optimizer moments, component moments,
+and the global update count. The four policies are native Adam, replacing
+fine momentum by the current fine gradient, freezing the fine component's
+adaptive scaling at the first proposal of the fork, and applying both changes.
+
+For each altered policy, multiply its proposed hidden-parameter fine update
+by a scalar so that its norm equals the native fine proposal's norm **at
+that clone's current state**. This is a local norm match; different clones
+need not accumulate identical path lengths. Keep the output-bias update,
+tracking update, and full-gradient moment recurrences native. Moment buffers
+continue evolving during the intervention and are retained on release.
+Record the unnormalized proposals as well. These policies test the direction
+and allocation of fine motion; a null response does not exclude an effect
+of its magnitude. A zero candidate with a nonzero native proposal is recorded
+as an unresolved norm match rather than supplied with an invented direction.
+
+At each fork, define fixed groups by descending neuron energy: the first
+1%, the next 4%, the next 15%, and the remaining population, with cumulative
+boundaries rounded upward. Track their energy, slope energy, signed fine and
+tracking slope contributions, and shares of squared update activity.
+Also measure the overlap $\sum_j\min(p_j(0),p_j(t))$ between normalized
+energy distributions. Group identities are fixed; the overlap can reveal
+redistribution even when the scalar effective count barely changes.
+
+For disjoint windows of 100, 1000, and 10,000 updates, measure
+$\|\sum_n\Delta a_n^F\|/\sum_n\|\Delta a_n^F\|$, its full hidden-parameter
+counterpart, endpoint direction alignment, and average adjacent-update
+alignment. Accumulate statistics for every window, including the 100-update
+windows between saved scalar rows. Separately retain signed outward pairing
+and the exact slope-energy balance. High path length with small net
+displacement indicates cancellation; displacement need not itself be outward.
+
+At 1000-update checkpoints, compare current raw fine, adaptively scaled
+current fine, and momentum-processed fine proposals. Record their magnitudes,
+slope fractions, and outward cosines. For each native 1000-update interval,
+evaluate the four combinations of beginning/end geometry and beginning/end
+fine residual, recomputing compensation for the selected geometry. Average
+the two decomposition orders to separate geometry and residual contributions
+to the force change. Pair both with the same ending slope vector and ending
+adaptive diagonal. This diagnostic is exact for that finite difference; it
+does not predict the next interval or represent a causal frozen-residual run.
+
+Compare pulse and release endpoints at equal update ages, alongside
+accumulated fine path length and attached-network raw error. Use the unchanged
+2048-point training measure and an 8192-point check with original target
+normalization. Increased scale without improved output is reported as scale
+growth, not useful acquisition. Opposing or null responses remain evidence.
+
+The Modal GPU campaign has a 1.8-hour aggregate cap and 8 GiB host-memory cap.
+Cases run in fixed target, seed, and width order; each case contains the
+native trajectory and all paired forks. A measured timing allowance prevents
+starting a new case that is unlikely to fit. Partial blocks are explicitly
+marked. Scalar rows and final optimizer states are retained; no full parameter
+trace is written. Eleven focused tests pass on Modal CPU before launch,
+including native recurrence preservation, component identities, local norm
+matching, unaltered tracking/output-bias proposals, release with historical
+moments, and the geometry/residual finite-difference identity.

@@ -1,0 +1,31 @@
+{
+  "platform": "Modal CPU",
+  "stage": "verify",
+  "seconds": 21.682876741,
+  "memory_hard_limit_mib": 4096,
+  "peak_child_rss_mib": 3906.7578125,
+  "tests": "...........                                                              [100%]\n11 passed in 20.04s\n",
+  "command": [
+    "/usr/local/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_population_adam.py",
+    "tests/test_population_adam_motion.py",
+    "-q",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "log": "...........                                                              [100%]\n11 passed in 20.04s\n",
+  "source_hashes": {
+    "experiments/expD34_readout_race/population_adam_motion.py": "f312c4aa9249584836c8a2f0bd2b71e18d053668127d42f2cc4dd50a5ac4aed3",
+    "experiments/expD34_readout_race/population_adam_motion_run.py": "054c486678e6e25f48a69c27628e045ff21c2332d8569fc70cc0d6b69ebfe248",
+    "experiments/expD34_readout_race/population_adam_motion_modal.py": "de44880ed77852d70b8623569b932f60723fbc02e9abdf6c8ff3710796bd250c",
+    "experiments/expD34_readout_race/population_adam.py": "f77142348c34de139a05604f140527253e351778e7bed73e484e35db071ee9a7",
+    "experiments/expD34_readout_race/population_adam_run.py": "ebecba587996e5333ce2ac0034373ca5b1eca8eff05c09bec556f92b70a8ecdc",
+    "experiments/expD34_readout_race/adam_forces.py": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6",
+    "tests/test_population_adam.py": "d5ac0ea1f5f1aba518d0aea063a683c95c32cede6194e7b846471839de524045",
+    "tests/test_population_adam_motion.py": "738e2969803366d1de0e840f9e014c1686ec44ec10dcc423efba6828bc4ca36b"
+  }
+}
