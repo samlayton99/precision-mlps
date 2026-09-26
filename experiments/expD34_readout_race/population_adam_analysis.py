@@ -293,6 +293,12 @@ def main():
     facts['verification']={key:stats([r[key] for r in measured]) for key in
         ('identity_max','unresolved','M_closure_max','A_closure_max','logC6_closure_max',
          'M_closure_relative','A_closure_relative','logC6_closure_relative')}
+    adaptive_checks=[r for rr in grouped for r in rr if 'adaptive_coarse_resolved' in r]
+    facts['verification']['adaptive_saved_states']=len(adaptive_checks)
+    facts['verification']['adaptive_unresolved_saved_states']=sum(r['adaptive_coarse_resolved']<.5 for r in adaptive_checks)
+    facts['verification']['balanced_adaptive_access']=stats([r['balanced_adaptive_access'] for r in adaptive_checks])
+    facts['verification']['wide_endpoint_grid_discrepancy']=stats([
+        abs(r['eval_error_end']-r['error_end']) for r in summaries if r['cohort']=='wide'])
     facts['archived_interventions']={}
     for am,av in ((.9,1.),(1.,.9),(.9,.9)):
         rr=[r for r in intervention_contrasts if (r['alpha_m'],r['alpha_v'])==(am,av)]
