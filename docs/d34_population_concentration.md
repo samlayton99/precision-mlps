@@ -1,7 +1,7 @@
 # Persistence from population concentration and target moments
 
-The question is why a wide population keeps learning its slopes slowly after
-the coarse tracking transient. Our explanation has two parts. First, spreading
+The question is why a wide population under ordinary GD keeps learning its
+slopes slowly after the coarse tracking transient. Our explanation has two parts. First, spreading
 a fixed amount of parameter energy over many neurons limits their combined
 nonlinear sensitivity. Second, concentration can reinforce this sensitivity
 when relative growth favors already energetic neurons. Common expansion alone does not change
@@ -30,7 +30,9 @@ proof. Sections 4–5 explain why affine removal and target moments make the
 bound useful; Section 7 shows the broad empirical coverage. Section 9 derives
 the signed concentration dynamics and the coupled theorem. Section 10 gives
 the accumulated-moment version. The final experimental discussion tests the
-mechanism and identifies what remains unresolved.
+mechanism and identifies what remains unresolved. Section 15 tests the
+qualitative extension to Adam and separates the observations that carry over
+from the population assumptions that do not.
 
 | Symbol | Meaning |
 |---|---|
@@ -1097,3 +1099,143 @@ The remaining theoretical refinement is collective orientation: constrain
 the target-loaded nonlinear contrast and radial pairing while allowing
 energy redistribution. That would use the slack identified in Section 12
 without returning to neuronwise control or assuming a future weak force.
+
+## 15. What carries over to Adam?
+
+Adam supports part of the population explanation: concentration accumulates
+moderately, and effective fine updates supply positive slope-energy growth.
+It also reveals an important boundary of the theorem. By the beginning of
+the measurement interval, Adam has accumulated much more parameter energy,
+shared by a much smaller effective part of the population than under GD.
+The population conditions that yield small sensitivity cannot be transferred
+merely because the subsequent concentration history is stable.
+
+### Start with the accuracy and scale observations
+
+We trained Adam from the same initializations as the GD controls on six
+targets: degree five, mixed sine, Gaussian, compact bump, step, and kink.
+There are two seeds at each of widths 705 and 1409. The optimizer uses
+learning rate 0.002, moment coefficients 0.9 and 0.999, and denominator
+offset $10^{-8}$. All 24 runs receive 125k full-batch updates. We use
+20k–25k as the preceding window and inspect 25k–125k; the start is fixed
+rather than selected for small tracking or favorable concentration.
+
+Twelve runs attain 1% relative training error during that interval, seven
+attain 0.1%, and none attains $10^{-4}$. These statements use every-update
+accuracy counters. Degree five, mixed sine, and bump stay above 1% in all
+four width–seed combinations; Gaussian, step, and kink attain 1% in all
+four. Thus the error criterion matters. Small population scale alone does
+not imply failure at every tolerance.
+
+Endpoint $\lambda_{\rm RMS}$ is 0.00198–0.0121 at width 705 and
+0.000684–0.00347 at width 1409. The largest RMS increase during the
+interval is 3.47-fold. These are evolving populations whose acquired scale
+remains far below the construction reference, rather than stationary states.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_population_final_20260926/output_and_scale.png" alt="Matched Adam and GD output accuracy and normalized slope RMS across six target families and two widths" style="max-width:100%;">
+  <figcaption>Updates 25k–125k, with two seeds per target and width. Solid curves show Adam and dashed curves GD; Adam shading spans the seeds and is not a confidence interval. Top: raw relative training error with a 1% line. Bottom: normalized slope RMS with the construction reference 0.25. Both optimizers use the current checkpoint and attached readouts. An independent 8192-point grid gives a separate endpoint accuracy check. The reference slope is not treated as necessary for 1% accuracy.</figcaption>
+</figure>
+
+### The structural persistence check passes, but its starting level differs
+
+Using every-update trapezoidal accumulation, the largest saved-prefix ratio
+of accumulated $\sqrt{\chi_6}$ to its preceding-window average times
+elapsed updates is 1.408. The corresponding ratio for $\sqrt{9K-5}$ is
+at most 1.246. Both pass a factor-two allowance in all 24 runs at all
+1000-update observation prefixes. This supports moderate accumulation of
+these population statistics under Adam. It does not derive their future
+history from the preceding window.
+
+At update 25k, median hidden energy is about 459 and 453 at widths 705
+and 1409, respectively. Median concentration is about 11,341 and 68,295.
+The effective energy-sharing count ranges from 3.3 to 16.7 across all
+24 runs. GD retains energy of order seven shared much more broadly.
+This contrast also appears in the separate width-177 archive across
+13 targets and five seeds: at 20k, Adam's median effective count is about
+12 of 177, compared with about 122 for GD.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_population_final_20260926/population_structure.png" alt="Adam retains much larger and more concentrated parameter energy than GD even though subsequent concentration accumulation remains moderate" style="max-width:100%;">
+  <figcaption>The same wide panel. Absolute hidden energy and effective energy-sharing count are shown above the accumulated-concentration check. The count $W/\sqrt{\chi_6}$ measures a moment of energy distribution; it does not identify a fixed set of active neurons. Bottom: all runs remain below the factor-two allowance relative to updates 20k–25k. A stable ratio does not imply small absolute concentration or small total energy.</figcaption>
+</figure>
+
+The geometric inequality $\|J_H\|\le C\sqrt{\chi_6}M^{3/2}/W$
+still holds at Adam states. Its right-hand side is no longer small for the
+same reason as in the GD panel. Moreover, multiplying every hidden
+parameter by a common factor leaves $\chi_6$ unchanged while increasing
+$M$ and the slopes. The gradient-flow comparison is what converts
+concentration control into an energy bound under GD; that conversion does
+not automatically hold for Adam.
+
+### Measure the actual processed contributions
+
+We retain the gradient decomposition used throughout this note. Each
+component receives a passive first-moment buffer, and all components use
+the actual Adam denominator. Their processed updates sum to the native
+optimizer update. This preserves the definition of effective fine gradient,
+including compensation, without claiming that Adam's processed fine update
+enforces zero instantaneous coarse-output motion.
+
+For $Q=M$, $A=\sum_j a_j^2$, or $Q=\log\chi_6$, accumulate
+
+$$
+Q(\theta_{n+1})-Q(\theta_n)
+=\sum_q\langle\nabla Q(\theta_n),\Delta\theta_n^{(q)}\rangle
++\delta_n^Q.
+$$
+
+Here $\delta_n^Q$ is measured exactly from the current endpoints; it is
+the squared increment for the two energy observables. Every pairing uses
+the moving state. This is finite-step accounting, with no frozen-Jacobian
+forecast and no bound on an individual neuron.
+
+Effective fine updates contribute positively to slope energy in all 24
+runs. Tracking contributes negatively in 23; the one positive contribution
+is 0.59% of its fine contribution. Across the 20 non-Gaussian cases,
+absolute tracking contributions are at most 12.1% of the fine contributions.
+The Gaussian cases require a different qualification: tracking opposes
+67–193% of their fine contribution and can determine the sign of their
+small net motion. A blanket negligible-tracking assumption would fail there.
+
+A separate width-177 panel continues 13 targets at two seeds from their
+stored 20k Adam states. Effective fine updates contribute positively to
+slope energy in all 26 continuations, whereas tracking is positive in 15
+and negative in 11. The concentration allowance passes in 24 of 26;
+both failures are degree nine. The dispersion allowance passes in all 26.
+These data support the fine contribution more broadly while ruling out
+a universal negative-tracking explanation. They are new checkpoint
+continuations: their median per-run maximum parameter difference from
+shared archived checkpoints is 0.083%, with a largest difference of 23.5%.
+Their signed accounts are not reconstructions of the original archived paths.
+
+Concentration has a different signed balance. Tracking favors concentration
+in all 24 runs, whereas effective fine updates oppose it in 17. Generated
+output correction, after Adam processing, favors concentration in 12 and
+opposes it in 12. The negative sign seen in every case of the earlier GD
+concentration audit therefore does not extend to Adam. The scalar observable
+and the optimizer metric both matter.
+
+Finally, the actual adaptive denominator increases instantaneous
+fine-residual access substantially relative to the raw metric. Actual
+next-step loss reductions nevertheless have both signs because they also
+depend on stored momentum and finite-step output changes. These oscillations
+are deterministic. Counting loss increases larger than $10^{-14}$, the median
+fraction is 43% at width 705 and 34% at width 1409. Raw weak sensitivity
+alone is therefore insufficient to bound native Adam's motion.
+
+The present result is a qualified qualitative extension: moderate
+concentration accumulation and predominantly fine-driven net slope growth
+survive, while the GD panel's broadly shared modest energy and its correction
+signs do not. An Adam theorem would need aggregate control of coupling through
+the adaptive denominator and moment history. The existing GD theorem remains
+a statement about its specified dynamics and empirically validated regime;
+these Adam measurements do not supply an Adam rate or output-error theorem.
+
+All 56 new cases completed, including the six missing GD controls. Native
+update and component checks passed on Modal; no coarse solve was unresolved.
+The accumulated energy and concentration identities agree to relative
+discrepancy at most $1.35\times10^{-12}$ when normalized by their absolute
+signed-contribution budget, with a floor of one. The campaign used about
+1.07 recorded GPU-hours. These are verification results for the measurements,
+separate from the theoretical claims above.

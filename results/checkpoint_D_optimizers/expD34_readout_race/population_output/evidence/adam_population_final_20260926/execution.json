@@ -1,0 +1,32 @@
+{
+  "platform": "Modal CPU",
+  "stage": "analyze",
+  "seconds": 23.731621167999997,
+  "memory_hard_limit_mib": 4096,
+  "child_peak_rss_mib": 3835.23046875,
+  "command": [
+    "/usr/local/bin/python",
+    "-m",
+    "experiments.expD34_readout_race.population_adam_analysis",
+    "--output",
+    "/tmp/adam-population",
+    "--stage",
+    "analyze",
+    "--seconds",
+    "557.694525943",
+    "--inputs",
+    "/tmp/adam-evidence-inputs"
+  ],
+  "tests": "......                                                                   [100%]\n6 passed in 11.07s\n",
+  "log": "......                                                                   [100%]\n6 passed in 11.07s\n{\"completed_cases\": 56, \"gpu_seconds\": 3841.042950121, \"groups\": [\"gd_reference_gd_W705\", \"gd_reference_gd_W1409\", \"replay_adam_W177\", \"wide_adam_W705\", \"wide_adam_W1409\", \"wide_gd_W1409\"]}\n",
+  "source_hashes": {
+    "experiments/expD34_readout_race/population_adam.py": "f77142348c34de139a05604f140527253e351778e7bed73e484e35db071ee9a7",
+    "experiments/expD34_readout_race/population_adam_modal.py": "9b15d4bf04e7888eb725bbdc3dc53cd259686b15ea4f07bf97a86912e4b96720",
+    "experiments/expD34_readout_race/population_adam_run.py": "ebecba587996e5333ce2ac0034373ca5b1eca8eff05c09bec556f92b70a8ecdc",
+    "experiments/expD34_readout_race/population_adam_analysis.py": "b5dc21afbcdec26ee16204375cab36f0b61788f400a06dcd578c8acc534c0fca",
+    "experiments/expD34_readout_race/adam_forces.py": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6",
+    "tests/test_population_adam.py": "d5ac0ea1f5f1aba518d0aea063a683c95c32cede6194e7b846471839de524045"
+  }
+}
