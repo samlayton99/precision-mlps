@@ -1,0 +1,119 @@
+\subsection{Precision-controlled construction and least-squares recovery}
+\label{app:pbit-solver}
+
+The precision experiment controls arithmetic throughout feature
+construction, readout recovery, and evaluation. These stages can each
+contribute numerical error, so the experiment applies the same working
+precision to all three. We implement the computation using a binary
+format with $p$ significand bits, including the leading bit, and
+explicit rounding after each elementary operation.
+
+\paragraph{Arithmetic.}
+Let $\operatorname{fl}_p$ denote rounding to the chosen format using
+round-to-nearest, ties-to-even. Arithmetic primitives return
+\[
+\operatorname{fl}_p(a+b),\quad
+\operatorname{fl}_p(a-b),\quad
+\operatorname{fl}_p(ab),\quad
+\operatorname{fl}_p(a/b),\quad
+\operatorname{fl}_p(\sqrt{a}).
+\]
+Operands and returned values belong to the working format.
+A model multiplication and its subsequent addition are rounded
+separately, and dot products use sequential rounded accumulation.
+Constants are prepared beforehand and rounded into the format.
+The unit roundoff for normal results is $u_p=2^{-p}$.
+
+The sweep uses $p=8,\ldots,53$, with normal exponents ranging from
+$-958$ to $959$ and gradual underflow. This expanded exponent range
+isolates the effect of significand precision; in particular, the
+$p=24$ sweep point is not a native binary32 computation. Separate
+checks use the IEEE binary32 and binary64 exponent ranges.
+The emulator stores values in binary64 containers, but each arithmetic
+primitive returns a value in the selected format. Its rounding
+implementation resolves midpoint cases to avoid double-rounding errors.
+
+\paragraph{Feature formation and evaluation.}
+Training locations, target samples, and the selected bandwidth are
+rounded before entering the computation. Grid spacing, centers, and
+slopes are then formed using the rounded arithmetic. Features use
+the centered evaluation order
+\[
+\phi_{j,p}(x)
+=
+\tanh_p\!\left(
+  \operatorname{fl}_p\!\left(
+    \gamma\,\operatorname{fl}_p(x-c_j)
+  \right)
+\right),
+\]
+where $x$, $c_j$, and $\gamma$ are working-format values.
+The activation $\tanh_p$ uses range reduction and polynomial
+evaluation built from the same rounded primitives. Near the origin,
+an exponential-difference formulation avoids subtracting nearly equal
+numbers. It is a specified numerical approximation to tanh, rather
+than an assumption of a correctly rounded transcendental operation.
+
+The design matrix contains these features and a constant bias column.
+After fitting, coefficients remain in the working format. Prediction
+starts from the fitted bias and adds feature contributions sequentially
+in increasing center order, rounding each multiplication and addition.
+At low precision, distinct centers or sample locations can round to
+the same value; this effect is retained in the experiment.
+
+\paragraph{Least-squares solver.}
+We port reference LAPACK 3.12.1's \texttt{DGELSS} SVD least-squares
+driver operation by operation, using its unblocked configuration
+for an overdetermined system with one right-hand side. The computation
+includes Householder QR reduction, bidiagonalization, iterative
+diagonalization of the bidiagonal matrix, and truncated
+back-substitution. Norms, rotations, matrix--vector products, and
+scaling operations use the working arithmetic. Machine constants,
+including precision and safe-minimum thresholds, are set for that
+format.
+
+Let $\widehat{\sigma}_1\ge\cdots\ge\widehat{\sigma}_{W+1}$ denote the
+computed singular values. We retain precisely those satisfying
+\[
+\widehat{\sigma}_i >
+\max\!\left\{
+  \operatorname{fl}_p\!\left(2^{1-p}\widehat{\sigma}_1\right),
+  \mathrm{sfmin}_p
+\right\},
+\]
+where $\mathrm{sfmin}_p$ is LAPACK's safe minimum for the chosen
+format. Thus the primary relative cutoff is
+$\texttt{RCOND}=2^{1-p}=2u_p$, fixed before observing the error.
+The decomposition and subsequent coefficient recovery are themselves
+performed at $p$ bits. The empirical solver uses the unscaled feature
+matrix; the reference-scaled recovery theorem specifies a separate
+algorithm and additional numerical conditions.
+
+\paragraph{Experimental protocol.}
+The precision panel uses the chirp
+$f(x)=\sin(8\pi(x+1)^2)$ on $[-1,1]$, total width $W=1024$,
+975 interior intervals, and 24 halo centers per side.
+Training and evaluation use 4,801 and 8,001 equispaced points,
+respectively. For each $p$, the refined bandwidth rule is evaluated
+offline with tolerance $2^{1-p}$, and its result is rounded on entry.
+Target sampling also occurs outside the controlled computation.
+
+Reported relative errors are measured afterwards in binary64 against
+the target at the original, unrounded evaluation locations.
+Consequently, input quantization contributes to the measured error.
+The experiment measures finite-grid relative error; the external
+error calculation does not supply additional precision to the fitted
+model.
+
+\paragraph{Validation.}
+Arithmetic primitives were checked against MPFR, including subnormal
+and midpoint cases. An independent MPFR replay verifies the operation
+sequence for activation evaluation, feature formation, and readout
+summation. Native-format solver checks reproduce reference LAPACK
+\texttt{SGELSS}/\texttt{DGELSS} bit for bit on the tested problems,
+including the full $4801\times1025$ feature matrix.
+A static audit checks that numerical operations pass through the
+rounded primitives. Dimension-based solver branch selection remains
+outside the controlled numerical kernels.
+These checks validate the implemented computation; the observed
+precision--error relation is an empirical result.

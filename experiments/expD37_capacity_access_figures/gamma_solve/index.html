@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gamma solve — kernels and GD</title>
+<script src="/plotly.js"></script>
+<style>
+:root {color-scheme:light;--ink:#172432;--muted:#526474;--line:#d6dee5;--blue:#1768a5;--orange:#ce6518;--green:#23856c;--paper:#fff;--back:#f4f7f9}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,sans-serif;background:var(--back);color:var(--ink)}
+main{max-width:1550px;margin:auto;padding:25px 30px 60px}h1{font-size:28px;font-weight:650;margin:0}h2{font-size:18px;margin:0 0 10px}p{margin:8px 0}.muted{color:var(--muted)}
+header{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+button,select,input[type=number]{font:inherit;color:var(--ink);background:white;border:1px solid #b9c7d3;border-radius:6px;padding:6px 10px}button{cursor:pointer}button:hover{background:#e9f1f6}button:disabled{opacity:.5;cursor:wait}
+button[aria-selected=true]{background:var(--ink);color:white;border-color:var(--ink)}nav{display:flex;gap:8px;margin:17px 0}
+.controls{display:grid;grid-template-columns:repeat(5,1fr);gap:22px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:17px 20px}
+label{display:block}.labelrow{display:flex;justify-content:space-between;gap:8px;font-weight:550}output{font-variant-numeric:tabular-nums;font-weight:500;color:var(--blue)}input[type=range]{width:100%;accent-color:var(--blue);margin:10px 0 2px}.hint{font-size:12px;color:var(--muted)}
+.controls.secondary{grid-template-columns:1.2fr 1fr 1fr 1.2fr;margin:12px 0}.controls.secondary select{width:100%;margin-top:7px}.controls.secondary input[type=number]{width:110px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin:14px 0}.toolbar label{display:inline-flex;gap:7px;align-items:center}.status{font-size:13px;min-height:20px;color:var(--muted)}
+.plot{background:white;border-radius:7px;min-width:0}.plotgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.panel{min-width:0}#kernels{height:620px}#scatter{height:400px}.smallplot{height:385px}.foot{font-size:13px;color:var(--muted);max-width:1200px;margin-top:14px}
+.math{font-family:Georgia,serif;font-size:17px;line-height:1.7}.note{background:#eaf1f6;border-left:3px solid #417598;padding:10px 15px;margin-top:14px}details{margin-top:20px}summary{cursor:pointer;font-weight:550}#continuity{height:310px}.error{color:#a92323}.saved a{color:var(--blue);margin-right:16px}
+[hidden]{display:none!important}@media(max-width:900px){main{padding:16px}.controls{grid-template-columns:1fr 1fr}.controls.secondary{grid-template-columns:1fr 1fr}.plotgrid{grid-template-columns:1fr}header{align-items:flex-start}#kernels{height:1150px}}
+@media(max-width:520px){.controls,.controls.secondary{grid-template-columns:1fr}header{display:block}header .actions{margin-top:10px}}
+</style>
+</head>
+<body><main>
+<header><div><h1>Gamma solve</h1><p class="muted">Frozen geometry · exact feature matrix · normalized readout GD</p></div><div class="actions"><button id="saveData">Save current sweep data</button><span id="saved" class="saved"></span></div></header>
+<div class="controls" aria-label="Geometry controls">
+ <label><span class="labelrow">Interior intervals N <output id="Nval">128</output></span><input id="N" type="range" min="16" max="512" step="16" value="128"><span class="hint">N + 1 interior centers; ⌈√N⌉ halo centers per side</span></label>
+ <label><span class="labelrow">Training samples m <output id="mval">263</output></span><input id="m" type="range" min="33" max="1025" step="1" value="263"><span class="hint">All m points in [−1, 1] enter the spectrum</span></label>
+ <label><span class="labelrow">Center jitter <output id="cjval">0%</output></span><input id="cj" type="range" min="0" max="1" step="0.01" value="0"><span class="hint">At 100%: at most 0.49h per center; order preserved</span></label>
+ <label><span class="labelrow">Data jitter <output id="djval">0%</output></span><input id="dj" type="range" min="0" max="1" step="0.01" value="0"><span class="hint">Fixed random offsets; endpoints stay at ±1</span></label>
+ <label><span class="labelrow">Heatmap γ <output id="gval">16</output></span><input id="gamma" type="range" min="-4" max="8" step="0.025" value="4"><span class="hint" id="lambdaLabel">λ = γh = 0.25</span></label>
+</div>
+<nav role="tablist" aria-label="Experiment"><button id="tabKernel" role="tab" aria-selected="true" aria-controls="kernelPanel">1 · Kernel &amp; spectrum</button><button id="tabAnalysis" role="tab" aria-selected="false" aria-controls="analysisPanel">2 · Eigenvalues &amp; target alignment</button></nav>
+<section id="kernelPanel" role="tabpanel" aria-labelledby="tabKernel">
+ <div class="toolbar"><span class="math">k<sub>sum</sub>(x,x′) = 1 + Σ<sub>j</sub> tanh[γ(x−c<sub>j</sub>)] tanh[γ(x′−c<sub>j</sub>)]</span><div class="actions"><label><input id="normalized" type="checkbox" checked> Show K = k/m</label><button id="downloadKernel">Download PNG</button></div></div>
+ <p class="math">k<sub>integral</sub>(x,x′) = 1 + h<sup>−1</sup> ∫<sub>a</sub><sup>b</sup> tanh[γ(x−c)] tanh[γ(x′−c)] dc</p>
+ <div id="kernelStatus" class="status" aria-live="polite">Calculating…</div>
+ <div id="kernels" class="plot"></div>
+ <p class="foot">Rows increase from top to bottom and columns from left to right, as in a matrix. The red square is [−1, 1] × [−1, 1]. Heatmaps extend across the halo and share one color scale. The integral uses a uniform center density 1/h, independent of center jitter. Bounds extend half a center cell beyond each extreme center, so (b−a)/h equals the neuron count. Exterior heatmap points are for display only; the spectrum uses the m training samples inside the square.</p>
+ <p class="foot">Solid spectrum: discrete kernel, calculated from the feature-matrix singular values. Dashed spectrum: integral kernel on the same training inputs; values below its FP64 Gram-matrix resolution are omitted. Both spectra show λ<sub>i</sub>/λ<sub>max</sub>. Exact structural zero eigenvalues lie off the logarithmic axis.</p>
+ <p class="foot">Dotted lines: least-squares fits of log<sub>10</sub>(λ<sub>i</sub>/λ<sub>max</sub>) = a + bi versus rank i. The slope b is in decades per rank; the fitted successive-eigenvalue ratio is λ<sub>i+1</sub>/λ<sub>i</sub> ≈ 10<sup>b</sup>. R² measures fit quality in log space. Both fits use the same ranks, excluding unresolved integral eigenvalues and values below the visible 10<sup>−16</sup> limit. The fitted rank range is printed below the spectrum and may change with γ.</p>
+</section>
+<section id="analysisPanel" role="tabpanel" aria-labelledby="tabAnalysis" hidden>
+ <div class="controls secondary">
+  <label>Target function<select id="target"><option value="mixed">Mixed sine</option><option value="sine">Sine</option><option value="runge">Runge</option><option value="quadratic">Quadratic</option><option value="exp_sine">Exponential of sine</option><option value="gaussian">Gaussian envelope</option></select><span class="hint" id="targetFormula"></span></label>
+  <label>Reference γ₀<select id="gamma0"><option>0.25</option><option>0.5</option><option>1</option><option>2</option><option>4</option><option selected>8</option><option>16</option><option>32</option><option>64</option><option>128</option></select><span class="hint">Same geometry and target throughout the sweep</span></label>
+  <label><span class="labelrow">Fixed steps n <output id="nval">1,000,000</output></span><input id="steps" type="range" min="3" max="9" step="0.05" value="6"><span class="hint">Changes panels b/c; panels d/e fix error at 1%</span></label>
+  <label>Match components by<select id="matching"><option value="rank">Descending eigenvalue rank</option><option value="overlap">Adjacent eigenvector overlap</option></select><span class="hint">The swapped curves depend on this convention</span></label>
+ </div>
+ <div class="toolbar"><span class="math">p<sub>i</sub>(γ) = |u<sub>i</sub>(γ)<sup>T</sup>y|² / ‖y‖² &nbsp; · &nbsp; η<sub>γ</sub> = 0.5 / λ<sub>max</sub>(K<sub>γ</sub>)</span><button id="downloadAnalysis">Download five-panel PNG</button></div>
+ <div id="analysisStatus" class="status" aria-live="polite"></div>
+ <div id="scatter" class="plot"></div>
+ <div class="plotgrid">
+  <div class="panel"><div id="fixedP" class="plot smallplot"></div></div>
+  <div class="panel"><div id="fixedRates" class="plot smallplot"></div></div>
+  <div class="panel"><div id="timeP" class="plot smallplot"></div></div>
+  <div class="panel"><div id="timeRates" class="plot smallplot"></div></div>
+ </div>
+ <div class="note foot">Black: actual spectral GD prediction. Blue: keep target weights p<sub>i</sub>(γ₀), change normalized eigenvalues. Orange: keep normalized eigenvalues at γ₀, change target weights. All three coincide at γ₀. These are constructed comparisons, not three separately trained networks. With η rescaled for each kernel, “fixed eigenvalues” means fixed ratios λ<sub>i</sub>/λ<sub>max</sub>.</div>
+ <p class="foot">The dotted horizontal line in b/c is 10<sup>−4</sup> squared relative error, corresponding to 1% relative L₂. Panels d/e find the first integer update attaining 1%, without executing those updates. Crosses at the top mean the tolerance was not reached by 10<sup>15</sup> predicted steps. Shading bounds the effect of redistributing target weight within numerically unresolved directions (σ<sub>i</sub>/σ<sub>max</sub> ≤ 10<sup>−12</sup>, plus the omitted nullspace); broad shading means the swapped curve is not uniquely determined by resolved directions. Tiny nonzero singular values are retained in the actual prediction.</p>
+ <details id="directionDetails"><summary>Check eigenvector continuity and numerical resolution</summary>
+  <p class="foot">K(γ) is differentiable. Eigenvectors can be chosen differentiably around a simple eigenvalue; an individual vector is not unique at a repeated eigenvalue. The local check below compares the eigenvector derivative formula with a centered finite difference at γ₀, after sign alignment. The overlap plot checks successive sweep samples; it is not a proof of differentiability between them.</p>
+  <p id="derivativeReport" class="foot"></p><div id="continuity" class="plot"></div>
+ </details>
+</section>
+<div id="error" class="error" role="alert"></div>
+</main>
+<script>
+const $=id=>document.getElementById(id), C={black:'#172432',blue:'#1768a5',orange:'#ce6518',green:'#23856c'};
+let active='kernel',kernelData=null,analysisData=null,kernelSerial=0,analysisSerial=0,kernelTimer,analysisTimer,info=null;
+const config={responsive:true,displaylogo:false,toImageButtonOptions:{format:'png',scale:2}};
+const font={family:'system-ui, sans-serif',size:13,color:C.black};
+function base(){return {font,paper_bgcolor:'white',plot_bgcolor:'white',margin:{l:73,r:28,t:88,b:62},hovermode:'closest',legend:{orientation:'h',y:1.12,x:0,font:{size:12}},uirevision:'constant'};}
+function axis(title,extra={}){return {title:{text:title,standoff:10},showline:true,linecolor:'#b5c0c9',gridcolor:'#e9eef2',zeroline:false,exponentformat:'power',showexponent:'all',...extra};}
+function params(){return {N:+$('N').value,m:+$('m').value,center_jitter:+$('cj').value,data_jitter:+$('dj').value,seed:42,gamma:2**(+$('gamma').value),gamma0:+$('gamma0').value,steps:Math.round(10**(+$('steps').value)),target:$('target').value,matching:$('matching').value,count:41,gamma_min:.25,gamma_max:128};}
+function labels(){let p=params();$('Nval').value=p.N;$('mval').value=p.m;$('cjval').value=Math.round(100*p.center_jitter)+'%';$('djval').value=Math.round(100*p.data_jitter)+'%';$('gval').value=p.gamma.toPrecision(4);$('lambdaLabel').textContent='λ = γh = '+(2*p.gamma/p.N).toPrecision(4);$('nval').value=p.steps.toLocaleString();if(info)$('targetFormula').textContent=info.targets[p.target][1];}
+async function request(path,p){const res=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});const data=await res.json();if(!res.ok)throw Error(data.error||res.statusText);return data;}
+function failed(e){$('error').textContent=e.message;}
+async function updateKernel(){const serial=++kernelSerial;$('kernelStatus').textContent='Updating…';try{const d=await request('/api/kernel',params());if(serial!==kernelSerial)return;kernelData=d;drawKernel();$('error').textContent='';}catch(e){failed(e);}}
+function spectrumFit(eigenvalues,ranks){
+ if(ranks.length<3)return null;
+ const y=ranks.map(i=>Math.log10(eigenvalues[i-1]/eigenvalues[0]));
+ const meanX=ranks.reduce((a,b)=>a+b,0)/ranks.length,meanY=y.reduce((a,b)=>a+b,0)/y.length;
+ let xx=0,xy=0,yy=0;
+ for(let j=0;j<ranks.length;j++){const dx=ranks[j]-meanX,dy=y[j]-meanY;xx+=dx*dx;xy+=dx*dy;yy+=dy*dy;}
+ const slope=xy/xx,intercept=meanY-slope*meanX;
+ const sse=y.reduce((sum,value,j)=>sum+(value-intercept-slope*ranks[j])**2,0);
+ return {slope,intercept,ratio:10**slope,r2:yy>1e-24?Math.max(0,Math.min(1,1-sse/yy)):null,
+         count:ranks.length,first:ranks[0],last:ranks.at(-1)};
+}
+function drawKernel(){if(!kernelData)return;const d=kernelData,m=d.meta,normalized=$('normalized').checked,scale=normalized?1:m.m;
+ const lo=Math.min(...d.direct.map(row=>Math.min(...row)),...d.continuous.map(row=>Math.min(...row)))*scale,hi=Math.max(...d.direct.map(row=>Math.max(...row)),...d.continuous.map(row=>Math.max(...row)))*scale;
+ const wide=window.innerWidth>900,domains=wide?[[0,.28],[.35,.63],[.76,1]]:[[0,1],[0,1],[0,1]],ys=wide?[[0,1],[0,1],[0,1]]:[[.76,1],[.4,.64],[0,.24]];
+ const titles=['Finite neuron sum','Uniform-center integral','Training-kernel spectrum'];
+ const traces=[{type:'heatmap',x:d.x,y:d.x,z:d.direct.map(row=>row.map(v=>v*scale)),zmin:lo,zmax:hi,colorscale:'Viridis',showscale:false,xaxis:'x',yaxis:'y',hovertemplate:'column xⱼ=%{x:.4f}<br>row xᵢ=%{y:.4f}<br>K=%{z:.6g}<extra>Finite sum</extra>'},
+ {type:'heatmap',x:d.x,y:d.x,z:d.continuous.map(row=>row.map(v=>v*scale)),zmin:lo,zmax:hi,colorscale:'Viridis',showscale:true,colorbar:{title:{text:normalized?'k / m':'k'},x:wide?.65:1.01,len:wide?.78:.27,y:wide?.5:.51,thickness:12},xaxis:'x2',yaxis:'y2',hovertemplate:'column xⱼ=%{x:.4f}<br>row xᵢ=%{y:.4f}<br>K=%{z:.6g}<extra>Integral</extra>'},
+ {type:'scatter',mode:'lines',x:d.eigenvalues.map((_,i)=>i+1),y:d.eigenvalues.map(v=>v/d.eigenvalues[0]),name:'Finite sum',line:{color:C.blue,width:2},xaxis:'x3',yaxis:'y3'},
+ {type:'scatter',mode:'lines',x:d.continuous_eigenvalues.map((_,i)=>i+1),y:d.continuous_eigenvalues.map(v=>v===null?null:v/d.continuous_eigenvalues[0]),name:'Integral',line:{color:C.orange,width:2,dash:'dash'},xaxis:'x3',yaxis:'y3'}];
+ const layout={...base(),height:wide?620:1150,margin:{l:58,r:50,t:99,b:177},legend:{orientation:'h',x:wide?.75:0,y:wide?1.17:.27},annotations:[],shapes:[]};
+ for(let i=0;i<3;i++){let s=i===0?'':i+1;layout['xaxis'+s]=axis(i<2?'Column position xⱼ':'Eigenvalue rank i',{domain:domains[i],anchor:'y'+s,range:i<2?m.bounds:undefined});layout['yaxis'+s]=axis(i<2?'Row position xᵢ':'λᵢ / λₘₐₓ',{domain:ys[i],anchor:'x'+s,type:i<2?'linear':'log',dtick:i<2?undefined:4,range:i<2?[m.bounds[1],m.bounds[0]]:[-16,.05],scaleanchor:i<2?'x'+s:undefined,scaleratio:1});layout.annotations.push({text:'<b>'+titles[i]+'</b>',x:(domains[i][0]+domains[i][1])/2,y:ys[i][1]+.055,xref:'paper',yref:'paper',showarrow:false});if(i<2)layout.shapes.push({type:'rect',xref:'x'+s,yref:'y'+s,x0:-1,x1:1,y0:-1,y1:1,line:{color:'#e12635',width:2.4},fillcolor:'rgba(0,0,0,0)'});}
+ const ranks=d.eigenvalues.flatMap((v,i)=>{
+   const w=d.continuous_eigenvalues[i];
+   return Number.isFinite(v)&&Number.isFinite(w)&&v/d.eigenvalues[0]>=1e-16&&w/d.continuous_eigenvalues[0]>=1e-16?[i+1]:[];
+ });
+ const fitText=[];
+ for(const [values,name,color] of [[d.eigenvalues,'Finite sum',C.blue],[d.continuous_eigenvalues,'Integral',C.orange]]){
+   const fit=spectrumFit(values,ranks);
+   if(!fit){fitText.push(`<span style="color:${color}">${name}: fewer than 3 resolved ranks</span>`);continue;}
+   const r2=fit.r2===null?'n/a':fit.r2.toFixed(4),x=[fit.first,fit.last];
+   traces.push({type:'scatter',mode:'lines',x,y:x.map(i=>10**(fit.intercept+fit.slope*i)),name:name+' fit',
+     line:{color,width:2,dash:'dot'},xaxis:'x3',yaxis:'y3',showlegend:false,meta:fit,
+     hovertemplate:`${name} best fit<br>log₁₀(λᵢ/λₘₐₓ) = ${fit.intercept.toPrecision(4)} ${fit.slope<0?'−':'+'} ${Math.abs(fit.slope).toPrecision(4)} i<br>Slope b = ${fit.slope.toPrecision(4)}<br>λᵢ₊₁/λᵢ ≈ ${fit.ratio.toPrecision(4)}<br>R² = ${r2}<br>Ranks ${fit.first}–${fit.last}<extra></extra>`});
+   fitText.push(`<span style="color:${color}"><b>${name}</b>: slope ${fit.slope.toPrecision(4)}; R² ${r2}<br>λᵢ₊₁/λᵢ ≈ ${fit.ratio.toPrecision(4)}</span>`);
+ }
+ if(ranks.length>=3)fitText.push(`Common fit: ranks ${ranks[0]}–${ranks.at(-1)} (${ranks.length} values)`);
+ layout.annotations.push({text:fitText.join('<br>'),xref:'paper',yref:'paper',x:domains[2][0],y:wide?-.22:-.085,
+   xanchor:'left',yanchor:'top',align:'left',showarrow:false,font:{size:11.5}});
+ Plotly.react('kernels',traces,layout,config);
+ $('kernelStatus').textContent=`${m.width} neurons = ${m.N+1} interior + ${m.halo} per side · m=${m.m} · γ=${m.gamma.toPrecision(4)} · λ=${m.lambda.toPrecision(4)} · integral bounds [${m.bounds[0].toFixed(4)}, ${m.bounds[1].toFixed(4)}] · ${m.display_points} displayed x positions (spectrum uses all ${m.m})`;
+}
+async function updateAnalysis(){const serial=++analysisSerial;$('analysisStatus').textContent='Calculating the gamma sweep…';try{const d=await request('/api/sweep',params());if(serial!==analysisSerial)return;analysisData=d;drawAnalysis();$('error').textContent='';}catch(e){failed(e);}}
+function line(x,y,name,color,dash){return {x,y,type:'scatter',mode:'lines',name,line:{color,width:2.3,dash:dash||'solid'}};}
+function counterLayout(title,timing=false){const d=analysisData;return {...base(),title:{text:title,x:.03,font:{size:15}},height:385,xaxis:axis('Common slope γ',{type:'log',range:[Math.log10(.25),Math.log10(128)],tickmode:'array',tickvals:[.25,.5,1,2,4,8,16,32,64,128],ticktext:['0.25','0.5','1','2','4','8','16','32','64','128']}),yaxis:axis(timing?'First GD step with relative L₂ ≤ 1%':'Squared relative error Eγ(n)²',{type:'log',dtick:timing?3:4,range:timing?[2,15.35]:[-16,.15]}),shapes:[{type:'line',xref:'x',yref:'paper',x0:d.gammas[d.reference_index],x1:d.gammas[d.reference_index],y0:0,y1:1,line:{color:'#94a3b0',dash:'dot'}},...(!timing?[{type:'line',xref:'paper',yref:'y',x0:0,x1:1,y0:1e-4,y1:1e-4,line:{color:'#9dabb4',dash:'dot'}}]:[])]};}
+function band(x,low,high,color,timing){const cap=analysisData.max_steps;return [{x,y:low.map(v=>v===null?cap:Math.max(v,1e-300)),type:'scatter',mode:'lines',line:{width:0},showlegend:false,hoverinfo:'skip'}, {x,y:high.map(v=>v===null?cap:Math.max(v,1e-300)),type:'scatter',mode:'lines',fill:'tonexty',fillcolor:color,line:{width:0},showlegend:false,hoverinfo:'skip'}];}
+function counterTraces(key,timing=false){const d=analysisData,x=d.gammas,pre=timing?'steps_':'',col=key==='fixed_p'?C.blue:C.orange,name=key==='fixed_p'?'Fixed pᵢ(γ₀)':'Fixed λᵢ/λₘₐₓ at γ₀';let traces=[...band(x,d[pre+key+'_lower'],d[pre+key+'_upper'],key==='fixed_p'?'rgba(23,104,165,.13)':'rgba(206,101,24,.13)',timing),line(x,d[pre+'actual'],'Actual GD prediction',C.black),line(x,d[pre+key],name,col)];if(timing){for(const [k,c] of [['actual',C.black],[key,col]]){const cens=x.filter((_,i)=>d['steps_'+k][i]===null);if(cens.length)traces.push({x:cens,y:cens.map(()=>d.max_steps),type:'scatter',mode:'markers',marker:{symbol:'x',color:c,size:7},showlegend:false,hovertemplate:'γ=%{x:.4g}<br>Not reached by 10¹⁵ steps<extra></extra>'});}}return traces;}
+function drawAnalysis(){const d=analysisData;if(!d)return;const sx=[],sy=[],colors=[],hover=[],ambx=[],amby=[],ambc=[];
+ for(let g=0;g<d.gammas.length;g++)for(let i=0;i<d.p[g].length;i++){let rate=d.rates[g][i],p=d.p[g][i];if(p<1e-16||rate<1e-18)continue;const ambiguous=d.unresolved[g][i];(ambiguous?ambx:sx).push(rate);(ambiguous?amby:sy).push(p);(ambiguous?ambc:colors).push(Math.log10(d.gammas[g]));if(!ambiguous)hover.push(`γ=${d.gammas[g].toPrecision(4)}<br>component=${i+1}`);}
+ const ticks=[.25,1,4,16,64,128],marker={size:4,opacity:.72,color:colors,colorscale:'Viridis',cmin:Math.log10(.25),cmax:Math.log10(128),showscale:true,colorbar:{title:{text:'γ'},tickvals:ticks.map(Math.log10),ticktext:ticks.map(String),thickness:13}};
+ Plotly.react('scatter',[{x:sx,y:sy,type:'scatter',mode:'markers',marker,text:hover,hovertemplate:'%{text}<br>ηλ=%{x:.4g}<br>p=%{y:.4g}<extra></extra>',showlegend:false},{x:ambx,y:amby,type:'scatter',mode:'markers',marker:{...marker,color:ambc,showscale:false,symbol:'x'},name:'Unresolved direction'}],{...base(),title:{text:'a · Target weight versus normalized eigenvalue',x:.03,font:{size:16}},height:400,xaxis:axis('Per-step rate ηγ λᵢ(γ) = ½ λᵢ / λₘₐₓ',{type:'log',dtick:3,range:[-18,Math.log10(.55)]}),yaxis:axis('Target energy pᵢ(γ)',{type:'log',dtick:4,range:[-16,.1]}),margin:{l:78,r:65,t:67,b:68}},config);
+ Plotly.react('fixedP',counterTraces('fixed_p'),counterLayout('b · Change eigenvalue ratios; hold target weights fixed'),config);
+ Plotly.react('fixedRates',counterTraces('fixed_rates'),counterLayout('c · Change target weights; hold eigenvalue ratios fixed'),config);
+ Plotly.react('timeP',counterTraces('fixed_p',true),counterLayout('d · Steps to 1%: change eigenvalue ratios',true),config);
+ Plotly.react('timeRates',counterTraces('fixed_rates',true),counterLayout('e · Steps to 1%: change target weights',true),config);
+ const nr=d.reference_index, t=d.steps_actual[nr];$('analysisStatus').textContent=`${d.gammas.length} γ values from 0.25 to 128 · λ from ${(d.lambdas[0]).toPrecision(3)} to ${d.lambdas.at(-1).toPrecision(3)} · n=${d.n.toLocaleString()} · γ₀=${d.gammas[nr]} · reference 1% crossing: ${t===null?'not reached by 10¹⁵':t.toLocaleString()+' steps'}`;
+ const records=d.derivative_check.isolated_modes,maxErr=Math.max(...records.map(v=>v.derivative_relative_error));$('derivativeReport').textContent=records.length?`At γ₀=${d.gammas[nr]}, ${records.length} isolated leading directions were checked with Δγ/γ=10⁻⁴. Largest relative discrepancy between the analytic eigenvector derivative and its centered finite difference: ${maxErr.toExponential(2)}. Unresolved directions and near-repeated eigenvalues are excluded from this check.`:'No sufficiently isolated eigenvectors passed the local-check eligibility criteria.';
+ drawContinuity();
+}
+function drawContinuity(){const d=analysisData;if(!d||!$('directionDetails').open)return;const xs=[],ys=[],cs=[];for(let g=0;g<d.gammas.length;g++)for(let j=0;j<Math.min(24,d.adjacent_overlap[g].length);j++){xs.push(d.gammas[g]);ys.push(d.adjacent_overlap[g][j]);cs.push(j+1);}Plotly.react('continuity',[{x:xs,y:ys,type:'scatter',mode:'markers',marker:{size:4,color:cs,colorscale:'Viridis',showscale:true,colorbar:{title:{text:'Reference<br>component'},thickness:12}},showlegend:false}],{...base(),height:310,title:{text:'Squared overlap with the matched direction at the adjacent γ sample',x:.03,font:{size:14}},xaxis:axis('γ',{type:'log'}),yaxis:axis('|uᵢ(previous γ)ᵀ uⱼ(γ)|²',{range:[-.02,1.02]})},config);}
+function geometryChanged(){labels();kernelSerial++;analysisSerial++;clearTimeout(kernelTimer);clearTimeout(analysisTimer);if(active==='kernel')kernelTimer=setTimeout(updateKernel,90);else analysisTimer=setTimeout(updateAnalysis,260);}
+for(const id of ['N','m','cj','dj'])$(id).addEventListener('input',geometryChanged);
+$('gamma').addEventListener('input',()=>{labels();kernelSerial++;clearTimeout(kernelTimer);if(active==='kernel')kernelTimer=setTimeout(updateKernel,80);});
+for(const id of ['target','gamma0','matching','steps'])$(id).addEventListener('input',()=>{labels();analysisSerial++;clearTimeout(analysisTimer);analysisTimer=setTimeout(updateAnalysis,150);});
+$('normalized').onchange=drawKernel;
+function activate(which){active=which;$('gamma').disabled=which!=='kernel';$('kernelPanel').hidden=which!=='kernel';$('analysisPanel').hidden=which!=='analysis';$('tabKernel').setAttribute('aria-selected',which==='kernel');$('tabAnalysis').setAttribute('aria-selected',which==='analysis');if(which==='kernel')updateKernel();else updateAnalysis();}
+$('tabKernel').onclick=()=>activate('kernel');$('tabAnalysis').onclick=()=>activate('analysis');$('directionDetails').ontoggle=drawContinuity;
+$('downloadKernel').onclick=()=>Plotly.downloadImage('kernels',{format:'png',filename:'gamma_solve_kernels',width:1450,height:620,scale:2});
+$('saveData').onclick=async()=>{const b=$('saveData');b.disabled=true;try{const d=await request('/api/save',params());$('saved').replaceChildren();for(const [label,url] of [['JSON',d.json],['NPZ',d.npz]]){const a=document.createElement('a');a.href=url;a.download='';a.textContent=label;$('saved').appendChild(a);}}catch(e){failed(e);}finally{b.disabled=false;}};
+$('downloadAnalysis').onclick=async()=>{if(!analysisData)return;const temp=document.createElement('div');temp.style.cssText='position:absolute;left:-10000px;width:1500px;height:1500px';document.body.appendChild(temp);const traces=[],layout={...base(),width:1500,height:1500,margin:{l:100,r:100,t:145,b:80},annotations:[],shapes:[],showlegend:false,title:{text:`${info.targets[analysisData.target][0]} · N=${analysisData.geometry.N}, m=${analysisData.geometry.m} · n=${analysisData.n.toLocaleString()} · γ₀=${analysisData.gammas[analysisData.reference_index]} · ${analysisData.matching}`,x:.06}};const ids=['scatter','fixedP','fixedRates','timeP','timeRates'],domains=[[[0,1],[.74,1]],[[0,.44],[.37,.62]],[[.56,1],[.37,.62]],[[0,.44],[0,.25]],[[.56,1],[0,.25]]];for(let i=0;i<ids.length;i++){const chart=$(ids[i]),s=i?' '+(i+1):'',suffix=i?String(i+1):'';for(const trace of chart.data){let t=JSON.parse(JSON.stringify(trace));t.xaxis='x'+suffix;t.yaxis='y'+suffix;if(t.marker?.colorbar)t.marker.colorbar={...t.marker.colorbar,len:.25,y:.87};traces.push(t);}layout['xaxis'+suffix]={...chart.layout.xaxis,domain:domains[i][0],anchor:'y'+suffix};layout['yaxis'+suffix]={...chart.layout.yaxis,domain:domains[i][1],anchor:'x'+suffix};layout.annotations.push({xref:'paper',yref:'paper',x:domains[i][0][0],y:domains[i][1][1]+.025,xanchor:'left',showarrow:false,text:chart.layout.title.text,font:{size:16}});if(i>0){const ref=analysisData.gammas[analysisData.reference_index];layout.shapes.push({type:'line',xref:'x'+suffix,yref:'y'+suffix+' domain',x0:ref,x1:ref,y0:0,y1:1,line:{color:'#94a3b0',dash:'dot'}});}}layout.annotations.push({xref:'paper',yref:'paper',x:0,y:1.055,xanchor:'left',showarrow:false,text:'Black: actual GD prediction     Blue: fixed pᵢ(γ₀)     Orange: fixed normalized eigenvalues     Shading: unresolved-direction ambiguity',font:{size:15}});try{await Plotly.newPlot(temp,traces,layout,config);await Plotly.downloadImage(temp,{format:'png',filename:'gamma_solve_alignment',width:1500,height:1500,scale:2});}finally{Plotly.purge(temp);temp.remove();}};
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(active==='kernel')drawKernel();else drawAnalysis();},150);});
+fetch('/api/info').then(r=>r.json()).then(d=>{info=d;labels();updateKernel();}).catch(failed);
+</script>
+</body></html>

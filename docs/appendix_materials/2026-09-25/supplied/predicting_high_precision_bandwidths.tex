@@ -1,0 +1,749 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.95in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Predicting high-precision bandwidths}
+\fancyhead[R]{\small Technical note}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\csch}{csch}
+\DeclareMathOperator{\Res}{Res}
+\DeclareMathOperator{\diag}{diag}
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\T}{\mathcal T}
+\newcommand{\Sscore}{\mathcal S}
+\newcommand{\Sa}{\mathcal S_{\rm sa}}
+\newcommand{\Perr}{\mathcal P_h}
+\newcommand{\Jerr}{\mathcal J_h}
+\allowdisplaybreaks[2]
+\title{Predicting high-precision bandwidths in tanh MLPs\\[4pt]
+\large Quadrature, finite-width corrections, and frequency estimation from data}
+\author{}\date{}
+\begin{document}
+\maketitle\vspace{-2.5em}
+\begin{abstract}
+A relative bandwidth can be selected before fitting an MLP readout by matching an aliasing score to a prescribed tolerance. For tanh, the useful finite-width score is an exponential factor times a hyperbolic sine. We derive this score from a finite-interval meromorphic quadrature identity, prove its relation to the exact first spectral pair, and quantify the errors of small-angle reduction and logarithmic inversion. We specify an amplitude-weighted frequency estimate from observations, explain its normalization and limitations, and prove the associated width and tolerance sensitivities. A final least-squares comparison states precisely how a valid alias bound can improve an end-to-end approximation certificate. The bandwidth predictor, an upper bound on one error contribution, and an empirical total-error minimizer are distinct objects throughout.
+\end{abstract}
+
+\section{The prescription and its inputs}
+\label{sec:setup}
+Let $f$ be real-valued on $\Omega=[-1,1]$. Place hidden centers on the uniform grid
+\begin{equation}
+ h=\frac2N,\qquad x_j=-1+jh,\qquad j=-R,\ldots,N+R,
+ \qquad W=N+2R+1.
+ \label{eq:geometry}
+\end{equation}
+The $R$ centers on each side outside $\Omega$ form the halo. For a relative bandwidth $\lambda>0$, the common hidden slope is \emph{determined}, not selected independently:
+\begin{equation}
+ \gamma:=\frac{\lambda}{h}=\frac{\lambda N}{2},\qquad
+ q_{\mathbf c}(x)=b+\sum_{j=-R}^{N+R}w_j\tanh\bigl(\gamma(x-x_j)\bigr).
+ \label{eq:mlp}
+\end{equation}
+The transition scale $\gamma^{-1}$ spans approximately $1/\lambda$ grid spacings. Smaller $\lambda$ means broader, more overlapping transitions relative to the grid. All readout parameters $\mathbf c=(b,w_{-R},\ldots,w_{N+R})$ can be fitted from in-domain function values by linear least squares.
+
+\paragraph{Practical bandwidth rule.}
+Given a representative angular frequency $\bar\omega>0$ and an effective aliasing tolerance $\varepsilon_{\rm eff}>0$, solve the scalar equation
+\begin{equation}
+ \boxed{2\exp\!\left(-\frac{\pi^2}{\lambda_{\rm pred}}\right)
+ \sinh\!\left(\frac{2\pi\bar\omega}{N\lambda_{\rm pred}}\right)
+ =\varepsilon_{\rm eff}.}
+ \label{eq:recipe}
+\end{equation}
+The root is taken on the increasing, high-precision branch specified in Section~\ref{sec:compact}. It requires no fitted readout or repeated network fits. A known target frequency may be used directly; otherwise the data-based convention is
+\begin{equation}
+ \widehat{\bar\omega}
+ =\frac{\sum_k|\widehat b_k|\,|\omega_k|}{\sum_k|\widehat b_k|},
+ \label{eq:centroid-summary}
+\end{equation}
+where $\widehat b_k$ are sampled Fourier coefficients with the endpoint and constant-mode conventions in Section~\ref{sec:frequency}. $N$ is the \emph{interior hidden-grid count}; it is neither the total width $W$ nor the Fourier sample count.
+
+The exponential in \eqref{eq:recipe} is set by tanh's complex poles. The hyperbolic sine retains how quickly the target varies relative to the hidden-feature scale. The equation predicts an aliasing threshold, not the entire error curve. Its practical purpose is to identify a useful bandwidth without a network-fitting sweep.
+
+\paragraph{Scope of the results.}
+The quadrature identity, pole bounds, score comparisons, inversion, and sensitivity results are proved in this note. The frequency centroid is an explicitly specified summary, not a universal spectral certificate. Section~\ref{sec:recovery} proves a conditional least-squares transfer given an accurate, bounded reference readout; it does not replace the separate analysis of the full boundary correction or every FP64 operation. No periodicity assumption is imposed on locally analytic targets. Fourier expansions are used only when explicitly available.
+
+\section{A local quadrature identity and the source of aliasing}
+\label{sec:quadrature}
+This section derives the pole contribution directly on a finite interval. It does not require constructing a cardinal kernel or a global Fourier extension of $f$.
+
+\subsection{Analytic domain and the reference kernel sum}
+Let $I_\Delta=[-1-\Delta,1+\Delta]$. Suppose $f$ has a holomorphic extension to
+\[
+ U_\delta(I_\Delta)=\{z\in\C:\operatorname{dist}(z,I_\Delta)<\delta\},
+ \qquad |f(z)|\le B,
+\]
+and remains real on $I_\Delta$. Define
+\begin{equation}
+ d=\frac{\pi}{2\gamma},\qquad
+ a_\gamma(z)=\frac{f(z+id)-f(z-id)}{2id}.
+ \label{eq:density}
+\end{equation}
+This is a local analytic difference quotient. Where the segment is in the analytic domain,
+\begin{equation}
+ a_\gamma(z)=\frac1{2d}\int_{-d}^d f'(z+iv)\,dv.
+ \label{eq:density-average}
+\end{equation}
+Thus its real-axis values approximate the target derivative as $d$ decreases. These analytic values will be used for analysis, not as observations required by the algorithm.
+
+Set $x_0=-1$, and choose the real contour endpoints halfway beyond the outer centers,
+\[
+ a=-1-(R+\tfrac12)h,\qquad b=1+(R+\tfrac12)h.
+\]
+Assume $(R+\tfrac12)h\le\Delta$ and choose a height $\sigma$ such that
+\begin{equation}
+ d<\sigma<\delta-d,\qquad
+ \sigma\notin\{(2\ell+1)d:\ell\ge0\}.
+ \label{eq:contour-assumptions}
+\end{equation}
+For $x\in\Omega$, define the meromorphic integrand
+\begin{equation}
+ F_x(z)=\frac{a_\gamma(z)}2
+ \left[\tanh\bigl(\gamma(x-z)\bigr)
+       -\tanh\bigl(\gamma(x_0-z)\bigr)\right].
+ \label{eq:integrand}
+\end{equation}
+Its quadrature sum is already an anchored tanh MLP:
+\begin{equation}
+ q_0(x):=f(x_0)+h\sum_{j=-R}^{N+R}F_x(x_j)
+ =f(x_0)+\sum_j\frac h2a_\gamma(x_j)
+ [\tanh(\gamma(x-x_j))-\tanh(\gamma(x_0-x_j))].
+ \label{eq:q0}
+\end{equation}
+In particular the baseline weights are $w_j=ha_\gamma(x_j)/2$. Cauchy's estimate and \eqref{eq:density-average} imply $|w_j|\le hB/[2(\delta-d)]$. Anchoring then gives the elementary baseline readout bound
+\begin{equation}
+ |b_0|+\sum_j|w_j|\le B+\frac{WhB}{\delta-d}.
+ \label{eq:baseline-readout}
+\end{equation}
+This does not yet include changes to the halo coefficients. Those changes require their own bounds.
+
+\subsection{The finite-interval meromorphic quadrature formula}
+Define two decaying quadrature weights,
+\begin{equation}
+ \zeta_h^+(z)=-\frac{e^{2\pi i(z-x_0)/h}}{1-e^{2\pi i(z-x_0)/h}},
+ \qquad
+ \zeta_h^-(z)=\frac{e^{-2\pi i(z-x_0)/h}}{1-e^{-2\pi i(z-x_0)/h}}.
+ \label{eq:weights}
+\end{equation}
+The superscript specifies the upper or lower half-plane. In its corresponding half-plane,
+\begin{equation}
+ |\zeta_h^\pm(z)|\le\frac1{e^{2\pi|\operatorname{Im}z|/h}-1}.
+ \label{eq:weight-bound}
+\end{equation}
+Let $\Gamma_+$ run from $b$ to $b+i\sigma$, across to $a+i\sigma$, and down to $a$. Let $\Gamma_-$ run from $a$ to $a-i\sigma$, across to $b-i\sigma$, and up to $b$.
+
+\begin{lemma}[Quadrature with explicit pole terms]
+\label{lem:quadrature}
+Let $G$ be meromorphic in a neighborhood of the closed rectangle $[a,b]+i[-\sigma,\sigma]$, with finitely many simple nonreal poles and no poles on the boundary or real axis. Then
+\begin{equation}
+ h\sum_{j=-R}^{N+R}G(x_j)-\int_a^bG(u)\,du
+ =\Jerr[G]+\Perr[G],
+ \label{eq:quad-identity}
+\end{equation}
+where
+\begin{align}
+ \Jerr[G]&=\int_{\Gamma_+}\zeta_h^+(z)G(z)\,dz
+          +\int_{\Gamma_-}\zeta_h^-(z)G(z)\,dz,\label{eq:J}\\
+ \Perr[G]&=-2\pi i\sum_p\zeta_h^{\operatorname{sgn}(\operatorname{Im}p)}(p)
+                    \Res(G;p).\label{eq:P}
+\end{align}
+Consequently,
+\begin{equation}
+ |\Perr[G]|\le2\pi\sum_p
+ \frac{|\Res(G;p)|}{e^{2\pi|\operatorname{Im}p|/h}-1}.
+ \label{eq:residue-bound}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Use the lattice meromorphic function
+\[
+ H_h(z)=\frac1{2i}\cot\!\left(\frac{\pi(z-x_0)}h\right).
+\]
+It has residue $h/(2\pi i)$ at each grid point. In the upper half-plane $H_h=-1/2+\zeta_h^+$, and in the lower half-plane $H_h=1/2+\zeta_h^-$. Write $I=\int_a^bG$ and $S_\pm=\sum_{\pm\operatorname{Im}p>0}\Res(G;p)$. Applying the residue theorem to the upper and lower half-rectangles gives
+\[
+ \int_{\Gamma_+}G=2\pi iS_+-I,\qquad
+ \int_{\Gamma_-}G=2\pi iS_-+I.
+\]
+Thus integration of $H_hG$ around the full rectangle gives
+$I+\pi i(S_--S_+)+\Jerr[G]$.
+Applying the residue theorem instead to $H_hG$ gives
+\[
+ h\sum_jG(x_j)+\pi i(S_--S_+)
+ +2\pi i\sum_p\zeta_h^{\operatorname{sgn}(\operatorname{Im}p)}(p)\Res(G;p).
+\]
+Equating the expressions proves \eqref{eq:quad-identity}. The estimate follows from \eqref{eq:weight-bound}.
+\end{proof}
+
+\paragraph{What is called aliasing.}
+For \eqref{eq:integrand}, define
+\begin{equation}
+ E_{\rm alias}^{(\sigma)}(f):=
+ \sup_{x\in\Omega}|\Perr[F_x]|.
+ \label{eq:alias-definition}
+\end{equation}
+This is the finite-contour pole contribution. For clarity, the exact decomposition of the baseline error is
+\begin{equation}
+ q_0(x)-f(x)
+ =\Perr[F_x]+\Jerr[F_x]-D_f(x),\qquad
+ D_f(x)=f(x)-f(x_0)-\int_a^bF_x(u)\,du.
+ \label{eq:full-decomposition}
+\end{equation}
+A halo correction changes the last bracket, not the definition of $\Perr[F_x]$. Horizontal-contour weights are exponentially small in $\sigma/h$; vertical-boundary and continuous-representation terms remain separate. A small pole contribution alone does not bound the entire error. Changing $\sigma$ can redistribute error between these components and must not be mistaken for improving the computed network.
+
+\section{Exact alias scores and spectrum-free bounds}
+\label{sec:poles}
+For a positive target angular frequency $\omega$, introduce
+\begin{equation}
+ \theta=h\omega,\qquad A=\frac{\pi^2}{\lambda},\qquad
+ t=\omega d=\frac{\pi\theta}{2\lambda},\qquad
+ \chi=2t=\frac{2\pi\omega}{N\lambda}.
+ \label{eq:angles}
+\end{equation}
+The single-frequency comparisons use $0<\theta<\pi$ and $0<\lambda\le1$. Define the exact first-pair score
+\begin{equation}
+ \boxed{\T(\lambda,\theta)=
+ \sinh t\,[\csch(A-t)+\csch(A+t)],\qquad \T(\lambda,0)=0.}
+ \label{eq:T}
+\end{equation}
+``Exact'' refers to this pair's multiplier, not to the total network error.
+
+\begin{theorem}[The first pair bounds the finite-contour pole contribution]
+\label{thm:alias}
+Under the contour assumptions of Section~\ref{sec:quadrature}, a unit mode $f(x)=e^{i\omega x}$ with $|h\omega|<\pi$ satisfies
+\begin{equation}
+ E_{\rm alias}^{(\sigma)}(f)
+ \le\frac{2\T(\lambda,h|\omega|)}{1-e^{-\pi^2/\lambda}}.
+ \label{eq:tone-bound}
+\end{equation}
+For a finite exponential sum $f(x)=\sum_jb_je^{i\omega_jx}$, with every $|h\omega_j|<\pi$,
+\begin{equation}
+ \boxed{E_{\rm alias}^{(\sigma)}(f)
+ \le\mathcal B_f(\lambda,N):=
+ \frac{2}{1-e^{-\pi^2/\lambda}}
+ \sum_{\omega_j\ne0}|b_j|\T(\lambda,h|\omega_j|).}
+ \label{eq:weighted-bound}
+\end{equation}
+At fixed $0<\theta<\pi$, $\T(\lambda,\theta)$ is strictly increasing in $\lambda$.
+\end{theorem}
+\begin{proof}
+For $\omega>0$, direct substitution in \eqref{eq:density} gives
+$a_\gamma(z)=i\sinh(\omega d)e^{i\omega z}/d$.
+The possible poles at height $y_\ell=(2\ell+1)d$ occur above and below $x$ and $x_0$. Each tanh term in $F_x$ has residue of magnitude $1/(2\gamma)$ times the corresponding density value. The four density magnitudes sum to
+$4(\sinh t/d)\cosh((2\ell+1)t)$.
+Since $2\pi y_\ell/h=(2\ell+1)A$ and $\gamma d=\pi/2$, Lemma~\ref{lem:quadrature} gives
+\begin{align}
+ E_{\rm alias}^{(\sigma)}(f)
+ &\le8\sinh t\sum_{\ell:\,y_\ell<\sigma}
+ \frac{\cosh((2\ell+1)t)}{e^{(2\ell+1)A}-1}\notag\\
+ &\le2\sinh t\sum_{m\ge1}
+ [\csch(mA-t)+\csch(mA+t)].
+ \label{eq:pair-series}
+\end{align}
+For the second inequality, extend the positive scalar sum to all $\ell\ge0$ and expand its denominator into a geometric series. Equivalently, expand $\csch z=2\sum_{\ell\ge0}e^{-(2\ell+1)z}$ on the second line. The sums converge absolutely and give the same expression. This algebraic majorant evaluates no additional target values outside the finite contour.
+
+For $v,A>0$, $\sinh(v+A)\ge e^A\sinh v$, so each successive pair is at most $e^{-A}$ times its predecessor. Summing the majorant proves \eqref{eq:tone-bound}. Negative frequencies have the same absolute estimate. Constants have zero density. Linearity and the triangle inequality give \eqref{eq:weighted-bound}. The factor two records anchoring: residues appear at both $x$ and $x_0$.
+
+For monotonicity, each summand of \eqref{eq:T} is $\sinh(c/\lambda)/\sinh(b/\lambda)$ with $b>c>0$, because $\theta<\pi$. Its logarithmic derivative with respect to $\log\lambda$ is
+$(b/\lambda)\coth(b/\lambda)-(c/\lambda)\coth(c/\lambda)>0$.
+The inequality follows because $v\coth v$ is strictly increasing: its derivative has numerator $\sinh v\cosh v-v>0$.
+\end{proof}
+
+\begin{proposition}[A local analytic-class bound without Fourier data]
+\label{prop:class}
+Assume the analytic domain in Section~\ref{sec:quadrature}, $\gamma\delta\ge4\pi$, and choose $d<\sigma\le\delta/2$ avoiding pole heights. Then, with
+\begin{equation}
+ \mathcal V(A)=\frac{e^{-A}}{(1-e^{-A})(1-e^{-2A})},
+ \label{eq:V}
+\end{equation}
+\begin{equation}
+ \boxed{E_{\rm alias}^{(\sigma)}(f)
+ \le\frac{32\pi B}{\lambda\delta N}\mathcal V(A)
+ \le4B\mathcal V(A).}
+ \label{eq:class}
+\end{equation}
+\end{proposition}
+\begin{proof}
+The margin gives $d\le\delta/8$. Cauchy's derivative estimate and \eqref{eq:density-average} imply
+\[
+ |a_\gamma(z)|\le\frac{B}{\delta-\sigma-d}
+ \le\frac{4B}{\delta}=:M_\sigma
+\]
+throughout the contour rectangle. There are at most four residues of magnitude $M_\sigma/(2\gamma)$ per pole layer. Hence
+\[
+ E_{\rm alias}^{(\sigma)}(f)
+ \le\frac{4\pi M_\sigma}{\gamma}
+ \sum_{\ell\ge0}\frac1{e^{(2\ell+1)A}-1}
+ \le\frac{4\pi M_\sigma}{\gamma}\mathcal V(A).
+\]
+The last inequality follows by bounding $1-e^{-(2\ell+1)A}$ below by $1-e^{-A}$ and summing $e^{-(2\ell+1)A}$. Substitute $M_\sigma$ and $\gamma=\lambda N/2$; then use $\gamma\delta\ge4\pi$.
+\end{proof}
+At $\lambda=1/4$, $4\mathcal V(4\pi^2)=2.8629\times10^{-17}$ approximately. This is a bound relative to the complex-domain amplitude $B$, not automatically relative to $\norm f_{2,\Omega}$. It controls aliasing alone. The target's analytic neighborhood and its magnitude bound must be treated together; increasing $\delta$ can increase $B$.
+
+\subsection{Retaining phases: a sharper diagnostic}
+The triangle inequalities in Theorem~\ref{thm:alias} discard cancellation. For a real analytic target and $d<\sigma<3d$, exactly the first pole layer is enclosed. Define
+\[
+ r=e^{-A},\qquad q(x)=r e^{2\pi i(x-x_0)/h},\qquad
+ G_f(x)=f(x+2id)-f(x).
+\]
+Directly evaluating \eqref{eq:P} gives the signed expression
+\begin{equation}
+ \Perr[F_x]=-2\operatorname{Re}\left[
+ G_f(x)\frac{q(x)}{1-q(x)}
+ -G_f(x_0)\frac{r}{1-r}\right].
+ \label{eq:signed}
+\end{equation}
+To check the constants, the residue at $x+id$ is $-a_\gamma(x+id)/(2\gamma)$, its upper quadrature weight is $-q/(1-q)$, and $a_\gamma(x+id)=G_f(x)/(2id)$. Multiplication by $-2\pi i$ in \eqref{eq:P}, followed by $\gamma d=\pi/2$, gives $-G_f(x)q/(1-q)$. The lower pole is its conjugate and the anchor has the opposite sign. Consequently
+\begin{equation}
+ E_{\rm alias}^{(\sigma)}(f)
+ \le\frac4{e^A-1}\sup_{x\in\Omega}|f(x+2id)-f(x)|.
+ \label{eq:local-difference}
+\end{equation}
+Neither the signed term nor this local upper bound includes the remainder in \eqref{eq:full-decomposition}.
+
+For $f(x)=\sum_ja_j\sin(\pi k_jx)$ with distinct integers $0<k_j<N/2$, let $t_j=\pi k_jd$. Expanding $q/(1-q)$ and using orthogonality of the noncolliding integer harmonics on $[-1,1]$ yields
+\begin{equation}
+ \norm{\Perr[F_\cdot]}_{2,\Omega}^{2}
+ =\frac{r^2}{2(1-r^2)}\sum_ja_j^2
+ \left[(e^{2t_j}-1)^2+(1-e^{-2t_j})^2\right].
+ \label{eq:signed-rms}
+\end{equation}
+Indeed the anchor in \eqref{eq:signed} has zero real part, each term in the geometric series produces frequencies $mN\pm k_j$, each sine has squared normalized RMS $1/2$, and $\sum_{m\ge1}r^{2m}=r^2/(1-r^2)$. This provides a phase-sensitive alias diagnostic without fitting a network. It is not a universal prediction of the least-squares error, especially when the other contour terms are comparable or large.
+
+\section{The equivalent spectral interpretation}
+\label{sec:spectral}
+The quadrature derivation is local. A spectral calculation explains why its rearranged sums are called alias pairs, without changing that derivation's assumptions. Adopt the convention
+$\widehat K(\xi)=\int_\R K(x)e^{-i\xi x}\,dx$ and set $K=\sech^2$.
+
+\begin{lemma}[Transform of the tanh derivative]
+\begin{equation}
+ \widehat K(\xi)=\frac{\pi\xi}{\sinh(\pi\xi/2)},\qquad \widehat K(0)=2.
+ \label{eq:transform}
+\end{equation}
+\end{lemma}
+\begin{proof}
+For $\xi>0$, integrate $e^{i\xi z}/\cosh^2z$ over the rectangle with horizontal sides at imaginary heights $0$ and $\pi$, then send its real endpoints to infinity. The vertical sides vanish. The top integral is $-e^{-\pi\xi}$ times the bottom integral. The sole double pole at $z=i\pi/2$ has residue $-i\xi e^{-\pi\xi/2}$. The residue theorem gives
+$(1-e^{-\pi\xi})\int_\R e^{i\xi x}\sech^2x\,dx=2\pi\xi e^{-\pi\xi/2}$.
+Evenness gives the chosen Fourier convention and negative frequencies. At zero, integrate $\tanh'$ directly.
+\end{proof}
+
+Let $K_\gamma(x)=\gamma K(\gamma x)/2$. For a unit mode,
+\[
+ a_\gamma(x)=i\omega\frac{\widehat K(0)}{\widehat K(\omega/\gamma)}e^{i\omega x}.
+\]
+The infinite-lattice derivative sum $h\sum_j a_\gamma(x_j)K_\gamma(x-x_j)$ has frequencies $\omega+2\pi m/h$. Its central derivative amplitude is exactly $i\omega$. One direct verification is to write $u=(x-x_0)/h$: the function
+$e^{-i\theta u}\sum_je^{i\theta j}K(\lambda(u-j))$ is one-periodic, with $m$th Fourier coefficient $\lambda^{-1}\widehat K((\theta+2\pi m)/\lambda)$, obtained by combining shifted unit integration intervals into $\R$. Exponential localization justifies the sum.
+
+Integrating each derivative harmonic divides by its frequency. The output multiplier of replica $m\ne0$ is therefore
+\begin{equation}
+ t_m(\lambda,\theta)=\frac{\theta}{\theta+2\pi m}
+ \frac{\widehat K((\theta+2\pi m)/\lambda)}{\widehat K(\theta/\lambda)}.
+ \label{eq:replica}
+\end{equation}
+Substitution of \eqref{eq:transform} cancels the polynomial frequency factors. Summing $|t_{-1}|+|t_1|$ gives \eqref{eq:T}; summing all replicas gives the pair series in \eqref{eq:pair-series} before its anchoring factor. The infinite-lattice calculation is an interpretation for modes, not a replacement of the finite-contour theorem or a demand that every locally analytic target have a global Fourier representation.
+
+\section{The compact predictor and controlled approximations}
+\label{sec:compact}
+Define the compact finite-width and small-angle scores
+\begin{equation}
+ \boxed{\Sscore(\lambda,N;\omega)=2e^{-A}\sinh\chi,\qquad
+ \Sa(\lambda,N;\omega)=2\chi e^{-A}
+ =\frac{4\pi\omega}{N\lambda}e^{-\pi^2/\lambda}.}
+ \label{eq:scores}
+\end{equation}
+The practical prescription \eqref{eq:recipe} uses $\Sscore$, not $\Sa$.
+
+\begin{proposition}[Score errors]
+\label{prop:score-errors}
+For $0<\theta<\pi$ and $0<\lambda\le1$,
+\begin{equation}
+ 1\le\frac{\T}{\Sscore}\le\frac1{1-e^{-(2A-\chi)}},\qquad
+ 1\le\frac{\T}{\Sa}\le\frac{\sinh\chi/\chi}{1-e^{-(2A-\chi)}}.
+ \label{eq:score-errors}
+\end{equation}
+In particular the relative discrepancy $(\T-\Sscore)/\Sscore$ is below $5.18\times10^{-5}$ throughout this domain, and below $7.16\times10^{-18}$ at $\lambda=1/4$.
+\end{proposition}
+\begin{proof}
+Use $\csch z=2e^{-z}/(1-e^{-2z})$ on $A-t$ and $A+t$. Each term is bounded below by its leading exponential and above by that exponential divided by $1-e^{-2(A-t)}$. Adding the leading terms yields
+$4e^{-A}\sinh t\cosh t=2e^{-A}\sinh\chi$.
+Finally $\Sscore/\Sa=\sinh\chi/\chi\ge1$. Since $\chi/A=\theta/\pi<1$, $2A-\chi>A\ge\pi^2$. Thus the first relative discrepancy is at most $(e^{\pi^2}-1)^{-1}$, and at $\lambda=1/4$ it is at most $(e^{4\pi^2}-1)^{-1}$.
+\end{proof}
+
+The compact approximation is uniformly accurate even when $\chi$ is not small. Small-angle linearization requires
+\begin{equation}
+ \chi=\frac{\pi h\omega}{\lambda}=\frac{\pi\omega}{\gamma}\ll1,
+ \label{eq:small-angle}
+\end{equation}
+not just $h\omega\ll1$. Its additional multiplicative error is
+\[
+ \frac{\sinh\chi}{\chi}=1+\frac{\chi^2}{6}+O(\chi^4),
+\]
+about $1.51\%$ at $\chi=0.3$ and $4.22\%$ at $\chi=0.5$. These percentages are relative to the linearized score. For a uniform statement about a mixture, \eqref{eq:small-angle} must hold for every retained frequency, not merely its average.
+
+\paragraph{Monotonicity and numerical evaluation.}
+The exact score $\T$ is monotone by Theorem~\ref{thm:alias}. For the compact score,
+\begin{equation}
+ \frac{\partial\log\Sscore}{\partial\log\lambda}
+ =A-\chi\coth\chi.
+ \label{eq:compact-slope}
+\end{equation}
+Because $\chi\coth\chi=\chi+2\chi/(e^{2\chi}-1)<\chi+1$, the sufficient branch condition $A-\chi\ge1$ guarantees monotonicity. On a bandwidth bracket, it suffices to check this at its largest endpoint. The score approximation in Proposition~\ref{prop:score-errors} does not need this extra branch condition; the condition is for a monotone root solve. The exact score can be used when it fails.
+
+A stable scalar evaluation avoids forming a large $\sinh$:
+\begin{equation}
+ \log\Sscore=-(A-\chi)+\log(1-e^{-2\chi}).
+ \label{eq:log-score}
+\end{equation}
+Evaluate $1-e^{-2\chi}$ as $-\operatorname{expm1}(-2\chi)$, and compare with $\log\varepsilon_{\rm eff}$. The exact score can likewise be evaluated using stable $\log\sinh$ and a log-sum-exp of its two positive terms. Bisection on a valid bracket returns the root, or the largest feasible endpoint if the whole bracket is below budget. If its smallest endpoint is already above budget, report that this bracket is infeasible. With zero supplied frequency, the score vanishes and imposes no alias constraint.
+
+\section{Representative frequency from observations}
+\label{sec:frequency}
+For a known sinusoid $a\sin(\omega x+\phi)$, use $\bar\omega=|\omega|$. For a known sinusoidal mixture without a constant, a practical convention is
+\begin{equation}
+ \bar\omega=\frac{\sum_j|a_j|\,|\omega_j|}{\sum_j|a_j|}.
+ \label{eq:known-mean}
+\end{equation}
+For general sampled targets, the following definition makes the same idea operational. It involves a transform and a weighted sum, not another fit of the network readout.
+
+\subsection{Transform and normalization conventions}
+For a target treated as period two, use $M$ distinct observations
+\[
+ z_\ell=-1+\frac{2\ell}{M},\qquad y_\ell=f(z_\ell),\qquad
+ \ell=0,\ldots,M-1.
+\]
+The repeated endpoint $1$ is excluded from this transform. For endpoint-inclusive least-squares observations with $M_X=sN+1$, the first $M=M_X-1$ values can be used for this periodic diagnostic; the last observation remains in the least-squares fit. Define
+\begin{equation}
+ \begin{gathered}
+ \mathcal K_M=\{-\lfloor M/2\rfloor,\ldots,\lceil M/2\rceil-1\},\\
+ \widehat b_k=\frac1M\sum_{\ell=0}^{M-1}y_\ell e^{-2\pi i k\ell/M},
+ \qquad \omega_k=\pi k,\\
+ \boxed{\widehat{\bar\omega}
+ =\frac{\sum_{k\in\mathcal K_M}|\widehat b_k|\,|\omega_k|}
+        {\sum_{k\in\mathcal K_M}|\widehat b_k|}.}
+ \end{gathered}
+ \label{eq:dft}
+\end{equation}
+The frequency basis is $e^{i\omega_k(x+1)}$. Changing the origin changes phases but not magnitudes. On an interval of length $L_\Omega$, replace $\omega_k$ by $2\pi k/L_\Omega$ and use $h=L_\Omega/N$ in $\chi=\pi h\bar\omega/\lambda$.
+
+Weights are amplitudes $|\widehat b_k|$, not powers $|\widehat b_k|^2$. A common Fourier normalization cancels in the ratio. For a one-sided transform of real data, double the weights for frequencies with an omitted negative partner, but do not double zero or an unpaired Nyquist mode. This reproduces \eqref{eq:dft}.
+
+\paragraph{The constant mode.}
+The convention used here includes the zero-frequency coefficient in the denominator. It contributes nothing to the numerator or actual pole error. Subtracting the mean first is a different, potentially useful convention and must be stated. Overall amplitude scaling leaves the centroid unchanged; adding a constant generally changes it. This offset dependence is a property of the practical summary, not of absolute alias error. If all observed Fourier coefficients vanish, the centroid is undefined. If only the constant coefficient is nonzero, no frequency constraint is inferred. Neither observation alone certifies that an arbitrary unknown target has no unresolved oscillations. A \emph{known} constant is represented exactly by the output bias.
+
+\subsection{Examples with known exact centroids}
+For
+\begin{equation}
+ f_1(x)=\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x),
+ \qquad \bar\omega_1=\frac{30\pi}{7}.
+ \label{eq:f1}
+\end{equation}
+The value follows immediately by inserting the three amplitudes into \eqref{eq:known-mean}.
+
+For $f_2(x)=e^{\sin(3\pi x)}$, the harmonics are $3\pi n$ with coefficient magnitudes
+\begin{equation}
+ I_n(1)=\sum_{k=0}^\infty
+ \frac{1}{2^{2k+n}k!(k+n)!},\qquad n\ge0.
+ \label{eq:bessel-series}
+\end{equation}
+This formula can be obtained without assuming a transform table: expand
+$e^{(z+z^{-1})/2}=\sum_{n\in\Z}I_{|n|}(1)z^n$ by multiplying the two exponential series, then set $z=e^{it}$ to obtain $e^{\cos t}$. Replacing $t$ by $3\pi x-\pi/2$ gives $e^{\sin(3\pi x)}$ and changes only coefficient phases.
+
+At $z=1$, $I_0(1)+2\sum_{n\ge1}I_n(1)=e$. Differentiating the generating function gives $2nI_n(1)=I_{n-1}(1)-I_{n+1}(1)$. Summing this identity yields $\sum_{n\ge1}nI_n(1)=[I_0(1)+I_1(1)]/2$. Thus the constant-inclusive centroid is
+\begin{equation}
+ \bar\omega_2
+ =\frac{6\pi\sum_{n\ge1}nI_n(1)}e
+ =3\pi e^{-1}[I_0(1)+I_1(1)]
+ =6.349190385\ldots.
+ \label{eq:f2-mean}
+\end{equation}
+The estimator \eqref{eq:dft} avoids needing the analytic series when only samples are supplied.
+
+\subsection{Sampling aliasing and endpoint handling}
+For an absolutely convergent period-two series
+$f(-1+t)=\sum_jb_je^{i\pi jt}$, substitution into \eqref{eq:dft} and discrete orthogonality give
+\begin{equation}
+ \widehat b_k=\sum_{m\in\Z}b_{k+mM}.
+ \label{eq:dft-alias}
+\end{equation}
+Therefore unresolved target frequencies can fold into the observed coefficients. $M$ determines the frequency estimate's resolution; $N$ determines the hidden-grid replicas. These are different counts. Convergence of the estimated centroid as $M$ increases is a useful diagnostic, not a universal certificate. Rounding- or noise-level coefficients also influence an amplitude-weighted centroid because the numerator weights them by frequency. Any filtering or amplitude cutoff should be reported. The checks in Section~\ref{sec:checks} use no filtering.
+
+A raw DFT assumes periodic continuation of the interval data. Dropping a duplicate endpoint does not remove endpoint jumps or derivative mismatches. For example, the nonperiodic target $f(x)=x$ has period-two Fourier coefficient magnitudes $1/(\pi|k|)$ for $k\ne0$, by one integration by parts. Its truncated centroid over $|k|\le K$ is
+\begin{equation}
+ \bar\omega_K=\frac{\pi K}{H_K},\qquad H_K=\sum_{k=1}^K\frac1k.
+ \label{eq:ramp}
+\end{equation}
+It grows with $K$ despite the target's simple interval behavior. Thus local analyticity alone does not make a raw periodic centroid an intrinsic frequency scale.
+
+For a nonperiodic target, either use available analytic information about its variation, or specify an endpoint-handled spectral representation and the coefficients used in the centroid. Detrending, windowing, and fitting on an extended interval are different choices, not equivalent conventions. A fit accurate only on the real interval need not control the complex target values in the pole argument. Proposition~\ref{prop:class} remains a spectrum-free alias certificate when local analytic bounds are available. No universal nonperiodic frequency-estimation guarantee is claimed here.
+
+\section{Target dependence, tolerance, and the budget strategy}
+\label{sec:budget}
+For known coefficients let
+\[
+ S_f=\sum_j|b_j|,\qquad
+ \bar\omega=\frac1{S_f}\sum_j|b_j|\,|\omega_j|,
+\]
+including the constant mode under the convention above. When all retained $\chi_j=2\pi|\omega_j|/(N\lambda)$ are small,
+\begin{equation}
+ \sum_j|b_j|\T(\lambda,h|\omega_j|)
+ \approx\frac{4\pi e^{-A}}{N\lambda}\sum_j|b_j|\,|\omega_j|
+ =S_f\Sa(\lambda,N;\bar\omega).
+ \label{eq:mean-justification}
+\end{equation}
+Proposition~\ref{prop:score-errors} supplies a uniform bound on this replacement if it covers all retained frequencies. This is why amplitude weighting, rather than power weighting, matches the leading absolute-value alias estimate.
+
+At finite angles, $\sinh$ is convex. Jensen's inequality gives
+\begin{equation}
+ \boxed{S_f\Sscore(\lambda,N;\bar\omega)
+ \le\sum_j|b_j|\Sscore(\lambda,N;|\omega_j|).}
+ \label{eq:jensen}
+\end{equation}
+Hence compressing the full spectrum to its mean can underestimate the weighted score. Weak high-frequency components can matter disproportionately. The compact formula is an accurate approximation \emph{for its frequency input}; this does not certify that the input summarizes every relevant component. A constant-inclusive centroid is particularly sensitive to changes in offset when used with a fixed effective tolerance.
+
+\paragraph{Three tolerance conventions.}
+An \emph{absolute} alias budget $\varepsilon_a$ has the same units as $f$. A \emph{relative} budget $\eta_a$ is converted to an absolute one as $\varepsilon_a=\eta_a\norm f_{2,\Omega}$, where
+$\norm f_{2,\Omega}^2=\tfrac12\int_{-1}^1|f|^2$.
+An \emph{effective score tolerance} $\varepsilon_{\rm eff}$ is the dimensionless right side of \eqref{eq:recipe}.
+
+For a single nonzero absolute frequency with total coefficient mass $S_f$, the rigorous bound is $2S_f\T/(1-e^{-A})$. Ignoring its small tail and compact-score corrections, an absolute budget corresponds to
+\begin{equation}
+ \varepsilon_{\rm eff}\approx\frac{\varepsilon_a}{2S_f}.
+ \label{eq:effective-tolerance}
+\end{equation}
+For a mixture represented by a centroid, this is a practical normalization, not an exact all-frequency guarantee. A certificate uses \eqref{eq:weighted-bound}, including amplitudes and the tail factor, or uses \eqref{eq:class}. To use the compact score in a rigorous finite-spectrum bound, one can insert its upper correction from \eqref{eq:score-errors} term by term:
+\begin{equation}
+ E_{\rm alias}^{(\sigma)}(f)
+ \le\frac2{1-e^{-A}}\sum_j
+ \frac{|b_j|\Sscore(\lambda,N;|\omega_j|)}{1-e^{-(2A-\chi_j)}}.
+ \label{eq:compact-certificate}
+\end{equation}
+Here all relevant components satisfy $|h\omega_j|<\pi$; unresolved tails need a separate argument.
+
+A reproducible practical choice is $\varepsilon_{\rm eff}=2^{1-p}$ for $p$ binary significand bits: $2^{-52}$ for binary64 and $2^{-23}$ for binary32. These are spacings above one, whereas round-to-nearest unit roundoff is $2^{-p}$. The score tolerance need not equal either quantity. It should be compatible with the independently estimated resolution, boundary, sampling, and numerical allowances. At narrow widths, forcing the alias score below machine epsilon can be counterproductive when other contributions are much larger.
+
+\begin{proposition}[What the largest-feasible-bandwidth rule optimizes]
+\label{prop:budget}
+Fix $N$, the halo design, and a compact bandwidth interval $\mathcal I\subset(0,1]$. Suppose the non-aliasing approximation envelope is
+\begin{equation}
+ F_{N,R}(\lambda)=a_N+b_N\lambda^{-1}e^{-\lambda R^2/4},
+ \qquad a_N,b_N>0,
+ \label{eq:nonalias}
+\end{equation}
+and $G_N(\lambda)$ is a continuous increasing alias upper bound. If the feasible set is nonempty, then
+\begin{equation}
+ \lambda_{\rm bud}=\max\{\lambda\in\mathcal I:G_N(\lambda)\le\varepsilon_a\}
+ \label{eq:budget}
+\end{equation}
+minimizes $F_{N,R}$, and also $F_{N,R}+\varepsilon_a$, over that set.
+\end{proposition}
+\begin{proof}
+The feasible set is compact. The derivative of the nonconstant factor in $F_{N,R}$ has logarithm derivative $-1/\lambda-R^2/4<0$. Thus $F_{N,R}$ decreases, and its minimum over the feasible set is at its largest point.
+\end{proof}
+The proposition is conditional on the displayed non-aliasing envelope; it does not derive the boundary correction. The interior-resolution contribution $a_N$ is independent of $\lambda$ here. The result optimizes an error \emph{budget}, not necessarily $F_{N,R}+G_N$, and not the measured FP64 error. Substituting a representative-frequency score implements a useful approximation to this strategy. No theorem here turns that score into the actual total-error minimizer.
+
+\section{Small-angle inversion and prediction accuracy}
+\label{sec:inversion}
+The compact equation is the practical prescription. Its small-angle reduction makes the scaling especially transparent. Write
+\begin{equation}
+ \frac{C_{\rm alias}}{N\lambda}e^{-\pi^2/\lambda}=\varepsilon_a,
+ \qquad C_{\rm alias}>0.
+ \label{eq:scalar}
+\end{equation}
+For the unanchored practical score, $C_{\rm alias}=4\pi\bar\omega$ and $\varepsilon_a=\varepsilon_{\rm eff}$. The leading anchored weighted bound instead has $C_{\rm alias}=8\pi\sum_j|b_j||\omega_j|$, before any relative normalization. A class envelope proportional to $(N\lambda)^{-1}e^{-\pi^2/\lambda}$ has the same inversion, without a small-angle interpretation.
+
+\begin{theorem}[Logarithmic inversion with an explicit remainder]
+\label{thm:log}
+Set
+\begin{equation}
+ z=\frac{\pi^2N\varepsilon_a}{C_{\rm alias}},\qquad
+ L=\log\frac1z=\log\frac{C_{\rm alias}}{\pi^2N\varepsilon_a}.
+ \label{eq:L}
+\end{equation}
+For $0<z<e^{-1}$, the branch of \eqref{eq:scalar} with $\pi^2/\lambda>1$ is
+\begin{equation}
+ \lambda_{\rm sa}=\frac{\pi^2}{-W_{-1}(-z)},
+ \label{eq:Lambert}
+\end{equation}
+where $W_{-1}(-z)$ is defined as the solution $w\le-1$ to $we^w=-z$. If $L\ge2$, then
+\begin{equation}
+ \boxed{\lambda_{\rm sa}=\frac{\pi^2}{L+\log L+r_L},\qquad
+ 0<r_L\le\frac{\log(1+\log L/L)}{1-1/(L+\log L)}
+ \le\frac{2\log L}{L}.}
+ \label{eq:log-root}
+\end{equation}
+Thus $\pi^2/(L+\log L)$ overestimates the root, with relative error at most
+$2\log L/[L(L+\log L)]$.
+\end{theorem}
+\begin{proof}
+Substitution $A=\pi^2/\lambda$ reduces \eqref{eq:scalar} to
+$Ae^{-A}=z$, or $H(A):=A-\log A=L$ on the increasing branch $A>1$. This proves \eqref{eq:Lambert}. At $A_0=L+\log L$,
+\[
+ H(A_0)=L-\log(1+\log L/L)<L,
+\]
+so $A>A_0$. On $[A_0,A]$, $H'(v)\ge1-1/A_0$. The mean value theorem proves the first remainder inequality. For $L\ge2$, $1-1/A_0>1/2$, and $\log(1+x)\le x$ proves the second. The relative bandwidth error is $(A-A_0)/A_0$.
+\end{proof}
+This is a high-precision inversion, not an unrestricted limit as $N\to\infty$ at fixed tolerance. A scalar root must lie in the chosen bandwidth interval; a frequency-based small-angle interpretation additionally needs \eqref{eq:small-angle} at that root. In particular, omitting the $\pi^2$ inside $L$ changes the numerical prediction unless that factor is explicitly absorbed into $C_{\rm alias}$.
+
+\begin{corollary}[From score error to bandwidth error]
+\label{cor:root-error}
+For the same $N,\bar\omega,\varepsilon_{\rm eff}$, suppose
+$\T(\lambda_T,h\bar\omega)=\varepsilon_{\rm eff}$ and
+$\Sa(\lambda_{\rm sa},N;\bar\omega)=\varepsilon_{\rm eff}$ have roots in $(0,1]$. Set $A_s=\pi^2/\lambda_{\rm sa}$ and evaluate $A_T,\chi_T$ at $\lambda_T$. Then
+\begin{equation}
+ 0\le\log\frac{\lambda_{\rm sa}}{\lambda_T}
+ \le\frac{\displaystyle\log\!\left[
+ (\sinh\chi_T/\chi_T)/(1-e^{-(2A_T-\chi_T)})\right]}{A_s-1}.
+ \label{eq:root-error}
+\end{equation}
+\end{corollary}
+\begin{proof}
+Proposition~\ref{prop:score-errors} gives $\Sa\le\T$, so monotonicity yields $\lambda_T\le\lambda_{\rm sa}$. On the interval between the roots,
+$d\log\Sa/d\log\lambda=\pi^2/\lambda-1\ge A_s-1$.
+Integrate this inequality and substitute
+$\Sa(\lambda_{\rm sa})=\T(\lambda_T)=\varepsilon_{\rm eff}$.
+The upper score-ratio bound in \eqref{eq:score-errors} proves the claim.
+\end{proof}
+Score errors can be appreciable while the bandwidth error is small: their logarithms are divided by $A_s-1$, approximately $38.5$ near $\lambda=1/4$.
+
+\section{Width, precision, target dependence, and the hidden slope}
+\label{sec:sensitivity}
+For sensitivity calculations, treat $N$ continuously with the target-frequency input and budget held fixed. Integer grid choices then sample the resulting curve. Implicit differentiation of $A-\log A=L$ gives
+\begin{equation}
+ \boxed{
+ \frac{d\log\lambda_{\rm sa}}{d\log N}
+ =\frac{d\log\lambda_{\rm sa}}{d\log\varepsilon_a}
+ =-\frac{d\log\lambda_{\rm sa}}{d\log C_{\rm alias}}
+ =\frac1{\pi^2/\lambda_{\rm sa}-1}.}
+ \label{eq:sa-sensitivity}
+\end{equation}
+Thus larger width or a looser aliasing tolerance permits larger $\lambda$; greater target variation or stricter precision requires smaller $\lambda$. At $\lambda=1/4$, the local width exponent is about $0.026$, corresponding to approximately $1.8\%$ change for a doubling when the exponent stays nearly unchanged. This figure concerns the resolved small-angle model, not every width.
+
+The calculation can be done before linearization. Set $q=\chi\coth\chi$; on the increasing branch $A-q>0$ of the compact score,
+\begin{equation}
+ \boxed{
+ \frac{d\log\lambda_{\rm pred}}{d\log N}=\frac{q}{A-q},\qquad
+ \frac{d\log\lambda_{\rm pred}}{d\log\varepsilon_{\rm eff}}=\frac1{A-q},\qquad
+ \frac{d\log\lambda_{\rm pred}}{d\log\bar\omega}=-\frac{q}{A-q}.}
+ \label{eq:full-sensitivity}
+\end{equation}
+Indeed $\partial\log\Sscore/\partial\log N=-q$, $\partial\log\Sscore/\partial\log\bar\omega=q$, and \eqref{eq:compact-slope} gives the remaining derivative. As $\chi\to0$, $q\to1$ and these formulas reduce to \eqref{eq:sa-sensitivity}. At smaller widths, the target-frequency correction can be substantial. If the estimated frequency or chosen budget changes with $N$, differentiating them contributes additional terms; those changes must not be attributed solely to the fixed-target width law.
+
+\paragraph{Why the hidden slope is nearly linear.}
+The slope remains $\gamma_N=\lambda_NN/2$ by definition. Therefore its logarithmic slope with respect to $N$ is one plus the corresponding width sensitivity above. Under $R=O(\sqrt N)$, $W=N+O(\sqrt N)$. Slowly varying $\lambda_N$ then gives nearly linear hidden-slope refinement. More precisely, wherever $\lambda_N$ stays between two positive width-independent constants, $\gamma_N=\Theta(W)$. Neither conclusion requires $\lambda_N$ to converge to a particular constant, and neither is a necessity theorem for every accurate MLP.
+
+\paragraph{The kernel-only default is a different approximation.}
+Equation~\eqref{eq:transform} gives the basic activation-only score
+\begin{equation}
+ A_{\tanh}(\lambda)=\frac{\widehat K(2\pi/\lambda)}{\widehat K(0)}
+ =\frac{A}{\sinh A}\sim2Ae^{-A},\qquad
+ \Sa=\frac{\theta}{\pi}\,2Ae^{-A}.
+ \label{eq:basic}
+\end{equation}
+Dropping the factor $\theta/\pi=2\bar\omega/(\pi N)$ gives a target- and width-independent default. At $\varepsilon_{\rm eff}=2^{-52}$ its root is $0.2440764\ldots$; at $2^{-23}$ it is $0.50325\ldots$. The width-aware root is not required to approach this default as $N$ increases. A constant target has zero alias error, while $A_{\tanh}(\lambda)>0$; the basic score is therefore not the actual zero-frequency error. Its value is as a simple practical scale, not an exact output limit.
+
+\section{Connection to readout recovery}
+\label{sec:recovery}
+The bandwidth calculation supplies one contribution to a reference-network bound. Its transfer to least squares does not depend on whether this contribution was obtained from spectra or directly from quadrature poles. The following result makes the required input explicit and proves the transfer without invoking another document.
+
+Let $\Phi$ be the observation matrix whose columns are the constant feature and the tanh features in \eqref{eq:mlp}, and let $\mathbf y$ contain $M_X$ observed exact target values. Use the normalized sampled norm
+$\norm g_X^2=M_X^{-1}\sum_i|g(z_i)|^2$.
+
+\begin{lemma}[Scaled truncated-SVD transfer]
+\label{lem:transfer}
+Suppose a reference readout $\mathbf c_*$ in this fixed dictionary satisfies
+\begin{equation}
+ \norm{f-q_{\mathbf c_*}}_\infty\le E,\qquad
+ |c_{*,j}|\le B\alpha_j,\qquad \alpha_j>0,\qquad K=\sum_j\alpha_j.
+ \label{eq:transfer-input}
+\end{equation}
+Let $D=\diag(\sqrt{\alpha_j})$, $F=\Phi D/\sqrt{M_X}$, and $\mathbf y_X=\mathbf y/\sqrt{M_X}$. In exact arithmetic, choose a singular-value cutoff
+\[
+ \tau=\frac{E+\eta}{B\sqrt K}>0,\qquad \eta\ge0,
+\]
+and let $\mathbf a_\tau$ be the least-squares solution formed by retaining singular values of $F$ larger than $\tau$. Then $\mathbf c_\tau=D\mathbf a_\tau$ obeys
+\begin{equation}
+ \boxed{\norm{f-q_{\mathbf c_\tau}}_X\le2E+\eta,
+ \qquad \norm{\mathbf c_\tau}_1\le2BK.}
+ \label{eq:transfer}
+\end{equation}
+\end{lemma}
+\begin{proof}
+For $\mathbf a_*=D^{-1}\mathbf c_*$, the coordinate envelopes imply
+$\norm{\mathbf a_*}_2\le B\sqrt K=:S$ and
+$\norm{F\mathbf a_*-\mathbf y_X}_2\le E$.
+Write $\mathbf y_X=F\mathbf a_*+e$. The truncated inverse gives
+$\mathbf a_\tau=V_JV_J^\top\mathbf a_*+F_\tau^\dagger e$, hence
+$\norm{\mathbf a_\tau}_2\le S+E/\tau\le2S$.
+The discarded part of $F\mathbf a_*$ has norm at most $\tau S$; its residual is therefore at most $E+\tau S=2E+\eta$.
+Finally $\norm{D\mathbf a}_1\le\sqrt K\norm{\mathbf a}_2$ by Cauchy--Schwarz, proving the coefficient bound.
+\end{proof}
+
+For an already verified boundary-corrected reference, one may use
+\[
+ E=E_{\rm resolution}+E_{\rm alias}+E_{\rm boundary}
+\]
+with any valid alias bound proved above, while retaining the reference's coordinate envelopes. Lemma~\ref{lem:transfer} then immediately benefits from the improved $E$. It does not require the returned coefficients to equal the analytic reference coefficients or the full feature matrix to be well-conditioned. It also does not say that arbitrary unscaled, untruncated least squares has the same coefficient guarantee.
+
+The lemma is exact-arithmetic and sampled-norm. A continuous FP64 certificate additionally needs sampling transfer, matrix and label errors, factorization error, coefficient formation, input rounding, and evaluation bounds. Those terms can depend on $N$, $M_X$, and $\lambda$. The bandwidth rule does not minimize all of them. In an end-to-end result with approximation multiplier $C_X$, allocating an output alias budget $\eta_a$ requires $C_XE_{\rm alias}\le\eta_a$, not merely $E_{\rm alias}\le\eta_a$. This separates the analytic bandwidth calculation from the numerical recovery claim without treating either as an alternative algorithm.
+
+\section{Reproducible scalar checks and practical use}
+\label{sec:checks}
+The following values use $\varepsilon_{\rm eff}=2^{-52}$ and $\bar\omega=30\pi/7$. They are roots of the displayed scalar equations, not empirical minimizers of fitted-network error. The logarithmic column uses $\pi^2/(L+\log L)$ with $C_{\rm alias}=4\pi\bar\omega$.
+\begin{center}
+\small
+\begin{tabular}{r r r r r r}
+\toprule
+$N$ & $\chi$ at exact root & Exact pair & Compact $\sinh$ & Small angle & Log inversion\\
+\midrule
+32   & 13.187 & 0.200478 & 0.200478 & 0.252515 & 0.253153\\
+64   & 5.574  & 0.237151 & 0.237151 & 0.257197 & 0.257868\\
+128  & 2.586  & 0.255528 & 0.255528 & 0.262058 & 0.262765\\
+256  & 1.246  & 0.265292 & 0.265292 & 0.267110 & 0.267855\\
+512  & 0.608  & 0.271894 & 0.271894 & 0.272363 & 0.273149\\
+1024 & 0.297  & 0.277711 & 0.277711 & 0.277829 & 0.278660\\
+2048 & 0.146  & 0.283494 & 0.283494 & 0.283523 & 0.284402\\
+\bottomrule
+\end{tabular}
+\end{center}
+The compact root agrees with the exact first-pair root to all six displayed decimals. The small-angle root exceeds the exact root by about $25.96\%$ at $N=32$, $2.56\%$ at $N=128$, $0.685\%$ at $N=256$, and $0.173\%$ at $N=512$. Accuracy relative to the same representative-frequency rule does not establish a full-spectrum or total-error certificate.
+
+For comparison, using the exact centroid \eqref{eq:f2-mean} for $e^{\sin(3\pi x)}$ gives the compact roots
+\begin{center}
+\begin{tabular}{r r r r r}
+\toprule
+$N=32$ & $64$ & $128$ & $256$ & $512$\\
+\midrule
+0.239236 & 0.256585 & 0.265921 & 0.272398 & 0.278196\\
+\bottomrule
+\end{tabular}
+\end{center}
+The unthresholded two-sided transform of $M=1024$ distinct, period-two samples gives
+\[
+ \widehat{\bar\omega}_1=13.463968515388,\qquad
+ \widehat{\bar\omega}_2=6.349190385070,
+\]
+consistent with the analytic centroids at the displayed precision. Small differences at the final digits depend on transcendental and FFT arithmetic. On a nonperiodic ramp, the raw periodic estimates instead rise from approximately $26.85$ at $M=64$ to $265.54$ at $M=1024$, illustrating \eqref{eq:ramp} qualitatively rather than a physical target-frequency change.
+
+\paragraph{Implementation sequence.}
+Fix the center grid and halo, specify the target-frequency estimator and effective tolerance, compute the centroid from available observations or known target information, and solve \eqref{eq:recipe} in log arithmetic on a valid increasing bracket. The exact first-pair score is an alternative with monotonicity throughout $0<h\bar\omega<\pi$. The returned $\lambda$ determines $\gamma=\lambda/h$; then form the feature matrix and recover the readout. A root search or feasibility check for the \emph{scalar score} is not a bandwidth sweep involving repeated network fits.
+
+\paragraph{What the prediction establishes.}
+The tanh kernel supplies the steep factor $e^{-\pi^2/\lambda}$; target variation and grid resolution supply the finite-width correction. The compact equation accurately preserves the first-pair score. Averaging the target spectrum and allocating its tolerance are separate approximations that must be documented. The expected practical payoff is an inexpensive, pre-fit bandwidth prescription; its empirical sharpness is assessed against independently measured errors. A formal precision certificate additionally retains the full reference, sampling, and arithmetic budgets.
+
+\paragraph{Reproduction files.}
+\texttt{check\_bandwidth\_predictions.py} evaluates the scalar roots, checks the score and inversion inequalities numerically, and reproduces the DFT estimates with ordinary double-precision arithmetic. It requires Python and NumPy and writes \texttt{scalar\_predictions.csv}. These tests are numerical checks, not outward-rounded certificates and not higher-precision construction of network weights. The mathematical proofs above do not depend on that script.
+\end{document}

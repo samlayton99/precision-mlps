@@ -1,0 +1,17 @@
+targets: [runge, mixed_sine, sine, gaussian_envelope]
+activation: tanh
+halo_per_side: 24
+bandwidth_widths: [96, 128, 192, 256]
+refinement_width_start: 64
+refinement_width_stop: 256
+refinement_width_step: 2
+refinement_lambda: 0.25
+precision_width: 256
+precisions: [24, 32, 40, 53]
+lambda_min: 0.05
+lambda_max: 1.5
+lambda_count: 85
+train_points: 4801
+eval_points: 8001
+halo_checks: [48, 96]
+halo_lambda_count: 15

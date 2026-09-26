@@ -1,0 +1,30 @@
+\begin{algorithm}[t]
+\caption{Practical QuILL construction}
+\begin{algorithmic}
+\Require Target $f$, width $W\ge50$, activation $\sigma$, $s=4$.
+
+\State Normalize $g(z)=f(c+dz)$ to $z\in[-1,1]$,
+where $c,d$ are the domain center and half-width.
+
+\State Set $R=24$, $N=W-2R-1$, $h=2/N$, and
+$x_j=-1+jh$ for $j=-R,\ldots,N+R$.
+
+\State Sample $y_i=g(z_i)$ at $z_i=-1+2i/(M-1)$,
+$i=0,\ldots,M-1$, with $M=sW+1$.
+
+\State Choose $\lambda$ by Section~3.3
+(or the activation-specific appendix rule).
+Fix input weights $\gamma=\lambda/h$ and biases $-\gamma x_j$.
+
+\State Form $A=(a_{ij})$ with
+$a_{ij}=\sigma(\gamma(z_i-x_j))$
+(rows: samples; columns: neurons).
+
+\State Solve $Aw+b\mathbf1\approx\mathbf y$ by SVD least squares.
+
+\State \Return $\widehat f(x)=\widehat g((x-c)/d)$, where
+\[
+\widehat g(z)=b+\sum_j w_j\,\sigma(\gamma(z-x_j)).
+\]
+\end{algorithmic}
+\end{algorithm}

@@ -1,0 +1,1 @@
+Version-6 review complete. Root reviewed incorporation, references, notation, and layout; independent agents reviewed proof integration and safe compression. Findings and exact edits: V6_SURGICAL_REVIEW.md. No manuscript or TeX files changed. Current editor left open. Context sync unavailable; local reviewed context used.

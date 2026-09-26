@@ -1,0 +1,16 @@
+experiment: expD37_capacity_access_figures
+source_experiment: expD36_frozen_lambda_sweep
+training_steps: 20000
+new_readout_maps: [alpha_scale, neighbor_sqrt_cumulative]
+diagnostic_gammas: [4, 8, 16, 32, 64, 128]
+access_panel_gammas: [4, 64]
+damping_panel_gammas: [4, 16, 64]
+relative_tolerance: 0.001
+polynomial_max_degree: 96
+common_tail_degree: 16
+relative_damping_log10_min: -24
+relative_damping_log10_max: 2
+relative_damping_count: 401
+svd_relative_cutoffs: [1.0e-12, 1.0e-13, 1.0e-14, 1.0e-15]
+primary_svd_relative_cutoff: 1.0e-14
+theorem_targets: [mixed, runge]

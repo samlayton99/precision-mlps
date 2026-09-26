@@ -1,0 +1,256 @@
+% Include after construction_appendix.tex and before comparison_bounds_appendix.tex.
+% Uses the existing construction labels and bibliography. Requires graphicx.
+\providecommand{\qeqref}[1]{(\ref{#1})}
+
+\subsection{Selection of the relative bandwidth}
+\label{sec:qi-bandwidth}
+
+We derive the tanh prescription from the pole contribution in
+\qeqref{eq:corrected-decomp}. With the preceding geometry,
+\begin{equation}
+ \frac{2\pi d}{h}=\frac{\pi^2}{\lambda},
+ \label{eq:bandwidth-exponent}
+\end{equation}
+giving the exponential factor $e^{-\pi^2/\lambda}$ in \qeqref{eq:Pbound}.
+
+\subsubsection{Frequency-dependent pole bound}
+For a positive angular frequency $\omega$, put
+\begin{equation}
+ \begin{gathered}
+ A_\lambda=\frac{\pi^2}{\lambda},\qquad
+ t_\omega=\omega d,\qquad
+ \chi_\omega=2t_\omega=\frac{2\pi\omega}{N\lambda},\\
+ \mathcal T(\lambda,h\omega)=\sinh t_\omega
+ \left[\frac1{\sinh(A_\lambda-t_\omega)}
+       +\frac1{\sinh(A_\lambda+t_\omega)}\right],
+ \end{gathered}
+ \label{eq:bandwidth-pair}
+\end{equation}
+with $\mathcal T(\lambda,0)=0$. The first-pair score bounds the complete
+pole contribution as follows.
+
+\begin{proposition}[Frequency-dependent aliasing bound]
+\label{prop:bandwidth-alias}
+For a finite exponential sum $f(x)=\sum_j b_je^{i\omega_jx}$ with
+$|h\omega_j|<\pi$, the pole contribution on the existing midpoint contour
+satisfies
+\begin{equation}
+ E_{\rm alias}:=\sup_{x\in\Omega}|\mathcal P_h[F_x]|
+ \le\frac{2}{1-e^{-A_\lambda}}
+       \sum_{\omega_j\ne0}|b_j|\mathcal T(\lambda,h|\omega_j|).
+ \label{eq:bandwidth-weighted-bound}
+\end{equation}
+\end{proposition}
+\begin{proof}
+For a unit mode with $\omega>0$, \qeqref{eq:density} gives
+$a_\gamma(z)=i\sinh(t_\omega)e^{i\omega z}/d$. At height
+$(2\ell+1)d$, the density magnitudes at the four poles above and below
+$x,x_0$ sum to $4\sinh(t_\omega)\cosh((2\ell+1)t_\omega)/d$.
+Use the residues $1/(2\gamma)$ in absolute value and
+\qeqref{eq:Rbounds}, as in Lemma~\ref{lem:midpoint}
+\cite[Secs.~4--5]{JavedTrefethen2014}, to obtain
+\begin{align*}
+ E_{\rm alias}
+ &\le8\sinh t_\omega\sum_{\ell\ge0}
+       \frac{\cosh((2\ell+1)t_\omega)}{e^{(2\ell+1)A_\lambda}-1}\\
+ &=2\sinh t_\omega\sum_{m\ge1}
+       \left[\frac1{\sinh(mA_\lambda-t_\omega)}
+             +\frac1{\sinh(mA_\lambda+t_\omega)}\right].
+\end{align*}
+Extending the positive residue sum and expanding its geometric denominators
+gives the second line. Each successive $m$-term is at most
+$e^{-A_\lambda}$ times its predecessor because
+$\sinh(v+A_\lambda)\ge e^{A_\lambda}\sinh v$ for $v>0$.
+Summation proves the unit-mode bound. Negative frequencies have the same
+absolute bound, constants have zero density, and linearity gives
+\qeqref{eq:bandwidth-weighted-bound}. The factor two accounts for anchoring
+at $x_0$ as well as evaluation at $x$.
+\end{proof}
+
+\subsubsection{Compact score and scalar prescription}
+Define the compact and small-angle scores
+\begin{equation}
+ \mathcal S(\lambda,N;\omega)=2e^{-A_\lambda}\sinh\chi_\omega,
+ \qquad
+ \mathcal S_{\rm sa}(\lambda,N;\omega)=2\chi_\omega e^{-A_\lambda}.
+ \label{eq:bandwidth-scores}
+\end{equation}
+For $0<h\omega<\pi$,
+\begin{equation}
+ 1\le\frac{\mathcal T}{\mathcal S}
+ \le\frac1{1-e^{-(2A_\lambda-\chi_\omega)}},
+ \qquad
+ \frac{\mathcal S}{\mathcal S_{\rm sa}}
+ =\frac{\sinh\chi_\omega}{\chi_\omega}.
+ \label{eq:bandwidth-score-comparison}
+\end{equation}
+Indeed, expand $1/\sinh z=2e^{-z}/(1-e^{-2z})$ in the two terms of
+\qeqref{eq:bandwidth-pair}. Their leading exponentials sum to
+$4e^{-A_\lambda}\sinh t_\omega\cosh t_\omega=\mathcal S$, and the
+smaller denominator is $1-e^{-(2A_\lambda-\chi_\omega)}$.
+The compact approximation is therefore controlled throughout this band;
+small-angle linearization additionally requires $\chi_\omega\ll1$.
+Figure~\ref{fig:bw-width-rules} shows the width dependence
+of the refined bandwidth selections.
+
+For a representative frequency $\bar\omega$ and a dimensionless score budget
+$\varepsilon_{\rm eff}>0$, the practical rule solves
+\begin{equation}
+ \boxed{2\exp\!\left(-\frac{\pi^2}{\lambda_{\rm pred}}\right)
+ \sinh\!\left(\frac{2\pi\bar\omega}{N\lambda_{\rm pred}}\right)
+ =\varepsilon_{\rm eff}.}
+ \label{eq:bandwidth-prescription}
+\end{equation}
+Use an admissible bandwidth bracket on an increasing branch. In fact,
+\begin{equation}
+ \frac{\partial\log\mathcal S}{\partial\log\lambda}
+ =A_\lambda-\chi_\omega\coth\chi_\omega>0
+ \quad\hbox{if }A_\lambda-\chi_\omega\ge1,
+ \label{eq:bandwidth-monotonicity}
+\end{equation}
+because $\chi\coth\chi<\chi+1$. Check the condition at the largest bracket endpoint and use bisection with
+$\log\mathcal S=-(A_\lambda-\chi_\omega)
+ +\log(-\operatorname{expm1}(-2\chi_\omega))$.
+If the whole bracket satisfies the budget, select its largest endpoint;
+if none does, report infeasibility. A zero frequency imposes no score constraint.
+
+\subsubsection{Frequency input and tolerance}
+For known coefficients use
+$\bar\omega=\sum_j|b_j||\omega_j|/\sum_j|b_j|$.
+For period-two sample data, take $m_F=M-1=sN$ distinct observations
+$y_\ell=f(-1+2\ell/m_F)$, excluding the repeated endpoint from the transform,
+and define
+\begin{equation}
+ \widehat b_k=\frac1{m_F}\sum_{\ell=0}^{m_F-1}
+      y_\ell e^{-2\pi i k\ell/m_F},\qquad
+ \widehat{\bar\omega}
+ =\frac{\sum_{k\in\mathcal K}|\widehat b_k|\,|\pi k|}
+        {\sum_{k\in\mathcal K}|\widehat b_k|},\qquad
+ \mathcal K=\{-\lfloor m_F/2\rfloor,\ldots,\lceil m_F/2\rceil-1\}.
+ \label{eq:bandwidth-frequency-estimate}
+\end{equation}
+Weights are amplitudes, not powers; the constant mode is included in the
+denominator. A zero denominator returns no estimate. For nonperiodic targets,
+the endpoint treatment and any spectral filtering must be specified: the raw
+periodic transform can reflect endpoint mismatch rather than interior
+variation. $m_F$ controls observation resolution; $N$ controls hidden-grid replicas.
+
+Amplitude weighting matches the leading small-angle bound, which is
+proportional to $\sum_j|b_j||\omega_j|$. At finite angles, however, convexity
+of $\sinh$ gives
+$\bigl(\sum_j|b_j|\bigr)\mathcal S(\bar\omega)
+ \le\sum_j|b_j|\mathcal S(|\omega_j|)$,
+with $\lambda,N$ held fixed. The centroid substitution is therefore a
+heuristic, not an upper-bound-preserving reduction. To certify aliasing, use
+\qeqref{eq:bandwidth-weighted-bound} with all relevant frequencies, or the
+spectrum-free bound \qeqref{eq:Pbound}.
+
+For one nonzero absolute frequency with coefficient mass
+$B_{\rm spec}=\sum_j|b_j|$, an absolute alias budget $\varepsilon_a$ gives
+the leading normalization $\varepsilon_{\rm eff}\simeq
+\varepsilon_a/(2B_{\rm spec})$. A bound retains the corrections in
+\qeqref{eq:bandwidth-weighted-bound} and
+\qeqref{eq:bandwidth-score-comparison}; a relative budget first multiplies by
+$\|f\|_{2,\Omega}$. Allocate the budget alongside the other allowances in
+Section~\ref{sec:recovery}, rather than necessarily setting it to unit
+roundoff. The prescription is an aliasing criterion, not a characterization
+of the total-error minimizer.
+
+\paragraph{Width dependence and induced slopes.}
+Along an interior root of \qeqref{eq:bandwidth-prescription}, with frequency
+and tolerance fixed, implicit differentiation in continuous $N$ gives
+\begin{equation}
+ \frac{d\log\lambda_{\rm pred}}{d\log N}
+ =\frac{\chi\coth\chi}{A_\lambda-\chi\coth\chi},
+ \qquad
+ \frac{\gamma_{\rm pred}}W
+ =\frac{\lambda_{\rm pred}}2
+   \frac{N}{N+2\lceil a_H\sqrt N\rceil+1},
+ \label{eq:bandwidth-slope-scaling}
+\end{equation}
+where $\omega=\bar\omega$ and $\lambda=\lambda_{\rm pred}$ in the
+definitions above. Thus the relative bandwidth varies
+slowly when $A_\lambda\gg\chi\coth\chi$. Fixed $\lambda$ gives
+$\gamma/W\to\lambda/2$; more generally, uniform positive lower and upper
+bounds on the selected bandwidth give $\gamma_{\rm pred}=\Theta(W)$ on
+that regime. Figure~\ref{fig:bw-width-rules} shows the finite-width behavior,
+without asserting a width-independent asymptotic limit.
+Figure~\ref{fig:bw-error-rules} compares the selections
+with measured approximation errors.
+
+\subsubsection{Activation-specific rules used in the figures}
+\label{app:bw-general-rule}
+For an activation $\sigma$, let $K=\sigma^{(r)}$ be its localized
+derivative, with $K\in L^1(\mathbb R)$ and $\widehat K(0)\ne0$.
+Use $\widehat K(\xi)=\int K(t)e^{-i\xi t}\,dt$ and define the general rule by
+\begin{equation}
+ \frac{|\widehat K(2\pi/\lambda_{\rm general})|}
+ {|\widehat K(0)|}=\varepsilon_{\rm eff}.
+ \label{eq:bw-general-score}
+\end{equation}
+The transforms used in the figures are
+\begin{equation}
+\begin{array}{c|c|c}
+ \sigma(x)&r&\widehat K(\xi)\\\hline
+ \tanh x&1&\displaystyle\frac{\pi\xi}{\sinh(\pi\xi/2)}\\[4pt]
+ x\Phi(x)\ \text{(exact GELU)}&2&(1+\xi^2)e^{-\xi^2/2}\\[3pt]
+ x/(1+e^{-x})\ \text{(SiLU)}&2&
+ \displaystyle\frac{(\pi\xi)^2\cosh(\pi\xi)}{\sinh^2(\pi\xi)}\\[4pt]
+ \operatorname{erf}(x)&1&2e^{-\xi^2/4}
+\end{array}
+\label{eq:bw-activation-transforms}
+\end{equation}
+Here $\Phi$ is the standard normal cumulative distribution function;
+the transform values at zero are $2,1,1,2$, respectively.
+For tanh and $\varepsilon_{\rm eff}=2^{-52}$,
+\eqref{eq:bw-general-score} gives $\lambda_{\rm general}\simeq0.2441$;
+$\lambda=0.25$ is its rounded practical default.
+
+For $\theta=h\bar\omega=2\bar\omega/N$, the refined markers solve
+\begin{equation}
+ T_{K,r}(\lambda,\theta):=
+ \sum_{\ell\in\{-1,1\}}
+ \left|\frac{\theta}{\theta+2\pi\ell}\right|^r
+ \frac{|\widehat K((\theta+2\pi\ell)/\lambda)|}
+ {|\widehat K(\theta/\lambda)|}
+ =\varepsilon_{\rm eff},\qquad 0<\theta<\pi.
+ \label{eq:bw-general-refined}
+\end{equation}
+This is the magnitude sum of the nearest Fourier replicas of a
+central-amplitude-matched infinite lattice. Integrating the $r$th derivative
+back to the function supplies the frequency factor raised to $r$.
+For tanh it is exactly \qeqref{eq:bandwidth-pair}; the main-text rule uses
+its controlled compact approximation \qeqref{eq:bandwidth-prescription}.
+Select a root on an admissible increasing branch with nonzero denominator.
+The other activations use this replica score as a bandwidth heuristic;
+the finite-interval pole-contribution bound above is specific to tanh.
+Replacing a spectrum by $\bar\omega$ retains the limitations already stated.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/appendix/bandwidth_width_rules.png}
+  \caption{Bandwidth selection versus width parameter $N$ for tanh,
+  exact GELU, and SiLU. Colored curves give the refined selections for
+  the eight targets in the legend, using $\varepsilon_{\rm eff}=2^{-52}$.
+  Dashed lines give the activation-specific general-rule selections
+  (approximately $0.25$ for tanh). These are scalar rule calculations,
+  not fitted-network errors; the refined selections retain their
+  frequency-dependent drift.}
+  \label{fig:bw-width-rules}
+\end{figure}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/appendix/bandwidth_error_rules.png}
+  \caption{Measured relative $L^2$ error versus bandwidth for four
+  targets (rows) and four activations (columns). Colors indicate
+  $N=32,48,64,96,128,256$, with 32 halo nodes per side and total width
+  $W=N+65$. Vertical dashed lines mark the general rule; red diamonds
+  mark the refined selections and their directly measured errors.
+  Readouts use FP64 SVD least squares on 2003 uniform points, with
+  relative singular-value cutoff $2^{-52}$; errors use 4001 uniform
+  evaluation points. Tanh is shown over $0.05\le\lambda\le0.5$;
+  the other activations extend to $1$. Refined selections use the
+  representative-frequency heuristic and need not minimize measured error.}
+  \label{fig:bw-error-rules}
+\end{figure}

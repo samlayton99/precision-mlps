@@ -1,0 +1,19 @@
+target: chirp
+domain: [-1.0, 1.0]
+width_budget: 1024
+halo_per_side: 24
+precision_min: 8
+precision_max: 53
+train_points: 4801
+validation_points: 1024
+evaluation_points: 8001
+chebyshev_points: 4096
+# Dense low-degree choices, then extend to the full width budget (2d+1<=1024).
+degrees: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 64, 72, 80, 88, 96, 112, 128, 160, 192, 256, 384, 511]
+step_min: 0.0001
+step_max: 4.0
+step_count: 65
+activation_bias: 0.34657359027997264
+quill_svd_cutoff: 2**(1-p)
+selection: minimum_validation_relative_l2_per_precision
+rounding: fp64_construct_then_round_all_parameters_then_fp64_evaluate_then_round_output

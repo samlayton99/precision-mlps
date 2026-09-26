@@ -1,0 +1,44 @@
+\subsection{Error propagation for compiled arithmetic circuits}
+\label{app:circuit-error}
+
+Let $\Phi$ be an arithmetic circuit computing
+$f_\Phi:\Omega\to\mathbb R$. Suppose affine gates are exact and each
+multiplication gate is replaced by a neural multiplier with uniform local
+error at most $\delta$ on its prescribed operand domain. For each node $v$,
+let $B_v$ bound the magnitude of its exact intermediate value over $\Omega$.
+
+Define error bounds recursively in a topological ordering of the circuit.
+Input and constant nodes have $E_v(\delta)=0$. For an affine gate
+$v=c+\sum_i a_i u_i$ and a multiplication gate $v=uw$, respectively, set
+\begin{align*}
+ E_v(\delta)&=\sum_i |a_i|E_{u_i}(\delta),\\
+ E_v(\delta)&=B_wE_u(\delta)+B_uE_w(\delta)
+             +E_u(\delta)E_w(\delta)+\delta.
+\end{align*}
+Fix $\delta_{\max}>0$ such that all exact and approximate intermediate
+values remain in their prescribed domains for $0<\delta\le\delta_{\max}$.
+For the output node $o$, define
+\[
+ \kappa_\Phi:=\frac{E_o(\delta_{\max})}{\delta_{\max}}.
+\]
+Then
+\[
+ \|N_{\Phi,\delta}-f_\Phi\|_{\infty,\Omega}
+ \le\kappa_\Phi\delta,
+ \qquad 0<\delta\le\delta_{\max}.
+\]
+
+\paragraph{Proof.}
+Induction bounds the error at each node by $E_v(\delta)$.
+For multiplication, writing the operand errors as $e_u,e_w$ gives
+$(u+e_u)(w+e_w)-uw=we_u+ue_w+e_ue_w$; the multiplier adds at most
+$\delta$. The recursively defined $E_v$ are polynomials in $\delta$
+with nonnegative coefficients and zero constant term. Hence
+$E_o(\delta)/\delta$ is nondecreasing and
+\[
+ \frac{E_o(\delta)}{\delta}
+ \le\frac{E_o(\delta_{\max})}{\delta_{\max}}=\kappa_\Phi.
+\]
+The size and depth bounds follow by replacing each multiplication gate
+with the chosen neural multiplier; independent gates at the same circuit
+level are evaluated in parallel.

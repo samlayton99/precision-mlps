@@ -1,0 +1,15 @@
+targets: [sine4, sine24, weak_high_frequency, chirp, runge25, runge100, gaussian_envelope, smooth_bump]
+width_min: 64
+width_max: 2048
+points_per_octave: 8
+halo_per_side: 24
+lambda: 0.25
+precision_bits: 53
+minimum_train_points: 4801
+train_points_per_width: 4
+minimum_eval_points: 8001
+eval_points_per_width: 8
+eval_chunk_size: 1024
+bump_half_width: 0.5
+validation_widths: [64, 128, 256, 512, 1024, 2048]
+refit_validation_widths: [64, 256, 2048]

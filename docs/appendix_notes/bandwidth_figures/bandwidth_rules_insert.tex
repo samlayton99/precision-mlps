@@ -1,0 +1,292 @@
+% Insertion for the supplied bandwidth appendix.
+% Place after eq:bandwidth-exponent and before "Frequency-dependent pole bound".
+% Retain the supplied tanh proposition and proof, compact-score comparison,
+% frequency-estimation discussion, and tolerance qualifications.
+% Requires amsmath, amssymb, booktabs, graphicx, tabularx.
+\providecommand{\BandwidthWidthFigure}{figures/bandwidth_width_rules.pdf}
+\providecommand{\BandwidthErrorFigure}{figures/bandwidth_error_rules.pdf}
+
+\subsubsection{The general rule and its tanh default}
+\label{app:bw-general-rule}
+
+We first state the bandwidth prescription for an activation $\sigma$ with a
+localized derivative $K=\sigma^{(r)}$. We assume $K\in L^1(\mathbb R)$ and
+$\widehat K(0)\ne0$, and use the angular-frequency convention
+\[
+ \widehat K(\xi)=\int_{\mathbb R}K(t)e^{-i\xi t}\,dt.
+\]
+The general rule selects a bandwidth from the normalized Fourier magnitude
+\begin{equation}
+ G_K(\lambda):=
+ \frac{|\widehat K(2\pi/\lambda)|}{|\widehat K(0)|},
+ \qquad
+ G_K(\lambda_{\rm general})=\varepsilon_{\rm eff}.
+ \label{eq:bw-general-score}
+\end{equation}
+It depends on the activation and the chosen tolerance, and not on width or
+target frequency. Multiplying $K$ by a nonzero constant does not change the
+rule. The relevant transforms for the four activations in our figures are
+\begin{equation}
+\begin{array}{c|c|c}
+ \sigma(x)&r&\widehat K(\xi)\\\hline
+ \tanh x&1&\displaystyle\frac{\pi\xi}{\sinh(\pi\xi/2)}\\[5pt]
+ x\Phi(x)\quad\text{(exact GELU)}&2&
+       (1+\xi^2)e^{-\xi^2/2}\\[3pt]
+ \displaystyle\frac{x}{1+e^{-x}}\quad\text{(SiLU)}&2&
+       \displaystyle\frac{(\pi\xi)^2\cosh(\pi\xi)}{\sinh^2(\pi\xi)}\\[5pt]
+ \operatorname{erf}(x)&1&2e^{-\xi^2/4}
+\end{array}
+\label{eq:bw-three-transforms}
+\end{equation}
+Here $\Phi$ is the standard normal cumulative distribution function. The
+values at zero are defined by continuity: $2$, $1$, $1$, and $2$, respectively.
+At $\varepsilon_{\rm eff}=2^{-52}$, the roots on the decaying Fourier tail are
+\[
+ \lambda_{\rm general}^{\tanh}=0.2440764,\qquad
+ \lambda_{\rm general}^{\rm GELU}=0.6985705,\qquad
+ \lambda_{\rm general}^{\rm SiLU}=0.4453827.
+\]
+For erf, $\lambda_{\rm general}=\pi/\sqrt{\log(1/\varepsilon_{\rm eff})}$.
+For completeness, GELU has $K(x)=(2-x^2)\phi(x)$, where $\phi=\Phi'$;
+the Gaussian transform and differentiation give its table entry. For SiLU,
+write $\ell(x)=(1+e^{-x})^{-1}$ and $L=\ell'$. Then
+$K=2L+xL'$ and $\widehat L(\xi)=\pi\xi/\sinh(\pi\xi)$, so
+$\widehat K=\widehat L-\xi\widehat L'$, giving the stated expression.
+For erf, $K=2e^{-x^2}/\sqrt\pi$ gives the last entry directly.
+Thus $\lambda=1/4$ is a convenient rounded FP64 tanh default, rather than a
+third activation-independent rule. It is not exactly the root of
+\eqref{eq:bw-general-score}: the tanh score at $1/4$ is
+$5.6511\times10^{-16}$.
+
+The quarter-scale default also has an independent justification under the
+admissibility hypotheses of the tanh representation theorem. If $B$ bounds
+the analytic target on the prescribed complex neighborhood, that proof gives
+\begin{equation}
+ E_{\rm alias}\le4B\mathcal U(\pi^2/\lambda),\qquad
+ \mathcal U(a)=\frac{e^{-a}}{(1-e^{-a})(1-e^{-2a})}.
+ \label{eq:bw-quarter-class-bound}
+\end{equation}
+This uses the representation theorem's condition $\gamma\delta\ge4\pi$,
+where $\delta$ is the analytic-neighborhood radius.
+At $\lambda=1/4$, $4\mathcal U(4\pi^2)=2.8629\times10^{-17}$.
+This statement concerns the aliasing contribution; the boundary, resolution,
+and numerical-recovery contributions still require their own estimates.
+
+\subsubsection{Why the kernel ratio appears}
+\label{app:bw-replicas}
+
+Use the grid coordinate $u=(x+1)/h$, where $h=2/N$. A finite lattice sum of
+derivative kernels has Fourier transform
+\begin{equation}
+ \widehat{\sum_j a_jK(\lambda(u-j))}(\theta)
+ =\lambda^{-1}\widehat K(\theta/\lambda)C(\theta),\qquad
+ C(\theta)=\sum_j a_je^{-ij\theta},\quad
+ C(\theta+2\pi m)=C(\theta).
+ \label{eq:bw-lattice-spectrum}
+\end{equation}
+The coefficient factor repeats at every lattice frequency. Dividing a
+replica by the retained Fourier component therefore cancels that factor.
+For a nonzero mode $\theta=h\omega$, integrating $r$ times gives the output
+replica ratio
+\begin{equation}
+ t_m(\lambda,\theta)=
+ \left(\frac{\theta}{\theta+2\pi m}\right)^r
+ \frac{\widehat K((\theta+2\pi m)/\lambda)}
+      {\widehat K(\theta/\lambda)},\qquad m\ne0.
+ \label{eq:bw-output-replica}
+\end{equation}
+The central transform must be nonzero. Polynomial integration constants of
+degree below $r$ are separate from these nonzero-frequency ratios.
+Equation~\eqref{eq:bw-output-replica} explains both ingredients of the
+refinement: the shifted Fourier arguments and the frequency factors from
+integration. It does not require the fitted readout coefficients.
+
+\subsubsection{The frequency-dependent refinement}
+\label{app:bw-refined-rule}
+
+For $0<\theta<\pi$, retain the nearest replica pair and define
+\begin{equation}
+ T_{K,r}(\lambda,\theta)=
+ \frac{
+ \left(\frac{\theta}{2\pi-\theta}\right)^r
+   |\widehat K((2\pi-\theta)/\lambda)|
+ +\left(\frac{\theta}{2\pi+\theta}\right)^r
+   |\widehat K((2\pi+\theta)/\lambda)|}
+ {|\widehat K(\theta/\lambda)|}.
+ \label{eq:bw-first-pair}
+\end{equation}
+Given a representative angular frequency $\bar\omega$, the refined rule is
+\begin{equation}
+ T_{K,r}(\lambda_{\rm refined},2\bar\omega/N)
+ =\varepsilon_{\rm eff}.
+ \label{eq:bw-refined-root}
+\end{equation}
+Both prescriptions select the largest admissible bandwidth within a stated
+search interval. A bracketed root solve is used on an increasing branch;
+if the entire interval meets the budget, its upper endpoint is returned,
+and an infeasible interval is reported rather than extrapolated.
+
+The general score retains the rapidly varying Fourier decay while dropping
+the width- and target-dependent prefactors. More precisely, at fixed
+$\lambda$ and $\theta\downarrow0$,
+\begin{equation}
+ \frac{T_{K,r}(\lambda,\theta)}{2(\theta/(2\pi))^r}
+ \longrightarrow G_K(\lambda).
+ \label{eq:bw-general-refined-limit}
+\end{equation}
+The division by $\theta^r$ matters: the refined score itself does not tend
+to the general score. Nor does this limit imply that roots at a fixed
+tolerance converge to $\lambda_{\rm general}$ as width tends to infinity.
+
+The function enters this scalar rule only through $\bar\omega$.
+Consequently its width curves are exact horizontal rescalings in $N$:
+if $\Lambda_{K,r}(z)$ solves $T_{K,r}(\lambda,2/z)=\varepsilon_{\rm eff}$,
+then $\lambda_{\rm refined}(N,\bar\omega)=\Lambda_{K,r}(N/\bar\omega)$.
+Converting to total width $W=N+2\lceil\sqrt N\rceil+1$ slightly changes this
+rescaling. It introduces no additional target dependence.
+
+The reason a constant general rule can remain useful is threshold
+sensitivity, rather than an asymptote of the refined roots. In the
+small-angle regime, put $C_\theta=2(\theta/(2\pi))^r$. If $\lambda_b$ solves
+$G_K(\lambda_b)=\varepsilon_{\rm eff}$ and $\lambda_s$ solves the surrogate
+$C_\theta G_K(\lambda_s)=\varepsilon_{\rm eff}$, the mean value theorem gives
+\begin{equation}
+ \log\frac{\lambda_s}{\lambda_b}
+ =-\frac{\log C_\theta}{D_K(\widetilde\lambda)},\qquad
+ D_K(\lambda)=\frac{d\log G_K(\lambda)}{d\log\lambda},
+ \label{eq:bw-threshold-sensitivity}
+\end{equation}
+for some $\widetilde\lambda$ between the two roots. For tanh,
+$D_K=a\coth a-1$, $a=\pi^2/\lambda$; its value at the FP64 general root is
+about $39.44$. A large change in an algebraic prefactor can therefore move
+the selected bandwidth much less. This comparison requires both a small
+central angle and negligible shifts in the Fourier tail: for tanh,
+$\pi\theta/\lambda\ll1$; for GELU, $2\pi\theta/\lambda^2\ll1$ and
+$\theta/\lambda\ll1$. The full refined score retains these shifts instead.
+
+For tanh, set $a=\pi^2/\lambda$ and
+$s=\pi\theta/(2\lambda)$. Direct substitution gives
+\begin{equation}
+ T_{K,1}(\lambda,\theta)
+ =\sinh s\,[\operatorname{csch}(a-s)+\operatorname{csch}(a+s)]
+ \simeq2e^{-a}\sinh(2s).
+ \label{eq:bw-tanh-reduction}
+\end{equation}
+With $\theta=2\bar\omega/N$, the final expression is exactly the compact
+score used in \eqref{eq:bandwidth-prescription} below. The supplied
+comparison \eqref{eq:bandwidth-score-comparison} controls this reduction.
+Thus the first-pair rule for a general activation and the compact tanh rule
+are two forms of the same refinement, with the latter using a controlled
+tail approximation.
+
+For an even positive transform whose logarithm is concave on the alias
+tail, put
+\[
+ \rho_K=
+ \frac{\widehat K((4\pi-\theta)/\lambda)}
+      {\widehat K((2\pi-\theta)/\lambda)}<1.
+\]
+The complete unanchored replica sum satisfies
+\begin{equation}
+ T_{K,r}\le\sum_{m\ne0}|t_m|
+ \le\frac{T_{K,r}}{1-\rho_K}.
+ \label{eq:bw-tail-control}
+\end{equation}
+Successive transform ratios are at most $\rho_K$ by log-concavity, and the
+integration factors also decrease, so summing the two geometric tails
+proves the upper inequality. The finite-contour tanh construction has an
+additional factor two from anchoring, as proved below. The general replica
+identity alone does not establish that finite-domain theorem for GELU or
+SiLU or erf. A representative frequency is also a practical reduction: for a
+multi-frequency target, a certified alias bound retains the full weighted
+spectrum, as in \eqref{eq:bandwidth-weighted-bound}.
+
+\subsubsection{Inputs and evaluation of the figures}
+Both figures use $\varepsilon_{\rm eff}=2^{-52}$, the spacing above one in
+binary64. The scalar solve uses the exact first-pair score, without the
+anchoring factor or later-pair correction; these are practical selections,
+not total-error certificates. Every displayed root is bracketed on
+$[0.003,1.5]$. The width figure displays $32\le N\le8192$ on a linear
+$N$ axis. A curve is omitted wherever its representative frequency
+violates $2\bar\omega/N<\pi$. Its frequency inputs are:
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{l r X}
+\toprule
+Target & $\bar\omega$ & Frequency convention\\
+\midrule
+$\sin(4\pi x)$ & $4\pi$ & Exact single frequency.\\
+$\sin(24\pi x)$ & $24\pi$ & Exact single frequency.\\
+$\sin(2\pi x)+10^{-3}\sin(40\pi x)$
+ & $2.04\pi/1.001$ & Exact amplitude-weighted line centroid.\\
+$\sin(8\pi(x+1)^2)$ & $16\pi$ & Mean absolute phase derivative on $[-1,1]$.\\
+$1/(1+25x^2)$ & $5$ & Whole-line Fourier-amplitude centroid.\\
+$1/(1+100x^2)$ & $10$ & Whole-line Fourier-amplitude centroid.\\
+$\log(\cosh(10x))/10$ & $6.45255$ & Fixed 4096-point period-two DFT amplitude centroid.\\
+$e^{-8(x-0.2)^2}\sin(8\pi x)$ & $8\pi$ & Carrier-frequency approximation.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+The log-cosh transform uses $x_\ell=-1+2\ell/4096$, omits the repeated
+endpoint, retains DC in the centroid denominator, and applies no window or
+filter. Although endpoint values agree, the periodic extension has a
+derivative jump; this estimate depends on transform resolution, which is
+held fixed as width changes. The chirp and packet inputs are characteristic
+frequency estimates, not exact amplitude centroids.
+
+The error figure uses four different targets:
+$\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x)$,
+$e^{-20x^2}$, $e^{\sin(3\pi x)}$, and $\operatorname{sech}(5x)$.
+Their frequency inputs are, respectively,
+$30\pi/7$, $\sqrt{80/\pi}$, $6.349190385$, and
+$40\mathsf C/\pi^2$, where $\mathsf C=\sum_{j\ge0}(-1)^j/(2j+1)^2$
+is Catalan's constant. The first and third use discrete Fourier-amplitude
+centroids (including DC); the second and fourth use whole-line transform
+centroids. In particular,
+$\widehat{\operatorname{sech}(5\cdot)}(\omega)
+=(\pi/5)\operatorname{sech}(\pi\omega/10)$ gives the final value.
+
+All fits use uniformly spaced centers
+$c_j=-1+2j/N$, $-32\le j\le N+32$, and
+$N\in\{32,48,64,96,128,256\}$.
+Thus $W=N+65$ and the halo is fixed at 32 per side, matching
+the archived experiment. Each feature matrix includes a constant column;
+there is no separate affine skip. Readouts are fit on 2003 uniform points
+by FP64 SVD least squares with relative singular-value cutoff $2^{-52}$.
+Relative $L^2$ errors are evaluated on 4001 uniform points. The displayed
+curves combine 1440 archived observations and 2400 added observations under
+this protocol; 96 additional fits evaluate the exact refined selections.
+No curve smoothing is applied. The network fits test the practical rule;
+they do not instantiate the boundary-corrected tanh construction in the
+supremum-norm theorem.
+
+\begin{figure}[tbp]
+ \centering
+ \includegraphics[width=\linewidth]{\BandwidthWidthFigure}
+ \caption{Predicted bandwidth versus $N$ for tanh, exact
+ GELU, and SiLU, with the same vertical scale in all three panels.
+ Colored curves evaluate the frequency-dependent rule for
+ the eight stated target functions at $\varepsilon_{\rm eff}=2^{-52}$.
+ Each horizontal dashed line shows the activation-specific general
+ Fourier-ratio root (approximately $0.25$ for tanh). These are scalar rule calculations, not
+ network fits. The general rule is constant in width; the refined rule
+ retains its frequency-dependent drift. Frequency conventions are stated
+ above.}
+ \label{fig:bw-width-rules}
+\end{figure}
+
+\begin{figure}[tbp]
+ \centering
+ \includegraphics[width=\linewidth]{\BandwidthErrorFigure}
+ \caption{Measured relative error against bandwidth, compared with the
+ general and frequency-dependent prescriptions. Columns: tanh, exact GELU,
+ SiLU, and erf. Rows: the four targets written above each panel, all distinct
+ from the eight targets of Figure~\ref{fig:bw-width-rules}. Colors show
+ $N=32,48,64,96,128,256$ with 32 halo nodes per side. Dashed vertical lines
+ mark the general-rule bandwidth; red diamonds mark the refined selections.
+ Marker heights are directly evaluated network errors, not error
+ predictions from the selector. All fits and evaluations use FP64;
+ horizontal ranges differ between activations. The markers use the
+ representative-frequency heuristic and need not minimize measured error.}
+ \label{fig:bw-error-rules}
+\end{figure}
