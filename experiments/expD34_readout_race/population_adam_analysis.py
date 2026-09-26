@@ -60,8 +60,13 @@ def summarize(rows):
     if 'sum_rootC6_sum' not in first:return result
     future=[r for r in rows if r['step']>25000]
     clocks=[r['accumulated_concentration_ratio'] for r in future]
+    dispersion_reference=(first['sum_dispersion_sum']-lookup[20000]['sum_dispersion_sum'])/5000
+    dispersion=[(r['sum_dispersion_sum']-first['sum_dispersion_sum'])/
+                (r['step']-25000)/dispersion_reference for r in future]
     result.update(clock_ratio_end=clocks[-1],clock_ratio_max=max(clocks),
         clock_factor_two_all_saved_prefixes=max(clocks)<=2,
+        dispersion_ratio_end=dispersion[-1],dispersion_ratio_max=max(dispersion),
+        dispersion_factor_two_all_saved_prefixes=max(dispersion)<=2,
         minimum_training_error=min(last['minimum_error'],last['relative_error']),
         any_1pct=last['hits_1pct']>0 or last['relative_error']<.01,
         any_0p1pct=last['hits_0p1pct']>0 or last['relative_error']<.001,
@@ -99,11 +104,13 @@ def aggregate(summaries):
         key=f'{cohort}_{optimizer}_W{int(width)}'
         fields=('M_start','M_ratio','C6_start','C6_ratio','effective_count_start','effective_count_end',
                 'lambda_end','slope_ratio','error_end','eval_error_end','clock_ratio_max',
+                'K_start','K_end','dispersion_ratio_max',
                 'tracking_slope_activity_share','balanced_adaptive_access_start','balanced_adaptive_access_ratio',
                 'balanced_adaptive_access_median','balanced_raw_access_median',
                 'M_closure_relative','A_closure_relative','logC6_closure_relative','archive_relative_difference_max')
         result[key]=dict(cases=len(rr),**{f:stats([r.get(f,np.nan) for r in rr]) for f in fields})
-        for field in ('clock_factor_two_all_saved_prefixes','any_1pct','any_0p1pct','any_1e4'):
+        for field in ('clock_factor_two_all_saved_prefixes','dispersion_factor_two_all_saved_prefixes',
+                      'any_1pct','any_0p1pct','any_1e4'):
             observed=[r for r in rr if field in r]
             result[key][field]=dict(measured=len(observed),count=sum(bool(r[field]) for r in observed))
         for q in ('logC6','M','A'):
