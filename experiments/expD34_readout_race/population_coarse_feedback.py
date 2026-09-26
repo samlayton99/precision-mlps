@@ -36,14 +36,17 @@ def proposal(state, x, y, config, arm=0, tracking_factor=1.):
     metric = jnp.where(frozen, state['fixed_inverse'], inverse)
     candidate = -eta * metric * ch[0]
     projected, resolved = balanced(candidate, jc, metric)
-    use_balance = (arm == 2) | (arm == 3) | (arm == 5)
-    gain = jnp.where((arm == 1) | (arm >= 3), 10., 1.)
+    use_balance = (arm == 2) | (arm == 3) | (arm == 5) | (arm == 8)
+    gain = jnp.where((arm == 1) | (arm == 3) | (arm == 4) | (arm == 5), 10., 1.)
     target = gain * jnp.linalg.norm(candidate[:-1])
     direction = jnp.where(use_balance, projected, candidate)
     norm = jnp.linalg.norm(direction[:-1])
     altered = gain * candidate
     altered = jnp.where(use_balance, direction * divide(target, norm), altered)
     fine = jnp.where(arm == 0, original[0], altered)
+    # Secondary controls: no fine motion, or the fork denominator at unit gain.
+    fine = jnp.where(arm == 6, jnp.zeros_like(fine), fine)
+    target = jnp.where(arm == 6, 0., target)
     tracking = tracking_factor * original[1]
     delta = native + (fine - original[0]) + (tracking_factor - 1.) * original[1]
     delta = jnp.where((arm == 0) & (tracking_factor == 1.), native, delta)

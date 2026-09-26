@@ -40,7 +40,7 @@ def execute(stage,seconds,cohort,payload):
     import os
     import resource
     start=time.monotonic();output=Path('/tmp/feedback-output');output.mkdir()
-    gpu=stage in ('audit','gd','adam')
+    gpu=stage in ('audit','gd','adam','followup')
     env=dict(os.environ,JAX_PLATFORMS='cuda' if gpu else 'cpu')
     logs='';returncode=0;command=[]
     if stage in ('verify','audit'):
@@ -96,7 +96,7 @@ def main(output:str,stage:str='verify',seconds:float=300,cohort:str='all',source
         for p in destination.parent.glob('*/execution.json'):
             d=json.loads(p.read_text())
             if d['platform']=='Modal GPU':spent+=d['seconds']+15 # Include receipt/packaging reserve.
-    if stage in ('audit','gd','adam') and not recover and not 0<seconds<=10800-spent-60:
+    if stage in ('audit','gd','adam','followup') and not recover and not 0<seconds<=10800-spent-60:
         raise ValueError(f'Aggregate 3 GPU-hour cap: {spent:.1f}s already allocated')
     if recover:data=modal.FunctionCall.from_id(recover).get()
     else:
@@ -107,7 +107,7 @@ def main(output:str,stage:str='verify',seconds:float=300,cohort:str='all',source
                     if folder.is_dir() and folder.name!='analysis':
                         for p in folder.iterdir():
                             if p.suffix in ('.csv','.json'):z.write(p,str(Path(folder.name)/p.name))
-        call=gpu.spawn(stage,seconds,cohort) if stage in ('audit','gd','adam') else cpu.spawn(stage,seconds,cohort,payload.getvalue())
+        call=gpu.spawn(stage,seconds,cohort) if stage in ('audit','gd','adam','followup') else cpu.spawn(stage,seconds,cohort,payload.getvalue())
         print(f'Recoverable Modal call: {call.object_id}',flush=True);data=call.get()
     with zipfile.ZipFile(io.BytesIO(data)) as z:
         if sum(p.file_size for p in z.infolist())>96*1024**2:raise ValueError('Artifact cap')

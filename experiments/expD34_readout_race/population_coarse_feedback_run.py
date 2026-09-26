@@ -127,7 +127,7 @@ def run(args):
     start=time.monotonic();cases=registry(args.inputs)
     if args.cohort!='all':
         width,seed=map(int,args.cohort.split('_'));cases=[c for c in cases if (c['width'],c['seed'])==(width,seed)]
-    if args.stage!='audit':cases=[c for c in cases if c['age']==130000 and (args.stage!='adam' or c['origin']=='adam')]
+    if args.stage!='audit':cases=[c for c in cases if c['age']==130000 and (args.stage not in ('adam','followup') or c['origin']=='adam')]
     rows=[];probes=[];curves=[];runs=[];bursts=[];sources=[];times=[]
     def flush():
         for name,values in (('states',rows),('probes',probes),('curvature',curves),('runs',runs),('bursts',bursts)):
@@ -158,6 +158,8 @@ def run(args):
                 policies += [(f'rate_{r:g}',r*reference,1.,0) for r in (.25,.5,.9,1.05,1.25)]
                 policies += [(f'rate_{r:g}_tracking01',r*reference,.1,0) for r in (.9,1.05)]
             duration=10000
+        elif args.stage=='followup':
+            policies=[(name,.002,1.,i) for name,i in (('native',0),('fine_off',6),('frozen',7),('frozen_balanced',8))];duration=20000
         else:policies=[(name,.002,1.,i) for i,name in enumerate(cf.ARMS)];duration=20000
         stopped=False;runtime=time.monotonic()
         configs=jnp.stack([config.at[0].set(eta) for _,eta,_,_ in policies])
@@ -209,5 +211,5 @@ def run(args):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--inputs',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--stage',choices=('audit','gd','adam'),required=True);p.add_argument('--cohort',default='all')
+    p.add_argument('--stage',choices=('audit','gd','adam','followup'),required=True);p.add_argument('--cohort',default='all')
     p.add_argument('--seconds',type=float,required=True);run(p.parse_args())

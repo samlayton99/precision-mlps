@@ -104,3 +104,19 @@ def test_batched_independent_branches():
         expected,_=cf.advance(single,x,y,c,arm,steps=12)
         for key in ('p','m','v','cm','accounts'):
             np.testing.assert_allclose(actual[key][arm],expected[key],rtol=2e-11,atol=2e-13)
+
+
+def test_secondary_controls():
+    saved,x,y,c=example();s=cf.initialize(saved,x,y,c)
+    native=cf.proposal(s,x,y,c);off=cf.proposal(s,x,y,c,6)
+    np.testing.assert_array_equal(off['fine'],jnp.zeros_like(s['p']))
+    np.testing.assert_allclose(off['delta'],native['tracking']+native['unknown'],atol=1e-16)
+    for arm in (7,8):
+        z=cf.proposal(s,x,y,c,arm)
+        other=cf.proposal(dict(s,v=100*s['v']),x,y,c,arm)
+        np.testing.assert_array_equal(z['fine'],other['fine'])
+        np.testing.assert_allclose(jnp.linalg.norm(z['fine'][:-1]),jnp.linalg.norm(native['fine'][:-1]),rtol=1e-12)
+        if arm==8:assert float(jnp.linalg.norm(z['jc']@z['fine']))<1e-13
+    final,_=cf.advance(s,x,y,c,6,steps=100)
+    assert abs(float(cf.diagnostics(final,x,y,c,6)['A_fine']))==0
+    assert abs(float(cf.diagnostics(final,x,y,c,6)['A_closure']))<1e-11
