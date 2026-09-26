@@ -161,15 +161,18 @@ def plot(output,native,contrasts):
                 vv=vals(w,t,k);axes[1,j].scatter([i]*len(vv),vv,color=c,marker=marker,s=23,label=label if i==0 else None)
         axes[0,j].set_title(f'Width {w}: parameter energy at 125k')
         for ax in axes[:,j]:ax.set_ylim(0,1.04);ax.set_xticks(range(6),LABELS,rotation=25);ax.set_xlim(-.6,5.6)
+        axes[0,j].set_ylim(0,1.22);axes[0,j].set_yticks([0,.25,.5,.75,1])
     axes[0,0].set_ylabel('Fraction of parameter energy');axes[1,0].set_ylabel('Population share / overlap')
-    axes[0,1].legend(fontsize=8);axes[1,1].legend(fontsize=8,loc='lower left')
+    axes[0,1].legend(fontsize=8,loc='upper center',ncol=3)
+    handles,labels=axes[1,1].get_legend_handles_labels()
+    fig.legend(handles,labels,fontsize=8,loc='outside lower center',ncol=2)
     fig.suptitle('Concentrated energy, active groups, and redistribution: 25k–125k')
     save(fig,'energy_and_activity')
     fig,axes=plt.subplots(3,2,figsize=(11,10),layout='constrained')
     for j,w in enumerate((705,1409)):
         for ci,n in enumerate((100,1000,10000)):
             for i,t in enumerate(SIX):
-                vv=vals(w,t,f'slope_coherence_{n}');axes[0,j].scatter([i+(ci-1)*.16]*len(vv),vv,s=24,color=plt.get_cmap('tab10')(ci),label=f'{n:,}-update windows' if i==0 else None)
+                vv=vals(w,t,f'slope_coherence_{n}');axes[0,j].scatter([i+(ci-1)*.16]*len(vv),vv,s=24,color=plt.get_cmap('tab10')(ci),label=f'{n:,} updates' if i==0 else None)
         for ci,(proposal,label) in enumerate(zip(('raw','scaled_current','processed'),('Raw fine','Scaled current fine','Momentum-processed fine'))):
             for i,t in enumerate(SIX):
                 vv=vals(w,t,proposal+'_outward_cosine_median');axes[1,j].scatter([i+(ci-1)*.16]*len(vv),vv,s=24,color=plt.get_cmap('tab10')(ci),label=label if i==0 else None)
@@ -185,7 +188,9 @@ def plot(output,native,contrasts):
         for ax in axes[:,j]:ax.set_xticks(range(6),LABELS,rotation=25);ax.set_xlim(-.6,5.6)
     axes[0,0].set_ylabel('Net fine slope displacement / path');axes[1,0].set_ylabel('Cosine with outward slope direction')
     axes[2,0].set_ylabel('Ratio (activity: final / first 10k windows)')
-    axes[0,1].legend(fontsize=8);axes[1,1].legend(fontsize=8);axes[2,1].legend(fontsize=8)
+    axes[0,1].legend(fontsize=7.5,loc='lower center',ncol=3)
+    axes[1,1].legend(fontsize=7,loc='lower center',ncol=3)
+    axes[2,1].legend(fontsize=8)
     fig.suptitle('Directional persistence and outward alignment: each seed shown')
     save(fig,'fine_direction')
     fig,axes=plt.subplots(2,2,figsize=(11,7.5),layout='constrained')
