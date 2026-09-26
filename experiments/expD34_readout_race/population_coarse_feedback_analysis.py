@@ -55,7 +55,7 @@ def analyze(args):
         if not folder.is_dir() or not (folder/'execution.json').exists():continue
         receipt=json.loads((folder/'execution.json').read_text());receipts.append(dict(folder=folder.name,**{k:receipt[k] for k in ('stage','platform','seconds','returncode')}))
         if receipt['returncode']:continue
-        if receipt['stage'] not in ('audit','gd','adam'):continue
+        if receipt['stage'] not in ('audit','gd','adam','followup'):continue
         if receipt['stage']=='audit' and use_new_audit and folder.name!='audit_metrics':continue
         for name,dest in (('states',states),('curvature',curves),('probes',probes),('runs',runs)):
             dest.extend(dict(stage=receipt['stage'],folder=folder.name,**r) for r in read(folder/(name+'.csv')))
@@ -68,9 +68,13 @@ def analyze(args):
     source=[]
     for r in audit:
         denom=r['z_change']**2
+        magnitude=r['linear_coarse']+r['equilibrium_change']+r['nonlinear_coarse']
         source.append(dict(**r,linear_share=ratio(r['linear_z_pairing'],denom),
             equilibrium_share=ratio(r['equilibrium_z_pairing'],denom),
-            nonlinear_share=ratio(r['remainder_z_pairing'],denom)))
+            nonlinear_share=ratio(r['remainder_z_pairing'],denom),
+            linear_magnitude_share=ratio(r['linear_coarse'],magnitude),
+            equilibrium_magnitude_share=ratio(r['equilibrium_change'],magnitude),
+            nonlinear_magnitude_share=ratio(r['nonlinear_coarse'],magnitude)))
     write(output/'tracking_sources.csv',source)
     paired=[]
     for end in (10000,20000):
@@ -104,6 +108,7 @@ def analyze(args):
         first=min(cs,key=lambda c:c['offset'])
         gd.append(dict(**r,lambda_rms=e['lambda_rms'],lambda_gain=e['lambda_rms']-s['lambda_rms'],
             lambda_ratio=ratio(e['lambda_rms'],s['lambda_rms']),error_ratio=ratio(e['relative_error'],s['relative_error']),
+            best_error_ratio=ratio(e['minimum_error'],s['relative_error']),
             relative_eval_error=e.get('relative_eval_error',np.nan),minimum_error=e['minimum_error'],
             fine_A=e['A_fine'],tracking_A=e['A_tracking'],step_A=e['A_step'],
             tracking_to_fine_A=ratio(e['A_tracking'],e['A_fine']),step_to_fine_A=ratio(e['A_step'],e['A_fine']),loss_increases=e['loss_increases'],
@@ -150,9 +155,22 @@ def analyze(args):
             lambda_ratio=ratio(r['lambda_rms'],b['lambda_rms']),error_ratio=ratio(r['relative_error'],b['relative_error']),
             left_stability=r['final_stability_ratio'],right_stability=b['final_stability_ratio']))
     write(output/'gd_tracking_contrasts.csv',gd_contrasts)
+    followup=[]
+    for end in (10000,20000):
+        subset=[r for r in states if r['stage']=='followup' and r['offset']==end and r['alive']]
+        native={r['case_key']:r for r in subset if r['arm']=='native'}
+        for r in subset:
+            n=native[r['case_key']]
+            followup.append(dict(case_key=r['case_key'],target=r['target'],width=r['width'],seed=r['seed'],arm=r['arm'],offset=end,
+                **{key:ratio(r[key],n[key]) for key in ('lambda_rms','relative_error','minimum_error','z2_sum','raw_tracking2_sum','shadow_gain_sum')},
+                actual_lambda=r['lambda_rms'],actual_error=r['relative_error'],
+                fine_A=r['A_fine'],tracking_A=r['A_tracking'],step_A=r['A_step'],
+                tracking_lag=ratio(r['z_lag_dot'],r['z2_sum']),mean_shadow_gain=r['shadow_gain_sum']/end))
+    write(output/'followup_pairs.csv',followup)
+    write(output/'run_outcomes.csv',runs)
     coverage={stage:dict(states=sum(r['stage']==stage for r in states),runs=sum(r['stage']==stage for r in runs),
         complete=sum(r['stage']==stage and r['complete'] for r in runs),
-        statuses={status:sum(r['stage']==stage and r['status']==status for r in runs) for status in ('complete','nonfinite','unresolved','budget_stopped')}) for stage in ('audit','gd','adam')}
+        statuses={status:sum(r['stage']==stage and r['status']==status for r in runs) for status in ('complete','nonfinite','unresolved','budget_stopped')}) for stage in ('audit','gd','adam','followup')}
     summaries=[]
     for offset in (10000,20000):
         for arm in ARMS:
@@ -176,11 +194,15 @@ def analyze(args):
     (output/'summary.json').write_text(json.dumps(facts,indent=2)+'\n')
     highlights=dict(coverage=coverage,gpu_seconds=facts['gpu_seconds_with_receipt_reserve'],
         scaled_A_closure=facts['scaled_A_closure'],
-        gd=[dict(origin=origin,arm=arm,n=len(rr),**{key:distribution([r[key] for r in rr if r['complete']]) for key in ('lambda_ratio','relative_error','error_ratio','final_stability_ratio','loss_increases','tracking_to_fine_A','step_to_fine_A')})
+        followup=[dict(arm=arm,offset=end,target=target,n=len(rr),
+            **{key:distribution([r[key] for r in rr]) for key in ('lambda_rms','relative_error','minimum_error','z2_sum','tracking_lag','mean_shadow_gain')})
+            for arm in ('native','fine_off','frozen','frozen_balanced') for end in (10000,20000) for target in ('all',*TARGETS)
+            if (rr:=[r for r in followup if r['arm']==arm and r['offset']==end and (target=='all' or r['target']==target)])],
+        gd=[dict(origin=origin,arm=arm,n=len(rr),**{key:distribution([r[key] for r in rr if r['complete']]) for key in ('lambda_ratio','relative_error','error_ratio','best_error_ratio','final_stability_ratio','loss_increases','tracking_to_fine_A','step_to_fine_A')})
             for origin in ('gd','adam') for arm in sorted(set(r['arm'] for r in gd))
             if (rr:=[r for r in gd if r['origin']==origin and r['arm']==arm])],
         balancing=[dict(offset=end,left=left,right=right,target=target,n=len(rr),
-            **{key:distribution([r[key] for r in rr]) for key in ('lambda_rms','relative_error','fine_slope_path','z2_sum','mean_shadow_gain')})
+            **{key:distribution([r[key] for r in rr]) for key in ('lambda_rms','relative_error','minimum_error','fine_slope_path','z2_sum','mean_shadow_gain')})
             for end in (10000,20000) for left,right in (('balanced','native'),('balanced10','fine10'),('frozen_balanced10','frozen10')) for target in ('all',*TARGETS)
             if (rr:=[r for r in contrasts if r['offset']==end and r['left']==left and (target=='all' or r['target']==target)])])
     (output/'highlights.json').write_text(json.dumps(highlights,indent=2)+'\n')
@@ -196,7 +218,7 @@ def analyze(args):
             rr=[r for r in paired if r['offset']==10000 and r['arm']=='native' and r['target']==target]
             if rr:ax[1].scatter([r['tracking_lag'] for r in rr],[r['tracking_to_fine_A'] for r in rr],color=colors[ti])
         ax[0].set(xlabel='Adaptive sharpness / frozen stability threshold',ylabel='Coarse contribution to top-mode curvature',title='A. Which curvature sets the Adam boundary?')
-        ax[0].axvline(1,color='.7',ls=':');ax[0].axhline(1,color='.7',ls=':');ax[0].legend(fontsize=8)
+        ax[0].axvline(1,color='.7',ls=':');ax[0].axhline(1,color='.7',ls=':');ax[0].legend(fontsize=8,loc='upper left')
         ax[1].set(xlabel='One-step correlation of tracking error',ylabel=r'Linear tracking / fine contribution to $\Delta A$',title='B. Oscillation and direct population effect')
         ax[1].axhline(0,color='.7',ls=':');ax[1].set_yscale('symlog',linthresh=.1)
         save(fig,output,'stability_and_tracking')
@@ -206,13 +228,13 @@ def analyze(args):
             for pi,proposal in enumerate(('processed','balanced')):
                 rr=[r for r in source if r['origin']==origin and r['age']==130000 and r['proposal']==proposal and r['norm_matched']]
                 x=oi*3+pi
-                for ki,key in enumerate(('linear_share','equilibrium_share','nonlinear_share')):
+                for ki,key in enumerate(('linear_magnitude_share','equilibrium_magnitude_share','nonlinear_magnitude_share')):
                     values=[r[key] for r in rr if np.isfinite(r[key])]
                     ax[0].scatter(np.full(len(values),x+(ki-1)*.18),values,s=12,alpha=.5,color=colors[ki])
                     if values:ax[0].plot([x+(ki-1)*.18-.07,x+(ki-1)*.18+.07],[np.median(values)]*2,color=colors[ki],lw=3)
         for i,label in enumerate(('Coarse-output change','Moving equilibrium','Nonlinear remainder')):ax[0].scatter([],[],color=colors[i],label=label)
-        ax[0].set(xticks=[0,1,3,4],xticklabels=['GD\nfine','GD\nbalanced','Adam\nfine','Adam\nbalanced'],ylabel='Signed share of tracking regeneration',title='A. Which response renews tracking?')
-        ax[0].set_yscale('symlog',linthresh=1);ax[0].axhline(1,color='.7',ls=':');ax[0].legend(fontsize=8)
+        ax[0].set(xticks=[0,1,3,4],xticklabels=['GD\nfine','GD\nbalanced','Adam\nfine','Adam\nbalanced'],ylabel='Magnitude / sum of the three magnitudes',title='A. Sources of an isolated fine-step response',ylim=(-.04,1.2))
+        ax[0].axhline(1,color='.7',ls=':');ax[0].legend(fontsize=8,loc='upper center',ncol=1)
         for ti,target in enumerate(TARGETS):
             rr=[r for r in paired if r['target']==target and r['arm']=='balanced10' and r['offset']==10000]
             controls={r['case_key']:r for r in paired if r['arm']=='fine10' and r['offset']==10000}
@@ -226,7 +248,7 @@ def analyze(args):
         fig,ax=plt.subplots(1,2,figsize=(10,3.8),layout='constrained')
         rates=('native_rate','rate_0.25','rate_0.5','rate_0.9','rate_1.05','rate_1.25')
         for ti,target in enumerate(TARGETS):
-            for ai,key in enumerate(('lambda_ratio','error_ratio')):
+            for ai,key in enumerate(('lambda_ratio','best_error_ratio')):
                 vals=[]
                 for arm in rates:
                     rr=[r for r in gd if r['origin']=='gd' and r['target']==target and r['arm']==arm and r['complete']]
@@ -236,20 +258,35 @@ def analyze(args):
         ax[0].set(ylabel='RMS slope / fork RMS slope',title='A. Population response after 10k GD updates')
         ax[0].yaxis.set_major_locator(matplotlib.ticker.LogLocator(subs=(1,2,5)))
         ax[0].yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:g}'))
-        ax[1].set(ylabel='Raw relative error / fork error',title='B. Output response at the same budget');ax[1].legend(fontsize=8)
+        ax[1].set(ylabel='Best raw relative error / fork error',title='B. Best output error within 10k updates');ax[1].legend(fontsize=8)
         save(fig,output,'gd_rate_response')
     if paired:
         fig,ax=plt.subplots(1,2,figsize=(10,3.8),layout='constrained')
-        names=['Native','Fine ×10','Balanced','Balanced\n×10','Frozen\n×10','Frozen +\nbalanced ×10']
+        names=['Native','Fine ×10','Balanced','Balanced ×10'];shown=ARMS[:4]
         for ti,target in enumerate(TARGETS):
-            for ai,key in enumerate(('lambda_rms_ratio','relative_error_ratio')):
+            for ai,key in enumerate(('lambda_rms_ratio','minimum_error_ratio')):
                 for end,style in ((10000,'-'),(20000,'--')):
-                    vals=[np.median([r[key] for r in paired if r['target']==target and r['arm']==arm and r['offset']==end]) if any(r['target']==target and r['arm']==arm and r['offset']==end for r in paired) else np.nan for arm in ARMS]
-                    ax[ai].plot(range(6),vals,style,marker='o' if end==10000 else '.',ms=4,color=colors[ti],alpha=1 if end==10000 else .55,label=LABELS[ti] if end==10000 else None)
-        for a in ax:a.set(xticks=range(6),xticklabels=names);a.axhline(1,color='.7',ls=':');a.set_yscale('log')
-        ax[0].set(ylabel='RMS slope / native RMS slope',title='A. Population acquisition: pulse / release')
-        ax[1].set(ylabel='Raw error / native raw error',title='B. Does extra motion improve output?');ax[1].legend(fontsize=8)
+                    vals=[np.median([r[key] for r in paired if r['target']==target and r['arm']==arm and r['offset']==end]) if any(r['target']==target and r['arm']==arm and r['offset']==end for r in paired) else np.nan for arm in shown]
+                    if ai==0:vals=100*(np.asarray(vals)-1)
+                    ax[ai].plot(range(4),vals,style,marker='o' if end==10000 else '.',ms=4,color=colors[ti],alpha=1 if end==10000 else .55,label=LABELS[ti] if end==10000 else None)
+        for i,a in enumerate(ax):a.set(xticks=range(4),xticklabels=names);a.axhline(0 if i==0 else 1,color='.7',ls=':')
+        ax[1].set_yscale('log')
+        ax[0].set(ylabel='RMS slope change versus native (%)',title='A. Population acquisition: pulse / release')
+        ax[1].set(ylabel='Best raw error / native best raw error',title='B. Does extra motion improve output?');ax[1].legend(fontsize=8)
         save(fig,output,'adam_causal_response')
+    if followup:
+        fig,ax=plt.subplots(1,2,figsize=(10,3.8),layout='constrained')
+        names=('fine_off','frozen','frozen_balanced')
+        for ti,target in enumerate(TARGETS):
+            for i,arm in enumerate(names):
+                rr=[r for r in followup if r['target']==target and r['arm']==arm and r['offset']==10000]
+                if rr:ax[0].scatter(np.full(len(rr),i)+(ti-2.5)*.04,[r['z2_sum'] for r in rr],color=colors[ti],s=20,label=LABELS[ti] if i==0 else None)
+                rr=[r for r in runs if r['stage']=='followup' and r['target']==target and r['arm']==arm]
+                if rr:ax[1].scatter(np.full(len(rr),i)+(ti-2.5)*.04,[min(r['end_offset'],10000) for r in rr],color=colors[ti],s=20)
+        for a in ax:a.set(xticks=range(3),xticklabels=['No fine motion','Frozen fine\ndenominator','Frozen +\nbalanced']);a.set_yscale('log')
+        ax[0].axhline(1,color='.7',ls=':');ax[0].set(ylabel='Tracking energy / native tracking energy',title='A. Does tracking require fine forcing?');ax[0].legend(fontsize=8)
+        ax[1].axhline(10000,color='.7',ls=':');ax[1].set(ylabel='Updates reached in the 10k pulse',title='B. Are unit-gain frozen controls stable?')
+        save(fig,output,'secondary_controls')
 
 
 if __name__=='__main__':
