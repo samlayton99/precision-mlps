@@ -20,6 +20,14 @@ and test the relevant optimizer mechanisms. They do not establish
 insufficient energy concentration as Adam's bottleneck or provide an Adam
 rate theorem.
 
+The amplitude test identifies an additional mechanism: tracking restricts
+the fine update through Adam's shared second moment. Attenuating tracking
+inside a shadow denominator exposes a mean 5.3–10-fold fine norm gain in
+every case, after capping gains at ten. Using that larger budget accelerates
+some targets, but in others mainly generates cancelling activity or a
+renewed tracking response. The evidence therefore concerns the amount and
+direction of actual fine motion, not concentration or activity alone.
+
 **Quantities used throughout this study.**
 
 | Symbol | Meaning |
@@ -424,6 +432,75 @@ assert that every measured trajectory has this form. The shadow-denominator
 experiment below tests its relevance while retaining the native tracking
 update. The matched scalar-gain control distinguishes a larger motion budget
 from a change in its allocation across coordinates.
+
+### The denominator test supports an amplitude restriction, with coupled limits
+
+All 72 follow-up runs complete. Each case receives a shared native burn-in
+from 125k to 130k, followed by native training, a scalar gain on the fine
+update, or the shadow-denominator policy. Both altered policies use the
+same locally available fine hidden-update norm, capped at ten times the
+native proposal. They run for 10k updates and then release to native Adam
+for 10k. Tracking and output-bias updates always use their native formulas
+at the current clone state; the native moment histories continue throughout.
+
+On the 24 native paths, the mean available capped gain ranges from 5.30
+to 9.95, with median 7.64. Thus tracking can substantially restrict fine
+motion through the shared denominator even when its signed slope contribution
+is small. This establishes an indirect effect of tracking, distinct from
+the direct tracking term in the slope-energy balance.
+
+The scalar-gain control increases pulse-end RMS in all twelve degree-five,
+sine, and kink cases. The increases are 1.74–3.34%, 1.65–15.2%, and
+7.70–12.9%, respectively, and are primarily supplied by additional fine
+slope-energy growth. Degree five and sine retain positive RMS differences
+after release. The denominator policy gives broadly similar scale gains in
+these families, with no uniform advantage over scalar amplification. This
+supports an amplitude restriction more clearly than a universally harmful
+coordinate allocation.
+
+The bump demonstrates the coupled limit. At width 705, seed 30, scalar
+amplification produces 15.6 times the native fine slope path, but fine
+coherence falls from 0.529 to 0.081. Its pulse-end RMS gain is only 0.048%.
+The denominator policy produces 73.3 times the path, with coherence 0.052,
+and lowers RMS by 1.01%. Across all four bump cases, scalar amplification
+raises RMS by only 0.043–0.165%, while fine coherence falls in every case.
+More activity has not produced proportionate outward motion. This is a
+causal example of the coupled dynamics turning a larger fine budget into
+largely cancelling updates, rather than evidence that the intervention did
+nothing.
+
+Tracking can also become significant after intervention. In all four step
+cases, the denominator policy increases the fine contribution, but a larger
+opposing tracking contribution offsets it. In all four Gaussian cases,
+that policy raises RMS while the fine contribution is smaller than in the
+control; a renewed positive tracking response supplies the gain. The
+unchanged tracking formula does not imply unchanged tracking along an
+altered trajectory. These cases prevent interpreting every scale increase
+as successful fine-force reinforcement.
+
+<figure>
+  <img src="evidence/adam_variance_final_20260926/tracking_denominator.png" alt="Tracking attenuation exposes a larger fine budget, but much greater activity need not yield scale growth or accurate output" style="max-width:100%;">
+  <figcaption>Forks at 130k after the shared 5k native burn-in. Top left: mean available fine hidden-update gain along each native trajectory over the pulse interval, with the gain capped at ten before averaging. Top right: accumulated fine slope path relative to the native control. Bottom: paired changes in slope RMS and raw relative error. Filled markers show the 140k pulse endpoint and open markers the 150k release endpoint; the response panels show medians and ranges over four width–seed combinations. The two policies match the available norm locally, so their evolving trajectories need not accumulate equal paths. Large activity ratios with small RMS changes expose cancellation or non-outward movement. Large percentage error changes are interpreted using the retained absolute errors.</figcaption>
+</figure>
+
+Output accuracy remains a separate test. At the pulse endpoint, scalar
+amplification improves both RMS and error in 11 of 24 cases; the denominator
+policy does so in 9. Every altered degree-five, sine, and bump run remains
+above 1% error at both selected endpoints. Across both endpoints, normalized slope RMS remains
+below 0.013 in every altered run. This is still far below the construction
+reference 0.25, without treating that reference as necessary for a chosen
+error tolerance. Some already-accurate cases suffer large temporary error
+increases. These policies are diagnostic interventions, not proposed
+replacement optimizers.
+
+The resulting Adam explanation has two measured parts. The shared
+denominator restricts the available fine-update amplitude; enlarging that
+amplitude can help, but can also reduce coherence and trigger tracking
+responses. Native momentum organizes useful direction, while concentrated
+energy does not guarantee that useful motion reinforces itself. This
+supports a population account based on signed motion and its coupled
+feedback. It does not support a concentration-only explanation, a universal
+restoring equilibrium, or an extrapolated Adam acquisition-time bound.
 
 ## The archive already distinguishes the two population regimes
 
@@ -940,3 +1017,43 @@ versions of the three new figures accompany the summaries.
 The first command's cap applies to that run. A combined campaign must
 subtract its recorded GPU time before allocating a denominator follow-up;
 the two commands are not permission to exceed the aggregate 1.8-hour budget.
+
+### Completed denominator follow-up and total resource use
+
+The denominator follow-up uses 1245.2 recorded GPU seconds, including its
+twelve-test GPU verification. Together the two campaigns use 5413.8 seconds,
+or **1.50 GPU-hours**, within the 1.8-hour aggregate cap. All 264 runs
+complete, with 24 shared 5k burn-ins in addition. The largest remote peak
+child host-memory use is 4598 MiB; each GPU job has an 8192 MiB hard cap.
+All numerical post-processing also runs on Modal.
+
+The denominator run has no unresolved coarse solves, zero-candidate norm
+matches, or nonfinite state diagnostics. Its largest component discrepancy
+is $4.03\times10^{-15}$, largest norm-budget discrepancy is
+$1.16\times10^{-15}$, and largest accumulated slope-energy closure error
+is $3.37\times10^{-11}$. The two error grids agree to
+$4.23\times10^{-6}$ in relative-error units. The expanded twelve-test
+suite passes on Modal CPU and GPU, including native recurrence, moment
+history on release, the shadow-variance recurrence with cross terms, and
+matched local norm budgets.
+
+The [native available gains](evidence/adam_variance_final_20260926/native_denominator_gains.csv),
+[paired responses and signed contributions](evidence/adam_variance_final_20260926/denominator_contrasts.csv),
+and [checks and execution records](evidence/adam_variance_final_20260926/facts.json)
+support the fourth figure. The [run directory](evidence/adam_variance_runs_20260926/)
+retains scalar histories, shared fork states, and final optimizer states.
+Gain diagnostics on native paths or after release describe the available
+shadow-denominator gain; they are not gains applied by the native policy.
+
+```sh
+.venv-modal/bin/modal run experiments/expD34_readout_race/population_adam_motion_modal.py \
+  --stage variance --seconds 1900 \
+  --output /tmp/adam_variance_reproduction
+.venv-modal/bin/modal run experiments/expD34_readout_race/population_adam_motion_modal.py \
+  --stage analyze_variance --seconds 300 --source /tmp/adam_variance_reproduction \
+  --output /tmp/adam_variance_analysis_reproduction
+```
+
+The 1900-second follow-up cap was assigned only after the primary run's
+4168.6-second receipt was available, leaving a reserve below the aggregate
+cap. A reproduction must similarly account for actual preceding GPU use.

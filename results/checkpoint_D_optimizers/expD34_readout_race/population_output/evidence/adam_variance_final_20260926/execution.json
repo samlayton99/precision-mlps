@@ -1,0 +1,37 @@
+{
+  "platform": "Modal CPU",
+  "stage": "analyze_variance",
+  "seconds": 20.25619034,
+  "memory_hard_limit_mib": 4096,
+  "peak_child_rss_mib": 3954.5078125,
+  "tests": "............                                                             [100%]\n12 passed in 15.57s\n",
+  "command": [
+    "/usr/local/bin/python",
+    "-m",
+    "experiments.expD34_readout_race.population_adam_variance_analysis",
+    "--inputs",
+    "/tmp/scalar-inputs",
+    "--output",
+    "/tmp/motion-output",
+    "--seconds",
+    "253.152862985"
+  ],
+  "log": "............                                                             [100%]\n12 passed in 15.57s\n{\"runs\": 72, \"complete_runs\": 72, \"native_cases\": 24, \"native\": {\"initial_gain\": {\"n\": 24, \"min\": 3.22737860453053, \"median\": 6.60864078953615, \"max\": 12.431886884219965}, \"mean_gain\": {\"n\": 24, \"min\": 5.331105340484961, \"median\": 7.93032145318891, \"max\": 21.976762841454068}, \"mean_capped_gain\": {\"n\": 24, \"min\": 5.297709710541685, \"median\": 7.637775062693832, \"max\": 9.951364459846445}, \"cap_fraction\": {\"n\": 24, \"min\": 0.0, \"median\": 0.0854, \"max\": 0.9506}}}\n",
+  "source_hashes": {
+    "experiments/expD34_readout_race/population_adam_motion.py": "825c61f8fc37b9a4ef1ee67c777736a38564d76a86f3ef1ae740a116be1275d4",
+    "experiments/expD34_readout_race/population_adam_motion_run.py": "054c486678e6e25f48a69c27628e045ff21c2332d8569fc70cc0d6b69ebfe248",
+    "experiments/expD34_readout_race/population_adam_motion_modal.py": "392668e722246a40ab2c55009a2403f82eb7b13db8742b827e40d2ce9bedc622",
+    "experiments/expD34_readout_race/population_adam_motion_analysis.py": "11dc51d49313e5e8d412ed6ddc5f507350dd608fde24f78959c067fcde916de9",
+    "experiments/expD34_readout_race/population_adam.py": "f77142348c34de139a05604f140527253e351778e7bed73e484e35db071ee9a7",
+    "experiments/expD34_readout_race/population_adam_run.py": "ebecba587996e5333ce2ac0034373ca5b1eca8eff05c09bec556f92b70a8ecdc",
+    "experiments/expD34_readout_race/population_adam_variance.py": "96c6e6051e5b6862783faf88b044b0c9d26301c7db0f5c22b930f13e58032733",
+    "experiments/expD34_readout_race/population_adam_variance_run.py": "d3d9fab71404ddf4458023c98c085c25a3980eec3aa10c62446ab052a32ec822",
+    "experiments/expD34_readout_race/population_adam_variance_analysis.py": "341727f9c155f3e5804d3cc593d7e472e2aa87f82f2fbf7c6b5cf7d3a2b81693",
+    "experiments/expD34_readout_race/adam_forces.py": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6",
+    "tests/test_population_adam.py": "d5ac0ea1f5f1aba518d0aea063a683c95c32cede6194e7b846471839de524045",
+    "tests/test_population_adam_motion.py": "738e2969803366d1de0e840f9e014c1686ec44ec10dcc423efba6828bc4ca36b",
+    "tests/test_population_adam_variance.py": "5ccaae0cedf1d8e00a7b7e9cadad02b1afd6d2df9a58b9604a426ec17a0b7a88"
+  }
+}

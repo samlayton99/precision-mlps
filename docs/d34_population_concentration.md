@@ -1247,7 +1247,7 @@ are deterministic. Counting loss increases larger than $10^{-14}$, the median
 fraction is 43% at width 705 and 34% at width 1409. Raw weak sensitivity
 alone is therefore insufficient to bound native Adam's motion.
 
-The present result is a qualified qualitative extension: moderate
+These initial measurements give a qualified qualitative extension: moderate
 concentration accumulation and predominantly fine-driven net slope growth
 survive, while the GD panel's broadly shared modest energy and its correction
 signs do not. An Adam theorem would need aggregate control of coupling through
@@ -1255,10 +1255,136 @@ the adaptive denominator and moment history. The existing GD theorem remains
 a statement about its specified dynamics and empirically validated regime;
 these Adam measurements do not supply an Adam rate or output-error theorem.
 
-All 56 new cases completed, including the six missing GD controls. Native
+All 56 cases in that initial audit completed, including the six missing GD controls. Native
 update and component checks passed on Modal; no coarse solve was unresolved.
 The accumulated energy and concentration identities agree to relative
 discrepancy at most $1.35\times10^{-12}$ when normalized by their absolute
 signed-contribution budget, with a floor of one. The campaign used about
 1.07 recorded GPU-hours. These are verification results for the measurements,
 separate from the theoretical claims above.
+
+### The motion follow-up separates concentration from activity
+
+The next campaign completes 192 continuations and paired policies across
+the same six targets, two widths, and two seeds. It answers a specific
+ambiguity: a small effective energy-sharing count does not say whether those
+neurons are stationary, moving outward, or reversing. Over 25k–125k, the
+initial top 5% by energy retain a median 98.5% of final energy and supply
+a median 98.4% of signed fine-driven slope growth. Yet they account for only
+a median 3.63% of total squared hidden-update activity. The energy-dominant
+group and the population carrying most of the activity are different.
+
+Nor is the energy generally confined to readouts. Slopes hold 77–93% of
+final hidden energy in the twenty non-degree-five cases; degree five has
+28–42%. Concentration is relative, and even concentrated slope energy can
+remain far below a population-scale budget. Within-group redistribution
+also matters: sine retains 90–99% of final energy in the initial top 5%,
+while overlap of the full normalized energy distribution falls to
+0.331–0.582. A stable effective count does not imply fixed energy weights.
+
+For the twelve degree-five, sine, and bump cases that fail 1% accuracy in
+the initial native panel, the fine slope update retains substantial
+directional persistence. Its average net displacement divided by path length
+in 10k windows is 0.661–0.924. Nevertheless, fine slope activity in the
+final 10k window is only 12–42% of that in the first, while total parameter
+energy grows by factors of 1.29–11.4. This supports a declining useful
+motion budget despite concentrated, growing energy. Gaussian fine motion
+is less coherent and tracking meaningfully opposes its small expansion;
+the explanation should retain that target dependence.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_motion_final_20260926/fine_direction.png" alt="Fine motion remains coherent for several targets while its magnitude declines despite increasing energy" style="max-width:100%;">
+  <figcaption>Adam continuations from 25k to 125k. Top: every-update fine slope coherence, averaged over disjoint windows of the indicated lengths. Middle: outward alignment of raw, adaptively scaled, and momentum-processed fine proposals, sampled every 1000 updates. Bottom: energy growth versus the ratio of late to early fine slope activity in equal 10k windows. Every seed is shown. The Gaussian and step have lower long-window coherence; a single oscillation explanation does not describe all targets.</figcaption>
+</figure>
+
+The direction interventions make this more than a trajectory description.
+Replacing fine momentum by the current fine gradient, while locally
+matching the fine hidden-update norm and retaining native tracking, lowers
+slope RMS in all 24 early forks after a 10k pulse. The median decrease is
+2.93%; the comparison at equal accumulated fine slope path is also negative
+in all 24 cases. Momentum helps organize useful motion in this experiment.
+At the late fork, changing fine momentum, freezing fine scaling, or doing
+both changes RMS by at most 1.6% across the pulse and release endpoints.
+
+This does not make a raw-sensitivity theorem automatic. For example, in
+degree five at width 705, seed 30, raw fine slope force per unit total
+error rises by 23% while the processed update declines. Error reduction,
+adaptive scaling, and moment history have distinct effects. The crossed
+geometry–residual diagnostic also fails to establish a universal restoring
+balance. The supported interpretation is limited reinforcement of actual
+useful motion, with the optimizer's processing measured explicitly.
+
+The [Adam study](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/ADAM_POPULATION.md#concentrated-energy-does-not-determine-the-useful-motion-budget)
+gives the energy/activity plot, paired responses, exact accounting, and
+verification. These fresh continuations preserve saved optimizer histories;
+their largest final parameter-vector difference from the older archive is
+1.56%, so the comparisons use newly computed native controls rather than
+claiming bitwise reproduction of archived paths.
+
+### Tracking can restrict fine motion indirectly through Adam's denominator
+
+A small signed tracking contribution does not make tracking irrelevant to
+the optimizer. Adam's shared second moment contains the square of the full
+gradient. An alternating tracking signal can contribute little mean motion
+while keeping that denominator large. For example, the orthogonal components
+$F=(f,f)$ and $R_n=(-1)^n(r,-r)$ produce a second moment close to
+$f^2+r^2$ in each coordinate after transients. The fine update is then
+approximately $-\eta f/\sqrt{f^2+r^2}$ per coordinate. Its amplitude is
+restricted by tracking even though the fine direction is constant. This is
+a mechanism illustration, not an assertion that all network trajectories
+have exactly this signal form.
+
+We test it in 72 further runs. A shadow second moment attenuates tracking
+to one tenth inside the squared full gradient, preserving the cross terms.
+After a shared native burn-in to 130k, compare native training, a scalar
+gain on fine updates, and use of the shadow denominator for those updates.
+Both altered policies receive the same locally available fine hidden-update
+norm, capped at ten times native. Tracking updates and the native moment
+recurrences retain their original formulas. A 10k pulse is followed by
+10k native release.
+
+Along all 24 native paths, the available mean capped gain is 5.30–9.95.
+The restriction through the denominator is therefore substantial. Scalar
+amplification raises RMS in every degree-five, sine, and kink case, by
+1.74–3.34%, 1.65–15.2%, and 7.70–12.9% after the pulse, principally through
+additional fine growth. The denominator policy gives similar benefits in
+these families without a uniform advantage over scalar amplification.
+
+The bump reveals why a larger budget need not reinforce population scale.
+At width 705, seed 30, scalar amplification creates 15.6 times the fine
+slope path, but coherence falls from 0.529 to 0.081 and RMS rises by only
+0.048%. The denominator policy creates 73.3 times the path with coherence
+0.052, and lowers RMS. This is induced cancelling activity, distinct from
+the relatively coherent fine motion of native training. In step, the
+denominator policy's extra fine growth is offset by tracking in all four
+cases. In Gaussian, its increased RMS is supplied by a renewed tracking
+response despite a smaller fine contribution. Strong interventions can
+change the balance of mechanisms.
+
+<figure>
+  <img src="../results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_variance_final_20260926/tracking_denominator.png" alt="Larger available fine budgets produce much more activity, with target-dependent effects on scale and output error" style="max-width:100%;">
+  <figcaption>Top left: available capped fine hidden-update gain along each native path. Top right: accumulated fine slope path relative to the native control. Bottom: paired RMS and raw-error changes. Filled markers are the pulse endpoint at 140k; open markers follow native release at 150k. Response points are medians over two widths and two seeds, with their ranges. Scalar gain and shadow-denominator policies match the local budget at their respective current states. Their accumulated activity need not match once trajectories separate.</figcaption>
+</figure>
+
+Every altered degree-five, sine, and bump run still exceeds 1% error at
+both selected endpoints. All altered normalized slope RMS values remain
+below 0.013. The scale reference 0.25 and the output criterion remain
+separate. Some interventions improve both, while others increase activity
+or scale and worsen error.
+
+The refined Adam mechanism concerns the budget and direction of actual
+fine motion. The shared denominator restricts its amplitude, momentum helps
+organize its direction, and coupled responses can turn amplification into
+oscillation or opposing tracking. Concentrated parameter energy guarantees
+none of these ingredients. This supplies an empirical explanation of the
+population behavior without transferring the GD concentration theorem to
+Adam or seeking neuronwise control. It also rules out a universal claim
+that fine amplification simply produces more outward growth.
+
+All 264 motion and denominator runs complete within 1.50 recorded GPU-hours.
+The expanded twelve-test suite passes on Modal CPU and GPU; every coarse
+solve is resolved and every saved state diagnostic is finite. The detailed
+[denominator results and verification](../results/checkpoint_D_optimizers/expD34_readout_race/population_output/ADAM_POPULATION.md#the-denominator-test-supports-an-amplitude-restriction-with-coupled-limits)
+include the signed contributions, sparse optimizer states, and reproduction
+commands. These are finite-interval empirical conclusions, not an Adam rate
+or output-error theorem.
