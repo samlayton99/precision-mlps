@@ -6,6 +6,10 @@ It is the central reading note, organized from motivating examples through
 the tested surrogate to the conditional acquisition argument. This walkthrough
 provides the underlying transport formulation and population theorem.
 
+The earlier [effective-gradient tutorial](d34_effective_gradient_state.md)
+connects the two gain terms to the modal-campaign examples. Its conditional
+assumptions should be read alongside the later population applicability audits.
+
 Why can training reduce the loss while failing to reach the slope scales and precision we seek? The useful object is the slope force that remains after the easily fitted residual components have relaxed. Its magnitude, direction, and distribution across neurons answer different questions. This note derives a conditional finite-time population-barrier theorem and explains how to measure its ingredients even when a complete proof from initialization is unavailable.
 
 The theorem applies to actual simultaneous GD, including random nonzero readouts and nonlinear signal regeneration. It does not establish that its hypotheses hold for every D34 initialization. The [technical theory note](d34_transport_scale_barrier.md) gives the broader transport formulation; the [evidence report](../results/checkpoint_D_optimizers/expD34_readout_race/transport_barrier/README.md) records the numerical tests. Here the goal is to make the mathematical steps and diagnostic interpretation accessible without prior knowledge of Schur complements or transport PDEs.

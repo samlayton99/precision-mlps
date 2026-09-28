@@ -5,7 +5,7 @@ from experiments.expD34_readout_race import plateau_probes as pp, plateau_result
 
 
 def test_probe_disk_resume_and_paired_endpoint_report(tmp_path,monkeypatch):
-    monkeypatch.setattr(pp,'verify_gpu',lambda _:None)
+    monkeypatch.setattr(pp,'verify_gpu',lambda *args:None)
     source=tmp_path/'source'/'primary_0';source.mkdir(parents=True)
     cases=[dict(target=t,optimizer='gd') for t in pp.ANCHORS]
     (source/'manifest.json').write_text(json.dumps(dict(cases=cases)))
@@ -13,7 +13,7 @@ def test_probe_disk_resume_and_paired_endpoint_report(tmp_path,monkeypatch):
     np.savez(source/'snapshots.npz',steps=np.array([100000]),p=np.tile(p,(7,1,1)))
     folder=tmp_path/'campaign'/'probes'/'seed0_100000'
     args=SimpleNamespace(source=source.parent,output=folder,seed=0,start=100000,half=False,
-        samples=64,horizon=10,max_seconds=-1.)
+        samples=64,horizon=10,max_seconds=-1.,runtime='slurm')
     pp.run(args)
     assert json.loads((folder/'status.json').read_text())['offset']==1
     args.max_seconds=1000;pp.run(args)

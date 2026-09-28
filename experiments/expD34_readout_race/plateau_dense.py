@@ -25,7 +25,7 @@ def kernel(x, modes, length):
     return jax.jit(jax.vmap(one,in_axes=(0,0,0)))
 
 
-def run(source, output, length=512, seed_limit=5):
+def run(source, output, length=512, seed_limit=5, starts=(100000,600000)):
     output.mkdir(parents=True,exist_ok=True)
     x=targets.grid(2048); modes=np.polynomial.legendre.legvander(x,9) @ targets.polynomial_map(x)
     advance=kernel(jnp.asarray(x),jnp.asarray(modes),length)
@@ -37,7 +37,7 @@ def run(source, output, length=512, seed_limit=5):
         hashes[str(folder/'snapshots.npz')]=hashlib.sha256((folder/'snapshots.npz').read_bytes()).hexdigest()
         yy=jnp.asarray(np.stack([af.data(c['target'])[1] for c in cases]))
         settings=jnp.asarray([[c[k] for k in ('eta','beta1','beta2','epsilon','adaptive')] for c in cases])
-        for start in (100000,600000):
+        for start in starts:
             si=int(np.flatnonzero(f['steps']==start)[0])
             state={k:jnp.asarray(f[k][:,si]) for k in f.files if k!='steps'}
             final,(vectors,rows)=jax.device_get(advance(state,yy,settings))
@@ -70,4 +70,5 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--length',type=int,default=512);p.add_argument('--seed-limit',type=int,default=5)
-    args=p.parse_args();run(args.source,args.output,args.length,args.seed_limit)
+    p.add_argument('--starts',type=int,nargs='+',default=[100000,600000])
+    args=p.parse_args();run(args.source,args.output,args.length,args.seed_limit,args.starts)
