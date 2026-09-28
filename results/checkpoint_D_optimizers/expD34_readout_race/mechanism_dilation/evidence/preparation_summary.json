@@ -1,0 +1,200 @@
+{
+  "panels": {
+    "late_development": {
+      "attempts": 138,
+      "width": 177,
+      "samples": 2048,
+      "originals": 23,
+      "targets": [
+        "blend_m010",
+        "blend_p001",
+        "blend_p010",
+        "blend_p030",
+        "bump_left",
+        "bump_right",
+        "chirp",
+        "exp_left",
+        "exp_right",
+        "gauss_left",
+        "gauss_right",
+        "kink_abs",
+        "kink_relu",
+        "localized_sine",
+        "mixed_sine",
+        "moment3",
+        "moment4",
+        "moment5",
+        "moment9",
+        "runge",
+        "sine",
+        "step_left",
+        "step_right"
+      ],
+      "starts": [
+        600000
+      ],
+      "seeds": [
+        0,
+        22
+      ],
+      "accepted": 138,
+      "failures": [],
+      "normalized_balance_max": 6.784911234467427e-13,
+      "normalized_stationarity_max": 5.980488745364989e-09,
+      "tracking_to_effective_scale_max": 7.314030066348202e-11,
+      "geometry_locked_exactly": true,
+      "input_sources": {
+        "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/inputs/development.npz": "cbaf34a19628000572d2026645d763d25df6ad91df5ee627593eb1aafc1c8af1"
+      },
+      "code_sources": {
+        "sha256": {
+          "mechanism_dilation_repair.py": "d65cb48e59bed05d6180afd7b01aa9a8cbbb1c3c14c8e80dcc9726a6afdc55bc",
+          "mechanism_persistence_kernel.py": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5"
+        },
+        "versions": {
+          "jax": "0.11.1",
+          "numpy": "2.5.1"
+        }
+      }
+    },
+    "late_confirmation": {
+      "attempts": 138,
+      "width": 177,
+      "samples": 2048,
+      "originals": 23,
+      "targets": [
+        "blend_m010",
+        "blend_p001",
+        "blend_p010",
+        "blend_p030",
+        "bump_left",
+        "bump_right",
+        "chirp",
+        "exp_left",
+        "exp_right",
+        "gauss_left",
+        "gauss_right",
+        "kink_abs",
+        "kink_relu",
+        "localized_sine",
+        "mixed_sine",
+        "moment3",
+        "moment4",
+        "moment5",
+        "moment9",
+        "runge",
+        "sine",
+        "step_left",
+        "step_right"
+      ],
+      "starts": [
+        600000
+      ],
+      "seeds": [
+        20,
+        23
+      ],
+      "accepted": 138,
+      "failures": [],
+      "normalized_balance_max": 7.021796186599418e-13,
+      "normalized_stationarity_max": 5.961242190872334e-09,
+      "tracking_to_effective_scale_max": 7.970208215760416e-11,
+      "geometry_locked_exactly": true,
+      "input_sources": {
+        "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/inputs/confirmation.npz": "9d332d234bcc51b1b4f2ae76a52372e8a15a0ce10e78fb1284ad53a0fc0d64a6"
+      },
+      "code_sources": {
+        "sha256": {
+          "mechanism_dilation_repair.py": "d65cb48e59bed05d6180afd7b01aa9a8cbbb1c3c14c8e80dcc9726a6afdc55bc",
+          "mechanism_persistence_kernel.py": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5"
+        },
+        "versions": {
+          "jax": "0.11.1",
+          "numpy": "2.5.1"
+        }
+      }
+    },
+    "wide_N512": {
+      "attempts": 72,
+      "width": 705,
+      "samples": 2048,
+      "originals": 12,
+      "targets": [
+        "bump_right",
+        "gauss_left",
+        "kink_abs",
+        "mixed_sine",
+        "moment5",
+        "step_right"
+      ],
+      "starts": [
+        20000
+      ],
+      "seeds": [
+        30,
+        31
+      ],
+      "accepted": 72,
+      "failures": [],
+      "normalized_balance_max": 9.049798513607742e-13,
+      "normalized_stationarity_max": 9.384208774265372e-10,
+      "tracking_to_effective_scale_max": 8.004403834711134e-07,
+      "geometry_locked_exactly": true,
+      "input_sources": {
+        "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/width_inputs/N512_fork20000.npz": "d2f897c12b4c2d66a4c423e310879891221d6902e65ac4daba02f9f2804e5489"
+      },
+      "code_sources": {
+        "sha256": {
+          "mechanism_dilation_repair.py": "d65cb48e59bed05d6180afd7b01aa9a8cbbb1c3c14c8e80dcc9726a6afdc55bc",
+          "mechanism_persistence_kernel.py": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5"
+        },
+        "versions": {
+          "jax": "0.11.1",
+          "numpy": "2.5.1"
+        }
+      }
+    },
+    "wide_N1024": {
+      "attempts": 72,
+      "width": 1409,
+      "samples": 2048,
+      "originals": 12,
+      "targets": [
+        "bump_right",
+        "gauss_left",
+        "kink_abs",
+        "mixed_sine",
+        "moment5",
+        "step_right"
+      ],
+      "starts": [
+        20000
+      ],
+      "seeds": [
+        30,
+        31
+      ],
+      "accepted": 72,
+      "failures": [],
+      "normalized_balance_max": 7.27250628227402e-14,
+      "normalized_stationarity_max": 2.1324899055503171e-10,
+      "tracking_to_effective_scale_max": 2.2799468047149374e-07,
+      "geometry_locked_exactly": true,
+      "input_sources": {
+        "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/width_inputs/N1024_fork20000.npz": "f8d9819564fb4d73962ece1e43f1874bf0ac07e2faa5895399af31b3e0a27a86"
+      },
+      "code_sources": {
+        "sha256": {
+          "mechanism_dilation_repair.py": "d65cb48e59bed05d6180afd7b01aa9a8cbbb1c3c14c8e80dcc9726a6afdc55bc",
+          "mechanism_persistence_kernel.py": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5"
+        },
+        "versions": {
+          "jax": "0.11.1",
+          "numpy": "2.5.1"
+        }
+      }
+    }
+  },
+  "attempts": 420,
+  "accepted": 420
+}

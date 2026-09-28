@@ -1,0 +1,2211 @@
+{
+  "python": "3.11.10",
+  "libraries": {
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "jax": "0.10.2",
+    "jaxlib": "0.10.2",
+    "optax": "0.2.8",
+    "matplotlib": "3.11.2",
+    "python-flint": "0.9.0",
+    "pytest": "9.1.1"
+  },
+  "sources": [
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/adam_output_audit.py",
+      "bytes": 22308,
+      "sha256": "90b0ad62ec05b3ca196cf2ec310d2822108e0270fb778784ebe252780b362c23"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/mechanism_dilation_analysis.py",
+      "bytes": 23739,
+      "sha256": "c4ad233fa367c632002967f8393aeb3ca63613dad510d81e0aae6af444ebb483"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/mechanism_dilation_repair.py",
+      "bytes": 13461,
+      "sha256": "fcc1abd919a78b167513cb6034e97def5576032b18b6b1951526b6f96e810bcd"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/mechanism_dilation_run.py",
+      "bytes": 15466,
+      "sha256": "55eb849129ffc56f0c2ac2f3553ea31febb691c6135632f81aca959576dc29dc"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_concentration_plot.py",
+      "bytes": 5360,
+      "sha256": "98a0a0e860f2ecd5b8cf0e8a505dfeaf227913c0264d6496bc42767a3037ad4d"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_coverage.py",
+      "bytes": 17396,
+      "sha256": "fff73e1f53d6589d33457984e1befbc7bc2e8d861fb846cfa7e02029f9c7c518"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_coverage_summary.py",
+      "bytes": 15580,
+      "sha256": "f497075fb03109902ca6c6e81f74ae4d9d1b6078b0f828b0fa6c45289c3e7c34"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_dilation_findings.py",
+      "bytes": 5553,
+      "sha256": "7329a473456a69bc0921416e9aa85856a79fdf61e2ce50a7e776d29b48eb2564"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_dilation_summary.py",
+      "bytes": 17259,
+      "sha256": "c4d26b3f5334668e656cf0a743b114459e5c0c53d27e9383d6ee779f1a539931"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_force_certificate.py",
+      "bytes": 7465,
+      "sha256": "d084cfe82c9700a3399b6826d8d7ffcb9fdc9774a8c76fc9fdc7f4207e6e3dcb"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_force_shape_findings.py",
+      "bytes": 8598,
+      "sha256": "0028dc4e3e964ffb2f01c30c345588243bb79b2a520b3d846f9dd00af7849604"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_frozen_readout.py",
+      "bytes": 10025,
+      "sha256": "d9f28dcf7970bda9b1a17041010be0e2dc92f009766eec4dd15047723d997e68"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_frozen_summary.py",
+      "bytes": 8537,
+      "sha256": "8d1dd1078516d10e924b92423d1e6d911066ec18afca7f304e97529f54aee23e"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_frozen_witness.py",
+      "bytes": 6401,
+      "sha256": "2b0c586806a3a97b2767aa9ffe30dc85f751eedfe7fe03fa67e13b8262624c3b"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_frozen_witness_certificate.py",
+      "bytes": 4509,
+      "sha256": "374bbff32523155ac51a2f99a38269d7e91c146df574cff58bd9a237925eac2c"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_gd_certificate.py",
+      "bytes": 6577,
+      "sha256": "38de9101ed5f5707759ec66402d98538f2062d58b31fd127ee79fd2127592987"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_output_audit.py",
+      "bytes": 17148,
+      "sha256": "99ff5f3a655a2733a132c0b318178d66ba437c456edf74eee284685f81674080"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_output_summary.py",
+      "bytes": 26248,
+      "sha256": "b9bc637a088e97a5d7a648eab9b6c5a9b08bf621ee3fb17ba2a07d1b9cb1f69e"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_reduced_audit.py",
+      "bytes": 8751,
+      "sha256": "6f65536317b46e998fd7751f6cb7f654cdfc009026dcb8e8a8e4ad066544cb2a"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_reinforcement_audit.py",
+      "bytes": 12906,
+      "sha256": "a50f8e2b0d2aff0d9312c4da4221cc151e6bc261352f033fff79b10b3fb95355"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_reinforcement_summary.py",
+      "bytes": 18421,
+      "sha256": "6b167daee09faea54c98406c89a00edd947e7d94b3aab627742ce1651b289240"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_sensitivity_certificate.py",
+      "bytes": 4208,
+      "sha256": "8a0e98cff3885b0ecbdeeccbe8fa13d0a8e7f654f3104410c3c4401d76cbdd77"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_shape_certificate.py",
+      "bytes": 8359,
+      "sha256": "7ec65253fd49060a45f8089a779bff639a9c681d82fc93ba2910ad1f4136b12c"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/experiments/expD34_readout_race/population_wide_inputs.py",
+      "bytes": 4473,
+      "sha256": "72b422294764a8414f01c8a7d91f60b4a43fcebbe4ab48675e8729a45c810a45"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/._test_d34_adam_output_audit.py",
+      "bytes": 263,
+      "sha256": "4c7d6659a00f8a2cbd57004733f7030840c7d29de959a1c847a3f2dd6d93343b"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/._test_d34_population_output_audit.py",
+      "bytes": 163,
+      "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_d34_adam_output_audit.py",
+      "bytes": 3620,
+      "sha256": "47ef27a072cda8e8c9ed0ed5fb36bb50659b9d14f1b350d1092c9bc419a93bb8"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_d34_population_gd_certificate.py",
+      "bytes": 3043,
+      "sha256": "9f78336e92a8515218bb76696ea8e1c23d905f4c62aebac1250e2c2c9e258765"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_d34_population_output_audit.py",
+      "bytes": 2687,
+      "sha256": "4b017ad3e712f8def1302231995a34e50331413027beb923b2a5101ae972dff8"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_coverage.py",
+      "bytes": 5939,
+      "sha256": "e35959378f88526303f7cfcd4a4e89893d4e1edd909ee9e4f1d69c9ec411a408"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_dilation_findings.py",
+      "bytes": 1269,
+      "sha256": "80ba76ce0025b2fcd894f8710ed6e7315d7960eead690c55e17e5e0cbc89e0a3"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_force_certificate.py",
+      "bytes": 4638,
+      "sha256": "4023335d4a7078a3536b4cf5a036d9157257d708bc0ddedeabc3596eb7372ee9"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_frozen_readout.py",
+      "bytes": 1501,
+      "sha256": "2072f909798f3b86f4a6a76279c1d7e43f3fce58c30ee972005b813787deabf2"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_frozen_summary.py",
+      "bytes": 591,
+      "sha256": "9bf3c1794fbe4d6e9e2f759219f9d7738768b6288f7c7dc41660f7fe8efff9fc"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_frozen_witness.py",
+      "bytes": 1397,
+      "sha256": "99d82027ea9997cdff4ab261fc0aef63d1f02a690b76504541db84a613a420da"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_frozen_witness_certificate.py",
+      "bytes": 963,
+      "sha256": "62db63224c8c45a877fac8b3915fa6b6f4101ac40901cec2cc6aac4cdcfb3b85"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_reduced_audit.py",
+      "bytes": 2576,
+      "sha256": "52332640ac035965348ccf5c00bfdd4d1ca26813a42dbcccf0a84188076c2051"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_reinforcement_audit.py",
+      "bytes": 6854,
+      "sha256": "baa290d78fcc698cd7fc099f2baa472e6fa5ac5ca40e10026153cce8f426c46e"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_reinforcement_summary.py",
+      "bytes": 1721,
+      "sha256": "7a4025b31837d3d98c9e0a34d9dfbaa40ce814efa807c11387b1ab144133567d"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_sensitivity_certificate.py",
+      "bytes": 2749,
+      "sha256": "ad919d6c98cbf899a6b09d86256e9fafe21bf6eac08d190e325a6ffd847aefd4"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_shape_certificate.py",
+      "bytes": 6008,
+      "sha256": "15f4ba30850f9f29533a7037323fdcba9abf00f9ec37926f3ecf936c171e48df"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_summaries.py",
+      "bytes": 4239,
+      "sha256": "f54ce85d24137e93d1b042f1ee66707a1520e40c59b5b242243cadf90b817225"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/code/tests/test_population_wide_inputs.py",
+      "bytes": 1650,
+      "sha256": "086c66a42dfd1723de0aa0403bb09d72b210d5f9df81608f73e25b3a7994a50b"
+    }
+  ],
+  "prepared_inputs": [
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/late_confirmation.npz",
+      "bytes": 1207960,
+      "sha256": "bceec1bc2c35e837890c108ef4f79adcb812440fe771021eb5b0a5f00db2635f"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/late_development.npz",
+      "bytes": 1208324,
+      "sha256": "f6cebbb75825488098b772e6028b06cbff798bc862eed29a555e8f7de31b2807"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/missing_fork.npz",
+      "bytes": 2850024,
+      "sha256": "06a0e61080cc4f30bbd946ecf8d32b99ce82fa692de52073967048140f661c8a"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/missing_initial.npz",
+      "bytes": 2336103,
+      "sha256": "03b8d73a0ce953fef8ccb5c7a24dd9f8de22b07cbe83af0bcdb883f153e8a334"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/missing_wide_N512.npz",
+      "bytes": 23855226,
+      "sha256": "f7dbe4469a446745675e69218648e7c5c07af5b017c89afce555d2d31176a33f"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/wide_N1024.npz",
+      "bytes": 9419156,
+      "sha256": "b0b98015b1cf596a5275c2b940a58cf56daf8c9d6493f1ccc7d54e7ab179b271"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/wide_N512.npz",
+      "bytes": 7340942,
+      "sha256": "fac39fba23e8b217905f2467f87b1b03ea4c099dfac08eb2ba1ee3a0ea514bce"
+    }
+  ],
+  "manifests": [
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_audit/manifest.json",
+      "bytes": 26379,
+      "sha256": "8f525e02eab26cfb0c47b10fcbd297880738d69f9d401c9b567063f75050639e"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/broader_static_audit/manifest.json",
+      "bytes": 8176,
+      "sha256": "fa03de903a7e95567530fb2faf82ead5972da7950073cefadda3483dbad6e464"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/broader_static_force/manifest.json",
+      "bytes": 760,
+      "sha256": "3fe9ced187d45df9e8abae691b3f34a0f74ad5359ecf1ad05b6a2028174e8f62"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_audit_main/manifest.json",
+      "bytes": 7522,
+      "sha256": "37a70c7d0331a770330410b942ce99b6de2b2c58fb4f8cfc2062e9126dc49470"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_final_audit/manifest.json",
+      "bytes": 9458,
+      "sha256": "40ef9b5c9e7dd48e8198f890dd62bec13d950ab58a88f1890a910920c42d9539"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_certificates/manifest.json",
+      "bytes": 753,
+      "sha256": "23697900fdc4d9eb82afca04d911a0b2b90058a7c8f1f96358b05ca2abef47be"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_moment_archive/manifest.json",
+      "bytes": 19317,
+      "sha256": "f0da2aba874947153a049c8dcdc639fa3a6aa31365fc34e9573b834f414c9624"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_moment_broad/manifest.json",
+      "bytes": 2898,
+      "sha256": "c8a3600b7611695e3fed6d17f096fadfe615662306a2ac995d2b993e0ea34c8b"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_rotation_archive/manifest.json",
+      "bytes": 19312,
+      "sha256": "2ffcbc013234c47e51bd05d41d0e08788637adc6a82fb9a27970129a32c90906"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_rotation_broad/manifest.json",
+      "bytes": 2898,
+      "sha256": "df0c3778a95ab4bc77bb0d4a168ec1ea87cb960bf6195093be3ed1bf7e0dcd25"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_rotation_dilations/manifest.json",
+      "bytes": 8028,
+      "sha256": "2592607313db964152cf5a1b5b1d4805c96c7c142fe3fd3165b8a4b8f7a1b49c"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_rotation_dilations_final/manifest.json",
+      "bytes": 9965,
+      "sha256": "25f84a8ea419da397aec228f654a35584c060ca7df1a8e9be818dc3ab4763b3a"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_spectral/manifest.json",
+      "bytes": 963,
+      "sha256": "b2490b1e02d1afeb36340c99b854aa689ec61d4dfa672755fb7210eebc1ded6d"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness_final/manifest.json",
+      "bytes": 12050,
+      "sha256": "b3857b28c1d370ccd4fa3b33eda8bc593d35afc54503ffba1dd995ec80d4c027"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/gd_certificates/manifest.json",
+      "bytes": 498,
+      "sha256": "6ef6fcfa18200ae1ef9382874afee7315cb654b78df9b24a7b86498139616d7a"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/late_confirmation_run/manifest.json",
+      "bytes": 1310257,
+      "sha256": "688c4b2c1138329070f4f1195c329faf64f5e22bbff3c8c0872b4c37b04c3a07"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/late_development_half/manifest.json",
+      "bytes": 198368,
+      "sha256": "5c962139193bc3abbb0e023dccd908b164d4e3ad3ab8f274f3f29cdf27a64e16"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/late_development_run/manifest.json",
+      "bytes": 1309934,
+      "sha256": "9cafe558d64e1499ba9bd6afa5ffd9cbe6e69c09170768f6b6b8a13133178178"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/missing_warmup/manifest.json",
+      "bytes": 6919,
+      "sha256": "85a7f120c603013687d519f73978d814de83fb7fee8898d96350cdcfa15e54fd"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/missing_wide_N512_run/manifest.json",
+      "bytes": 1936553,
+      "sha256": "7a3b62305ef7578b88dc143785d71c205d230dda7322cc2f0915619b9e9d4c54"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/reinforcement_audit/manifest.json",
+      "bytes": 19317,
+      "sha256": "2b3c4ed16268a9eb046d87f2a43e85e03c0b70b38cce6adbb2c89675b228b774"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/shape_certificate_archive/manifest.json",
+      "bytes": 607,
+      "sha256": "3c53e0d1f8573ff0e6dee9b2be632142adf0fc2cdc70017f172919cb1261afaf"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/shape_certificate_archive_checked/manifest.json",
+      "bytes": 644,
+      "sha256": "e2ce7d283d516bba18fd60eeb8230631e41a857312acd60c54bb24294ba2ff33"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/shape_certificate_broad/manifest.json",
+      "bytes": 604,
+      "sha256": "0fc634b22f66e09d62e11a5fc3b6f6b2010f54f08f1b7143ff831d5bb86ddd15"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/shape_certificate_broad_checked/manifest.json",
+      "bytes": 641,
+      "sha256": "6e1168197159506bb4ab0041be2640c30277b83bb4ea5802e198f2496479f925"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/wide_N1024_run/manifest.json",
+      "bytes": 687813,
+      "sha256": "4cc8200caa3dfd692049a4ae3304965e206ca3f1ec6c3014629feb07966daf06"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/wide_N512_half/manifest.json",
+      "bytes": 198967,
+      "sha256": "c55e7b423e383754e48a953608dd450b2253ab9faeebef5f52ae759d076d8917"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/wide_N512_long/manifest.json",
+      "bytes": 198968,
+      "sha256": "4a7eadb32924556ab18a44c13bbd6607263c06800f4c93d4e079a5ec75bd1744"
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/wide_N512_run/manifest.json",
+      "bytes": 687510,
+      "sha256": "58d27934783e7234baa45c618caac61cb9cce3547f296d619c2f55b128082ed8"
+    }
+  ],
+  "cleanup_inventory": [
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check",
+      "files": [
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34_arb_probe.py",
+          "bytes": 6134,
+          "sha256": "8ce86d75c5bc57035a8402d00e2add13b4d4faf6444f1e07a5968d925094788d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/.source_commit",
+          "bytes": 8,
+          "sha256": "35aa0b011902c8cf675853136b77f6350fa50ba87d1ee750320d8eece3fc330d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-coupled.sh",
+          "bytes": 748,
+          "sha256": "83578cd147184bb8fca9d8311ee7c7e45ab31f017ca851fdaf00a3d24dc24a27"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-retrospective.py",
+          "bytes": 2990,
+          "sha256": "8b2b16fe033412f42b7f7b9b4d29e7faa6fbb167b9f42d5ad206f07d1df0de55"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-analyze.sh",
+          "bytes": 1029,
+          "sha256": "1ca0116c30c26da0b242fb66e3818b6cb2f06fc37c98e56bc122c7ff38ca21df"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-physical.sh",
+          "bytes": 605,
+          "sha256": "1b06bab2a1334aa3a11e4b1d8493d77d1981d25db422a23b54c34b449af1558d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-physical-prepare.sh",
+          "bytes": 1412,
+          "sha256": "bbb5bb4893255c9adaece4322cb18a5ac4cef04fb907092ad0e6ba68afb29b62"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-feedback.sh",
+          "bytes": 616,
+          "sha256": "59610458290175d3cc5587573aeb3f7db455d55fad52afadfde2bf4c10d7b8fd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-prepare.sh",
+          "bytes": 1383,
+          "sha256": "ca9f8633f9250a4283436feca300abc0319d3eb34f0b0caa341164beb93f8825"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-final-analysis.sh",
+          "bytes": 1030,
+          "sha256": "3c7e2050b5dc5434c5e31618905fe165bb109635d0422f0fa29136502a5701bf"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-overview.py",
+          "bytes": 3036,
+          "sha256": "19eced84b4d96c7d80b406ebd9b4205b2ce63aff36733561136f91485d05127d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/pi_note_evidence_figures.py",
+          "bytes": 6837,
+          "sha256": "f7ce17a354561fab3fe0888a4d8ecd5c57aedae419979e980847b72f0bf6d981"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34_width_bound_audit.py",
+          "bytes": 4859,
+          "sha256": "a62579da5b195acf0e494006c19a164f4bc6272de3713d32fd2674cad3e87b7c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34_arb_directional.py",
+          "bytes": 8274,
+          "sha256": "d59497fde9497eaa6828e796873c7307e92f83765959ac3559fe3700a944b189"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/d34-persistence-envelope.py",
+          "bytes": 3405,
+          "sha256": "b014609a90973a687e95cb7439714af926f5599d3f1026c6b5e496e665723246"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/__pycache__/d34_arb_probe.cpython-311.pyc",
+          "bytes": 18807,
+          "sha256": "d6ee69cabe62abae10ad4646b2c869d92137aaccfc182d461c0677b59d91a9af"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/.pytest_cache/CACHEDIR.TAG",
+          "bytes": 191,
+          "sha256": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/.pytest_cache/.gitignore",
+          "bytes": 37,
+          "sha256": "3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/.pytest_cache/README.md",
+          "bytes": 302,
+          "sha256": "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/.pytest_cache/v/cache/lastfailed",
+          "bytes": 2,
+          "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/.pytest_cache/v/cache/nodeids",
+          "bytes": 17000,
+          "sha256": "e7898688512192348e0f02e015b109d648cb54c087b5d197228e69fafe621a67"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_dilation_run.py",
+          "bytes": 6126,
+          "sha256": "5b9a3990d3b21816e392d4e5245c2f415dceed540baa2181a7334094e88a8dbb"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_expD34_mechanism_moving_tube.py",
+          "bytes": 2528,
+          "sha256": "c644c2666a3da92ffb40ad609436f165165e44250fcb953ab0099b0127b31534"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_expD34_mechanism_pulses.py",
+          "bytes": 3703,
+          "sha256": "8f4acd33025d46204bbf27673cc1a7b6e6e595a7f0314b4082f4a1bef191d17d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/._test_expD34_mechanism_pulses.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_expD34_mechanism_envelope.py",
+          "bytes": 2960,
+          "sha256": "e2d0812d079372c31d30e16b92ec404d4cf8e13e40ef610679cadf8737f17ba2"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_expD34_mechanism_widths.py",
+          "bytes": 1753,
+          "sha256": "502788909b7f37b7ded93842f0674ed103825e73b14e07619a1da8cf184dae56"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_adam.py",
+          "bytes": 5440,
+          "sha256": "367c6366aa08bcf5bb581eb8f675049df71dad049dc7119974352ed6ef77cc35"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_expD34_mechanism_splitting.py",
+          "bytes": 6174,
+          "sha256": "75b1127b3eb6a61076cd0388e72a357a69bb2616624df2b15b742dddb7a0d5b5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/._test_mechanism_adam.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/._test_expD34_mechanism_splitting.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_population_reinforcement_audit.py",
+          "bytes": 4754,
+          "sha256": "ed28fc396bd06d1bc885b308f5b3810ab28da9db4382857049e0a85da72eb1c1"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_population_reinforcement_summary.py",
+          "bytes": 1721,
+          "sha256": "7a4025b31837d3d98c9e0a34d9dfbaa40ce814efa807c11387b1ab144133567d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_population_force_certificate.py",
+          "bytes": 4638,
+          "sha256": "4023335d4a7078a3536b4cf5a036d9157257d708bc0ddedeabc3596eb7372ee9"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_population_wide_inputs.py",
+          "bytes": 1650,
+          "sha256": "086c66a42dfd1723de0aa0403bb09d72b210d5f9df81608f73e25b3a7994a50b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_population_summaries.py",
+          "bytes": 4239,
+          "sha256": "f54ce85d24137e93d1b042f1ee66707a1520e40c59b5b242243cadf90b817225"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_population_sensitivity_certificate.py",
+          "bytes": 2749,
+          "sha256": "ad919d6c98cbf899a6b09d86256e9fafe21bf6eac08d190e325a6ffd847aefd4"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_d34_population_gd_certificate.py",
+          "bytes": 3043,
+          "sha256": "9f78336e92a8515218bb76696ea8e1c23d905f4c62aebac1250e2c2c9e258765"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_d34_population_output_audit.py",
+          "bytes": 2687,
+          "sha256": "4b017ad3e712f8def1302231995a34e50331413027beb923b2a5101ae972dff8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/._test_mechanism_dilation_run.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_d34_mechanism_dilation_repair.py",
+          "bytes": 7645,
+          "sha256": "f652a233c5369a63ea303fc77462130c6118857c66036991887d4ba3fb8f398e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/._test_d34_mechanism_dilation_repair.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_d34_adam_output_audit.py",
+          "bytes": 3620,
+          "sha256": "47ef27a072cda8e8c9ed0ed5fb36bb50659b9d14f1b350d1092c9bc419a93bb8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/._test_d34_adam_output_audit.py",
+          "bytes": 263,
+          "sha256": "4c7d6659a00f8a2cbd57004733f7030840c7d29de959a1c847a3f2dd6d93343b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/._test_d34_population_output_audit.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_expD34_mechanism_polynomial.py",
+          "bytes": 3485,
+          "sha256": "c4d95becf82c86d9e7451bf0a15b2eb599faad2b59a7632a0ad6b948455246dc"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_moment_persistence.py",
+          "bytes": 9363,
+          "sha256": "aae5aee8108620fcb9bf3e9326cae4b4d0d948e3fbda96bb62afb0fb9a3ea92b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_population_reduced_audit.py",
+          "bytes": 2576,
+          "sha256": "52332640ac035965348ccf5c00bfdd4d1ca26813a42dbcccf0a84188076c2051"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_persistence_acceleration.py",
+          "bytes": 1213,
+          "sha256": "e47df0736ff6fb4eb87ac4357dba650ca06d9d78d31bf4b8a06f87792ec30117"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_persistence_coupled_response.py",
+          "bytes": 3264,
+          "sha256": "55e3a3b7689fcd7f889720fe23c5a742de0cdeb48b4334bf4ea03b439c4c58ae"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_persistence_linear_response.py",
+          "bytes": 1665,
+          "sha256": "168e01c58b9585c18b8361ed5d79ade8910d4f8dc974fc05b4a6f34d32e98130"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_persistence_pulse_summary.py",
+          "bytes": 1991,
+          "sha256": "fb7a0d94335493f69c76ae7932a0eca16e42f76212a1416150da9dd314d340c5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_persistence_runner.py",
+          "bytes": 5115,
+          "sha256": "1ce1ceebfda9e60ee57a4956207f2c8143dd61cb29a8912e8470fd55ef9f13f2"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_persistence_pulses.py",
+          "bytes": 9363,
+          "sha256": "311c635d16775669bbf48df5796f1c9727bd4102aa15868326da40e62edf5128"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_persistence.py",
+          "bytes": 5175,
+          "sha256": "e4c2dc00a65dc4f933bfd356359e70db162fe4ede23bee66211d7ed22d00b3fd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_population_coverage.py",
+          "bytes": 5939,
+          "sha256": "e35959378f88526303f7cfcd4a4e89893d4e1edd909ee9e4f1d69c9ec411a408"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/test_mechanism_adam_feedback.py",
+          "bytes": 1613,
+          "sha256": "45aba45ecefff44b561290ab27c6e0332d5adcd86582b0f7369c0fdd81ccda3e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_dilation_run.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 22824,
+          "sha256": "a31c95dec80117ba69f52f44136d6121b44f7d3033ad74c4b8a03aad0b0336f0"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_expD34_mechanism_moving_tube.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 12977,
+          "sha256": "14c196ce2cc78c751ad7ce398d87cb6227f344bdf6c9457d4b433d787222fbcd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_expD34_mechanism_splitting.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 18875,
+          "sha256": "dd805ef0b081ebf4aa8c4329325e0c664e3016f2260024bf9110cb522ed3b29c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_expD34_mechanism_pulses.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 9325,
+          "sha256": "9e4b26ca22b44083a07d3a11d7703c40140194ddf3702d996e296dcfd780c32c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_expD34_mechanism_widths.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 6758,
+          "sha256": "2b7371a9d4d3022f565699390f3348c5b0fe6aa5b6c81f298c88bc401ae135d2"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_adam.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 17793,
+          "sha256": "2715dde44793f34db03027e50f7db86fbf9a591a80bef06c00f65fe6ff8b0471"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_population_reinforcement_audit.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 14817,
+          "sha256": "c7743e7e08cfe9a15b3ec46f4f83b1105832dbf73551bb2c1ada82397320c05a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_population_force_certificate.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 22401,
+          "sha256": "4adc2af23ed239848cdcb6d742cc946b469f091169a5b4a34ee1b6075ed571b0"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_population_wide_inputs.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 6142,
+          "sha256": "1e3669885dbcd65b0b88257f0665430a0d2b9c24d83951a83b8d21815f4eea61"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_population_summaries.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 14572,
+          "sha256": "3e14ed3c4c8672380ca0e48dd70ec55f8eb824104f9744bd37ba350f08d53585"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_population_sensitivity_certificate.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 12957,
+          "sha256": "a56ef2732b0cd23ccde7b1b45a1819c57c029943e050d61993a3eb3b6ee95b62"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_d34_population_gd_certificate.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 10243,
+          "sha256": "a0840738f636f472b29c3a66139a014510c318b54b5ead82ed23ebd231f54312"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_d34_population_output_audit.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 11635,
+          "sha256": "d3e3b0fb542abc6c1209b05ebfc1a17254671d9185e5e5d621fbafcc03d5664b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_d34_mechanism_dilation_repair.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 30905,
+          "sha256": "2a247997cd9430f06c3755a0b62adfc5a9bbeb7beca0c275075870b62e619351"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_d34_adam_output_audit.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 9900,
+          "sha256": "b350de9d8f2c51303cd33324f8b8386484267426b2fd1bcfb627722a4341e359"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_d34_mechanism_dilation_repair.cpython-311-pytest-9.1.1.pyc",
+          "bytes": 30989,
+          "sha256": "66bc282c22602d822167834c26a44828dd645a94703dd66a808c317381b1542d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_dilation_run.cpython-311-pytest-9.1.1.pyc",
+          "bytes": 18287,
+          "sha256": "6e4439a1758869d3a1d98fc7205236918a87e6eea4908cba8a89b96e86b212d9"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_moment_persistence.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 53206,
+          "sha256": "feb50d9d802aeeb4de2dad8657ec27e1a8d49154e0f83ab96854e75067444b9b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_population_coverage.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 18845,
+          "sha256": "1eb2be4714c7c18cdb3b533e8d85f3d612f272fea64d68c6a48f5b9b1d93bba5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_persistence_acceleration.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 4122,
+          "sha256": "276ecca65920ca72e3adbe804127f6f0cf43daecb71600e08790a8bb3905b656"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_persistence_coupled_response.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 10149,
+          "sha256": "5b60cc9d4c8b48b30e2b53b799bb76be656d1fdaf3a9724c2e7ec5847eac14e5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_persistence_linear_response.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 5638,
+          "sha256": "3800645b28eeeb82bebc0233e3e17af1ed01d330813b7c0cdbc5d294b42e9050"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_persistence_pulse_summary.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 7257,
+          "sha256": "33ea1752d6bfa9681ccbcf6cbba02dbd88e2cbc17f650258a1e93c61b2ae0a1b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_persistence_pulses.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 26944,
+          "sha256": "224467a6f6fa102fdd5444ddf82226c7ccb83defd1dc081e6babd80783de93be"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_persistence_runner.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 12612,
+          "sha256": "80040ca21c5d55d0941699d4883c6d482a536961a4614b08496cef3363533a72"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_persistence.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 19055,
+          "sha256": "e6fdc18457927471a72c5dd1febb6cebeb417aee24933c4096bcd8570c345c04"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_expD34_mechanism_envelope.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 10313,
+          "sha256": "ac02a73a47898f8b4da35a6ce76d66098a540f7c424d0831c376f8152f7f21ac"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_expD34_mechanism_polynomial.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 10974,
+          "sha256": "727ff7bdba77453bd227863365027b1352c73d6a9d83952fed5e5eac72c901fe"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_mechanism_adam_feedback.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 5735,
+          "sha256": "814afae8fac47d213448d888036f68681ccc66b4787ae3457b100fadb49e1b8b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_population_reduced_audit.cpython-312-pytest-8.4.2.pyc",
+          "bytes": 12381,
+          "sha256": "0f18947f81241be1f5fc73458f92da30687f9191a0f5b6d49ca1309d0cdbdf4d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/tests/__pycache__/test_population_reinforcement_summary.cpython-311-pytest-9.1.1.pyc",
+          "bytes": 7808,
+          "sha256": "e35c20eb8cfff0c9fa7d6dc6301bfb1180b75d8f436f336082b3b18882d687a5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_dilation_run.py",
+          "bytes": 14267,
+          "sha256": "08c13fbbebcb443250f1fa0f662c124ac697b4c393a15c38616d79fbe430a2bf"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_width_scaling.py",
+          "bytes": 3953,
+          "sha256": "5af30387f360a1d854d9f2860c2da4b1a6ae5ad678c5c1e189636ebdb4451b93"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_polynomial_anchor.py",
+          "bytes": 3665,
+          "sha256": "edef580bafc873351d87d732b96ba8fdbf36d8f25f729900e0e746e78aa9abee"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_widths_figures.py",
+          "bytes": 2979,
+          "sha256": "1c4c8a2994f81d29e2d02a8f704ca8800b3a2c1738994e9d7f55bfc5515a2253"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_splitting_diagnostics.py",
+          "bytes": 7021,
+          "sha256": "dfa907e7afbde235db541e20050a29eb893ab04686433808a6c4845f6f09ce67"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_moving_tube.py",
+          "bytes": 10915,
+          "sha256": "b5276cf7952ef2966d4f3f8fbc8d1c005c627686fc38671940651fc4148698e0"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_pulses.py",
+          "bytes": 20098,
+          "sha256": "17d929a054c94ad620552166af8c646d98a74d8bde462185d09a60fdebd78dbc"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/._mechanism_pulses.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_splitting_baselines.py",
+          "bytes": 5212,
+          "sha256": "f53f9622ffb70bbed6920e4c51061426c4b4bf2145b9b91b53ac40d6b2d16daf"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_splitting_analysis.py",
+          "bytes": 7069,
+          "sha256": "f954da576078c94aaea357660ee25ef3b8d8476c026e39e32645f40e626e8194"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_envelope.py",
+          "bytes": 10013,
+          "sha256": "2b7d3c666a109d1aa7cce5060316b1d1c4cbf48612b1437d4621546d03e825b6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_adam_analyze.py",
+          "bytes": 8071,
+          "sha256": "193db94f21c4e7eed973fbe2ef07b5afeffc5697bd5824d15de74f5194941e79"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_adam_verify.py",
+          "bytes": 3131,
+          "sha256": "b32a63164688abaed69031ffd8436bee0ae0ba654987c542eab635d6a9fcd339"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_widths.py",
+          "bytes": 9426,
+          "sha256": "01b8dbb8d1cd4e2311a99958c6bb2e47acafd8fcbd6cb2aab47388c30cff6dc2"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_adam.py",
+          "bytes": 13944,
+          "sha256": "e24ebe0f7a32c1699c3d75d6f85ee5e1c583fcef4b9701284fddfa838b3fb4e2"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_splitting.py",
+          "bytes": 18022,
+          "sha256": "f8284b008561adcd203a10eaa45beb1e732aee7a0b8136c44584f3a07a6e6608"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/effective_feedback_holdout.py",
+          "bytes": 5685,
+          "sha256": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/effective_feedback_predict.py",
+          "bytes": 11332,
+          "sha256": "67a86f9c1efdb9e71eec7a06eb5c3a9bfb82f4f6925322ba48f3f80ba35b2f1e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/persistence_theory.py",
+          "bytes": 7032,
+          "sha256": "12020504e3579f709c2e5b5a4621c95c1eb9be2bc62493b386586c7db883ec35"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/._mechanism_adam.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/._mechanism_splitting.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/transport.py",
+          "bytes": 8903,
+          "sha256": "ab829a4de8cd143c7237031b1c3773db6e3cff90b59e025b1ab17c0fbba6debd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/targets.py",
+          "bytes": 1948,
+          "sha256": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/run.py",
+          "bytes": 13502,
+          "sha256": "47ceaa7bd8e6427892f5c6eea3c56964101c6d020212ec9c2adc7f53bd05434e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/references.py",
+          "bytes": 2151,
+          "sha256": "e92301521aae05009217dce44443ad6c67da1c3319f5feee76dd4e52d3956c09"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/effective_feedback_modal.py",
+          "bytes": 7383,
+          "sha256": "06b552d4fe1f864acb968caa641cd4327b3c57ff52f371dacbaaed20b3cf96cb"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/effective_feedback_kernel.py",
+          "bytes": 4210,
+          "sha256": "17b309f0e1365dfe524677c1fd9ca138131deb1fcdfe8a737906adea083ccf10"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/effective_feedback.sbatch",
+          "bytes": 1638,
+          "sha256": "a63817fea218b48e23b97d4072691a148e0e4882029552d1c4065faaae0a903e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/effective_feedback.py",
+          "bytes": 20100,
+          "sha256": "762d13619ec079fb363f08731051143a7249c17d8d4b703ea9564ced1ffba341"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/core.py",
+          "bytes": 1325,
+          "sha256": "97be4105d949619ebe56f0c55bc0ec79df17a0e9ede63df181f467f06e7269f5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/adam_run.py",
+          "bytes": 12097,
+          "sha256": "62df6b1475f3298aaccd21f320b0b0af5901d2a9a3e2e45420ad6d591a2044a3"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/adam_forces.py",
+          "bytes": 4111,
+          "sha256": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_reinforcement_audit.py",
+          "bytes": 10947,
+          "sha256": "b475887786dd30b83711abbe6bbd2a122952f69234909237df14bc22df9e5da8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_reinforcement_summary.py",
+          "bytes": 11904,
+          "sha256": "e3a4b486013ea95ffdb0aab0eeb1cd1b91c5304ceb4daf745adfed82511f8275"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_output_summary.py",
+          "bytes": 26248,
+          "sha256": "b9bc637a088e97a5d7a648eab9b6c5a9b08bf621ee3fb17ba2a07d1b9cb1f69e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/adam_output_audit.py",
+          "bytes": 22308,
+          "sha256": "90b0ad62ec05b3ca196cf2ec310d2822108e0270fb778784ebe252780b362c23"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_force_certificate.py",
+          "bytes": 7465,
+          "sha256": "d084cfe82c9700a3399b6826d8d7ffcb9fdc9774a8c76fc9fdc7f4207e6e3dcb"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_sensitivity_certificate.py",
+          "bytes": 4208,
+          "sha256": "8a0e98cff3885b0ecbdeeccbe8fa13d0a8e7f654f3104410c3c4401d76cbdd77"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_gd_certificate.py",
+          "bytes": 6577,
+          "sha256": "38de9101ed5f5707759ec66402d98538f2062d58b31fd127ee79fd2127592987"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_output_audit.py",
+          "bytes": 17148,
+          "sha256": "99ff5f3a655a2733a132c0b318178d66ba437c456edf74eee284685f81674080"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_wide_inputs.py",
+          "bytes": 4473,
+          "sha256": "72b422294764a8414f01c8a7d91f60b4a43fcebbe4ab48675e8729a45c810a45"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/._population_wide_inputs.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/._mechanism_dilation_run.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_dilation_repair.py",
+          "bytes": 13461,
+          "sha256": "fcc1abd919a78b167513cb6034e97def5576032b18b6b1951526b6f96e810bcd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/._mechanism_dilation_repair.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/._adam_output_audit.py",
+          "bytes": 263,
+          "sha256": "4c7d6659a00f8a2cbd57004733f7030840c7d29de959a1c847a3f2dd6d93343b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/._population_output_audit.py",
+          "bytes": 163,
+          "sha256": "36433c170c45d19e0ebdb76f2eaf8ab089ed4313bdebf8f8a71e98e4a97233dd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_dilation_analysis.py",
+          "bytes": 23739,
+          "sha256": "c4ad233fa367c632002967f8393aeb3ca63613dad510d81e0aae6af444ebb483"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_polynomial_analysis.py",
+          "bytes": 6406,
+          "sha256": "4e1c400e92047f7920b51deb27c0ff1c032c0972b4ec88f960fd32fa7fce7c01"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_polynomial.py",
+          "bytes": 5585,
+          "sha256": "c0ce95b6b3f3068314991784a441cfc78dae41aaa17ba28e7579c6de063f4721"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/moment_persistence_summary.py",
+          "bytes": 11670,
+          "sha256": "da688183747003a20e2b7bebad71d8a2e494361cdc68caa9b255f4dddb8b39ed"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/moment_persistence.py",
+          "bytes": 21905,
+          "sha256": "56cf8470307463074e248bf2b4ec22473c2fa852ba0c6534cce64b4dbe5ab016"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_coverage_summary.py",
+          "bytes": 15580,
+          "sha256": "f497075fb03109902ca6c6e81f74ae4d9d1b6078b0f828b0fa6c45289c3e7c34"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_reduced_audit.py",
+          "bytes": 8751,
+          "sha256": "6f65536317b46e998fd7751f6cb7f654cdfc009026dcb8e8a8e4ad066544cb2a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_acceleration.py",
+          "bytes": 7349,
+          "sha256": "67aae3aa7141d868c9f0305ff34b2baf22b71d7c10deef280dfbda3236a77350"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_comparison.py",
+          "bytes": 9532,
+          "sha256": "656e7409b4f4ff1e0ba1a51d6439ef05910b0839bb092fffb6c0f791a04ed067"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_coupled_response.py",
+          "bytes": 14473,
+          "sha256": "74a6e6a6385d3e71a106f9b613dd1817f1919bbb828ad402f3cf35763027cadf"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_linear_response.py",
+          "bytes": 10696,
+          "sha256": "3103fa4b54f9bbfa5746c16347a94a3479d35d81395db0154976dcb128115f32"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_pulse_summary.py",
+          "bytes": 10353,
+          "sha256": "ef7034ac489f3a17224882bd385c7f79dd1a30d703cfa8fffc9a8a18c5c0256b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_summary.py",
+          "bytes": 11363,
+          "sha256": "c75444d46074b872ae15355ae8c6e4cc622d56b4df6718ed2e704a1f39cc64ad"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_pulses.py",
+          "bytes": 21291,
+          "sha256": "3729df634f5765055cd7c85748db6981ee86b59dbe59a92715c7414a065d6c9c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_kernel.py",
+          "bytes": 7317,
+          "sha256": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence.py",
+          "bytes": 16273,
+          "sha256": "ccf7ae8dc46c4419f97b0bbe839c142c8cc371abeea0d51779c97e4e7ba81b65"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_polynomial_confirmation.py",
+          "bytes": 4230,
+          "sha256": "d8b006bb05f6fb746bda2cc35e6d292596194086acd69c9679caff6c1bb406cf"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_coverage.py",
+          "bytes": 17396,
+          "sha256": "fff73e1f53d6589d33457984e1befbc7bc2e8d861fb846cfa7e02029f9c7c518"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_polynomial_clamp.py",
+          "bytes": 4583,
+          "sha256": "3b76d68c17c7126cfc1fdbe53e41c179d731e11d7e9fc4ca729a087716c67a07"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_adam_feedback.py",
+          "bytes": 9963,
+          "sha256": "beedb032b8f8bade8bfc443c92707bbe1f5b015f1ad1a7cb9595ba155c79977b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_polynomial_force_audit.py",
+          "bytes": 2004,
+          "sha256": "cfc3e075c740604ad6622a74a8cfdc954e1a2401275320b25b3f0120d93aeb65"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_polynomial_figure.py",
+          "bytes": 2493,
+          "sha256": "aeac956a12269fe367ed09a91692930c7c88262102799249d2babd048b307305"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/population_dilation_summary.py",
+          "bytes": 14344,
+          "sha256": "2870fde10c81a11d8e68ebde73d154cebecb820af1955db8ff9ef5a8dd334978"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_path_audit.py",
+          "bytes": 8351,
+          "sha256": "b3427720ae8366dc36845a87afee175b8197b3487a7b0f022ae8159bb321d713"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/mechanism_persistence_width_audit.py",
+          "bytes": 11289,
+          "sha256": "ed8d4aa68f4290c08623eeb6a0754cea8f4dd0244074f8e1d187bfb79ebbc83e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_dilation_run.cpython-312.pyc",
+          "bytes": 29161,
+          "sha256": "0978a57f4b5e0606cb9390a000a89f19690ac9e5e4f7b9f8387aaf6bbc328f45"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial_clamp.cpython-312.pyc",
+          "bytes": 10047,
+          "sha256": "67e5634a548b9239376b16d4d33c839e6657287c896490cd7a333395df5d70d4"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial_confirmation.cpython-312.pyc",
+          "bytes": 8127,
+          "sha256": "94da0929529eb6b456333f4169adc13fb344d80ba68c574d873ed02d23694be8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_width_scaling.cpython-312.pyc",
+          "bytes": 8091,
+          "sha256": "1f00360210ce451350621d3ba17c4d93ce27d70e0958ca44d51b939ffe8fbab0"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial_anchor.cpython-312.pyc",
+          "bytes": 7977,
+          "sha256": "8573604f0a002ef9643b907b00096772b9828971f5d5f22e6d3d04ec85429d07"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_moving_tube.cpython-312.pyc",
+          "bytes": 19755,
+          "sha256": "351c0eff5877d656db58a4a177e8a303b5b29b3f8d5bb7fb142dec914d67e397"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_widths_figures.cpython-311.pyc",
+          "bytes": 7326,
+          "sha256": "cca171aba6a1ca61c7bf35b7a6a210a99055e01c2ee527a0e22976665cc9e13f"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_splitting_diagnostics.cpython-312.pyc",
+          "bytes": 13122,
+          "sha256": "67975617f79e5bf63a34faa19ff2adcd56944089650f656704cd1e821c85260e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/effective_feedback_predict.cpython-311.pyc",
+          "bytes": 18350,
+          "sha256": "52cf613f581bbbbf21ebb1d74343739de4d53e74fa18d63ccbdec7fa3041b876"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/persistence_theory.cpython-311.pyc",
+          "bytes": 14077,
+          "sha256": "12834fd97de6544a7d080ae89f05517f158c06ecdf5434a0caa9240fe42030f2"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/effective_feedback_kernel.cpython-311.pyc",
+          "bytes": 8007,
+          "sha256": "5bc14d04d027a070306493d038cb3ecc1e7a0af4eb4018daa3e3c2c7852e420f"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_pulses.cpython-311.pyc",
+          "bytes": 43743,
+          "sha256": "2f4654cd92a46d181fd046b37e9dcf4691a1c9a1f7761a8bcf3757fa0b866dd3"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_splitting_analysis.cpython-312.pyc",
+          "bytes": 11141,
+          "sha256": "b1476fdfad475d2810da3bcfbfb75602dfa7f24f03a45b7456f090bea0439e0c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_pulses.cpython-312.pyc",
+          "bytes": 37494,
+          "sha256": "761a26070d1d10e3741532a5899ac341eeeb42f791720d12f3b76ddbc44120a3"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_splitting_baselines.cpython-312.pyc",
+          "bytes": 9616,
+          "sha256": "1e463d52c4ac555f304ebd5e6745ebc8e9d16418673773f25b22e67d26279d9c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_adam_analyze.cpython-312.pyc",
+          "bytes": 14084,
+          "sha256": "8c00baa25c30417128ed9c55f02db1a87c5781c6addb979b2c7883c3b48276de"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_adam_verify.cpython-312.pyc",
+          "bytes": 6415,
+          "sha256": "1f08966b8e80e7fa55bcbfc599976d559608ab9f598925bb16325569f50b1310"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_splitting.cpython-311.pyc",
+          "bytes": 38800,
+          "sha256": "d61ae5b1eb4d316c4ca3299d7a47e514b549cb8b0c20ccf5ca6a01f44733fc1a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/effective_feedback_holdout.cpython-311.pyc",
+          "bytes": 12203,
+          "sha256": "049d9dc6873d1b8e069c6fa1822f7cebd9fd3c3353452ce4ebda374209d4f66c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/transport.cpython-311.pyc",
+          "bytes": 20576,
+          "sha256": "99f8e761e401c3e1a88c14bb563de8619494ee603a6b7cbae3320d1ae483501b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/effective_feedback.cpython-311.pyc",
+          "bytes": 42392,
+          "sha256": "38accae8bbe0aa230bd65470a908657ba07fedf44b82a0648f55bbbd85bd5f94"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/references.cpython-311.pyc",
+          "bytes": 5129,
+          "sha256": "b98afb9e14744fe2f51f13dbb51c55dd8bd6b39aa3e2dc8cff3fd602aac40bf8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/core.cpython-311.pyc",
+          "bytes": 3461,
+          "sha256": "99ddbcd3fd7c7487314697a2ce6bfd6653f7642a0a9b8c1eee592a54702f98f7"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/run.cpython-311.pyc",
+          "bytes": 30199,
+          "sha256": "6d83bf9f8a6e6597c6667269a1de9b2c504a1a605fec9aedab905f2170c2d2ed"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/adam_run.cpython-311.pyc",
+          "bytes": 29152,
+          "sha256": "365cf9297d28dc71cfa41a724d749a9c2a995a13c014d53d650c606b1456ae5a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/targets.cpython-311.pyc",
+          "bytes": 4599,
+          "sha256": "0612dc2ab0e54723732fc6f858707a656965b9e1cd0a30133d18714520196e9b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/adam_forces.cpython-311.pyc",
+          "bytes": 8283,
+          "sha256": "a16fc8114603b9a42af0d6b918bc2134dbb3e47cd34befe61ebee02f79b70317"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_widths.cpython-311.pyc",
+          "bytes": 22085,
+          "sha256": "8fd144f25bbed46bde24191700e94f1cc49f7e3a993023b12d1e258cade22189"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/effective_feedback_predict.cpython-312.pyc",
+          "bytes": 16841,
+          "sha256": "10b7f370bac0fab6205beffeeae8ea9d9a99f3e092e2f95dca9b90bca38f411a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/persistence_theory.cpython-312.pyc",
+          "bytes": 13008,
+          "sha256": "02ef8c5c4ea0062372b0100cf77fd042a265410c6366143bc71c0e5011413f6b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_splitting.cpython-312.pyc",
+          "bytes": 34964,
+          "sha256": "1c2b4175be93f46b47b7f2d3b344835ce4ac9aeb2ebec309a3bd7a61955a78ae"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_adam.cpython-312.pyc",
+          "bytes": 25783,
+          "sha256": "b43bd804eaf19cb49fc5045ea9958a98e67bce0d8f3f2af4977136dee4da5ffb"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/effective_feedback_kernel.cpython-312.pyc",
+          "bytes": 7533,
+          "sha256": "43abcbfa56a529907ff47b86956c69c69f38bee1ac037332a9e0ad4957d48c08"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/transport.cpython-312.pyc",
+          "bytes": 18988,
+          "sha256": "43f1d169d3b7fcd51ca1523ae5afb5601c2aad4a4002cddb9215d1a20d7d5db6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/references.cpython-312.pyc",
+          "bytes": 4679,
+          "sha256": "a139ea71c7cf2208f857fb8e8d2761cf67f7a76a1d88d0b24acd659d3ca97aca"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/core.cpython-312.pyc",
+          "bytes": 3185,
+          "sha256": "1b8cafb46ba2b51f8de8936dac147feff769c8e1b56936f55e8ccbca010cf944"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/run.cpython-312.pyc",
+          "bytes": 26254,
+          "sha256": "9dd3ba6afe6eb6624295dfe20a26272080aaaa36a8d5c3d9b2e75623f53a5280"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/adam_run.cpython-312.pyc",
+          "bytes": 25152,
+          "sha256": "f50c7a1bd634df9076827a69401d12f67822bf6a80a43c17f33a1b18cc13c72c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/targets.cpython-312.pyc",
+          "bytes": 4273,
+          "sha256": "03b7d3a7760d2d5843b6fb02d0ee46aab3c513f9cd078a5988a69592f7bde33f"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/adam_forces.cpython-312.pyc",
+          "bytes": 8004,
+          "sha256": "f853fe1b950c259258289d8cc016679fcd1350e3a3cd5183a77d5f5bd4951cbb"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/effective_feedback.cpython-312.pyc",
+          "bytes": 36472,
+          "sha256": "1cb1e2e39819643aa927d72857562d26167dcc25f42327a832721012416f6cef"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_reinforcement_audit.cpython-312.pyc",
+          "bytes": 19503,
+          "sha256": "765456e1ccf2f86f95f0646e4efd5abaa7006961b8b57a269894596cc36bb13d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/adam_output_audit.cpython-311.pyc",
+          "bytes": 47906,
+          "sha256": "e5231828e665fdfc34ddbfcb3ea24d1bcc0a13f45f27d9898d910e3069332537"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_output_summary.cpython-311.pyc",
+          "bytes": 51969,
+          "sha256": "9b3b7402b3a97819a51834608fa70748ed9f19d4ed88b772cdab9aceedc0e8e2"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_force_certificate.cpython-312.pyc",
+          "bytes": 13339,
+          "sha256": "5cc1044284f920fad894ac6b6c6ae0f949d4db74f793e60b138fdd446b1a928c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_wide_inputs.cpython-312.pyc",
+          "bytes": 8247,
+          "sha256": "adb074e572dc9f48ad9787795d005f067bc3d5ed5abe76a8db2ace9f39ce713d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_output_summary.cpython-312.pyc",
+          "bytes": 32850,
+          "sha256": "c88e02cf94ae422f3a19af6ae9f81f1945f0d59cd600de5eebe475a53183f534"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_dilation_analysis.cpython-312.pyc",
+          "bytes": 35701,
+          "sha256": "9ca9d523408f79aac7ba192797ff8255c41e18d003819937bbafd884219fe66c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_dilation_summary.cpython-312.pyc",
+          "bytes": 20903,
+          "sha256": "c9b0f7432f545eaa25c2cd0dbf69a93c8d044028ee0083a414e6ad4f6849853a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_gd_certificate.cpython-312.pyc",
+          "bytes": 10557,
+          "sha256": "bbae272931213e120955c4a5561d938625a5ed8aadd67e90edc2af2f6bf46e54"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_sensitivity_certificate.cpython-312.pyc",
+          "bytes": 6301,
+          "sha256": "50582db6f198b0dbc83581c2675278818c32fc225dfe9e18e11c6337b42f686b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_output_audit.cpython-312.pyc",
+          "bytes": 33006,
+          "sha256": "3ea02e6cdaecc261e8ce770f27f715af2f44a7235921cd3b69119f721afb97e7"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/adam_output_audit.cpython-312.pyc",
+          "bytes": 36747,
+          "sha256": "68f1e54527e0ea06341898c144151369aea49738e3465afdb7d53023e27c9ca6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_dilation_repair.cpython-312.pyc",
+          "bytes": 20966,
+          "sha256": "d68af575a33534bdf26479f47c096d3630721759ae272ec837765d40b4c17295"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_dilation_analysis.cpython-311.pyc",
+          "bytes": 45846,
+          "sha256": "31921e2bdeba690154e281d6a75f5efb1e7fbaf78accc09903d87cf77d08dc77"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_dilation_repair.cpython-311.pyc",
+          "bytes": 22194,
+          "sha256": "66305b00dac1f7345e7d4e1334dfd4c006b60d72a8813b726d8d005750f63751"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_dilation_run.cpython-311.pyc",
+          "bytes": 25289,
+          "sha256": "1aab685e43c8ff3ec6de8cc0e19ceed9e051d695af85320f0c71285fa3021067"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_kernel.cpython-311.pyc",
+          "bytes": 15794,
+          "sha256": "f09dbf0550a178a4aef64425471a0320dc141dedcf2f6c86036a74636970467d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_adam.cpython-311.pyc",
+          "bytes": 28973,
+          "sha256": "d8e2c0432406058f990d4789860d887b99f7b25edb9f33083c8ee6cafd374013"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence.cpython-311.pyc",
+          "bytes": 36301,
+          "sha256": "9682f7e9484b2b64963cbda29a9fde32b40a6665042ea08f805be355956c4448"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial.cpython-312.pyc",
+          "bytes": 11194,
+          "sha256": "6251513e8385d9734f7e290cfa12bf8508c1b1364a7d6fca22f0be0abed35c80"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/moment_persistence.cpython-312.pyc",
+          "bytes": 34409,
+          "sha256": "989ca4d64ef5893e6b83a4c5458223a82efc0f3779fba5dca02bb5c34b2d662f"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_coverage_summary.cpython-311.pyc",
+          "bytes": 39196,
+          "sha256": "1a866686a2b5eede36a3cd538c69ed1d3fe70e26bb5bc3ca9c565a0369a4ceb0"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_coverage.cpython-312.pyc",
+          "bytes": 32600,
+          "sha256": "2b27fb61b826328d8854c94202193f363b8cf003fcd9a9f1e5d6f641e765f4d7"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_coverage_summary.cpython-312.pyc",
+          "bytes": 25133,
+          "sha256": "32f93c73228c2cc8c76690625a20052d0fb9c80f9f529558e08c90a5f60c4c97"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_acceleration.cpython-312.pyc",
+          "bytes": 12561,
+          "sha256": "1311b2e94aefab0824761a3e45c654898c61fde241ae625a143d32650be2abee"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_comparison.cpython-312.pyc",
+          "bytes": 14505,
+          "sha256": "7bb84d85976d811571ebd6476c5de61b22abfea0ab9d42f88fa4b3bad92644eb"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_coupled_response.cpython-312.pyc",
+          "bytes": 22627,
+          "sha256": "927e69a2dcc6b7e2fb951c3c78e9b401e69125e3398f7f988a913edc68aa1926"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_linear_response.cpython-312.pyc",
+          "bytes": 17015,
+          "sha256": "907fdae146a95f1c618fd5fcc2b21f4fce2b0df7a8ffe0c35b00aba75dd95c55"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_width_audit.cpython-312.pyc",
+          "bytes": 19153,
+          "sha256": "d3faec6a369e3a3dba770b997c8c8e4a7ea7e7fd06533f0bf5b0e11feda17505"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_pulse_summary.cpython-312.pyc",
+          "bytes": 18408,
+          "sha256": "7d59c5526c93b6c04c0176682b966c6da409e4e26c35470dd27666343663727a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_summary.cpython-312.pyc",
+          "bytes": 19296,
+          "sha256": "a673d6489a5b0738da2404d4ced69a02ab61b2c8dde68d48ee268ec8a774a958"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_pulses.cpython-312.pyc",
+          "bytes": 33791,
+          "sha256": "612b1d7ef1d71d2b42d993228a09e2be4dd073f1c0117d925b7982a710eef204"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence.cpython-312.pyc",
+          "bytes": 31531,
+          "sha256": "bac23454579b9dc73ed13e5b6688b68f520aede7c168685cfe11f50922120238"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_kernel.cpython-312.pyc",
+          "bytes": 14393,
+          "sha256": "a7792d791677418474445e5b663360fd7f234e662d7462940ec102e33cc08fb3"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_splitting_baselines.cpython-311.pyc",
+          "bytes": 11255,
+          "sha256": "830f903f2911c9f86fa0612ad8a649da756aef9de4e6f4406515e9806c89bdfb"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_splitting_diagnostics.cpython-311.pyc",
+          "bytes": 16351,
+          "sha256": "4d0aa5a1a395cf91d2fc6981fe6904a19c719fa154d287a3246e48ec94e35e63"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial.cpython-311.pyc",
+          "bytes": 12393,
+          "sha256": "ee79e72d44e8fecbbe37b70224f5270fd247e190e93d6c3a6dd2c492b6ec41a9"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_envelope.cpython-312.pyc",
+          "bytes": 15346,
+          "sha256": "cec5eb8a5badd8717779cb292b855b90bf28b00242c2e8639733e8e25a090cba"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/effective_feedback_holdout.cpython-312.pyc",
+          "bytes": 10522,
+          "sha256": "9fa786cf82a307013c522b8dae80bcd612ac5dabc8e5404ee954de88712f574c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_widths.cpython-312.pyc",
+          "bytes": 19803,
+          "sha256": "4a1f3ab5c0d5986e2c2cea9a584fd547a3e17a86340b2b155bb0686d453e49a6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial_confirmation.cpython-311.pyc",
+          "bytes": 8795,
+          "sha256": "38cfd0bbf287115ad0ade05581f2d6beb34b77a5eb7bf88602c4bcce7e8d73f8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_adam_feedback.cpython-312.pyc",
+          "bytes": 20346,
+          "sha256": "4c71862123cba5a2f026c21f97df869428e82337613747b635904e7c7a876082"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial_force_audit.cpython-312.pyc",
+          "bytes": 3546,
+          "sha256": "fa973b2422e9a8fbed8d6e98917af97d06826ddffe6debb010b6253b4a66a990"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/moment_persistence_summary.cpython-311.pyc",
+          "bytes": 30602,
+          "sha256": "e8e06ed3c45f658a7483197ab8e6698acbbd33f60599ef6f87968fb907a74374"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_reduced_audit.cpython-312.pyc",
+          "bytes": 14184,
+          "sha256": "75642e87e00cc1d08d9e8fa13eba601d5c6be7be8751899206e21acd7ba88433"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial_analysis.cpython-312.pyc",
+          "bytes": 14204,
+          "sha256": "6344da7aa40edeeb8d6f76e120ead79e883b9f302e529e05b1cdcfa7ad7937b6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_polynomial_figure.cpython-311.pyc",
+          "bytes": 5598,
+          "sha256": "870bfb3976ec33e40b349a857741f420ae64dd7c05523f0d0ff73b2752123259"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_dilation_summary.cpython-311.pyc",
+          "bytes": 26637,
+          "sha256": "77dfb5ef1dd4cf42bc7c12116402ee423fb08180c658501d0c9fe47390602c24"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_coverage.cpython-311.pyc",
+          "bytes": 37685,
+          "sha256": "c9503bca8f039b9ddc871527798d47a1a253ecd3eea4a92539f5cbd9e4017b82"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/mechanism_persistence_path_audit.cpython-312.pyc",
+          "bytes": 13354,
+          "sha256": "ade631906228a561c31b4492f9da503d7c54d2eb13bfe9b81439d4d480edeaee"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD34_readout_race/__pycache__/population_reinforcement_summary.cpython-311.pyc",
+          "bytes": 25178,
+          "sha256": "f64876b4dbece467f0fb4204e0a30c2401629804949bca27a1b1e13c2b40401f"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD28_loss_gradient_decomposition/run.py",
+          "bytes": 18770,
+          "sha256": "fa17978843139cf0223549390c98d456ccfb44c9f1e70418c2723a5cb541276e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD28_loss_gradient_decomposition/__pycache__/run.cpython-312.pyc",
+          "bytes": 32035,
+          "sha256": "a609cb3ec2de572b469f47a621c6584f4a79214da10ebe3eff7ab93c27312167"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD28_loss_gradient_decomposition/__pycache__/run.cpython-311.pyc",
+          "bytes": 37900,
+          "sha256": "124ac89e6af4ce0e94f8762f60949d3a586db861c34e1683e9521357e943983f"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/run.py",
+          "bytes": 13252,
+          "sha256": "05a84d72d5b1a02c4ef3e69eefa5ba81395b349a86cb7b8a751493bb6266453a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/spectrum.py",
+          "bytes": 7636,
+          "sha256": "608c4766aae382014e709369235a41cc3081e70ddc3a49a54fbbe4124af207ca"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/first_steps_refit.py",
+          "bytes": 16645,
+          "sha256": "7bda3a16edb533a839874b4b3b98c6b5f89426a7aefd36a38c57a61e51bf0749"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/signed_log.py",
+          "bytes": 1319,
+          "sha256": "128ac19881ea94e6d9ca47e6006a65f037ffb839b39af458041d6c287e851ca8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/readout_comparison.py",
+          "bytes": 24556,
+          "sha256": "ba63404219e60b83784aa6d8f9906e7f81a9d04b24543d9c7f3a9e32862269cb"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/whole_line.py",
+          "bytes": 19284,
+          "sha256": "f03ded97fb20e1496a9cb3e9361d39792911fa846fbd79301fc259ecd711157d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/analyze.py",
+          "bytes": 18948,
+          "sha256": "b8bfd6a18517a68fe31038517b6f46bd2358bed051115a007b3dce90de50324b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/four_way_comparison.py",
+          "bytes": 16426,
+          "sha256": "eb3fec061e944be712ccb59f4fea7a4e35972bf3931e958e233b7766b3ac8aa0"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/__pycache__/signed_log.cpython-311.pyc",
+          "bytes": 2709,
+          "sha256": "19bc31e7872b87311f0bf8f07c4265f867d44c717d01b3785816bbd130ac40bd"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/__pycache__/spectrum.cpython-311.pyc",
+          "bytes": 16199,
+          "sha256": "2c057468f34b786c26fc1d42b742980d0d439cb0a695c9b4ac840b86e7bd22de"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/__pycache__/analyze.cpython-311.pyc",
+          "bytes": 34369,
+          "sha256": "58009dff74689c602b1fa1f774ad61e1a6dc6deea89e4fae26839d0a25d2c231"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/__pycache__/whole_line.cpython-311.pyc",
+          "bytes": 40935,
+          "sha256": "369250484d545256249d84cdb7ce49570de500697ee334adaf0aec575237554b"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/__pycache__/run.cpython-311.pyc",
+          "bytes": 26291,
+          "sha256": "a44c98676fe693af57a4bd80f8c78b8d14500e8ea58571e974ca851a43f02016"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/__pycache__/readout_comparison.cpython-311.pyc",
+          "bytes": 44639,
+          "sha256": "577a1acab8dce10ed506e7200716974b07da778287b5a78036a3cb1b8ea199aa"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/__pycache__/first_steps_refit.cpython-311.pyc",
+          "bytes": 32088,
+          "sha256": "656b184fe232d3605b13c3252c422b4f8150075193e3f0877a379cf5a8e838b4"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expD24_gd_residual_spectrum/__pycache__/four_way_comparison.cpython-311.pyc",
+          "bytes": 31630,
+          "sha256": "cd8a8fd03dcc0ed243a8eb6ead7e0caf40a1667e9fe5e7f232b13f60d91cc4d8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expC05_geometry_interpolation/common.py",
+          "bytes": 3874,
+          "sha256": "e6982f4f8f3139ec681162ebfd5cbc26292360328a493b429bc207014b427d3c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/experiments/expC05_geometry_interpolation/__pycache__/common.cpython-311.pyc",
+          "bytes": 5669,
+          "sha256": "b5aa30db799b10f80d0c67808dafbbe9aa9288721343bf6fdbea84cabaabf74e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/pi_evidence_inputs/clone_confirmation.csv",
+          "bytes": 810889,
+          "sha256": "9f1d5bdf047378148efe821d562a4fada0671bdf12b19c1c2eea71d1435f4943"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/pi_evidence_inputs/clone_development.csv",
+          "bytes": 808419,
+          "sha256": "bec1f5f227d042a3dba1109cc70f5faa4d5de104d599c6738210e9d8a7cf03ea"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/pi_evidence_inputs/pulse_development.csv",
+          "bytes": 178348,
+          "sha256": "2f9cf6cdb96d5ab83d9f2a72b78696a13f581a2c9a8fb6ab725077fac5adfc5f"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/pi_evidence_inputs/feedback.csv",
+          "bytes": 82110,
+          "sha256": "96c306445a61553d3690ee6425928dbdd71a99189ea0a3e8eeab816af4bfb4cc"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/pi_evidence_inputs/heldout.csv",
+          "bytes": 2037480,
+          "sha256": "6ca4bd47991e338901ba95340acfe95bfed69d2aa5235288bdb3e2133b9e0dce"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/diagnostic_batch_check/pi_evidence_inputs/pulse_confirmation.csv",
+          "bytes": 179966,
+          "sha256": "a18bd729874dfe1fc446ee1d009f6dab7dda15635106f64b73a85857ab231e52"
+        }
+      ],
+      "total_bytes": 7709796
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness",
+      "files": [
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_repaired_kink_abs.npz",
+          "bytes": 85060,
+          "sha256": "4521e08060b6cc498e3e5dd5aede8d142879abb8bfbfba44dbc3057bb6b25b5a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_repaired_step_right.npz",
+          "bytes": 80061,
+          "sha256": "f59b6a36d8c0a3488cd250e8a0c62b21bbf85901713fa586c91be4127812840c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_s100_inverse_bump_right.npz",
+          "bytes": 73598,
+          "sha256": "c2c91431006633fe2b7aa7b32db57a3b1bc4f6a41c555a55f9fb06d13bf80d39"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_s100_primary_bump_right.npz",
+          "bytes": 73596,
+          "sha256": "a79fec2b1ea95bc401a7bdad12dc4a90584a7dd95848dde9e9291ffed8bb3540"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_repaired_bump_right.npz",
+          "bytes": 73008,
+          "sha256": "c8fc119d6d38e6ba22fc41fdcb9414173d035680a5bdd08785e3cc4d24883103"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_repaired_gauss_left.npz",
+          "bytes": 85393,
+          "sha256": "2546200fd8d04a2be1c299fa3332ccceac6a7f34a078314eec389002f57ff081"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_s100_inverse_mixed_sine.npz",
+          "bytes": 76731,
+          "sha256": "d8c17c9441ef364ac4561f30d1d962d437f468397f14334806b7afee8bcced78"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_s100_primary_mixed_sine.npz",
+          "bytes": 76720,
+          "sha256": "a80f68501dc854a0d843079b719f9634d17e5a4175a74b37055a851100261fbe"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_repaired_mixed_sine.npz",
+          "bytes": 76261,
+          "sha256": "949c198af1c0a2ab49f247f6bc519416f03418715775a48980cf1497ae0ff9a6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witness_repaired_moment5.npz",
+          "bytes": 85144,
+          "sha256": "166bd98c33ea1f9f43c3e8c4f9d0854702405c1474e169d2f9c0a027f79916d6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/frozen_witness/witnesses.csv",
+          "bytes": 380846,
+          "sha256": "fb1bb152e0bde5ef198ef9092cba3e6ae110a4f4c03da7179230958d9fd6c408"
+        }
+      ],
+      "total_bytes": 1166418,
+      "matches_final": {
+        "witness_repaired_kink_abs.npz": true,
+        "witness_repaired_step_right.npz": true,
+        "witness_s100_inverse_bump_right.npz": true,
+        "witness_s100_primary_bump_right.npz": true,
+        "witness_repaired_bump_right.npz": true,
+        "witness_repaired_gauss_left.npz": true,
+        "witness_s100_inverse_mixed_sine.npz": true,
+        "witness_s100_primary_mixed_sine.npz": true,
+        "witness_repaired_mixed_sine.npz": true,
+        "witness_repaired_moment5.npz": true,
+        "witnesses.csv": true
+      }
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary",
+      "files": [
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/facts.json",
+          "bytes": 1231544,
+          "sha256": "ee973e3824f452b5df9877a1dcfae6f5cb5814e133664c107534b5c7554fb9e0"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/natural_ordinary_gd_enclosures.png",
+          "bytes": 128428,
+          "sha256": "b601b88521ca0822ee8423eea3cadbe11b8bc70278225a4f9801bbfbb6956485"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/static_ordinary_gd_enclosures.png",
+          "bytes": 132959,
+          "sha256": "7f2f11b0c428299a063ba6e2a0a16d5fbe1855d6cad4ec97b612fa16d6455f17"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/natural_drift.png",
+          "bytes": 138079,
+          "sha256": "cad0252f71c3211de4cb905244c3b6417778f9da9945aa6d788a1363b76239d2"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/effective_flow_enclosures.png",
+          "bytes": 192678,
+          "sha256": "2b383258d447d0178c17fcd5766cf9928b8f1ff62c487914a1e0d9804407cb76"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/natural_generated_target.png",
+          "bytes": 337019,
+          "sha256": "812a689dc456ec3d5197e46708e53409983094ef2f8ac0ae9d98a60339c3c3a3"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/natural_rates.png",
+          "bytes": 115312,
+          "sha256": "48e0ca61dc210970ceba7fa0879c6d687f897fb18d47f17480800db6f29f2b1e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/natural_strongest_output_floors.png",
+          "bytes": 153805,
+          "sha256": "69073c60e86f54a4bd6e71753b607d5befab6a9c066719de9099cdd5c47b8d20"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/natural_population_output.png",
+          "bytes": 272498,
+          "sha256": "9ccf7025ec0100663248e1fa72fefc67c3195d6d81f7fb49d0601b855cd290ee"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/static_generated_target.png",
+          "bytes": 420417,
+          "sha256": "190adaa8f27dbd00c579d2d3af1e5c7e2cd3c0a04fbd1d57144d1bc7c3441b00"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/static_rates.png",
+          "bytes": 131442,
+          "sha256": "144450b98edbfd4d558b2c0a50e8bbf312928fb6f24ef71e818e90bff0a6150c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/static_strongest_output_floors.png",
+          "bytes": 168763,
+          "sha256": "2a0bb3fe6e03ce53b4968bf17fd1c77f705772fdbc2d879108d6596b096d03ec"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary/static_population_output.png",
+          "bytes": 329227,
+          "sha256": "c3a56301560b2c82426d216501a08b5f93f58c2a3c235984656d993cceb48266"
+        }
+      ],
+      "total_bytes": 3752171
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined",
+      "files": [
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/facts.json",
+          "bytes": 1239496,
+          "sha256": "45a6bbef1119c2825dfc25ba78d422e622e1036a62f9ca230d6fc3d5e072c1ef"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/natural_ordinary_gd_enclosures.png",
+          "bytes": 128428,
+          "sha256": "b601b88521ca0822ee8423eea3cadbe11b8bc70278225a4f9801bbfbb6956485"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/static_ordinary_gd_enclosures.png",
+          "bytes": 132959,
+          "sha256": "7f2f11b0c428299a063ba6e2a0a16d5fbe1855d6cad4ec97b612fa16d6455f17"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/natural_drift.png",
+          "bytes": 147790,
+          "sha256": "4444ad25ef27fac45ccddfdbb00cbfe3bf51b099278f786fd6c4c34bb7f84e73"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/effective_flow_enclosures.png",
+          "bytes": 213266,
+          "sha256": "e174402da2993e4f735a3991c2068c090e7fbc18809ac1cbb5f7501e5016bc25"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/natural_generated_target.png",
+          "bytes": 268163,
+          "sha256": "454f5d9b8ff1c9213b95fdf5d5627e3a933f0c219bc6c53c2656e38f9d2ec78c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/natural_rates.png",
+          "bytes": 175793,
+          "sha256": "c7a0a514c5bab62d4edd3274475c2757c323902dd87b3533e0a5e7a22061dcc4"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/natural_strongest_output_floors.png",
+          "bytes": 153805,
+          "sha256": "69073c60e86f54a4bd6e71753b607d5befab6a9c066719de9099cdd5c47b8d20"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/natural_population_output.png",
+          "bytes": 272498,
+          "sha256": "9ccf7025ec0100663248e1fa72fefc67c3195d6d81f7fb49d0601b855cd290ee"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/static_generated_target.png",
+          "bytes": 355617,
+          "sha256": "0795aec42226e387f74965aa186afdcd2ce194940fe76062676e265be0ce0ccc"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/static_rates.png",
+          "bytes": 243608,
+          "sha256": "f3a0c80f27cf206dbc65bdcd4570730cfcfc14d14125379bf9ddb8a73512d70a"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/static_strongest_output_floors.png",
+          "bytes": 168763,
+          "sha256": "2a0bb3fe6e03ce53b4968bf17fd1c77f705772fdbc2d879108d6596b096d03ec"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/archive_summary_refined/static_population_output.png",
+          "bytes": 329227,
+          "sha256": "c3a56301560b2c82426d216501a08b5f93f58c2a3c235984656d993cceb48266"
+        }
+      ],
+      "total_bytes": 3829413
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary",
+      "files": [
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/response_03.png",
+          "bytes": 330357,
+          "sha256": "1f1f46d6d402606290b5126f63fa2d72ce41f27a04264f72ddd7b7f9e3024536"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/response_02.png",
+          "bytes": 335233,
+          "sha256": "692c8ae463d03da82c404d395bc10b65ca893625ccf3640a22fd66f1b24ff205"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/response_01.png",
+          "bytes": 360319,
+          "sha256": "c101e2dca33f8618d0a02e02531c90774523c3f0029728dff14a47e2a07c9fa5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/response_00.png",
+          "bytes": 374362,
+          "sha256": "58ad2198ccdddf9431a408755a09d7ed2adbaadeefd61a198e5e66f1e9799fd6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/coverage.png",
+          "bytes": 57021,
+          "sha256": "c8d26416b7b9930875beda1a0728ea3c6f926f1e41fdf367416806dc157de1e9"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/summary.json",
+          "bytes": 68105,
+          "sha256": "10b739ba17b002dbd555fcacf8788aa6d87240ca870fe993eee76250d4fdc288"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/attempts.csv",
+          "bytes": 2838047,
+          "sha256": "d80af132d7f2a232e53e3f5e93f4866df2fa9ee6d9fe8bbe7030d36b220fad2c"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/endpoints.csv",
+          "bytes": 1032268,
+          "sha256": "2d077fd6fb876c842565319e4c6e379084d0d554117a46dbf3ae7ef040b2b933"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_four_summary/states.csv",
+          "bytes": 9016834,
+          "sha256": "a1b6b4845168ba5b34ed607fb0fe0cab0a0e04942ed89ffd117759e38af428bd"
+        }
+      ],
+      "total_bytes": 14412546
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary",
+      "files": [
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/findings.json",
+          "bytes": 336495,
+          "sha256": "0b191a26d7cd2553c4053149bc97eb5ea9899ffe1f1506bee8606d5f5d1e035e"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/response_06.png",
+          "bytes": 330357,
+          "sha256": "1f1f46d6d402606290b5126f63fa2d72ce41f27a04264f72ddd7b7f9e3024536"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/response_05.png",
+          "bytes": 300192,
+          "sha256": "bcaaeea540e0f4c132cf284369744eeace7fff9d1f17176b873c3ef567ca469d"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/response_04.png",
+          "bytes": 281480,
+          "sha256": "3bfa8851b1231c5b0f141dc6f2b9e1cead6b89f83b6b252bcdb2ebba2170cda3"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/response_03.png",
+          "bytes": 335233,
+          "sha256": "692c8ae463d03da82c404d395bc10b65ca893625ccf3640a22fd66f1b24ff205"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/response_02.png",
+          "bytes": 360319,
+          "sha256": "c101e2dca33f8618d0a02e02531c90774523c3f0029728dff14a47e2a07c9fa5"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/response_01.png",
+          "bytes": 292138,
+          "sha256": "72b9903f0b6b57e522ee3a4102ddabc3053db65949763c54ac58415be8cff4e4"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/response_00.png",
+          "bytes": 374362,
+          "sha256": "58ad2198ccdddf9431a408755a09d7ed2adbaadeefd61a198e5e66f1e9799fd6"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/coverage.png",
+          "bytes": 69869,
+          "sha256": "6e28d02b0d21623203e26b8c6ae4eb185e9252ad7ce225e7cd430f4dcffb4a06"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/summary.json",
+          "bytes": 97179,
+          "sha256": "e9be29cfbce680e8e3cb6323f4397759ae21787ce35380652112e569ea186183"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/step_controls.csv",
+          "bytes": 21608,
+          "sha256": "f4434b120756833f839080d5e6a9ce38e6ea7b93d6428205ba317c054e30f82f"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/attempts.csv",
+          "bytes": 3258139,
+          "sha256": "83c4e15bfccab43942d220f11eaa0447f56d86bc4cfab55b914d9dc7767eeb28"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/endpoints.csv",
+          "bytes": 1163321,
+          "sha256": "6f15433e5d546686f33d318a542af521f166193fa747da31591780f44a607f26"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/dilation_main_controls_summary/states.csv",
+          "bytes": 10337786,
+          "sha256": "50ee607f5269d23e0df59bd90d20213b42ac6e63022731943872f4a55344681f"
+        }
+      ],
+      "total_bytes": 17558478
+    },
+    {
+      "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary",
+      "files": [
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/facts.json",
+          "bytes": 152127,
+          "sha256": "811ea3ca5ec7b9d08c9cc015563ac183542740cf1e724cf310e3b4fe5d4f75ca"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/force_concentration.png",
+          "bytes": 174428,
+          "sha256": "6ffebc4c0087e03911449e609ad784fd61c6e38034463e4954a2766a8611ccff"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/force_weighted_population.png",
+          "bytes": 166363,
+          "sha256": "8374644133a64f87c3ffbf2d70353fc549f3713ec7c46c8198ae2fe4038179b3"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/natural_feedback.png",
+          "bytes": 695921,
+          "sha256": "a804556d33fd66afb7f424746ef337e8a8d3fd863c972574778d039c84b07fc8"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/signed_balance.png",
+          "bytes": 181720,
+          "sha256": "dc39a88e9746734dfb75af16163ac2cdb3bab8f8d362bd2804b50165fb423dea"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/bound_levels.png",
+          "bytes": 153349,
+          "sha256": "2ec7a5c6948daa708f09d997f6dcf8598149133fffcfc5a5436632650d479086"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/group_statistics.csv",
+          "bytes": 21284,
+          "sha256": "14ae8ec2753eb8b1301eac7db2ed138a9923a31d5d1dbb3b8e0e18d602e49860"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/trajectory_endpoints.csv",
+          "bytes": 34287,
+          "sha256": "06fecc3c079757bd2eef0736b5fb013f1ec2af4159734484ddb7e18559ab5ad7"
+        },
+        {
+          "path": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/population_output_cb89e72/force_concentration_summary/derived_states.csv",
+          "bytes": 661434,
+          "sha256": "b5cb0e62e5ca1846f4bfac765412c627a848e3325459ee450777692d7c88ae6d"
+        }
+      ],
+      "total_bytes": 2240913
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "source_sha256": "67aae3aa7141d868c9f0305ff34b2baf22b71d7c10deef280dfbda3236a77350",
+  "kernel_sha256": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5",
+  "inputs": {
+    "physical_confirmation_N128/manifest.json": "357c05336e8f500ffa7cb054fdbcc8141348942020a2b219e1636147ff78fdcf",
+    "physical_confirmation_N128/inputs.npz": "cbcf46fee3bd29a45c26bb0f04f54f330c29fa38cf6ef9b8dd07c5f6d04aa6d5",
+    "kicks_confirmation_N128/directions.npz": "49a91b815dc854a81015632ed302ab6f17acbaa43ad816b2e154ee028746ae96",
+    "kicks_confirmation_N128/manifest.json": "ccced2302aafcf4087a6ad661530f556f6a3f5800cbfb803b3d978d7e630fc85",
+    "physical_confirmation_late/manifest.json": "d4f9d51c368482b589b392134e267e88437c58907f91544185ea663bfd9abed8",
+    "physical_confirmation_late/inputs.npz": "f9f264bb6969071c24185491a1006b7f55bda405463e355fec2620c9faed5d18",
+    "kicks_confirmation_late/directions.npz": "9565b1380b83e4f42e228bf8425a01562b5191f3517be120c2a0e7c04105014a",
+    "kicks_confirmation_late/manifest.json": "e7c203ead2ad98b307e4890ced76eb0d730818504f3c87e4612dd5d5eafc3844",
+    "physical_development_N128/manifest.json": "1ca02f16fc2f28c580431ab6e21cc3075f6d9cf5f335b454e45e54829965f56b",
+    "physical_development_N128/inputs.npz": "98bdb387b9f75906406f9d0a9fdc4a6958741a4633e8f06bcf125a7cc47a7b69",
+    "kicks_development_N128/directions.npz": "4aeb08f35b929ff75661dc6429af615e50702166d0b143aecdf44b41d26b8364",
+    "kicks_development_N128/manifest.json": "742b5f2dff64b49d75c4577924bb1126b28edd34cc973afcab1e375863e42e51",
+    "physical_development_late/manifest.json": "e8f30508658fdcd6bbdbca63fd1fdb671315a629cec1e531e7092eeb48a9ecc4",
+    "physical_development_late/inputs.npz": "32ca12ea780bb06f9810e7bd43c296b5d5eba4c5c5d0b2be2445aaab6219f90f",
+    "kicks_development_late/directions.npz": "90708d80b69e08454059025aff990672491af3b9458d5a05819961245a4d0ede",
+    "kicks_development_late/manifest.json": "fbdfba3402599b066fc2a72497bd0adfcf527543a96bb83d19221c16e64fd990"
+  },
+  "cases": 16,
+  "skipped": [],
+  "etas": [
+    0.002,
+    0.001,
+    0.0005
+  ],
+  "identity": "xi_second=H_squared_v+DH[g]v at the fork",
+  "scope": "Initial derivative diagnostic, no future trajectory inputs, no finite-window inference",
+  "step_check": "Exact two-step tangent after removing v-2etaHv; O(eta) error after division by eta squared",
+  "numerical_certificate": false
+}

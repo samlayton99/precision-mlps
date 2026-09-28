@@ -1,0 +1,20 @@
+% Insert after the existing GD theorem and its empirical validation in Section 3.5.
+% This paragraph supplements that theorem; it does not replace it.
+\paragraph{Adam: a coarse stability constraint on fine motion.}
+Adam reaches larger, more concentrated parameter energies, where the preceding
+GD bound is uninformative. Its remaining acquisition gap has an additional
+optimizer mechanism: coarse tracking contributes to the shared second moment
+that scales the effective fine update. Across six targets, two widths, and two
+seeds at update 130k, the leading adaptive curvature has median 98.7\% of the
+local momentum stability threshold; the coarse contribution accounts for a
+median 98.8\% of this curvature. Large-step GD provides a causal comparison:
+attenuating tracking removes the observed loss oscillations in all 24 paired
+starts. Removing the fine update's first-order coarse disturbance barely
+changes native Adam acquisition. Turning off fine displacement altogether
+preserves substantial late tracking for degree five, sine, and kink, while
+several localized cases settle. Thus continuing fine displacement is not a
+universal requirement for the observed coarse activity. A reduced adaptive
+model illustrates how coarse oscillation can maintain a denominator that
+limits fine drift even without such forcing
+(Appendix~\ref{app:coarse-feedback}). These optimizer-specific results complement
+the GD population theorem; they do not provide an Adam rate bound.

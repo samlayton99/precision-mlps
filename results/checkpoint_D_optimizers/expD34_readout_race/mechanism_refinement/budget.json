@@ -1,0 +1,91 @@
+{
+  "start_utc": "2026-09-23 08:18:25 UTC",
+  "deadline_utc": "2026-09-23 16:18:25 UTC",
+  "limit_gpu_seconds": 14400,
+  "prior_effective_feedback_seconds": 18734.465931415557,
+  "prior_adam_seconds_charged_conservatively": 2841,
+  "combined_authorization_seconds": 36000,
+  "accounting": "Reserve each GPU allocation before launch; reconcile allocated GPU elapsed including compilation, failures and idle time. CPU-only Slurm work is recorded separately.",
+  "reservations": [
+    {
+      "id": "polynomial_confirmation_burnin",
+      "reserved_gpu_seconds": 600,
+      "status": "complete",
+      "job_id": 1273,
+      "accounted_gpu_seconds": 50,
+      "purpose": "Fresh seeds 32 and 33, six fixed targets and three independent widths, ordinary GD to the fixed 20k fork; then issue polynomial forecasts."
+    },
+    {
+      "id": "polynomial_confirmation_continuation",
+      "reserved_gpu_seconds": 600,
+      "status": "complete",
+      "job_id": 1282,
+      "accounted_gpu_seconds": 60,
+      "purpose": "Continue the fresh 36 cases from 20k to 40k only after immutable cubic and quintic own-state predictions are saved."
+    },
+    {
+      "id": "adam_confirmation",
+      "reserved_gpu_seconds": 600,
+      "status": "complete",
+      "job_id": 1255,
+      "accounted_gpu_seconds": 41,
+      "purpose": "Complete the original four-arm preserved-history Adam test on seed 1 with immutable preissued frozen/two-phase forecasts; new feedback helper remains untested."
+    },
+    {
+      "id": "splitting_confirmation",
+      "reserved_gpu_seconds": 900,
+      "status": "complete",
+      "job_id": 1231,
+      "accounted_gpu_seconds": 145,
+      "purpose": "Confirm original nine splitting policies on the fixed second-seed23-target cohort after issuing20k forecasts."
+    },
+    {
+      "id": "pulses_confirmation",
+      "reserved_gpu_seconds": 900,
+      "status": "complete",
+      "job_id": 1227,
+      "accounted_gpu_seconds": 61,
+      "purpose": "Confirm the preissued matched-pulse responses on the fixed second-seed23-target cohort,20k additional updates."
+    },
+    {
+      "id": "independent_widths_40k",
+      "reserved_gpu_seconds": 600,
+      "status": "complete",
+      "job_id": 1237,
+      "accounted_gpu_seconds": 47,
+      "purpose": "Continue all36 independently initialized networks from20k for20k additional updates after fixed Schur/constant-force forecasts."
+    },
+    {
+      "id": "adam_development",
+      "reserved_gpu_seconds": 900,
+      "status": "complete",
+      "job_id": 1206,
+      "accounted_gpu_seconds": 40,
+      "purpose": "Thirteen seed-0 Adam forks, four preserved-history moment interventions, up to20k updates; includes GPU preflight and compilation."
+    },
+    {
+      "id": "splitting_development",
+      "reserved_gpu_seconds": 1800,
+      "status": "complete",
+      "job_id": 1207,
+      "accounted_gpu_seconds": 146,
+      "purpose": "All23 development targets across original and eight quotient splitting policies, up to20k updates; one GPU allocation."
+    },
+    {
+      "id": "pulses_development",
+      "reserved_gpu_seconds": 1800,
+      "status": "complete",
+      "job_id": 1219,
+      "accounted_gpu_seconds": 69,
+      "purpose": "Twenty-three development forks with baseline and six matched pulses each,20k additional updates."
+    },
+    {
+      "id": "independent_widths_20k",
+      "reserved_gpu_seconds": 900,
+      "status": "complete",
+      "job_id": 1220,
+      "accounted_gpu_seconds": 52,
+      "purpose": "Thirty-six independent ordinary-GD cases acrossNref128,512,1024,20k updates at unchanged learning rate."
+    }
+  ]
+}

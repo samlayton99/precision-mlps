@@ -1,0 +1,31 @@
+{
+  "precision_bits": 128,
+  "width": 705,
+  "samples": 2048,
+  "through_update": 100000,
+  "eta": 0.002,
+  "eta_exact_ratio": [
+    1152921504606847,
+    576460752303423488
+  ],
+  "analytic_eigenvalue_upper": 706,
+  "intervals": {
+    "correlation": "[0.21197628195456749745623551200059278 +/- 2.76e-36]",
+    "adjoint_witness_norm_upper": "[0.00218719103885333389432812979281522006646274916 +/- 4.44e-48]",
+    "initial_residual_norm_upper": "[0.809019087022895448096426140933521177633547055 +/- 4.05e-46]",
+    "witness_norm_upper": "[1.00000000000000006521213176397701687290454939 +/- 2.28e-45]",
+    "normalized_target_norm_upper": "[0.999999999999999994528563885027132797751641852 +/- 6.50e-47]",
+    "travel_factor_upper": "[18.4427778390829382013935021693443825850900098 +/- 1.23e-44]",
+    "descent_margin": "[0.587999999999999970606845423048980592284351587 +/- 2.96e-46]",
+    "numerator": "[0.17934216838180362780278368562378970 +/- 7.25e-36]",
+    "relative_error_floor_lower": "[0.179342168381803617088757787294004827621289372 +/- 4.99e-46]"
+  },
+  "certified_above": {
+    "0.01": true,
+    "0.001": true,
+    "0.0001": true
+  },
+  "scope": "Every integer update 0<=n<=N of exact-arithmetic frozen-feature GD for the encoded empirical problem; not FP64-training or continuum certification",
+  "input_sha256": "a80f68501dc854a0d843079b719f9634d17e5a4175a74b37055a851100261fbe",
+  "helper_sha256": "374bbff32523155ac51a2f99a38269d7e91c146df574cff58bd9a237925eac2c"
+}

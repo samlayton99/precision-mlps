@@ -1,0 +1,120 @@
+{
+  "question": "Explain persistence of failed scale acquisition after coarse disequilibrium becomes small, test evolving coupling, and derive a predictive finite-time bound.",
+  "target": "moment9",
+  "optimizer": "simultaneous full-batch GD in raw coordinates",
+  "width": 177,
+  "training_midpoints": 2048,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "reference_eta": 0.002,
+  "retrospective_interval": [
+    100000,
+    600000
+  ],
+  "prospective_interval": [
+    600000,
+    6000000
+  ],
+  "primary_models": {
+    "retrospective": [
+      "five_mode",
+      "ten_mode",
+      "linear_features",
+      "frozen_tangent",
+      "constant_gradient"
+    ],
+    "prospective": [
+      "full",
+      "ten_mode",
+      "linear_features",
+      "frozen_tangent",
+      "constant_gradient"
+    ]
+  },
+  "adaptations": [
+    "Local CPU execution after automatic approval review rejected exporting new source to Runpod; no upload workaround or new GPU job was used.",
+    "Moment-matched Gaussian quadrature of the original discrete training measure accelerates the long tanh runs; it does not substitute continuum moments.",
+    "The two spectral modes and physical quadratic/cubic reductions were selected after inspection of the initial force spectrum.",
+    "The local hard-mode loss-floor bound was derived after the force attribution and frozen-forecast enclosure analysis."
+  ],
+  "numerical_controls": {
+    "precision": "float64",
+    "half_step_eta": 0.001,
+    "half_step_seed": 0,
+    "half_step_models_by_interval": {
+      "100000_to_600000": [
+        "five_mode",
+        "ten_mode",
+        "linear_features"
+      ],
+      "600000_to_6000000": [
+        "full",
+        "ten_mode",
+        "linear_features"
+      ]
+    },
+    "long_tanh_quadrature_points": 64,
+    "node_doubling": "Full GD, seed 0, 128 points, 600k to 6m",
+    "direct_sum_control": "Full GD, five seeds, 600k to 620k, direct 2048-point sum versus 64-point rule",
+    "direct_retrospective_models": [
+      "five_mode",
+      "ten_mode"
+    ],
+    "modal_audit_degrees": [
+      65,
+      129
+    ],
+    "linear_features": "Full fixed Gram matrix; no rank or sample truncation"
+  },
+  "bound_evaluation": {
+    "starting_steps": [
+      100000,
+      600000
+    ],
+    "acquisition_thresholds": [
+      1.0,
+      3.2,
+      16.0
+    ],
+    "frozen_enclosure_block_updates": 1000,
+    "energy_radius_candidates": "301 geometric points from 0.001 to 0.5",
+    "energy_ellipse_candidates": "256 imaginary strip heights from 0.5 to 1.55 for each neuron",
+    "future_true_states_used_for_constants": false,
+    "qualification": "Real-arithmetic analytical inequalities evaluated in ordinary FP64; not directed-rounding interval certification"
+  },
+  "authorization": {
+    "gpu_hour_ceiling": 10,
+    "wall_hour_ceiling": 8,
+    "started_utc": "2026-09-22 10:31:39 UTC",
+    "deadline_utc": "2026-09-22 18:31:39 UTC",
+    "new_gpu_jobs_submitted": 0,
+    "new_gpu_hours_used": 0
+  },
+  "primary_run_source_commits": [
+    "43f6b9b",
+    "3f0c44a",
+    "2437aeb"
+  ],
+  "analysis_and_theory_commits": [
+    "0f3385d",
+    "18b63c0",
+    "d858882",
+    "0bf17e0",
+    "abb193c",
+    "488cdb0"
+  ],
+  "source_archives": "../adam_force_extension/raw/primary_{0,1,2,3,4}/snapshots.npz",
+  "source_hashes": "Recorded in each run manifest and artifact_hashes.json",
+  "scientific_scope": "Deterministic training-grid optimization from retained degree-9 checkpoints; no claim of useful geometry, intended precision, permanent trapping, or entry from initialization.",
+  "replay_source": "inputs.npz",
+  "replay_support_commit": "6127b60",
+  "completed_run_directories": 15,
+  "completed_numerical_cases": 47,
+  "all_runs_complete": true,
+  "execution_completed_utc": "2026-09-22T12:20:21.576644+00:00"
+}

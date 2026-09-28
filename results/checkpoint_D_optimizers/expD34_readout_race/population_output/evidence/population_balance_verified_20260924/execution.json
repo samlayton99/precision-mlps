@@ -1,0 +1,57 @@
+{
+  "platform": "Modal CPU",
+  "study": "balance",
+  "memory_hard_limit_mib": 4096,
+  "child_peak_rss_mib": 185.0546875,
+  "started_unix": 1790311143.7408805,
+  "finished_unix": 1790311147.0392118,
+  "commands": [
+    {
+      "command": [
+        "/usr/local/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_population_target_gap.py",
+        "tests/test_population_balance_probe.py",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "returncode": 0,
+      "stdout": "..........                                                               [100%]\n10 passed in 0.28s\n"
+    },
+    {
+      "command": [
+        "/usr/local/bin/python",
+        "-m",
+        "experiments.expD34_readout_race.population_balance_probe",
+        "--capsule",
+        "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/energy_baseline_arb/inputs/N512_seed30_20k.npz",
+        "--endpoints",
+        "results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/feedback_flow_100k/endpoints.npz",
+        "--output",
+        "/tmp/target-gap"
+      ],
+      "returncode": 0,
+      "stdout": "[\n  {\n    \"target\": \"moment5\",\n    \"initial_imbalance\": 1.056229737005848,\n    \"final_imbalance\": 1.056335231291589,\n    \"initial_alignment\": 0.3407354530394138,\n    \"final_alignment\": 0.3407209504692202,\n    \"initial_ac\": 0.6961623076646652,\n    \"final_ac\": 0.6961627548911341,\n    \"initial_slope_rms\": 0.054681316939840276,\n    \"final_slope_rms\": 0.05468387816632377\n  },\n  {\n    \"target\": \"mixed_sine\",\n    \"initial_imbalance\": 1.0478749094745425,\n    \"final_imbalance\": 1.0082086657825235,\n    \"initial_alignment\": -0.3491756128848571,\n    \"final_alignment\": -0.35463717486356144,\n    \"initial_ac\": -0.710779137388661,\n    \"final_ac\": -0.7106724106647251,\n    \"initial_slope_rms\": 0.054537603905669405,\n    \"final_slope_rms\": 0.05358829371616456\n  },\n  {\n    \"target\": \"gauss_left\",\n    \"initial_imbalance\": 1.0772716887214808,\n    \"final_imbalance\": 1.2881026105101074,\n    \"initial_alignment\": -0.2729859435912816,\n    \"final_alignment\": -0.2474494480253302,\n    \"initial_ac\": -0.5544642656859641,\n    \"final_ac\": -0.5582563190219558,\n    \"initial_slope_rms\": 0.05459714318829036,\n    \"final_slope_rms\": 0.05957034311807486\n  },\n  {\n    \"target\": \"bump_right\",\n    \"initial_imbalance\": 1.0672197835980488,\n    \"final_imbalance\": 1.1790228874642363,\n    \"initial_alignment\": 0.21501438006880258,\n    \"final_alignment\": 0.2028835217856043,\n    \"initial_ac\": 0.4265461905232025,\n    \"final_ac\": 0.42857806712409613,\n    \"initial_slope_rms\": 0.05397368270191653,\n    \"final_slope_rms\": 0.05680754793554732\n  },\n  {\n    \"target\": \"step_right\",\n    \"initial_imbalance\": 1.0796003592415249,\n    \"final_imbalance\": 1.3836867935933967,\n    \"initial_alignment\": 0.5874279085492914,\n    \"final_alignment\": 0.5446476997851203,\n    \"initial_ac\": 1.4083930827083542,\n    \"final_ac\": 1.4174129078874322,\n    \"initial_slope_rms\": 0.05929451436547451,\n    \"final_slope_rms\": 0.06420539989127189\n  },\n  {\n    \"target\": \"kink_abs\",\n    \"initial_imbalance\": 1.0429331151004386,\n    \"final_imbalance\": 1.0635694007059162,\n    \"initial_alignment\": 0.2698076054311599,\n    \"final_alignment\": 0.26394096328699634,\n    \"initial_ac\": 0.5481471137776561,\n    \"final_ac\": 0.5493620604265546,\n    \"initial_slope_rms\": 0.05373346563247503,\n    \"final_slope_rms\": 0.05412206135193547\n  }\n]\n"
+    }
+  ],
+  "sources": {
+    "results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/force_moment_archive/states.csv": "202ad412f2f4bc37aee80b5e387553cb5461c8322db2591dadf728686017cb46",
+    "results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/feedback_flow_100k/states.csv": "7d8a4ef9b0c313dd14f8c0840c1b57c6bc4a06e42e46d3469651311ccdc0f184",
+    "results/checkpoint_D_optimizers/expD34_readout_race/mechanism_refinement/energy_baseline_arb/inputs/N512_seed30_20k.npz": "ce6aae30f8772a9fdac3600fb4d1dab1216963abb2b45fc0d0eeec481fbd18fd",
+    "results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/feedback_flow_100k/endpoints.npz": "92ea70d48915fa803f7e33d62424cd8b51f49350c10ba4cd289da112a09f35fa",
+    "experiments/expD34_readout_race/population_target_gap.py": "d05586b2e7a29259f638a9ce3ba46387c773eec5f1a60318df00557ec77fa421",
+    "tests/test_population_target_gap.py": "63d131cba7ffe652f263e13118c765862d20efa96d69bf73bc3f4348786470d7",
+    "experiments/expD34_readout_race/population_balance_probe.py": "bf3cd370d2afa7a65c09f5878ea324d1a3007eb98b703ee0f37dc3ba5710ae12",
+    "tests/test_population_balance_probe.py": "97c47e104f58e12bc9fd4212c54ee5566a0e80521857ba4f1d3c86746ecd7513",
+    "experiments/expD34_readout_race/population_target_gap_modal.py": "026ff8a76de046ff1b7f30711f2375f48bad3541e1e3fe889f5d320c317668be",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "matplotlib": "3.10.3",
+    "pytest": "8.4.0"
+  }
+}

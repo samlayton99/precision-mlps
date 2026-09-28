@@ -1,0 +1,21 @@
+{
+  "cases": 30,
+  "eta": 0.002,
+  "updates": [
+    0,
+    20000,
+    100000
+  ],
+  "evaluation_source": "embedded_arrays",
+  "evaluation_helper_sha256": {},
+  "input_sha256": "fac39fba23e8b217905f2467f87b1b03ea4c099dfac08eb2ba1ee3a0ea514bce",
+  "full_manifest_sha256": "4a7eadb32924556ab18a44c13bbd6607263c06800f4c93d4e079a5ec75bd1744",
+  "full_snapshot_sha256": {
+    "0": "385e04b16b98dd2506656854b29e610ee499c36569030bcf187d22ebd2508ca1",
+    "20000": "c5fd34d54a163b5d3f661e9b4613d40bd1568892ab57b52da8f185068f5fe80e",
+    "100000": "c7aea7375cd14a0ea6aa82285c72e51da240f4ed59b73ec1bcbf9ed23fd6d121"
+  },
+  "helper_sha256": "d9f28dcf7970bda9b1a17041010be0e2dc92f009766eec4dd15047723d997e68",
+  "scope": "Exact linear-GD recurrence evaluated by FP64 SVD; no singular-value truncation; not interval certification",
+  "slow_bound": "Retained initial residual energy in eta*lambda<=cutoff; valid for every update through the stated budget in exact arithmetic"
+}

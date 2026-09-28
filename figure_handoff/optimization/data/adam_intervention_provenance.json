@@ -1,0 +1,103 @@
+{
+  "inputs": [
+    {
+      "path": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_variance_final_20260926/denominator_contrasts.csv",
+      "sha256": "5ed86e02051ecdcf0643c2d7f60ff70921055e4b78adab91f2406bb20c2f7819"
+    },
+    {
+      "path": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_variance_final_20260926/native_denominator_gains.csv",
+      "sha256": "2103abff009ba9787b99d7105d8901518b777f40b9d7dcb6f4bf514e07faf00c"
+    },
+    {
+      "path": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_variance_final_20260926/facts.json",
+      "sha256": "98c18cbfa036e01c02130c12d882a0bc9eb8c377cfbe651a2e307fe8835ba346"
+    },
+    {
+      "path": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_variance_runs_20260926/states.csv",
+      "sha256": "7bdf79b62fb430bcbebb18798cbb843186731a81684b63121dbb97b4eeadc3f3"
+    },
+    {
+      "path": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/adam_variance_runs_20260926/runs.csv",
+      "sha256": "6bb77f1cf6fb4b420d5493180cb8ef68c12f71eed03aa1feec9c1db5188ca170"
+    }
+  ],
+  "mapping": {
+    "summary_x": "fine_path_ratio",
+    "summary_y": "slope_effect_percent",
+    "history_path": "fine_slope_path",
+    "history_rms": "slope_rms",
+    "history_spacing": "h",
+    "history_bandwidth": "lambda_rms",
+    "selection": "offset=10000; age=130000; step=140000",
+    "x": "intervention_fine_path / native_fine_path",
+    "y": "100 * (intervention_endpoint_rms / native_endpoint_rms - 1)"
+  },
+  "checks": {
+    "gain_only": {
+      "points": 24,
+      "positive": 19,
+      "negative": 5
+    },
+    "tracking_attenuated_variance": {
+      "points": 24,
+      "positive": 17,
+      "negative": 7
+    },
+    "points": 48,
+    "matched_starts": 24,
+    "completed_branches": 72,
+    "scalar_pulse_rows": 792,
+    "duplicate_matches": 0,
+    "missing_matches": 0,
+    "fine_path_range": [
+      5.897033273047976,
+      679.0188835124125
+    ],
+    "response_percent_range": [
+      -1.0571560501227206,
+      15.15388675098357
+    ],
+    "maximum_endpoint_bandwidth": 0.01285942847295753,
+    "compact_bump_w705_seed30": [
+      {
+        "target": "bump_right",
+        "width": 705,
+        "seed": 30,
+        "policy": "gain_only",
+        "policy_label": "Scalar amplification",
+        "fork_age": 130000,
+        "endpoint_age": 140000,
+        "pulse_updates": 10000,
+        "spacing": 0.00390625,
+        "native_fine_path": 1.4338750355896581,
+        "intervention_fine_path": 22.359469472221395,
+        "native_endpoint_rms": 1.9503207951088162,
+        "intervention_endpoint_rms": 1.9512474379194469,
+        "native_endpoint_bandwidth": 0.007618440605893813,
+        "intervention_endpoint_bandwidth": 0.007622060304372839,
+        "fine_path_ratio": 15.593736495333028,
+        "slope_effect_percent": 0.047512327867016424
+      },
+      {
+        "target": "bump_right",
+        "width": 705,
+        "seed": 30,
+        "policy": "tracking_attenuated_variance",
+        "policy_label": "Tracking-attenuated denominator",
+        "fork_age": 130000,
+        "endpoint_age": 140000,
+        "pulse_updates": 10000,
+        "spacing": 0.00390625,
+        "native_fine_path": 1.4338750355896581,
+        "intervention_fine_path": 105.12011663463794,
+        "native_endpoint_rms": 1.9503207951088162,
+        "intervention_endpoint_rms": 1.9305339573342104,
+        "native_endpoint_bandwidth": 0.007618440605893813,
+        "intervention_endpoint_bandwidth": 0.007541148270836759,
+        "fine_path_ratio": 73.31190935436642,
+        "slope_effect_percent": -1.0145427267262308
+      }
+    ]
+  },
+  "plotted_csv_sha256": "50e04a9681365c3a976ed0c401b771ea3ad9c378b01678eb254dc7700bd56481"
+}

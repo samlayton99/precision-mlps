@@ -1,0 +1,32 @@
+{
+  "platform": "Modal GPU",
+  "study": "refinement",
+  "seconds": 127.30075249700002,
+  "memory_hard_limit_mib": 8192,
+  "child_peak_rss_mib": 4264.8671875,
+  "inputs_and_code": {
+    "experiments/expD34_readout_race/population_window.py": "d550cef4aa218ac622262d72d34528e65f6a22e9aaecca5f71435890fbf7ce7e",
+    "experiments/expD34_readout_race/population_window_modal.py": "ea3493ce27f944ea7d341ec5aaf855869a1d11e43ebf61d893c1feb0d9d16684",
+    "experiments/expD34_readout_race/population_feedback_flow.py": "b88c7e23f5e4314f2828bceec1bff24d62e713ae8b33ccd16ece0b178b4a0846",
+    "experiments/expD34_readout_race/population_feedback_budget.py": "23e4c72b55029f5dbb439cf00ec01d6953cbea1ff462b8a24204cb9a2d18b7af",
+    "experiments/expD34_readout_race/population_accumulated_audit.py": "9d020229fde16c60723beb6db6c942fd0ca47a77ee49c431f71abd842048d08a",
+    "experiments/expD34_readout_race/mechanism_persistence_kernel.py": "9b63cd3997e5be66766e9aaedfbea56fcc9f29fecc89ba88148c735d48b39ed5",
+    "experiments/expD34_readout_race/population_balance_dynamics.py": "12a4e2580dd8d26e4b882ebd5c8b7722036b565b7325f9f532c35b3a1337c180",
+    "experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "experiments/expD34_readout_race/adam_forces.py": "68ca17edcfe8b31a657cf6a670c91f6e6164387b218453f2a337559d4cec929e",
+    "experiments/expD34_readout_race/effective_feedback_holdout.py": "ce48bf8f9419c5602edf85f48325e20d0c8e047861e254a26a0559d26486aec6",
+    "tests/test_population_window.py": "5bc2e6559703d5d517a0699cbc0b9f9439699c5e7822d98ecede39b01a3f8a4c"
+  },
+  "command": [
+    "/usr/local/bin/python",
+    "-m",
+    "experiments.expD34_readout_race.population_window_run",
+    "--study",
+    "refinement",
+    "--output",
+    "/tmp/window-evidence",
+    "--max-seconds",
+    "845.985752329"
+  ],
+  "log": "....                                                                     [100%]\n4 passed in 23.03s\n{\"nref\": 512, \"width\": 705, \"seed\": 30, \"target\": \"moment5\", \"start\": 20000, \"target_scale\": 1.0, \"eta\": 0.002, \"cold\": false, \"kind\": \"gd\", \"dt\": 0.001, \"seconds\": 15.674343794000002, \"q_initial\": 9.531421718594202e-07, \"q_final\": 9.536420648700548e-07, \"kappa_initial\": 2.3723070887521157e-06, \"kappa_final\": 2.3943333986403204e-06, \"final_lambda_rms\": 0.0002136099003701997, \"final_relative_error\": 0.8660255388732262, \"maximum_rate_identity_error\": 7.318364664277155e-19}\n{\"nref\": 512, \"width\": 705, \"seed\": 30, \"target\": \"moment5\", \"start\": 20000, \"target_scale\": 1.0, \"eta\": 0.002, \"cold\": false, \"kind\": \"effective\", \"dt\": 0.01, \"seconds\": 13.785482329999994, \"q_initial\": 9.531421718594202e-07, \"q_final\": 9.536420642902462e-07, \"kappa_initial\": 2.3723070887521157e-06, \"kappa_final\": 2.394333402411885e-06, \"final_lambda_rms\": 0.00021360990036242193, \"final_relative_error\": 0.8660255388732271, \"maximum_rate_identity_error\": 8.012931681025681e-19}\n{\"nref\": 512, \"width\": 705, \"seed\": 30, \"target\": \"gauss_left\", \"start\": 20000, \"target_scale\": 0.3713011646461742, \"eta\": 0.002, \"cold\": false, \"kind\": \"gd\", \"dt\": 0.001, \"seconds\": 11.209706785999998, \"q_initial\": 0.0012520505147361033, \"q_final\": 0.003427200685376896, \"kappa_initial\": 0.0020662081481948686, \"kappa_final\": 0.011428204715043465, \"final_lambda_rms\": 0.00023633620282607708, \"final_relative_error\": 0.7878286325305407, \"maximum_rate_identity_error\": 5.204170427930421e-18}\n{\"nref\": 512, \"width\": 705, \"seed\": 30, \"target\": \"gauss_left\", \"start\": 20000, \"target_scale\": 0.3713011646461742, \"eta\": 0.002, \"cold\": false, \"kind\": \"effective\", \"dt\": 0.01, \"seconds\": 12.521089744999998, \"q_initial\": 0.0012520505147361033, \"q_final\": 0.0034242129872033935, \"kappa_initial\": 0.0020662081481948686, \"kappa_final\": 0.011418749818254043, \"final_lambda_rms\": 0.0002363143813541097, \"final_relative_error\": 0.7878294402010404, \"maximum_rate_identity_error\": 3.469446951953614e-18}\n{\"nref\": 512, \"width\": 705, \"seed\": 30, \"target\": \"step_right\", \"start\": 20000, \"target_scale\": 0.9636241118102141, \"eta\": 0.002, \"cold\": false, \"kind\": \"gd\", \"dt\": 0.001, \"seconds\": 11.286479929999999, \"q_initial\": 0.0016283708936776532, \"q_final\": 0.00415651010403342, \"kappa_initial\": 0.001817995612054933, \"kappa_final\": 0.008329370863649687, \"final_lambda_rms\": 0.0002546695983253281, \"final_relative_error\": 0.48907025330839204, \"maximum_rate_identity_error\": 1.734723475976807e-18}\n{\"nref\": 512, \"width\": 705, \"seed\": 30, \"target\": \"step_right\", \"start\": 20000, \"target_scale\": 0.9636241118102141, \"eta\": 0.002, \"cold\": false, \"kind\": \"effective\", \"dt\": 0.01, \"seconds\": 12.777004997999995, \"q_initial\": 0.0016283708936776532, \"q_final\": 0.0041522358697726434, \"kappa_initial\": 0.001817995612054933, \"kappa_final\": 0.00832357966473364, \"final_lambda_rms\": 0.00025461631729099056, \"final_relative_error\": 0.48907308040864045, \"maximum_rate_identity_error\": 1.734723475976807e-18}\n{\"nref\": 512, \"width\": 705, \"seed\": 30, \"target\": \"kink_abs\", \"start\": 20000, \"target_scale\": 0.6214766720163144, \"eta\": 0.002, \"cold\": false, \"kind\": \"gd\", \"dt\": 0.001, \"seconds\": 11.258943201999998, \"q_initial\": 0.0013374204692548197, \"q_final\": 0.0017605739569125272, \"kappa_initial\": -0.0006100609405076882, \"kappa_final\": 0.003478876208828483, \"final_lambda_rms\": 0.00021242875107563768, \"final_relative_error\": 0.4273769009893107, \"maximum_rate_identity_error\": 8.673617379884035e-19}\n{\"nref\": 512, \"width\": 705, \"seed\": 30, \"target\": \"kink_abs\", \"start\": 20000, \"target_scale\": 0.6214766720163144, \"eta\": 0.002, \"cold\": false, \"kind\": \"effective\", \"dt\": 0.01, \"seconds\": 12.604723922999995, \"q_initial\": 0.0013374204692548197, \"q_final\": 0.0017599876009539571, \"kappa_initial\": -0.0006100609405076882, \"kappa_final\": 0.003477464666062296, \"final_lambda_rms\": 0.0002124187745109793, \"final_relative_error\": 0.42737719229175947, \"maximum_rate_identity_error\": 8.673617379884035e-19}\n"
+}

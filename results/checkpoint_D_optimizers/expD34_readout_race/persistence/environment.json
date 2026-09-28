@@ -1,0 +1,25 @@
+{
+  "python": "3.12.10 (main, Apr  9 2025, 03:49:38) [Clang 20.1.0 ]",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "machine": "arm64",
+  "jax": "0.11.1",
+  "numpy": "2.5.1",
+  "matplotlib": "3.11.0",
+  "backend": "cpu",
+  "devices": [
+    "cpu:0"
+  ],
+  "x64_enabled": true,
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "tests": {
+    "command": "JAX_ENABLE_X64=true JAX_PLATFORMS=cpu OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python -m pytest -q tests/test_expD34_*.py",
+    "passed": 103,
+    "warnings": 4,
+    "seconds": 21.57,
+    "source_commit": "6127b60"
+  },
+  "input_archive_check": "input_verification.json"
+}

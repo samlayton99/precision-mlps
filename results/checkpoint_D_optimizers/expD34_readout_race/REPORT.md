@@ -154,6 +154,8 @@ The [full scale trajectories](core20k/scale_acquisition.png), [population distri
 
 ## What this means for the proof
 
+The subsequent [focused equal-rate analysis](signal_recovery/README.md) quantifies this distinction on the actual random-readout initialization. Readout contributes approximately half of the early signal decline. Degree 3 later exhibits modest net growth in over 93% of its neurons, yet its measured slope path remains too short to acquire 10% of neurons at $\gamma=3.2$ through 600k. The [companion theory](../../../docs/d34_scale_acquisition_theory.md) proves the discrete population-distance criterion and identifies the additional assumptions needed for a predictive bound. This supports a target-dependent, finite-time motion-budget explanation rather than transferring the zero-readout theorem's attribution or assuming permanent depletion.
+
 The useful proof target remains a finite-time bound on the fraction of neurons reaching a specified slope threshold. The evidence motivates three ingredients: a signed coupled coarse-allocation model, a hierarchy of higher residual moments, and control of the evolving readout coefficients. A statement that fast readout always reduces useful slope learning would be too strong.
 
 The affine Gram closure and polynomial moment gradients are exact for their reference models. The pointwise slope-moment interval is an analytic inequality at the supplied state. Agreement between a degree-7 reference and trained tanh is numerical evidence; it does not supply a certified long-time trajectory radius. Even staying within $|ax+b|<\pi/2$ does not guarantee that seven terms yield a small accumulated trajectory error.
@@ -168,7 +170,7 @@ In particular, a small-slope reference should be used up to a justified stopping
 
 ## Verification and reproduction
 
-The [experiment README](../../../experiments/expD34_readout_race/README.md) specifies the source initialization, equations, saved-state conventions, launcher commands, and analysis interfaces. Curated arrays contain explicitly labeled plotting columns. Full diagnostic tables remain under `/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race` on the authorized Slurm host.
+The [experiment README](../../../experiments/expD34_readout_race/README.md) specifies the source initialization, equations, saved-state conventions, launcher commands, and analysis interfaces. Curated arrays contain explicitly labeled plotting columns. The focused analysis preserves verified compact states and per-neuron travel for its 15 equal-rate cases. Full diagnostic tables were originally retained under `/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race`; that volume later became inaccessible, so remote availability is not guaranteed.
 
 On 2026-09-20, the user authorized retirement of the approximately 399 GiB raw trajectory directory at `runs/readout_race` to reclaim workspace storage. Before deletion, all 73 numerical files listed in the six curated evidence manifests matched their saved SHA-256 hashes. The reports, figures, compact plotting arrays, endpoint and audit tables, and separate full analysis directory were retained. The [retired raw metadata archive](provenance/retired_raw_metadata.tar.gz) preserves 145 additional manifest, environment, and progress records. The committed figures remain reproducible from the curated data; omitted full parameter/gradient histories and resumable raw checkpoints are no longer available from that directory.
 

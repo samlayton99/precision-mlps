@@ -1,0 +1,28 @@
+{
+  "original_input": "/workspace/junmiaoh/experiments/precision-mlps/mechanism-0365cd3-20260923/evidence/moving_tube_inputs/N512_seed30_20k.npz",
+  "original_input_sha256": "ce6aae30f8772a9fdac3600fb4d1dab1216963abb2b45fc0d0eeec481fbd18fd",
+  "selected_row": 1,
+  "case": {
+    "target": "mixed_sine",
+    "seed": 30,
+    "start": 20000,
+    "eta": 0.002,
+    "width": 705,
+    "nref": 512,
+    "halo": 96,
+    "target_scale": 0.8100925873009825
+  },
+  "selected_input_sha256": "6f25e4131c615d0b8ae91031e8bc9d57f6f94ffb1db1d61ab1f74a4f6da61ef2",
+  "reference_sha256": "979b3db9e8ec5d377426eccbe1d752e834d6593a5a960840fbd2914924e0eb51",
+  "chord_input_sha256": "de6c644259c77e425cd70a972a16c1a654da2d3f74de0e1c3a108fc1ff2c0dd4",
+  "used_rows": "99,199,...,19999; all other rows are zero and must not be read",
+  "supported_chunks": [
+    100,
+    1000
+  ],
+  "reference": "new archived binary64 frozen-effective forecast endpoints; exact chords between them, not the earlier FP64 moving-tube reference",
+  "certificate_source_sha256": "8ce86d75c5bc57035a8402d00e2add13b4d4faf6444f1e07a5968d925094788d",
+  "helper_h": "1/64",
+  "actual_h": "1/256",
+  "headline_rescaling": "divide helper prefix by4; helper exclusion at1/4 implies actual normalized lambda below1/16"
+}

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/code/experiments/expD34_readout_race/cross_function_summary.py", line 239, in <module>
+    main()
+  File "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/code/experiments/expD34_readout_race/cross_function_summary.py", line 235, in main
+    run(args.root, args.output)
+  File "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/code/experiments/expD34_readout_race/cross_function_summary.py", line 225, in run
+    figures(output, all_rows['forces'], all_rows['budgets'])
+  File "/workspace/junmiaoh/experiments/precision-mlps/cross-function-audit-f69e1bb/code/experiments/expD34_readout_race/cross_function_summary.py", line 110, in figures
+    import matplotlib
+ModuleNotFoundError: No module named 'matplotlib'
+srun: error: 1212ac4ba094: task 0: Exited with exit code 1

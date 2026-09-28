@@ -1,0 +1,116 @@
+{
+  "rows": 840,
+  "unique_states": 834,
+  "targets": [
+    "blend_m010",
+    "blend_p001",
+    "blend_p010",
+    "blend_p030",
+    "bump_left",
+    "bump_right",
+    "chirp",
+    "exp_left",
+    "exp_right",
+    "gauss_left",
+    "gauss_right",
+    "kink_abs",
+    "kink_relu",
+    "localized_sine",
+    "mixed_sine",
+    "moment3",
+    "moment4",
+    "moment5",
+    "moment9",
+    "runge",
+    "sine",
+    "step_left",
+    "step_right"
+  ],
+  "widths": [
+    177,
+    705,
+    1409
+  ],
+  "seeds": [
+    0,
+    20,
+    22,
+    23,
+    30,
+    31
+  ],
+  "scales": [
+    1.0,
+    1.25,
+    2.0
+  ],
+  "skipped": [],
+  "max_delta_bound_violation": -1.8297492774381485e-06,
+  "max_relative_force_bound_violation": -0.1361714695271952,
+  "natural_panels": {
+    "late_development": {
+      "rows": 46,
+      "targets": 23,
+      "static_budget_time_min": 6.006071399309013e-17,
+      "static_budget_time_median": 1.5611903789123798e-10,
+      "alignment_min": 0.0501110929974865
+    },
+    "late_confirmation": {
+      "rows": 46,
+      "targets": 23,
+      "static_budget_time_min": 5.2227675797344334e-17,
+      "static_budget_time_median": 3.5464456274744564e-10,
+      "alignment_min": 0.025845806350634274
+    },
+    "wide_N512": {
+      "rows": 24,
+      "targets": 6,
+      "static_budget_time_min": 159.85149165530586,
+      "static_budget_time_median": 235.5138303464942,
+      "alignment_min": 0.19288263969461558
+    },
+    "wide_N1024": {
+      "rows": 24,
+      "targets": 6,
+      "static_budget_time_min": 397.63869793518097,
+      "static_budget_time_median": 540.9256174004068,
+      "alignment_min": 0.19991012610492007
+    }
+  },
+  "stress_selection_rule": "Shortest static comparison duration among width705 original seed31 checkpoints; four distinct families. Diagnostic selection, not independent held-out evaluation.",
+  "selected": [
+    {
+      "target": "step_right",
+      "seed": 31,
+      "width": 705.0,
+      "start": 20000,
+      "static_budget_time": 177.66873903873588,
+      "tracking_ratio": 0.001021150464368514
+    },
+    {
+      "target": "kink_abs",
+      "seed": 31,
+      "width": 705.0,
+      "start": 20000,
+      "static_budget_time": 214.99802572651822,
+      "tracking_ratio": 0.0006954012502286343
+    },
+    {
+      "target": "gauss_left",
+      "seed": 31,
+      "width": 705.0,
+      "start": 20000,
+      "static_budget_time": 215.1223335829621,
+      "tracking_ratio": 0.0006971205578918466
+    },
+    {
+      "target": "bump_right",
+      "seed": 31,
+      "width": 705.0,
+      "start": 20000,
+      "static_budget_time": 262.20991400058944,
+      "tracking_ratio": 0.0006069986414508028
+    }
+  ],
+  "scope": "Initial and 20k-additional-update snapshots only; static durations freeze shape for diagnosis and are not persistence guarantees"
+}

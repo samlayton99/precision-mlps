@@ -1,0 +1,29 @@
+{
+  "focused_tests_passed": 28,
+  "focused_test_files": [
+    "tests/test_expD34_recovery.py",
+    "tests/test_expD34_readout_race.py"
+  ],
+  "full_suite_summary": "17 failed, 676 passed, 9 skipped, 4 deselected, 10 warnings in 296.15s (0:04:56)",
+  "matches_archived_upstream_failure_identifiers": true,
+  "failed_test_identifiers": [
+    "FAILED constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+    "FAILED constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+    "FAILED tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+    "FAILED tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+    "FAILED tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+    "FAILED tests/test_expF10_qi_operator.py::test_models_forward_backward",
+    "FAILED tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+    "FAILED tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+    "FAILED tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+    "FAILED tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+    "FAILED tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+    "FAILED tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+    "FAILED tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+    "FAILED tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+    "FAILED tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+    "FAILED tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+    "FAILED tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+  ],
+  "baseline": "verification/upstream_fast_tests.log"
+}
