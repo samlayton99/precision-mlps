@@ -1,0 +1,255 @@
+% Replace the previous subsection with label app:comparison-bounds.
+% Include after the bandwidth subsection, within the existing appendix.
+% Uses only existing bibliography keys. No preamble or bibliography is added.
+\providecommand{\qeqref}[1]{(\ref{#1})}
+\providecommand{\ComparisonTable}{Table~1}
+
+\subsection{Derivation of the comparison bounds}
+\label{app:comparison-bounds}
+
+We derive the implementation-specific entries in \ComparisonTable{} for the
+fixed analytic class of Section~\ref{sec:setup}. Write
+$L_\varepsilon=\log(1/\varepsilon)$, with $0<\varepsilon<e^{-2}$, and use
+$W$ for maximum hidden-layer width, $P_{\max}$ for the largest absolute
+weight or bias, and $b_{\rm work}$ for working significand precision. Constants depend on the fixed class and
+construction, not on $\varepsilon$. The entries are sufficient bounds for the
+realizations specified below.
+
+\paragraph{Common approximation and arithmetic estimates.}
+Use round-to-nearest arithmetic with $u=2^{-b_{\rm work}}$, accurately rounded
+elementary functions, and sufficient exponent range. Each construction
+requests its own sample locations, with absolute sample error $O(u)$; location
+and input rounding are included using the class's uniform Lipschitz bound.
+The standard operationwise and summation estimates in
+\cite[Chs.~2--4]{Higham2002} are used throughout, with their smallness
+conditions satisfied by the precisions below. If coefficient formation,
+storage, and evaluation contribute at most $u\mathcal A$, an arithmetic
+budget of $\varepsilon/2$ requires only
+\begin{equation}
+ b_{\rm work}\ge\log_2(1/\varepsilon)
+       +\log_2\max\{1,\mathcal A\}+O(1).
+ \label{eq:table-precision}
+\end{equation}
+For the polynomial-based rows, the degree-$\nu$ Chebyshev interpolant at
+$\cos(\ell\pi/\nu)$, $0\le\ell\le\nu$, satisfies
+\begin{equation}
+ P_\nu=\sum_{j=0}^{\nu}c_{j,\nu}T_j,
+ \qquad \|f-P_\nu\|_\infty\le C\rho^{-\nu},
+ \qquad |c_{j,\nu}|\le C\rho^{-j},\quad \rho>1,
+ \label{eq:cmp-chebyshev}
+\end{equation}
+by \cite[Chs.~4 and~8]{trefethen2019atap}. Thus $\nu=O(L_\varepsilon)$
+suffices and $\sum_j(1+j)|c_{j,\nu}|\le C$. Computing the coefficients
+from the samples by the discrete cosine formula gives
+$\|\widehat{\boldsymbol c}-\boldsymbol c\|_1\le u\,\operatorname{poly}(\nu)$
+by the same arithmetic estimates, even with direct summation. Here
+$\operatorname{poly}(\nu)$ denotes a fixed-degree polynomial bound. The competitor
+function-error bounds below are uniform and therefore also imply normalized
+RMS bounds.
+
+\subsubsection{Classical staircase}
+Let $x_j=-1+2j/N$ and $S(t)=(1+\tanh t)/2$. The specified staircase is
+\begin{equation}
+ q_N(x)=f(-1)+\sum_{j=1}^N\Delta_jf\,S(N(x-x_j)),
+ \qquad \Delta_jf=f(x_j)-f(x_{j-1}).
+ \label{eq:cmp-staircase}
+\end{equation}
+The historical reference is \cite{58342}; the rates here concern
+\qeqref{eq:cmp-staircase}. If $L_f$ is the Lipschitz constant, then
+$|\Delta_jf|\le2L_f/N$. Replacing $S$ by the Heaviside step gives error
+at most $2L_f/N$, while $|S(t)-H(t)|\le e^{-2|t|}$ gives
+\[
+ |q_N-q_N^{\rm step}|\le\frac{2L_f}{N}
+       \sum_{j=1}^Ne^{-2N|x-x_j|}\le\frac{CL_f}{N}.
+\]
+The last sum is bounded uniformly because the scaled centers are separated
+by two. Expanding $S$ yields $N$ tanh units, hidden parameters $O(N)$,
+readout weights $\Delta_jf/2$ with absolute sum at most $L_f$, and bias
+$[f(-1)+f(1)]/2$. Sample errors accumulate to $O(uN)$; affine errors
+$O(uN)$ per feature and sequential summation have the same output bound
+because the readout sum is bounded \cite[Chs.~3--4]{Higham2002}. Hence
+\begin{equation}
+ \|f-\widehat q_N\|_\infty\le C/N+CuN.
+ \label{eq:cmp-staircase-error}
+\end{equation}
+Taking $N\asymp\varepsilon^{-1}$ and $u\lesssim\varepsilon/N$ gives
+$W,P_{\max}=O(\varepsilon^{-1})$, $b_{\rm work}=O(L_\varepsilon)$,
+and one hidden layer.
+
+\subsubsection{A polynomial-based tanh specialization}
+For the row associated with \cite{mhaskar1996approximation}, consider the
+following explicit realization of the polynomial-approximation strategy.
+Write $P_\nu=\sum_{p=0}^{\nu}\mu_px^p$. The Chebyshev recurrence gives
+$\sum_p|\mu_p|\le Ce^{C\nu}$, since the absolute monomial coefficient sum
+of $T_j$ is at most $3^j$. Set $\beta_*=\tfrac12\log2$ and, for dyadic
+$\eta>0$, define
+\begin{equation}
+ H_{p,\eta}(x)=
+ \frac{\sum_{r=0}^p(-1)^{p-r}\binom pr
+       \tanh\!\bigl(\beta_*+(r-p/2)\eta x\bigr)}
+      {\eta^p\tanh^{(p)}(\beta_*)},\quad
+ q_{\nu,\eta}=\mu_0+\sum_{p=1}^{\nu}\mu_pH_{p,\eta}.
+ \label{eq:cmp-mhaskar-features}
+\end{equation}
+All features have the form $\tanh(\beta_*+j\eta x/2)$,
+$-\nu\le j\le\nu$; combining repeated features uses at most $2\nu+1$ units.
+
+The denominators admit an explicit lower bound. Define
+$E_1(z)=1$ and $E_{p+1}(z)=(1+pz)E_p(z)+z(1-z)E_p'(z)$.
+Differentiation gives
+\begin{equation}
+ \tanh^{(p)}(\beta_*)=\frac{2^{p+2}E_p(-2)}{3^{p+1}},
+ \qquad |\tanh^{(p)}(\beta_*)|^{-1}\le\frac{3^{p+1}}{2^{p+2}}.
+ \label{eq:cmp-mhaskar-denominator}
+\end{equation}
+Indeed, $E_p$ has integer coefficients and constant coefficient one, so
+$E_p(-2)$ is odd and nonzero. Repeated integration of the centered difference
+expresses $H_{p,\eta}$ as $x^p$ times the average of
+$\tanh^{(p)}(\beta_*+\eta x\sum_i t_i)/\tanh^{(p)}(\beta_*)$ on
+$[-1/2,1/2]^p$. The sum has mean zero and second moment $p/12$, giving
+\begin{equation}
+ \|H_{p,\eta}-x^p\|_\infty
+ \le\frac{p\eta^2\|\tanh^{(p+2)}\|_\infty}
+          {24|\tanh^{(p)}(\beta_*)|}.
+ \label{eq:cmp-mhaskar-difference}
+\end{equation}
+Cauchy's estimate on a fixed narrower tanh strip bounds the derivative by
+$(p+2)!C^{p+2}$. Consequently
+$\|q_{\nu,\eta}-P_\nu\|_\infty\le\eta^2e^{C\nu\log(\nu+2)}$.
+Choose $\nu=O(L_\varepsilon)$ and dyadic $\eta$, with $\nu\eta\le1$,
+so both approximation errors are at most $\varepsilon/4$. This permits
+\begin{equation}
+ \log(1/\eta)=O\!\bigl(L_\varepsilon+\nu\log(\nu+2)\bigr),
+ \qquad |\mu_0|+\sum_j|w_j|\le Ce^{C\nu}(2/\eta)^\nu.
+ \label{eq:cmp-mhaskar-scales}
+\end{equation}
+The second bound follows by summing the uncombined binomial coefficients and
+using \qeqref{eq:cmp-mhaskar-denominator}; it also bounds the combined readout.
+Hidden slopes are at most $1/2$ and hidden biases equal $\beta_*$.
+
+For coefficient formation, compute the sampled Chebyshev coefficients,
+convert by the polynomial recurrence, and accumulate the shared-feature
+weights. Conversion has amplification $\operatorname{poly}(\nu)e^{C\nu}$.
+The recurrence for $E_p$ has nonnegative coefficients summing to $p!$, so
+$|E_p(-2)|\le2^{p-1}p!$: its integer intermediates need only
+$O(\nu\log(\nu+2))$ bits, within the budget below. Powers of dyadic $\eta$
+are exponent shifts. Rounded divisions, storage of $\beta_*$, and bounded
+feature arguments then give, by \cite[Chs.~2--4]{Higham2002},
+\begin{equation}
+ \|\widehat q_{\nu,\eta}-q_{\nu,\eta}\|_\infty
+ \le u\,e^{C\nu\log(\nu+2)}(2/\eta)^\nu.
+ \label{eq:cmp-mhaskar-arithmetic}
+\end{equation}
+This is an absolute error bound and does not assume relative accuracy of
+cancelling sums. Substituting \qeqref{eq:cmp-mhaskar-scales} in
+\qeqref{eq:table-precision} gives one hidden layer, $W=O(L_\varepsilon)$,
+$P_{\max}\le\exp[O(L_\varepsilon^2\log L_\varepsilon)]$, and
+$b_{\rm work}=O(L_\varepsilon^2\log L_\varepsilon)
+=\widetilde O(L_\varepsilon^2)$.
+
+\subsubsection{Sampled sigmoidal quasi-interpolation}
+Use $\phi=S'$ and $\psi(t)=S(t+1)-S(t)$ with the same $S$ as above.
+The translates of $\psi$ form a nonnegative partition of unity
+\cite[Lemma~5.1]{Costarelli2015Approximation}. Extend $f$ to a bounded
+Lipschitz function $F$ by linear interpolation from its endpoint values to
+zero at $\pm2$, and set $F=0$ outside $[-2,2]$. The exponential kernel
+tails satisfy the hypotheses of \cite[Theorem~5.4(ii)]{Costarelli2015Approximation}; with scale
+$N$ and cutoff $2N$, this gives
+\begin{equation}
+ \left\|f-\sum_{k=-2N}^{2N}a_k\psi(N\,\cdot-k)\right\|_\infty\le C/N,
+ \qquad a_k=\int_{\mathbb R}\phi(t)F((k+t)/N)\,dt.
+ \label{eq:cmp-cs-integral}
+\end{equation}
+Replace the coefficients by samples. Since $\int\phi=1$,
+\[
+ |a_k-F(k/N)|\le\frac{L_F}{N}\int_{\mathbb R}|t|\phi(t)\,dt\le C/N.
+\]
+The partition of unity bounds the function change by the largest coefficient
+change, so $q_N^{\rm CS}=\sum_{k=-2N}^{2N}F(k/N)\psi(N\,\cdot-k)$ retains
+error $C/N$. The extension uses only core samples and endpoint values.
+Expanding each $\psi$ into two tanhs without merging gives at most $8N+2$
+units, hidden parameters $O(N)$, and absolute readout sum $O(N)$.
+Affine errors $O(uN)$ and standard summation bounds therefore give
+\begin{equation}
+ \|f-\widehat q_N^{\rm CS}\|_\infty\le C/N+CuN^2
+ \label{eq:cmp-cs-error}
+\end{equation}
+including coefficient formation \cite[Chs.~3--4]{Higham2002}. Choose
+$N\asymp\varepsilon^{-1}$ and $u\lesssim\varepsilon/N^2$ to obtain
+$W,P_{\max}=O(\varepsilon^{-1})$, $b_{\rm work}=O(L_\varepsilon)$,
+and one hidden layer.
+
+\subsubsection{ChebNet}
+For the ReQU activation $\sigma_2(t)=(\max\{t,0\})^2$, the recursive
+realization in \cite[Sec.~2.1, Theorem~1, 2019 version]{tang2019chebnet}
+represents $P_\nu$ exactly with $O(\nu)$ neurons
+and nonzero weights and $O(\log(\nu+1))$ hidden layers. Its recursive split
+uses $T_{m+j}=2T_mT_j-T_{m-j}$, with $m$ a power of two. Along a path into
+a fixed subtree, a doubling sends index $m+j$ to $j<(m+j)/2$, while a
+reflection changes only the sign. Each original coefficient has at most one
+path into that subtree. Its amplification is therefore at most
+$2\max\{1,j\}$, and the intermediate coefficient sums obey
+\begin{equation}
+ \sum_k|c_k^{\rm subtree}|
+ \le2\sum_{j=0}^{\nu}\max\{1,j\}|c_{j,\nu}|\le C.
+ \label{eq:cmp-chebnet-subtree}
+\end{equation}
+Thus intermediate polynomials are bounded on $[-1,1]$. The fixed-size square,
+product, and identity modules of \cite[Lemma~2]{tang2019chebnet} then have
+uniformly bounded weights, biases, and exact hidden states; in particular,
+$P_{\max}=O(1)$.
+
+The coefficient recursion involves additions and doublings through logarithmic
+depth, so parameter formation has error $u\,\operatorname{poly}(\nu)$.
+On a fixed enlargement of the exact state ranges, each bounded-fan-in module
+is uniformly Lipschitz and has local rounding error $O(u)$
+\cite[Chs.~2--3]{Higham2002}. Hence the maximum layer error satisfies
+\[
+ E_{\ell+1}\le C_1E_\ell+u\,\operatorname{poly}(\nu),
+ \qquad E_0=O(u),\qquad \ell=O(\log(\nu+1)).
+\]
+It follows that $\|\widehat q_\nu-P_\nu\|_\infty\le
+u\,\operatorname{poly}(\nu)$; choosing this bound below $\varepsilon/2$
+also keeps all layer errors below one, closing the enlarged-range induction.
+Together with \qeqref{eq:cmp-chebyshev}, this gives $W=O(L_\varepsilon)$,
+depth $O(\log L_\varepsilon)$, and
+$b_{\rm work}=\log_2(1/\varepsilon)+O(\log L_\varepsilon)$.
+
+\subsubsection{QUILL}
+Theorem~\ref{thm:qi-numerics-explicit} and Corollary~\ref{cor:logwidth}
+supply this row in their geometric-to-allowance regime. With the allowance
+at most $\varepsilon/2$ and the resulting width in the certified range,
+$W=O(L_\varepsilon)$ suffices. Bounded centers and readout, together with
+$\gamma=\lambda/h=O(W)$, give $P_{\max}=O(W)$ and one hidden layer.
+For a construction-and-evaluation allowance $uC_{\rm num}W^q$ uniform on
+that regime, \qeqref{eq:table-precision} gives
+$b_{\rm work}=\log_2(1/\varepsilon)+O(\log W)=O(L_\varepsilon)$.
+These substitutions retain the preceding aliasing, sampling, and numerical
+conditions; varying the design with $\varepsilon$ additionally requires
+uniform constants along that choice.
+
+\subsubsection{Measured comparison at fixed precision}
+\label{app:measured-method-comparison}
+
+Figure~\ref{fig:appendix-method-comparison} complements
+Table~\ref{tab:comparison} with measured error versus total
+hidden-neuron budget at two working precisions. QUILL reaches small errors with fewer neurons in these comparisons;
+ChebNet attains lower final errors at larger budgets.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/appendix/comparison_results.png}
+  \caption{Measured accuracy versus total hidden-neuron budget for
+  Runge, $f(x)=1/(1+25x^2)$ (left), and the chirp,
+  $f(x)=\sin(8\pi(x+1)^2)$ (right), on $[-1,1]$.
+  Each marker gives the smallest validation relative $L^2$ error
+  among saved candidates with at most $W$ hidden neurons, including
+  all layers and halo neurons; plateaus may retain a smaller candidate.
+  Top: 24-bit significands with an expanded exponent range
+  (FP32 precision, rather than native binary32 arithmetic).
+  Bottom: native FP64 for QUILL and ChebNet, and saved 53-bit
+  arithmetic runs for the other methods.
+  QUILL's 24-bit candidate grid is coarser; budgets without a saved
+  candidate are left blank. All panels share the same scales.}
+  \label{fig:appendix-method-comparison}
+\end{figure}
