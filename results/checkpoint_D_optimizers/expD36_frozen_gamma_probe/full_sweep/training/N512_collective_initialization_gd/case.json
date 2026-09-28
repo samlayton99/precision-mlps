@@ -1,0 +1,288 @@
+{
+  "tag": "N512_collective_initialization_gd",
+  "n": 512,
+  "map": "collective",
+  "gammas": [
+    4,
+    16,
+    64
+  ],
+  "optimizer": "gd",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 4
+    }
+  ],
+  "rates": [
+    [
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627,
+      0.029432134251532627
+    ],
+    [
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284,
+      0.02846559600419284
+    ],
+    [
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202,
+      0.02841705312578202
+    ]
+  ],
+  "epsilons": [
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "matrix_hashes": [
+    "834f4542d90902cdcdce3d0d9a33e844c9da9f62579fbd6ad675067865989fc3",
+    "143ec29ce6ea4c88c878c5cf7e024258dfd94718b24120a779bb7748be987a64",
+    "1503c32047cc93f39739f7b01f7d45f10f5d24dc4e9c08912cb627ce332ecf2c"
+  ],
+  "initial_hash": "cb20e0c53f18646adb603f6c3898695a07b126ba2caaa776ec6646cb5e69310f",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

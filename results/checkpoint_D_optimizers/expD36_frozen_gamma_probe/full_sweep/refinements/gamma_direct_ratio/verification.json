@@ -1,0 +1,123 @@
+{
+  "source": "docs/gamma_ratio_note_v4.pdf",
+  "source_sha256": "8e2c5ec684ec7290f259d09e3d18afb3bb0837dfeb00ec069d8d901c07a14357",
+  "geometry": {
+    "samples": 8193,
+    "tanh_features": 559,
+    "center_spacing": 0.00390625
+  },
+  "specialization": "p=0, all lattice aliases covered by the analytic norm allowance",
+  "independent_code_and_proof_review": true,
+  "focused_tests_passed": 6,
+  "source_and_array_hash_checks": 80,
+  "rows": [
+    {
+      "gamma": 8,
+      "crossings": {
+        "necessary": {
+          "updates": 13934809,
+          "error_before": 0.010000000030200898,
+          "error_at": 0.00999999963464629
+        },
+        "reference": {
+          "updates": 15798313,
+          "error_before": 0.010000000174652537,
+          "error_at": 0.009999999825756044
+        },
+        "sufficient": {
+          "updates": 32778524,
+          "error_before": 0.010000000128213631,
+          "error_at": 0.009999999960074616
+        }
+      },
+      "necessary_fraction": 0.8820441144570309,
+      "sufficient_factor": 2.074811658687861,
+      "refinement_max_eigenvalue_change": 3.524291969370097e-12,
+      "baseline_compression_plus_arithmetic": 6.355341986329385e-12,
+      "refinement_integer_endpoints_identical": true,
+      "all_resolved_ratio_and_sampled_curve_enclosures_hold": true
+    },
+    {
+      "gamma": 12,
+      "crossings": {
+        "necessary": {
+          "updates": 163954,
+          "error_before": 0.010000103163263774,
+          "error_at": 0.009999946509895398
+        },
+        "reference": {
+          "updates": 186057,
+          "error_before": 0.010000132696716261,
+          "error_at": 0.009999994652789947
+        },
+        "sufficient": {
+          "updates": 321441,
+          "error_before": 0.01000003089673528,
+          "error_at": 0.00999995098845945
+        }
+      },
+      "necessary_fraction": 0.881203072176806,
+      "sufficient_factor": 1.7276479788451926,
+      "refinement_max_eigenvalue_change": 2.3021584638627246e-12,
+      "baseline_compression_plus_arithmetic": 6.608704556729754e-12,
+      "refinement_integer_endpoints_identical": true,
+      "all_resolved_ratio_and_sampled_curve_enclosures_hold": true
+    },
+    {
+      "gamma": 16,
+      "crossings": {
+        "necessary": {
+          "updates": 54453,
+          "error_before": 0.010000065998056931,
+          "error_at": 0.009999840329617378
+        },
+        "reference": {
+          "updates": 61792,
+          "error_before": 0.01000013433213395,
+          "error_at": 0.009999935462970204
+        },
+        "sufficient": {
+          "updates": 97205,
+          "error_before": 0.0100000447970102,
+          "error_at": 0.009999918218775572
+        }
+      },
+      "necessary_fraction": 0.8812305800103574,
+      "sufficient_factor": 1.5731000776799586,
+      "refinement_max_eigenvalue_change": 1.1652900866465643e-12,
+      "baseline_compression_plus_arithmetic": 6.9875552020727925e-12,
+      "refinement_integer_endpoints_identical": true,
+      "all_resolved_ratio_and_sampled_curve_enclosures_hold": true
+    },
+    {
+      "gamma": 64,
+      "crossings": {
+        "necessary": {
+          "updates": 14118,
+          "error_before": 0.010000325045594059,
+          "error_at": 0.009999865773601247
+        },
+        "reference": {
+          "updates": 16013,
+          "error_before": 0.010000203916575958,
+          "error_at": 0.00999979899945959
+        },
+        "sufficient": {
+          "updates": 20278,
+          "error_before": 0.010000040835176867,
+          "error_at": 0.009999719636608206
+        }
+      },
+      "necessary_fraction": 0.8816586523449698,
+      "sufficient_factor": 1.2663460937987885,
+      "refinement_max_eigenvalue_change": 2.984279490192421e-13,
+      "baseline_compression_plus_arithmetic": 7.0874091757306876e-12,
+      "refinement_integer_endpoints_identical": true,
+      "all_resolved_ratio_and_sampled_curve_enclosures_hold": true
+    }
+  ],
+  "sanity_scope": "The coarser m263/W153 gamma64 p=0 interval is vacuous; no claim to reproduce V4 retained-alias accuracy there.",
+  "numerical_status": "Checked FP64, with analytic tails and signed-factor compression separated from empirical arithmetic and quadrature checks; not interval-arithmetic certification.",
+  "new_gpu_hours": 0,
+  "new_training_updates": 0
+}

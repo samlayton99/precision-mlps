@@ -1,0 +1,288 @@
+{
+  "tag": "N512_individual_initialization_adam",
+  "n": 512,
+  "map": "individual",
+  "gammas": [
+    4,
+    16,
+    64
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 4
+    }
+  ],
+  "rates": [
+    [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ],
+    [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ],
+    [
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08
+    ],
+    [
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08
+    ]
+  ],
+  "matrix_hashes": [
+    "4ca69cf390cbe97d59720f410c5fc30576fa8a99b64a6e87ddef59f40926fdcc",
+    "aa46176363a1fceadb9fc399680584cf5a67f413f2b98d025606817815edf3ca",
+    "24b1eeb2eb162b6287c4a2b5395957dba614dce6d4c79fa8aacf8581abe7ec45"
+  ],
+  "initial_hash": "b544780ff12a0712dc4bb6bc71481c0b6ffde3259aafd8143eab297fedb92692",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

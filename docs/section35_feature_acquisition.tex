@@ -1,0 +1,98 @@
+% Drop-in main text with figures and captions inline.
+\subsection{Why joint training acquires useful feature scales slowly}
+\label{sec:feature-acquisition}
+
+Over five million updates, trained mean slopes do not keep pace with the
+construction scale as width grows (Figure~\ref{fig:note-training}a).
+On mixed sine at
+$W=512$, joint Adam reaches median relative training error
+$1.81\times10^{-3}$, compared with $6.62\times10^{-7}$ using the supplied
+$\lambda=1/4$ dictionary;
+joint GD remains at $0.244$ (Figure~\ref{fig:note-training}b).
+Numerically resolved readout refits barely improve the learned Adam
+dictionary, and increasing its slopes at fixed centers does not close the
+gap (Appendix~\ref{app:feature-evidence}).
+These interventions indicate that useful slopes and centers must be
+acquired together.
+
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/joint_acquisition.png}
+ \caption{\textbf{Joint training leaves a scale and accuracy gap.}
+ Panels (a,b): mixed-sine target on $[-1,1]$; five million updates.
+ Joint training uses five seeds and one recipe per width and optimizer,
+ selected by median final validation error.
+ \textbf{(a)} Mean absolute slope versus total width, including halos.
+ Faint curves show seed means; outlined markers show pooled means.
+ \textbf{(b)} At $W=512$, relative training RMS error for joint training
+ (solid) and frozen readouts on the supplied $\lambda=1/4$ dictionary (dashed).
+ Joint curves show seed medians after binning. Shading preserves temporal
+ extrema and, for joint training, seed spread.
+ \textbf{(c)} Adam intervention responses over 10k updates from a shared 130k
+ checkpoint. Each point compares an intervention with its matched native control:
+ accumulated fine-slope path versus percentage difference in final RMS slope.
+ The 48 comparisons span six target families, widths 705 and 1409, and two seeds;
+ they are separate from the experiments in (a,b).
+ Greater motion can increase acquisition but need not produce a substantially
+ larger endpoint scale. All altered pulse-end RMS bandwidths remain below
+ 0.013, compared with the construction reference 0.25.
+ The dotted line in (a) marks that supplied construction scale, not a universal
+ acquisition threshold. Protocol and target for (a,b) are in
+ Appendix~\ref{app:feature-evidence}.}
+ \label{fig:note-training}
+\end{figure}
+
+We quantify one mechanism that limits this acquisition.
+In the small-parameter regime, tanh's leading non-affine term is cubic,
+so its target-driven growth depends on the target's low-degree polynomial
+projection. Bounding this coupling, higher-order contributions, and
+population concentration controls the growth of slopes, biases, and
+readouts. The resulting bound on non-affine output yields an output-error
+lower bound.
+
+\begin{theorem}[Output error under slow feature acquisition]
+\label{thm:feature-output}
+Let $f\ne0$ be the sampled target and $f_\perp$ its component orthogonal
+to affine functions. Under the population-concentration, target-coupling,
+and coarse-tracking bounds of Appendix~\ref{app:feature-theory},
+joint GD satisfies
+\begin{equation}
+ \frac{\|f-q_n\|_{2,Z}}{\|f\|_{2,Z}}
+ \ge
+ \frac{[\|f_\perp\|_{2,Z}-\mathcal Q_n(B_n)]_+}{\|f\|_{2,Z}}.
+ \label{eq:feature-main-error}
+\end{equation}
+Here $B_n$ is an explicit scalar upper bound on the joint norm of hidden
+slopes, biases, and readouts, and $\mathcal Q_n(B_n)$ bounds their
+non-affine output. The same comparison gives
+$\overline\lambda_n\le hB_n/\sqrt W$, with reference spacing $h$ and
+$\overline\lambda_n=W^{-1}\sum_j h|\gamma_{j,n}|$.
+The recurrence, coefficients, and precise conditions are given in the appendix.
+\end{theorem}
+
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section35_population/figures/population_output.pdf}
+ \caption{\textbf{Limited population growth leaves a substantial output-error floor.}
+ \textbf{Left:} Joint parameter norm and its upper bound $B_n$, normalized
+ by the initial norm. \textbf{Right:} Executed GD relative training RMS error
+ and the theorem's lower bound. Solid curves and markers show GD;
+ dashed curves show bounds. Archived $W=705$, seed-30 continuations start
+ after 20,000 updates and run 100,000 more at step size 0.002.
+ Mixed sine is the target used in Figure~\ref{fig:note-training}; smooth step
+ has the largest growth allowance among the six principal targets.
+ Bounds use structural coefficients evaluated along the saved trajectories.}
+ \label{fig:feature-population-output}
+\end{figure}
+
+The conditional bounds closely track the separate GD continuation
+experiments: across ten continuations spanning six target families, the
+output-error lower bound captures at least 97.7\% of executed error at
+every stored diagnostic time (Figure~\ref{fig:feature-population-output};
+Appendix~\ref{app:feature-evidence}). The structural coefficients are
+evaluated along these trajectories. The longer Adam experiments establish
+a corresponding empirical acquisition gap; the theorem concerns GD.
+
+QUILL supplies the feature geometry and readout directly, avoiding this
+acquisition stage. We next compose these constructed primitives into
+arithmetic circuits.

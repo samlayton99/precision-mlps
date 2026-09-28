@@ -1,0 +1,454 @@
+% Authored directly from the companion Markdown note; no generated prose.
+% Compile from the repository root:
+% latexmk -pdf -outdir=/tmp/gamma-review-latex docs/gamma_optimization_paper_note.tex
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amsthm}
+\usepackage{newtxtext,newtxmath}
+\usepackage[letterpaper,margin=0.75in]{geometry}
+\usepackage{graphicx,microtype,xcolor}
+\usepackage{caption,enumitem,fancyhdr,needspace}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!55!black]{hyperref}
+\definecolor{ink}{HTML}{17334A}
+\definecolor{accent}{HTML}{C65525}
+\hypersetup{pdftitle={Gamma controls the scales available to readout gradient descent},
+  pdfsubject={Mechanism theorem, five-target evidence, and complete proof}}
+\graphicspath{{results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel/}}
+\newcommand{\repo}{https://github.com/samlayton99/precision-mlps/blob/experiment/frozen-gamma-probe}
+\newcommand{\evidence}{\repo/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_factorized_kernel}
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\Res}{Res}
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 1pt minus 1pt}
+\setlength{\emergencystretch}{2em}
+\setlength{\headheight}{14pt}
+\captionsetup{font=small,labelfont=bf,justification=raggedright,singlelinecheck=false}
+\setlist[itemize]{leftmargin=1.3em,itemsep=3pt,topsep=3pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{ink}Gamma and readout optimization}
+\fancyhead[R]{\small Collaborator review}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\begin{document}
+\thispagestyle{plain}
+{\color{ink}\fontsize{23}{27}\selectfont\bfseries
+Gamma controls the scales available\newline
+to readout gradient descent\par}
+\vspace{4pt}
+{\small\color{ink}Research note \quad Mechanism, measured delays, and self-contained proof}
+\vspace{6pt}
+
+\textbf{Gamma changes how quickly a readout learns an attainable target.}
+For fixed neuron centers, a common slope applies an explicit frequency filter
+to the features and hence to the kernel governing readout updates. Small gamma
+strongly attenuates fine spatial variation. Carrying this filter through the
+finite training geometry predicts the observed delay: reducing gamma from 64
+to 8 requires \textbf{986.59 times as many updates} for the primary target.
+Across five targets, measured slowdowns range from 3.34 to 986.59; all 19
+available executed acquisition times lie inside the predicted intervals, with
+one additional run censored. The mechanism is exact; the delay depends on
+the target, geometry, and optimizer.
+
+\section{The kernel gives gamma a direct role in optimization}
+Freeze the common slope $\gamma>0$ and centers $c_j$ in the model
+\begin{equation}
+ f_{\gamma,\theta}(x)=b+\sum_{j=1}^W w_j\tanh\!\bigl(\gamma(x-c_j)\bigr),
+ \qquad \theta=(b,w_1,\ldots,w_W).
+\end{equation}
+Train only the raw readout coefficients from zero on half empirical mean
+squared error at $m$ training inputs $x_i$. Compare slopes with the same
+centers, inputs, target, coefficient coordinates, and specified step-size rule.
+For the feature vector
+$\phi_\gamma(x)=(1,\tanh(\gamma(x-c_1)),\ldots,\tanh(\gamma(x-c_W)))^T$,
+define
+\begin{equation}
+ k_\gamma(x,x')=\phi_\gamma(x)^T\phi_\gamma(x'),\qquad
+ (K_\gamma)_{i\ell}=k_\gamma(x_i,x_\ell)/m.
+\end{equation}
+Writing $r_n$ for target values minus predictions after $n$ updates, ordinary
+readout gradient descent (GD) satisfies
+\begin{equation}\label{eq:update}
+ \boxed{r_{n+1}=(I-\eta_\gamma K_\gamma)r_n.}
+\end{equation}
+Thus the kernel describes which errors a coefficient update corrects together.
+Similar feature responses make two predictions move together; learning their
+difference can be slow. Gamma's optimization effect follows from how it changes
+this update matrix.
+
+\section{An explicit gamma filter}
+The fixed reference dictionary consists of sharp steps at the same centers:
+\begin{equation}\label{eq:reference}
+\begin{split}
+ k_{\mathrm{step}}(x,x')&=1+\sum_{j=1}^W\sign(x-c_j)\sign(x'-c_j),\\
+ \rho_\gamma(t)&=\frac{\gamma}{2}\sech^2(\gamma t).
+\end{split}
+\end{equation}
+The density $\rho_\gamma$ averages a sharp step into a tanh transition with
+width proportional to $1/\gamma$. The following theorem identifies the
+resulting filter exactly.
+
+\clearpage
+\begin{theorem}[Gamma-controlled smoothing]\label{thm:mechanism}
+For any fixed centers and common slope $\gamma>0$, the tanh readout kernel is
+the step kernel averaged over both inputs:
+\begin{equation}\label{eq:smoothing}
+ k_\gamma(x,x')=\iint_{\mathbb R^2}\rho_\gamma(x-t)\rho_\gamma(x'-s)
+ k_{\mathrm{step}}(t,s)\,dt\,ds.
+\end{equation}
+In either input, averaging multiplies a frequency-$\omega$ component by
+\begin{equation}\label{eq:multiplier}
+ \boxed{M_\gamma(\omega)=\frac{z}{\sinh z},\qquad
+ z=\frac{\pi|\omega|}{2\gamma},\qquad M_\gamma(0)=1.}
+\end{equation}
+A common-slope cap $0<\gamma\le\Gamma$ implies
+$M_\gamma(\omega)\le M_\Gamma(\omega)$. Frequencies well below gamma
+are nearly preserved; those well above gamma have exponentially small
+multipliers, $M_\gamma(\omega)\sim2ze^{-z}$ as $z\to\infty$.
+\end{theorem}
+
+\textbf{The mechanism is selective attenuation of spatial scales.}
+Reducing gamma from 64 to 8 changes the multiplier at $\omega=2\pi$ from
+0.9960 to 0.7851, but at $\omega=10\pi$ from 0.9074 to 0.02584. The finer
+component's multiplier becomes about 35.1 times smaller. Gamma changes the
+relative strength of corrections even when the step compensates for overall
+kernel magnitude. Appendix~\ref{app:proof} gives the full proof, including
+the transform calculation. No periodic sample or center assumption is needed.
+
+Finite sampling and center geometry determine how the filtered components
+combine into learning directions. Fourier waves need not be eigenvectors of
+the sampled kernel, so $M_\gamma^2$ is generally neither a finite-kernel
+eigenvalue nor an inverse learning time. We retain these couplings when
+computing the prediction. The cap guarantees feature attenuation; the target's
+interaction with the resulting kernel determines the delay.
+
+\subsection*{A small example with perfect capacity}
+Take one centered neuron, samples $-s,+s$ with $s>0$, and labels $-1,+1$.
+Every positive gamma fits exactly with $b=0$ and $w=1/\tanh(\gamma s)$.
+Yet at step $\eta=0.5$, reaching 1\% residual takes \textbf{925 updates}
+when $\gamma s=0.1$ and \textbf{14 updates} when $\gamma s=1$.
+The largest kernel eigenvalue is one in both cases. The target's contrast
+direction has eigenvalue $\tanh^2(\gamma s)$, explaining the different
+rates. Appendix~\ref{app:time} gives its exact acquisition count and the
+general GD corollary.
+
+\subsection*{What the theorem contributes to the quantitative explanation}
+The theorem isolates gamma in a known frequency filter. Applying that filter
+to the fixed finite geometry and target gives a learning curve through
+standard least-squares GD. A controlled finite expansion makes the calculation
+practical and supplies acquisition intervals. No rate is fitted to an
+optimization trajectory. The following figures test the calculation
+retrospectively against archived training runs.
+
+\clearpage
+\section{The filter retains the measured timing accuracy}
+The primary problem has $W=559$ hidden neurons, $m=8{,}193$ equally spaced
+training inputs on $[-1,1]$, equispaced centers with a boundary halo, and target
+\begin{equation}\label{eq:target}
+ f^\star(x)=\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x).
+\end{equation}
+Readouts start at zero. Each saved step is approximately $\eta_\gamma=0.5/L_\gamma$,
+where $L_\gamma$ is the largest eigenvalue of $K_\gamma$. All four models
+actually attain 1\% relative residual, equivalent to relative squared loss
+$10^{-4}$. Their different acquisition times therefore demonstrate an
+optimization effect at an attainable accuracy.
+
+\begin{figure}[h!]
+ \centering\includegraphics[width=\linewidth]{paper_three_panel.pdf}
+ \caption{\textbf{Observed scale gap, predicted delay, and a slope intervention.}
+ All panels use the sine-mixture target. \textbf{A:} After 20,000 joint Adam
+ updates, faint points show the median and maximum absolute hidden slope
+ for each of five seeds; solid curves show their medians across seeds.
+ The dashed $\gamma=N/8$ construction reference is sufficient in that
+ construction, not an asserted necessary threshold.
+ \textbf{B:} Filter-derived intervals match executed zero-initialized raw
+ readout GD hits at 1\% residual for 559 fixed-center features. The inset
+ divides each interval by its observed hit. These are deterministic bounds.
+ \textbf{C:} After 200,000 raw readout updates, fixed gamma 4 leaves residual
+ near 0.42, while gamma $N/8$ gives 0.0034--0.0016 across widths 153--1089.
+ Panels B/C use curvature-normalized steps; A motivates the scale question
+ from joint training. The theorem concerns common-slope frozen features.}
+ \label{fig:main}
+\end{figure}
+
+The measured first-hit time changes from 15,798,313 updates at gamma 8 to
+16,013 at gamma 64. The predicted delay ratio is \textbf{985.70--987.49},
+enclosing the executed \textbf{986.59}. At gamma 8, the interval's total
+width is 0.181\% of the observed time. These primary endpoints have independent
+interval-arithmetic certificates.
+
+A scalar control that rescales only the gamma-64 kernel to match each case's
+largest eigenvalue predicts 16,013 updates at every gamma under the saved
+step rule. The full frequency-dependent filter accounts for the large delay
+this magnitude-only control misses. The numerical intervals are tight for
+the specified geometry and target; the theorem does not assert a universal
+slowdown factor or monotone learning time for every target.
+
+\clearpage
+\section{The delay depends on the target}
+Four control targets use the same geometry and four slopes: the single sine
+$\sqrt2\sin(2\pi x)$, Runge function $1/(1+25x^2)$, quadratic $\sqrt5x^2$,
+and exponential of sine $\exp(\sin(3\pi x))$. Every target reaches 1\%
+at gamma 8 and gamma 64, allowing the measured comparison below.
+
+\begin{figure}[h!]
+ \centering\includegraphics[width=\linewidth]{target_slowdown.pdf}
+ \caption{\textbf{The same gamma intervention gives target-dependent delays.}
+ Each dot is the executed first-hit count at gamma 8 divided by that at
+ gamma 64. Whiskers show the ratio interval from the predicted acquisition
+ bounds and are narrower than the dots at this scale. Samples, centers,
+ zero initialization, 1\% residual tolerance, and curvature-normalized step
+ rule are shared. Only the sine-mixture endpoints have independent
+ interval-arithmetic certification; the controls have numerical sensitivity
+ checks. Figure~\ref{fig:all} includes every intermediate gamma and magnifies
+ interval tightness.}
+ \label{fig:slowdown}
+\end{figure}
+
+The same filter produces very different delays because each target places
+different energy in the finite kernel's learning directions. These observations
+support a quantitative target-dependent explanation. The quadratic still
+needs 58.17 times as many updates at gamma 8: low polynomial degree alone
+does not imply fast acquisition in this tanh dictionary. Finite geometry
+and target alignment remain part of the calculation.
+
+\subsection*{What scaling gamma with width recovers}
+Figure~\ref{fig:main}C tests an intervention suggested by the filter: increase
+gamma as center spacing shrinks to preserve access to finer spatial scales.
+Gamma proportional to inverse spacing keeps the multiplier unchanged at
+frequencies measured relative to that spacing. In this construction, that
+means gamma proportional to width; Appendix~\ref{app:width} states this
+precisely.
+
+Panel C holds the physical target fixed. It demonstrates a finite-budget
+benefit, and its residual near 0.42 is not an established irreducible floor.
+The filter identity does not by itself guarantee constant training times
+across widths. All figures concern training behavior, with no held-out
+generalization claim.
+
+\clearpage
+\appendix
+\section{Complete proof of the gamma mechanism}\label{app:proof}
+The density in~\eqref{eq:reference} has unit mass and cumulative integral
+$\int_{-\infty}^a\rho_\gamma(t)\,dt=[1+\tanh(\gamma a)]/2$.
+Splitting at a step's center gives
+\begin{equation}
+ \int_{\mathbb R}\rho_\gamma(x-t)\sign(t-c)\,dt
+ =\tanh\!\bigl(\gamma(x-c)\bigr).
+\end{equation}
+Insert the finite sum defining $k_{\mathrm{step}}$ into the double integral
+in~\eqref{eq:smoothing}. Each pair of steps becomes a pair of tanh features,
+and the constant stays one. Bounded features and an integrable density
+justify all exchanges; the steps themselves need not be integrable.
+
+Use Fourier convention
+$\widehat\rho(\omega)=\int_{\mathbb R}\rho(t)e^{-i\omega t}\,dt$.
+For a real number $a>0$, define
+\begin{equation}
+ I(a)=\int_{\mathbb R}\frac{e^{-iau}}{\cosh^2u}\,du,
+ \qquad F(\zeta)=\frac{e^{-ia\zeta}}{\cosh^2\zeta}.
+\end{equation}
+Integrate $F$ counterclockwise around the rectangle with vertices
+$-R,R,R+i\pi,-R+i\pi$, then let $R\to\infty$. On either vertical side,
+$|e^{-ia\zeta}|\le e^{a\pi}$ and
+$|\cosh(\pm R+iv)|^2=\sinh^2R+\cos^2v\ge\sinh^2R$
+for $0\le v\le\pi$, so those integrals vanish. Since
+$F(u+i\pi)=e^{a\pi}F(u)$ and the upper side runs right to left, the
+horizontal integrals tend to $(1-e^{a\pi})I(a)$.
+
+The only enclosed pole is the double pole $\zeta_0=i\pi/2$. Set
+$w=\zeta-\zeta_0$. Using $\cosh(\zeta_0+w)=i\sinh w$,
+\begin{equation}
+ F(\zeta_0+w)=e^{a\pi/2}\left(-\frac1{w^2}+\frac{ia}{w}+O(1)\right),
+ \qquad \Res_{\zeta=\zeta_0}F=ia e^{a\pi/2}.
+\end{equation}
+The residue theorem yields
+\begin{equation}
+ (1-e^{a\pi})I(a)=-2\pi a e^{a\pi/2},
+ \qquad I(a)=\frac{\pi a}{\sinh(\pi a/2)}.
+\end{equation}
+The sine part of the real-line integrand is odd, so $I$ is real and even;
+the formula extends to negative $a$. At zero,
+$I(0)=\int_{\mathbb R}\sech^2u\,du=2$, the continuous limit.
+Substituting $u=\gamma t$ gives the normalized multiplier
+\begin{equation}
+ \widehat\rho_\gamma(\omega)=\tfrac12 I(\omega/\gamma)
+ =\frac{\pi|\omega|/(2\gamma)}{\sinh(\pi|\omega|/(2\gamma))}
+ =M_\gamma(\omega),\qquad M_\gamma(0)=1.
+\end{equation}
+In particular,
+\begin{equation}
+ \int_{\mathbb R}\rho_\gamma(x-t)e^{i\omega t}\,dt
+ =M_\gamma(\omega)e^{i\omega x}.
+\end{equation}
+This proves the frequency interpretation in either kernel input without
+requiring an ordinary integrable Fourier transform of the steps.
+Expanding $\sinh z$ gives $M_\gamma=1-z^2/6+O(z^4)$ at small $z$;
+$\sinh z\sim e^z/2$ gives $M_\gamma\sim2ze^{-z}$ at large $z$.
+
+Finally, the derivative of $z/\sinh z$ has numerator
+$\sinh z-z\cosh z<0$ for $z>0$: this numerator vanishes at zero and has
+derivative $-z\sinh z<0$. Reducing gamma increases $z$, proving the cap
+inequality. This completes Theorem~\ref{thm:mechanism}.
+
+\clearpage
+\section{Standard GD corollary and acquisition intervals}\label{app:time}
+Let $y_i=f^\star(x_i)$ be the nonzero target vector, and let $\Phi_\gamma$
+have rows $\phi_\gamma(x_i)^T$. Thus $K_\gamma=\Phi_\gamma\Phi_\gamma^T/m$.
+From zero initialization, with $0<\eta_\gamma\le1/L_\gamma$, define
+\begin{equation}
+ E_\gamma(n)=\frac{\|(I-\eta_\gamma K_\gamma)^ny\|}{\|y\|},\qquad
+ n_\epsilon(\gamma)=\min\{n\in\mathbb N_0:E_\gamma(n)\le\epsilon\}.
+\end{equation}
+Here $0<\epsilon<1$; an empty crossing set has time $+\infty$. This is
+a kernel-and-target calculation requiring no executed GD trajectory.
+
+\begin{corollary}[Target-dependent acquisition]
+Let $u_i(\gamma)$ be orthonormal eigenvectors for the positive eigenvalues
+$\lambda_i(\gamma)$ of $K_\gamma$, with
+$p_i(\gamma)=|u_i(\gamma)^Ty|^2/\|y\|^2$. Let
+$E_{\mathrm{floor}}(\gamma)$ be the minimum relative residual over all
+readouts in this same tanh model. Then
+\begin{equation}\label{eq:law}
+ E_\gamma(n)^2=E_{\mathrm{floor}}(\gamma)^2+
+ \sum_i p_i(\gamma)(1-\eta_\gamma\lambda_i(\gamma))^{2n}.
+\end{equation}
+\end{corollary}
+\begin{proof}
+Expand $y$ in an orthonormal eigenbasis of the symmetric kernel. Nullspace
+components remain unchanged and give the least-squares floor. Every positive
+mode decays by the corresponding factor in~\eqref{eq:law}. Orthogonality
+adds their squared residual norms.
+\end{proof}
+The weights are target energy fractions, or squared cosine alignments with
+unit eigenvectors. Gamma changes the rates and these weights through the
+explicit filter. Eigenvalues $\lambda_i$ are distinct from the dimensionless
+bandwidth $\beta$ in Appendix~\ref{app:width}.
+
+In the two-point example, the target occupies the contrast mode with
+eigenvalue $\tanh^2(\gamma s)$ and zero floor. For $0<\eta<1$,
+\begin{equation}
+ n_\epsilon(\gamma)=\left\lceil\frac{\log\epsilon}
+ {\log(1-\eta\tanh^2(\gamma s))}\right\rceil
+ \sim\frac{\log(1/\epsilon)}{\eta\gamma^2s^2}\quad(\gamma s\to0).
+\end{equation}
+
+For the full experiment, a finite harmonic expansion retains the sample/center
+couplings and bounds omitted terms, including distant transitions in its
+auxiliary periodic representation. It approximates the original nonperiodic
+tanh model with the original readout coordinates. The detailed construction
+is in the \href{\repo/docs/gamma_factorized_readout.md}{technical supplement}.
+
+If $\widehat E_\gamma(n)$ is the predicted residual and a justified margin
+satisfies $|E_\gamma(n)-\widehat E_\gamma(n)|\le d_\gamma(n)$, then
+integer witnesses $a,b$ give
+\begin{equation}
+\begin{gathered}
+ \widehat E_\gamma(a)-d_\gamma(a)>\epsilon,\qquad
+ \widehat E_\gamma(b)+d_\gamma(b)\le\epsilon\\[-2pt]
+ \Longrightarrow\quad a+1\le n_\epsilon(\gamma)\le b.
+\end{gathered}
+\end{equation}
+The true residual is nonincreasing under the step condition, proving the
+necessary count; the second witness proves sufficiency. The simplest margin
+is $n\eta_\gamma\Delta$ for kernel error bound $\Delta$, with both update
+operators contracting. The refinement retains the error's action on the
+target. Dividing necessary and sufficient counts across gammas gives the
+ratio interval. Numerical verification status is separate from these
+exact-arithmetic statements (Appendix~\ref{app:cases}).
+
+\clearpage
+\section{Width scaling preserves relative bandwidth}\label{app:width}
+For center spacing $h$, set $\beta=\gamma h$ and grid-relative frequency
+$\xi=h\omega$. Fixing $\beta>0$ gives
+\begin{equation}
+ M_{\beta/h}(\xi/h)=
+ \frac{\pi|\xi|/(2\beta)}{\sinh(\pi|\xi|/(2\beta))},
+\end{equation}
+independent of $h$, with value one at zero. For fixed gamma and nonzero
+$\xi$, as $h\to0$,
+\begin{equation}
+ M_\gamma(\xi/h)^2\sim\frac{\pi^2\xi^2}{\gamma^2h^2}
+ \exp\!\left(-\frac{\pi|\xi|}{\gamma h}\right).
+\end{equation}
+The construction uses $h=2/N$, $W=N+2\lceil\sqrt N\rceil+1$, and
+$\gamma=N/8$, hence $\beta=1/4$ and $\gamma=\Theta(W)$.
+This avoids a growing exponential attenuation at the dictionary's resolution.
+An upper bound $\gamma=O(W)$ alone also permits fixed gamma and does not
+imply the conclusion. At fixed physical frequency, fixed gamma already
+gives width-independent attenuation; linear scaling makes its multiplier
+approach one. Geometry and target weights still determine training time.
+
+\section{Protocol and evidence provenance}\label{app:protocol}
+Figure~\ref{fig:main}A trains hidden slopes, offsets, and readout parameters
+for 20,000 Adam updates, with learning rate $10^{-3}$, epsilon $10^{-8}$,
+and moments $(0.9,0.999)$. Hidden slopes and readout weights start independently
+uniform on $[-\sqrt{6/(W+1)},\sqrt{6/(W+1)}]$; biases start at zero.
+Seeds 0--4 are all shown. The width study uses $N=128,256,512,1024$;
+the acquisition study uses $N=512$. Grids have $m=16N+1$ equally spaced
+endpoint samples on $[-1,1]$. Frozen centers have spacing $2/N$ with a halo
+of $\lceil\sqrt N\rceil$ additional centers at each end.
+
+In Figure~\ref{fig:main}C, the target, inputs, centers, raw coordinates, and
+200,000-update budget are shared within each width. Gamma is the intervention,
+and the step follows each kernel's curvature. These are measured residuals;
+certified times have not been computed at every width. Joint-training
+observations in A do not establish a theorem about joint Adam dynamics.
+
+The four primary intervals have independent 192-bit interval-arithmetic
+endpoint certificates for nominal-real tanh on archived binary inputs and
+saved steps. They do not certify every floating-point iterate or plotted
+curve. The sixteen control intervals have double-precision reference and
+arithmetic-sensitivity checks, including a disclosed heuristic allowance for
+transcendental evaluations. No separate interval certificates were computed
+for those targets. A zero-width numerical interval alone does not certify
+an exact first hit.
+
+\textbf{Review materials.}
+The \href{\repo/docs/gamma_optimization_paper_note.md}{companion Markdown note}
+and \href{\repo/docs/gamma_factorized_readout.md}{technical supplement}
+provide the narrative and full numerical construction.
+The \href{\evidence/REPORT.md}{evaluation report} includes control targets,
+the scalar-rescaling control, analytic versus combined margins, and sensitivity
+checks. The \href{\evidence/summary.json}{numerical summary},
+\href{\evidence/interval_audit.json}{interval audit}, and
+\href{\evidence/review_figure_data.json}{figure data} preserve exact values
+and verification status. Figures reuse archived results; no new training was
+needed. The \href{\evidence/paper_validation.json}{validation record}
+separates prior implementation tests from this document's checks.
+
+\clearpage
+\section{Complete five-target acquisition results}\label{app:cases}
+All cases share the 559-neuron geometry, 8,193 samples, zero raw readout,
+half empirical mean squared error, and each gamma's saved step, approximately
+$0.5/L_\gamma$. Intervals combine the analytic and target-action margins.
+Harmonic resolution is selected from calculated bounds, without fitting
+endpoints to executed hits.
+
+\begin{figure}[h!]
+ \centering\includegraphics[width=\linewidth]{target_acquisition.pdf}
+ \caption{\textbf{All twenty predictions, with nineteen executed crossings.}
+ \textbf{A--E:} Colored curves and whiskers give predicted first-hit intervals;
+ black dots give executed hits at 1\% residual. Vertical ranges differ;
+ connecting lines guide the eye. The open triangle marks the quadratic run
+ stopped at 200,000 updates and is not an observed crossing.
+ \textbf{F:} Each interval endpoint is divided by its executed hit, shifted
+ by one, and multiplied by 100. The symmetric-log axis expands small
+ deviations. All 19 intervals contain zero; the censored case is excluded.
+ The largest total relative width is 0.181\%, for the sine mixture at gamma 8.
+ Only A's intervals have independent interval-arithmetic certificates.}
+ \label{fig:all}
+\end{figure}
+
+The censored quadratic run at gamma 12 has a predicted crossing interval
+269,286--269,299 and a separate original-kernel spectral forecast of 269,292.
+Both remain forecasts. The other nineteen cases compare predictions against
+actual GD crossings. These checks assess the target-dependent timing
+calculation on archived training problems; they do not establish a universal
+learning-time ordering over targets or dictionaries.
+\end{document}

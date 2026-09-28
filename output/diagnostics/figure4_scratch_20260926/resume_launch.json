@@ -1,0 +1,30 @@
+{
+  "pid": 72657,
+  "started_unix": 1790411901.0752072,
+  "command": [
+    "/tmp/figure4-venv/bin/python",
+    "-u",
+    "/dev/shm/figure4_scratch_20260926/code/adam_joint_probe_run.py",
+    "--input",
+    "/dev/shm/figure4_scratch_20260926/production/w256/base/joint_input.npz",
+    "--config",
+    "/dev/shm/figure4_scratch_20260926/production/w256/joint_gd.json",
+    "--output",
+    "/dev/shm/figure4_scratch_20260926/production/w256/joint_gd_continuation",
+    "--resume-exports",
+    "/dev/shm/figure4_scratch_20260926/production/durable/w256/joint_gd",
+    "--resume-step",
+    "4250000",
+    "--export-dir",
+    "/dev/shm/figure4_scratch_20260926/production/durable/w256/joint_gd",
+    "--export-every",
+    "250000"
+  ],
+  "gpu": 0,
+  "timeout_seconds": 900,
+  "source_sha256": {
+    "adam_joint_probe_run.py": "ac9770d2cc279c01bd9f54ce1863172de076db783e1e4a39b6a77aa4c803e6e2",
+    "figure4_restore.py": "d83f76d43c1f243a265a1585bcf81fdaa90ee0886ef13bee8a24adaa19f73b45",
+    "figure4_durable.py": "504af691f82d92dbc019a1986345dc0abb0c650c981282f56e23323226cd7da7"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "config": {
+    "n": 512,
+    "gammas": [
+      1,
+      4,
+      16,
+      64
+    ],
+    "maps": [
+      "raw",
+      "collective"
+    ],
+    "targets": [
+      "sine_mix_2_6_10",
+      "quadratic"
+    ],
+    "samples_per_cell": 16,
+    "n_eval": 32768,
+    "n_validation": 4096,
+    "k_max": 128,
+    "tolerances": [
+      0.01,
+      0.0001,
+      1e-06,
+      1e-08
+    ],
+    "cutoffs": [
+      1e-10,
+      1e-12,
+      1e-14
+    ],
+    "gd_frontiers": [
+      20000,
+      100000
+    ],
+    "adam_steps": 50000,
+    "adam_rates": [
+      0.001,
+      0.01
+    ],
+    "adam_epsilon": 1e-12,
+    "chunk_size": 500,
+    "gpu_budget_seconds": 7200,
+    "cpu_budget_seconds": 3600
+  },
+  "source_commit": "b1cc225",
+  "sample_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+  "target_hash": "e5d71bb696ef4f676dcc774553fcc0bdcaf765c575785e086b2f7f776af30600",
+  "width": 559,
+  "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+  "polynomial_orthogonality": 3.863400450369404e-14,
+  "independent_coefficient_abs_error": 1.2117146831171962e-15,
+  "versions": {
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "jax": "0.10.2",
+    "optax": "0.2.8",
+    "mpmath": "1.3.0"
+  },
+  "slurm_job": "677",
+  "precision_note": "FP64 estimates; no interval enclosure",
+  "screen_seconds": 100.23047853726894,
+  "complete": true
+}

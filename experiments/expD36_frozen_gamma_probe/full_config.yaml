@@ -1,0 +1,38 @@
+campaign: full_sweep_v1
+n: 512
+gammas: [1, 2, 4, 8, 12, 16, 24, 32, 48, 64, 96]
+maps: [raw, collective, individual, collective_neighbor, individual_neighbor]
+targets: [sine_mix_2_6_10, exp_sin_3pi, runge_25, quadratic, sine_2pi]
+samples_per_cell: 16
+n_eval: 32768
+n_validation: 4096
+k_max: 256
+k_max_extension: 512
+tolerances: [0.01, 0.0001, 0.000001, 0.00000001, 0.0000000001, 0.000000000001]
+cutoffs: [1.0e-10, 1.0e-12, 1.0e-14]
+checkpoints: [0, 1000, 5000, 10000, 20000, 40000, 42500, 45000, 47500, 50000, 100000, 200000]
+training_steps: 200000
+adam_pilot_steps: 50000
+adam_rates: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+adam_epsilons: [1.0e-8, 1.0e-12]
+common_adam: {rate: 0.001, epsilon: 1.0e-12}
+validation_steps: [40000, 42500, 45000, 47500, 50000]
+chunk_size: 500
+seeds: [0, 1, 2, 3, 4]
+robust_gammas: [4, 16, 64]
+robust_targets: [sine_mix_2_6_10, runge_25]
+initializations: [sqrt_alpha_xavier, alpha_xavier]
+widths: [128, 256, 512, 1024]
+width_maps: [raw, collective_neighbor]
+gd_rate_controls: [0.25, 0.9]
+coordinate_controls: [uniform_sqrt_h, collective_unscaled_bias, collective_ordinary_halo]
+polynomial_degrees: [16, 32, 64, 128]
+damping_log10_relative: [0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24]
+joint_steps: 20000
+joint_rate: 0.001
+joint_epsilon: 1.0e-8
+gpu_budget_seconds: 7200
+gpu_previously_used_seconds: 207
+cpu_budget_seconds: 3600
+cpu_previously_used_seconds: 193
+forecast_reserve_fraction: 0.2

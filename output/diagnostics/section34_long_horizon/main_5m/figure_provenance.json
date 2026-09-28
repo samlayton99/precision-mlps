@@ -1,0 +1,17 @@
+{
+  "joint_analysis": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/analysis",
+  "bound_source": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/bounds",
+  "executed_gd_source": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/frozen_gd",
+  "frozen_adam_reference": {
+    "source": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/uniform_access",
+    "geometry_index": 4,
+    "recipe_index": 10,
+    "recipe": {
+      "schedule": "cosine",
+      "learning_rate": 0.0001
+    },
+    "validation_error": 6.620708302958729e-07
+  },
+  "horizon": 5000000,
+  "display": "Joint error and RMS lines use seedwise within-bin medians. Fixed Adam groups its compact display bins into 200 equal-width intervals and takes medians of their medians, preserving both endpoints. All error/RMS shading retains every raw seedwise extremum in each displayed bin. The 99th-percentile slopes use saved parameter checkpoints and show their seed range. Slopes use fixed reference spacing 2/467."
+}

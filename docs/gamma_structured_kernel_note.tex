@@ -1,0 +1,726 @@
+% Directly authored companion to gamma_structured_kernel_note.md.
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm,newtxtext,newtxmath}
+\usepackage[letterpaper,margin=0.78in]{geometry}
+\usepackage{graphicx,microtype,xcolor,caption,fancyhdr,tabularx}
+\usepackage[colorlinks=true,linkcolor=blue!40!black,urlcolor=blue!50!black]{hyperref}
+\definecolor{ink}{HTML}{263442}
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\csch}{csch}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\diag}{diag}
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newcommand{\repo}{https://github.com/samlayton99/precision-mlps/blob/experiment/frozen-gamma-probe}
+\newcommand{\evidence}{\repo/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma}
+\graphicspath{{results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/}}
+\hypersetup{pdftitle={An explicit gamma cap for finite tanh learning operators},
+pdfsubject={Gamma-dependent Fourier quadratic-form bounds, target access, and small boundary-system verification}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+\setlength{\emergencystretch}{2em}
+\setlength{\headheight}{14pt}
+\captionsetup{font=small,labelfont=bf,justification=raggedright,singlelinecheck=false}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{ink}An explicit gamma cap for finite tanh learning}
+\fancyhead[R]{\small Full proof and evidence}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\begin{document}
+\thispagestyle{plain}
+{\color{ink}\fontsize{23}{26}\selectfont\bfseries
+An explicit gamma cap for\\finite tanh learning operators\par}
+\vspace{8pt}
+The question is whether a bound can carry gamma all the way to a learning
+obstruction without hiding its effect inside a full eigendecomposition.
+For a uniformly sampled, common-slope tanh dictionary, the answer is yes
+at the level of quadratic forms: an explicit Fourier expression bounds
+the kernel's action on every mean-zero direction. This is a finite-interval
+statement about ordinary tanh features. A periodic model is not substituted
+for the trained dictionary.
+
+The distinction between this statement and a precise acquisition-time
+prediction matters. The Fourier bound can be close to the actual quadratic
+form while a learning-time bound using only that one number remains
+conservative. We separate the analytic cap theorem, its elementary training
+consequence, and a richer calculation of target energy in slow modes.
+In the tested $N=512$ geometry, the cap bound is within 0.15\% of the true
+quadratic form across 17 prescribed directions and four slopes. The richer
+calculation gives a 5.07-million-update necessary time for the original
+gamma-8 sine mixture, compared with 15.80 million updates observed.
+These are different tightness statements; the latter is not an exact forecast.
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}p{0.27\linewidth}X@{}}
+\hline
+Symbol & Meaning\\\hline
+$h,q,m$ & Center spacing, integer oversampling, and observed input count\\
+$\gamma,\Gamma$ & Common feature slope and its upper cap\\
+$\lambda=\gamma h$ & Dimensionless bandwidth; never an eigenvalue\\
+$J_\gamma,K_\gamma=J_\gamma J_\gamma^*$ & Sample-normalized features and raw-readout kernel\\
+$\mu,\eta\mu$ & Kernel eigenvalue and per-update rate\\
+$v=(v_i),y$ & A pattern's values at observed inputs, and normalized training target\\
+$\mathcal Q_\Gamma(v)$ & Explicit cap-dependent bound on $v^*K_\gamma v$\\
+$E_\gamma(n)$ & Relative residual after $n$ GD updates from zero\\\hline
+\end{tabularx}
+\end{center}
+
+\section{A theorem with gamma visible in the conclusion}
+Let $h>0$ and let observed inputs be a finite subset of the fine grid
+$x_i=ih/q$, with positive integer $q$. There are $m$ observed inputs.
+The dictionary has $W$ distinct centers from the lattice $c_j=jh$, all
+with common slope $0<\gamma\le\Gamma$, and a bias. Its columns are
+\[
+J_\gamma[i,j]=m^{-1/2}\tanh\bigl(\gamma(x_i-c_j)\bigr),\qquad
+J_\gamma[i,\mathrm{bias}]=m^{-1/2}.
+\]
+This includes the finite interval, endpoint sample, and uniform halo centers
+in the experiments. Normalization preserves the Euclidean metric of the
+original readout coefficients. With $y_i=y_i^{\rm phys}/\sqrt m$, the
+relative residual from zero initialization is
+$E_\gamma(n)=\|(I-\eta K_\gamma)^ny\|/\|y\|$.
+
+A sample vector $v=(v_i)$ specifies one amplitude at each observed input
+$x_i$. It can describe the training target, a residual pattern, or a chosen
+oscillation. For example, given a function $f$, choose
+$v_i=f(x_i)-m^{-1}\sum_r f(x_r)$ and, if desired, divide by $\|v\|$.
+Subtracting the sample mean puts the vector in the theorem's domain.
+Its entries are sample values, not readout weights or eigenvalues;
+no kernel eigenvector is needed to choose it.
+
+Put $v_i=0$ at unobserved fine-grid indices. Define its $q$ phase
+polynomials and alias combinations, keeping dependence on $v$ explicit:
+\[
+V_{v,s}(\theta)=\sum_{\ell\in\mathbb Z}v_{q\ell+s}e^{-i\ell\theta},\qquad
+B_{v,k}(\theta)=\sum_{s=0}^{q-1}V_{v,s}(\theta)e^{-i(\theta+2\pi k)s/q}.
+\]
+Combining these sums gives the exact identity
+\[
+B_{v,k}(\theta)=\sum_{r\in\mathrm{observed}}v_r
+e^{-i(\theta+2\pi k)r/q}.
+\]
+This is the chosen vector's Fourier amplitude at the indicated sampled
+frequency. All sample-index sums are finite. The index $k$ labels
+frequencies indistinguishable when sampled at center spacing. Let
+\[
+M_\Gamma(\omega)=\frac z{\sinh z},\qquad
+z=\frac{\pi|\omega|}{2\Gamma},\qquad M_\Gamma(0)=1,
+\]
+and define
+\[
+\mathcal Q_\Gamma(v)=\frac1{2\pi m}\int_{-\pi}^{\pi}
+\left[\sum_{k\in\mathbb Z}
+\frac{2M_\Gamma((\theta+2\pi k)/h)}{|\theta+2\pi k|}
+\underbrace{\left|\sum_{r\in\mathrm{observed}}v_r
+e^{-i(\theta+2\pi k)r/q}\right|}_{|B_{v,k}(\theta)|:\ \text{sample-vector dependence}}
+\right]^2\,d\theta.
+\]
+This is the full oversampled formula, including all aliases; the experiment
+has $q=16$. Gamma weights the Fourier content of the specified vector.
+Changing $v$ changes the bound even with gamma and geometry fixed.
+Scaling $v$ scales its quadratic form and bound by the squared magnitude
+of that constant.
+
+For a mean-zero vector, $B_{v,0}(0)=\sum_i v_i=0$, so the apparent
+$k=0$ singularity has a finite limiting magnitude. The remaining alias
+series converges exponentially. This expression uses prescribed geometry,
+the target or test direction, and gamma cap. It uses no trained coefficients
+or kernel eigenvectors.
+
+\begin{theorem}[A common gamma cap limits access to resolved sample directions]
+For every stated dictionary, every $0<\gamma\le\Gamma$, and every
+mean-zero sample vector $v$,
+\[
+\boxed{v^*K_\gamma v\le\mathcal Q_\Gamma(v).}
+\]
+The right-hand side is nondecreasing in $\Gamma$. Its frequency weights
+contain $M_\Gamma(\omega)$, which decays exponentially when
+$|\omega|/\Gamma$ is large. Thus directions with little leakage into
+low frequencies have a small kernel quadratic form under a small cap.
+
+If $y\ne0$ is mean-zero, GD starts at zero, and $\eta>0$ satisfies
+$\eta\|K_\gamma\|\le1$, put $r_\Gamma=\mathcal Q_\Gamma(y)/\|y\|^2$.
+Whenever $\eta r_\Gamma<1$,
+\[
+E_\gamma(n)\ge(1-\eta r_\Gamma)^n.
+\]
+For $r_\Gamma>0$, reaching tolerance $0<\varepsilon<1$ requires at least
+\[
+\left\lceil\frac{\log(1/\varepsilon)}{-\log(1-\eta r_\Gamma)}\right\rceil
+\]
+updates. For $r_\Gamma=0$, a nonzero target cannot be learned.
+The sufficient stable step $\eta\le1/(W+1)$ needs no spectrum calculation.
+\end{theorem}
+The target condition is explicit rather than an assumption about unknown
+eigenvectors: sampled Fourier content enters $\mathcal Q_\Gamma$.
+A high nominal oscillation frequency is insufficient; finite-window
+leakage into low frequencies can dominate the integral. The theorem does
+not assert that every target learns faster as gamma increases. It provides
+a cap-dependent obstruction for a specified target.
+
+\subsection*{What the directional bound says about eigenvalues}
+Let $u_i$ be orthonormal eigenvectors of $K_\gamma$, with eigenvalues
+$\mu_i\ge0$. For a unit mean-zero sample vector $v$,
+\[
+v^*K_\gamma v=\sum_i\mu_i|\langle u_i,v\rangle|^2
+\le\mathcal Q_\Gamma(v).
+\]
+Each direction gives a different weighted average of the same eigenvalues.
+A large eigenvalue is compatible with a small bound for a vector that
+barely overlaps its eigenvector. The theorem controls the quadratic form
+$v^*K_\gamma v$, not every component of $K_\gamma v$ or the norm
+$\|K_\gamma v\|$.
+
+If a unit eigenvector $u_j$ is itself mean-zero, choosing $v=u_j$ isolates
+its eigenvalue: $\mu_j\le\mathcal Q_\Gamma(u_j)$. This requires knowing
+$u_j$, which can itself change with gamma. The finite kernel need not
+preserve the mean-zero subspace, so not
+all its eigenvectors are admissible. Centering an eigenvector generally
+destroys the eigenvector identity. The directional formula therefore does
+not independently identify every eigenvalue or eigenvector.
+
+A useful consequence needs no eigenvectors: for $t>0$,
+\[
+\sum_{\mu_i>t}|\langle u_i,v\rangle|^2
+\le\frac{\mathcal Q_\Gamma(v)}{t}.
+\]
+Retaining only these nonnegative terms in the weighted average proves
+the inequality. A small cap bound limits the amount of this particular
+pattern that can occupy fast modes. Complementary slow energy can include
+a nullspace component; Section~4 separately excludes that possibility
+when bounding positive slow energy.
+
+To guarantee many small eigenvalues, one would instead establish
+$\mathcal Q_\Gamma(v)\le a\|v\|^2$ for every vector in a specified
+$r$-dimensional mean-zero subspace. The min--max principle then gives
+at least $r$ eigenvalues of $K_\gamma$ at most $a$, possibly including
+zeros. The 17 empirical direction checks are not such a uniform subspace
+proof, and their observed 0.15\% tightness is not a universal relative-error
+guarantee.
+
+\subsection*{A simpler formula at matched input and center spacing}
+For $q=1$, write $V(\theta)=\sum_i v_i e^{-ii\theta}$. Pairing aliases
+improves the bound to
+\[
+v^*K_\gamma v\le\frac1{2\pi m}\int_{-\pi}^{\pi}
+\frac4{\theta^2}M_\Gamma(\theta/h)^2|V(\theta)|^2\,d\theta.
+\]
+The principal-frequency step envelope $4/\theta^2$ is multiplied by the
+squared attenuation. The exact aligned-grid step response has squared
+magnitude $\cot^2(\theta/2)$; the envelope is not that discrete spectrum.
+This bounds the finite ordinary-tanh dictionary without identifying its
+eigenvectors with Fourier waves.
+
+With at least $m$ distinct tanh centers, bias and tanh columns span the
+whole $m$-sample space for every $\gamma>0$. The delay theorem can then
+apply to exactly representable targets. This algebraic rank statement
+does not imply numerically easy interpolation or small coefficients.
+
+\section{Proof of the cap theorem}
+\textbf{Smoothing and the difference response.}
+With $\rho_\gamma(x)=\frac\gamma2\sech^2(\gamma x)$, integration gives
+$\rho_\gamma*\sign=\tanh(\gamma\,\cdot)$. Its Fourier transform is
+$M_\gamma$. Substitute $u=e^{2\gamma x}$ in the transform integral and use
+$\Gamma(1-ia)\Gamma(1+ia)=\pi a/\sinh(\pi a)$ with
+$a=\omega/(2\gamma)$ to obtain the formula. The localized adjacent
+feature difference
+\[
+d_\gamma(x)=\tanh(\gamma x)-\tanh(\gamma(x-h))
+=2\rho_\gamma*\mathbf1_{[0,h]}(x)
+\]
+has transform
+\[
+\widehat d_\gamma(\omega)=
+\frac{2(1-e^{-i\omega h})}{i\omega}M_\gamma(\omega).
+\]
+Its zero-frequency value is $2h$. Sampling this integrable difference
+allows ordinary Poisson summation. Dividing out the discrete difference
+factor gives, away from $\theta=0$,
+\[
+T_{\gamma,s}(\theta)=\sum_{k\in\mathbb Z}
+\frac{2M_\gamma((\theta+2\pi k)/h)}{i(\theta+2\pi k)}
+e^{i(\theta+2\pi k)s/q}.
+\]
+The undifferenced tanh sequence is not summable. We use this formula only
+after the mean-zero sample combination cancels its constant-tail
+singularity; it is not an ordinary absolutely convergent transform of
+that sequence.
+
+\textbf{Extend the centers, not the training problem.}
+For mean-zero $v$, bias contributes zero. Extending center indices to all
+integers adds nonnegative squared feature correlations:
+\[
+v^*K_\gamma v\le\frac1m\sum_{j\in\mathbb Z}
+\left|\sum_i v_i\tanh\bigl(\gamma(x_i-jh)\bigr)\right|^2.
+\]
+The series converges: outside the sample interval, the constant $+1$ or
+$-1$ parts cancel, leaving exponentially decaying correlations.
+Parseval's identity expresses its right-hand side as
+\[
+\frac1{2\pi m}\int_{-\pi}^{\pi}
+\left|\sum_{s=0}^{q-1}\overline{T_{\gamma,s}(\theta)}V_{v,s}(\theta)\right|^2d\theta.
+\]
+Apply the triangle inequality to the alias sum. At fixed frequency,
+$M_\gamma(\omega)\le M_\Gamma(\omega)$ for $\gamma\le\Gamma$.
+This proves the cap bound and monotonicity in the cap, without asserting
+a Loewner ordering of the original finite kernels at different slopes.
+
+\textbf{Matched-grid improvement.}
+For $q=1$, put $a=\pi/(2\gamma h)$. Apart from the common factor
+$\pi/(i\gamma h)$, the response is
+\[
+\sum_{k\in\mathbb Z}\csch\bigl(a(\theta+2\pi k)\bigr).
+\]
+For $0<\theta<\pi$, pair terms at $\theta+2\pi k$ and
+$2\pi(k+1)-\theta$ to see the sum is nonnegative. Alternatively,
+separate $k=0$ and pair terms at $2\pi k+\theta$ and $2\pi k-\theta$
+to bound it by $\csch(a\theta)$. Odd symmetry handles negative $\theta$.
+Squaring gives $4M_\gamma(\theta/h)^2/\theta^2$; replacing gamma by
+its cap completes the improvement.
+
+\textbf{Training delay.}
+The target-weighted spectral measure places weight
+$|\langle u_j,y\rangle|^2/\|y\|^2$ at eigenvalue $\mu_j$, including
+nullspace energy. Its mean is $y^*K_\gamma y/\|y\|^2$.
+The function $(1-\eta\mu)^{2n}$ is convex on $[0,1/\eta]$.
+Jensen's inequality and the cap bound give
+\[
+E_\gamma(n)^2\ge
+\left(1-\eta\frac{y^*K_\gamma y}{\|y\|^2}\right)^{2n}
+\ge(1-\eta r_\Gamma)^{2n}.
+\]
+This proves the residual and update-count claims. Finally,
+$\|K_\gamma\|\le\|J_\gamma\|_F^2\le W+1$ proves the step rule.
+
+\textbf{Representability with enough centers.}
+Set $a_i=e^{2\gamma x_i}$ and $b_j=e^{2\gamma c_j}$. Then
+\[
+\tanh\bigl(\gamma(x_i-c_j)\bigr)=1-\frac{2b_j}{a_i+b_j}.
+\]
+Bias and any $m$ tanh columns span the columns of the $m\times m$
+Cauchy matrix $1/(a_i+b_j)$. Its determinant is nonzero for distinct
+inputs and distinct centers. Thus the original features have full row
+rank. This is not claimed for the oversampled experiment, where the
+sample count exceeds the feature count.\hfill$\square$
+
+\section{The exact Toeplitz formulation and its limits}
+For consecutive uniform centers, write hidden weights as backward
+differences of cumulative coefficients. Let $C$ be the invertible
+transform, leaving bias unchanged, and $Z_\gamma=J_\gamma C$.
+Hidden columns become the localized $d_\gamma(x-c_j)$ and one terminal
+tanh feature. The metric is $T=C^*C$, with tridiagonal hidden block:
+diagonal $2,\ldots,2,1$ and off-diagonal $-1$. Exactly,
+\[
+K_\gamma=Z_\gamma T^{-1}Z_\gamma^*,\qquad
+Z_\gamma^*Z_\gamma w=\mu T w.
+\]
+Here $w$ is a coefficient-space generalized eigenvector. It is distinct
+from the sample vector $v$ in the cap theorem: its coordinates index
+transformed readout coefficients, not observed inputs.
+The generalized problem recovers the same positive kernel eigenvalues.
+GD in these coordinates uses $T^{-1}$ on its gradient. An identity metric
+would change the optimizer. Dropping the terminal feature or restricting
+to zero-sum weights also changes the problem; that coefficient subspace
+is not generally invariant under raw GD.
+
+For localized columns, summing products over the infinite input lattice
+gives a Toeplitz Gram matrix. Subtracting left and right unobserved-row
+Grams gives the finite matrix exactly. The outside-row feature matrices
+have Hankel structure after the appropriate index reversal. Terminal
+and bias cross terms remain. The discrete Toeplitz symbol sums squared
+magnitudes of the $q$ sampled difference responses, divided by $m$.
+
+This exposes gamma and supplies the cap theorem, but does not make
+finite eigenvectors independent of gamma. A small absolute Toeplitz
+approximation error need not be small relative to slow rates. Assess
+$\widehat Z$ after metric correction:
+\[
+e=\|(Z_\gamma-\widehat Z)C^{-1}\|,\qquad
+\|K_\gamma-\widehat K\|\le(2\|\widehat ZC^{-1}\|+e)e.
+\]
+The triangular factor $C^{-1}$ can amplify errors. Tests and diagnostics
+retain it explicitly.
+
+\section{Retaining target energy through small boundary systems}
+The cap theorem controls a quadratic form. To retain more spectral
+information, apply a smooth low-pass filter to $A=\eta K_\gamma$:
+\[
+f_{k,s}(a)=\frac1{1+(a/s)^k},\qquad k\text{ positive and even},\quad s>0.
+\]
+Define $F_{k,s}=y^*f_{k,s}(A)y/\|y\|^2$. For target energy $S(t)$ in
+rates at most $t>0$, monotonicity of $f$ gives
+\[
+\left[\frac{F_{k,s}-f_{k,s}(t)}{1-f_{k,s}(t)}\right]_+
+\le S(t)\le\min\left\{1,\frac{F_{k,s}}{f_{k,s}(t)}\right\}.
+\]
+Subtract an allowance on $F$ in the lower bound and add it in the upper.
+These are inequalities, not an assumption that the filter is a hard
+spectral projector.
+
+Let $H=\eta\widehat J^*\widehat J$, $g=\sqrt\eta\widehat J^*y$, and
+$z_j=s\exp(i(2j+1)\pi/k)$. Partial fractions and the feature-to-kernel
+identity give
+\[
+\widehat F_{k,s}=1-\frac1{k\|y\|^2}\sum_{j=0}^{k-1}
+g^*(H-z_jI)^{-1}g.
+\]
+The Fourier-plus-boundary construction organizes $H$ as an explicit
+Fourier diagonal plus a signed low-rank correction. Woodbury's identity
+reduces each shift to the retained boundary dimension. Fourier entries
+and boundary factors depend explicitly on gamma; no rates are fitted
+to training curves. Numerical compression and its error must be disclosed.
+
+\textbf{Why shifted-solve residuals matter.}
+In real coefficient coordinates, let $u$ approximate $(H-zI)^{-1}g$,
+with $r=g-(H-zI)u$. Then
+\[
+g^T(H-zI)^{-1}g=g^Tu+u^Tr+r^T(H-zI)^{-1}r.
+\]
+The remaining error is at most $\|r\|^2/|\operatorname{Im}z|$.
+These are ordinary transposes: $H$ and $g$ are real, while $u,r$ may
+be complex. Transform a solve in the complex Fourier basis back before
+using this identity. A small-system condition number alone is not an
+accuracy certificate.
+
+If $\|A-\widehat A\|\le\delta_A$, the resolvent identity supplies
+the additional exact-arithmetic allowance
+\[
+|F_{k,s}-\widehat F_{k,s}|\le
+\frac{\delta_A}{k}\sum_{j=0}^{k-1}
+\frac{|z_j|}{|\operatorname{Im}z_j|^2}.
+\]
+This controls construction error separately from solve residuals. Both
+sample kernels are positive semidefinite, so in this allowance replace
+$|\operatorname{Im}z_j|$ by the larger distance from $z_j$ to
+$[0,\infty)$. The implementation uses this improvement. Floating-point
+evaluation needs a separate assessment.
+
+\textbf{Exclude unlearnable energy without diagonalization.}
+Any explicit readout $w$ gives
+\[
+S(0)\le\frac{\bigl(\|y-\widehat Jw\|+\epsilon_J\|w\|\bigr)^2}{\|y\|^2},
+\qquad\|J_\gamma-\widehat J\|\le\epsilon_J.
+\]
+For $0<b<1$, put $p=[\underline S(b)-\overline S(0)]_+$ using these
+bounds. Under the same stable positive step, this mass lies in $(0,b]$,
+is exactly representable on the observed grid, and implies
+\[
+E_\gamma(n)\ge\sqrt p(1-b)^n.
+\]
+Consequently, when $p>\varepsilon^2$, reaching relative residual
+$\varepsilon$ requires
+\[
+n\ge\left\lceil
+\frac{\log(\sqrt p/\varepsilon)}{-\log(1-b)}
+\right\rceil.
+\]
+The reported necessary time is the maximum of this bound over the
+prescribed cutoffs. If $p\le\varepsilon^2$, that cutoff gives no
+positive delay bound.
+This witness-based interval starts at zero but excludes the nullspace
+by subtraction. It differs from the earlier diagnostic band
+$(10^{-9},b]$. Neither says the whole target is exactly representable
+in an oversampled dictionary.
+
+\section{What the experiments establish}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{structured_gamma_three_panel.png}
+\caption{\textbf{An explicit gamma mechanism and its measured limits.}
+A compares the cap theorem with direct ordinary-tanh quadratic forms for
+a fixed Gaussian-windowed oscillation, using the training archive's
+$N=512,q=16$ geometry; the displayed cap equals the actual slope.
+B and C use the original sine-mixture target. B compares positive slow
+energy with lower bounds from compact boundary solves, excluding
+nullspace energy through explicit readout witnesses. C distinguishes
+full-spectrum acquisition forecasts and actual GD first-crossing
+measurements from the new necessary-time bounds. Lines connect evaluated
+slopes. Sensitivity ranges compare arithmetic allowances, not confidence
+intervals. No curve is a schematic; no new GPU training was run.}
+\end{figure}
+
+\subsection*{The cap bound is sharp on the tested quadratic forms}
+The spectral-form audit uses $N=512$ with $q=16$ and $q=1$, and $N=128$
+with $q=1$, at slopes 8, 12, 16, and 64. Its 17 directions are the
+five original analytic targets after removing sample means, plus ordinary,
+Gaussian-windowed, and degree-7-polynomial-complement sines at four
+frequencies. This gives 204 direction--dictionary checks. Centered
+versions of originally non-mean-zero targets are direction diagnostics;
+they do not silently replace original training targets.
+
+Extended-center direct sums agree with the Fourier integral to
+approximately $10^{-12}$ relative error. An analytic exponential bound
+controls remaining center tails below $10^{-26}$. The integral uses
+8,192 and 16,384 midpoint nodes; retained aliases have a separate
+analytic tail bound. These verify numerical consistency, not
+outward-rounded interval certification of the integral.
+
+For the original sine mixture at $N=512,q=16$, the infinite-center form
+exceeds the finite form by factors about 1.0000608, 1.0000033,
+1.0000002, and 1.0000000 as gamma increases. Across all 17 directions
+on this geometry, the cap envelope is within 0.15\% of the finite form.
+
+The clearest example is the fixed, centered, unit-norm sample vector of
+\[
+f(x)=e^{-\frac12(x/0.25)^2}\sin(20\pi x),\qquad -1\le x\le1.
+\]
+Its actual kernel quadratic form increases from $1.1323\times10^{-7}$
+at gamma 8 to $0.062783$ at gamma 64, a factor over 550,000. The cap
+tracks this closely. An unwindowed sine at the same frequency has
+substantial finite-window low-frequency leakage; its form changes only
+from about 0.243 to 0.321. The Fourier expression predicts this
+distinction and shows why nominal frequency alone is inadequate.
+
+On matched $N=512,q=1$, all sample targets are exactly representable
+by the Cauchy argument. For the Gaussian-windowed target and common
+step $\eta=0.5/560$, evaluating the elementary cap/Jensen formula gives
+necessary times of approximately \textbf{46.0 billion}, \textbf{1.51
+billion}, \textbf{51.1 million}, and \textbf{82,301} updates at caps
+8, 12, 16, and 64. These are numerical lower-bound evaluations, not
+executed times. They do not measure temporal tightness or prove an
+ordering of actual acquisition times between these dictionaries.
+
+\subsection*{Compact target bounds improve the delay estimate, with slack}
+The primary archived target is
+\[
+y^{\rm phys}(x)=\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x).
+\]
+At $N=512,q=16$, there are 8,193 samples and 559 tanh features plus
+bias. Archived steps satisfy $\eta\|K_\gamma\|\simeq0.5$ and vary with
+gamma. The compact calculation uses order-64 filters, 97 logarithmic
+cutoffs from $10^{-8}$ to $0.5$, scale $s=b/1.25$, and readout witnesses
+from ridge shifts $10^{-10},10^{-12},10^{-14}$. It selects the largest
+necessary time using only the constructed operator and these filters.
+Original-kernel eigenspectra and GD crossings are afterward references.
+
+Under the default arithmetic sensitivity allowance, necessary times at
+gamma 8, 12, 16, and 64 are \textbf{5,072,048}, \textbf{130,057},
+\textbf{29,640}, and \textbf{5,421}. Observed crossings are
+\textbf{15,798,313}, \textbf{186,057}, \textbf{61,792}, and
+\textbf{16,013}. The bounds account for about 32\%, 70\%, 48\%, and
+34\% of measured time. They retain a substantial part of the delay,
+while remaining conservative.
+
+At gamma 8 the selected cutoff is $b=1.10298\times10^{-7}$. The
+lower bound puts at least $0.00030614$ target energy in $(0,b]$, after
+subtracting nullspace upper bound $7.25\times10^{-8}$. This is about
+0.0306\% positive slow energy, rather than the larger mass at the
+earlier, faster cutoff $10^{-6}$. The smaller cutoff gives the stronger
+necessary time. Omitting the heuristic arithmetic allowance gives
+6,978,540 updates; increasing it tenfold gives 3,805,707. These show
+sensitivity, not probabilistic uncertainty.
+
+Primary boundary solves retain dimensions 26, 26, 26, and 22. Setup
+is larger: signed-correction diagonalizations have dimensions 306, 266,
+246, and 170 before the small shifted solves. Numerical compression
+uses a $10^{-12}$ discarded-eigenvalue threshold and is checked through
+residuals. It is not a theorem that every geometry or gamma has such
+a small rank. The candidate avoids a full kernel eigendecomposition,
+but does eigendecompose the signed correction during setup.
+
+Separate small-system inertia calculations bracket eigenvalues 10, 26,
+and 40 in all 18 dictionaries. All 54 numerical brackets contain
+independent references at each sensitivity level. At gamma 8, the 26th
+eigenvalue's default relative bracket width is about 0.085\%.
+The 40th is unresolved: its bracket includes zero. A reciprocal-eigenvalue
+version initially gave inaccurate counts; scaling the signed correction
+and stopping refinement when pivot signs are uncertain avoids falsely
+narrow brackets. These checks do not certify floating-point inertia.
+
+\subsection*{Broader checks and failed simplifications}
+The sweep covers 18 dictionaries and five original targets each.
+Twelve are the existing $N=128,256,512$ by gamma $8,12,16,64$ cases.
+Six additions are $N=512$ at gamma $10,24,48$, and
+$(N,\gamma)=(128,2),(256,4),(256,32)$. Fresh cases use the analytic
+stable step $0.5/(W+1)$. Every case also reports a common-step comparison
+at that rule. No target coefficients or slopes are trained in this analysis.
+
+All 90 cases yield nonzero necessary times under the scan. Every
+resolved reference crossing is later than its bound, and all 19 available
+executed crossings agree with that ordering. The archived quadratic/gamma-12
+trajectory remains censored at 200,000 updates. Two gamma-2 reference
+crossings exceed the spectral-reference search cap $10^{18}$; these are
+unresolved, not declared unlearnable. All 1,796 saved primary GD checkpoints
+are retained; the full constructed-spectrum baseline matches them within
+$4.56\times10^{-14}$ in relative residual.
+
+Sharpness is not uniform. At $N=256$, gamma 4, the primary default
+bound is about 302 million updates versus about 937 billion in the
+numerical full-spectrum reference. The smallest allowed cutoff is
+selected, indicating the scan does not resolve that slower scale.
+Precision, filter coverage, and capacity witness quality matter there.
+Fixed-$\gamma h$ width tracks are a limitation check as well as a scaling
+check. Fixed attenuation does not imply width-independent raw rates:
+feature mass and physical target frequencies also affect comparison.
+
+Simpler candidates are unreliable substitutes. At gamma 8, a full
+Fourier-diagonal model predicts 3,035 updates. A 16-mode cosine-block
+approximation happens to predict 17.0 million there, but predicts 1.61
+million at gamma 12 versus 186,057 measured. A fortuitous one-slope match
+is insufficient. These are approximation controls, not theorem bounds.
+The exact Toeplitz identity is verified separately; finite boundaries
+and the original metric cannot be discarded just because the
+representation is structured.
+
+In the gamma-8 diagnostic, a Toeplitz-minus-boundary Gram discrepancy
+around $7.5\times10^{-17}$ before metric correction becomes
+$1.4\times10^{-12}$ afterward. Error estimates must use the raw metric.
+Aliases can have large relative effects near Nyquist even if absolutely
+tiny. No uniform relative alias approximation or target-independent
+eigenvector stability is assumed.
+
+The primary cases were used to develop the filter range before applying
+it unchanged elsewhere. Existing results are retrospective optimization
+evidence. Additional cases test transfer of the frozen calculation,
+not held-out predictive generalization. Full-spectrum reference solves
+are validation calculations and remain separately labeled.
+
+\appendix
+\section{Construction of the boundary systems}
+This appendix specifies the finite approximation used in the compact
+calculation. The cap theorem itself does not depend on it.
+
+Let $L=Nh$. A $2L$-periodic, antiperiodic reference has absolutely
+convergent expansion
+\[
+\phi_\gamma(d)=\sum_{k\in\mathbb Z}
+\frac2{i\pi(2k+1)}M_\gamma\!\left(\frac{(2k+1)\pi}{L}\right)
+e^{i(2k+1)\pi d/L}.
+\]
+For $|d|<L$, the difference from ordinary tanh is exactly
+\[
+\tanh(\gamma d)-\phi_\gamma(d)=
+2\sum_{r=1}^\infty\frac{(-1)^{r-1}}{1+e^{-2r\gamma L}}
+\left[e^{-2r\gamma(L-d)}-e^{-2r\gamma(L+d)}\right].
+\]
+To prove it, the paired image sum
+\[
+\tanh(\gamma d)+\sum_{\ell\ge1}(-1)^\ell
+[\tanh(\gamma(d-\ell L))+\tanh(\gamma(d+\ell L))]
+\]
+has the derivative of $\phi_\gamma$ and the same zero value at $d=0$.
+Expand its positive-distance tanh terms into convergent geometric series
+to obtain the formula. Each retained term separates into an input factor
+and a center factor for $d=x-c$.
+
+Choose integer $1\le B<N/2$ and nonnegative integer $p$. Treat first
+and last $B$ core-center columns exactly; retain $p$ image terms in the
+remaining columns. Keep halo columns, bias, and endpoint row exact.
+If $\tau_Q$ bounds the absolute sum of omitted Fourier coefficients,
+\[
+\epsilon_J=\sqrt{N-2B}\left[
+\frac{4e^{-2(p+1)\gamma Bh}}{1-e^{-2(p+1)\gamma L}}+\tau_Q\right]
+\]
+bounds feature operator error by Frobenius norm. For harmonics
+$k=-Q,\ldots,Q-1$ with positive integer $Q$, one valid tail bound is
+\[
+\tau_Q\le\frac{4\pi}{\gamma L}
+\frac{e^{-a(2Q+1)}}{(1-e^{-2a(2Q+1)})(1-e^{-2a})},
+\qquad a=\frac{\pi^2}{2\gamma L}.
+\]
+Both tails follow by bounding and summing the first omitted exponential.
+Since $\|J_\gamma\|\le\sqrt{W+1}$, kernel error is at most
+$(2\sqrt{W+1}+\epsilon_J)\epsilon_J$.
+
+On the first $qN$ inputs and $N$ core centers, the reference is
+diagonalized in center coordinates by the fixed half-odd Fourier matrix
+$F_{\ell k}=N^{-1/2}e^{i(2k+1)\pi\ell/N}$. Its phase eigenvalues are
+\[
+t_{s,k}=N\sum_{a\in\mathbb Z}
+\frac{2M_\gamma((2(k+aN)+1)\pi/L)}{i\pi(2(k+aN)+1)}
+e^{i(2(k+aN)+1)\pi s/(qN)},
+\]
+and its coefficient-Gram diagonal is $m^{-1}\sum_s|t_{s,k}|^2$.
+This infinite alias sum describes the exact reference. Computational $J_0$
+retains harmonics $-Q,\ldots,Q-1$, so its diagonal restricts the same sum to
+$-Q\le k+aN\le Q-1$; $\tau_Q$ covers omitted terms.
+Sum aliases before squaring magnitudes. Zero padding includes remaining
+columns and the endpoint convention.
+
+Write the retained correction as $UV^*$, so $\widehat J=J_0+UV^*$.
+Multiplication gives
+\[
+\widehat J^*\widehat J=J_0^*J_0+
+\begin{bmatrix}J_0^*U&V\end{bmatrix}
+\begin{bmatrix}0&I\\I&U^*U\end{bmatrix}
+\begin{bmatrix}J_0^*U&V\end{bmatrix}^*.
+\]
+A QR factorization and signed eigendecomposition give the diagonal-plus-
+low-rank form for Woodbury solves. Compression is a computational choice.
+The target-filter residual is assessed against the uncompressed constructed
+Gram matrix: a poor compressed solve enlarges its residual error instead
+of silently changing the theorem's kernel.
+
+For eigenvalue brackets, write the compressed Gram $D+VSV^*$ with $S$
+diagonal with entries $\pm1$, absorbing correction magnitudes into $V$.
+Away from reference poles and zero pivots, Schur-complement congruence gives
+\begin{align*}
+n_-(D+VSV^*-tI)
+={}&n_-(D-tI)\\
+&+n_-\!\left(-S-V^*(D-tI)^{-1}V\right)-n_-(-S).
+\end{align*}
+Here $n_-$ counts strictly negative eigenvalues. This reduces a count
+query to retained boundary dimension. Compression and construction
+errors must widen brackets for the actual kernel. Floating-point decisions
+near poles need their own assessment; algebra alone does not certify
+computed counts.
+
+\section{Numerical status and reproduction}
+The exact-arithmetic theorems, alias and image-series bounds, and
+residual-squared solve identity are proved above. The numerical study
+uses FP64. Its default feature sensitivity allowance is
+\[
+64u\sqrt{W+1}\,[1+\gamma L+\log_2N],
+\]
+where $u$ is machine epsilon. A shifted-solve residual-evaluation and
+dot-product guard is added. These are disclosed sensitivity models,
+not a complete outward-rounded analysis of FFTs, transcendental functions,
+matrix products, and quadrature. The 0, 1, and 10 times feature/solve-guard
+variants show their effect. None of the new target-mass bounds or timing
+endpoints is labeled interval-certified. Earlier independently certified
+full-spectrum timing intervals remain separate.
+
+An independent 80-digit check recomputes selected boundary solves from
+fixed compressed FP64 inputs. At the examined gamma-8 pole, the small
+system's condition number is about $5.73\times10^{11}$. Residual correction
+reduces its quadratic error from $1.77\times10^{-10}$ to
+$6.82\times10^{-14}$. At gamma 64, ordinary rounding exceeds the pure
+residual-squared radius, demonstrating the need for the separate allowance.
+This checks selected solve arithmetic, not transcendental input construction
+or a whole-theorem interval evaluation.
+
+Evidence records input and code hashes, geometry, targets, steps, cutoffs,
+witnesses, ranks, and numerical allowances. All 24 fingerprinted source
+artifacts and earlier reports are unchanged. Independent reproduction
+matches all 18 case files except elapsed time, every saved array, and both
+figure files. All 25 new tests pass. The full non-slow suite reports
+810 passed, 17 failed, 9 skipped, and 4 deselected; the 17 failure
+identifiers exactly match the pre-existing baseline. This study used no
+new GPU training. Reproduce from the repository root with one BLAS thread:
+\begin{quote}\footnotesize
+\begin{verbatim}
+export OPENBLAS_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1
+python -m experiments.expD36_frozen_gamma_probe.structured_symbol_audit
+python -m experiments.expD36_frozen_gamma_probe.structured_gamma_analysis
+python -m experiments.expD36_frozen_gamma_probe.structured_precision_audit
+python -m pytest -q tests/test_expD36_structured_gamma.py \
+  tests/test_expD36_structured_resolvent.py tests/test_expD36_structured_symbol.py
+latexmk -pdf -interaction=nonstopmode -halt-on-error \
+  -outdir=/tmp/gamma-structured-latex docs/gamma_structured_kernel_note.tex
+\end{verbatim}
+\end{quote}
+
+\section*{References and relation to earlier work}
+Toeplitz quadratic-form machinery is classical; see
+\href{https://ee.stanford.edu/~gray/CIT006-journal.pdf}{Gray,
+\emph{Toeplitz and Circulant Matrices: A Review}}.
+The smoothing identity and finite Fourier boundary construction are derived
+in the \href{\repo/docs/gamma_uniform_grid_theorem.md}{existing technical note}.
+The new cap statement extends centers only inside an upper bound and
+retains sampling aliases. Small-system filtering separately retains target
+information; it does not turn the elementary Rayleigh bound into an
+exact time law.
+\end{document}

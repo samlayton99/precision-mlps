@@ -1,0 +1,38 @@
+{
+  "gpu_second_limit": 4080,
+  "included_jobs": [
+    1442,
+    1449,
+    1450,
+    1482,
+    1483
+  ],
+  "planned_adam_jobs": "Both schedules, one 2M-selected rate per schedule, five paired seeds.",
+  "selection_basis": "Full2M learning-rate grid plus one lower-boundary expansion",
+  "narrowing": "Supporting 5M quadratic extension uses one best rate per schedule; main mixed-sine experiment retains the top two per schedule.",
+  "initializers": "Same five paired seeds, fresh starts, full-horizon cosine",
+  "measured_small_batch_seconds_per_update": 0.00023516743038420865,
+  "adam_5m_jobs": {
+    "cosine": {
+      "job_id": 1482,
+      "learning_rate": 0.002
+    },
+    "constant": {
+      "job_id": 1483,
+      "learning_rate": 0.0002
+    }
+  },
+  "expansion_elapsed_seconds": 485,
+  "selection_after_expansion": "The lower-rate expansion did not change either schedule winner; both winners are interior to the tested 2M grid.",
+  "global_gpu_second_hard_limit": 21600,
+  "authorization": "Parent approved a 62\u201368 GPU-minute forecast using the remaining global budget; the full campaign retains a hard six GPU-hour cap.",
+  "measured_gd_five_case_seconds_per_update": 0.000153,
+  "actual_gpu_seconds": 3738,
+  "actual_job_gpu_seconds": {
+    "1442": 485,
+    "1449": 795,
+    "1450": 823,
+    "1482": 821,
+    "1483": 814
+  }
+}

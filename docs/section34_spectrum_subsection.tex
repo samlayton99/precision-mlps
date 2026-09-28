@@ -1,0 +1,72 @@
+% Drop-in section with its figure and caption inline.
+\subsection{Bandwidth controls optimization access to high precision}
+\label{sec:bandwidth-access}
+
+The construction's nearly width-independent relative bandwidth $\lambda=\gamma h$ requires
+$\gamma=\Theta(W)$, yet trained mean slopes fall short (Figure~\ref{fig:note-training}a).
+Even though larger widths admit smaller $\lambda$ at comparable construction error
+(Figure~\ref{fig:construction}b), small slopes can delay readout learning by weakening
+target-relevant kernel directions. We quantify this delay by replacing
+Section~3.1's direct least-squares solve with GD on fixed features.
+This connects prior analysis of spectral bias
+\citep{xu2020frequency,tancik2020fourier} to readout optimization
+in the quasi-interpolant dictionary.
+
+\begin{theorem}[Slope-dependent output-error lower bound]
+\label{thm:note-output}
+For the fixed-center construction of Section~3.1 with common slope
+$\gamma>0$, let $\mu_1\ge\mu_2\ge\cdots\ge0$ be the normalized
+readout-kernel eigenvalues. For a nonzero sampled target, readout GD from
+zero with $\eta=1/(2\mu_1)$ satisfies
+\begin{equation}
+ \frac{\|f-q_n\|_{2,Z}^{2}}{\|f\|_{2,Z}^{2}}
+ \ge\sum_i p_i(\gamma)
+ \left(1-\frac{\overline\rho_i(\gamma)}2\right)^{2n},\qquad n\ge0.
+ \label{eq:note-output-bound}
+\end{equation}
+Here $\|\cdot\|_{2,Z}$ is the training-sample RMS norm,
+$p_i$ is the fraction of sampled target energy projected onto kernel
+eigenvector $i$, and $\mu_i/\mu_1\le\overline\rho_i(\gamma)\le1$.
+The gamma-dependent upper bounds $\overline\rho_i$ come from the spectral
+Theorem~\ref{thm:note-rates} in Appendix~\ref{app:note-spectrum}.
+\end{theorem}
+
+\paragraph{Proof sketch.}
+The readout kernel contains normalized inner products of feature vectors
+at pairs of training points. To bound its spectrum, we separate the constant
+sample direction and approximate the sum over centers by an integral.
+This approximation depends explicitly on $d\coth(\gamma d)$,
+where $d$ separates those points. Bounding the finite-center corrections
+gives $\overline\rho_i(\gamma)$; standard GD eigenmode decay then yields
+the output-error bound.
+
+\begin{figure}[!htbp]
+ \centering
+ \includegraphics[width=\linewidth]{output/diagnostics/section34_long_horizon/main_5m/paired/spectrum_readout.png}
+ \caption{\textbf{Small slopes weaken kernel directions and delay readout learning.}
+ Width $W=512$; target
+ $f(x)=[\sin(2\pi x)+\frac12\sin(6\pi x)+\frac14\sin(14\pi x)]/\sqrt{21/32}$
+ on $[-1,1]$.
+ \textbf{(a)} Kernel ratios $\mu_i/\mu_1$ (outlined markers) and intervals from
+ Theorem~\ref{thm:note-rates} (dashed boundaries,
+ shading) for three ranks carrying substantial target energy. Lines connect
+ ordered ranks; eigenvectors change with bandwidth.
+ \textbf{(b)} Executed frozen-readout GD errors (solid, hollow markers) and
+ square roots of Theorem~\ref{thm:note-output}'s lower bounds (dashed). The error bound combines
+ theorem-derived rate bounds with all resolved target projections onto the
+ frozen kernel's eigenvectors. Errors are relative training RMS through five million
+ updates; geometry and protocol are in Appendix~\ref{app:note-evaluation}.}
+ \label{fig:note-spectrum}
+\end{figure}
+The spectral bounds of Theorem~\ref{thm:note-rates} track how bandwidth
+changes target-relevant ratios $\mu_i/\mu_1$
+(Figure~\ref{fig:note-spectrum}a). GD's step size is limited by the
+largest eigenvalue $\mu_1$. At small bandwidths, target-relevant eigenvalues
+are much smaller, so the corresponding error components decay slowly.
+Theorem~\ref{thm:note-output} converts these rate bounds into
+output-error lower bounds that closely track executed GD
+(Figure~\ref{fig:note-spectrum}b): small slopes delay accuracy
+already available in the dictionary.
+
+Joint training can change this spectrum by moving the slopes and centers.
+We next examine whether it acquires useful features within the training budget.

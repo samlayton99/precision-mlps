@@ -1,0 +1,1998 @@
+{
+  "cases": [
+    {
+      "optimizer": "adam",
+      "seed": 0,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0022559779195731916,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 3.3383962263721606e-06,
+          "energy_closure": 1.0000000000000018,
+          "direct_quadratic_form": 3.4166134491422735,
+          "spectral_quadratic_form": 3.4166134491422713
+        },
+        "residual": {
+          "total_energy": 5.089436373601787e-06,
+          "complement_energy": 3.3383962263716164e-06,
+          "energy_closure": 5.089436373601786e-06,
+          "direct_quadratic_form": 2.2729866732622884e-13,
+          "spectral_quadratic_form": 2.2729866732632492e-13
+        }
+      },
+      "mu_max": 27.63356448921558,
+      "numerical_unresolved_target_energy_at_1e_18": 5.088662073049477e-06,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed0_readout_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 0,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0022559779195731916,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.940293513757706e-06,
+          "energy_closure": 1.0000000000000002,
+          "direct_quadratic_form": 198945648.50881618,
+          "spectral_quadratic_form": 198945648.50881618
+        },
+        "residual": {
+          "total_energy": 5.089436373601787e-06,
+          "complement_energy": 2.9402935137574614e-06,
+          "energy_closure": 5.089436373601787e-06,
+          "direct_quadratic_form": 4.947980408916289e-07,
+          "spectral_quadratic_form": 4.947980408916715e-07
+        }
+      },
+      "mu_max": 1572718566.2389917,
+      "numerical_unresolved_target_energy_at_1e_18": 5.088662074492767e-06,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed0_readout_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        2068907.015735137,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 0,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0022559779195731916,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 9.294786240446087e-10,
+          "energy_closure": 0.9999999999999997,
+          "direct_quadratic_form": 4.184381021615439,
+          "spectral_quadratic_form": 4.184381021615435
+        },
+        "residual": {
+          "total_energy": 5.089436373601787e-06,
+          "complement_energy": 9.294786240431211e-10,
+          "energy_closure": 5.089436373601784e-06,
+          "direct_quadratic_form": 3.2578197238615716e-13,
+          "spectral_quadratic_form": 3.257819723861435e-13
+        }
+      },
+      "mu_max": 28.277899560865166,
+      "numerical_unresolved_target_energy_at_1e_18": 5.82955130834506e-08,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed0_full_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 0,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0022559779195731916,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 9.708845568517503e-10,
+          "energy_closure": 1.000000000000002,
+          "direct_quadratic_form": 214259754.41404557,
+          "spectral_quadratic_form": 214259754.41404578
+        },
+        "residual": {
+          "total_energy": 5.089436373601787e-06,
+          "complement_energy": 9.708845568553626e-10,
+          "energy_closure": 5.0894363736017835e-06,
+          "direct_quadratic_form": 1.254093783035979e-06,
+          "spectral_quadratic_form": 1.2540937830358587e-06
+        }
+      },
+      "mu_max": 1588412158.5732186,
+      "numerical_unresolved_target_energy_at_1e_18": 5.8295510640959947e-08,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed0_full_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        2068907.015735137,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 1,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0014596001026542216,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.225558362225888e-06,
+          "energy_closure": 1.0,
+          "direct_quadratic_form": 3.65899491334608,
+          "spectral_quadratic_form": 3.6589949133460755
+        },
+        "residual": {
+          "total_energy": 2.130432459668214e-06,
+          "complement_energy": 1.2255583622259008e-06,
+          "energy_closure": 2.130432459668214e-06,
+          "direct_quadratic_form": 5.3962418356577175e-15,
+          "spectral_quadratic_form": 5.396241835651235e-15
+        }
+      },
+      "mu_max": 27.70810883206593,
+      "numerical_unresolved_target_energy_at_1e_18": 2.1304197512783674e-06,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed1_readout_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 1,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0014596001026542216,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.275254015748601e-06,
+          "energy_closure": 0.9999999999999997,
+          "direct_quadratic_form": 198793578.9842958,
+          "spectral_quadratic_form": 198793578.98429593
+        },
+        "residual": {
+          "total_energy": 2.130432459668214e-06,
+          "complement_energy": 1.2752540157485578e-06,
+          "energy_closure": 2.130432459668214e-06,
+          "direct_quadratic_form": 1.582074221678958e-07,
+          "spectral_quadratic_form": 1.5820742216826993e-07
+        }
+      },
+      "mu_max": 1479281534.3063118,
+      "numerical_unresolved_target_energy_at_1e_18": 2.1304197516114343e-06,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed1_readout_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        20261951.158532463,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 1,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0014596001026542216,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 4.8985691518083326e-11,
+          "energy_closure": 1.0000000000000004,
+          "direct_quadratic_form": 3.8278068143211708,
+          "spectral_quadratic_form": 3.8278068143211788
+        },
+        "residual": {
+          "total_energy": 2.130432459668214e-06,
+          "complement_energy": 4.89856915198772e-11,
+          "energy_closure": 2.130432459668213e-06,
+          "direct_quadratic_form": 3.177603659469147e-14,
+          "spectral_quadratic_form": 3.1776036594698746e-14
+        }
+      },
+      "mu_max": 27.78828490014496,
+      "numerical_unresolved_target_energy_at_1e_18": 8.35563007672846e-09,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed1_full_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 1,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0014596001026542216,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 4.151965788209054e-11,
+          "energy_closure": 0.9999999999999977,
+          "direct_quadratic_form": 205947356.1165353,
+          "spectral_quadratic_form": 205947356.1165352
+        },
+        "residual": {
+          "total_energy": 2.130432459668214e-06,
+          "complement_energy": 4.151965788180888e-11,
+          "energy_closure": 2.130432459668217e-06,
+          "direct_quadratic_form": 6.740405236649697e-07,
+          "spectral_quadratic_form": 6.740405236649747e-07
+        }
+      },
+      "mu_max": 1481493325.91063,
+      "numerical_unresolved_target_energy_at_1e_18": 8.355632963308324e-09,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed1_full_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        9807001.14897563,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 2,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.002296539945175449,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.6217149443385093e-06,
+          "energy_closure": 0.999999999999998,
+          "direct_quadratic_form": 3.4589357633125193,
+          "spectral_quadratic_form": 3.4589357633125086
+        },
+        "residual": {
+          "total_energy": 5.274095719786456e-06,
+          "complement_energy": 2.6217149443385597e-06,
+          "energy_closure": 5.274095719786457e-06,
+          "direct_quadratic_form": 2.5953340224167955e-13,
+          "spectral_quadratic_form": 2.5953340224169414e-13
+        }
+      },
+      "mu_max": 25.80193540871008,
+      "numerical_unresolved_target_energy_at_1e_18": 5.273191102328489e-06,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed2_readout_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 2,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.002296539945175449,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 3.7860065869979855e-06,
+          "energy_closure": 1.0000000000000009,
+          "direct_quadratic_form": 212996397.71927392,
+          "spectral_quadratic_form": 212996397.71927398
+        },
+        "residual": {
+          "total_energy": 5.274095719786456e-06,
+          "complement_energy": 3.786006586998206e-06,
+          "energy_closure": 5.274095719786456e-06,
+          "direct_quadratic_form": 7.461206364134208e-07,
+          "spectral_quadratic_form": 7.461206364132168e-07
+        }
+      },
+      "mu_max": 1435211824.7788537,
+      "numerical_unresolved_target_energy_at_1e_18": 5.273191099330887e-06,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed2_readout_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        2032791.581738198,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 2,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.002296539945175449,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.056997060063002e-09,
+          "energy_closure": 0.9999999999999997,
+          "direct_quadratic_form": 4.198002857770847,
+          "spectral_quadratic_form": 4.198002857770842
+        },
+        "residual": {
+          "total_energy": 5.274095719786456e-06,
+          "complement_energy": 1.0569970600672094e-09,
+          "energy_closure": 5.274095719786462e-06,
+          "direct_quadratic_form": 3.8872864892813784e-13,
+          "spectral_quadratic_form": 3.887286489281742e-13
+        }
+      },
+      "mu_max": 26.473568311932617,
+      "numerical_unresolved_target_energy_at_1e_18": 4.151811461294841e-08,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed2_full_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 2,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.002296539945175449,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 9.71466750572893e-10,
+          "energy_closure": 0.999999999999999,
+          "direct_quadratic_form": 243792862.7124073,
+          "spectral_quadratic_form": 243792862.71240726
+        },
+        "residual": {
+          "total_energy": 5.274095719786456e-06,
+          "complement_energy": 9.714667505749165e-10,
+          "energy_closure": 5.274095719786452e-06,
+          "direct_quadratic_form": 1.654369763144423e-06,
+          "spectral_quadratic_form": 1.6543697631445831e-06
+        }
+      },
+      "mu_max": 1496999074.7639127,
+      "numerical_unresolved_target_energy_at_1e_18": 4.151811550112683e-08,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed2_full_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        2032791.581738198,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 3,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0018143227040915727,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.5264676885135593e-06,
+          "energy_closure": 0.9999999999999994,
+          "direct_quadratic_form": 3.4057510370174198,
+          "spectral_quadratic_form": 3.405751037017417
+        },
+        "residual": {
+          "total_energy": 3.2917668745821567e-06,
+          "complement_energy": 1.5264676885138689e-06,
+          "energy_closure": 3.2917668745821567e-06,
+          "direct_quadratic_form": 3.980426504749606e-14,
+          "spectral_quadratic_form": 3.9804265047505614e-14
+        }
+      },
+      "mu_max": 23.93263359344881,
+      "numerical_unresolved_target_energy_at_1e_18": 3.291488307133328e-06,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed3_readout_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 3,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0018143227040915727,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.3667566718543102e-06,
+          "energy_closure": 0.9999999999999996,
+          "direct_quadratic_form": 210397170.63357764,
+          "spectral_quadratic_form": 210397170.63357776
+        },
+        "residual": {
+          "total_energy": 3.2917668745821567e-06,
+          "complement_energy": 2.366756671854546e-06,
+          "energy_closure": 3.2917668745821563e-06,
+          "direct_quadratic_form": 3.1931116336695426e-07,
+          "spectral_quadratic_form": 3.1931116336676887e-07
+        }
+      },
+      "mu_max": 1422036625.5307896,
+      "numerical_unresolved_target_energy_at_1e_18": 3.291488307133328e-06,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed3_readout_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        5510343.257856439,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 3,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0018143227040915727,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.7702004096167555e-10,
+          "energy_closure": 1.0000000000000007,
+          "direct_quadratic_form": 3.7145053463014026,
+          "spectral_quadratic_form": 3.714505346301398
+        },
+        "residual": {
+          "total_energy": 3.2917668745821567e-06,
+          "complement_energy": 1.7702004096240003e-10,
+          "energy_closure": 3.2917668745821567e-06,
+          "direct_quadratic_form": 1.0559285564798903e-13,
+          "spectral_quadratic_form": 1.0559285564798764e-13
+        }
+      },
+      "mu_max": 24.088842368510782,
+      "numerical_unresolved_target_energy_at_1e_18": 6.143277775372269e-09,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed3_full_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 3,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0018143227040915727,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.8650734268182925e-10,
+          "energy_closure": 0.9999999999999991,
+          "direct_quadratic_form": 215701690.03867978,
+          "spectral_quadratic_form": 215701690.03867972
+        },
+        "residual": {
+          "total_energy": 3.2917668745821567e-06,
+          "complement_energy": 1.8650734267977645e-10,
+          "energy_closure": 3.2917668745821525e-06,
+          "direct_quadratic_form": 1.0034285238085667e-06,
+          "spectral_quadratic_form": 1.003428523808814e-06
+        }
+      },
+      "mu_max": 1432867737.0032473,
+      "numerical_unresolved_target_energy_at_1e_18": 6.143279218662201e-09,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed3_full_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        5510343.257856439,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 4,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0016979211387911537,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.3895107098559414e-06,
+          "energy_closure": 0.9999999999999989,
+          "direct_quadratic_form": 3.140837809611896,
+          "spectral_quadratic_form": 3.140837809611898
+        },
+        "residual": {
+          "total_energy": 2.8829361935538484e-06,
+          "complement_energy": 1.3895107098561263e-06,
+          "energy_closure": 2.882936193553849e-06,
+          "direct_quadratic_form": 1.6710740832173573e-14,
+          "spectral_quadratic_form": 1.6710740832159235e-14
+        }
+      },
+      "mu_max": 27.686068575382176,
+      "numerical_unresolved_target_energy_at_1e_18": 2.8828446217987747e-06,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed4_readout_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 4,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0016979211387911537,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.4355511464778821e-06,
+          "energy_closure": 1.0000000000000016,
+          "direct_quadratic_form": 192368902.25907806,
+          "spectral_quadratic_form": 192368902.25907812
+        },
+        "residual": {
+          "total_energy": 2.8829361935538484e-06,
+          "complement_energy": 1.4355511464777565e-06,
+          "energy_closure": 2.882936193553848e-06,
+          "direct_quadratic_form": 1.673051906751635e-07,
+          "spectral_quadratic_form": 1.6730519067516404e-07
+        }
+      },
+      "mu_max": 1560627497.8465476,
+      "numerical_unresolved_target_energy_at_1e_18": 2.8828446195783286e-06,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed4_readout_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        7575384.141435055,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 4,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0016979211387911537,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 3.424962095912798e-10,
+          "energy_closure": 0.9999999999999999,
+          "direct_quadratic_form": 3.2163580557161144,
+          "spectral_quadratic_form": 3.216358055716113
+        },
+        "residual": {
+          "total_energy": 2.8829361935538484e-06,
+          "complement_energy": 3.424962095926865e-10,
+          "energy_closure": 2.882936193553846e-06,
+          "direct_quadratic_form": 4.022869272269646e-14,
+          "spectral_quadratic_form": 4.022869272271007e-14
+        }
+      },
+      "mu_max": 27.71997815455738,
+      "numerical_unresolved_target_energy_at_1e_18": 9.250188393039593e-09,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed4_full_raw",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 4,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_adam_cosine",
+        "recipe_index": 0,
+        "schedule": "cosine",
+        "learning_rate": 0.05,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.002256448919740529,
+          0.0014598646831824938,
+          0.0022966035181307648,
+          0.001814724093052364,
+          0.001698484788486213
+        ],
+        "median_validation_error": 0.001814724093052364,
+        "train_errors": [
+          0.0022559779195731916,
+          0.0014596001026542216,
+          0.002296539945175449,
+          0.0018143227040915727,
+          0.0016979211387911537
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.0022565672289257075,
+          0.0014599311690205255,
+          0.0022966194614682787,
+          0.0018148249745477592,
+          0.0016986261576348437
+        ],
+        "final_fifth_error_decrease": 0.2889935319436332,
+        "final_fifth_q99_increase": -0.021579295284990363
+      },
+      "train_error": 0.0016979211387911537,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 3.4488463691378964e-10,
+          "energy_closure": 1.0000000000000004,
+          "direct_quadratic_form": 194917989.21895257,
+          "spectral_quadratic_form": 194917989.21895257
+        },
+        "residual": {
+          "total_energy": 2.8829361935538484e-06,
+          "complement_energy": 3.4488463691738224e-10,
+          "energy_closure": 2.8829361935538476e-06,
+          "direct_quadratic_form": 6.679623522053154e-07,
+          "spectral_quadratic_form": 6.679623522056616e-07
+        }
+      },
+      "mu_max": 1562739852.524131,
+      "numerical_unresolved_target_energy_at_1e_18": 9.250187948950384e-09,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed4_full_adaptive",
+      "state_sha256": "e7f3b367728a3aea4ffa1f3be3a6d37d387da2abe1af866b751645d1c4ff4e6e",
+      "diagonal_range": [
+        7575384.141435055,
+        100000000.0
+      ]
+    },
+    {
+      "optimizer": "gd",
+      "seed": 0,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.2439313678961394,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.032303275127908065,
+          "energy_closure": 0.9999999999999999,
+          "direct_quadratic_form": 1.6154619823196381,
+          "spectral_quadratic_form": 1.6154619823196377
+        },
+        "residual": {
+          "total_energy": 0.05950251224368171,
+          "complement_energy": 0.03230327512790804,
+          "energy_closure": 0.0595025122436817,
+          "direct_quadratic_form": 2.258418810670584e-08,
+          "spectral_quadratic_form": 2.2584188106706464e-08
+        }
+      },
+      "mu_max": 8.152673289099782,
+      "numerical_unresolved_target_energy_at_1e_18": 0.055925058699513586,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed0_readout_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 0,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.2439313678961394,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.004747226000508049,
+          "energy_closure": 1.0000000000000007,
+          "direct_quadratic_form": 3.8250882081210857,
+          "spectral_quadratic_form": 3.8250882081210844
+        },
+        "residual": {
+          "total_energy": 0.05950251224368171,
+          "complement_energy": 0.004747226000508021,
+          "energy_closure": 0.05950251224368171,
+          "direct_quadratic_form": 2.459216915775236e-08,
+          "spectral_quadratic_form": 2.4592169157753418e-08
+        }
+      },
+      "mu_max": 69.97839352156565,
+      "numerical_unresolved_target_energy_at_1e_18": 0.021982962064210354,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed0_full_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 1,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.24393325573003827,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.033055275894225994,
+          "energy_closure": 1.0000000000000009,
+          "direct_quadratic_form": 1.61706353035412,
+          "spectral_quadratic_form": 1.61706353035412
+        },
+        "residual": {
+          "total_energy": 0.059503433251056254,
+          "complement_energy": 0.033055275894225966,
+          "energy_closure": 0.05950343325105626,
+          "direct_quadratic_form": 2.2579077796406967e-08,
+          "spectral_quadratic_form": 2.257907779640683e-08
+        }
+      },
+      "mu_max": 8.162250795686278,
+      "numerical_unresolved_target_energy_at_1e_18": 0.05592445523104639,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed1_readout_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 1,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.24393325573003827,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.0049433539106905145,
+          "energy_closure": 0.999999999999999,
+          "direct_quadratic_form": 3.826390994014331,
+          "spectral_quadratic_form": 3.826390994014326
+        },
+        "residual": {
+          "total_energy": 0.059503433251056254,
+          "complement_energy": 0.0049433539106905145,
+          "energy_closure": 0.05950343325105626,
+          "direct_quadratic_form": 2.4593434618274855e-08,
+          "spectral_quadratic_form": 2.4593434618268466e-08
+        }
+      },
+      "mu_max": 69.96550762224935,
+      "numerical_unresolved_target_energy_at_1e_18": 0.021985271529914363,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed1_full_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 2,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.25728820444293127,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.030412275639275177,
+          "energy_closure": 1.0000000000000002,
+          "direct_quadratic_form": 0.995272882369937,
+          "spectral_quadratic_form": 0.9952728823699369
+        },
+        "residual": {
+          "total_energy": 0.06619722014546758,
+          "complement_energy": 0.03041227563927528,
+          "energy_closure": 0.06619722014546761,
+          "direct_quadratic_form": 1.697878492854011e-09,
+          "spectral_quadratic_form": 1.6978784928520555e-09
+        }
+      },
+      "mu_max": 6.228491112211438,
+      "numerical_unresolved_target_energy_at_1e_18": 0.047503789079543224,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed2_readout_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 2,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.25728820444293127,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.0007147902109368655,
+          "energy_closure": 0.9999999999999993,
+          "direct_quadratic_form": 1.3342140032514502,
+          "spectral_quadratic_form": 1.3342140032514491
+        },
+        "residual": {
+          "total_energy": 0.06619722014546758,
+          "complement_energy": 0.0007147902109368629,
+          "energy_closure": 0.0661972201454676,
+          "direct_quadratic_form": 1.8647257183483254e-09,
+          "spectral_quadratic_form": 1.8647257183475003e-09
+        }
+      },
+      "mu_max": 40.485898829125595,
+      "numerical_unresolved_target_energy_at_1e_18": 0.028601604098170363,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed2_full_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 3,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.2011560766157398,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.020932908221326978,
+          "energy_closure": 0.9999999999999982,
+          "direct_quadratic_form": 2.0691349910436125,
+          "spectral_quadratic_form": 2.0691349910436094
+        },
+        "residual": {
+          "total_energy": 0.04046376715943739,
+          "complement_energy": 0.02093290822132702,
+          "energy_closure": 0.04046376715943739,
+          "direct_quadratic_form": 3.4731646864002505e-10,
+          "spectral_quadratic_form": 3.4731646864051035e-10
+        }
+      },
+      "mu_max": 13.594879348790906,
+      "numerical_unresolved_target_energy_at_1e_18": 0.0364048566484394,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed3_readout_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 3,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.2011560766157398,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 4.950621038399358e-05,
+          "energy_closure": 1.0000000000000007,
+          "direct_quadratic_form": 2.220758354452705,
+          "spectral_quadratic_form": 2.220758354452704
+        },
+        "residual": {
+          "total_energy": 0.04046376715943739,
+          "complement_energy": 4.950621038399145e-05,
+          "energy_closure": 0.04046376715943743,
+          "direct_quadratic_form": 1.5430369927376412e-09,
+          "spectral_quadratic_form": 1.5430369927363671e-09
+        }
+      },
+      "mu_max": 26.750919282233085,
+      "numerical_unresolved_target_energy_at_1e_18": 0.004895063748513229,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed3_full_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 4,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.20470112107519564,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.028381157357162422,
+          "energy_closure": 0.9999999999999998,
+          "direct_quadratic_form": 1.3784209851222518,
+          "spectral_quadratic_form": 1.3784209851222504
+        },
+        "residual": {
+          "total_energy": 0.04190254896944191,
+          "complement_energy": 0.028381157357162415,
+          "energy_closure": 0.04190254896944191,
+          "direct_quadratic_form": 8.195248016924332e-10,
+          "spectral_quadratic_form": 8.195248016921038e-10
+        }
+      },
+      "mu_max": 8.178582287549558,
+      "numerical_unresolved_target_energy_at_1e_18": 0.04133463526424486,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed4_readout_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 4,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 5000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main/h5m/joint_gd",
+        "recipe_index": 2,
+        "schedule": "cosine",
+        "learning_rate": 0.2,
+        "horizon": 5000000,
+        "validation_errors": [
+          0.2439341734058546,
+          0.24393606123410477,
+          0.2572916534266114,
+          0.20115835384574862,
+          0.20470287123648917
+        ],
+        "median_validation_error": 0.2439341734058546,
+        "train_errors": [
+          0.2439313678961394,
+          0.24393325573003827,
+          0.25728820444293127,
+          0.2011560766157398,
+          0.20470112107519564
+        ],
+        "all_seeds_finite": true,
+        "eval_errors": [
+          0.24393487475699221,
+          0.2439367625838302,
+          0.2572925156441861,
+          0.20115892313298706,
+          0.2047033087595713
+        ],
+        "final_fifth_error_decrease": 0.002927292075536103,
+        "final_fifth_q99_increase": -0.0017006116892408496
+      },
+      "train_error": 0.20470112107519564,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.0010344255567077331,
+          "energy_closure": 0.9999999999999983,
+          "direct_quadratic_form": 1.5508390985107061,
+          "spectral_quadratic_form": 1.5508390985107037
+        },
+        "residual": {
+          "total_energy": 0.04190254896944191,
+          "complement_energy": 0.0010344255567077318,
+          "energy_closure": 0.041902548969441934,
+          "direct_quadratic_form": 5.27391724048166e-09,
+          "spectral_quadratic_form": 5.273917240480747e-09
+        }
+      },
+      "mu_max": 23.136889984689432,
+      "numerical_unresolved_target_energy_at_1e_18": 0.005540968753657172,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed4_full_raw",
+      "state_sha256": "bc3ce8b7a968f83f0a794ba238a8037b59972462f51cc2234fac8582b55cb93c"
+    }
+  ],
+  "interpretation": "Endpoint local Jacobian metrics. Adaptive diagonals come from the actual joint Adam state. Momentum, changing geometry, and changing preconditioning are omitted; these are not Adam rate predictions.",
+  "normalization": "Jacobians divided by sqrt(m); both target and residual spectral energies divided by target squared norm.",
+  "numerical_resolution": "Unresolved spectral energy is not a proved capacity floor.",
+  "analysis_sha256": "355b7b163e8d87febe9f73923f70b0c5b042a9ea6d83e77558ce6027f6f79b26"
+}

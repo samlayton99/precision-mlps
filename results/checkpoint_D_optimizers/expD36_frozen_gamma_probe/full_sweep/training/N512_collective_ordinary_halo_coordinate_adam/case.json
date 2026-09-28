@@ -1,0 +1,60 @@
+{
+  "tag": "N512_collective_ordinary_halo_coordinate_adam",
+  "n": 512,
+  "map": "collective_ordinary_halo",
+  "gammas": [
+    4,
+    16,
+    64
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "chi": 0.5
+    }
+  ],
+  "rates": [
+    [
+      0.001
+    ],
+    [
+      0.001
+    ],
+    [
+      0.001
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-12
+    ],
+    [
+      1e-12
+    ],
+    [
+      1e-12
+    ]
+  ],
+  "matrix_hashes": [
+    "a177ce80d8a151394c8ac0863673a12d2094eadf4191e79f1443db35fe3c94aa",
+    "b9fff41e05d968a178eca4f364fd2febf4d7a2eaecef8a743ec7f25f5b38c1b4",
+    "c53b6a03ab079cd8f44395cd029a8899f2111d0c6b78957c177f8f7ea3a32b28"
+  ],
+  "initial_hash": "9e8e4d1848b6146e3a4ad37c38a8de9ea2dcc5cfec426df9bc9136268477c3dc",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

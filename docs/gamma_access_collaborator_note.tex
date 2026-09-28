@@ -1,0 +1,446 @@
+% Directly authored companion to gamma_access_collaborator_note.md.
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm,newtxtext,newtxmath}
+\usepackage[letterpaper,margin=0.76in]{geometry}
+\usepackage{graphicx,microtype,xcolor,caption,fancyhdr}
+\usepackage[colorlinks=true,linkcolor=blue!40!black,urlcolor=blue!50!black]{hyperref}
+\definecolor{ink}{HTML}{263442}
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\range}{range}
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newcommand{\repo}{https://github.com/samlayton99/precision-mlps/blob/experiment/frozen-gamma-probe}
+\newcommand{\evidence}{\repo/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_access_note}
+\graphicspath{{results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/gamma_access_note/}}
+\hypersetup{pdftitle={How gamma controls access to representable target components},
+pdfsubject={Finite tanh readout theorem, positive slow target energy, proof, and measured optimization delays}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt plus 1pt}
+\setlength{\emergencystretch}{2em}
+\setlength{\headheight}{14pt}
+\captionsetup{font=small,labelfont=bf,justification=raggedright,singlelinecheck=false}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{ink}Gamma and optimization access}
+\fancyhead[R]{\small Collaborator note}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\begin{document}
+\thispagestyle{plain}
+{\color{ink}\fontsize{22}{25}\selectfont\bfseries
+How gamma controls access to\\representable target components\par}
+\vspace{7pt}
+\textbf{The proposed paper claim.} A target component can belong to a frozen
+tanh dictionary's span and still require millions of readout updates to learn.
+A common small slope $\gamma$ suppresses frequency content in the features.
+On a finite interval, sampling and boundaries mix those frequencies; retaining
+this mixing carries the explicit attenuation into accurate eigenvalues and
+target projections. We can therefore identify \textbf{representable but slow
+target components}, and predict the resulting delay before running GD.
+
+For a paper with room for one theorem, we recommend the \textbf{finite-interval
+tanh theorem} below. It concerns the features actually trained. The periodic
+calculation is a motivating example and a step in the proof, rather than a
+second headline theorem. Evaluating the result includes a finite spectral
+calculation. No decay rate is fitted to the observed training curve.
+
+The figure follows three steps: gamma filters frequency content; the finite
+kernel places target energy in positive but slow modes; that spectrum predicts
+the observed training trajectory. At gamma 8, the calculation places at least
+\textbf{4.3322\% of target energy in representable slow modes}, implying a
+\textbf{3.036-million-update necessary time} from that band alone. The complete
+spectrum gives a narrow interval containing the measured
+\textbf{15,798,313 updates}. Spectral numbers use a disclosed floating-point
+allowance; the four primary full-spectrum timing intervals also contain
+independently certified archived intervals.
+
+\textbf{Notation.} $J_\gamma$ is the sample-normalized feature matrix;
+$K_\gamma=J_\gamma J_\gamma^*$ is its readout kernel. $\mu_j$ is an eigenvalue,
+and $\eta\mu_j$ is its per-update learning rate. $E_\gamma(n)$ is relative
+residual norm: 1\% means $E_\gamma(n)\le0.01$. Physical slope is $\gamma$;
+dimensionless bandwidth is $\lambda=\gamma h$, never an eigenvalue. A hat
+denotes the constructed approximation; $\delta_\gamma$ bounds its kernel
+error. The band-energy fraction is $p_\gamma$; the periodic reference feature
+is $\phi_\gamma$.
+
+\section{Why the periodic example makes the mechanism transparent}
+A tanh is exactly a smoothed step:
+\[
+\tanh(\gamma x)=(\rho_\gamma*\sign)(x),\qquad
+\rho_\gamma(t)=\frac\gamma2\sech^2(\gamma t).
+\]
+The smoothing density has Fourier multiplier
+\[
+M_\gamma(\omega)=\frac z{\sinh z},\qquad
+z=\frac{\pi|\omega|}{2\gamma},\qquad M_\gamma(0)=1.
+\]
+On a circle, with centers and input measure uniform over the whole period,
+translations make the kernel diagonal in Fourier waves. Smoothing multiplies
+each feature coefficient by $M_\gamma$, and the kernel pairs two coefficients:
+\[
+\mu_\omega(\gamma)=\mu_\omega^{\rm step}M_\gamma(\omega)^2.
+\]
+At high frequency relative to gamma,
+\[
+M_\gamma(\omega)^2\sim
+\left(\frac{\pi|\omega|}{\gamma}\right)^2e^{-\pi|\omega|/\gamma}.
+\]
+At a fixed step size, this produces an exponential optimization penalty.
+Every frequency with
+$\mu_\omega^{\rm step}>0$ remains accessible at every $\gamma>0$, but its
+learning rate can become extremely small. Frequencies absent from the
+periodic step remain inaccessible; for the standard square wave these
+include nonconstant even harmonics. Bias supplies the constant mode. The
+claim concerns accessible frequencies, not all periodic functions.
+
+Ordinary tanh on an interval is not this periodic population model.
+Boundaries and finite sampling can rotate learning directions. The finite
+theorem retains these effects instead of treating periodic eigenvalues as
+an approximation to the answer.
+
+\section{The one theorem to present}
+Fix an interval of length $L>0$, an integer $N\ge3$, and equally spaced core centers $c_j=jh$,
+$j=0,\ldots,N-1$, $h=L/N$, and inputs $x_i=ih/q$, where $q$ is a positive
+integer and $i=0,\ldots,qN$. Thus $m=qN+1$ includes both endpoints.
+Any extra centers stay fixed and are retained explicitly; $W$ counts all
+tanh features. Include a bias column equal to $1/\sqrt m$ and define
+\[
+J_\gamma[i,j]=\frac{\tanh(\gamma(x_i-c_j))}{\sqrt m},\qquad
+y_i=\frac{y_i^{\rm phys}}{\sqrt m}.
+\]
+All tanh features have a common frozen slope $\gamma>0$.
+GD minimizes $\frac12\|J_\gamma w-y\|^2$ in the original Euclidean
+readout coefficients, starts at $w=0$, and uses $\eta>0$.
+The nonzero target $y$ and all input/center locations stay fixed as gamma
+changes.
+
+Its relative residual is
+$E_\gamma(n)=\|(I-\eta K_\gamma)^ny\|/\|y\|$.
+Write $\mu_j$ for eigenvalues in decreasing order, including zeros, and
+$u_j$ for an orthonormal eigenbasis. Define cumulative target energy
+\[
+S_\gamma(t)=\sum_{\eta\mu_j\le t}
+\frac{|\langle y,u_j\rangle|^2}{\|y\|^2}.
+\]
+
+First synthesize a periodic reference from Fourier coefficients multiplied
+by $M_\gamma$. Then retain the gamma-dependent boundary terms, exact boundary
+columns, extra centers, bias, and endpoint row. Call the resulting features
+$\widehat J_\gamma$ and kernel $\widehat K_\gamma$. Appendix A gives the
+scalar formulas and error allowance; no training observation is used.
+
+\begin{theorem}[Gamma-dependent access to representable finite-tanh components]
+Under the stated geometry and raw-readout parameterization, the Fourier and
+boundary construction gives an explicit allowance $\delta_\gamma$ such that
+\[
+\|K_\gamma-\widehat K_\gamma\|\le\delta_\gamma,\qquad
+|\mu_j(\gamma)-\widehat\mu_j(\gamma)|\le\delta_\gamma.
+\]
+All gamma dependence is explicit in the frequency multipliers, boundary
+factors, and allowance. The analytic allowance decreases geometrically to
+zero as the retained boundary expansion increases.
+
+Choose $\eta(\|\widehat K_\gamma\|+\delta_\gamma)\le1$. Let
+$\underline S_\gamma(t)$ and $\overline S_\gamma(t)$ be the bounds defined
+below on the fraction of target energy in per-update rates at most $t$.
+For $0<a<b<1$, set
+\[
+p_\gamma=\left[\underline S_\gamma(b)-\overline S_\gamma(a)\right]_+.
+\]
+At least a fraction $p_\gamma$ of target energy lies in the positive-rate
+band $(a,b]$. This component is exactly representable on the sampled grid.
+Nevertheless, it implies
+\[
+\boxed{E_\gamma(n)\ge\sqrt{p_\gamma}(1-b)^n.}
+\]
+\end{theorem}
+The theorem identifies a property of the specified target and dictionary.
+It does not assume target alignment with a chosen Fourier wave. Gamma changes
+both eigenvalues and finite eigenvectors; the spectral calculation retains
+both changes when computing target energy.
+
+For explicit energy bounds, compute the eigenvectors $\widehat u_j$ of
+$\widehat K_\gamma$ and set
+\[
+\widehat S_\gamma(t)=\sum_{\eta\widehat\mu_j\le t}
+\frac{|\langle y,\widehat u_j\rangle|^2}{\|y\|^2}.
+\]
+Include the full nullspace. For a chosen buffer $g>0$, valid bounds are
+\begin{align*}
+\underline S_\gamma(t)
+&=\left(\sqrt{\widehat S_\gamma(t-g)}-
+\frac{\eta\delta_\gamma}{g}\right)_+^2,\\
+\overline S_\gamma(t)
+&=\min\!\left\{1,\left(\sqrt{\widehat S_\gamma(t+g)}+
+\frac{\eta\delta_\gamma}{g}\right)^2\right\}.
+\end{align*}
+Buffers may differ between cutoffs. Taking the largest lower and smallest
+upper bound over any declared collection remains valid. Subtracting upper
+mass at a strictly positive $a$ is essential: it excludes the possibility
+that the reported slow energy is merely an unlearnable nullspace component.
+
+The full target need not be exactly representable. The component isolated
+by $(a,b]$ is. This precisely separates optimization access from capacity.
+
+\section{Where gamma enters, and what must still be calculated}
+The quantitative chain is
+\[
+\begin{aligned}
+\gamma
+&\longrightarrow\underbrace{M_\gamma(\omega)\ \text{and boundary factors}}
+_{\text{explicit feature construction}}\\
+&\longrightarrow\underbrace{\widehat\mu_j(\gamma),\widehat u_j(\gamma)}
+_{\text{finite spectral calculation}}
+\longrightarrow\underbrace{p_\gamma\ \text{and }E_\gamma(n)}
+_{\text{target access and delay}}.
+\end{aligned}
+\]
+This goes beyond observing that gamma changes a matrix. We identify its
+feature-level action analytically, retain the geometry that mixes frequencies,
+and bound the resulting spectral error. Finite eigenvectors are computed,
+not assumed to remain Fourier waves. The boundary correction also depends
+on gamma; it is neither a free fit nor an assumed small perturbation.
+
+Two errors must not be confused. Small gamma can make true learning rates
+small. Separately, truncation introduces approximation error $\delta_\gamma$,
+reducible by retaining more terms. The latter controls prediction precision;
+it is not the proposed cause of delay.
+
+The periodic example gives a scalar cap-to-rate inequality immediately.
+On the finite interval, the theorem gives quantitative predictions after
+solving the explicit corrected spectral problem. It does not assert that
+every target or finite eigenvalue improves monotonically with gamma. Such
+ordering is unnecessary to explain the measured, target-dependent delay.
+
+\section{Predictions and the three-panel figure}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{gamma_access_three_panel.pdf}
+\caption{\textbf{Gamma changes optimization access to a fixed target.}
+A shows exact analytic periodic attenuation, not measured training data.
+Faint guides mark the target's physical frequencies, without identifying
+them with finite-kernel eigenvectors.
+B shows finite ordinary-tanh target energy in positive rates above
+$a=10^{-9}$ and below the horizontal-axis cutoff. Solid curves come from
+the original tanh spectrum; shaded bounds come from the Fourier-plus-boundary
+construction. The marked cutoff is $b=10^{-6}$. C compares predictions
+from the complete constructed spectrum with saved GD checkpoints.
+The horizontal 1\% threshold and crossing markers show acquisition time.
+Circles are saved GD measurements, diamonds are executed first hits,
+and short horizontal segments at 1\% are necessary--sufficient timing
+intervals. Colors identify the same four slopes throughout. Spectral bands
+use the disclosed FP64 sensitivity allowance, not independent interval
+certification. The primary full-spectrum timing intervals contain
+previously certified intervals.}
+\end{figure}
+
+The primary target is
+\[
+f(x)=\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x),
+\qquad x\in[-1,1].
+\]
+The archive uses $L=2$, $N=512$, $q=16$, and $m=8193$. Its 512 core
+centers, terminal center, and 23 halo centers on each side give 559 tanh
+features plus bias. Common frozen slopes are 8, 12, 16, and 64. Readouts
+start at zero; each saved step is curvature-normalized to approximately
+$\eta\|K_\gamma\|=0.5$. Comparisons therefore concern those actual normalized
+steps, not one common raw step. Translating $[-1,1]$ to $[0,L]$ changes
+neither feature differences nor target samples.
+
+At $\gamma=8$, $a=10^{-9}$, $b=10^{-6}$, numerical evaluation gives
+\[
+\underline S_8(b)=0.0433317719,\qquad
+\overline S_8(a)=0.00000929944,\qquad
+p_8\ge0.0433224724.
+\]
+Thus at least 4.3322\% of target energy lies in strictly positive but slow
+modes. This band requires at least \textbf{3,035,627 updates} to reach 1\%
+relative residual. At gamma 64, even the upper bound on all energy with
+rates at most $10^{-6}$ is only about \textbf{0.000162\%}.
+These compare the same target, retaining each gamma's own finite directions.
+
+The single-band bound discards variation within that band. Keeping every
+rate and target weight gives the necessary--sufficient intervals
+\[
+\begin{gathered}
+\left[15{,}767{,}081,15{,}829{,}763\right],\qquad
+\left[186{,}056,186{,}059\right],\\
+\left[61{,}792,61{,}793\right],\qquad
+\left[16{,}013,16{,}013\right].
+\end{gathered}
+\]
+Measured crossings are \textbf{15,798,313}, \textbf{186,057},
+\textbf{61,792}, and \textbf{16,013}. The gamma-8 interval width is
+0.397\% of its observed time. It is useful to show both the positive slow
+component explaining the obstruction and the full forecast predicting
+its duration.
+
+This retrospectively analyzes existing optimization experiments. The
+representative target and rate band were chosen during analysis, not
+preregistered. Truncations use analytic error bounds; the buffer scan uses
+the constructed spectrum without consulting the original target mass.
+There is no new training or fitted decay parameter, and no held-out
+generalization claim. The wider package has three grid sizes, four slopes,
+and five targets, with all 60 reference crossings and all 19 available
+executed crossings enclosed.
+
+The spectral bands add a heuristic FP64 arithmetic allowance to the proved
+analytic remainder; they are not independent interval certificates.
+The four primary full-spectrum timing intervals also contain independently
+certified Arb intervals, validating the wider timing intervals by monotonicity.
+This inherited validation does not certify the new positive-band energy
+numbers. The \href{\repo/docs/gamma_uniform_grid_theorem.md}{full technical
+note} records the arithmetic allowance and its tenfold sensitivity check.
+
+\appendix
+\section{Explicit construction and proof}
+\textbf{The reference and its boundaries.}
+Let $s$ be the $2L$-periodic square wave equal to $\sign(d)$ on $(-L,L)$,
+and $\phi_\gamma=\rho_\gamma*s$. It is antiperiodic: shifting by $L$ flips
+its sign. Its Fourier expansion is
+\[
+\phi_\gamma(d)=\sum_{k\in\mathbb Z}\frac2{i\pi(2k+1)}
+M_\gamma\!\left(\frac{(2k+1)\pi}{L}\right)e^{i(2k+1)\pi d/L}.
+\]
+Positive gamma gives absolute convergence. Sampling retains aliases:
+coefficients of frequencies indistinguishable on the finite grid add
+before forming the kernel. Do not substitute population eigenvalues
+for this sampled calculation.
+
+The exact image identity is
+\[
+\phi_\gamma(d)=\tanh(\gamma d)+\sum_{\ell\ge1}(-1)^\ell
+\big[\tanh(\gamma(d-\ell L))+\tanh(\gamma(d+\ell L))\big].
+\]
+Both sides have derivative
+$\sum_{\ell\in\mathbb Z}(-1)^\ell\gamma\sech^2(\gamma(d-\ell L))$.
+Both vanish at zero and their paired tails converge locally uniformly,
+proving the identity. Expanding each image's positive-distance tanh as
+a geometric series gives, for $|d|<L$,
+\[
+\tanh(\gamma d)=\phi_\gamma(d)+
+2\sum_{r\ge1}\frac{(-1)^{r-1}}{1+e^{-2r\gamma L}}
+\big[e^{-2r\gamma(L-d)}-e^{-2r\gamma(L+d)}\big].
+\]
+This is explicit finite-interval gamma dependence: the Fourier attenuation
+and every boundary coefficient are known functions of gamma. With $d=x-c$,
+each exponential separates into a factor of $x$ and one of $c$.
+Retaining $p$ terms gives correction rank at most $2p$ on interior columns.
+
+\textbf{A controllable remainder.}
+Choose an integer $B$ with $1\le B<N/2$ and a nonnegative integer $p$.
+Treat the first and last $B$ core columns exactly.
+On the other core columns and all but the endpoint input row, use
+$\phi_\gamma$ plus the first $p$ boundary terms. Treat extra centers, bias,
+and the endpoint row exactly. This defines $\widehat J_\gamma$ in the
+original feature coordinates.
+
+Interior distances have $|d|\le L-Bh$. The finite geometric remainder of
+each tanh expansion is at most twice its first omitted exponential.
+Summing both sides and all images gives the unnormalized entry-error bound
+\[
+\epsilon_{B,p}(\gamma)=
+\frac{4e^{-2(p+1)\gamma Bh}}{1-e^{-2(p+1)\gamma L}}.
+\]
+At most $N-2B$ columns have error. Frobenius norm bounds operator norm, so
+\[
+\epsilon_J=\sqrt{N-2B}\,\epsilon_{B,p}(\gamma),\qquad
+\|J_\gamma-\widehat J_\gamma\|\le\epsilon_J.
+\]
+Every true unnormalized entry has magnitude at most one, including bias.
+Thus $\|J_\gamma\|\le\sqrt{W+1}$ and the expanded Gram difference gives
+\[
+\boxed{\delta_\gamma=2\sqrt{W+1}\,\epsilon_J+\epsilon_J^2.}
+\]
+This proves the kernel bound; the min--max characterization proves the
+ordered eigenvalue bound. If the reference Fourier series is truncated
+with uniform entry error $\tau$, replace $\epsilon_{B,p}$ by
+$\epsilon_{B,p}+\tau$ before forming $\epsilon_J$ and $\delta_\gamma$.
+Floating-point evaluation needs a separate allowance.
+
+The reference's uniform-grid blocks are explicitly diagonalizable by
+half-odd Fourier vectors. Restoring boundary columns, the $p$ separable
+terms, $W-N$ extra centers, bias, and endpoint row changes the feature
+matrix by rank at most $2B+2p+(W-N)+2$. The kernel correction rank is
+at most twice this. It is signed and need not be small in norm. The
+\href{\repo/docs/gamma_uniform_grid_theorem.md}{full construction proof}
+supplies exact alias sums and signed spectral formulas. The numerical full
+forecast uses the SVD of the constructed feature matrix; it does not claim
+to obtain all target projections from a small eigenvalue-count calculation.
+
+\textbf{Transferring target energy.}
+Put $A=\eta K_\gamma$, $\widehat A=\eta\widehat K_\gamma$, and
+$d=\eta\delta_\gamma$. Let $P$ project onto eigenvalues of $A$ at most $t$,
+and $Q$ onto eigenvalues of $\widehat A$ at most $t-g$. The cross-projection
+$X=(I-P)Q$ solves
+\[
+A_{>t}X-X\widehat A_{\le t-g}=(I-P)(A-\widehat A)Q.
+\]
+The restricted spectra are separated by at least $g$. The exponential
+integral solution of this Sylvester equation gives $\|X\|\le d/g$.
+Therefore $\|Qy\|\le\|Py\|+(d/g)\|y\|$, yielding the lower cumulative
+bound. Use the projector of $\widehat A$ below $t+g$ and reverse the roles
+for the upper bound. This controls subspaces without requiring a gap
+between every pair of eigenvalues.
+
+True energy in $(a,b]$ is $S_\gamma(b)-S_\gamma(a)$ and is at least
+$[\underline S_\gamma(b)-\overline S_\gamma(a)]_+$.
+Every eigenvalue in this band is positive, so its eigenvector belongs to
+$\range(K_\gamma)=\range(J_\gamma)$. This proves exact representability
+of the isolated component on the input grid.
+
+\textbf{Transferring to training.}
+Zero initialization gives $r_n=(I-\eta K_\gamma)^ny$. Under the step
+condition, each rate in $(a,b]$ retains at least a factor $1-b$ of residual
+amplitude per update.
+Square and sum the target coefficients to obtain
+$E_\gamma(n)^2\ge p_\gamma(1-b)^{2n}$.
+For $p_\gamma>\varepsilon^2$, reaching $E_\gamma(n)\le\varepsilon$ requires
+\[
+n\ge\left\lceil
+\frac{\log(\sqrt{p_\gamma}/\varepsilon)}{-\log(1-b)}
+\right\rceil.
+\]
+The complete constructed spectrum gives
+\begin{align*}
+\widehat E_\gamma(n)^2
+&=\sum_j\frac{|\langle y,\widehat u_j\rangle|^2}{\|y\|^2}
+(1-\eta\widehat\mu_j)^{2n},\\
+|E_\gamma(n)-\widehat E_\gamma(n)|&\le n\eta\delta_\gamma.
+\end{align*}
+The sum includes nullspace energy. Telescope the two matrix powers:
+each of $n$ terms contains one kernel difference and otherwise contractions.
+This proves the last inequality. Thus
+$\widehat E_\gamma(n)+n\eta\delta_\gamma\le\varepsilon$ proves acquisition
+by $n$, while $\widehat E_\gamma(n)-n\eta\delta_\gamma>\varepsilon$ excludes
+it by $n$. This is the origin of the necessary--sufficient timing intervals.
+
+\section{Paper placement and reproducibility}
+Use the periodic multiplier as a motivating example, the finite-tanh access
+result as the sole numbered theorem, and the three-panel figure as its
+empirical evaluation. Keep the scalar construction, transfer proof, full
+timing formula, and numerical sensitivity in the appendix. Present common
+frozen slope, uniform core centers and samples, fixed target, and raw readout
+GD alongside the theorem. Representability means representability on the
+training grid.
+
+At grid-relative frequency $\theta=\omega h$, attenuation depends on
+$\gamma h$ through $z=\pi|\theta|/(2\gamma h)$. Holding $\gamma h$ fixed
+preserves this part of spectral access under refinement. It does not alone
+remove raw-kernel width scaling, boundary effects, or step dependence.
+
+The \href{\evidence/gamma_access_data.json}{figure data} records source
+hashes, positive-band bounds, GD checkpoints, and the distinction between
+analytic and measured quantities. Reproduce the figure with
+\begin{quote}\small\ttfamily
+python -m experiments.expD36\_frozen\_gamma\_probe.gamma\_access\_figure
+\end{quote}
+Compile this note with
+\begin{quote}\small\ttfamily
+latexmk -pdf -outdir=/tmp/gamma-access-latex\\
+\hspace*{1em}docs/gamma\_access\_collaborator\_note.tex
+\end{quote}
+Earlier proof notes and archives remain unchanged. No new GPU training is used.
+\end{document}

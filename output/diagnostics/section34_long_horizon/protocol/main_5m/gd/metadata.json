@@ -1,0 +1,58 @@
+{
+  "config": {
+    "horizon": 5000000,
+    "epsilon": 1e-08,
+    "chunk_size": 100,
+    "optimizer": "gd",
+    "schedules": [
+      "constant",
+      "cosine"
+    ],
+    "learning_rates": [
+      0.2,
+      0.5
+    ]
+  },
+  "optimizer": "gd",
+  "recipes": [
+    {
+      "schedule": "constant",
+      "learning_rate": 0.2
+    },
+    {
+      "schedule": "constant",
+      "learning_rate": 0.5
+    },
+    {
+      "schedule": "cosine",
+      "learning_rate": 0.2
+    },
+    {
+      "schedule": "cosine",
+      "learning_rate": 0.5
+    }
+  ],
+  "planned_horizon": 5000000,
+  "actual_steps": 5000000,
+  "width": 512,
+  "input_sha256": "be357924d77d60c51c1720d3ceaf55723be2e41205f70678e8a7e1a173a563cc",
+  "parameter_layout": "a[W],b[W],c[W],d",
+  "trace_axes": [
+    "update",
+    "seed",
+    "recipe"
+  ],
+  "checkpoint_axes": [
+    "checkpoint",
+    "seed",
+    "recipe",
+    "parameter"
+  ],
+  "metric": "raw relative output L2 error",
+  "slope_metric": "sqrt(mean(a**2)), physical slope not dimensionless bandwidth",
+  "loss": "0.5 * mean((sum(c*tanh(a*x+b))+d-target)**2)",
+  "devices": [
+    "cuda:0"
+  ],
+  "cosine_formula": "eta0 * (1 + cos(pi*n/horizon))/2; n=0,...,horizon-1"
+}

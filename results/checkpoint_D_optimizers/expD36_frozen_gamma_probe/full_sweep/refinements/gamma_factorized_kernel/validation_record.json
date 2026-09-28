@@ -1,0 +1,76 @@
+{
+  "base_commit": "09d08a811b5361758cfa6c857f88e945b4cc8387",
+  "source_files_sha256": {
+    "experiments/expD36_frozen_gamma_probe/gamma_filter.py": "f8a794e2f8ab71bde128c62b598a0883146651d254cb52d75e8a330784bfa910",
+    "experiments/expD36_frozen_gamma_probe/gamma_filter_analysis.py": "e24206a6eddaad2b8eafd01d5ba339a46fb43b4f587a4f4e3925fe0f575f1553",
+    "experiments/expD36_frozen_gamma_probe/common_slope_poly.py": "2910a8f6475ff5cbf28f08d4af492e4ad27150c6de0c91c4a66ad82d5a7b5ffe",
+    "experiments/expD36_frozen_gamma_probe/common_slope_analysis.py": "563743c05c9bb0bf068a7975035a43a4889e8ea985f3460e49ace56e5146a2d3",
+    "experiments/expD36_frozen_gamma_probe/common_slope_audit.py": "de2a0a8bc6e8ed341c173bc2dc9949200c0e95af7138b7b50d905921a7f902ac",
+    "experiments/expD36_frozen_gamma_probe/finite_gamma_gram.py": "dd10b6d83134f8e35e2f07202d7f9536392578aade1b1c74af11373ad6e9ea70",
+    "experiments/expD36_frozen_gamma_probe/core.py": "c9bcb5efef3f615cab0e13fd2d1971ff063639e0ef32853c6369dabd75206000",
+    "tests/test_expD36_gamma_filter.py": "4168a0725f971551be7d98ab3218545097751e8c4a5a9f53af5f69004e88e2eb",
+    "tests/test_expD36_common_slope_poly.py": "699eaf5a5d5f89aab28a5a69190da71e5159eecdb5fb57cb6df9cfe09046fbde"
+  },
+  "full_suite": {
+    "command": "pytest -q -p no:cacheprovider -m \"not slow\"",
+    "passed": 768,
+    "failed": 17,
+    "skipped": 9,
+    "deselected": 4,
+    "baseline_failure_match": true,
+    "failures": [
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+      "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+      "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+      "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+      "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+      "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+      "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+      "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+      "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+      "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+      "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+      "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+    ],
+    "log_sha256": "adf301c84da56b452d70435faaad4fc6e339b8256cb7882eeb4468affa0d9171"
+  },
+  "focused_tests": {
+    "passed": 20
+  },
+  "evidence": {
+    "executed_hits_checked": 19,
+    "censored_cases": 1,
+    "selected_intervals_no_wider_than_polynomial": 20,
+    "reference_error_comparisons": 12150,
+    "band_violations": 0,
+    "interval_certified_primary_brackets": 8,
+    "interval_endpoint_statements": 16,
+    "distinct_interval_endpoint_evaluations": 10,
+    "analysis_seconds": 13.582184958271682,
+    "audit_seconds": 284.3935370417312,
+    "gpu_hours": 0
+  },
+  "compact_replay": {
+    "gamma": 8,
+    "harmonics": 128,
+    "targets": 5,
+    "methods": [
+      "analytic",
+      "action",
+      "combined"
+    ],
+    "exact_match": true,
+    "input_archive_sha256": "d4133ca209d51ea997636b578596978b08c21ef13232e6a8e38c93f4aa23b0a3"
+  },
+  "artifact_sha256": {
+    "summary.json": "f99324e8bc04436ba82e8c6ffa3b2f8a76aaada044e4dbae57a4c510883f853a",
+    "interval_audit.json": "f7cf107ec0405189caf36da3ff005d3428c1b28f1a717c820ce188821ba4b243",
+    "three_panel.png": "bb3f9a3e5cb1d828df36350c6fc7cac834e433e50b5634fe6a72e003778c0751",
+    "three_panel.pdf": "c4887a4853c9b8e9809fcbaa24827167aa740dfcd2576045e34a7804c35554d9"
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "witnesses": [
+    {
+      "n": 512,
+      "m": 8193,
+      "gamma": 4,
+      "k": 29,
+      "digits": 80,
+      "E": "0.08549272336561406084941746554364826466027987452001429364179814765",
+      "mu": "0.0000000020368126524301146997418714769349477682708616332942200937670977767",
+      "polynomial_norm_neighbor_error": "6.32531876594e-81",
+      "seconds": 16.21762379910797,
+      "model": "nominal_real_tanh_exact_grid",
+      "status": "high_precision_evaluation_not_interval_certified"
+    },
+    {
+      "n": 512,
+      "m": 8193,
+      "gamma": 4,
+      "k": 29,
+      "digits": 120,
+      "E": "0.08549272336561406084941746554364826466027987452001429364179814765",
+      "mu": "0.0000000020368126524301146997418714769349477682708616332942200937670977767",
+      "polynomial_norm_neighbor_error": "7.7451838297e-121",
+      "seconds": 19.1536611802876,
+      "model": "nominal_real_tanh_exact_grid",
+      "status": "high_precision_evaluation_not_interval_certified"
+    },
+    {
+      "n": 512,
+      "m": 8193,
+      "gamma": 1,
+      "k": 31,
+      "digits": 80,
+      "E": "0.039538896917671371636970695574825813827820663111070628807438232352",
+      "mu": "6.3703097412424716614566324689562515242983654998217577291156059072e-34",
+      "polynomial_norm_neighbor_error": "6.32531876594e-81",
+      "seconds": 16.11560078151524,
+      "model": "nominal_real_tanh_exact_grid",
+      "status": "high_precision_evaluation_not_interval_certified"
+    },
+    {
+      "n": 512,
+      "m": 8193,
+      "gamma": 1,
+      "k": 31,
+      "digits": 120,
+      "E": "0.039538896917671371636970695574825813827820663111070628807438232352",
+      "mu": "6.3703097412424716614566324689562515242983654998217577291156059072e-34",
+      "polynomial_norm_neighbor_error": "7.7451838297e-121",
+      "seconds": 19.130789517425,
+      "model": "nominal_real_tanh_exact_grid",
+      "status": "high_precision_evaluation_not_interval_certified"
+    }
+  ],
+  "comparisons": [
+    {
+      "gamma": 4,
+      "k": 29,
+      "mu_fp64": 2.0368126524321506e-09,
+      "mu_high": 2.0368126524301145e-09,
+      "fp64_relative_difference": 9.99644811372491e-13,
+      "agreeing_decimal_digits": 65.0,
+      "fp64_log10_bound": 9.631990632943321,
+      "high_log10_bound": 9.631990632943753,
+      "caveat": "Nominal high-precision features; stored FP64 features and L are separate approximations"
+    },
+    {
+      "gamma": 1,
+      "k": 31,
+      "mu_fp64": 1.8142507428892885e-31,
+      "mu_high": 6.3703097412424714e-34,
+      "fp64_relative_difference": 283.79788528076114,
+      "agreeing_decimal_digits": 65.0,
+      "fp64_log10_bound": 30.552961672276787,
+      "high_log10_bound": 33.00749843247228,
+      "caveat": "Nominal high-precision features; stored FP64 features and L are separate approximations"
+    }
+  ],
+  "factorizations": [
+    {
+      "gamma": 4,
+      "relative_L_difference": 5.551115123125783e-16,
+      "curves": [
+        {
+          "step": 0,
+          "gesdd": [
+            0.999999999999999,
+            0.9999999999999987
+          ],
+          "gesvd": [
+            0.9999999999999994,
+            0.9999999999999991
+          ],
+          "max_abs_difference": 4.440892098500626e-16
+        },
+        {
+          "step": 20000,
+          "gesdd": [
+            0.44623025154835244,
+            0.07457445233534156
+          ],
+          "gesvd": [
+            0.4462302515483526,
+            0.07457445233534153
+          ],
+          "max_abs_difference": 1.6653345369377348e-16
+        },
+        {
+          "step": 100000,
+          "gesdd": [
+            0.433535628665957,
+            0.0426645203554316
+          ],
+          "gesvd": [
+            0.43353562866595713,
+            0.04266452035543158
+          ],
+          "max_abs_difference": 1.1102230246251565e-16
+        }
+      ]
+    },
+    {
+      "gamma": 16,
+      "relative_L_difference": 2.220446049250313e-16,
+      "curves": [
+        {
+          "step": 0,
+          "gesdd": [
+            0.9999999999999996,
+            0.9999999999999984
+          ],
+          "gesvd": [
+            0.9999999999999993,
+            0.999999999999998
+          ],
+          "max_abs_difference": 4.440892098500626e-16
+        },
+        {
+          "step": 20000,
+          "gesdd": [
+            0.054614971047250875,
+            0.022133203205996686
+          ],
+          "gesvd": [
+            0.05461497104725081,
+            0.02213320320599651
+          ],
+          "max_abs_difference": 1.7694179454963432e-16
+        },
+        {
+          "step": 100000,
+          "gesdd": [
+            0.005923556264620156,
+            0.010825730843402387
+          ],
+          "gesvd": [
+            0.005923556264620208,
+            0.01082573084340228
+          ],
+          "max_abs_difference": 1.0581813203458523e-16
+        }
+      ]
+    }
+  ],
+  "complete": true
+}

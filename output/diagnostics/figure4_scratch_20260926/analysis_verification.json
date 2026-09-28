@@ -1,0 +1,86 @@
+{
+  "checks": [
+    {
+      "width": 128,
+      "optimizer": "adam",
+      "parameter_checkpoints": 501,
+      "population_size": 640,
+      "selected_schedule": "cosine",
+      "selected_learning_rate": 0.02,
+      "population_moments_verified": true,
+      "validation_selection_verified": true
+    },
+    {
+      "width": 128,
+      "optimizer": "gd",
+      "parameter_checkpoints": 501,
+      "population_size": 640,
+      "selected_schedule": "constant",
+      "selected_learning_rate": 0.2,
+      "population_moments_verified": true,
+      "validation_selection_verified": true
+    },
+    {
+      "width": 512,
+      "optimizer": "adam",
+      "parameter_checkpoints": 501,
+      "population_size": 2560,
+      "selected_schedule": "cosine",
+      "selected_learning_rate": 0.05,
+      "population_moments_verified": true,
+      "validation_selection_verified": true
+    },
+    {
+      "width": 512,
+      "optimizer": "gd",
+      "parameter_checkpoints": 501,
+      "population_size": 2560,
+      "selected_schedule": "cosine",
+      "selected_learning_rate": 0.2,
+      "population_moments_verified": true,
+      "validation_selection_verified": true
+    },
+    {
+      "width": 1024,
+      "optimizer": "adam",
+      "parameter_checkpoints": 501,
+      "population_size": 5120,
+      "selected_schedule": "cosine",
+      "selected_learning_rate": 0.05,
+      "population_moments_verified": true,
+      "validation_selection_verified": true
+    },
+    {
+      "width": 1024,
+      "optimizer": "gd",
+      "parameter_checkpoints": 501,
+      "population_size": 5120,
+      "selected_schedule": "cosine",
+      "selected_learning_rate": 0.2,
+      "population_moments_verified": true,
+      "validation_selection_verified": true
+    },
+    {
+      "width": 256,
+      "optimizer": "adam",
+      "parameter_checkpoints": 501,
+      "population_size": 1280,
+      "selected_schedule": "cosine",
+      "selected_learning_rate": 0.05,
+      "population_moments_verified": true,
+      "validation_selection_verified": true
+    },
+    {
+      "width": 256,
+      "optimizer": "gd",
+      "parameter_checkpoints": 501,
+      "population_size": 1280,
+      "selected_schedule": "constant",
+      "selected_learning_rate": 0.2,
+      "population_moments_verified": true,
+      "validation_selection_verified": true
+    }
+  ],
+  "archived_adam_features_match_all_five_seeds_exactly": true,
+  "archived_input_sha256": "5fb86f03656bd91046494e1389b5cb7ef8e5b867defd069b4e9a1de7106bed0d"
+}

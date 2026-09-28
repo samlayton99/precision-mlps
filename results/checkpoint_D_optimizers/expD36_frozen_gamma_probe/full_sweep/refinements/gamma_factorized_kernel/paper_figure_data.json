@@ -1,0 +1,231 @@
+{
+  "target": "sine_mix_2_6_10",
+  "joint_steps": 20000,
+  "joint_rate": 0.001,
+  "joint_epsilon": 1e-08,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "readout_steps": 200000,
+  "epsilon": 0.01,
+  "samples_per_cell": 16,
+  "joint": [
+    {
+      "n": 128,
+      "width": 153,
+      "reference_gamma": 16.0,
+      "seed_medians": [
+        0.30133114838979835,
+        0.21772526036791504,
+        0.35001957900982406,
+        0.2784405413120517,
+        0.17195335470296283
+      ],
+      "seed_maxima": [
+        11.753444034939319,
+        15.368724740356491,
+        11.798970498877354,
+        10.75495256844974,
+        8.108109234005942
+      ]
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "reference_gamma": 32.0,
+      "seed_medians": [
+        0.11519094882861106,
+        0.1739841414182185,
+        0.16528021095186513,
+        0.1550190755811298,
+        0.15132492302091344
+      ],
+      "seed_maxima": [
+        9.455403575656918,
+        2.982358653978175,
+        2.9092588523685623,
+        2.897076174049163,
+        13.47230244270439
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "reference_gamma": 64.0,
+      "seed_medians": [
+        0.13730570428104566,
+        0.13848804940538578,
+        0.16415022038009705,
+        0.13550243856476127,
+        0.11394002169685241
+      ],
+      "seed_maxima": [
+        2.819823826989812,
+        2.821614348722047,
+        2.8894533174801533,
+        2.8599556031712856,
+        2.8009390923279085
+      ]
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "reference_gamma": 128.0,
+      "seed_medians": [
+        0.11655279844263935,
+        0.12661831528752124,
+        0.12058772688244028,
+        0.11294936978602527,
+        0.12445471368433268
+      ],
+      "seed_maxima": [
+        2.9151649658170933,
+        2.980665650805405,
+        2.944531190973356,
+        2.9698954505923014,
+        2.9807044584997606
+      ]
+    }
+  ],
+  "timing": [
+    {
+      "gamma": 8,
+      "eta": 0.002068412912130894,
+      "executed": 15798313,
+      "necessary": 15784048,
+      "sufficient": 15812623,
+      "lower_harmonics": 128,
+      "upper_harmonics": 128
+    },
+    {
+      "gamma": 12,
+      "eta": 0.0020399951089001152,
+      "executed": 186057,
+      "necessary": 186057,
+      "sufficient": 186058,
+      "lower_harmonics": 256,
+      "upper_harmonics": 256
+    },
+    {
+      "gamma": 16,
+      "eta": 0.0020298167987789703,
+      "executed": 61792,
+      "necessary": 61792,
+      "sufficient": 61792,
+      "lower_harmonics": 256,
+      "upper_harmonics": 256
+    },
+    {
+      "gamma": 64,
+      "eta": 0.0020173468150207307,
+      "executed": 16013,
+      "necessary": 16013,
+      "sufficient": 16013,
+      "lower_harmonics": 512,
+      "upper_harmonics": 512
+    }
+  ],
+  "recovery": [
+    {
+      "n": 128,
+      "width": 153,
+      "gamma": 4,
+      "eta": 0.007280490694590801,
+      "residual": 0.4243171005935684,
+      "strategy": "fixed"
+    },
+    {
+      "n": 128,
+      "width": 153,
+      "gamma": 16.0,
+      "eta": 0.006749717382805342,
+      "residual": 0.00343183136647985,
+      "strategy": "matched"
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "gamma": 4,
+      "eta": 0.004114807882552907,
+      "residual": 0.42240392272688465,
+      "strategy": "fixed"
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "gamma": 32.0,
+      "eta": 0.0037718764416024906,
+      "residual": 0.002886400931793355,
+      "strategy": "matched"
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 4,
+      "eta": 0.0022130351230971916,
+      "residual": 0.4214311264785491,
+      "strategy": "fixed"
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 64.0,
+      "eta": 0.002017346815022739,
+      "residual": 0.0021459679178100267,
+      "strategy": "matched"
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "gamma": 4,
+      "eta": 0.0011715198617259159,
+      "residual": 0.42073611448625176,
+      "strategy": "fixed"
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "gamma": 128.0,
+      "eta": 0.0010638688141316722,
+      "residual": 0.0016185780726333254,
+      "strategy": "matched"
+    }
+  ],
+  "delay_ratio": {
+    "necessary": 985.7021170299132,
+    "sufficient": 987.486604633735,
+    "executed": 986.5929557234747
+  },
+  "source_sha256": {
+    "manifest.json": "c82d92fb24a3992bddaf3348c16dd59c978e160ca3c11e833a86afa5e7138138",
+    "joint/N128/evaluations.json": "0d2aa3557d60bb72966a80445293f90fb8cda38c313b743b72d3fb4f4dd4dc43",
+    "training/N128_raw_gd/case.json": "096bbcf4f2ab0e0a309aa50423d4a234bf542dd660b224156b6ca79a4df79515",
+    "training/N128_raw_gd/evaluations.json": "6d6bfaa600907cd961a68b19cdf8779ac9ca5558b6ab68919373c252d2a9787d",
+    "dictionaries/N128_raw_g4/meta.json": "51a858991fab026039677f9303d80050252d0014228e7e3eee332fb9ec94ec3c",
+    "dictionaries/N128_raw_g16/meta.json": "31395a9f6b21e902015f2c93aa3935a1f6cc49bda92b274d28115cedd4b4e432",
+    "joint/N256/evaluations.json": "85a72811982df4d32729ec88579b262b3f98b5cc4d05fb38376409120afcef77",
+    "training/N256_raw_gd/case.json": "5f6b892ea3dd29d469ea77f1713985ed09b3b36f4fc4da26f76f0fe4cd3eee9f",
+    "training/N256_raw_gd/evaluations.json": "10391d74fc54db5922d21cb644c74d5ee24259936be92360c4fff1114994669b",
+    "dictionaries/N256_raw_g4/meta.json": "8697b682a42e31113505444ccfa60689f03b0bcdf71a5e2d07ff667a5fd2e828",
+    "dictionaries/N256_raw_g32/meta.json": "aff69501188e357cefb0bbbc23ffc734f53d2c7857dd564409f877c4b60e2d48",
+    "joint/N512/evaluations.json": "fd05e03e1cb53c81a52d589ee162d09646732d79324173c41cb1dcf3f854b3eb",
+    "training/N512_raw_gd/case.json": "84772e1c267818e603b605659916bce8cf18da0fa31a831af122a3e602af8614",
+    "training/N512_raw_gd/evaluations.json": "fca0c2829cdc697bf3fab3caac89d69b760cfba4569d9cfff804b6e30b479520",
+    "dictionaries/N512_raw_g4/meta.json": "73d5b40c29b3689ed9043ddd3557d33160050d6a9e2132589be7929dd8533be3",
+    "dictionaries/N512_raw_g64/meta.json": "145aaf0f7a28cfed61c27b4bbef1661469b1b3da4f3278e6be4a2b6c6b35b31e",
+    "joint/N1024/evaluations.json": "5f93659bfdda84fd63902b4dba642fba69f4075a44aa4a4e26900fb70dc76973",
+    "training/N1024_raw_gd/case.json": "de525ab6cd56434c2aa68110190241264e338eff54128bffe88fb1e5bc716118",
+    "training/N1024_raw_gd/evaluations.json": "48962b93c64ddbdebd5df08a7156dc39dc0d61e9474fce2740a74dfc990c8dbe",
+    "dictionaries/N1024_raw_g4/meta.json": "d7b5201ace1cfec5820899133bf3427f8369d0817c4e56a29970c1e57b0a87d5",
+    "dictionaries/N1024_raw_g128/meta.json": "793e78a6ed604f4ccf79ddab5acd208e06d438b3e9d17ba44394865f7babc3de",
+    "refinements/gamma_factorized_kernel/summary.json": "f99324e8bc04436ba82e8c6ffa3b2f8a76aaada044e4dbae57a4c510883f853a",
+    "refinements/gamma_factorized_kernel/interval_audit.json": "f7cf107ec0405189caf36da3ff005d3428c1b28f1a717c820ce188821ba4b243"
+  },
+  "plotting_source_sha256": "cd3400c6f2daf49ca81b787bdfcd89bc04584550a5d9b716f976de6bc53e8da1",
+  "evidence_role": "Retrospective training evidence; B endpoints independently interval-certified",
+  "gpu_hours": 0
+}

@@ -1,0 +1,6815 @@
+{
+  "scope": "post-hoc raw-map analysis; no new training",
+  "chi": 0.5,
+  "epsilon": 0.01,
+  "target_tail_roundoff_threshold": 1e-12,
+  "prediction_inputs": "target samples, center geometry, gamma, width, budget; no measured spectrum or curvature",
+  "source_code_sha256": "ebc6a54d2e4dc71b5b795d5f05939ab80eacec45a9a292a3e7d7c3dfd342b7dd",
+  "validation_inputs_sha256": {
+    "training/N128_raw_gd/case.json": "096bbcf4f2ab0e0a309aa50423d4a234bf542dd660b224156b6ca79a4df79515",
+    "training/N128_raw_gd/evaluations.json": "6d6bfaa600907cd961a68b19cdf8779ac9ca5558b6ab68919373c252d2a9787d",
+    "training/N256_raw_gd/case.json": "5f6b892ea3dd29d469ea77f1713985ed09b3b36f4fc4da26f76f0fe4cd3eee9f",
+    "training/N256_raw_gd/evaluations.json": "10391d74fc54db5922d21cb644c74d5ee24259936be92360c4fff1114994669b",
+    "training/N512_raw_gd/case.json": "84772e1c267818e603b605659916bce8cf18da0fa31a831af122a3e602af8614",
+    "training/N512_raw_gd/evaluations.json": "fca0c2829cdc697bf3fab3caac89d69b760cfba4569d9cfff804b6e30b479520",
+    "training/N1024_raw_gd/case.json": "de525ab6cd56434c2aa68110190241264e338eff54128bffe88fb1e5bc716118",
+    "training/N1024_raw_gd/evaluations.json": "48962b93c64ddbdebd5df08a7156dc39dc0d61e9474fce2740a74dfc990c8dbe"
+  },
+  "checks": {
+    "predicted_cases": 73,
+    "checkpoint_comparisons": 876,
+    "positive_error_floors": 306,
+    "violations": 0
+  },
+  "rows": [
+    {
+      "n": 128,
+      "width": 153,
+      "gamma": 1,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 1.0,
+      "central_centers": 65,
+      "outer_sample_fraction": 0.25085407515861396,
+      "grid_hash": "e031e6599a22692648a9cc39f3067fda1294b3b07433c4251be7d36bea80cfdd",
+      "geometry_hash": "e8dcffeefc4bbdd2baea5a4748e871552b6cde6cf3f7c2728a4cb1552db8dbd9",
+      "c2_without_measured_curvature": {
+        "k": 34,
+        "log10_bound": 30.489906060008412,
+        "bound": null,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.014597337398751773,
+      "witness_log_access": -79.05636590132772,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.45539785054296356,
+          "k": 8,
+          "observed_error": 0.837543136226575
+        },
+        {
+          "step": 5000,
+          "error": 0.43871669125452023,
+          "k": 8,
+          "observed_error": 0.7668581901093287
+        },
+        {
+          "step": 10000,
+          "error": 0.4372384342235724,
+          "k": 10,
+          "observed_error": 0.7626768373656098
+        },
+        {
+          "step": 20000,
+          "error": 0.4357552973652874,
+          "k": 10,
+          "observed_error": 0.7607090603586169
+        },
+        {
+          "step": 40000,
+          "error": 0.43365782510544537,
+          "k": 10,
+          "observed_error": 0.7569384717673462
+        },
+        {
+          "step": 42500,
+          "error": 0.4334374285426557,
+          "k": 10,
+          "observed_error": 0.7564705114801029
+        },
+        {
+          "step": 45000,
+          "error": 0.43322342437708145,
+          "k": 10,
+          "observed_error": 0.7560032948920682
+        },
+        {
+          "step": 47500,
+          "error": 0.4330152866905814,
+          "k": 10,
+          "observed_error": 0.7555368211013922
+        },
+        {
+          "step": 50000,
+          "error": 0.43281255795271184,
+          "k": 10,
+          "observed_error": 0.7550710892068454
+        },
+        {
+          "step": 100000,
+          "error": 0.42949616311765115,
+          "k": 10,
+          "observed_error": 0.7459108670340476
+        },
+        {
+          "step": 200000,
+          "error": 0.4248060725637243,
+          "k": 10,
+          "observed_error": 0.7284511245915639
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "width": 153,
+      "gamma": 1,
+      "target": "runge_25",
+      "curvature_lower": 1.0,
+      "central_centers": 65,
+      "outer_sample_fraction": 0.25085407515861396,
+      "grid_hash": "e031e6599a22692648a9cc39f3067fda1294b3b07433c4251be7d36bea80cfdd",
+      "geometry_hash": "e8dcffeefc4bbdd2baea5a4748e871552b6cde6cf3f7c2728a4cb1552db8dbd9",
+      "c2_without_measured_curvature": {
+        "k": 21,
+        "log10_bound": 16.3701240706343,
+        "bound": null,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.01371920653244088,
+      "witness_log_access": -46.96830029976743,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7199210191790969,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.17409393412525123,
+          "k": 7,
+          "observed_error": 0.46678592820338427
+        },
+        {
+          "step": 5000,
+          "error": 0.13976862996715064,
+          "k": 9,
+          "observed_error": 0.4201500827600209
+        },
+        {
+          "step": 10000,
+          "error": 0.1361500244431507,
+          "k": 9,
+          "observed_error": 0.4145007889210463
+        },
+        {
+          "step": 20000,
+          "error": 0.13103254343423176,
+          "k": 9,
+          "observed_error": 0.40387811230849346
+        },
+        {
+          "step": 40000,
+          "error": 0.12379533238623186,
+          "k": 9,
+          "observed_error": 0.3849284374615373
+        },
+        {
+          "step": 42500,
+          "error": 0.12303486633874158,
+          "k": 9,
+          "observed_error": 0.382761153849323
+        },
+        {
+          "step": 45000,
+          "error": 0.12229645690131287,
+          "k": 9,
+          "observed_error": 0.38063634385994966
+        },
+        {
+          "step": 47500,
+          "error": 0.12157828942273258,
+          "k": 9,
+          "observed_error": 0.37855333784234835
+        },
+        {
+          "step": 50000,
+          "error": 0.1208787852197223,
+          "k": 9,
+          "observed_error": 0.37651147223926945
+        },
+        {
+          "step": 100000,
+          "error": 0.10943574981021534,
+          "k": 9,
+          "observed_error": 0.3433466938610864
+        },
+        {
+          "step": 200000,
+          "error": 0.09522324996863835,
+          "k": 11,
+          "observed_error": 0.307965473367447
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "width": 153,
+      "gamma": 4,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 2.37248176741363,
+      "central_centers": 65,
+      "outer_sample_fraction": 0.25085407515861396,
+      "grid_hash": "e031e6599a22692648a9cc39f3067fda1294b3b07433c4251be7d36bea80cfdd",
+      "geometry_hash": "e8dcffeefc4bbdd2baea5a4748e871552b6cde6cf3f7c2728a4cb1552db8dbd9",
+      "c2_without_measured_curvature": {
+        "k": 30,
+        "log10_bound": 6.130870382315685,
+        "bound": 1351670.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.08578490102228511,
+      "witness_log_access": -16.498833367062574,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.15002831108164977,
+          "k": 26,
+          "observed_error": 0.4607895912095514
+        },
+        {
+          "step": 5000,
+          "error": 0.12816426818589963,
+          "k": 26,
+          "observed_error": 0.45248247549490095
+        },
+        {
+          "step": 10000,
+          "error": 0.11448584985376012,
+          "k": 28,
+          "observed_error": 0.4504368259547234
+        },
+        {
+          "step": 20000,
+          "error": 0.10375631940091798,
+          "k": 28,
+          "observed_error": 0.447535100698032
+        },
+        {
+          "step": 40000,
+          "error": 0.08858247191661348,
+          "k": 28,
+          "observed_error": 0.44357169275364805
+        },
+        {
+          "step": 42500,
+          "error": 0.08698804614333189,
+          "k": 28,
+          "observed_error": 0.44317020259237627
+        },
+        {
+          "step": 45000,
+          "error": 0.08543986520592356,
+          "k": 28,
+          "observed_error": 0.44278177631708504
+        },
+        {
+          "step": 47500,
+          "error": 0.08393412442872508,
+          "k": 28,
+          "observed_error": 0.44240483162683814
+        },
+        {
+          "step": 50000,
+          "error": 0.08246751387657855,
+          "k": 28,
+          "observed_error": 0.44203798317646104
+        },
+        {
+          "step": 100000,
+          "error": 0.05847555441736939,
+          "k": 28,
+          "observed_error": 0.43569830436089124
+        },
+        {
+          "step": 200000,
+          "error": 0.03211603567486564,
+          "k": 30,
+          "observed_error": 0.4243171005935684
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "width": 153,
+      "gamma": 4,
+      "target": "runge_25",
+      "curvature_lower": 2.37248176741363,
+      "central_centers": 65,
+      "outer_sample_fraction": 0.25085407515861396,
+      "grid_hash": "e031e6599a22692648a9cc39f3067fda1294b3b07433c4251be7d36bea80cfdd",
+      "geometry_hash": "e8dcffeefc4bbdd2baea5a4748e871552b6cde6cf3f7c2728a4cb1552db8dbd9",
+      "c2_without_measured_curvature": {
+        "k": 19,
+        "log10_bound": 0.7246852215263051,
+        "bound": 6.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.020407272096869426,
+      "witness_log_access": -8.0214205578098,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7199210191790969,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.00031456167960236786,
+          "k": 37,
+          "observed_error": 0.15702734726644713
+        },
+        {
+          "step": 5000,
+          "error": 0.0001345776160374556,
+          "k": 41,
+          "observed_error": 0.10321853744231678
+        },
+        {
+          "step": 10000,
+          "error": 9.244232296288203e-05,
+          "k": 43,
+          "observed_error": 0.08848373834652505
+        },
+        {
+          "step": 20000,
+          "error": 6.343050607232765e-05,
+          "k": 45,
+          "observed_error": 0.07303339451476604
+        },
+        {
+          "step": 40000,
+          "error": 4.348032705693869e-05,
+          "k": 47,
+          "observed_error": 0.06038958513410314
+        },
+        {
+          "step": 42500,
+          "error": 4.240291224820564e-05,
+          "k": 47,
+          "observed_error": 0.0595470159194264
+        },
+        {
+          "step": 45000,
+          "error": 4.135674685341974e-05,
+          "k": 47,
+          "observed_error": 0.05878305963342605
+        },
+        {
+          "step": 47500,
+          "error": 4.033925990692631e-05,
+          "k": 47,
+          "observed_error": 0.05808384528567579
+        },
+        {
+          "step": 50000,
+          "error": 3.934821475825525e-05,
+          "k": 47,
+          "observed_error": 0.05743814858719182
+        },
+        {
+          "step": 100000,
+          "error": 2.7065283100267444e-05,
+          "k": 49,
+          "observed_error": 0.04903831414760691
+        },
+        {
+          "step": 200000,
+          "error": 1.8595349383906793e-05,
+          "k": 51,
+          "observed_error": 0.0403576725765044
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "width": 153,
+      "gamma": 16.0,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 4.084819959448271,
+      "central_centers": 65,
+      "outer_sample_fraction": 0.25085407515861396,
+      "grid_hash": "e031e6599a22692648a9cc39f3067fda1294b3b07433c4251be7d36bea80cfdd",
+      "geometry_hash": "e8dcffeefc4bbdd2baea5a4748e871552b6cde6cf3f7c2728a4cb1552db8dbd9",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7510982879628448,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 5.030437921392385,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.26894826302400293
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.15998432807627055
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.11875694096454856
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.06767001171723502
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.025435256591591012
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.022965220171044586
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0208492374089551
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.019034993632223562
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.017477286214579144
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006987796538016958
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00343183136647985
+        }
+      ]
+    },
+    {
+      "n": 128,
+      "width": 153,
+      "gamma": 16.0,
+      "target": "runge_25",
+      "curvature_lower": 4.084819959448271,
+      "central_centers": 65,
+      "outer_sample_fraction": 0.25085407515861396,
+      "grid_hash": "e031e6599a22692648a9cc39f3067fda1294b3b07433c4251be7d36bea80cfdd",
+      "geometry_hash": "e8dcffeefc4bbdd2baea5a4748e871552b6cde6cf3f7c2728a4cb1552db8dbd9",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0399486074456084,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.7199210191790969,
+      "witness_log_access": 5.030437921392385,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7199210191790969,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.018420243991210103
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0038407947527315583
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0019200366259169706
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0009644647079580951
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0004870865127724708
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0004594868779354426
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0004349556514909947
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0004129876312223203
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0003931852572282846
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00020348241394171822
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00011053627226056964
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "gamma": 1,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 1.0,
+      "central_centers": 129,
+      "outer_sample_fraction": 0.2504271418110813,
+      "grid_hash": "2c71d538ec08adfa372bf84b2d6b451283eae01f66712b72a4590643431daf42",
+      "geometry_hash": "79b7d0c857d6203610d3f797bee6424acfa90916a453883a6bbc27651521723f",
+      "c2_without_measured_curvature": {
+        "k": 34,
+        "log10_bound": 30.20318580122327,
+        "bound": null,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.014542024310482776,
+      "witness_log_access": -78.42037713460772,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.4500452103454823,
+          "k": 8,
+          "observed_error": 0.8348578369632755
+        },
+        {
+          "step": 5000,
+          "error": 0.4372986802171303,
+          "k": 10,
+          "observed_error": 0.7638447737961027
+        },
+        {
+          "step": 10000,
+          "error": 0.43585733027144175,
+          "k": 10,
+          "observed_error": 0.7600019929737689
+        },
+        {
+          "step": 20000,
+          "error": 0.4338189536301232,
+          "k": 10,
+          "observed_error": 0.7582496149897544
+        },
+        {
+          "step": 40000,
+          "error": 0.43093625373874594,
+          "k": 10,
+          "observed_error": 0.7548814685006857
+        },
+        {
+          "step": 42500,
+          "error": 0.430633347636111,
+          "k": 10,
+          "observed_error": 0.7544631310592983
+        },
+        {
+          "step": 45000,
+          "error": 0.430339227043116,
+          "k": 10,
+          "observed_error": 0.7540453867559519
+        },
+        {
+          "step": 47500,
+          "error": 0.43005316915441233,
+          "k": 10,
+          "observed_error": 0.7536282349493678
+        },
+        {
+          "step": 50000,
+          "error": 0.4297745451545508,
+          "k": 10,
+          "observed_error": 0.7532116749986562
+        },
+        {
+          "step": 100000,
+          "error": 0.42521659642081483,
+          "k": 10,
+          "observed_error": 0.7450037821998817
+        },
+        {
+          "step": 200000,
+          "error": 0.4187706835049641,
+          "k": 10,
+          "observed_error": 0.7292771669138064
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "gamma": 1,
+      "target": "runge_25",
+      "curvature_lower": 1.0,
+      "central_centers": 129,
+      "outer_sample_fraction": 0.2504271418110813,
+      "grid_hash": "2c71d538ec08adfa372bf84b2d6b451283eae01f66712b72a4590643431daf42",
+      "geometry_hash": "79b7d0c857d6203610d3f797bee6424acfa90916a453883a6bbc27651521723f",
+      "c2_without_measured_curvature": {
+        "k": 21,
+        "log10_bound": 16.090780538562637,
+        "bound": null,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.013705797942949816,
+      "witness_log_access": -46.33231153304743,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7198614527759273,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.1565355925319225,
+          "k": 7,
+          "observed_error": 0.47735246918987817
+        },
+        {
+          "step": 5000,
+          "error": 0.13643009404082973,
+          "k": 9,
+          "observed_error": 0.414922662751489
+        },
+        {
+          "step": 10000,
+          "error": 0.13145679644319794,
+          "k": 9,
+          "observed_error": 0.4105033542285047
+        },
+        {
+          "step": 20000,
+          "error": 0.12442349153090952,
+          "k": 9,
+          "observed_error": 0.402374641989467
+        },
+        {
+          "step": 40000,
+          "error": 0.11447689633564598,
+          "k": 9,
+          "observed_error": 0.3874767881729094
+        },
+        {
+          "step": 42500,
+          "error": 0.11343173572281318,
+          "k": 9,
+          "observed_error": 0.38573576033243456
+        },
+        {
+          "step": 45000,
+          "error": 0.11241688902098934,
+          "k": 9,
+          "observed_error": 0.38402062483886545
+        },
+        {
+          "step": 47500,
+          "error": 0.11142986223063267,
+          "k": 9,
+          "observed_error": 0.38233107479074513
+        },
+        {
+          "step": 50000,
+          "error": 0.11046848565910769,
+          "k": 9,
+          "observed_error": 0.3806668053497808
+        },
+        {
+          "step": 100000,
+          "error": 0.0952992266482229,
+          "k": 11,
+          "observed_error": 0.35223937028501484
+        },
+        {
+          "step": 200000,
+          "error": 0.09342953540037656,
+          "k": 11,
+          "observed_error": 0.3168147121147614
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "gamma": 4,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 4.692450604316978,
+      "central_centers": 129,
+      "outer_sample_fraction": 0.2504271418110813,
+      "grid_hash": "2c71d538ec08adfa372bf84b2d6b451283eae01f66712b72a4590643431daf42",
+      "geometry_hash": "79b7d0c857d6203610d3f797bee6424acfa90916a453883a6bbc27651521723f",
+      "c2_without_measured_curvature": {
+        "k": 30,
+        "log10_bound": 6.148672530101251,
+        "bound": 1408227.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.08559421378842923,
+      "witness_log_access": -15.862844600342578,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.15039921571141632,
+          "k": 26,
+          "observed_error": 0.4583513140215371
+        },
+        {
+          "step": 5000,
+          "error": 0.1290326233907942,
+          "k": 26,
+          "observed_error": 0.45198262985435184
+        },
+        {
+          "step": 10000,
+          "error": 0.1149061798879524,
+          "k": 28,
+          "observed_error": 0.4498214576889975
+        },
+        {
+          "step": 20000,
+          "error": 0.10442076764874846,
+          "k": 28,
+          "observed_error": 0.44671626452750846
+        },
+        {
+          "step": 40000,
+          "error": 0.08959215545299337,
+          "k": 28,
+          "observed_error": 0.4425596096520252
+        },
+        {
+          "step": 42500,
+          "error": 0.0880340060455102,
+          "k": 28,
+          "observed_error": 0.44214193996680057
+        },
+        {
+          "step": 45000,
+          "error": 0.08652104931166699,
+          "k": 28,
+          "observed_error": 0.4417379775086891
+        },
+        {
+          "step": 47500,
+          "error": 0.08504956713975859,
+          "k": 28,
+          "observed_error": 0.4413459650129647
+        },
+        {
+          "step": 50000,
+          "error": 0.08361632490225236,
+          "k": 28,
+          "observed_error": 0.4409643786823146
+        },
+        {
+          "step": 100000,
+          "error": 0.06017023036328406,
+          "k": 28,
+          "observed_error": 0.4343329994891337
+        },
+        {
+          "step": 200000,
+          "error": 0.03314642214914502,
+          "k": 30,
+          "observed_error": 0.42240392272688465
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "gamma": 4,
+      "target": "runge_25",
+      "curvature_lower": 4.692450604316978,
+      "central_centers": 129,
+      "outer_sample_fraction": 0.2504271418110813,
+      "grid_hash": "2c71d538ec08adfa372bf84b2d6b451283eae01f66712b72a4590643431daf42",
+      "geometry_hash": "79b7d0c857d6203610d3f797bee6424acfa90916a453883a6bbc27651521723f",
+      "c2_without_measured_curvature": {
+        "k": 19,
+        "log10_bound": 0.7431469510149507,
+        "bound": 6.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.02038897178874215,
+      "witness_log_access": -7.385431791089802,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7198614527759273,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0003195675561941164,
+          "k": 37,
+          "observed_error": 0.1516977242505895
+        },
+        {
+          "step": 5000,
+          "error": 0.00013699025382837957,
+          "k": 41,
+          "observed_error": 0.10009190740711915
+        },
+        {
+          "step": 10000,
+          "error": 9.40133661591673e-05,
+          "k": 43,
+          "observed_error": 0.08586482177573833
+        },
+        {
+          "step": 20000,
+          "error": 6.445405043786892e-05,
+          "k": 45,
+          "observed_error": 0.0710060155299025
+        },
+        {
+          "step": 40000,
+          "error": 4.414756043179335e-05,
+          "k": 47,
+          "observed_error": 0.058369043865254586
+        },
+        {
+          "step": 42500,
+          "error": 4.309465895843982e-05,
+          "k": 47,
+          "observed_error": 0.05752428875500625
+        },
+        {
+          "step": 45000,
+          "error": 4.2072295912551515e-05,
+          "k": 47,
+          "observed_error": 0.05676206179443699
+        },
+        {
+          "step": 47500,
+          "error": 4.107795882306899e-05,
+          "k": 47,
+          "observed_error": 0.056068429858547306
+        },
+        {
+          "step": 50000,
+          "error": 4.010946192778073e-05,
+          "k": 47,
+          "observed_error": 0.055431927217715164
+        },
+        {
+          "step": 100000,
+          "error": 2.7562237435445408e-05,
+          "k": 49,
+          "observed_error": 0.04747752714675114
+        },
+        {
+          "step": 200000,
+          "error": 1.891998591028423e-05,
+          "k": 51,
+          "observed_error": 0.039223860601754354
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "gamma": 32.0,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 8.090070541210268,
+      "central_centers": 129,
+      "outer_sample_fraction": 0.2504271418110813,
+      "grid_hash": "2c71d538ec08adfa372bf84b2d6b451283eae01f66712b72a4590643431daf42",
+      "geometry_hash": "79b7d0c857d6203610d3f797bee6424acfa90916a453883a6bbc27651521723f",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7305253109873041,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 5.666426688112432,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.16117441427017784
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.04340083204195861
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.021318619885036614
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.012762396491490042
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008033665230168302
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007722263838998144
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007440489423736515
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007184042020849381
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006949438508140833
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004462173506851608
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002886400931793355
+        }
+      ]
+    },
+    {
+      "n": 256,
+      "width": 289,
+      "gamma": 32.0,
+      "target": "runge_25",
+      "curvature_lower": 8.090070541210268,
+      "central_centers": 129,
+      "outer_sample_fraction": 0.2504271418110813,
+      "grid_hash": "2c71d538ec08adfa372bf84b2d6b451283eae01f66712b72a4590643431daf42",
+      "geometry_hash": "79b7d0c857d6203610d3f797bee6424acfa90916a453883a6bbc27651521723f",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0194485130720987,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.7198614527759273,
+      "witness_log_access": 5.666426688112432,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7198614527759273,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0066078231064933615
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0006512909058865547
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00035917656964512475
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00023598511770634177
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00016164468410731237
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001564759827499303
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00015176189182518888
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00014743961159637234
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00014345786615287264
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 9.933751331304246e-05
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 6.900534883013059e-05
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 1,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 1.0,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 34,
+        "log10_bound": 29.910913798425625,
+        "bound": null,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.014512013969164354,
+      "witness_log_access": -77.76065434956506,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.4426463680590881,
+          "k": 8,
+          "observed_error": 0.8335146208355191
+        },
+        {
+          "step": 5000,
+          "error": 0.4359182712848023,
+          "k": 10,
+          "observed_error": 0.7621569848104821
+        },
+        {
+          "step": 10000,
+          "error": 0.4339136773193588,
+          "k": 10,
+          "observed_error": 0.7584613803385737
+        },
+        {
+          "step": 20000,
+          "error": 0.43107875334637735,
+          "k": 10,
+          "observed_error": 0.7568347253921864
+        },
+        {
+          "step": 40000,
+          "error": 0.42706956541549035,
+          "k": 10,
+          "observed_error": 0.7537064858054476
+        },
+        {
+          "step": 42500,
+          "error": 0.4266482910766289,
+          "k": 10,
+          "observed_error": 0.7533177671098821
+        },
+        {
+          "step": 45000,
+          "error": 0.4262392354079524,
+          "k": 10,
+          "observed_error": 0.7529295599125267
+        },
+        {
+          "step": 47500,
+          "error": 0.4258413931496041,
+          "k": 10,
+          "observed_error": 0.7525418637003486
+        },
+        {
+          "step": 50000,
+          "error": 0.4254538897605619,
+          "k": 10,
+          "observed_error": 0.7521546779605981
+        },
+        {
+          "step": 100000,
+          "error": 0.41911480704593157,
+          "k": 10,
+          "observed_error": 0.7445173753061685
+        },
+        {
+          "step": 200000,
+          "error": 0.4101499902978965,
+          "k": 10,
+          "observed_error": 0.7298384777116877
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 1,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 1.0,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 26,
+        "log10_bound": 20.03289125606229,
+        "bound": null,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.011006417398452536,
+      "witness_log_access": -58.01636032639719,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.28343994489193564,
+          "k": 8,
+          "observed_error": 0.5176473304083994
+        },
+        {
+          "step": 5000,
+          "error": 0.2515549451363405,
+          "k": 8,
+          "observed_error": 0.5001499859643258
+        },
+        {
+          "step": 10000,
+          "error": 0.22766289709117316,
+          "k": 8,
+          "observed_error": 0.4995787986429974
+        },
+        {
+          "step": 20000,
+          "error": 0.1938744387128279,
+          "k": 8,
+          "observed_error": 0.4995125918561061
+        },
+        {
+          "step": 40000,
+          "error": 0.14609034262249332,
+          "k": 8,
+          "observed_error": 0.4993993456870557
+        },
+        {
+          "step": 42500,
+          "error": 0.1410693224469445,
+          "k": 8,
+          "observed_error": 0.4993853304823174
+        },
+        {
+          "step": 45000,
+          "error": 0.13619393228931537,
+          "k": 8,
+          "observed_error": 0.4993713459796166
+        },
+        {
+          "step": 47500,
+          "error": 0.13145219081213158,
+          "k": 8,
+          "observed_error": 0.49935739204317076
+        },
+        {
+          "step": 50000,
+          "error": 0.13030988898226303,
+          "k": 10,
+          "observed_error": 0.4993434685385233
+        },
+        {
+          "step": 100000,
+          "error": 0.12397080626763271,
+          "k": 10,
+          "observed_error": 0.49907119314077997
+        },
+        {
+          "step": 200000,
+          "error": 0.11500598951959766,
+          "k": 10,
+          "observed_error": 0.49855934095326376
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 1,
+      "target": "runge_25",
+      "curvature_lower": 1.0,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 21,
+        "log10_bound": 15.802646630598248,
+        "bound": 6348141967581900.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.013698892966601043,
+      "witness_log_access": -45.67258874800476,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.14093470269709366,
+          "k": 9,
+          "observed_error": 0.4873634637103275
+        },
+        {
+          "step": 5000,
+          "error": 0.13170400625875214,
+          "k": 9,
+          "observed_error": 0.4103896816169094
+        },
+        {
+          "step": 10000,
+          "error": 0.12478726658537295,
+          "k": 9,
+          "observed_error": 0.4068882121754637
+        },
+        {
+          "step": 20000,
+          "error": 0.11500551953187606,
+          "k": 9,
+          "observed_error": 0.40123167073018823
+        },
+        {
+          "step": 40000,
+          "error": 0.10117204018511772,
+          "k": 9,
+          "observed_error": 0.39058444117402374
+        },
+        {
+          "step": 42500,
+          "error": 0.09971845657506465,
+          "k": 9,
+          "observed_error": 0.38931362409232056
+        },
+        {
+          "step": 45000,
+          "error": 0.098307032805,
+          "k": 9,
+          "observed_error": 0.38805580513421095
+        },
+        {
+          "step": 47500,
+          "error": 0.09693430028185496,
+          "k": 9,
+          "observed_error": 0.38681087926819935
+        },
+        {
+          "step": 50000,
+          "error": 0.0955972414506098,
+          "k": 9,
+          "observed_error": 0.38557874193797603
+        },
+        {
+          "step": 100000,
+          "error": 0.09350766058116712,
+          "k": 11,
+          "observed_error": 0.363464798976299
+        },
+        {
+          "step": 200000,
+          "error": 0.09090734009419146,
+          "k": 11,
+          "observed_error": 0.33138743348410477
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 1,
+      "target": "quadratic",
+      "curvature_lower": 1.0,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 1,
+        "log10_bound": -1.3275742953316028,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 4.129488483325449,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.4357760690657797
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.14960554084664246
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.1435901043250735
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.13975657908742842
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.13241248392063418
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.1315222924531068
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.13063814526830084
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.1297600017271549
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.12888782146645672
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.11263671121057489
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0860943242346679
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 1,
+      "target": "sine_2pi",
+      "curvature_lower": 1.0,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 8,
+        "log10_bound": 3.9965603453717424,
+        "bound": 9922.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.054133087986204344,
+      "witness_log_access": -13.52971802318308,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.028337581318286863,
+          "k": 8,
+          "observed_error": 0.8556595099005244
+        },
+        {
+          "step": 5000,
+          "error": 0.0009047168394180766,
+          "k": 10,
+          "observed_error": 0.795758471549052
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.7919640281141989
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.789126337210421
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.7835653494464857
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.7828731901759365
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.7821816873380425
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.7814908403499777
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.7808006486294484
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.7671335284886542
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.7405665837963419
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 2,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 3.4360472073354593,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 32,
+        "log10_bound": 15.240608867026852,
+        "bound": 1740238878779228.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.03953889691767132,
+      "witness_log_access": -38.98877851333493,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.38474581213953646,
+          "k": 14,
+          "observed_error": 0.6800946598004123
+        },
+        {
+          "step": 5000,
+          "error": 0.36196702315412377,
+          "k": 14,
+          "observed_error": 0.5693712406374319
+        },
+        {
+          "step": 10000,
+          "error": 0.35404641349351584,
+          "k": 16,
+          "observed_error": 0.5063345560369635
+        },
+        {
+          "step": 20000,
+          "error": 0.34837566963739414,
+          "k": 16,
+          "observed_error": 0.4736882916803127
+        },
+        {
+          "step": 40000,
+          "error": 0.34035602676732285,
+          "k": 16,
+          "observed_error": 0.46810113383485025
+        },
+        {
+          "step": 42500,
+          "error": 0.33951334495588503,
+          "k": 16,
+          "observed_error": 0.4679399330664534
+        },
+        {
+          "step": 45000,
+          "error": 0.33869510434623673,
+          "k": 16,
+          "observed_error": 0.4677910375951525
+        },
+        {
+          "step": 47500,
+          "error": 0.3378992941009759,
+          "k": 16,
+          "observed_error": 0.46764987641586847
+        },
+        {
+          "step": 50000,
+          "error": 0.3371241648616805,
+          "k": 16,
+          "observed_error": 0.46751375553513946
+        },
+        {
+          "step": 100000,
+          "error": 0.324443996116403,
+          "k": 16,
+          "observed_error": 0.46513033401378145
+        },
+        {
+          "step": 200000,
+          "error": 0.3065115295036521,
+          "k": 16,
+          "observed_error": 0.46151311350609153
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 2,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 3.4360472073354593,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 24,
+        "log10_bound": 8.766518797415733,
+        "bound": 584142490.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.015526599568839427,
+      "witness_log_access": -27.433905656734204,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.09389440624448202,
+          "k": 15,
+          "observed_error": 0.49884336175323013
+        },
+        {
+          "step": 5000,
+          "error": 0.08285579791419806,
+          "k": 15,
+          "observed_error": 0.479581303369893
+        },
+        {
+          "step": 10000,
+          "error": 0.07458435483436396,
+          "k": 15,
+          "observed_error": 0.46790288885289905
+        },
+        {
+          "step": 20000,
+          "error": 0.06288676785046551,
+          "k": 15,
+          "observed_error": 0.45654130859130243
+        },
+        {
+          "step": 40000,
+          "error": 0.05486894874470507,
+          "k": 17,
+          "observed_error": 0.4408246321720186
+        },
+        {
+          "step": 42500,
+          "error": 0.054460308331082605,
+          "k": 17,
+          "observed_error": 0.4389594875397249
+        },
+        {
+          "step": 45000,
+          "error": 0.054063520152400006,
+          "k": 17,
+          "observed_error": 0.4371052688656238
+        },
+        {
+          "step": 47500,
+          "error": 0.05367760909632356,
+          "k": 17,
+          "observed_error": 0.43526146463693155
+        },
+        {
+          "step": 50000,
+          "error": 0.0533017268491251,
+          "k": 17,
+          "observed_error": 0.433427755519566
+        },
+        {
+          "step": 100000,
+          "error": 0.0471527518379858,
+          "k": 17,
+          "observed_error": 0.39873576158641505
+        },
+        {
+          "step": 200000,
+          "error": 0.03845678798253936,
+          "k": 17,
+          "observed_error": 0.33966016715462743
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 2,
+      "target": "runge_25",
+      "curvature_lower": 3.4360472073354593,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 21,
+        "log10_bound": 6.534693840026785,
+        "bound": 3425263.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.013698892966601043,
+      "witness_log_access": -23.098017066796455,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.036169718882424734,
+          "k": 15,
+          "observed_error": 0.3225135464436642
+        },
+        {
+          "step": 5000,
+          "error": 0.025623196529159023,
+          "k": 17,
+          "observed_error": 0.24900724106441433
+        },
+        {
+          "step": 10000,
+          "error": 0.023678719898093083,
+          "k": 17,
+          "observed_error": 0.2184627094341575
+        },
+        {
+          "step": 20000,
+          "error": 0.020928814674722088,
+          "k": 17,
+          "observed_error": 0.2056355130163941
+        },
+        {
+          "step": 40000,
+          "error": 0.017254945395710933,
+          "k": 19,
+          "observed_error": 0.19624881232335095
+        },
+        {
+          "step": 42500,
+          "error": 0.01715877979995947,
+          "k": 19,
+          "observed_error": 0.19519904252799788
+        },
+        {
+          "step": 45000,
+          "error": 0.01706540339782661,
+          "k": 19,
+          "observed_error": 0.1941655767460231
+        },
+        {
+          "step": 47500,
+          "error": 0.016974586715536942,
+          "k": 19,
+          "observed_error": 0.19314808631731556
+        },
+        {
+          "step": 50000,
+          "error": 0.016886130118907626,
+          "k": 19,
+          "observed_error": 0.1921463128931816
+        },
+        {
+          "step": 100000,
+          "error": 0.015439088109613388,
+          "k": 19,
+          "observed_error": 0.17510809315466616
+        },
+        {
+          "step": 200000,
+          "error": 0.01339266167474586,
+          "k": 19,
+          "observed_error": 0.15406602284980236
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 2,
+      "target": "quadratic",
+      "curvature_lower": 3.4360472073354593,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.7136918377327457,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.252878723667706,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.28487879641061253
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.17642026026597107
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.12146457450108092
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.09920572106916939
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.09067495785322531
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0897764210355776
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.08888851605492376
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.08801080997452622
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.08714304820114838
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.07170479323232722
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.04980296554799868
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 2,
+      "target": "sine_2pi",
+      "curvature_lower": 3.4360472073354593,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 6,
+        "log10_bound": 0.8800094499442298,
+        "bound": 8.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.30575037161488633,
+      "witness_log_access": -1.3146607191879882,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.6701713665069005
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.4390397572460883
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.2596189245805405
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.09491828090389857
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.03348500470351959
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.032652298569659975
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.032100556287992674
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0317195341150309
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.031441279370842616
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0287904007518783
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02465812922284485
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 4,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 9.332589025440088,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 30,
+        "log10_bound": 6.159594072910703,
+        "bound": 1444090.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.08549272336561413,
+      "witness_log_access": -15.203121815299912,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.15062151574862334,
+          "k": 26,
+          "observed_error": 0.45718871834485925
+        },
+        {
+          "step": 5000,
+          "error": 0.12955023030561785,
+          "k": 26,
+          "observed_error": 0.4516857743213964
+        },
+        {
+          "step": 10000,
+          "error": 0.1151667756171888,
+          "k": 28,
+          "observed_error": 0.44945942531838073
+        },
+        {
+          "step": 20000,
+          "error": 0.10482628187048093,
+          "k": 28,
+          "observed_error": 0.4462302515483527
+        },
+        {
+          "step": 40000,
+          "error": 0.09020261537225246,
+          "k": 28,
+          "observed_error": 0.44194758745126067
+        },
+        {
+          "step": 42500,
+          "error": 0.08866600108976627,
+          "k": 28,
+          "observed_error": 0.4415193428851644
+        },
+        {
+          "step": 45000,
+          "error": 0.08717395487465882,
+          "k": 28,
+          "observed_error": 0.4411053684035041
+        },
+        {
+          "step": 47500,
+          "error": 0.08572281000310858,
+          "k": 28,
+          "observed_error": 0.44070381129057046
+        },
+        {
+          "step": 50000,
+          "error": 0.08430937655324969,
+          "k": 28,
+          "observed_error": 0.44031307033943856
+        },
+        {
+          "step": 100000,
+          "error": 0.06118732961469939,
+          "k": 28,
+          "observed_error": 0.433535628665957
+        },
+        {
+          "step": 200000,
+          "error": 0.03376981070349544,
+          "k": 30,
+          "observed_error": 0.4214311264785491
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 4,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 9.332589025440088,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 24,
+        "log10_bound": 1.8826241595956976,
+        "bound": 77.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.015526599568839427,
+      "witness_log_access": -10.583961753961198,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0008325818832388344,
+          "k": 35,
+          "observed_error": 0.3468285242943403
+        },
+        {
+          "step": 5000,
+          "error": 0.00023099186728696192,
+          "k": 37,
+          "observed_error": 0.16808936804426178
+        },
+        {
+          "step": 10000,
+          "error": 8.432330137695642e-05,
+          "k": 44,
+          "observed_error": 0.12708953216503502
+        },
+        {
+          "step": 20000,
+          "error": 6.222041500014332e-05,
+          "k": 44,
+          "observed_error": 0.12193965437727293
+        },
+        {
+          "step": 40000,
+          "error": 3.468183769053608e-05,
+          "k": 46,
+          "observed_error": 0.12011969682070892
+        },
+        {
+          "step": 42500,
+          "error": 3.315763759142215e-05,
+          "k": 46,
+          "observed_error": 0.11993994132646082
+        },
+        {
+          "step": 45000,
+          "error": 3.167764549785013e-05,
+          "k": 46,
+          "observed_error": 0.11976565588330222
+        },
+        {
+          "step": 47500,
+          "error": 3.0238224309165816e-05,
+          "k": 46,
+          "observed_error": 0.11959604516629141
+        },
+        {
+          "step": 50000,
+          "error": 2.883620987462591e-05,
+          "k": 46,
+          "observed_error": 0.11943044281291705
+        },
+        {
+          "step": 100000,
+          "error": 6.985061522534241e-06,
+          "k": 48,
+          "observed_error": 0.11649686698924173
+        },
+        {
+          "step": 200000,
+          "error": 4.152900999759102e-06,
+          "k": 53,
+          "observed_error": 0.11129792275822598
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 4,
+      "target": "runge_25",
+      "curvature_lower": 9.332589025440088,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 19,
+        "log10_bound": 0.7544513982747004,
+        "bound": 6.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.02037959856306939,
+      "witness_log_access": -6.725709006047135,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0003225748067797829,
+          "k": 37,
+          "observed_error": 0.14840655107385928
+        },
+        {
+          "step": 5000,
+          "error": 0.00013843342085301426,
+          "k": 41,
+          "observed_error": 0.09826385458574281
+        },
+        {
+          "step": 10000,
+          "error": 9.495110405761923e-05,
+          "k": 43,
+          "observed_error": 0.08434910986017351
+        },
+        {
+          "step": 20000,
+          "error": 6.506334496200235e-05,
+          "k": 45,
+          "observed_error": 0.06998129645268389
+        },
+        {
+          "step": 40000,
+          "error": 4.454343334501909e-05,
+          "k": 47,
+          "observed_error": 0.057153294951491726
+        },
+        {
+          "step": 42500,
+          "error": 4.350508398376044e-05,
+          "k": 47,
+          "observed_error": 0.05628474007851061
+        },
+        {
+          "step": 45000,
+          "error": 4.249685097949694e-05,
+          "k": 47,
+          "observed_error": 0.055504198983771805
+        },
+        {
+          "step": 47500,
+          "error": 4.1516256585938376e-05,
+          "k": 47,
+          "observed_error": 0.05479774773179363
+        },
+        {
+          "step": 50000,
+          "error": 4.056114525021138e-05,
+          "k": 47,
+          "observed_error": 0.05415369270555324
+        },
+        {
+          "step": 100000,
+          "error": 2.7856069699007676e-05,
+          "k": 49,
+          "observed_error": 0.04652430103228632
+        },
+        {
+          "step": 200000,
+          "error": 1.9111133209137586e-05,
+          "k": 51,
+          "observed_error": 0.03863465602920914
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 4,
+      "target": "quadratic",
+      "curvature_lower": 9.332589025440088,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.3109871420918204,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.324807622593154,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.19269283248964267
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.1138046682105997
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.09397334409893153
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.07457445233534121
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.05682712835213413
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.05562689227133731
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.054552755773649
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.05358526485130732
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.052707886704485556
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.04266452035543152
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.032219597924639215
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 4,
+      "target": "sine_2pi",
+      "curvature_lower": 9.332589025440088,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 4,
+        "log10_bound": -0.5816407248628168,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.8438090535516365,
+      "witness_log_access": 5.123081240870761,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.08917128464155949
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.024019183426471465
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.012512417680758638
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008586886632342994
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00525874019239419
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0049807388144017225
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004726257533243127
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004493564145798771
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004281024961480033
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0024391744378490306
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0017140004209188697
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 8,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 14.953190065611917,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 28,
+        "log10_bound": 1.4430999856587983,
+        "bound": 28.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.14013093586212513,
+      "witness_log_access": -2.782570910135507,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.41334211894158024
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.32254817101779343
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.2639554754824517
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.21828061153815198
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.20257809349294692
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.20198699765185543
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.20145835495489114
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.20097238423871952
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.2005156798803073
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.19266182116776617
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.17824483356270066
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 8,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 14.953190065611917,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 15,
+        "log10_bound": -1.1095535557120366,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.1028248279779306,
+      "witness_log_access": 2.4194770905316267,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.11823542350376876
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.07275499116407656
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.04939840603422321
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.031214286055560123
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02416988714084049
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0238000425472059
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.023462224494830264
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.023150168925389392
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.022859383935062764
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.019073817459397457
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.014936291955109019
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 8,
+      "target": "runge_25",
+      "curvature_lower": 14.953190065611917,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0392171940717407,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.719831659069168,
+      "witness_log_access": 6.3261490230144,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.05264280506703468
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.023424032174524784
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.016418708127784547
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.011404484015254401
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008142504314885498
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007904635398309719
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007685309946053535
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007482206334664811
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007293426562601526
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005100151049538216
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0035331655382761927
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 8,
+      "target": "quadratic",
+      "curvature_lower": 14.953190065611917,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.1068379927964118,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.3261490230144,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.13045999725289367
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.07189489562792525
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.055632696965184796
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0429157434131741
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.033105169544775076
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.03235117735209099
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.03165522364796996
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.031010456656015702
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.030411080534587916
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.023388602522335687
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.017897256625531856
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 8,
+      "target": "sine_2pi",
+      "curvature_lower": 14.953190065611917,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7502575355377743,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.3261490230144,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.03619124331564565
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.012835441607490608
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00836651382204715
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005534499112519306
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003687081416193171
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0035612287652196308
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0034463261301485573
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0033408090167198683
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003243445309083978
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0021784443444446714
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0014802798046199606
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 12,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 15.931214803460099,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 28,
+        "log10_bound": -0.16872734718152987,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.14013093586212513,
+      "witness_log_access": 0.9921543994169975,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.3183390208815583
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.2004050005155222
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.17822579806035915
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.14949425130687033
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.10590069023551403
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.10146104941985659
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.09721229590794649
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.09314586585481421
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.08925363055916029
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.03838190688931668
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008307906198964822
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 12,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 15.931214803460099,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.2576054778002537,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.5448152731708782,
+      "witness_log_access": 6.326149473004094,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.07595413264862058
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02532090849084445
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01825894425531272
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01324302771726285
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.009313743542254593
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00903626423429326
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008784607579663914
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008555262657101536
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008345279113836725
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006050303439357373
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0042528719589704405
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 12,
+      "target": "runge_25",
+      "curvature_lower": 15.931214803460099,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.011702349700913,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.719831659069168,
+      "witness_log_access": 6.326149473004094,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.025712451593555077
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007766329933100105
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0046775170063515946
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0027734671003128895
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0017024328310147109
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0016310905723795313
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0015660404353824906
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0015064314070148243
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0014515894712406408
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0008801042488561533
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005647830963035466
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 12,
+      "target": "quadratic",
+      "curvature_lower": 15.931214803460099,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.079323148425584,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.326149473004094,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.10205930499606562
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.05203461090354605
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.03902740977444498
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.029296766954456276
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02200167314070004
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.021457471248985904
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.020956744952383723
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02049389691192316
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.020064289856073277
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.015067979130093561
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.011311657782864006
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 12,
+      "target": "sine_2pi",
+      "curvature_lower": 15.931214803460099,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7227426911669466,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473004094,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.028331007367313796
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.010315767088250702
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006803019283116759
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0045176521884226105
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0030171839479623992
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0029132733776052037
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0028186620494509555
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002732061890294156
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0026524230034899753
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0017831129648933017
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.001204100243057333
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 16,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 16.068383094890688,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7190194071386753,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.3261494731550485,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.25135776050854336
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.15012829798506397
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.10565885344509862
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0546149710472496
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.018856724138787903
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01707838745481075
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.015591373530775304
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01434223782596885
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.013286822035080557
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005923556264619267
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0029493967150059836
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 16,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 16.068383094890688,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.2538821937719824,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.5448152731708782,
+      "witness_log_access": 6.3261494731550485,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.05131990086441368
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.015748736158731368
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0109129177049851
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007852573032777518
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0055866524823118486
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005416762726300567
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0052612507987228945
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005118435405896303
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0049868877526485925
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003582481395937391
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0026604452280668328
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 16,
+      "target": "runge_25",
+      "curvature_lower": 16.068383094890688,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0079790656726415,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.719831659069168,
+      "witness_log_access": 6.3261494731550485,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01565724100389934
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0034037562377456495
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0018103264064903263
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0010187077007201904
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0006169021155427703
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005928229052677125
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005711452085782022
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005514922157174232
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005335736108478893
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00035239966124562486
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0002456924633664426
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 16,
+      "target": "quadratic",
+      "curvature_lower": 16.068383094890688,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0755998643973128,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.3261494731550485,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.08623625161250643
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.041259804001126235
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.030186857269996478
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.022133203205998295
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01625414889825914
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.015822073557541606
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.015425344188623178
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.015059329497596355
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01472021012985444
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.010825730843403271
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007967142427810315
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 16,
+      "target": "sine_2pi",
+      "curvature_lower": 16.068383094890688,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7190194071386753,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.3261494731550485,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02489252438527421
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.009113713025784152
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006024963623503997
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004009956844602693
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0026829118395676095
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0025908065635375467
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002506940146637605
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0024301729888329435
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002359572958903953
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0015874923724537976
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0010718110411565805
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 24,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 16.089563500677652,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184473224341884,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.18687285131397463
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.06870326553924153
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.030616255420741
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01542756214722517
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00917170663302622
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008781027527670888
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008429281434165617
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008110593210510508
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007820246596793819
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0048135805786803055
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0029855747029959145
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 24,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 16.089563500677652,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.2533101090674954,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.5448152731708782,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.032251398285933645
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.010153037644341582
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007128759509130109
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0050157498819658
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003583538269780497
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0034803227985366458
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0033857363223242253
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0032986382133785587
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0032180903601919577
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0023062639365984054
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0016552069514585417
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 24,
+      "target": "runge_25",
+      "curvature_lower": 16.089563500677652,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0074069809681545,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.719831659069168,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008499219176246235
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0012691300029677702
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0007232191005371954
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0004760129527824335
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00033192875225175736
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00032198330160304497
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00031291242532623396
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0003045939144054773
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00029692804151877313
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00021129530547583973
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00015097592143611916
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 24,
+      "target": "quadratic",
+      "curvature_lower": 16.089563500677652,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.075027779692826,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.07016938095220446
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.03067156323946206
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.021670784051449524
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01537450615400928
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.010942408524521644
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.010623077272707376
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.010330716050320444
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.010061721826893907
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.009813131751398018
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0070060361480515435
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005010671166015534
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 24,
+      "target": "sine_2pi",
+      "curvature_lower": 16.089563500677652,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184473224341884,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.021585265354644303
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007829670532809004
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005169751640789093
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003440321018523522
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002303195735598041
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002224300621857372
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002152463173888992
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0020867069430008703
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0020262333745341378
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0013647973896212288
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0009226597146057213
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 32,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 16.08995169357247,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184368443377273,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.15496932964383303
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.04013641591922358
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.020166720398584463
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.012191700922745463
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007693470580587727
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0073963228572388445
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00712736430211775
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006882514911148948
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0066584676135461795
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004280161045653127
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0027708107766437782
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 32,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 16.08995169357247,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.2532996309710343,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.5448152731708782,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02594239609713884
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008449206877056484
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005826818211075505
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004060155841352026
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002842706522377863
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00275588514874558
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002676513076107224
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0026035843003293048
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0025362731515197524
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0017824474734915597
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0012552783826991875
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 32,
+      "target": "runge_25",
+      "curvature_lower": 16.08995169357247,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0073965028716934,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.719831659069168,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006136750746232206
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0008589634197875236
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005462817898869146
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0003747579451582722
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0002613395970274303
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00025330355415978075
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00024596087613404697
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00023921743444340455
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00023299606287437348
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001634750925327719
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00011498815262322975
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 32,
+      "target": "quadratic",
+      "curvature_lower": 16.08995169357247,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0750173015963647,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.06259026507247573
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02578795340546372
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01781974920059142
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.012385424507190568
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00864750752899993
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00838152429718625
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008138440288739423
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00791515960722658
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007709141221171481
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005406559908289425
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0038012677655468253
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 32,
+      "target": "sine_2pi",
+      "curvature_lower": 16.08995169357247,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184368443377273,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.019934973249292474
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007113238638848793
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004676829737127074
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003103080588219019
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002073287667130541
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0020019947017887417
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0019370973172262277
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0018777087341279167
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0018231040204232068
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0012266669513216622
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.000828808164936292
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 48,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 16.08995893388653,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184366489096864,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.12608326172879367
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.026676104895707414
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01549505065344755
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.009784873005253224
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006326103379368589
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006093513022632858
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005882539872562412
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005690102899397656
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005513696907378798
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0036204982780890143
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0023944325443328858
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 48,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 16.08995893388653,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.2532994355429934,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.5448152731708782,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0215776259055393
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007014042664081238
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004726133282456693
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0032120521864430524
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0021966538155674454
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002125391633438314
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0020603936157603223
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0020008017493872944
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0019459132467035984
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0013393393648262466
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0009252876549165787
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 48,
+      "target": "runge_25",
+      "curvature_lower": 16.08995893388653,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0073963074436527,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.719831659069168,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0045549011272909695
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0006558692640258244
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00043273896855858864
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0002933946487302903
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00020052347962215466
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00019401214195151502
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001880736907586762
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00018262957755579878
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001776154807774149
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00012222252660081375
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 8.442575663578464e-05
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 48,
+      "target": "quadratic",
+      "curvature_lower": 16.08995893388653,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.075017106168324,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.055746852927617545
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.021338867054697584
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.014348162332677735
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.009731861333613423
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006646679700452955
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006430452789183166
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006233264108049033
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006052502287225397
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005886029023628481
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0040476951898197125
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002794311350373005
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 48,
+      "target": "sine_2pi",
+      "curvature_lower": 16.08995893388653,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184366489096864,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01829148167480951
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.006314960044233479
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004110703953416783
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0027065451550397682
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0017977755447551175
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0017351923120538096
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0016782629793922247
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0016261995861042427
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0015783585679842616
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0010576702752131428
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0007124147554560517
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 64,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 16.089958936315387,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184366488441276,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.1143941933071264
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02291909982832978
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0136664992576666
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008668074824123032
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005620782623690753
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005415584400177814
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0052294288881631614
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0050596048265584845
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0049039071440408685
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003231432809847682
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0021459679178100267
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 64,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 16.089958936315387,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.2532994354774347,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.5448152731708782,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.020000388015791848
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00635798503657891
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004210319558088398
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0028159944153120686
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0018990912721099516
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.001835403070666971
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.001777396206471193
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0017242848098242085
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0016754262538616936
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0011397040478381513
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0007791537840148725
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 64,
+      "target": "runge_25",
+      "curvature_lower": 16.089958936315387,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0073963073780938,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.719831659069168,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004028857777554938
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005851092122358667
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0003832963443540486
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.000256084916149318
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00017267227972201683
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00016688133969705512
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001616071915444248
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00015677831165523742
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001523362212122886
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00010363444450035264
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 7.085747740915612e-05
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 64,
+      "target": "quadratic",
+      "curvature_lower": 16.089958936315387,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0750171061027651,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.05273281365953617
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.019280188005388256
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.012736844993023742
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.008506281992686332
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005731932142046869
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005539402068952294
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0053640644224927266
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0052035388597385735
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0050558792936108345
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00343755058420778
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002349111925844171
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 64,
+      "target": "sine_2pi",
+      "curvature_lower": 16.089958936315387,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184366488441276,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.017494477105169045
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005875074730634798
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0037879785544023717
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002474904840853347
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.001633941786923819
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0015763279656601297
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.001523955419710895
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.001476090073832115
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0014321328949160202
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0009554435717352942
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.000641304685960074
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 96,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 16.0899589363162,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184366488441056,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.10537326684952451
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.02003259543495237
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.011969034209781826
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007542532933345889
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004865159196054351
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004685783237325116
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004523167187527604
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004374913474546622
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004239073698924725
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002785135764880142
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0018469293896362041
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 96,
+      "target": "exp_sin_3pi",
+      "curvature_lower": 16.0899589363162,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.2532994354774127,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.5448152731708782,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.5448152731708782,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.018779502994833257
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005731741677909393
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0037058182259073727
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002425474476624274
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0016055510904413727
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0015493954181026895
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0014983486561205306
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0014516947470368862
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0014088494469272808
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.000944012264068944
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.000637028880829351
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 96,
+      "target": "runge_25",
+      "curvature_lower": 16.0899589363162,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0073963073780718,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.719831659069168,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.719831659069168,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0036610893377749107
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005230413845685776
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00033594825760934377
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00021972436640983986
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001454420750313973
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00014035650724924392
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00013573373672407302
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00013150887100404684
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00012762896908362332
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 8.553643784584888e-05
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 5.773478996359526e-05
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 96,
+      "target": "quadratic",
+      "curvature_lower": 16.0899589363162,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -1.0750171061027431,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.6666666583902642,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.6666666583902642,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.05011616704264174
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.01733204104802549
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.011179285299593871
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.007308649211794067
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0048355237656042506
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004666256703424083
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004512399860102929
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004371791885836027
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00424266956712398
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.002842184896297817
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.001917622244197809
+        }
+      ]
+    },
+    {
+      "n": 512,
+      "width": 559,
+      "gamma": 96,
+      "target": "sine_2pi",
+      "curvature_lower": 16.0899589363162,
+      "central_centers": 257,
+      "outer_sample_fraction": 0.25021359697302575,
+      "grid_hash": "d99e9063f7e2873ae44ecdc8b0ab3742bd7b3e5c5f75c781d9b88cc4241e61a6",
+      "geometry_hash": "6242b0cf48c1282174f29ffe62e4c0b4ecdb04a49d059a36ed5ec8758096ec70",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7184366488441056,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.326149473155099,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.016753457170119623
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.005406073453346495
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0034294669566047524
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0022098224407050295
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0014425480814837252
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0013904679560006446
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0013431851871472341
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0013000220221822182
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.001260426217680556
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0008338768101413727
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0005559816775044296
+        }
+      ]
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "gamma": 1,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 1.9249175834057966,
+      "central_centers": 513,
+      "outer_sample_fraction": 0.2501068050045774,
+      "grid_hash": "c837c44b3e145f85d5d2519ab356f437ef4ec64bbd00d2f14a242fb7ec7c47f7",
+      "geometry_hash": "7ee0c132758f8849fd0bbdde67b5e911eb167fa88298ee3a4feed96da24e85aa",
+      "c2_without_measured_curvature": {
+        "k": 34,
+        "log10_bound": 29.902703430361182,
+        "bound": null,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.014496423590049129,
+      "witness_log_access": -77.0937886997872,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.4424157266738496,
+          "k": 8,
+          "observed_error": 0.8327185414822723
+        },
+        {
+          "step": 5000,
+          "error": 0.43587880490000774,
+          "k": 10,
+          "observed_error": 0.7609470410368445
+        },
+        {
+          "step": 10000,
+          "error": 0.43386216486474105,
+          "k": 10,
+          "observed_error": 0.7573234931759022
+        },
+        {
+          "step": 20000,
+          "error": 0.4310102051764423,
+          "k": 10,
+          "observed_error": 0.7557960371472869
+        },
+        {
+          "step": 40000,
+          "error": 0.4269769251059089,
+          "k": 10,
+          "observed_error": 0.7528606358062035
+        },
+        {
+          "step": 42500,
+          "error": 0.4265531192318896,
+          "k": 10,
+          "observed_error": 0.7524957444375742
+        },
+        {
+          "step": 45000,
+          "error": 0.4261416054528769,
+          "k": 10,
+          "observed_error": 0.7521313032348989
+        },
+        {
+          "step": 47500,
+          "error": 0.42574137246817434,
+          "k": 10,
+          "observed_error": 0.7517673117749786
+        },
+        {
+          "step": 50000,
+          "error": 0.42535154048144025,
+          "k": 10,
+          "observed_error": 0.7514037696348493
+        },
+        {
+          "step": 100000,
+          "error": 0.41897436474931515,
+          "k": 10,
+          "observed_error": 0.7442266345930849
+        },
+        {
+          "step": 200000,
+          "error": 0.4099556763393073,
+          "k": 10,
+          "observed_error": 0.7303976325279994
+        }
+      ]
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "gamma": 1,
+      "target": "runge_25",
+      "curvature_lower": 1.9249175834057966,
+      "central_centers": 513,
+      "outer_sample_fraction": 0.2501068050045774,
+      "grid_hash": "c837c44b3e145f85d5d2519ab356f437ef4ec64bbd00d2f14a242fb7ec7c47f7",
+      "geometry_hash": "7ee0c132758f8849fd0bbdde67b5e911eb167fa88298ee3a4feed96da24e85aa",
+      "c2_without_measured_curvature": {
+        "k": 21,
+        "log10_bound": 15.796619806942802,
+        "bound": 6260655501002873.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.01369539033638627,
+      "witness_log_access": -45.0057230982269,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7198167595881759,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.1408726768117112,
+          "k": 9,
+          "observed_error": 0.49555292339132934
+        },
+        {
+          "step": 5000,
+          "error": 0.13158651097870427,
+          "k": 9,
+          "observed_error": 0.40699734272506294
+        },
+        {
+          "step": 10000,
+          "error": 0.12462820701325857,
+          "k": 9,
+          "observed_error": 0.40375739403957356
+        },
+        {
+          "step": 20000,
+          "error": 0.11478767917421075,
+          "k": 9,
+          "observed_error": 0.3999705753110021
+        },
+        {
+          "step": 40000,
+          "error": 0.10087107124331932,
+          "k": 9,
+          "observed_error": 0.3927054019388897
+        },
+        {
+          "step": 42500,
+          "error": 0.0994087527123983,
+          "k": 9,
+          "observed_error": 0.39182441503020593
+        },
+        {
+          "step": 45000,
+          "error": 0.09798884736971725,
+          "k": 9,
+          "observed_error": 0.3909493583958832
+        },
+        {
+          "step": 47500,
+          "error": 0.09660786577862755,
+          "k": 9,
+          "observed_error": 0.3900802007215861
+        },
+        {
+          "step": 50000,
+          "error": 0.09530579717237544,
+          "k": 11,
+          "observed_error": 0.38921691078497356
+        },
+        {
+          "step": 100000,
+          "error": 0.09345604372271084,
+          "k": 11,
+          "observed_error": 0.3731360696804511
+        },
+        {
+          "step": 200000,
+          "error": 0.09084009730714875,
+          "k": 11,
+          "observed_error": 0.3470317540147835
+        }
+      ]
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "gamma": 4,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 18.612966149736028,
+      "central_centers": 513,
+      "outer_sample_fraction": 0.2501068050045774,
+      "grid_hash": "c837c44b3e145f85d5d2519ab356f437ef4ec64bbd00d2f14a242fb7ec7c47f7",
+      "geometry_hash": "7ee0c132758f8849fd0bbdde67b5e911eb167fa88298ee3a4feed96da24e85aa",
+      "c2_without_measured_curvature": {
+        "k": 30,
+        "log10_bound": 6.16918971989308,
+        "bound": 1476352.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.08544044283010903,
+      "witness_log_access": -14.536256165522051,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.15081196239943523,
+          "k": 26,
+          "observed_error": 0.45639616330439914
+        },
+        {
+          "step": 5000,
+          "error": 0.12998661076240312,
+          "k": 26,
+          "observed_error": 0.45146673639574003
+        },
+        {
+          "step": 10000,
+          "error": 0.11541231713343528,
+          "k": 28,
+          "observed_error": 0.44919765680979307
+        },
+        {
+          "step": 20000,
+          "error": 0.10519251260569558,
+          "k": 28,
+          "observed_error": 0.44587308593926606
+        },
+        {
+          "step": 40000,
+          "error": 0.09073952643776413,
+          "k": 28,
+          "observed_error": 0.441477536310949
+        },
+        {
+          "step": 42500,
+          "error": 0.08922084677060205,
+          "k": 28,
+          "observed_error": 0.44103917621728983
+        },
+        {
+          "step": 45000,
+          "error": 0.08774621499399017,
+          "k": 28,
+          "observed_error": 0.44061563105080187
+        },
+        {
+          "step": 47500,
+          "error": 0.08631200718032589,
+          "k": 28,
+          "observed_error": 0.4402049869064204
+        },
+        {
+          "step": 50000,
+          "error": 0.08491507063896142,
+          "k": 28,
+          "observed_error": 0.43980559109887335
+        },
+        {
+          "step": 100000,
+          "error": 0.06206289299817533,
+          "k": 28,
+          "observed_error": 0.43290944146704663
+        },
+        {
+          "step": 200000,
+          "error": 0.034321214874432716,
+          "k": 30,
+          "observed_error": 0.42073611448625176
+        }
+      ]
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "gamma": 4,
+      "target": "runge_25",
+      "curvature_lower": 18.612966149736028,
+      "central_centers": 513,
+      "outer_sample_fraction": 0.2501068050045774,
+      "grid_hash": "c837c44b3e145f85d5d2519ab356f437ef4ec64bbd00d2f14a242fb7ec7c47f7",
+      "geometry_hash": "7ee0c132758f8849fd0bbdde67b5e911eb167fa88298ee3a4feed96da24e85aa",
+      "c2_without_measured_curvature": {
+        "k": 19,
+        "log10_bound": 0.7642518301980851,
+        "bound": 6.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.020374856204500115,
+      "witness_log_access": -6.058843356269274,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7198167595881759,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.00032522471359214077,
+          "k": 37,
+          "observed_error": 0.14575111853730416
+        },
+        {
+          "step": 5000,
+          "error": 0.0001397050859070767,
+          "k": 41,
+          "observed_error": 0.0968809339386339
+        },
+        {
+          "step": 10000,
+          "error": 9.57801161785996e-05,
+          "k": 43,
+          "observed_error": 0.08317154861003964
+        },
+        {
+          "step": 20000,
+          "error": 6.560374115813897e-05,
+          "k": 45,
+          "observed_error": 0.06928484767528736
+        },
+        {
+          "step": 40000,
+          "error": 4.489565776235998e-05,
+          "k": 47,
+          "observed_error": 0.05624149054873366
+        },
+        {
+          "step": 42500,
+          "error": 4.3869427510352405e-05,
+          "k": 47,
+          "observed_error": 0.05533828821819665
+        },
+        {
+          "step": 45000,
+          "error": 4.28729621118535e-05,
+          "k": 47,
+          "observed_error": 0.054528013044129256
+        },
+        {
+          "step": 47500,
+          "error": 4.190381273962391e-05,
+          "k": 47,
+          "observed_error": 0.05379708755584164
+        },
+        {
+          "step": 50000,
+          "error": 4.095984899935603e-05,
+          "k": 47,
+          "observed_error": 0.053133872381356036
+        },
+        {
+          "step": 100000,
+          "error": 2.8116126677047896e-05,
+          "k": 49,
+          "observed_error": 0.04571836049759854
+        },
+        {
+          "step": 200000,
+          "error": 1.9280740293297145e-05,
+          "k": 51,
+          "observed_error": 0.03821850062269243
+        }
+      ]
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "gamma": 128.0,
+      "target": "sine_mix_2_6_10",
+      "curvature_lower": 32.089901335623615,
+      "central_centers": 513,
+      "outer_sample_fraction": 0.2501068050045774,
+      "grid_hash": "c837c44b3e145f85d5d2519ab356f437ef4ec64bbd00d2f14a242fb7ec7c47f7",
+      "geometry_hash": "7ee0c132758f8849fd0bbdde67b5e911eb167fa88298ee3a4feed96da24e85aa",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.7082392746320892,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 1.0,
+      "witness_log_access": 6.9930151229329605,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 1.0,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.09721241398659493
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.017998148614278123
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.010741502971426092
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00672114412507177
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0043071362847837
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0041462148014754134
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.004000434433663364
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0038676194862651897
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003746003120713147
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0024494434305091877
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0016185780726333254
+        }
+      ]
+    },
+    {
+      "n": 1024,
+      "width": 1089,
+      "gamma": 128.0,
+      "target": "runge_25",
+      "curvature_lower": 32.089901335623615,
+      "central_centers": 513,
+      "outer_sample_fraction": 0.2501068050045774,
+      "grid_hash": "c837c44b3e145f85d5d2519ab356f437ef4ec64bbd00d2f14a242fb7ec7c47f7",
+      "geometry_hash": "7ee0c132758f8849fd0bbdde67b5e911eb167fa88298ee3a4feed96da24e85aa",
+      "c2_without_measured_curvature": {
+        "k": 0,
+        "log10_bound": -0.9972171651798226,
+        "bound": 1.0,
+        "status": "fp64_estimate"
+      },
+      "witness_tail": 0.7198167595881759,
+      "witness_log_access": 6.9930151229329605,
+      "checkpoint_error_floors": [
+        {
+          "step": 0,
+          "error": 0.7198167595881759,
+          "k": 0,
+          "observed_error": 1.0
+        },
+        {
+          "step": 1000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.003576979971441242
+        },
+        {
+          "step": 5000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.000736791640079039
+        },
+        {
+          "step": 10000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00047092366056417995
+        },
+        {
+          "step": 20000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00030530424297750883
+        },
+        {
+          "step": 40000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0002005318403494055
+        },
+        {
+          "step": 42500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001934034104923598
+        },
+        {
+          "step": 45000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00018692939360477953
+        },
+        {
+          "step": 47500,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.0001810174967567417
+        },
+        {
+          "step": 50000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00017559249533071294
+        },
+        {
+          "step": 100000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 0.00011701733349763673
+        },
+        {
+          "step": 200000,
+          "error": 0.0,
+          "k": null,
+          "observed_error": 7.864634817377306e-05
+        }
+      ]
+    }
+  ]
+}

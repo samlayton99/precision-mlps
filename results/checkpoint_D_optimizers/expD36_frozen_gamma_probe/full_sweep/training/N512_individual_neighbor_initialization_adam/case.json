@@ -1,0 +1,288 @@
+{
+  "tag": "N512_individual_neighbor_initialization_adam",
+  "n": 512,
+  "map": "individual_neighbor",
+  "gammas": [
+    4,
+    16,
+    64
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "sqrt_alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 0
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 1
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 2
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 3
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "alpha_xavier",
+      "seed": 4
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "alpha_xavier",
+      "seed": 4
+    }
+  ],
+  "rates": [
+    [
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1
+    ],
+    [
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1
+    ],
+    [
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.1
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08
+    ],
+    [
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08
+    ]
+  ],
+  "matrix_hashes": [
+    "8e817f3576d904697acd19b564b8be2dda0242b6334b504778de07375eb2c25a",
+    "a4f99395eb3655906e70195ce474dd0529aeb8986a707c8cd7febafa6df927c1",
+    "74686280a733e636d6b5b706a62756b82d1bcc3aa9c7680efa14e77e931d9ef5"
+  ],
+  "initial_hash": "1ad1eb028834134e5439649bc7aa7ba53301d0f3ec797644736de55e2df51557",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

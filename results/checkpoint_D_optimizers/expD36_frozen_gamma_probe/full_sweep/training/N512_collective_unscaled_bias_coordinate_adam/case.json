@@ -1,0 +1,60 @@
+{
+  "tag": "N512_collective_unscaled_bias_coordinate_adam",
+  "n": 512,
+  "map": "collective_unscaled_bias",
+  "gammas": [
+    4,
+    16,
+    64
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "chi": 0.5
+    }
+  ],
+  "rates": [
+    [
+      0.001
+    ],
+    [
+      0.001
+    ],
+    [
+      0.001
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-12
+    ],
+    [
+      1e-12
+    ],
+    [
+      1e-12
+    ]
+  ],
+  "matrix_hashes": [
+    "0257817968692c41fd215ded57027f03a3d5082199910ea58f0d5629d1542c86",
+    "4acd9b7c38e38590057e7d3da477b11b0b82af6ee4c08dce8f8c871ff58b3600",
+    "871860166779268e86f6480cb64dc5c9bc0cfbf8d8c2d4f72115cc19951c095e"
+  ],
+  "initial_hash": "9e8e4d1848b6146e3a4ad37c38a8de9ea2dcc5cfec426df9bc9136268477c3dc",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

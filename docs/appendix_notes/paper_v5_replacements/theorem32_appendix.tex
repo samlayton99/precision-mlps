@@ -1,0 +1,305 @@
+% Add after the construction/bandwidth/comparison/precision subsections.
+% Remain within the existing appendix; do not add another \appendix command.
+% Uses amsmath, amssymb and the paper's theorem/proof environments.
+\subsection{Finite-kernel rate bounds and proof of Theorem~\ref{thm:note-output}}
+\label{app:note-spectrum}
+
+We bound the normalized eigenvalues of the actual finite tanh dictionary.
+The continuous-center calculation makes the slope dependence explicit;
+the lattice and exterior-center corrections transfer it to the finite network.
+All bounds below are evaluated at the given $\gamma$, without a reference slope.
+
+\paragraph{Training problem and exact residual formula.}
+Let $z_1,\ldots,z_M\in[-1,1]$, $M\ge2$, be the training inputs and
+$x_1,\ldots,x_W$ consecutive centers on a lattice $x_{\rm lat}+h\mathbb Z$,
+with $h>0$ and $\gamma>0$. Define the normalized feature matrix and target by
+\begin{equation}
+ (A_\gamma)_{a0}=M^{-1/2},\qquad
+ (A_\gamma)_{aj}=M^{-1/2}\tanh(\gamma(z_a-x_j)),\qquad
+ y_a=M^{-1/2}f(z_a),\qquad \Phi_\gamma=A_\gamma A_\gamma^T.
+ \label{eq:note-feature-definition}
+\end{equation}
+Thus $L(c)=\tfrac12\|A_\gamma c-y\|_2^2$ is the sampled squared-error
+objective with factor $1/(2M)$. For $r_n=A_\gamma c_n-y$,
+\begin{equation}
+ c_{n+1}=c_n-\eta A_\gamma^Tr_n,
+ \qquad r_{n+1}=(I-\eta\Phi_\gamma)r_n,
+ \qquad c_0=0.
+ \label{eq:note-residual-recurrence}
+\end{equation}
+Let $(\mu_i,u_i)_{i=1}^M$ be orthonormal eigenpairs of $\Phi_\gamma$,
+ordered by decreasing eigenvalue. The bias implies $\mu_1\ge1$.
+For $y\ne0$, set
+\begin{equation}
+ \rho_i=\mu_i/\mu_1,\qquad
+ p_i=|u_i^Ty|^2/\|y\|_2^2,\qquad \eta=1/(2\mu_1).
+ \label{eq:note-target-weights}
+\end{equation}
+Diagonalizing the recurrence gives
+\begin{equation}
+ E_\gamma(n)^2:=\frac{\|r_n\|_2^2}{\|y\|_2^2}
+ =\sum_{i=1}^M p_i(1-\rho_i/2)^{2n}.
+ \label{eq:note-exact-spectral-error}
+\end{equation}
+This equals the relative squared training RMS error in the main theorem.
+Zero eigenvalues are included; their target components do not decay.
+
+\paragraph{Continuous-center matrix and the Fourier multiplier.}
+Write $t_\gamma(c)=(\tanh(\gamma(z_a-c)))_{a=1}^M$, and choose
+$Q\in\mathbb R^{M\times(M-1)}$ with $Q^TQ=I$ and $Q^T\mathbf1=0$.
+The projection removes the constant tails, making the following integral finite:
+\begin{equation}
+ H_\gamma=\frac1{Mh}\int_{\mathbb R}
+ Q^Tt_\gamma(c)t_\gamma(c)^TQ\,dc
+ =-\frac2{Mh}Q^T[d_{ab}\coth(\gamma d_{ab})]_{a,b}Q,
+ \quad d_{ab}=z_a-z_b.
+ \label{eq:note-integral-matrix}
+\end{equation}
+At $d_{ab}=0$ the bracket is interpreted as $1/\gamma$.
+Indeed, $1-\tanh u\tanh v=\coth(u-v)(\tanh u-\tanh v)$ gives
+$\int_{\mathbb R}[1-t_{\gamma,a}(c)t_{\gamma,b}(c)]\,dc
+=2d_{ab}\coth(\gamma d_{ab})$; the constant term vanishes under $Q$.
+No eigenvector of $\Phi_\gamma$ is assumed to have zero mean.
+
+With Fourier convention $\widehat g(\omega)=\int g(x)e^{-i\omega x}\,dx$,
+let $\varrho_\gamma(x)=\gamma\operatorname{sech}^2(\gamma x)/2$. Then
+\begin{equation}
+ \tanh(\gamma x)=(\varrho_\gamma*\operatorname{sgn})(x),\qquad
+ M_\gamma(\omega)=\widehat\varrho_\gamma(\omega)
+ =\frac{z}{\sinh z},\quad z=\frac{\pi|\omega|}{2\gamma},\quad M_\gamma(0)=1.
+ \label{eq:note-multiplier}
+\end{equation}
+The convolution follows by integrating $\varrho_\gamma$ up to $x$.
+For the transform, substitution $s=e^{2\gamma x}$ gives
+$\int_0^\infty s^{-i\nu}(1+s)^{-2}\,ds
+=\Gamma(1-i\nu)\Gamma(1+i\nu)=\pi\nu/\sinh(\pi\nu)$,
+where $\nu=\omega/(2\gamma)$.
+For $u=Qv$, the step sum $\sum_a u_a\operatorname{sgn}(c-z_a)$ is
+compactly supported and has derivative $2\sum_a u_a\delta_{z_a}$.
+Convolution followed by Parseval therefore yields
+\begin{equation}
+ v^TH_\gamma v=\frac2{\pi Mh}\int_{\mathbb R}
+ \frac{M_\gamma(\omega)^2}{\omega^2}
+ \left|\sum_a(Qv)_a e^{-i\omega z_a}\right|^2\,d\omega.
+ \label{eq:note-fourier-quadratic}
+\end{equation}
+The apparent singularity at zero is removable because $\mathbf1^TQv=0$.
+Every integrand contribution is nonnegative, and its only slope dependence
+is $M_\gamma^2$. In particular,
+\begin{equation}
+ \frac{M_{2\gamma}(\omega)^2}{M_\gamma(\omega)^2}
+ =\cosh^2\!\left(\frac{\pi|\omega|}{4\gamma}\right).
+ \label{eq:note-multiplier-gain}
+\end{equation}
+This factor is close to one for $|\omega|\ll\gamma$ and exponentially
+large for $|\omega|\gg\gamma$. Thus contributions at different frequencies
+change by different factors. Since $M_\gamma$ increases with $\gamma$,
+$H_{\gamma_b}\succeq H_{\gamma_a}$ for $\gamma_b\ge\gamma_a$;
+the minimum--maximum principle gives the same ordering of their eigenvalues.
+The finite-network normalization and corrections must still be retained.
+
+\paragraph{Explicit lattice and exterior-center corrections.}
+For $\nu\ne0$ the integrable product deficit
+$F_{ab}(c)=t_{\gamma,a}(c)t_{\gamma,b}(c)-1$ has transform
+\begin{equation}
+ \widehat F_{ab}(\nu)
+ =-\frac{4M_\gamma(\nu)}{\nu}
+ \sin(\nu d_{ab}/2)\coth(\gamma d_{ab})
+ e^{-i\nu(z_a+z_b)/2}.
+ \label{eq:note-deficit-transform}
+\end{equation}
+At $d_{ab}=0$ the limit is $-2M_\gamma(\nu)e^{-i\nu z_a}/\gamma$.
+This follows by transforming the integrable difference of tanhs in the
+identity used for \eqref{eq:note-integral-matrix}.
+Choose an integer $J\ge0$, put $\nu_k=2\pi k/h$, and retain
+\begin{equation}
+ G_\gamma=\frac2{Mh}\sum_{k=1}^J
+ Q^T\operatorname{Re}\!\left[e^{i\nu_k x_{\rm lat}}
+ \widehat F(\nu_k)\right]Q.
+ \label{eq:note-lattice-correction}
+\end{equation}
+Let $\mathcal F$ be a finite set of lattice centers absent from the network.
+Choose it so the remaining absent centers are precisely two exterior tails,
+starting at $c_R>z_{\max}$ and $c_L<z_{\min}$; in particular, include any
+absent centers within the sample interval. Define
+\begin{equation}
+ T_\gamma=\frac1M\sum_{c\in\mathcal F}Q^Tt_\gamma(c)t_\gamma(c)^TQ,
+ \qquad S_\gamma=H_\gamma+G_\gamma-T_\gamma.
+ \label{eq:note-corrected-matrix}
+\end{equation}
+For any $0<\vartheta<\pi/2$, set $\bar z=M^{-1}\sum_a z_a$,
+$d_R=c_R-z_{\max}>0$, and $d_L=z_{\min}-c_L>0$. The unretained terms obey
+\begin{align}
+ \delta_\gamma&=
+ \frac{8\gamma\|z-\bar z\mathbf1\|_2^2\sec^4\vartheta}{3Mh}
+ \frac{e^{-2\pi\vartheta(J+1)/(\gamma h)}}
+ {1-e^{-2\pi\vartheta/(\gamma h)}},\label{eq:note-grid-allowance}\\
+ \tau_\gamma&=
+ \frac{4(e^{-4\gamma d_R}+e^{-4\gamma d_L})}{1-e^{-4\gamma h}},
+ \label{eq:note-tail-allowance}\\
+ S_\gamma-(\delta_\gamma+\tau_\gamma)I
+ &\preceq Q^T\Phi_\gamma Q\preceq S_\gamma+\delta_\gamma I.
+ \label{eq:note-matrix-enclosure}
+\end{align}
+Here $z=(z_a)_{a=1}^M$. The retained matrices $G_\gamma,T_\gamma$
+need not be small; the allowances bound only their unretained terms.
+
+To prove the lattice allowance, let $u=Qv$ and
+$g(c)=\sum_a u_a\tanh(\gamma(c-z_a))$. Subtracting
+$\tanh(\gamma(c-\bar z))$ inside each term, then using Minkowski and
+Cauchy--Schwarz, gives
+\[
+ \int_{\mathbb R}|g(t\pm i\vartheta/\gamma)|^2\,dt
+ \le\frac{4\gamma}{3}\sec^4\vartheta
+ \|z-\bar z\mathbf1\|_2^2\|u\|_2^2.
+\]
+The derivative bound uses
+$|\operatorname{sech}^2(t+i\vartheta)|\le
+\sec^2\vartheta\operatorname{sech}^2t$ and
+$\int\operatorname{sech}^4t\,dt=4/3$ over the real line.
+Shift the Fourier contour of the analytic function $g(c)^2$ by
+$\vartheta/\gamma$; the displayed inequality bounds its absolute integral.
+Poisson summation and the geometric sum over $|k|>J$ give
+\eqref{eq:note-grid-allowance}, uniformly for unit $v$.
+For a right exterior center, projection cancels the limiting constant
+vector and $1-\tanh t\le2e^{-2t}$ gives
+$M^{-1}\|Q^Tt_\gamma(c)\|_2^2\le4e^{-4\gamma(c-z_{\max})}$.
+Summing both tails proves \eqref{eq:note-tail-allowance}.
+The infinite lattice sum equals $H_\gamma+G_\gamma+R_\gamma$ with
+$\|R_\gamma\|_2\le\delta_\gamma$. Subtracting all absent centers gives
+$Q^T\Phi_\gamma Q=S_\gamma+R_\gamma-T_{\rm tail,\gamma}$,
+where $0\preceq T_{\rm tail,\gamma}\preceq\tau_\gamma I$, proving
+\eqref{eq:note-matrix-enclosure}.
+
+\paragraph{Finite eigenvalue ratios.}
+Write $\beta_1\ge\cdots\ge\beta_{M-1}$ for the eigenvalues of the
+explicit matrix $S_\gamma$. They are computed from
+\eqref{eq:note-integral-matrix}--\eqref{eq:note-corrected-matrix},
+not fitted to the finite kernel's small eigenvalues.
+For $e=\mathbf1/\sqrt M$, define
+\begin{equation}
+ \ell_\gamma=e^T\Phi_\gamma e
+ =1+\sum_{j=1}^W\left[\frac1M\sum_{a=1}^M
+ \tanh(\gamma(z_a-x_j))\right]^2.
+ \label{eq:note-top-lower}
+\end{equation}
+Then $1\le\ell_\gamma\le\mu_1\le W+1$ by Rayleigh's principle and the
+trace bound. A sharper upper bound, useful for the two-sided interval, is
+\begin{equation}
+ b_\gamma=\|Q^T\Phi_\gamma e\|_2,\quad
+ a_\gamma=\beta_1+\delta_\gamma,\quad
+ L_\gamma=\min\!\left\{W+1,
+ \frac{\ell_\gamma+a_\gamma+
+ \sqrt{(\ell_\gamma-a_\gamma)^2+4b_\gamma^2}}2\right\}.
+ \label{eq:note-top-upper}
+\end{equation}
+Indeed, in the basis $[e,Q]$, bound the off-diagonal block by $b_\gamma$
+and the restricted block by $a_\gamma I$ using
+\eqref{eq:note-matrix-enclosure}. The resulting scalar $2\times2$
+matrix bounds the largest Rayleigh quotient. Computing
+$\Phi_\gamma e=A_\gamma(A_\gamma^Te)$ requires no eigendecomposition
+of the finite kernel.
+
+\begin{theorem}[Finite-network rate bounds]
+\label{thm:note-rates}
+Under the preceding definitions, set
+$\underline\rho_1=\overline\rho_1=1$. For $2\le i\le M-1$, define
+\begin{equation}
+ \underline\rho_i(\gamma)
+ =\frac{[\beta_i-\delta_\gamma-\tau_\gamma]_+}{L_\gamma},\qquad
+ \overline\rho_i(\gamma)
+ =\min\!\left\{1,\frac{\beta_{i-1}+\delta_\gamma}{\ell_\gamma}\right\},
+ \label{eq:note-ratio-interval}
+\end{equation}
+where $[s]_+=\max(s,0)$. At $i=M$, use
+$\underline\rho_M=0$ and the same upper formula.
+Then $\underline\rho_i\le\mu_i/\mu_1\le\overline\rho_i$ for every $i$.
+For indices $i>W+1$, both endpoints may instead be set to zero.
+\end{theorem}
+\begin{proof}
+Let $\kappa_i$ be the ordered eigenvalues of $Q^T\Phi_\gamma Q$.
+The matrix enclosure and compression interlacing give
+\[
+ \beta_i-\delta_\gamma-\tau_\gamma\le\kappa_i
+ \le\beta_i+\delta_\gamma,\qquad
+ \mu_i\ge\kappa_i\ge\mu_{i+1}.
+\]
+Thus the lower bound for $\mu_i$ uses $\beta_i$, and its upper bound uses
+$\beta_{i-1}$. Divide by the appropriate upper or lower bound on $\mu_1$.
+Nonnegativity supplies the last lower endpoint. Finally,
+$\operatorname{rank}A_\gamma\le W+1$ proves the stated exact zeros.
+\end{proof}
+
+The normalization is also explicit in $\gamma$.
+An exterior center at distance $d_j>0$ from the sample interval contributes
+at least $\tanh^2(\gamma d_j)$ to \eqref{eq:note-top-lower}.
+These feature means can already be near saturation while the
+high-frequency factors in \eqref{eq:note-fourier-quadratic} remain small.
+This explains how the numerator and denominator can change at different
+rates; the finite bounds retain both changes. Increasing $\gamma$ orders
+$H_\gamma$, but does not by itself order every normalized eigenvalue of
+$\Phi_\gamma$. A particular ratio increase is certified whenever
+$\underline\rho_i(\gamma_b)>\overline\rho_i(\gamma_a)$.
+For fixed $J,\vartheta$ and exterior-center sets, $\delta_\gamma$ increases
+and $\tau_\gamma$ decreases with $\gamma$; more retained lattice terms can
+be needed at larger slopes.
+
+\paragraph{Proof of the output-error bound and conversion to steps.}
+Use the upper endpoints $\overline\rho_i$ above as the rate bounds in
+Theorem~\ref{thm:note-output}. Since $(1-\rho/2)^{2n}$ decreases on
+$0\le\rho\le1$, substituting
+\eqref{eq:note-ratio-interval} into
+\eqref{eq:note-exact-spectral-error} proves Theorem~\ref{thm:note-output}:
+\begin{equation}
+ \underbrace{\sum_i p_i(1-\overline\rho_i/2)^{2n}}_{\underline E_\gamma(n)^2}
+ \le E_\gamma(n)^2\le
+ \underbrace{\sum_i p_i(1-\underline\rho_i/2)^{2n}}_{\overline E_\gamma(n)^2}.
+ \label{eq:note-error-sandwich}
+\end{equation}
+The $p_i$ are the actual finite-kernel target weights from
+\eqref{eq:note-target-weights}, not weights from $H_\gamma$ or $S_\gamma$.
+For $0<\varepsilon<1$, let $n_\varepsilon$ be the first integer with
+$E_\gamma(n)\le\varepsilon$. With $\min\varnothing=+\infty$,
+\begin{equation}
+ \min\{n\ge0:\underline E_\gamma(n)\le\varepsilon\}
+ \le n_\varepsilon\le
+ \min\{n\ge0:\overline E_\gamma(n)\le\varepsilon\}.
+ \label{eq:note-step-interval}
+\end{equation}
+Hence upper rate bounds give necessary training times; lower rate bounds
+give sufficient times. All statements concern the specified frozen-feature,
+exact-arithmetic gradient descent recurrence.
+
+\paragraph{Numerical example and scope.}
+\label{app:note-step-example}
+The $9.20\times10^{11}$ example uses $N=128$, $h=1/64$, 129 core
+centers and 12 halo centers per side ($W=153$), 263 equally spaced
+endpoint-inclusive samples, and
+$f(x)=\sin(2\pi x)+\tfrac12\sin(6\pi x)+\tfrac14\sin(10\pi x)$.
+At $\gamma=4$, the evaluated necessary, finite-kernel spectral, and
+sufficient counts for $1\%$ relative training error are respectively
+$9.20\times10^{11}$, $1.008\times10^{12}$, and $3.31\times10^{12}$.
+A numerical readout refit gives relative error $5.85\times10^{-4}$.
+This is a separate configuration from the main width-512 experiment.
+
+For these calculations, a positive quadrature feature factor evaluates
+$H_\gamma$, and retained corrections are added in its singular-vector
+basis to avoid cancellation in small eigenvalues. Truncating the center
+integral at distance $P/\gamma$ beyond the sample interval omits a positive
+matrix of norm at most $2e^{-4P}/(h\gamma)$; its allowance is added to
+upper eigenvalue endpoints and the restricted-block bound used in
+$L_\gamma$. Ratios for the actual finite kernel are computed by
+squaring feature singular values. Powers use
+$\exp(2n\log(1-\rho/2))$ with \texttt{log1p}, and crossing counts use
+integer bracketing and binary search, not trillion-step training.
+
+The saved checks increase quadrature order from 10 to 16 and padding
+from 20 to 24, and compare independent feature-SVD drivers.
+For the full error curves, the calculations also use the empirical
+roundoff allowance $64\varepsilon_{64}\|S_\gamma\|_2$, with
+$\varepsilon_{64}=2^{-52}$: subtract it from lower eigenvalue numerators
+and add it to upper numerators and the restricted-block upper bound.
+Numerically unresolved components are dropped only from the lower error
+curve; the upper curve gives them zero lower rate and retains their full energy.
+These are refinement-checked floating-point evaluations of the analytic
+bounds, not directed-rounding certificates for the displayed counts.
