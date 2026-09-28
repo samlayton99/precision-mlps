@@ -22,6 +22,12 @@ particular, a horizon proportional to width is not automatically a practical
 many-update guarantee. The result concerns effective fine flow; transfer
 to ordinary GD requires tracking and discretization control separately.
 
+The [completed numerical assessment](../results/checkpoint_D_optimizers/expD34_readout_race/moment_persistence/README.md)
+finds that the present constants are not yet useful for the observed long
+slowdown: 22 of 223 initial states are admitted, and the strongest companion
+GD bound lasts at most 38 updates. Read the proof as an established
+structural argument whose quantitative implementation still needs work.
+
 | Symbol | Meaning |
 |---|---|
 | $W$ | Physical number of neurons. |

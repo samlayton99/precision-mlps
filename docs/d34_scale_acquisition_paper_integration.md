@@ -55,10 +55,10 @@ a second observation repeated elsewhere.
 The revised argument has five steps:
 
 1. **Observe the precision gap and population scale together.** Figure 4
-   places joint Adam/GD and fixed-geometry Adam/GD output errors beside the
-   RMS relative slopes of the same joint runs. Keep the common five-million
-   budget and selection protocol visible. A supplied geometry is a useful
-   comparison, not a universally necessary geometry.
+   shows slope scaling with width, joint versus fixed-geometry output errors,
+   and the separate matched Adam intervention responses. Keep the common
+   five-million-update budget of the training comparison visible. A supplied
+   geometry is a useful comparison, not a universally necessary geometry.
 2. **Identify the surviving force.** Explain $\nabla L=R+F$ before using
    either symbol in a theorem. Figure 5a shows small tracking during the
    actual post-transient continuation used in panel (b).
@@ -87,16 +87,19 @@ ratio or an endpoint-displacement bound before knowing why either matters.
 
 ## Figure roles and reading instructions
 
-**Figure 4: the observation.** Reuse the spectrum note's paired layout with
-RMS only. The rebuilt figure keeps all four error curves, both joint RMS
-curves, seed variation, and the supplied $1/4$ reference. It removes the
-99th-percentile curves. The ordinate is the actual scale
-$\lambda_{\rm RMS}(t)=h\|\gamma(t)\|_2/\sqrt W$, not displacement since a
-restart. The error ordinate is raw relative training error, with the saved
-extrema preserved in display bands. Do not claim failure at 1% for the
-Adam endpoint: its $1.81\times10^{-3}$ error already passes that threshold.
-The relevant observation is its precision gap to $6.62\times10^{-7}$ on
-supplied features.
+**Figure 4: the observation.** The final three-panel layout shows acquired
+mean absolute slopes versus width, the full five-million-update raw-error
+comparison, and 48 Adam intervention responses. Panel (c) compares actual
+accumulated fine-slope path to the percentage change in endpoint RMS slope,
+each relative to its matched native control over updates 130k–140k. It uses
+six targets in a separate campaign, not the training cohort in panels (a,b).
+Both positive and negative responses remain visible: greater fine motion
+need not produce a substantially larger endpoint scale. Use the compact
+data and renderer in [the figure handoff](../figure_handoff/optimization/README.md)
+for the exact current artwork and endpoint values. Earlier paired RMS and
+percentile figures are historical diagnostics. The output-error argument
+concerns the precision gap to supplied features, not failure at an arbitrary
+1% threshold.
 
 **Figure 5: mechanisms.** Both panels use smooth step, width 705, seed 30,
 and the same unmodified checkpoint at 20k GD updates, followed to 120k.

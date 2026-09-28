@@ -39,8 +39,14 @@ states an explicit transfer to ordinary GD. The subsequent
 found that none of 223 archived states satisfies its aligned sector: mixed
 signs and hidden biases are substantial. This sufficient example does not
 explain the archived populations. The full heterogeneous polynomial force
-is accurate at the tested wide states, so the next theorem should retain
-those variables rather than perturb away the violations.
+is accurate at the tested wide states. The new
+[exact-tanh moment theorem](d34_moment_persistence_theorem.md) retains mixed
+signs and biases and proves structural persistence from initial data; its
+[GD companion](d34_moment_persistence_gd.md) also derives tracking control.
+The [numerical assessment](../results/checkpoint_D_optimizers/expD34_readout_race/moment_persistence/README.md)
+is a limitation: only 22 of 223 states pass the conservative initial-region
+test, and the strongest new GD recurrence reaches at most 38 updates.
+The proofs are complete, but these constants do not explain the long slowdown.
 
 This is the main reading note. Sections 1–2 explain the force and its direction;
 Sections 3–4 test its coupled evolution and develop a surrogate; Section 5
@@ -714,26 +720,49 @@ rules out direct application of this sector theorem to the archived states:
 zero of 223 satisfy the cone, and the median negative-product fraction is
 44.6%. Biases are also non-negligible in rescaled coordinates. These are not
 rare exceptional neurons. The theorem remains a sufficient illustration;
-the next structural argument must keep mixed signs and bias moments in the
+the structural argument must keep mixed signs and bias moments in the
 shared compensation. Generated-error correction can also lose sensitivity,
 so the separate algebraic-slowing mechanism remains relevant. Neither result
 justifies assuming strong restoration in the wide panel.
 
-Generic parameter-maxima bounds currently support at most eighteen updates
-in the recent first-exit audit, even with tracking set to zero. That is a
-limitation of those constants, not observed escape after eighteen updates.
-The immediate objective is a mechanism-based lower bound on acquisition time
-with a justified duration. Accurate prediction of every small movement is
-not required. The [experiment report](../results/checkpoint_D_optimizers/expD34_readout_race/mechanism_persistence/README.md)
-retains the numerical limitations alongside the successful comparisons.
+**The new moment proof closes the logic, but its duration is too short.**
+For example, opposite readout–slope products need not destroy coarse
+conditioning: the sum of their squared sizes can remain large. The
+[exact-tanh theorem](d34_moment_persistence_theorem.md) controls that positive
+moment and the total particle moment through the same weak fine flow that
+moves the slopes. These estimates preserve conditioning and close a support
+bound. They then bound force reinforcement and the fraction of labels ever
+attaining $\lambda=0.25$. There is no assumption of a small future force.
+
+The [GD companion](d34_moment_persistence_gd.md) adds a proved tracking
+recurrence and contains each update segment. Its initial-force refinement
+uses the checkpoint's small effective force to limit subsequent movement.
+Across 223 archived states, 22 pass the initial-region test; the primary
+GD bound reaches at most five updates and the refinement reaches 38.
+These are limits of sufficient estimates, not observed escape times.
+The earlier generic calculation reached at most eighteen updates on its
+own panel. None provides the long practical acquisition delay we seek.
+
+The [new assessment](../results/checkpoint_D_optimizers/expD34_readout_race/moment_persistence/README.md)
+also shows what remains unexplained. Across twelve width-1409 continuations,
+the full effective force grows by at most 4.45% over 20,000 updates;
+the median increase is 1.43%. Moments and coarse conditioning barely change.
+These endpoints lie outside the proved windows. The prediction to establish
+is that this weak reinforcement follows from preserved signed feedback,
+not merely from an unsigned bound on every possible Jacobian response.
+The immediate proof target is therefore the signed curvature of the
+compensated fine force on a moment region, together with a less wasteful
+coarse-conditioning estimate. This does not require universal contraction
+or an accurate forecast of every small movement.
 
 The force reduction and coupled forecasts have evidence across functions;
 the width-dependent rate has a conditional proof; selected empirical instances
 have finite rounding-controlled certificates. A broadly useful theorem still
 needs a preserved structural condition shown to cover the observed
-heterogeneous states, with its transfer errors controlled. The new theorem
-proves preservation in an explicit sector whose direct empirical coverage
-has now failed. Accurate wide-state polynomial force reconstruction supports
+heterogeneous states for a useful duration, with its transfer errors
+controlled. The sector theorem fails direct coverage; the exact-tanh moment
+theorem has broader hypotheses but still yields short numerical windows.
+Accurate wide-state polynomial force reconstruction supports
 the fuller coupled model, but does not establish a future feedback bound or
 an autonomous trajectory forecast. None of these claims requires
 permanent trapping or establishes entry into the post-transient regime from

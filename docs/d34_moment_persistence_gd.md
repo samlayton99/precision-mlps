@@ -7,6 +7,11 @@ state. The result applies to the exact tanh network, with mixed readout signs
 and nonzero hidden biases. Its constants are deliberately conservative;
 whether the resulting interval is informative is a separate numerical question.
 
+The [completed audit](../results/checkpoint_D_optimizers/expD34_readout_race/moment_persistence/README.md)
+finds a maximum of five updates for the primary recurrence and 38 for the
+initial-force refinement in Section 6. Thus these proofs do not yet supply
+a useful long-horizon acquisition bound on the archived trajectories.
+
 The starting example is a checkpoint with small rescaled parameters and a
 small, but nonzero, coarse disequilibrium. The recurrence below allows this
 disequilibrium to decay or initially grow. It does not require it to have a
