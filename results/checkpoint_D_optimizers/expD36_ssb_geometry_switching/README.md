@@ -1,5 +1,7 @@
 # Metric restoration and geometry learning with SSBroyden
 
+**Data availability (September 27, 2026).** The committed summaries, figures, curated states, and numerical evidence are retained. The untracked full histories and restart checkpoints were deleted during the approved storage cleanup. Checkpoint paths in the historical handoff describe the original campaign; resuming those runs requires recreating the missing states through training.
+
 The clearest result is a restriction on the proposed switching rule: a direction
 that improves future readout learnability can still permit almost no actual
 geometry movement. At 17 measured late switching states, mixing back the

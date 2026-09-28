@@ -1,5 +1,7 @@
 # Learning precision with scaled coordinates, gradient memory, and resets
 
+**Data availability (September 27, 2026).** Committed summaries, figures, curated states, and precision audits remain available. The untracked full histories, solver states, and trajectory archives were deleted during the approved storage cleanup. The archived hash inventories document the original executions; they do not imply that the corresponding raw files are still stored locally.
+
 The experiments distinguish two limits: stable first-order training can remain slow because the residual occupies weak directions, while constant-rate Adam can keep making excursions that obscure a much smaller approximation error. Correct coordinate scales and neighboring readouts help, but neither makes the learned least-squares system uniformly well conditioned. Gradient memory accelerates some persistent residual modes; it does not remove their small singular values.
 
 The strongest repeatable first-order improvement is finishing Adam with a shared-rate schedule. At width 1024, fresh-seed median final MSEs are $9.44\times10^{-11}$ on sine, $1.21\times10^{-10}$ on mixed sine, and $6.85\times10^{-10}$ on degree nine. Gradient memory also helps matched GD continuations; neuron recycling does not consistently help the tuned models. SSBroyden's non-descent metric reset reaches $2.03\times10^{-21}$ on its best sine seed, still far above the construction's error. These are attained results within a finite budget, not demonstrated convergence floors.
