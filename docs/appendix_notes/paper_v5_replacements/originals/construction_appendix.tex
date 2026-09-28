@@ -1,0 +1,1493 @@
+% Drop-in replacement for the construction appendix.
+% Requires amsmath, amssymb, amsthm, and the paper's theorem environments.
+% All citation keys are already in the current bibliography or its three
+% previously supplied additions. No further bibliography entries are added.
+\providecommand{\R}{\mathbb R}
+\providecommand{\C}{\mathbb C}
+\providecommand{\Om}{\Omega}
+\providecommand{\eps}{\varepsilon}
+\providecommand{\dist}{\operatorname{dist}}
+\providecommand{\sech}{\operatorname{sech}}
+\providecommand{\norm}[1]{\ensuremath{\left\lVert #1\right\rVert}}
+\providecommand{\Erep}{E_{\mathrm{rep}}}
+\providecommand{\Cbd}{C_{\mathrm{bd}}}
+\providecommand{\Dlam}{D_\lambda}
+\providecommand{\capp}{c_{\mathrm{app}}}
+\providecommand{\QUILLMainTheorem}{Theorem~\ref{thm:qi-numerics}}
+\providecommand{\QUILLMainCorollary}{Corollary~\ref{cor:qi-log-width}}
+% Use a dedicated reference command so a template's redefinition of \eqref
+% cannot produce "equation equation ...".
+\providecommand{\qeqref}[1]{(\ref{#1})}
+
+\appendix
+\numberwithin{equation}{section}
+\section{Construction theory}
+\label{app:construction-theory}
+
+We prove Theorem~\ref{thm:qi-numerics-explicit}, the precise statement underlying
+\QUILLMainTheorem. We first construct an accurate reference network in the
+prescribed tanh dictionary, and then establish its recovery from in-domain
+samples and the resulting continuous-RMS bound. Section~\ref{app:gelu-silu}
+extends the representation argument to exact GELU and SiLU.
+
+\subsection{Setup and theorem statement}
+\label{sec:setup}
+Let $\Om=[-1,1]$, $I_\Delta=[-1-\Delta,1+\Delta]$, and $\delta,\Delta,B>0$.
+The class $\mathcal A_{\delta,B}(I_\Delta)$ consists of the functions real on
+$I_\Delta$, holomorphic on
+\[
+ U_\delta(I_\Delta)=\{z\in\C:\dist(z,I_\Delta)<\delta\},
+\]
+and bounded there by $B$. We use
+\[
+ \norm{g}_{2,\Om}^2=\frac12\int_{-1}^1|g(x)|^2\,dx,
+ \qquad \norm{g}_\infty=\sup_{x\in\Om}|g(x)|.
+\]
+Fix $0<\lambda\le1$ and $a_H>0$, and define
+\begin{equation}
+ h=\frac2N,\quad x_j=-1+jh,\quad
+ R=\lceil a_H\sqrt N\rceil,\quad \gamma=\frac\lambda h,
+ \quad W=N+2R+1.
+ \label{eq:geometry}
+\end{equation}
+The tanh dictionary is
+\begin{equation}
+ q_c(x)=b_c+\sum_{j=-R}^{N+R}w_j\tanh(\gamma(x-x_j)),
+ \qquad \norm{c}_1=|b_c|+\sum_j|w_j|.
+ \label{eq:dictionary}
+\end{equation}
+Call this geometry admissible if
+\begin{equation}
+ (R+\tfrac12)h\le\Delta,\quad \gamma\delta\ge4\pi,
+ \quad \lambda R\ge2\log2,\quad
+ N\ge16\max\{1,a_H^2\}.
+ \label{eq:admissible}
+\end{equation}
+At observation density $s\in\mathbb N$, use only core samples
+\begin{equation}
+ z_i=-1+\frac{ih}{s},\quad 0\le i\le Ns,
+ \qquad M=Ns+1,\qquad
+ \norm{g}_{2,X}^2=\frac1M\sum_{i=0}^{M-1}|g(z_i)|^2.
+ \label{eq:samplegrid}
+\end{equation}
+There are $n=W+1$ readout coordinates, including the output bias. The sampled
+algorithm is reference-scaled truncated SVD, as specified in
+Section~\ref{sec:recovery}; it is not an unregularized least-squares minimizer.
+
+\begin{theorem}[Approximation and finite-precision recovery]
+\label{thm:qi-numerics-explicit}
+Let $f\in\mathcal A_{\delta,B}(I_\Delta)$ and let \qeqref{eq:geometry} be
+admissible. Suppose the numerical conditions in Section~\ref{sec:recovery}
+and the sampling and input-rounding conditions in
+Section~\ref{sec:continuous} hold, with $M\ge n$.
+Every returned network satisfies
+\begin{align}
+ \norm{\widehat c_W}_1
+ &\le 2BK_{\rm ref}+\eps_{\rm coeff,W},
+ \label{eq:reader-coeff}\\
+ \norm{f-\widehat q_W}_{2,\Om}
+ &\le C_f\left(e^{-\capp W}+\frac{e^{-\pi^2/\lambda}}W\right)
+       +\eps_{\rm rec,W},
+ \label{eq:reader-error}\\
+ \capp&=\tfrac18\min\{\pi\delta,\lambda a_H^2\},
+ \qquad C_f=\frac{512\pi B}{\lambda\delta}.
+ \label{eq:capp}
+\end{align}
+Here $K_{\rm ref}$ is a width-independent bound on the sum of the reference
+envelopes in \qeqref{eq:coordinate-envelope}. The nonnegative allowances
+$\eps_{\rm coeff,W}$ and $\eps_{\rm rec,W}$ are defined in
+\qeqref{eq:epsrec}. All input-rounding contributions
+are included in these allowances; in particular, $C_f$ does not depend on $W$.
+\end{theorem}
+
+\paragraph{Proof outline.}
+Sections~\ref{sec:local}--\ref{sec:witness} construct the tanh reference and
+bound its coefficients. Section~\ref{app:gelu-silu} gives the two activation
+extensions. Section~\ref{sec:recovery} applies reference-scaled truncated SVD,
+Section~\ref{sec:continuous} transfers the sampled bounds to continuous error,
+and Section~\ref{sec:assemble} assembles the theorem and its width corollary.
+
+\subsection{Local analytic tanh representation}
+\label{sec:local}
+Set
+\begin{equation}
+ d=\frac\pi{2\gamma},\quad r=(R+\tfrac12)h,
+ \quad J=[a,b]=[-1-r,1+r],\quad x_0=-1.
+ \label{eq:local-geometry}
+\end{equation}
+The $W$ centers in \qeqref{eq:geometry} are the midpoints of the width-$h$
+cells partitioning $J$, and $Wh=2+2r$. Define
+\begin{equation}
+ K_\gamma(t)=\frac\gamma2\sech^2(\gamma t),\qquad
+ a_\gamma(z)=\frac{f(z+id)-f(z-id)}{2id}
+            =\frac1{2d}\int_{-d}^d f'(z+iv)\,dv.
+ \label{eq:density}
+\end{equation}
+Approximating a derivative by localized kernels and integrating the expansion
+is a standard route to sigmoidal approximation
+\cite{Costarelli2015Approximation,Buhmann_Jager_2022quasiinterpolation}.
+Here the shifted-value formula gives a density adapted to a finite analytic
+neighborhood.
+
+\begin{lemma}[Local density bound]
+\label{lem:density}
+If $\sigma+d<\delta$, the density is holomorphic near
+$J+i[-\sigma,\sigma]$, is real on $J$, and satisfies
+\begin{equation}
+ \sup_{t\in J,\ |y|\le\sigma}|a_\gamma(t+iy)|
+ \le M_\sigma:=\frac B{\delta-\sigma-d}.
+ \label{eq:density-bound}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Cauchy's estimate gives $|f'(t+i(y+v))|\le B/(\delta-\sigma-d)$ for
+$|v|\le d$; average in \qeqref{eq:density}. The shifted formula gives
+holomorphy, and $f(\bar z)=\overline{f(z)}$ gives reality on $J$.
+\end{proof}
+For $x\in\Om$, put
+\begin{align}
+ D_x(z)&=\tfrac12[\tanh(\gamma(x-z))-\tanh(\gamma(x_0-z))],
+ \qquad F_x(z)=a_\gamma(z)D_x(z), \label{eq:D-F}\\
+ (\mathcal C_h f)(x)&=f(x_0)+\int_a^bF_x(t)\,dt, \label{eq:Ch}\\
+ H_x(z)&=\coth(\gamma(x-z))-\coth(\gamma(x_0-z)), \label{eq:Hx}\\
+ (\mathcal B_hf)(x)&=\frac1{4d}\int_{-d}^d
+ [f(a+iy)H_x(a+iy)-f(b+iy)H_x(b+iy)]\,dy. \label{eq:Bh}
+\end{align}
+
+\begin{lemma}[Finite local representation]
+\label{lem:finite-rep}
+For $x\in\Om$,
+\begin{equation}
+ f(x)=\mathcal C_hf(x)+\mathcal B_hf(x),\qquad
+ \norm{\mathcal B_hf}_\infty
+ \le B[\coth(\gamma r)-\coth(\gamma(r+2))]
+ \le\frac{2B}{e^{2\gamma r}-1}.
+ \label{eq:finite-rep}
+\end{equation}
+\end{lemma}
+\begin{proof}
+The assertion at $x=x_0$ is immediate. Otherwise, $\gamma d=\pi/2$ implies
+$H_x(t\pm id)=2D_x(t)$, and hence
+\[
+ \int_a^bF_x(t)\,dt=\frac1{4id}\left[
+ \int_a^b f(t+id)H_x(t+id)\,dt-
+ \int_a^b f(t-id)H_x(t-id)\,dt\right].
+\]
+On the positively oriented rectangle $J+i[-d,d]$, the residues of $fH_x$
+at $x$ and $x_0$ are $-f(x)/\gamma$ and $f(x_0)/\gamma$.
+Separating the two horizontal integrals and the vertical sides gives
+\qeqref{eq:finite-rep}, since $4d\gamma=2\pi$.
+For $\ell=x-x_0\in[0,2]$, the expansion
+$\coth w=1+2\sum_{k\ge1}e^{-2kw}$ for $\Re w>0$ and oddness give
+\begin{align*}
+ |H_x(a+iy)|&\le\coth(\gamma r)-\coth(\gamma(r+\ell)),\\
+ |H_x(b+iy)|&\le\coth(\gamma(r+2-\ell))-\coth(\gamma(r+2)).
+\end{align*}
+Each is at most $\coth(\gamma r)-\coth(\gamma(r+2))$.
+Insert these bounds in \qeqref{eq:Bh} and use
+$\coth t-1=2/(e^{2t}-1)$.
+\end{proof}
+Since $\mathcal B_h f$ depends only on the two vertical segments through
+$a$ and $b$, the representation gives an explicit boundary functional.
+Discretizing the integral introduces a second endpoint contribution, which
+will be corrected together with this functional.
+
+\subsection{Midpoint discretization}
+\label{sec:quadrature}
+We use the finite-interval characteristic-function argument of
+\cite[Secs.~4--5]{JavedTrefethen2014}. The following formulation fixes the
+orientations and retains the residues of a meromorphic integrand.
+Let $b=a+m_qh$, $t_j=a+(j+\tfrac12)h$, and define
+\[
+ Q_hF=h\sum_{j=0}^{m_q-1}F(t_j),\qquad IF=\int_a^bF(t)\,dt,
+ \qquad \zeta_0=a+h/2.
+\]
+For $F$ meromorphic near $[a,b]+i[-\sigma,\sigma]$, with finitely many poles
+and none on the boundary or real segment, put
+\begin{equation}
+ \mathcal K_h(z)=\frac1{2i}\cot\frac{\pi(z-\zeta_0)}h,
+ \qquad R_h^\pm=\mathcal K_h\pm\tfrac12.
+ \label{eq:characteristic}
+\end{equation}
+Let $\mathcal P_\pm$ be its upper/lower pole sets, and set
+\begin{align}
+ \mathcal H_h[F]&=\int_a^b
+ [R_h^-(t-i\sigma)F(t-i\sigma)-R_h^+(t+i\sigma)F(t+i\sigma)]\,dt,
+ \label{eq:Hquad}\\
+ \mathcal V_h[F]&=i\int_0^\sigma
+ \frac{F(b+iy)-F(a+iy)-F(b-iy)+F(a-iy)}{1+e^{2\pi y/h}}\,dy,
+ \label{eq:Vquad}\\
+ \mathcal P_h[F]&=2\pi i\left[
+ \sum_{p\in\mathcal P_+}\operatorname{Res}(R_h^+F;p)
+ +\sum_{p\in\mathcal P_-}\operatorname{Res}(R_h^-F;p)\right].
+ \label{eq:Pquad}
+\end{align}
+For a simple pole, $\operatorname{Res}(R_h^\pm F;p)
+=R_h^\pm(p)\operatorname{Res}(F;p)$.
+
+\begin{lemma}[Signed midpoint identity]
+\label{lem:midpoint}
+\begin{equation}
+ Q_hF-IF=\mathcal H_h[F]+\mathcal V_h[F]-\mathcal P_h[F],
+ \label{eq:midpoint}
+\end{equation}
+and, in their respective half-planes,
+\begin{equation}
+ |R_h^+(z)|\le\frac1{e^{2\pi\Im z/h}-1},\qquad
+ |R_h^-(z)|\le\frac1{e^{2\pi|\Im z|/h}-1}.
+ \label{eq:Rbounds}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Apply the contour argument in \cite[Secs.~4--5]{JavedTrefethen2014} with
+\qeqref{eq:characteristic}. Equivalently, the positively oriented upper
+path $b\to b+i\sigma\to a+i\sigma\to a$ and lower path
+$a\to a-i\sigma\to b-i\sigma\to b$ give
+\[
+ \int_{\Gamma_+}F=2\pi i\sum_{\mathcal P_+}\operatorname{Res}F-IF,
+ \qquad
+ \int_{\Gamma_-}F=2\pi i\sum_{\mathcal P_-}\operatorname{Res}F+IF.
+\]
+Every grid pole of $\mathcal K_h$ has residue $h/(2\pi i)$. Apply the residue
+theorem to $\mathcal K_hF$ on the combined contour and substitute
+$\mathcal K_h=R_h^+-1/2$ above and $R_h^-+1/2$ below. At the half-cell
+endpoints, $R_h^+(a+iy)=R_h^+(b+iy)=(1+e^{2\pi y/h})^{-1}$ and the lower
+values are their negatives. These identities give \qeqref{eq:midpoint}.
+Writing $w=e^{2\pi i(z-\zeta_0)/h}$ gives $R_h^+=w/(w-1)$ and
+$R_h^-=1/(w-1)$, proving \qeqref{eq:Rbounds}.
+\end{proof}
+For tanh choose
+\begin{equation}
+ k=\left\lceil\frac\delta{8d}\right\rceil,\qquad \sigma=2kd.
+ \label{eq:sigmachoice}
+\end{equation}
+Admissibility implies $d\le\delta/8$ and
+\begin{equation}
+ \delta/4\le\sigma\le\delta/2,\quad
+ \sigma+d\le5\delta/8,\quad M_\sigma\le4B/\delta.
+ \label{eq:sigmaprops}
+\end{equation}
+Also $\gamma\sigma=k\pi$, so $D_x(t\pm i\sigma)=D_x(t)$.
+
+\begin{lemma}[Tanh quadrature bounds]
+\label{lem:tanhquad}
+Uniformly for $x\in\Om$,
+\begin{align}
+ |\mathcal H_h[F_x]|&\le\frac{4M_\sigma}{e^{2\pi\sigma/h}-1},
+ \label{eq:Hbound}\\
+ |\mathcal P_h[F_x]|&\le\frac{4\pi M_\sigma}\gamma
+ \sum_{\ell=0}^{k-1}\frac1{e^{(2\ell+1)\pi^2/\lambda}-1},
+ \label{eq:Pbound}\\
+ |\mathcal V_h[F_x]|&\le\frac{4M_\sigma h\log2}{\pi(e^{2\gamma r}-1)}.
+ \label{eq:Vbound}
+\end{align}
+\end{lemma}
+\begin{proof}
+On the real axis, $D_x(t)=\int_{x_0}^xK_\gamma(v-t)\,dv\ge0$ and
+$\int_\R D_x(t)\,dt=x-x_0\le2$. Together with imaginary periodicity and
+\qeqref{eq:Rbounds}, this proves \qeqref{eq:Hbound}.
+The pole families are
+\[
+ x\pm i(2\ell+1)d,\qquad x_0\pm i(2\ell+1)d,
+ \qquad 0\le\ell<k.
+\]
+Their residues in $D_x$ have modulus $1/(2\gamma)$, and
+$2\pi(2\ell+1)d/h=(2\ell+1)\pi^2/\lambda$, giving \qeqref{eq:Pbound}.
+At the vertical sides, subtract the common saturated value of the two tanhs
+and use $\tanh w-1=-2/(e^{2w}+1)$ for $\Re w>0$, together with oddness.
+This gives $|D_x(a\pm iy)|,|D_x(b\pm iy)|\le2/(e^{2\gamma r}-1)$.
+Now use \qeqref{eq:Vquad} and
+$\int_0^\infty(1+e^{2\pi y/h})^{-1}\,dy=h\log2/(2\pi)$.
+\end{proof}
+The midpoint network is
+\begin{equation}
+ q_h(x)=f(x_0)+h\sum_{j=-R}^{N+R}a_\gamma(x_j)D_x(x_j).
+ \label{eq:baseline-network}
+\end{equation}
+Its weights $w_j^{\rm base}=ha_\gamma(x_j)/2$ satisfy
+\begin{equation}
+ |w_j^{\rm base}|\le\frac{Bh}\delta,\qquad
+ \sum_j|w_j^{\rm base}|\le\frac{2B(1+\Delta)}\delta.
+ \label{eq:baseline-coeff}
+\end{equation}
+Subtracting \qeqref{eq:midpoint} from the finite representation gives
+\begin{equation}
+ f-q_h=\mathcal B_h^{\rm eff}f+\mathcal P_h[F_x]-\mathcal H_h[F_x],
+ \qquad \mathcal B_h^{\rm eff}f:=\mathcal B_hf-\mathcal V_h[F_x].
+ \label{eq:baseline-signed}
+\end{equation}
+Thus the correction must treat both the representation boundary term and the
+midpoint endpoint term.
+
+\subsection{Boundary correction using the existing halo}
+\label{sec:boundary}
+Set
+\begin{equation}
+ z_-(x)=e^{-2\gamma(x-a)},\quad z_+(x)=e^{-2\gamma(b-x)},
+ \quad\theta=e^{-\gamma r},\quad z_{\pm,0}=z_\pm(x_0).
+ \label{eq:zpm}
+\end{equation}
+All these arguments lie in $(0,\theta^2]$. For $\ell\ge1$, define
+\begin{align}
+ \mu_\ell^-&=\frac1{2d}\int_{-d}^d f(a+iy)e^{2i\ell\gamma y}\,dy,
+ &\mu_\ell^+&=\frac1{2d}\int_{-d}^d f(b+iy)e^{-2i\ell\gamma y}\,dy,
+ \label{eq:mu}\\
+ \nu_\ell^-&=i(-1)^\ell\int_0^\sigma
+ \frac{a_\gamma(a-iy)e^{-2i\ell\gamma y}-a_\gamma(a+iy)e^{2i\ell\gamma y}}
+ {1+e^{2\pi y/h}}\,dy, \label{eq:numinus}\\
+ \nu_\ell^+&=i(-1)^\ell\int_0^\sigma
+ \frac{a_\gamma(b-iy)e^{2i\ell\gamma y}-a_\gamma(b+iy)e^{-2i\ell\gamma y}}
+ {1+e^{2\pi y/h}}\,dy. \label{eq:nuplus}
+\end{align}
+Write $g_\ell^\pm=\mu_\ell^\pm-\nu_\ell^\pm$,
+$G^\pm(z)=\sum_{\ell\ge1}g_\ell^\pm z^\ell$, and
+$\Dlam=\pi/(2\lambda)+4\log2/\pi$.
+
+\begin{lemma}[Boundary series]
+\label{lem:boundary-series}
+The coefficients are real, satisfy
+\begin{equation}
+ |g_\ell^\pm|\le M_h:=\frac{Bh}\delta\Dlam,
+ \label{eq:gh-bound}
+\end{equation}
+and give
+\begin{equation}
+ \mathcal B_h^{\rm eff}f(x)
+ =G^-(z_-(x))-G^-(z_{-,0})+G^+(z_+(x))-G^+(z_{+,0}).
+ \label{eq:boundary-series}
+\end{equation}
+\end{lemma}
+\begin{proof}
+Expand $\coth w=1+2\sum_{\ell\ge1}e^{-2\ell w}$ and
+$\tanh w=1+2\sum_{\ell\ge1}(-1)^\ell e^{-2\ell w}$ for $\Re w>0$;
+use oddness at the opposite endpoint. For example, writing
+$\Delta z_\pm^\ell=z_\pm(x)^\ell-z_{\pm,0}^\ell$, the left endpoint terms
+are $H_x(a+iy)=2\sum_{\ell\ge1}\Delta z_-^\ell e^{2i\ell\gamma y}$ and
+$D_x(a+iy)=\sum_{\ell\ge1}(-1)^\ell\Delta z_-^\ell e^{2i\ell\gamma y}$;
+the right endpoint has a minus sign and the conjugate phase. Absolute
+convergence permits termwise integration, yielding \qeqref{eq:boundary-series}.
+Since $\gamma d=\pi/2$,
+\begin{equation}
+ \int_{-d}^d e^{2i\ell\gamma y}\,dy=0\quad(\ell\ge1).
+ \label{eq:moment-cancel}
+\end{equation}
+Subtract $f(a)$ or $f(b)$ in the corresponding $\mu$ integral. Cauchy's bound
+$|f'|\le2B/\delta$ gives $|\mu_\ell^\pm|\le Bd/\delta$.
+Similarly, \qeqref{eq:sigmaprops} and the integral used in the preceding
+lemma give $|\nu_\ell^\pm|\le4Bh\log2/(\pi\delta)$.
+These estimates imply \qeqref{eq:gh-bound}; conjugate symmetry gives reality.
+\end{proof}
+The cancellation makes the boundary moments $O(Bh)$ and will give an
+$O(Bh)$ correction readout. The quadratic exponent in the halo size instead
+comes from combining a correction degree proportional to $R$ with
+$-\log\theta$ proportional to $R$.
+
+For a series $G(z)=\sum_{\ell\ge1}g_\ell z^\ell$, $|g_\ell|\le M_G$,
+use the prescribed-denominator Pad\'e-type construction
+\cite{BrezinskiRedivoZaglia2015}:
+\begin{equation}
+ D_m(z)=\prod_{i=1}^m(1+t_i z),\quad
+ P_m=[D_mG]_{\le m},\quad S_m=P_m/D_m,
+ \qquad 0<t_i\le\theta^{-1}.
+ \label{eq:pade}
+\end{equation}
+Here $[\cdot]_{\le m}$ denotes Taylor truncation at zero and the $t_i$ are
+distinct. On $|z|=\theta$, $|D_mG|\le 2^mM_G/(1-\theta)$.
+Cauchy's coefficient estimate, summed beyond degree $m$ on
+$0\le z\le\theta^2$, and $D_m(z)\ge1$ imply
+\begin{equation}
+ \sup_{0\le z\le\theta^2}|G(z)-S_m(z)|
+ \le \frac{M_G\theta}{(1-\theta)^2}(2\theta)^m.
+ \label{eq:pade-error}
+\end{equation}
+Take $1\le m\le\lfloor(R+1)/2\rfloor$ and the outermost halo centers
+\begin{equation}
+ \xi_i^-=a+(i-\tfrac12)h,\quad
+ \xi_i^+=b-(i-\tfrac12)h,\quad t_i=e^{2\lambda(i-1/2)}.
+ \label{eq:outer-centers}
+\end{equation}
+Then $t_i\le\theta^{-1}$, and
+\begin{equation}
+ \frac1{1+t_i z_-(x)}=\frac{1+\tanh(\gamma(x-\xi_i^-))}{2},\qquad
+ \frac1{1+t_i z_+(x)}=\frac{1-\tanh(\gamma(x-\xi_i^+))}{2}.
+ \label{eq:halo-identity}
+\end{equation}
+Let $S_m^\pm$ be \qeqref{eq:pade} for $G^\pm$ and define
+\begin{equation}
+ q_{\rm bd}(x)=S_m^-(z_-(x))-S_m^-(z_{-,0})
+              +S_m^+(z_+(x))-S_m^+(z_{+,0}),
+ \qquad q^\star=q_h+q_{\rm bd}.
+ \label{eq:qbd}
+\end{equation}
+
+\begin{proposition}[Correction in the prescribed dictionary]
+\label{prop:boundary-correction}
+The correction uses only the existing halo slots and satisfies
+\begin{equation}
+ \norm{\mathcal B_h^{\rm eff}f-q_{\rm bd}}_\infty
+ \le\frac{4M_h\theta}{(1-\theta)^2}(2\theta)^m.
+ \label{eq:bd-general}
+\end{equation}
+With $m=\lfloor(R+1)/2\rfloor$ and $\lambda R\ge2\log2$,
+\begin{equation}
+ \norm{\mathcal B_h^{\rm eff}f-q_{\rm bd}}_\infty
+ \le16M_h e^{-\lambda R^2/4}.
+ \label{eq:bd-r2}
+\end{equation}
+\end{proposition}
+\begin{proof}
+Distinct roots give $S_m=c_0+\sum_{i=1}^m c_i/(1+t_i z)$.
+Use \qeqref{eq:halo-identity} in the four anchored evaluations; constants
+cancel and \qeqref{eq:pade-error} proves \qeqref{eq:bd-general}.
+Now $m\ge R/2$, $\theta\le e^{-\lambda R}\le1/4$, and
+$(2\theta)^m\le e^{-\lambda R^2/4}$, while
+$4\theta/(1-\theta)^2\le16$.
+\end{proof}
+
+\subsection{Width-independent readout control}
+\label{sec:coefficients}
+The partial-fraction coefficients form an inverse-Vandermonde map
+\cite{Gautschi1962}. For the nodes in \qeqref{eq:outer-centers}, put
+\begin{equation}
+ \zeta=e^{-2\lambda},\quad r_i=t_i^{-1}=\zeta^{i-1/2},\quad
+ p_k=\prod_{j=1}^k(1-\zeta^j),\quad p_0=1.
+ \label{eq:zeta-p}
+\end{equation}
+The coefficients in $S_m=c_0+\sum_i c_i/(1+t_i z)$ satisfy
+\begin{equation}
+ c_i=(-1)^i\frac{\zeta^{[i(i+1)-1]/2}}{p_{i-1}p_{m-i}}
+ \sum_{\ell=1}^m e_{\ell-1}(r_1,\ldots,\widehat r_i,\ldots,r_m)g_\ell.
+ \label{eq:scaled-pf}
+\end{equation}
+Here $e_k$ is the elementary symmetric polynomial and a hat omits an entry.
+For clarity, the specialization of the classical coefficient formula is
+\[
+ c_i=\frac{P_m(-r_i)}{\prod_{j\ne i}(1-t_j/t_i)},\qquad
+ P_m(-r_i)=(-r_i)^m\sum_{\ell=1}^m g_\ell
+ [z^{m-\ell}]\prod_{j\ne i}(1+t_jz).
+\]
+The second equality follows by telescoping the factor $1+t_i z$ in the
+truncated numerator. Factoring the geometric node differences in the
+first equality gives \qeqref{eq:scaled-pf}.
+Define
+\begin{align}
+ p_\infty&=\prod_{j\ge1}(1-\zeta^j),\qquad
+ L_+=\prod_{j\ge1}(1+\zeta^{j-1/2}), \label{eq:pinfty}\\
+ \Cbd(\lambda)&=\sum_{i\ge1}
+ \frac{\zeta^{[i(i+1)-1]/2}}{p_{i-1}p_\infty}
+ \prod_{\substack{j\ge1\\j\ne i}}(1+\zeta^{j-1/2}).
+ \label{eq:Cbd}
+\end{align}
+
+\begin{proposition}[Boundary coefficient bound]
+\label{prop:Cbd}
+For fixed $\lambda>0$, $\Cbd(\lambda)<\infty$ and
+\begin{equation}
+ \sum_{i=1}^m|c_i|\le\Cbd(\lambda)\sup_{\ell\ge1}|g_\ell|,
+ \qquad
+ \Cbd(\lambda)\le\frac{\sqrt\pi e^\lambda}{2\sqrt\lambda}
+                  \exp\frac{5\pi^2}{24\lambda}.
+ \label{eq:Cbd-bound}
+\end{equation}
+\end{proposition}
+\begin{proof}
+In \qeqref{eq:scaled-pf}, the symmetric coefficients are nonnegative and
+sum to $\prod_{j\ne i}(1+r_j)$; also $p_{m-i}\ge p_\infty$.
+This proves the first bound. Since $\sum_j\zeta^j<\infty$, $p_\infty>0$
+and $L_+<\infty$, and the remaining $i$-factor decays as
+$e^{-\lambda i(i+1)}$. For the explicit bound, use $p_{i-1}\ge p_\infty$ and
+\begin{align*}
+ \log p_\infty^{-1}
+ &=\sum_{k\ge1}\frac1{k(e^{2\lambda k}-1)}\le\frac{\pi^2}{12\lambda},\\
+ \log L_+&\le\frac1{2\lambda}\int_0^\infty\log(1+e^{-t})\,dt
+          =\frac{\pi^2}{24\lambda},\\
+ \sum_{i\ge1}e^{-\lambda i(i+1)}
+ &\le\int_0^\infty e^{-\lambda t^2}\,dt=\frac{\sqrt\pi}{2\sqrt\lambda}.
+\end{align*}
+The middle inequality is the midpoint bound for the convex integrand.
+\end{proof}
+Each boundary contributes half of its partial-fraction absolute sum to the
+tanh readout. Thus
+\begin{equation}
+ \sum_j|w_j^\star|\le\frac{2B(1+\Delta)}\delta+
+                 \Cbd(\lambda)\frac{Bh}\delta\Dlam.
+ \label{eq:weight-sum}
+\end{equation}
+The anchored bias is at most $B+\sum_j|w_j^\star|$, so $h\le1/8$ gives
+\begin{equation}
+ \norm{c^\star}_1\le K B,\qquad
+ K=1+\frac{4(1+\Delta)}\delta+\frac{\Cbd(\lambda)\Dlam}{4\delta}.
+ \label{eq:K}
+\end{equation}
+
+\subsection{The analytic tanh witness}
+\label{sec:witness}
+\begin{theorem}[Boundary-corrected analytic witness]
+\label{thm:witness}
+For every admissible geometry,
+\begin{equation}
+ \norm{f-q^\star}_\infty\le
+ \frac{128\pi B}{\lambda\delta}
+ \left[e^{-\capp W}+\frac{e^{-\pi^2/\lambda}}W\right]
+ =:\Erep(W,\lambda),\qquad \norm{c^\star}_1\le KB.
+ \label{eq:Erep}
+\end{equation}
+In particular, $W=N+O(\sqrt N)$ and $\gamma=\Theta(W)$ at fixed $\lambda$.
+\end{theorem}
+\begin{proof}
+The signed decomposition is
+\begin{equation}
+ f-q^\star=(\mathcal B_h^{\rm eff}f-q_{\rm bd})
+            +\mathcal P_h[F_x]-\mathcal H_h[F_x].
+ \label{eq:corrected-decomp}
+\end{equation}
+For $A\ge\pi^2$,
+\[
+ \sum_{\ell\ge0}\frac1{e^{(2\ell+1)A}-1}
+ \le\frac{e^{-A}}{(1-e^{-A})(1-e^{-2A})}\le2e^{-A}.
+\]
+Consequently, Lemma~\ref{lem:tanhquad} and
+Proposition~\ref{prop:boundary-correction} give the explicit three bounds
+\begin{align*}
+ E_{\rm hor}&\le\frac{32B}\delta e^{-\pi\delta N/4},\\
+ E_{\rm bd}&\le\frac{32B\Dlam}{\delta N}e^{-\lambda a_H^2N/4},\\
+ E_{\rm rep\!l}&\le\frac{64\pi B}{\lambda\delta N}e^{-\pi^2/\lambda}.
+\end{align*}
+Admissibility implies $N\le W\le2N$ and
+$\lambda(1+\Dlam)<4\pi$. With
+$\kappa=\tfrac14\min\{\pi\delta,\lambda a_H^2\}$, the first two terms
+sum to at most $(128\pi B/(\lambda\delta))e^{-\kappa W/2}$;
+the third is at most $(128\pi B/(\lambda\delta W))e^{-\pi^2/\lambda}$.
+Equation \qeqref{eq:K} gives the readout bound.
+\end{proof}
+
+\subsection{Extensions to exact GELU and SiLU}
+\label{app:gelu-silu}
+For these activations we approximate $f''$ by a polynomial, apply a finite
+differential inverse of the kernel convolution, and discretize by
+Lemma~\ref{lem:midpoint}. The polynomial and its derivatives occur only in
+the reference construction; the sampled algorithm below uses real values of
+$f$ and deterministic coefficient envelopes.
+
+\subsubsection{Domains and polynomial approximation}
+Choose $1<L_*<1+\Delta$ and let $J_*=[-L_*,L_*]$. Denote by
+$\mathcal E_\rho(J_*)$ the closed filled Bernstein ellipse with semiaxes
+$L_*(\rho+\rho^{-1})/2$ and $L_*(\rho-\rho^{-1})/2$.
+Fix $1<\rho_1<\rho_2$, $\delta_*>0$, and $s_*>0$ such that
+\begin{equation}
+ \mathcal E_{\rho_2}(J_*)+\{z:|z|\le\delta_*\}
+ \subset U_\delta(I_\Delta),\qquad
+ \mathcal D:=J_*+i[-s_*,s_*]\Subset\operatorname{int}\mathcal E_{\rho_1}(J_*).
+ \label{eq:psi-domains}
+\end{equation}
+Such choices exist by taking the ellipses and $s_*,\delta_*$ sufficiently
+small. Set
+\begin{equation}
+ d_*:=\dist(\mathcal D,\partial\mathcal E_{\rho_1}(J_*))>0,
+ \quad d_{\rm ext}=L_*-1,\quad C_*:=2/d_{\rm ext}.
+ \label{eq:psi-margins}
+\end{equation}
+Cauchy's estimate bounds $f''$ on $\mathcal E_{\rho_2}(J_*)$ by
+$2B/\delta_*^2$. The analytic Chebyshev estimates of
+\cite[Ch.~8]{trefethen2019atap}, applied to its degree-$\nu$ truncation,
+give a real polynomial $p_\nu$ with
+\begin{equation}
+ \norm{f''-p_\nu}_{L^\infty(J_*)}\le A_{\rm pol}B\rho_2^{-\nu},\qquad
+ \sup_{\mathcal E_{\rho_1}(J_*)}|p_\nu|\le A_{\rm pol}B,
+ \label{eq:psi-poly}
+\end{equation}
+where, for example, one may take
+\begin{equation}
+ A_{\rm pol}=\frac2{\delta_*^2}
+ \max\left\{\frac2{\rho_2-1},\ 1+\frac{2\rho_1}{\rho_2-\rho_1}\right\}.
+ \label{eq:Apol}
+\end{equation}
+The second inequality follows by summing the Chebyshev coefficient bound on
+the smaller ellipse. We reserve $n$ for the number of readout coordinates
+and use $\nu=\lfloor\eta N\rfloor$ for the polynomial degree.
+
+\subsubsection{Finite polynomial deconvolution}
+For a real even kernel $K$ with an exponential absolute moment and integral one,
+write
+\begin{equation}
+ M_K(z)=\int_\R K(t)e^{zt}\,dt,\qquad
+ M_K(z)^{-1}=\sum_{\ell\ge0}b_{2\ell}z^{2\ell}.
+ \label{eq:psi-mgf}
+\end{equation}
+Suppose the inverse is holomorphic on $|z|\le r_*$ and bounded there by
+$C_{\rm inv}$. Define
+\begin{equation}
+ a_{\gamma,\nu}
+ =\sum_{\ell=0}^{\lfloor\nu/2\rfloor}
+ b_{2\ell}\gamma^{-2\ell}p_\nu^{(2\ell)},\qquad
+ A_{\rm den}:=\tfrac43 C_{\rm inv}A_{\rm pol}.
+ \label{eq:psi-deconv}
+\end{equation}
+
+\begin{lemma}[Polynomial deconvolution]
+\label{lem:psi-deconv}\label{lem:psi-density}
+The density is a real polynomial. With $K_\gamma(t)=\gamma K(\gamma t)$,
+\begin{equation}
+ \int_\R a_{\gamma,\nu}(t)K_\gamma(x-t)\,dt=p_\nu(x).
+ \label{eq:psi-exact-convolution}
+\end{equation}
+If $\nu/(r_*\gamma d_*)\le1/2$, then
+\begin{equation}
+ \sup_{z\in\mathcal D}|a_{\gamma,\nu}(z)|\le A_{\rm den}B.
+ \label{eq:psi-density-bound}
+\end{equation}
+For instance, $0<\eta\le r_*\lambda d_*/4$ ensures this degree condition.
+\end{lemma}
+\begin{proof}
+Taylor expansion of any polynomial $a$ terminates, so evenness of $K$ gives
+\[
+ \int_\R K(u)a(x-u/\gamma)\,du=M_K(D/\gamma)a(x),\qquad D=d/dx.
+\]
+All integrals exist by the moment hypothesis. Since $D$ is nilpotent on
+polynomials of degree at most $\nu$, the finite substitution of the inverse
+series gives \qeqref{eq:psi-exact-convolution} exactly.
+Cauchy's estimates give $|b_{2\ell}|\le C_{\rm inv}r_*^{-2\ell}$ and
+$|p_\nu^{(2\ell)}(z)|\le A_{\rm pol}B(2\ell)!/d_*^{2\ell}$ for
+$z\in\mathcal D$. Using $(2\ell)!\le\nu^{2\ell}$ and summing a geometric
+series of ratio at most $1/4$ proves \qeqref{eq:psi-density-bound}.
+\end{proof}
+We will also need an exterior bound, since the convolution in
+\qeqref{eq:psi-exact-convolution} is over the whole real line. The real
+Chebyshev extremal inequality gives, for $|t|\ge L_*$,
+\begin{equation}
+ |a_{\gamma,\nu}(t)|
+ \le A_{\rm den}B\exp\left(\nu\operatorname{arcosh}\frac{|t|}{L_*}\right)
+ \le A_{\rm den}B e^{\nu C_*(|t|-1)}.
+ \label{eq:psi-exterior}
+\end{equation}
+The extremal inequality follows from alternation at the $\nu+1$ Chebyshev
+extrema: a larger value outside $J_*$ would force the difference from a
+suitable multiple of $T_\nu(t/L_*)$ to have more than $\nu$ zeros.
+The last inequality uses $\operatorname{arcosh}s\le\log(2s)\le2s$ and
+$|t|/L_*\le(|t|-1)/(L_*-1)$.
+
+\subsubsection{Kernel identities and admissibility}
+Let
+\[
+ \varphi(z)=\frac{e^{-z^2/2}}{\sqrt{2\pi}},\qquad
+ \Phi(z)=\tfrac12+\int_0^z\varphi(t)\,dt,
+ \qquad \varsigma(z)=(1+e^{-z})^{-1},
+\]
+\[
+ \psi_G(z)=z\Phi(z),\qquad \psi_S(z)=z\varsigma(z).
+\]
+These are exact GELU and SiLU. Differentiation gives
+\begin{align}
+ K_G(z)=\psi_G''(z)&=(2-z^2)\frac{e^{-z^2/2}}{\sqrt{2\pi}},
+ &M_G(z)&=(1-z^2)e^{z^2/2}, \label{eq:gelu-kernel}\\
+ K_S(z)=\psi_S''(z)&=2g(z)+zg'(z),\quad g=\varsigma'=\tfrac14\sech^2(z/2),
+ &M_S(z)&=\frac{(\pi z)^2\cos(\pi z)}{\sin^2(\pi z)}.
+ \label{eq:silu-kernel}
+\end{align}
+At zero, both moment functions have removable value one. For GELU the moment
+identity follows by differentiating $\int\varphi(t)e^{zt}\,dt=e^{z^2/2}$
+twice. For SiLU, the substitution $v=e^t$ gives
+\[
+ G(z):=\int_\R g(t)e^{zt}\,dt
+ =\int_0^\infty\frac{v^z}{(1+v)^2}\,dv
+ =\Gamma(1+z)\Gamma(1-z)=\frac{\pi z}{\sin\pi z}
+ \quad(|\Re z|<1).
+\]
+Integration by parts in $\int t g'(t)e^{zt}\,dt$ yields
+$M_S=G-zG'$, proving \qeqref{eq:silu-kernel}.
+Thus
+\begin{equation}
+ M_G^{-1}(z)=\frac{e^{-z^2/2}}{1-z^2},\qquad
+ M_S^{-1}(z)=\frac{\sin^2(\pi z)}{(\pi z)^2\cos(\pi z)}.
+ \label{eq:psi-inverse-symbols}
+\end{equation}
+The inverse radii are $1$ and $1/2$, respectively. For $0<r_*<1$ in the
+GELU case and $0<r_*<1/2$ in the SiLU case, valid bounds are
+\begin{equation}
+ C_{{\rm inv},G}=\frac{e^{r_*^2/2}}{1-r_*^2},\qquad
+ C_{{\rm inv},S}=\frac{[\sinh(\pi r_*)/(\pi r_*)]^2}{\cos(\pi r_*)}.
+ \label{eq:psi-inverse-bounds}
+\end{equation}
+These follow from the power series of sine and
+$|\cos(\pi z)|^2=\cos^2(\pi\Re z)+\sinh^2(\pi\Im z)$.
+
+Choose $a_G>0$, $0<a_S<d_{\rm ext}/2$, and $0<\vartheta<\pi$, and set
+\begin{equation}
+ R_G=\lceil a_G\sqrt N\rceil,\quad R_S=\lceil a_SN\rceil,
+ \quad r_R=(R+\tfrac12)h,\quad
+ \sigma_G=\frac{2\pi h}{\lambda^2},\quad \sigma_S=\frac\vartheta\gamma.
+ \label{eq:psi-geometry}
+\end{equation}
+For each activation choose $\eta>0$ as in Lemma~\ref{lem:psi-deconv}, with
+$\eta\le1$. In the SiLU case also require $\eta\le\lambda/(8C_*)$.
+In this subsection take $N$ large enough that $\nu\ge1$, $\gamma\ge1$, and
+\begin{equation}
+ r_R\le d_{\rm ext},\qquad \sigma_\psi\le s_*,\qquad
+ \begin{cases}
+ \nu C_*\le\gamma^2d_{\rm ext}/4,&\psi=\psi_G,\\
+ \nu C_*\le\gamma/4,&\psi=\psi_S.
+ \end{cases}
+ \label{eq:psi-admissible}
+\end{equation}
+All these conditions hold for sufficiently large $N$ at fixed design. In
+particular, the midpoint rectangle is contained in $\mathcal D$. The SiLU
+contour stays below its nearest poles at preactivation height $\pi$.
+
+\subsubsection{Halo and midpoint estimates}
+Let $J_R=[a_R,b_R]=[-1-r_R,1+r_R]$ and write
+\begin{align}
+ (\mathcal C_Rp_\nu)(x)&=\int_{J_R}a_{\gamma,\nu}(t)K_\gamma(x-t)\,dt,\nonumber\\
+ E_{\rm halo}^\psi(x)&=\int_{\R\setminus J_R}a_{\gamma,\nu}(t)K_\gamma(x-t)\,dt,
+ \quad F_x^\psi(z)=a_{\gamma,\nu}(z)K_\gamma(x-z),\nonumber\\
+ G_N^\psi(x)&=h\sum_{j=-R}^{N+R}a_{\gamma,\nu}(x_j)K_\gamma(x-x_j).
+ \label{eq:psi-kernel-network}
+\end{align}
+There are no kernel poles in the chosen rectangles. Hence
+Lemma~\ref{lem:midpoint} and \qeqref{eq:psi-exact-convolution} give
+\begin{equation}
+ f''-G_N^\psi=(f''-p_\nu)+E_{\rm halo}^\psi
+             -\mathcal H_h[F_x^\psi]-\mathcal V_h[F_x^\psi].
+ \label{eq:psi-master-decomp}
+\end{equation}
+Put $Z=\gamma r_R=\lambda(R+1/2)$. The following estimates include explicit
+prefactors for the terms that will enter the approximation bound.
+
+\begin{proposition}[GELU kernel quadrature]
+\label{prop:gelu-errors}
+Define
+\begin{align}
+ Q_G(\lambda)&=\frac{2(3+4\pi^2/\lambda^2)e^{-2\pi^2/\lambda^2}}
+                    {1-e^{-4\pi^2/\lambda^2}},\nonumber\\
+ V_G(\lambda)&=\frac4{\sqrt{2\pi}}
+                 \left(\frac{4\lambda}\pi+\frac{2\lambda^3}{\pi^3}\right).
+ \label{eq:gelu-allowances}
+\end{align}
+Under \qeqref{eq:psi-admissible}, uniformly on $\Om$,
+\begin{equation}
+ |E_{\rm halo}^G|\le12A_{\rm den}B e^{-Z^2/8},\quad
+ |\mathcal H_h[F_x^G]|\le A_{\rm den}B Q_G(\lambda),\quad
+ |\mathcal V_h[F_x^G]|\le A_{\rm den}B V_G(\lambda)e^{-Z^2/4}.
+ \label{eq:gelu-errors}
+\end{equation}
+\end{proposition}
+\begin{proof}
+For real $u$,
+$|K_G(u)|\le(2+u^2)e^{-u^2/2}/\sqrt{2\pi}$.
+On $J_*\setminus J_R$, use the bounded density. Outside $J_*$, let
+$w=|t-x|\ge d_{\rm ext}$. Equations \qeqref{eq:psi-exterior} and
+\qeqref{eq:psi-admissible} imply
+$|a_{\gamma,\nu}(t)|\le A_{\rm den}B e^{\gamma^2w^2/4}$.
+Thus on both omitted tails, with $u=\gamma w$, the absolute integrand is at
+most $A_{\rm den}B\gamma(2+u^2)e^{-u^2/4}/\sqrt{2\pi}$. Integration gives
+\[
+ |E_{\rm halo}^G|\le\frac{2A_{\rm den}B}{\sqrt{2\pi}}
+ \int_Z^\infty(2+u^2)e^{-u^2/4}\,du
+ \le12A_{\rm den}B e^{-Z^2/8},
+\]
+using $\int_0^\infty(2+u^2)e^{-u^2/8}\,du=6\sqrt{2\pi}$.
+
+For the horizontal sides, for any real $v$,
+\[
+ \int_\R |K_G(u+iv)|\,du\le(3+v^2)e^{v^2/2}.
+\]
+Choose $v_G=\gamma\sigma_G=2\pi/\lambda$ and use \qeqref{eq:Rbounds}.
+The two horizontal sides contribute at most
+$2A_{\rm den}B(3+v_G^2)e^{v_G^2/2}/(e^{2\pi v_G/\lambda}-1)$,
+which is $A_{\rm den}B Q_G$.
+
+On a vertical side, the real kernel argument obeys $|u|\ge Z$.
+The elementary inequality
+$(2+u^2+v^2)e^{-u^2/2}\le(4+v^2)e^{-Z^2/4}$ gives
+\[
+ |\mathcal V_h[F_x^G]|\le
+ \frac{4A_{\rm den}B}{\sqrt{2\pi}}e^{-Z^2/4}
+ \int_0^{v_G}\frac{(4+v^2)e^{v^2/2}}{1+e^{2\pi v/\lambda}}\,dv.
+\]
+For $0\le v\le v_G$, the exponential ratio is at most $e^{-\pi v/\lambda}$.
+Extend the integral to infinity to obtain $V_G$.
+\end{proof}
+
+\begin{proposition}[SiLU kernel quadrature]
+\label{prop:silu-errors}
+Let $c_\vartheta=\sec(\vartheta/2)$ and define
+\begin{equation}
+ A_\vartheta=2c_\vartheta^2+(1+\vartheta)c_\vartheta^3,
+ \quad Q_S(\lambda)=\frac{8A_\vartheta}{e^{2\pi\vartheta/\lambda}-1},
+ \quad V_S(\lambda)=\frac{4\lambda A_\vartheta\log2}\pi.
+ \label{eq:silu-allowances}
+\end{equation}
+Under \qeqref{eq:psi-admissible}, uniformly on $\Om$,
+\begin{equation}
+ |E_{\rm halo}^S|\le16A_{\rm den}B e^{-Z/2},\quad
+ |\mathcal H_h[F_x^S]|\le A_{\rm den}B Q_S(\lambda),\quad
+ |\mathcal V_h[F_x^S]|\le A_{\rm den}B V_S(\lambda)e^{-Z/2}.
+ \label{eq:silu-errors}
+\end{equation}
+\end{proposition}
+\begin{proof}
+On the real axis $|g(u)|\le e^{-|u|}$ and
+$g'=g(1-2\varsigma)$, so $|K_S(u)|\le(2+|u|)e^{-|u|}$.
+Outside $J_*$, \qeqref{eq:psi-exterior} and
+$\nu C_*\le\gamma/4$ bound the density by
+$A_{\rm den}B e^{\gamma|t-x|/4}$. Within $J_*$ use its uniform bound.
+Consequently
+\[
+ |E_{\rm halo}^S|\le2A_{\rm den}B
+ \int_Z^\infty(2+u)e^{-3u/4}\,du
+ \le16A_{\rm den}B e^{-Z/2},
+\]
+since $(2+u)e^{-u/4}\le4$ for $u\ge0$.
+For $z=u+iv$, $|v|\le\vartheta$, writing $t=e^{-u}$ gives
+\[
+ |1+te^{-iv}|\ge(1+t)\cos(\vartheta/2),\quad
+ |g(z)|\le c_\vartheta^2e^{-|u|},\quad
+ |1-2\varsigma(z)|\le c_\vartheta.
+\]
+Therefore $|K_S(u+iv)|\le A_\vartheta(1+|u|)e^{-|u|}$, whose real-line
+integral is at most $4A_\vartheta$. The two horizontal sides and
+\qeqref{eq:Rbounds} give $Q_S$. On each vertical side $|u|\ge Z$, and
+$(1+|u|)e^{-|u|}\le2e^{-|u|/2}$. Four endpoint terms and
+$\int_0^\infty(1+e^{2\pi y/h})^{-1}dy=h\log2/(2\pi)$ give $V_S$.
+\end{proof}
+
+\subsubsection{Activation realization and coefficient envelopes}
+Define
+\begin{equation}
+ q_0^\psi(x)=\frac h\gamma\sum_{j=-R}^{N+R}
+ a_{\gamma,\nu}(x_j)\psi(\gamma(x-x_j)).
+ \label{eq:psi-q0}
+\end{equation}
+Twice differentiating gives $(q_0^\psi)''=G_N^\psi$. Choose
+\begin{equation}
+ \beta=f'(-1)-(q_0^\psi)'(-1),\quad
+ \alpha=f(-1)-q_0^\psi(-1)+\beta,\quad
+ q_\psi^\star=q_0^\psi+\alpha+\beta x.
+ \label{eq:psi-anchor}
+\end{equation}
+Both activations obey $\psi(z)-\psi(-z)=z$ on their domains, by
+$\Phi(-z)=1-\Phi(z)$ or $\varsigma(-z)=1-\varsigma(z)$.
+Thus
+\begin{equation}
+ \beta x=\frac\beta\gamma[\psi(\gamma x)-\psi(-\gamma x)]
+ \label{eq:psi-linear-identity}
+\end{equation}
+uses two additional hidden units and $\alpha$ is the output bias. The two
+anchor conditions imply
+\begin{equation}
+ f(x)-q_\psi^\star(x)=\int_{-1}^x(x-t)[f''(t)-G_N^\psi(t)]\,dt.
+ \label{eq:psi-lift-error}
+\end{equation}
+Integration gives a factor at most two in $L^\infty$; Young's inequality
+with $s\mathbf1_{[0,2]}(s)$ gives the same factor in normalized $L^2$.
+
+\begin{theorem}[Exact-GELU and SiLU witnesses]
+\label{thm:psi-witness}\label{thm:gelu-witness}\label{thm:silu-witness}
+With the domains, parameters, and admissibility conditions above, the
+prescribed network has $W_\psi=N+2R_\psi+3$ hidden-unit slots and satisfies
+\begin{align}
+ \norm{f-q_G^\star}_\infty
+ &\le 2B\left[A_{\rm pol}\rho_2^{-\nu}
+       +A_{{\rm den},G}\{(12+V_G)e^{-Z_G^2/8}+Q_G\}\right]=:E_W^G,
+ \label{eq:gelu-witness}\\
+ \norm{f-q_S^\star}_\infty
+ &\le 2B\left[A_{\rm pol}\rho_2^{-\nu}
+       +A_{{\rm den},S}\{(16+V_S)e^{-Z_S/2}+Q_S\}\right]=:E_W^S.
+ \label{eq:silu-witness}
+\end{align}
+The same estimates hold in normalized $L^2$. For fixed design these imply
+\begin{equation}
+ \norm{f-q_\psi^\star}_\infty
+ \le C_\psi B e^{-c_\psi W_\psi}+2A_{{\rm den},\psi}B Q_\psi(\lambda),
+ \label{eq:psi-rate}
+\end{equation}
+where $W_G=N+O(\sqrt N)$, $W_S=\Theta(N)$,
+$Q_G=O((1+\lambda^{-2})e^{-2\pi^2/\lambda^2})$, and, for fixed
+$\vartheta$, $Q_S=O_\vartheta(e^{-2\pi\vartheta/\lambda})$ on $0<\lambda\le1$.
+\end{theorem}
+\begin{proof}
+Use \qeqref{eq:psi-master-decomp}, the two quadrature propositions, and
+\qeqref{eq:psi-lift-error}. For $N\ge2/\eta$, $\nu\ge\eta N/2$.
+Also $Z_G^2\ge\lambda^2a_G^2N$, $Z_S\ge\lambda a_SN$, and
+$W_\psi\le(L_*+2)N$. One may therefore take
+\[
+ c_G=\frac{\min\{(\eta/2)\log\rho_2,\lambda^2a_G^2/8\}}{L_*+2},\qquad
+ c_S=\frac{\min\{(\eta/2)\log\rho_2,\lambda a_S/2\}}{L_*+2}.
+\]
+The stated bounds on $Q_\psi$ follow from their explicit denominators.
+\end{proof}
+Unlike the tanh correction, the GELU halo estimate uses Gaussian spatial
+decay directly. The uncorrected SiLU kernel has exponential tails and uses
+$R_S=\Theta(N)$ to retain a geometric rate in total width.
+
+On the real axis, $|\psi(t)|\le|t|$ and $|\psi'(t)|\le2$ for both
+activations: $\psi_G'=\Phi+t\varphi$ has absolute value at most
+$1+1/\sqrt{2\pi e}$, and $\psi_S'=\varsigma+t g$ has absolute value at most
+$1+1/e$. Since $(N+2R+1)h\le2L_*$, write $H_*=1+L_*$ and set
+\begin{equation}
+ A_\beta=\delta^{-1}+4L_*A_{\rm den},\qquad
+ A_\alpha=1+2L_*H_*A_{\rm den}+A_\beta.
+ \label{eq:psi-affine-envelopes}
+\end{equation}
+Then \qeqref{eq:psi-density-bound} and \qeqref{eq:psi-anchor} give
+\begin{equation}
+ |w_j^\star|\le B A_{\rm den}h/\gamma,\quad
+ |w_\pm^\star|=|\beta|/\gamma\le BA_\beta/\gamma,\quad
+ |\alpha|\le BA_\alpha.
+ \label{eq:psi-weight-envelope}
+\end{equation}
+Here $w_\pm^\star$ are the weights of the two affine units. These inequalities
+follow respectively from the density bound,
+$|(q_0^\psi)'(-1)|\le4L_*A_{\rm den}B$, and
+$|q_0^\psi(-1)|\le2L_*H_*A_{\rm den}B$.
+
+Let $\phi_j$ denote each native activation feature, including the affine
+pair, and $\phi_b=1$. Choose deterministic positive normalization constants
+$m_b=1$ and
+\begin{equation}
+ m_j\ge\max\{1,\sup_{x\in\Om}|\phi_j(x)|\},\qquad
+ m_j\le2(1+\gamma H_*)
+ \label{eq:psi-column-normalization}
+\end{equation}
+for the grid units, and $m_\pm\le2(1+\gamma)$ for the affine pair.
+The exact supremum satisfies these conditions; the least dyadic upper bound on
+$1+\gamma H_*$ (and $1+\gamma$ for the pair) also does so. These choices
+may be validated by outward enclosures of the displayed quantities. Write $\varphi_j=\phi_j/m_j$ and $v_j=m_jc_j$.
+Explicit normalized-coordinate envelopes are
+\begin{equation}
+ \alpha_j=m_jA_{\rm den}h/\gamma,\quad
+ \alpha_\pm=m_\pm A_\beta/\gamma,\quad
+ \alpha_b=A_\alpha.
+ \label{eq:psi-coordinate-envelopes}
+\end{equation}
+Since $\gamma\ge1$, their sum satisfies
+\begin{equation}
+ \sum_j\alpha_j\le
+ A_\alpha+4L_*A_{\rm den}(H_*+1)+8A_\beta=:K_{{\rm ref},\psi}.
+ \label{eq:psi-normalized-l1}
+\end{equation}
+In particular, this bound includes the bias and both affine units.
+
+\begin{lemma}[Normalized features on cell ellipses]
+\label{lem:psi-strip-growth}
+For every fixed $v_0>0$ for GELU, and $0<v_0<\pi$ for SiLU, there is a
+constant $C_{\psi,v_0}$ such that
+\begin{equation}
+ |\psi(u+iv)|\le C_{\psi,v_0}(1+u_+),\qquad |v|\le v_0,
+ \quad u_+=\max\{u,0\}.
+ \label{eq:psi-strip-growth}
+\end{equation}
+Explicit choices are
+\begin{equation}
+ C_{G,v}=1+v+\frac{v e^{v^2/2}}{\sqrt{2\pi}}(e^{-1/2}+v),
+ \qquad C_{S,v}=(1+v)\sec(v/2).
+ \label{eq:psi-strip-constants}
+\end{equation}
+For a core cell of length $h$ and a Bernstein ellipse of parameter
+$\varrho>1$, set $t_\varrho=(\varrho+\varrho^{-1}-2)/4$.
+If $\lambda(\varrho-\varrho^{-1})/4\le v_0$, then every normalized feature
+satisfies
+\begin{equation}
+ |\varphi_j(z)|\le C_{\psi,v_0}(3+\lambda t_\varrho)
+ \quad\text{on that ellipse}.
+ \label{eq:psi-ellipse-bound}
+\end{equation}
+\end{lemma}
+\begin{proof}
+For GELU, $|u|\Phi(u)$ is bounded for $u\le0$ by the Gaussian tail
+inequality $t\Phi(-t)\le\varphi(t)$. In
+\[
+ \psi_G(u+iv)=(u+iv)\Phi(u)
+        +i(u+iv)\int_0^v\varphi(u+it)\,dt,
+\]
+the second term is bounded uniformly in $u$, because
+$|\varphi(u+it)|=e^{-u^2/2+t^2/2}/\sqrt{2\pi}$ and
+$(|u|+v_0)e^{-u^2/2}$ is bounded. This proves \qeqref{eq:psi-strip-growth}.
+For SiLU,
+$|\psi_S(u+iv)|\le\sec(v_0/2)(|u|+v_0)/(1+e^{-u})$;
+for $u<0$ use $|u|e^{u}\le1/e$, and for $u\ge0$ use the linear bound.
+
+Each real feature's maximum preactivation on $\Om$ is $U_j=\gamma(1-x_j)$,
+or $U_j=\gamma$ for an affine unit. Both activations satisfy
+$\psi(t)\ge t/2$ for $t\ge0$. Consequently
+$m_j\ge\max\{1,(U_j)_+/2\}$. The ellipse extends horizontally by at most
+$h t_\varrho$ beyond the core; its preactivation real part is at most
+$U_j+\lambda t_\varrho$. Divide \qeqref{eq:psi-strip-growth} by $m_j$ to
+obtain \qeqref{eq:psi-ellipse-bound}.
+\end{proof}
+
+\subsection{Reference-scaled truncated-SVD recovery}
+\label{sec:recovery}
+The same sampled recovery argument applies to all three dictionaries.
+Assume $M\ge n$, where $n$ is the total readout dimension of the selected
+dictionary, including its bias and any affine-correction units. Write the native features as $\phi_j$, with $\phi_b=1$, and set
+\begin{equation}
+ \varphi_j=\phi_j/m_j,\quad
+ \mathsf M_\phi=\operatorname{diag}(m_j),\quad v=\mathsf M_\phi c,
+ \quad q_c=\sum_jv_j\varphi_j,
+ \qquad m_b=1.
+ \label{eq:normalized-dictionary}
+\end{equation}
+For tanh, $m_j=1$; for GELU/SiLU use
+\qeqref{eq:psi-column-normalization}. In either case $|\varphi_j(x)|\le1$
+on $\Om$ and $m_j\ge1$.
+
+\subsubsection{Reference envelopes}
+Let $E_W^{\rm an}$ denote the explicit analytic bound
+\qeqref{eq:Erep}, \qeqref{eq:gelu-witness}, or \qeqref{eq:silu-witness}.
+The witness has positive coordinate envelopes
+\begin{equation}
+ |v_j^\star|\le B\alpha_j,\qquad
+ K_W^{\rm ref}:=\sum_j\alpha_j\le K_{\rm ref}.
+ \label{eq:coordinate-envelope}
+\end{equation}
+For GELU/SiLU these are \qeqref{eq:psi-coordinate-envelopes}.
+For tanh, put $m=\lfloor(R+1)/2\rfloor$ and
+\begin{equation}
+ L_{i,m}=\frac{\zeta^{[i(i+1)-1]/2}}{p_{i-1}p_{m-i}}
+             \prod_{\substack{1\le j\le m\\j\ne i}}(1+\zeta^{j-1/2}).
+ \label{eq:Lim}
+\end{equation}
+Start each grid coordinate at $\alpha_j=h/[2(\delta-d)]$, and add
+$h\Dlam L_{i,m}/(2\delta)$ at the $i$th corrected slot on either side.
+Take $\alpha_b=1+\sum_{j\ne b}\alpha_j$. The coefficient formulas above give
+\qeqref{eq:coordinate-envelope}; one may use $K_{\rm ref}=K$ from
+\qeqref{eq:K}, because $\sum_iL_{i,m}\le\Cbd(\lambda)$.
+Define
+\begin{equation}
+ D=\operatorname{diag}(\sqrt{\alpha_j}),\quad
+ L=\sqrt{\sum_j\alpha_j},\quad S=BL,\quad
+ A_{ij}=\varphi_j(z_i),\quad
+ F=\frac{AD}{\sqrt M},\quad y_X=\frac{(f(z_i))_{i=0}^{M-1}}{\sqrt M}.
+ \label{eq:scaling}
+\end{equation}
+These are exact reference quantities; rounding of their stored versions is
+included in the formation bounds below. Cauchy--Schwarz gives
+\begin{equation}
+ a^\star=D^{-1}v^\star,\qquad
+ \norm{a^\star}_2\le S,\quad
+ \norm{Fa^\star-y_X}_2\le E_W^{\rm an},\quad
+ \norm{Da}_1\le L\norm{a}_2.
+ \label{eq:scaled-witness}
+\end{equation}
+Indeed, $\sum_j|v_j^\star|^2/\alpha_j\le B^2\sum_j\alpha_j$;
+the residual bound follows from uniform approximation.
+
+\subsubsection{Numerical conditions and comparison problem}
+Use round-to-nearest arithmetic with unit roundoff $u$, gradual underflow,
+and no overflow or invalid operations in a returned run. Let $\mu$ be a
+valid absolute rounding allowance (the smallest positive subnormal is
+sufficient), so $|\operatorname{RN}(t)-t|\le u|t|+\mu$.
+All error bounds are either standard a priori bounds or validated upper
+bounds with outward rounding. Failed range or denominator checks do not
+produce a certified return. Standard product, summation, and matrix-operation
+estimates are taken from \cite[Chs.~2--4]{Higham2002}; SVD factorization
+and orthogonality bounds are supplied by \cite[Ch.~4]{LAPACK1999}.
+
+For later use, a length-$q$ pairwise dot product with rounded products obeys
+\begin{equation}
+ |\operatorname{pdot}(v,w)-v^Tw|
+ \le\Gamma_q^{\rm pw}\sum_i|v_iw_i|+\beta_q^{\rm pw},\quad
+ \Gamma_q^{\rm pw}=\frac{k_qu}{1-k_qu},\quad
+ \beta_q^{\rm pw}=\frac{(2q-1)\mu}{1-k_qu},\quad
+ k_q=1+\lceil\log_2q\rceil.
+ \label{eq:pairwise-bound}
+\end{equation}
+Assume $k_qu<1$. The relative bound is the usual pairwise bound; the additive
+term counts at most $2q-1$ local absolute errors and their amplification
+along the tree. In particular $\Gamma_q^{\rm pw}=O(u\log q)$.
+
+The algorithm assembles $\widetilde F,\widetilde y$, computes a thin SVD
+$(\widehat U,\widehat\Sigma,\widehat V)$ with nonnegative diagonal
+$\widehat\Sigma$, forms $p_i=\operatorname{pdot}(\widehat U_{:i},\widetilde y)$,
+and retains exactly the singular values $\widehat\sigma_i>\tau$. It sets
+\begin{equation}
+ \widehat z_i=\begin{cases}
+ \operatorname{RN}(p_i/\widehat\sigma_i),&\widehat\sigma_i>\tau,\\
+ 0,&\widehat\sigma_i\le\tau,
+ \end{cases}
+ \label{eq:computed-svd-coordinates}
+\end{equation}
+and exports the native readout by forming
+$D\widehat V\widehat z$ and dividing coordinate $j$ by $m_j$, all in the
+working arithmetic. The bias is included in this same solve.
+
+We require bounds for the exact comparison quantities
+\begin{equation}
+ F_0=U_0\widehat\Sigma V_0^T,\quad U_0^TU_0=V_0^TV_0=I,
+ \qquad
+ a_\tau=F_{0,\tau}^{\dagger}y_0=V_0\widehat z,
+ \label{eq:comparison-objects}
+\end{equation}
+with
+\begin{equation}
+ \norm{F-F_0}_2\le a_W,\quad \norm{y_X-y_0}_2\le b_W,\quad
+ \norm{\mathsf M_\phi\widehat c-Da_\tau}_1\le e_{c,W}.
+ \label{eq:nearby-problem}
+\end{equation}
+The matrix and label formation bounds include normalization, evaluation at
+stored sample points, and any hidden-geometry storage error. Thus the analytic
+basis remains the prescribed basis, rather than an implicitly perturbed one.
+
+Here is a sufficient realization of \qeqref{eq:comparison-objects}--\qeqref{eq:nearby-problem}
+that also makes the dependence on the cutoff explicit. Suppose
+\begin{align*}
+ \norm{F-\widetilde F}_2&\le e_F,&
+ \norm{y_X-\widetilde y}_2&\le e_y,&
+ \norm{\widetilde F-\widehat U\widehat\Sigma\widehat V^T}_2&\le r_F,\\
+ \norm{\widehat U^T\widehat U-I}_2&\le o_U<1,&
+ \norm{\widehat V^T\widehat V-I}_2&\le o_V<1.
+\end{align*}
+Put $\delta_U=1-\sqrt{1-o_U}$, $\delta_V=1-\sqrt{1-o_V}$,
+$U_+=\sqrt{1+o_U}$, $V_+=\sqrt{1+o_V}$, and $Y=\norm{\widetilde y}_2$.
+Standard bounds or enclosed residual products supply these numbers; spectral
+norms may be bounded by Frobenius norms. Then one may take
+\begin{align}
+ a_W&=e_F+r_F+\norm{\widehat\Sigma}_2(\delta_U V_++\delta_V),\nonumber\\
+ e_p&=\sqrt n\,[\Gamma_M^{\rm pw}U_+Y+\beta_M^{\rm pw}],\nonumber\\
+ b_W&=e_y+\delta_UY+e_p+u\norm p_2+\mu\norm{\widehat\sigma}_2.
+ \label{eq:comparison-bounds}
+\end{align}
+To verify the interface, take the polar factors
+$U_0=\widehat U(\widehat U^T\widehat U)^{-1/2}$ and similarly $V_0$.
+Their singular values give
+$\norm{\widehat U-U_0}_2\le\delta_U$ and
+$\norm{\widehat V-V_0}_2\le\delta_V$, proving the bound for $a_W$.
+If $J_\tau=\{i:\widehat\sigma_i>\tau\}$, set
+\[
+ y_0=\widetilde y+U_{0,J_\tau}
+ (\widehat\Sigma_{J_\tau}\widehat z_{J_\tau}
+       -U_{0,J_\tau}^T\widetilde y).
+\]
+This makes $F_{0,\tau}^{\dagger}y_0=V_0\widehat z$ exactly. Projection
+rounding contributes $e_p$, and division gives
+$|\widehat\sigma_i\widehat z_i-p_i|\le u|p_i|+\mu\widehat\sigma_i$ on
+retained coordinates. These bounds prove the formula for $b_W$.
+In particular, $a_W$ and $b_W$ are available before choosing $\tau$; the
+bound for division does not contain $1/\tau$.
+The polar factors and $y_0$ are analysis objects, not computed intermediates.
+
+Finally let $e_{\rm exp}$ be the standard forward-error bound for the
+specified native export, in the form
+\[
+ \norm{\mathsf M_\phi\widehat c-D\widehat V\widehat z}_1\le e_{\rm exp}.
+\]
+It includes storage of $D$, row dot products, products, and division by $m_j$.
+It can also be obtained by enclosing each displayed coordinate difference
+using \qeqref{eq:pairwise-bound} and the scalar rounding model. Once the
+bound $\norm{\widehat z}_2\le2S$ below is established, the choice
+\begin{equation}
+ e_{c,W}=e_{\rm exp}+2LS\delta_V
+ \label{eq:coefficient-export-bound}
+\end{equation}
+proves the last inequality of \qeqref{eq:nearby-problem}. This construction
+of the numerical interface uses only standard error bounds and returned
+finite arrays; it does not assume recovery of the analytic coefficients.
+
+\subsubsection{Cutoff and recovery bound}
+Let $\overline E_W\ge E_W^{\rm an}$ be the approximation bound available to
+the algorithm, and retain its formation allowance
+$\eps_{E,W}:=\overline E_W-E_W^{\rm an}\ge0$.
+Choose a positive threshold with
+\begin{equation}
+ \eta_W=\overline E_W+a_WS+b_W,\qquad
+ \tau S\ge\eta_W,\qquad 0\le\tau S-\eta_W\le\rho_W.
+ \label{eq:eta}
+\end{equation}
+An outward upper bound for $\eta_W/S$ provides such a threshold; $\rho_W$
+includes this excess and its rounding. No condition on singular-value gaps
+is needed. The truncated-SVD coefficient comparison in
+\cite[Theorem~3.8, first inequality]{AdcockHuybrechs2020} gives
+\begin{equation}
+ \norm{a_\tau}_2\le S+\eta_W/\tau\le2S,
+ \qquad \norm{F_0a_\tau-y_0}_2\le\eta_W+\tau S.
+ \label{eq:tsvd-standard}
+\end{equation}
+For the second inequality, the discarded singular values are at most $\tau$;
+apply this to the comparison vector $a^\star$. This is the usual
+thresholded least-squares estimate \cite{Hansen1987TSVD}.
+
+\begin{proposition}[Recovered coefficient and sample bounds]
+\label{prop:svd-recovery}
+Define
+\begin{equation}
+ T=2LS+e_{c,W},\qquad
+ R_X=2\overline E_W+4a_WS+3b_W+\rho_W+e_{c,W}.
+ \label{eq:T-RX}
+\end{equation}
+The returned native readout satisfies
+\begin{equation}
+ \norm{\widehat c}_1\le\norm{\mathsf M_\phi\widehat c}_1\le T,
+ \qquad \norm{f-q_{\widehat c}}_{2,X}\le R_X.
+ \label{eq:sampled-recovery}
+\end{equation}
+\end{proposition}
+\begin{proof}
+The reference residual on $(F_0,y_0)$ is at most $\eta_W$, so
+\qeqref{eq:tsvd-standard} applies. Since $a_\tau=V_0\widehat z$,
+$\norm{\widehat z}_2=\norm{a_\tau}_2\le2S$, which justifies
+\qeqref{eq:coefficient-export-bound}. Returning to $F,y_X$ gives
+\[
+ \norm{Fa_\tau-y_X}_2
+ \le\eta_W+\tau S+2a_WS+b_W
+ \le2\overline E_W+4a_WS+3b_W+\rho_W.
+\]
+Now use \qeqref{eq:scaled-witness}, coefficient export, and
+$|\varphi_j|\le1$. Finally, $m_j\ge1$ bounds the native norm by the normalized
+norm. The reference part of $T$ is $2BL^2\le2BK_{\rm ref}$.
+\end{proof}
+At fixed observation density, the projected-vector allowance $e_p$ has a
+pairwise contribution $O(u\sqrt W\log W)$ times $U_+Y$. This statement
+concerns that contribution, not an assertion that every factorization,
+storage, or input-rounding term has the same width dependence.
+
+\subsection{From sampled error to continuous error}
+\label{sec:continuous}
+Let $q=q_{\widehat c}$ be the exact function of the returned readout in the
+prescribed basis, and put $g=f-q$. For each core cell $I=[x_k,x_{k+1}]$, define
+\[
+ \norm v_{2,I}^2=\frac1h\int_I|v|^2,\qquad
+ \norm v_{\mathrm{trap},I}^2=
+ \frac1s\left[\frac{|v(x_k)|^2+|v(x_{k+1})|^2}2
+          +\sum_{j=1}^{s-1}|v(x_k+jh/s)|^2\right].
+\]
+Fix $\varrho>1$ and $p\in\mathbb N$, $p\ge1$, and assume
+\begin{equation}
+ \lambda(\varrho-\varrho^{-1})\le\pi,\qquad
+ \frac h4(\varrho+\varrho^{-1})<\delta,\qquad s\ge2(p+1)^2.
+ \label{eq:sampling-conditions}
+\end{equation}
+The closed cell ellipses lie in the target tube. In preactivation coordinates
+their vertical semiaxis is at most $\pi/4$. For tanh,
+\[
+ |\tanh(u+iv)|^2=\frac{\sinh^2u+\sin^2v}{\sinh^2u+\cos^2v}\le1
+ \qquad(|v|\le\pi/4).
+\]
+For GELU/SiLU apply Lemma~\ref{lem:psi-strip-growth}. Thus there is a
+width-independent $C_{\rm ell}$, equal to one for tanh and
+$C_{\psi,\pi/4}(3+\lambda t_\varrho)$ for GELU/SiLU, with
+\begin{equation}
+ |g(z)|\le\mathcal M:=B+C_{\rm ell}T
+ \quad\text{on every cell ellipse}.
+ \label{eq:gellipse}
+\end{equation}
+The analytic Chebyshev estimate \cite[Ch.~8]{trefethen2019atap} gives a
+degree-$p$ polynomial $P_I$ such that
+\begin{equation}
+ \norm{g-P_I}_{\infty,I}\le e_p^{\rm an}
+ :=\frac{2\mathcal M}{\varrho-1}\varrho^{-p}.
+ \label{eq:ep}
+\end{equation}
+The local polynomial inverse estimates used below are standard; see
+\cite[Secs.~5.4.1 and 5.4.4]{Canuto2006Spectral}. We record their constants
+and the specialization to the present equispaced grid.
+
+\begin{lemma}[Local polynomial sampling]
+\label{lem:poly-sampling}
+For every polynomial $P$ of degree at most $p$ on a cell of length $h$,
+\begin{align}
+ \norm{P'}_{2,I}&\le\frac{(p+1)\sqrt{p(p+2)}}h\norm P_{2,I},
+ \label{eq:legendre-inverse}\\
+ \norm P_{\infty,I}&\le(p+1)\norm P_{2,I},\qquad
+ \norm{P'}_{\infty,I}\le\frac{2p^2(p+1)}h\norm P_{2,I}.
+ \label{eq:linfty-inverse}
+\end{align}
+Under \qeqref{eq:sampling-conditions},
+\begin{equation}
+ \norm P_{2,I}\le\sqrt2\norm P_{\mathrm{trap},I},\qquad
+ \norm P_{\infty,I}\le2\max_{x\in X\cap I}|P(x)|.
+ \label{eq:P-trap}
+\end{equation}
+\end{lemma}
+\begin{proof}
+For completeness, the constants in the cited inverse estimates can be
+obtained from the normalized Legendre basis
+$\sqrt{2j+1}\,P_j$ on $[-1,1]$:
+$|P_j|\le1$, $\int_{-1}^1(P_j')^2=j(j+1)$, and
+$\sum_{j=1}^p(2j+1)j(j+1)/2=p(p+1)^2(p+2)/4$.
+Cauchy--Schwarz and rescaling give \qeqref{eq:legendre-inverse} and the first
+inequality in \qeqref{eq:linfty-inverse}; Markov's inequality gives the second.
+For the equispaced grid, the elementary trapezoidal error for $|P|^2$ gives
+\[
+ \left|\norm P_{\mathrm{trap},I}^2-\norm P_{2,I}^2\right|
+ \le\frac hs\norm P_{2,I}\norm{P'}_{2,I}
+ \le\frac{(p+1)\sqrt{p(p+2)}}s\norm P_{2,I}^2
+ \le\tfrac12\norm P_{2,I}^2.
+\]
+This proves the first part of \qeqref{eq:P-trap}. For the uniform norm,
+choose the nearest grid point to a maximizer, at distance at most $h/(2s)$,
+and use Markov's inequality to get
+$\norm P_\infty\le\max_X|P|+(p^2/s)\norm P_\infty$.
+\end{proof}
+
+\begin{lemma}[Continuous error transfer]
+\label{lem:rms-transfer}
+With $c_M=\sqrt{2M/(M-1)}\le2$,
+\begin{align}
+ \norm g_{2,\Om}&\le c_M\norm g_{2,X}+(1+\sqrt2)e_p^{\rm an},
+ \label{eq:rms-transfer}\\
+ \norm g_\infty&\le2\max_{x\in X}|g(x)|+3e_p^{\rm an}.
+ \label{eq:uniform-transfer}
+\end{align}
+\end{lemma}
+\begin{proof}
+On each cell, \qeqref{eq:ep} and \qeqref{eq:P-trap} give
+$\norm g_{2,I}\le\sqrt2\norm g_{\mathrm{trap},I}+(1+\sqrt2)e_p^{\rm an}$.
+Combine cells by Minkowski. The global trapezoidal norm squared is
+\[
+ \frac1{M-1}\left[\frac{|g(z_0)|^2+|g(z_{M-1})|^2}2
+                       +\sum_{i=1}^{M-2}|g(z_i)|^2\right]
+ \le\frac M{M-1}\norm g_{2,X}^2.
+\]
+For the uniform inequality, apply the second part of \qeqref{eq:P-trap} to
+$P_I$, and add the three approximation-error terms.
+\end{proof}
+
+\subsubsection{Input rounding and evaluation}
+Let $Q(x)$ be round-to-nearest in the working format, clamped to $\Om$, and
+let $\xi\ge\sup_{x\in\Om}|Q(x)-x|$. For the RMS rounding estimate assume
+that the core-cell endpoints are exactly representable. Monotonicity of
+round-to-nearest then gives $Q(I)\subseteq I$ for each core cell. For example, $N=2^k$ satisfies this condition when the required grid
+significands, exponents, and integer indices are exactly representable.
+Set
+\begin{equation}
+ \chi_W=\frac{2p^2(p+1)\xi}h.
+ \label{eq:chi}
+\end{equation}
+The bound on $P_I'$ in \qeqref{eq:linfty-inverse} implies
+$\norm{P_I\circ Q}_{2,I}\le(1+\chi_W)\norm{P_I}_{2,I}$.
+Repeating the proof of Lemma~\ref{lem:rms-transfer} therefore gives
+\begin{equation}
+ \norm{g\circ Q}_{2,\Om}
+ \le(1+\chi_W)c_M R_X+
+       [1+\sqrt2(1+\chi_W)]e_p^{\rm an}.
+ \label{eq:gQ}
+\end{equation}
+Also $\norm{f-f\circ Q}_{2,\Om}\le B\xi/\delta$ by Cauchy's estimate.
+We collect the rounding terms separately:
+\begin{equation}
+ E_{\rm in,W}=\frac{B\xi}\delta+
+        \chi_W(c_M R_X+\sqrt2 e_p^{\rm an}).
+ \label{eq:input-round-target}
+\end{equation}
+
+Assume the activation evaluator, including stored affine arguments, satisfies
+\[
+ |\widehat\phi_j(t)-\phi_j(t)|\le m_j\eps_{\phi,W}
+ \quad(t\in\Om\text{ representable}).
+\]
+This is a uniform error contract for the specified tanh, exact-GELU, or SiLU
+routine, including any geometry-storage perturbation; it is not an assumption
+of an exact transcendental evaluation. Use rounded products and pairwise
+summation for the native readout. Since
+$\sum_j|\widehat c_j\phi_j(t)|\le T$ and
+$\sum_j|\widehat c_j\widehat\phi_j(t)|\le(1+\eps_{\phi,W})T$,
+\qeqref{eq:pairwise-bound} gives
+\begin{equation}
+ E_{\rm ev,W}:=
+ [\eps_{\phi,W}+\Gamma_n^{\rm pw}(1+\eps_{\phi,W})]T+\beta_n^{\rm pw},
+ \qquad
+ |\widehat q_W(x)-q(Q(x))|\le E_{\rm ev,W}.
+ \label{eq:evaluation}
+\end{equation}
+The mixed term $\Gamma_n^{\rm pw}\eps_{\phi,W}$ is retained.
+
+\begin{theorem}[Computed continuous-error bounds]
+\label{thm:computed}
+Under the preceding analytic and numerical conditions,
+\begin{equation}
+ \norm{\widehat c_W}_1\le T,\qquad
+ \norm{f-\widehat q_W}_{2,\Om}
+ \le c_M R_X+(1+\sqrt2)e_p^{\rm an}+E_{\rm in,W}+E_{\rm ev,W}.
+ \label{eq:computed-rms}
+\end{equation}
+If $r_{\infty,X}$ is a validated upper bound on
+$\max_{x\in X}|f(x)-q(x)|$, then also
+\begin{equation}
+ \norm{f-\widehat q_W}_\infty
+ \le2r_{\infty,X}+3e_p^{\rm an}+B\xi/\delta+E_{\rm ev,W}.
+ \label{eq:computed-uniform}
+\end{equation}
+The uniform statement requires only $Q(\Om)\subseteq\Om$, not cellwise
+preservation. It is a maximum-residual certificate, not a replacement of the
+sampled RMS by the same numerical value.
+\end{theorem}
+\begin{proof}
+The coefficient bound is Proposition~\ref{prop:svd-recovery}.
+Decompose $f-\widehat q=(f-f\circ Q)+(g\circ Q)+(q\circ Q-\widehat q)$,
+and apply \qeqref{eq:gQ} and \qeqref{eq:evaluation} for RMS.
+For the uniform norm, use \qeqref{eq:uniform-transfer} at $Q(x)$.
+\end{proof}
+
+\subsection{Theorem assembly and width dependence}
+\label{sec:assemble}
+Put
+\begin{equation}
+ A_{\rm rep}=\frac{128\pi}{\lambda\delta},\qquad
+ \Delta_{\rm rec,W}=2\eps_{E,W}+4a_WS+3b_W+\rho_W+e_{c,W}.
+ \label{eq:Arep}
+\end{equation}
+For tanh, $R_X=2\Erep(W,\lambda)+\Delta_{\rm rec,W}$.
+Using $c_M\le2$ in the analytic term of \qeqref{eq:computed-rms} gives
+\begin{equation}
+ \norm{f-\widehat q_W}_{2,\Om}
+ \le4A_{\rm rep}B\left(e^{-\capp W}+\frac{e^{-\pi^2/\lambda}}W\right)
+       +\eps_{\rm rec,W},
+ \label{eq:final-decomp}
+\end{equation}
+where
+\begin{equation}
+ \eps_{\rm rec,W}=c_M\Delta_{\rm rec,W}
+ +(1+\sqrt2)e_p^{\rm an}+E_{\rm in,W}+E_{\rm ev,W},
+ \qquad \eps_{\rm coeff,W}=e_{c,W}.
+ \label{eq:epsrec}
+\end{equation}
+These quantities are nonnegative explicit bounds; $E_{\rm in,W}$ contains
+all factors involving $\xi/h$. The reference coefficient bound is
+$2LS=2B K_W^{\rm ref}\le2BK_{\rm ref}$, which completes the proof of
+Theorem~\ref{thm:qi-numerics-explicit}.
+
+For GELU/SiLU, use $E_W^{\rm an}=E_W^\psi$ and the envelopes
+\qeqref{eq:psi-coordinate-envelopes}. The same computation proves
+\begin{equation}
+ \norm{f-\widehat q_W^\psi}_{2,\Om}
+ \le4E_W^\psi+\eps_{\rm rec,W}^\psi,
+ \qquad
+ \norm{\widehat c_W^\psi}_1\le2BK_{{\rm ref},\psi}+e_{c,W}^\psi.
+ \label{eq:psi-computed}
+\end{equation}
+In particular, \qeqref{eq:psi-rate} yields geometric refinement in width plus
+the activation-specific midpoint and numerical allowances. The analytical
+high derivatives and complex target values are not evaluated by this sampled
+construction. Its guarantees concern successful runs satisfying the stated
+numerical bounds; they do not assert that every default least-squares
+implementation has those bounds.
+
+\begin{corollary}[Logarithmic sufficient width above a fixed allowance]
+\label{cor:logwidth}
+Fix the target class, bandwidth, activation, and design. Suppose the preceding
+bounds have the form
+\[
+ \norm{f-\widehat q_W}_{2,\Om}\le A e^{-cW}+\tau_W
+\]
+with $A,c>0$ independent of width, and $\tau_W\le\tau$ throughout a specified
+certified range $\mathcal W$ of admissible widths. For any $\eps>\tau$, every
+$W\in\mathcal W$ satisfying
+\begin{equation}
+ W\ge\frac1c\log\frac A{\eps-\tau}
+ \label{eq:log-width}
+\end{equation}
+has error at most $\eps$. For tanh one may take $A=4A_{\rm rep}B$,
+$c=\capp$, and
+$\tau_W=4A_{\rm rep}B W^{-1}e^{-\pi^2/\lambda}+\eps_{\rm rec,W}$.
+\end{corollary}
+\begin{proof}
+The error is bounded by $Ae^{-cW}+\tau$; solve
+$Ae^{-cW}\le\eps-\tau$. Existence of an admissible width meeting this
+inequality inside the certified range remains part of the premise.
+\end{proof}
+For $\eps\ge2\tau$ the sufficient width is
+$c^{-1}\log(2A/\eps)$, subject to the same range restriction. This is the
+fixed-design statement underlying \QUILLMainCorollary. If $\lambda$ is
+instead varied with $\eps$, the dependence of $A,c$, admissibility, and the
+allowances on $\lambda$ must be retained; this corollary alone makes no joint
+$\eps\to0$ assertion with varying design.

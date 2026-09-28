@@ -46,6 +46,11 @@ src/                          Core library (PyTorch, all computation in float64)
     losses.py                 MSE, Lp, hybrid boundary
     train_loop.py             Multi-stage training orchestration
     metrics.py                MetricsCollector: uniform metric set across experiments
+  precision/                  No-leakage p-bit arithmetic (expC11): a binary format with a p-bit significand, every
+                              +,-,*,/,sqrt correctly rounded (emulator, MPFR-verified), the tanh model, and reference
+                              LAPACK 3.12.1 DGELSS ported statement by statement (lapack_gelss.h). Bit-identical to
+                              netlib SGELSS/DGELSS (reference_lapack.py builds them from source with gfortran).
+                              Tests: tests/test_pbit.py (needs the 'precision' extra for gmpy2).
 
 experiments/                  One FLAT folder per experiment (expXNN_name), each with config.yaml + run.py.
                               Flat (not nested under checkpoints) because run.py uses REPO_ROOT = parents[2].
@@ -76,6 +81,14 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
                                  4 activations incl. gaussian r=0) and a hashed pre-registered test on 10 fresh targets, widths 48-384,
                                  precisions 11-53 bits + native fp32; anchor_rule_v1.md is the frozen statement; lands at the
                                  valley corner except under-resolved high-frequency content; v1n = B/||f||_inf (amplitude fix)
+  expC11_true_precision_law/     panel (c) of the expC09 figure redone with the model AND the least-squares solve at p bits
+                                 (src/precision): chirp, W=1024, p=8..53, refined-rule lambda; SPEC.md is normative;
+                                 run.py --sweep/--anchors/--standard, plot.py
+  expC13_five_method_comparison/ five constructions (QUILLS, Mhaskar, staircase, Costarelli-Spigler, ChebNet) with every
+                                 construction and inference operation at p bits via pfloat (~/my-repos/projects/tools/pfloat),
+                                 format (p, -958, 959), 3073-parameter budget, validation selection, 320-bit error meter;
+                                 SPEC.md is normative; run.py --sweep/--extended, plot.py; tests/test_expC13_*.py;
+                                 headline: tradeoff_data.py + tapout_plot.py (tap-out width and floor, QUILLS vs ChebNet, N<=1024, p<=53)
   # Checkpoint D -- can optimizers find the geometry, and the optimizer program
   #   Entry point for D07 onward: docs/ORIENTATION.md
   expD01_geometry_ladder/        Adam on frozen geometry stalls; lstsq solves

@@ -1,0 +1,520 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[letterpaper,margin=0.95in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,array}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Q}{\mathcal Q}
+\newcommand{\add}{\operatorname{add}}
+\newcommand{\sub}{\operatorname{sub}}
+\newcommand{\mul}{\operatorname{mul}}
+\newcommand{\dv}{\operatorname{div}}
+\newcommand{\rint}{\operatorname{rint}}
+\newcommand{\ldexp}{\operatorname{ldexp}}
+\newcommand{\tp}{\operatorname{tanh}_{p}}
+\newcommand{\fl}{\operatorname{fl}}
+\newcommand{\code}[1]{\texttt{#1}}
+\title{A Precision-Controlled Tanh Construction:\\Arithmetic Contract and Implementation Evidence}
+\author{}\date{Section 3 research note 1 --- 25 September 2026}
+
+\usepackage{microtype,fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small True-p-bit implementation}
+\fancyhead[R]{\small Section 3 research note 1}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[2]
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The expC11 computation constructs a fixed-geometry tanh network and fits its
+readout with an explicitly rounded, $p$-significand-bit implementation of
+reference LAPACK's SVD least-squares driver. The same arithmetic controls
+geometry, activation evaluation, the solve, stored coefficients, and sequential
+inference. This note specifies that computation, including its input boundary,
+exponent range, operation order, and rank cutoff. It records the existing
+implementation checks and completed chirp and Runge measurements, without
+claiming a new test run or a certificate for a different recovery algorithm.
+\end{abstract}
+
+\section{What the experiment measures}
+
+The question is whether a prescribed tanh geometry can be constructed, fitted,
+and evaluated accurately when the numerical computation itself is restricted
+to $p$ significant binary digits. Rounding a final coefficient vector is not
+enough to answer this question: feature formation and the least-squares solve
+can themselves introduce errors. ExpC11 therefore fixes a sequence of rounded
+operations for all of these stages.
+
+The objects entering the experiment are a set of target samples, a bandwidth
+$\lambda$, integer dimensions, and a floating-point format. Target sampling
+and bandwidth selection occur outside the controlled computation. They produce
+data that are rounded before entering it. Within the computation, the centers,
+features, least-squares solution, and predictions are all formed in the chosen
+format. A binary64 observer measures the resulting error afterwards.
+
+This distinction matters when connecting the experiment to Section~3's
+realizability discussion. The experiment supplies an explicit implementation
+and numerical evidence for one construction procedure. It is not a proof that
+every solver, summation order, or parameterization has the same error, and it
+does not implement the supplied reference-scaled FP64 recovery theorem. That
+theorem has its own coefficient-envelope scaling and recovery/export contract.
+ExpC11 uses the unscaled design matrix and the particular truncated
+\code{DGELSS} procedure described below.
+
+The earlier expC09 precision panel also has a different interpretation: its
+precision restriction concerns the forward computation while the solve remains
+in FP64. Its observed plateau and error constant cannot be presented as those
+of an all-$p$-bit solve. The later expC13 raw-affine comparison is likewise a
+separate protocol. None of its measurements are used in this note.
+
+\section{The arithmetic contract}
+
+\subsection{Significand precision and exponent range}
+Let $\mathcal F(p,e_{\min},e_{\max})$ denote a binary format with $p$
+significand bits, including the leading bit, normal exponents from $e_{\min}$
+through $e_{\max}$, and gradual underflow. A positive normal value has the form
+$m2^e$ with $1\le m<2$ and $p$ binary significant digits. Subnormals below
+$2^{e_{\min}}$ lie on the uniform lattice with spacing
+\[
+ q_{\mathrm{sub}}=2^{e_{\min}-p+1}.
+\]
+Write $\Q$ for round-to-nearest, ties-to-even into this format. The five
+arithmetic primitives are
+\begin{align*}
+ \add(a,b)&=\Q(a+b), & \sub(a,b)&=\Q(a-b),\\
+ \mul(a,b)&=\Q(ab), & \dv(a,b)&=\Q(a/b), &
+ \operatorname{sqrt}_{p}(a)&=\Q(\sqrt a).
+\end{align*}
+Every operand is already a format value, and each primitive rounds separately.
+In particular, a multiply followed by an add is not fused. The unit roundoff
+for normal results is $u_p=2^{-p}$; the primary solver cutoff is $2u_p$.
+
+Negation, absolute value, comparison, sign transfer, and copying do not require
+a rounding step. Power-of-two scaling is exact when its result is
+representable; the emulator's scaling wrapper also applies format rounding at
+range boundaries. The nearest-integer operation $\rint$, with ties to even,
+is used only on the small values required by activation range reduction. An
+integer used as a floating operand enters as $\Q(k)$. Integer loop counters,
+array sizes, and indexing remain ordinary exact control information.
+
+The precision sweep uses
+\[
+ \mathcal F_p=\mathcal F(p,-958,959),\qquad p=8,9,\ldots,53.
+\]
+This range is wide enough to separate the experiment's significand restriction
+from the narrow exponent range of IEEE binary32. It also ensures that every
+finite sweep-format value, including its subnormals, is exactly representable
+as a normal binary64 carrier value. Native-format checks use
+\[
+ \mathcal F_{32}=\mathcal F(24,-126,127),\qquad
+ \mathcal F_{64}=\mathcal F(53,-1022,1023).
+\]
+Thus the sweep point $p=24$ is not an IEEE FP32 experiment. The sweep format at
+$p=53$ is also not identical to binary64 as a set of numbers. The recorded
+agreement with binary64 concerns the tested computations; exponent-sensitive
+behavior need not agree on arbitrary inputs.
+
+\subsection{Constants and the input boundary}
+Constants are prepared outside the model and rounded once into the format.
+This includes the activation coefficients and the machine parameters used by
+LAPACK. The preparation code uses exact rational arithmetic for rational
+constants and high-precision evaluation with a midpoint-separation check for
+the required transcendental constants. Runtime access retrieves the stored
+format value; it does not recompute that constant at higher precision.
+
+For binary64 training locations $x_i$ and supplied binary64 labels
+$y_i=\fl_{64}(f(x_i))$, the model receives
+\[
+ \widetilde x_i=\Q(x_i),\qquad
+ \widetilde y_i=\Q(y_i).
+\]
+It likewise receives rounded evaluation inputs $\widetilde x^e_i$, bandwidth
+$\widetilde\lambda=\Q(\lambda)$, and geometry integers
+$\widetilde N=\Q(N)$ and $\widetilde j=\Q(j)$. The labels are samples at
+the original locations $x_i$, subsequently rounded; they are not freshly
+evaluated as $f(\widetilde x_i)$ inside the model.
+
+The bandwidth is selected offline, separately for each precision, using the
+existing refined rule with tolerance $2^{1-p}$. Consequently, the experiment
+does not assert that target generation or the bandwidth-selection algorithm
+itself runs at $p$ bits. Its controlled boundary begins after those inputs
+have been supplied and rounded.
+
+\section{Geometry, activation, and design matrix}
+
+\subsection{Centered features in a prescribed operation order}
+Choose $N$ interior intervals and $H$ halo centers on each side. The center
+indices are $j=-H,\ldots,N+H$, giving
+\[
+ W=N+2H+1
+\]
+hidden features. Geometry is formed by
+\begin{equation}\label{eq:geometry}
+ h=\dv(2,\widetilde N),\qquad
+ c_j=\add\bigl(-1,\mul(\widetilde j,h)\bigr),\qquad
+ \gamma=\dv(\widetilde\lambda,h).
+\end{equation}
+The feature at a format-valued input $x$ is
+\begin{equation}\label{eq:feature}
+ \phi_j(x)=\tp\!\left(\mul\bigl(\gamma,\sub(x,c_j)\bigr)\right).
+\end{equation}
+The subtraction is performed before multiplication by $\gamma$. Forming a
+stored bias $b_j=\Q(-\gamma c_j)$ and evaluating
+$\add(\mul(\gamma,x),b_j)$ gives a different rounding sequence, even though
+the two expressions are identical over the reals. The expC11 evidence applies
+to the centered form~\eqref{eq:feature}.
+
+At small $p$, the rounding of geometry integers and centers is part of the
+experiment. Distinct indices can produce equal rounded values, and a fine
+training grid can have repeated rounded locations. The array still has the
+prescribed number of rows and columns. One should not interpret that nominal
+width as a guarantee of distinct finite-precision features or full rank.
+
+\subsection{A tanh algorithm built from rounded primitives}
+The activation is a specified algorithm $\tp$, not a call to a system
+\code{tanh} routine followed by output rounding. Its construction uses
+\[
+ \tanh(a)=-\frac{\exp(-2a)-1}{\exp(-2a)+1},\qquad a\ge0,
+\]
+and evaluates the numerator as an \code{expm1}-type expression to avoid
+subtracting two nearly equal numbers near the origin.
+
+The stored constants are
+\begin{align*}
+ I&=\Q(1/\ln2), & S&=\Q((p+3)\ln2/2),\\
+ L_h&=\Q_{\max(p-k_b,1)}(\ln2), &
+ L_l&=\Q(\ln2-L_h),
+\end{align*}
+where $k_b$ is the bit length of $p+4$ and $\Q_q$ denotes rounding to $q$
+significand bits. The shorter significand of $L_h$ supports the split range
+reduction. Let $d\ge1$ be the smallest integer satisfying
+\[
+ \frac{0.35^d}{(d+1)!}\le2^{-(p+1)},\qquad
+ a_\ell=\Q\!\left(\frac1{(\ell+1)!}\right),\quad 0\le\ell<d.
+\]
+These coefficients define a Horner approximation to $\exp(r)-1$ after
+reduction. The degree rule is part of the specified algorithm; by itself it
+is not a global floating-point error bound for the completed activation.
+
+For input $z$, set $a=|z|$. If $a\ge S$, return $1$ or $-1$ according to
+the sign of $z$. Otherwise form $u=-2a$ by exact power-of-two scaling and set
+\[
+ k=\rint\bigl(\mul(u,I)\bigr),\qquad
+ r=\begin{cases}
+ u,& k=0,\\
+ \sub\bigl(\sub(u,\mul(k,L_h)),\mul(k,L_l)\bigr),& k\ne0.
+ \end{cases}
+\]
+The small integer $k$ is represented in the working format when used in these
+products. Evaluate the polynomial in the following order:
+\[
+ q\leftarrow a_{d-1},\qquad
+ q\leftarrow\add(a_\ell,\mul(r,q))\quad
+ (\ell=d-2,d-3,\ldots,0),\qquad P=\mul(r,q).
+\]
+Reconstruct the exponential difference and the activation by
+\begin{align*}
+ E&=\begin{cases}
+ P,&k=0,\\
+ \add\bigl(\ldexp(P,k),\sub(2^k,1)\bigr),&k\ne0,
+ \end{cases}\\
+ t&=-\dv(E,\add(E,2)),\qquad
+ \tp(z)=\begin{cases}t,&z\ge0,\\-t,&z<0.\end{cases}
+\end{align*}
+Every displayed add, subtract, multiply, and divide is one rounded operation.
+There is no wider accumulator inside the activation algorithm. Nor is
+$\tp(z)$ claimed to equal correctly rounded mathematical $\tanh(z)$.
+The existing tests compare the algorithm with an independent MPFR replay and
+check its error against mathematical tanh on sampled inputs; these are
+different checks.
+
+\subsection{The sampled fitting problem}
+For $M$ training points, form the $M\times n$ matrix, $n=W+1$,
+\[
+ A_{i,j+H+1}=\phi_j(\widetilde x_i),\qquad
+ A_{i,n}=1,\qquad -H\le j\le N+H.
+\]
+The final column represents the output bias. The right-hand side is
+$\widetilde y=(\widetilde y_1,\ldots,\widetilde y_M)^T$. Entries of $A$
+are already format values when the least-squares driver receives them.
+The driver performs its own rounded matrix operations; it does not hand this
+matrix to a binary64 solver.
+
+\section{The all-p-bit least-squares computation}
+
+\subsection{Reference driver and supported branch}
+The implementation ports reference LAPACK 3.12.1 \code{DGELSS}, restricted
+to $M\ge n$ and one right-hand side. Floating-point expressions in the
+reachable routines are mapped to the primitives above in the specified
+evaluation order. Block size is fixed at one, selecting the unblocked
+level-2 kernels. A blocked library implementation can change rounding order
+and is not the bitwise reference for this computation.
+
+For the tall expC11 matrix, the main stages are Householder QR, application
+of its orthogonal transformations to the right-hand side, reduction of the
+remaining problem to upper bidiagonal form, construction of the right
+singular-vector factors, implicit-shift QR iteration on the bidiagonal matrix,
+and truncated back-substitution. The port includes the scalar operations
+inside these stages: norms, rotations, reflectors, matrix--vector products,
+and scaling. Representative routines are \code{DGEQR2}, \code{DLARFG},
+Blue's \code{DNRM2}, \code{DGEBD2}, \code{DORGL2}, \code{DBDSQR},
+\code{DLARTG}, \code{DLAS2}, \code{DLASV2}, \code{DRSCL}, and
+\code{DGEMV}.
+
+Machine parameters belong to the working format. In particular,
+\code{DLAMCH('E')} is $2^{-p}$ and \code{DLAMCH('P')} is $2^{1-p}$.
+Safe minimum, overflow threshold, norm-scaling thresholds, and the constants
+used by bidiagonal iteration are also prepared for that format. Changing only
+the rounding of matrix entries while retaining binary64 machine constants
+would define a different solver.
+
+The port is deliberately not a general replacement for all \code{DGELSS}
+branches. It returns an error for $M<n$, an input requiring the omitted
+\code{DLASCL} rescaling branch, or an all-zero matrix. A constant bias column
+rules out the all-zero design matrix here. A nonzero bidiagonal-iteration
+status is propagated rather than silently accepted as a fitted model.
+
+There is one documented arithmetic exception in solver control flow. The
+reference driver's dimension crossover is computed as
+\[
+ \code{MNTHR}=\operatorname{INT}
+       \bigl(\operatorname{REAL}(\min(M,n))\cdot1.6\bigr)
+\]
+in native single precision, matching reference LAPACK. It determines whether
+to perform the initial QR reduction. This calculation uses matrix dimensions,
+not data values; it is outside the $p$-bit numerical kernels and is explicitly
+allowed by the static audit. For the reported $4801\times1025$ problem it
+selects the tall-matrix QR path.
+
+\subsection{Truncation and sensitivity cutoffs}
+In exact arithmetic, a truncated SVD solve retains singular directions whose
+singular values exceed a threshold, divides their transformed right-hand-side
+components by those singular values, and maps back through the right singular
+vectors. In expC11 each of these operations, including the decomposition, is
+performed in the working arithmetic. Therefore the exact-arithmetic formula
+describes the algorithmic purpose, not an identity asserting that the computed
+factors are an exact SVD of $A$.
+
+Let $\widehat\sigma_1\ge\cdots\ge\widehat\sigma_n$ be the computed
+singular values, and let $\mathrm{sfmin}$ be the stored LAPACK safe minimum.
+The implemented retention rule is
+\begin{equation}\label{eq:threshold}
+ \widehat\sigma_i>	au,\qquad
+ \tau=\max\{\mul(\rho,\widehat\sigma_1),\mathrm{sfmin}\},
+ \qquad \rho=2^{1-p}.
+\end{equation}
+Equality is discarded. This includes the safe-minimum safeguard present in
+the code; the shorter description ``discard values at most
+$\rho\sigma_1$'' suppresses that detail. The reported effective rank is
+the number of retained computed singular values.
+
+The chirp sensitivity study also uses $\rho=\kappa2^{-p}$ for
+$\kappa\in\{1,8,32\}$. It reuses the state after \code{DBDSQR} and repeats
+the cutoff-dependent scaling and final matrix--vector multiply. Since the
+decomposition does not depend on \code{RCOND}, this reproduces those stages
+of separate calls with the same arithmetic and decomposition. A cutoff is
+not chosen afterwards to minimize the plotted primary error: the primary
+curve consistently uses $\rho=2^{1-p}$.
+
+\section{Storage, inference, and the external observer}
+
+Write the fitted coefficients as $w_j$, $-H\le j\le N+H$, and bias $b$.
+All are format values produced by the solver. For an evaluation input
+$\widetilde x$, the readout starts at the bias and visits the features in
+increasing center-index order:
+\begin{equation}\label{eq:readout}
+ s\leftarrow b,\qquad
+ s\leftarrow\add\bigl(s,\mul(\phi_j(\widetilde x),w_j)\bigr),
+ \quad j=-H,-H+1,\ldots,N+H.
+\end{equation}
+This is a sequential rounded sum. Pairwise reduction, compensated summation,
+a library dot product, or an exact accumulator would change the experiment.
+Saved-model evaluation reconstructs the same rounded geometry and applies
+this same order.
+
+The emulator stores values in binary64 arrays, but the storage type does not
+grant additional arithmetic precision: each stored number must be exactly
+representable in the chosen format, and subsequent arithmetic still goes
+through its rounding primitives. Saved coefficient, prediction, and
+singular-value arrays are checked for this representability. The saved
+model files use binary64 containers; they are not a claim of a physically
+packed $p$-bit deployment format or a measured memory saving.
+
+With $M_e$ original evaluation locations $x^e_i$, define the reported error
+\[
+ E_p=\frac{\left(\sum_{i=1}^{M_e}
+   |s(\Q(x^e_i))-f_{64}(x^e_i)|^2\right)^{1/2}}
+ {\left(\sum_{i=1}^{M_e}|f_{64}(x^e_i)|^2\right)^{1/2}},
+ \qquad f_{64}(x)=\fl_{64}(f(x)).
+\]
+The observer performs this measurement in binary64. In particular, it compares
+against the target at the unrounded grid, so input quantization contributes
+to the error. This is a finite-grid relative $\ell^2$ measurement, conventionally
+called relative $L^2$ in the experiment reports. It is not a certified
+continuous-domain norm, and no sampled-to-continuous theorem is invoked here.
+
+\section{Implementation checks and their scope}
+
+The model and solver are written once in two C headers and instantiated with
+three arithmetic backends. The emulator uses a binary64 carrier to implement
+the requested rounded primitives; the native variants use binary32 or
+binary64 scalar types. Native builds disable contraction and automatic
+vectorization, preserving the scalar operation sequence.
+
+The emulator must avoid double rounding. A binary64 operation followed by a
+naive $p$-bit rounding can choose the wrong side of a target-format midpoint.
+The implementation therefore computes the carrier result together with the
+sign of its residual relative to the exact result. TwoSum supplies this
+information for addition; FMA residuals supply it for multiplication, division,
+and square root. The residual sign resolves midpoint cases before the result
+is returned in the target format. Exact power-of-two scaling protects very
+small residual calculations. The internal use of FMA implements one rounded
+primitive; it does not fuse a model multiply with its following model add.
+
+The completed reports record 202 passing tests in the arithmetic and replay
+suite, together with full-size native/reference comparisons. These are
+historical results from those reports, not tests rerun in preparing this note.
+The evidence has several distinct roles:
+\begin{enumerate}
+\item Primitive comparisons use MPFR for the rounded add, subtract, multiply,
+divide, and square-root operations, including midpoint traps, subnormal
+behavior, and tiny results. Native-format comparisons additionally check
+agreement with hardware arithmetic.
+\item A separate MPFR implementation, written from the specification,
+replays activation constants, $\tp$, feature formation, and sequential
+readout. It does not independently replay the least-squares solve. Its model
+replay uses a wide exponent range without subnormalization; finite-range
+behavior is covered separately by the primitive tests.
+\item The solver is compared with netlib \code{SGELSS}/\code{DGELSS},
+compiled from reference source with contraction disabled and block size one.
+The tests cover random, rank-deficient, graded, and tanh design matrices.
+The reports also record bitwise agreement on the full $4801\times1025$
+problem in exact IEEE FP32 and FP64.
+\item The static audit walks clang's expanded syntax tree, including every
+branch, and rejects raw floating arithmetic, unrounded conversions, disallowed
+math calls, or unchecked floating literals outside the rounding layer.
+Its allowed findings are exactly the dimension-crossover exception described
+above. Planted arithmetic and conversion leaks serve as negative controls.
+\item The Runge report records representability and error-recomputation
+checks for all 46 saved models, source-hash agreement with its manifest, and
+bitwise saved-model replay at $p=8,24,53$.
+\end{enumerate}
+
+These checks support fidelity to a specified numerical algorithm. They do not
+constitute an exhaustive proof over all inputs, a certified tanh error bound,
+or a conditioning theorem. In particular, the existing tanh test samples
+inputs at each precision from 8 through 53 and requires error at most three
+ulps, where the ulp is measured at the true output's magnitude. The report's
+stronger phrasing ``at most 2.5 ulp at every $p$'' should be read as reported
+numerical evidence, not a uniform bound proved by that test.
+
+\section{Completed measurements}
+
+The two reported sweeps use $W=1024$, $H=24$, and $N=975$, with $4801$
+training points and $8001$ evaluation points, equispaced on $[-1,1]$. The
+targets are
+\[
+ f_{\mathrm{chirp}}(x)=\sin(8\pi(x+1)^2),\qquad
+ f_{\mathrm{Runge}}(x)=\frac1{1+25x^2}.
+\]
+The offline selector uses frequency scales $16\pi$ and $5$, respectively.
+For Runge, the search interval is $[0.03,3]$: at $p=8,9,10,11$ the selector
+returns its upper limit $\lambda=3$, rather than an equality root. At
+$p=12,\ldots,53$ the report records satisfaction of the stated score equation.
+
+Table~\ref{tab:results} reproduces rounded values from the completed reports.
+Both main curves use the sweep exponent range and cutoff $2^{1-p}$.
+\begin{table}[ht]
+\centering
+\caption{Reported relative evaluation errors. The IEEE FP32 anchor has a
+different exponent range from the 24-bit sweep point.}
+\label{tab:results}
+\begin{tabular}{lcc}
+\toprule
+Format & Chirp & Runge 25\\
+\midrule
+Sweep, $p=24$ & $6.81\times10^{-5}$ & $9.57\times10^{-6}$\\
+Sweep, $p=53$ & $1.04\times10^{-13}$ & $2.50\times10^{-14}$\\
+IEEE binary32 anchor & $6.39\times10^{-5}$ & not reported here\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For chirp, a line $E_p\approx C2^{-p}$ with slope fixed in advance was fit
+by its intercept over $p=16,\ldots,40$, giving $C=1386$. Over
+$p=16,\ldots,53$, the reported median of $E_p2^p$ is $1115$. The sweep
+continues down to $p=53$ without the separate plateau visible in the
+forward-only comparison. The latter's reported fitted constant is $19.5$,
+and its FP64-solve plateau is approximately $9.3\times10^{-14}$. The data
+support a one-bit-per-bit trend for this fixed-size, fixed-solver experiment;
+they do not identify a universal error constant for least squares.
+
+Low precision is a distinct regime. For chirp at $p=8,\ldots,13$, the
+reported errors are $1.35,1.46,0.84,0.39,0.29,0.25$, with retained ranks
+$100,232,299,575,871,943$. Larger sensitivity cutoffs reduce several spikes
+in the higher-precision curve. Thus the trend must not be described as
+monotone convergence at every precision or as successful accurate fitting
+throughout the 8--53 range.
+
+Runge generally has lower error through most of the sweep, including the
+24-bit and 53-bit entries in the table. No convergence-rate or intercept fit
+was performed for Runge. Its final two errors, $2.66\times10^{-14}$ at
+$p=52$ and $2.50\times10^{-14}$ at $p=53$, do not alone establish a floor.
+
+The chirp IEEE FP32 anchor also illustrates why the exponent range must be
+reported. Its error differs by about six percent from the 24-bit sweep point;
+the report records approximately $1.8\times10^8$ subnormal intermediates in
+that FP32 run. This is an observed effect of the full format, not evidence
+that the significand-bit specification was violated. Both source reports
+retain a pending-author-review status for presentation or conclusions, even
+though the cited measurement sweeps are complete.
+
+\section{Source provenance and reproducibility boundary}
+
+The following are actual paths relative to the repository root. They separate
+the computation's specification, inspected implementation, historical test
+evidence, and saved experimental results. No training run, precision sweep,
+or numerical validation suite was rerun for this note.
+
+\begin{description}\raggedright
+\item[Normative contract.]
+\path{experiments/expC11_true_precision_law/SPEC.md}.
+The explicit safe-minimum threshold in~\eqref{eq:threshold}, zero-matrix
+rejection, and dimension-crossover exception are clarified from the code.
+\item[Model and solver.]
+\path{src/precision/pbit_algo.h} and
+\path{src/precision/lapack_gelss.h}.
+\item[Arithmetic and interface.]
+\path{src/precision/pbit_emul.c},
+\path{src/precision/pbit_native.c}, and
+\path{src/precision/pbit.py}.
+\item[Independent anchors and audit.]
+\path{src/precision/reference_lapack.py} and
+\path{src/precision/audit.py}.
+\item[Tests and model replay.]
+\path{tests/test_pbit.py},
+\path{tests/pbit_replay_reference.py}, and
+\path{tests/test_pbit_replay_selfcheck.py}.
+\item[Experiment runners.]
+\path{experiments/expC11_true_precision_law/run.py} and
+\path{experiments/expC11_true_precision_law/runge_comparison.py}.
+\item[Chirp report.]
+\path{results/checkpoint_C_geometry/expC11_true_precision_law/expC11_results.md}.
+Its sibling \path{data/} directory contains \path{config.json},
+\path{measurements.jsonl}, \path{summary.json}, the saved
+\path{models/p*.npz}, and native/reference anchor records.
+\item[Runge report.]
+\path{results/checkpoint_C_geometry/expC11_true_precision_law/runge25_comparison/expC11_runge25_results.md}.
+Its sibling \path{data/} directory contains the configuration and source
+hashes, measurements, models, and \path{validation.json}.
+\item[Distinct recovery proof supplied with the source packet.]
+\path{docs/appendix_materials/2026-09-25/supplied/fp64_scaled_svd_recovery_proof.pdf}.
+It is identified here to keep its numerical contract separate; the expC11
+checks are not a certificate that this theorem's algorithm was implemented.
+\end{description}
+
+\end{document}
