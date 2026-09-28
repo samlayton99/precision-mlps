@@ -1,0 +1,376 @@
+{
+  "tag": "N512_individual_adam_continue",
+  "n": 512,
+  "map": "individual",
+  "gammas": [
+    1,
+    2,
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "exp_sin_3pi",
+      "target_index": 1,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "quadratic",
+      "target_index": 3,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "sine_2pi",
+      "target_index": 4,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "exp_sin_3pi",
+      "target_index": 1,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "quadratic",
+      "target_index": 3,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "sine_2pi",
+      "target_index": 4,
+      "initialization": "zero",
+      "view": "common"
+    }
+  ],
+  "rates": [
+    [
+      0.1,
+      0.1,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.1,
+      0.1,
+      0.01,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.1,
+      0.1,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.01,
+      0.1,
+      0.01,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.01,
+      0.1,
+      0.0001,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.1,
+      0.1,
+      0.0001,
+      0.01,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.1,
+      0.1,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.1,
+      0.1,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.1,
+      0.1,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.1,
+      0.1,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.1,
+      0.01,
+      0.0001,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-12,
+      1e-12,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ]
+  ],
+  "matrix_hashes": [
+    "5281557e4ef84d107d930771c9a5567ab58963a2c73f150b8b85d72dd58dd6d1",
+    "c66675ccee3835e0c75536070b951ab20094828b89938eba3de430d4b01098cf",
+    "4ca69cf390cbe97d59720f410c5fc30576fa8a99b64a6e87ddef59f40926fdcc",
+    "25f63e655366b72bb7f1cc10b2bf67354f48aa3d017e633ebd5349645c653c51",
+    "486bcec1ba3731af3a4388447e3609b0515a88192c8a121166575cb2522f0f61",
+    "aa46176363a1fceadb9fc399680584cf5a67f413f2b98d025606817815edf3ca",
+    "803c5b84daa6ff94e026ef0fc6aa2a009439be323942f3c05c82786972921267",
+    "4d787d0f6d6f1c5f8d194151a4661f572502bd0bfdd85a294defbd1b47ec7934",
+    "708b26b71a4917c07e2c87ffa0bdeaa29e295a808fa82296ddcce4925e770189",
+    "24b1eeb2eb162b6287c4a2b5395957dba614dce6d4c79fa8aacf8581abe7ec45",
+    "9afcae425ba5dd2ceda2e3b5f18620437380317248a138351e8acc64ac9fcbc0"
+  ],
+  "initial_hash": "135967e4e2871a3150a5056eb9e88c4256e5100999ad8e5f671a974534b1fda2",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

@@ -1,0 +1,92 @@
+{
+  "decimal_digits": 80,
+  "source_sha256": {
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/refinements/structured_gamma/summary.json": "54ae1422b3f4d11360978f1f0f3e159a244e7b2d77bbb029dcb90fa353018c81",
+    "experiments/expD36_frozen_gamma_probe/uniform_grid_spectrum.py": "c2069ce3cb035b1b7769a16c17059bc9eed13928edbc35eb5f5c12457b98dac6",
+    "experiments/expD36_frozen_gamma_probe/structured_precision_audit.py": "810a2bfe459ff7b40d3e94b4c399dfa7be058a7f27c1bfb89b02eac12d9a8679",
+    "experiments/expD36_frozen_gamma_probe/structured_resolvent.py": "5517b0b237123405f5aa22100b48d5f3a2c12e79b57ff55b8e8734b4b4fe44aa",
+    "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/full_sweep/common/N512/arrays.npz": "f7d20b7d9b481f4db1f744d0f36a4be1dcb3b356263779e196c3a59fc99c6dd8"
+  },
+  "cases": [
+    {
+      "gamma": 8,
+      "n": 512,
+      "dimension": 560,
+      "signed_rank": 26,
+      "eta": 0.002068412912130894,
+      "cutoff": 1.1029830912616472e-07,
+      "pole": [
+        8.813235998586147e-08,
+        4.329665208854023e-09
+      ],
+      "input_definition": "Fixed FP64 normalized diagonal, weighted signed factors, complex forcing, and pole; all small-matrix sums and solve recomputed at 80 decimal digits. Weighted factors include the original FP64 square root.",
+      "input_sha256": "12105eddb77a338c9e087347683a4ae6f24d590f58bc74d088b444465ac8434d",
+      "small_condition_number_fp64": 572968687702.699,
+      "small_formation_max_absolute_error": 6.894174344550019e-10,
+      "q_mp": [
+        0.6578902121052135,
+        0.001436479323392879
+      ],
+      "q_dp": [
+        0.6578902119376289,
+        0.0014364792660442882
+      ],
+      "q_dp_corrected": [
+        0.6578902121052783,
+        0.0014364793233716542
+      ],
+      "uncorrected_quadratic_error": 1.771255327183206e-10,
+      "corrected_using_mp_residual_error": 6.62848339794667e-14,
+      "corrected_using_dp_residual_error": 6.824809009734343e-14,
+      "exact_input_residual_product_bound": 3.365146726567688e-11,
+      "fp64_residual_product_bound": 3.3651020042628173e-11,
+      "mp_residual_norm": 4.858669244321032e-10,
+      "dp_residual_norm": 4.858606630039855e-10,
+      "residual_formation_error": 8.3676386347332e-15,
+      "upper_half_filter_pole_weight": 0.04762486049107145,
+      "corrected_filter_pole_absolute_error": 3.0891296224109453e-15,
+      "elapsed_seconds": 2.110330820083618,
+      "status": "Arithmetic diagnostic for the fixed compressed model only; excludes construction, dropped terms, transforms, and input-rounding certification."
+    },
+    {
+      "gamma": 64,
+      "n": 512,
+      "dimension": 560,
+      "signed_rank": 22,
+      "eta": 0.0020173468150207307,
+      "cutoff": 0.0001480046700289772,
+      "pole": [
+        0.00011826111353767064,
+        5.8097959583350555e-06
+      ],
+      "input_definition": "Fixed FP64 normalized diagonal, weighted signed factors, complex forcing, and pole; all small-matrix sums and solve recomputed at 80 decimal digits. Weighted factors include the original FP64 square root.",
+      "input_sha256": "3725dd195668a1301e94de9cb00028108f596721a1aa3b4485e00a4bb9ba395a",
+      "small_condition_number_fp64": 266239.29216596036,
+      "small_formation_max_absolute_error": 2.7501067112044234e-13,
+      "q_mp": [
+        0.6689801061088696,
+        0.0023402787705407236
+      ],
+      "q_dp": [
+        0.6689801061088697,
+        0.002340278770540768
+      ],
+      "q_dp_corrected": [
+        0.6689801061088697,
+        0.0023402787705407253
+      ],
+      "uncorrected_quadratic_error": 1.722158463403045e-16,
+      "corrected_using_mp_residual_error": 1.3600628243468654e-27,
+      "corrected_using_dp_residual_error": 1.664648530415237e-16,
+      "exact_input_residual_product_bound": 5.620917800126467e-24,
+      "fp64_residual_product_bound": 5.62549818963641e-24,
+      "mp_residual_norm": 3.5289113220087295e-15,
+      "dp_residual_norm": 3.535621157397201e-15,
+      "residual_formation_error": 5.296437470321259e-17,
+      "upper_half_filter_pole_weight": 0.04762486049107145,
+      "corrected_filter_pole_absolute_error": 7.927469328680958e-18,
+      "elapsed_seconds": 1.5497848987579346,
+      "status": "Arithmetic diagnostic for the fixed compressed model only; excludes construction, dropped terms, transforms, and input-rounding certification."
+    }
+  ]
+}

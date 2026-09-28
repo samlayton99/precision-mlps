@@ -1,0 +1,412 @@
+{
+  "width": 512,
+  "horizon": 200000,
+  "selected_recipe_indices": [
+    2,
+    2,
+    5,
+    5,
+    5
+  ],
+  "selection": "Minimize final 4096-grid raw relative L2 error per seed; same recipe for all snapshots; 8192-grid errors are independent evaluation.",
+  "retrospective_snapshot_selection": true,
+  "endpoints": [
+    {
+      "seed": 0,
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.0002,
+      "train_error": 0.16541194283767668,
+      "validation_error": 0.16541328177435952,
+      "eval_error": 0.1654136164855261,
+      "lambda_rms": 0.013823213529711168,
+      "selected": false
+    },
+    {
+      "seed": 0,
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.002,
+      "train_error": 0.11120751817245868,
+      "validation_error": 0.11120911188169479,
+      "eval_error": 0.11120951028218173,
+      "lambda_rms": 0.014348654257189612,
+      "selected": false
+    },
+    {
+      "seed": 0,
+      "recipe_index": 2,
+      "schedule": "constant",
+      "learning_rate": 0.02,
+      "train_error": 0.02306312902760771,
+      "validation_error": 0.02306382919703184,
+      "eval_error": 0.023064004507173764,
+      "lambda_rms": 0.01717025769844426,
+      "selected": true
+    },
+    {
+      "seed": 0,
+      "recipe_index": 3,
+      "schedule": "cosine",
+      "learning_rate": 0.0002,
+      "train_error": 0.21408908165574994,
+      "validation_error": 0.21409034636230867,
+      "eval_error": 0.21409066251932615,
+      "lambda_rms": 0.008719247387364763,
+      "selected": false
+    },
+    {
+      "seed": 0,
+      "recipe_index": 4,
+      "schedule": "cosine",
+      "learning_rate": 0.002,
+      "train_error": 0.10572601663109957,
+      "validation_error": 0.10572818350815444,
+      "eval_error": 0.10572872519521624,
+      "lambda_rms": 0.013892322287607504,
+      "selected": false
+    },
+    {
+      "seed": 0,
+      "recipe_index": 5,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "train_error": 0.05814076488337599,
+      "validation_error": 0.05814303558935896,
+      "eval_error": 0.058143603193726044,
+      "lambda_rms": 0.01605947931439523,
+      "selected": false
+    },
+    {
+      "seed": 1,
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.0002,
+      "train_error": 0.16268529780305604,
+      "validation_error": 0.16268658205955833,
+      "eval_error": 0.1626869031016558,
+      "lambda_rms": 0.013762665160143208,
+      "selected": false
+    },
+    {
+      "seed": 1,
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.002,
+      "train_error": 0.07906693624926622,
+      "validation_error": 0.0790706209166379,
+      "eval_error": 0.0790715420208772,
+      "lambda_rms": 0.014340574092621612,
+      "selected": false
+    },
+    {
+      "seed": 1,
+      "recipe_index": 2,
+      "schedule": "constant",
+      "learning_rate": 0.02,
+      "train_error": 0.02829667396668381,
+      "validation_error": 0.02829939331005735,
+      "eval_error": 0.028300073870517584,
+      "lambda_rms": 0.016342139029396092,
+      "selected": true
+    },
+    {
+      "seed": 1,
+      "recipe_index": 3,
+      "schedule": "cosine",
+      "learning_rate": 0.0002,
+      "train_error": 0.21396534742556533,
+      "validation_error": 0.21396660577918114,
+      "eval_error": 0.21396692034927958,
+      "lambda_rms": 0.008373989028865806,
+      "selected": false
+    },
+    {
+      "seed": 1,
+      "recipe_index": 4,
+      "schedule": "cosine",
+      "learning_rate": 0.002,
+      "train_error": 0.12619538835676125,
+      "validation_error": 0.12619751398854154,
+      "eval_error": 0.12619804537130494,
+      "lambda_rms": 0.012760495185630653,
+      "selected": false
+    },
+    {
+      "seed": 1,
+      "recipe_index": 5,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "train_error": 0.08247448325853872,
+      "validation_error": 0.08247448412027615,
+      "eval_error": 0.0824744843333933,
+      "lambda_rms": 0.015824030722375346,
+      "selected": false
+    },
+    {
+      "seed": 2,
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.0002,
+      "train_error": 0.16326068932549959,
+      "validation_error": 0.16326228421430175,
+      "eval_error": 0.1632626829105071,
+      "lambda_rms": 0.014340079925925227,
+      "selected": false
+    },
+    {
+      "seed": 2,
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.002,
+      "train_error": 0.08584794827632215,
+      "validation_error": 0.08585116048685924,
+      "eval_error": 0.08585196349004327,
+      "lambda_rms": 0.017612544466108045,
+      "selected": false
+    },
+    {
+      "seed": 2,
+      "recipe_index": 2,
+      "schedule": "constant",
+      "learning_rate": 0.02,
+      "train_error": 0.08188390644320377,
+      "validation_error": 0.0818901672973448,
+      "eval_error": 0.08189173239382953,
+      "lambda_rms": 0.01671107311455354,
+      "selected": false
+    },
+    {
+      "seed": 2,
+      "recipe_index": 3,
+      "schedule": "cosine",
+      "learning_rate": 0.0002,
+      "train_error": 0.20838675811023383,
+      "validation_error": 0.20838830247713347,
+      "eval_error": 0.20838868854705647,
+      "lambda_rms": 0.010515687936390997,
+      "selected": false
+    },
+    {
+      "seed": 2,
+      "recipe_index": 4,
+      "schedule": "cosine",
+      "learning_rate": 0.002,
+      "train_error": 0.0847246015115868,
+      "validation_error": 0.08472804225916898,
+      "eval_error": 0.08472890239251157,
+      "lambda_rms": 0.017202804373327937,
+      "selected": false
+    },
+    {
+      "seed": 2,
+      "recipe_index": 5,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "train_error": 0.07749266414554302,
+      "validation_error": 0.07749784905263409,
+      "eval_error": 0.07749914518492963,
+      "lambda_rms": 0.015060995814172197,
+      "selected": true
+    },
+    {
+      "seed": 3,
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.0002,
+      "train_error": 0.15742733328665198,
+      "validation_error": 0.15742863638929389,
+      "eval_error": 0.15742896214090385,
+      "lambda_rms": 0.013449563813337662,
+      "selected": false
+    },
+    {
+      "seed": 3,
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.002,
+      "train_error": 0.1461613313352441,
+      "validation_error": 0.1461621637558342,
+      "eval_error": 0.14616237184067182,
+      "lambda_rms": 0.015269472438763119,
+      "selected": false
+    },
+    {
+      "seed": 3,
+      "recipe_index": 2,
+      "schedule": "constant",
+      "learning_rate": 0.02,
+      "train_error": 0.06871476998122049,
+      "validation_error": 0.06871567373085222,
+      "eval_error": 0.06871589975050142,
+      "lambda_rms": 0.018785330465025857,
+      "selected": false
+    },
+    {
+      "seed": 3,
+      "recipe_index": 3,
+      "schedule": "cosine",
+      "learning_rate": 0.0002,
+      "train_error": 0.23769594187331514,
+      "validation_error": 0.2376987607311229,
+      "eval_error": 0.23769946541751938,
+      "lambda_rms": 0.010435290971416303,
+      "selected": false
+    },
+    {
+      "seed": 3,
+      "recipe_index": 4,
+      "schedule": "cosine",
+      "learning_rate": 0.002,
+      "train_error": 0.1509741678228825,
+      "validation_error": 0.15097474468233674,
+      "eval_error": 0.15097488887931693,
+      "lambda_rms": 0.013778458057486452,
+      "selected": false
+    },
+    {
+      "seed": 3,
+      "recipe_index": 5,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "train_error": 0.05933507873828731,
+      "validation_error": 0.059337022806119785,
+      "eval_error": 0.059337508847661986,
+      "lambda_rms": 0.014070196883271593,
+      "selected": true
+    },
+    {
+      "seed": 4,
+      "recipe_index": 0,
+      "schedule": "constant",
+      "learning_rate": 0.0002,
+      "train_error": 0.1801146730308328,
+      "validation_error": 0.1801175934061165,
+      "eval_error": 0.1801183234656061,
+      "lambda_rms": 0.013925897126074427,
+      "selected": false
+    },
+    {
+      "seed": 4,
+      "recipe_index": 1,
+      "schedule": "constant",
+      "learning_rate": 0.002,
+      "train_error": 0.11649331812383379,
+      "validation_error": 0.11649502432632382,
+      "eval_error": 0.11649545084660252,
+      "lambda_rms": 0.013850247144474574,
+      "selected": false
+    },
+    {
+      "seed": 4,
+      "recipe_index": 2,
+      "schedule": "constant",
+      "learning_rate": 0.02,
+      "train_error": 0.09897832635860078,
+      "validation_error": 0.09898087179906054,
+      "eval_error": 0.09898150813969428,
+      "lambda_rms": 0.017046172449414834,
+      "selected": false
+    },
+    {
+      "seed": 4,
+      "recipe_index": 3,
+      "schedule": "cosine",
+      "learning_rate": 0.0002,
+      "train_error": 0.2083323819849802,
+      "validation_error": 0.20833472200169267,
+      "eval_error": 0.20833530697902072,
+      "lambda_rms": 0.0101160456436523,
+      "selected": false
+    },
+    {
+      "seed": 4,
+      "recipe_index": 4,
+      "schedule": "cosine",
+      "learning_rate": 0.002,
+      "train_error": 0.11802309711564225,
+      "validation_error": 0.11802500913684993,
+      "eval_error": 0.11802548711211366,
+      "lambda_rms": 0.01382747446327002,
+      "selected": false
+    },
+    {
+      "seed": 4,
+      "recipe_index": 5,
+      "schedule": "cosine",
+      "learning_rate": 0.02,
+      "train_error": 0.09151663436153873,
+      "validation_error": 0.09152197972300367,
+      "eval_error": 0.09152331597412044,
+      "lambda_rms": 0.01693602142286688,
+      "selected": true
+    }
+  ],
+  "max_reconstruction_gap": 9.71445146547012e-17,
+  "source_metadata": {
+    "config": {
+      "horizon": 200000,
+      "chunk_size": 100,
+      "learning_rates": [
+        0.0002,
+        0.002,
+        0.02
+      ],
+      "epsilon": 1e-08,
+      "schedules": [
+        "constant",
+        "cosine"
+      ]
+    },
+    "recipes": [
+      {
+        "schedule": "constant",
+        "learning_rate": 0.0002
+      },
+      {
+        "schedule": "constant",
+        "learning_rate": 0.002
+      },
+      {
+        "schedule": "constant",
+        "learning_rate": 0.02
+      },
+      {
+        "schedule": "cosine",
+        "learning_rate": 0.0002
+      },
+      {
+        "schedule": "cosine",
+        "learning_rate": 0.002
+      },
+      {
+        "schedule": "cosine",
+        "learning_rate": 0.02
+      }
+    ],
+    "planned_horizon": 200000,
+    "actual_steps": 200000,
+    "width": 512,
+    "input_sha256": "be357924d77d60c51c1720d3ceaf55723be2e41205f70678e8a7e1a173a563cc",
+    "parameter_layout": "a[W],b[W],c[W],d",
+    "trace_axes": [
+      "update",
+      "seed",
+      "recipe"
+    ],
+    "checkpoint_axes": [
+      "checkpoint",
+      "seed",
+      "recipe",
+      "parameter"
+    ],
+    "metric": "raw relative output L2 error",
+    "slope_metric": "sqrt(mean(a**2)), physical slope not dimensionless bandwidth",
+    "loss": "0.5 * mean((sum(c*tanh(a*x+b))+d-target)**2)",
+    "devices": [
+      "cuda:0"
+    ],
+    "cosine_formula": "eta0 * (1 + cos(pi*n/horizon))/2; n=0,...,horizon-1"
+  },
+  "source_state_sha256": "7c6fb40783b3ad43cf56dd77dff5e2018c5379eff2744d29045f1fc7f5fc8768"
+}

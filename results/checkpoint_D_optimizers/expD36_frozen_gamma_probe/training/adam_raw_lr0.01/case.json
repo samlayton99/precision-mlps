@@ -1,0 +1,39 @@
+{
+  "optimizer": "adam",
+  "map": "raw",
+  "gammas": [
+    1,
+    4,
+    16,
+    64
+  ],
+  "targets": [
+    "sine_mix_2_6_10"
+  ],
+  "rates": [
+    0.01,
+    0.01,
+    0.01,
+    0.01
+  ],
+  "epsilon": 1e-12,
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "row n measures state n before update n+1; endpoint saved separately",
+  "input_matrix_hashes": [
+    "75ab35af3dc21948cd2f069c8ccf349a93fe197c9c1a6176c09e36c68a66d7f5",
+    "81dc07ef624a68413f5fb702b75d5019d48efa9010172087cf620a12843fa072",
+    "c0777b8ae8ac39b4bfcdccdfa66af8fa8330d19d712ebc7c4c082a52126818c4",
+    "82b3565b205d451eb917a9065124ca5d07d0b1efc0260cb585f7173f8d9767eb"
+  ],
+  "source_commit": "66eb341"
+}

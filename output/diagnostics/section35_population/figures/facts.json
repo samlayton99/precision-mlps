@@ -1,0 +1,84 @@
+{
+  "checks": [
+    {
+      "target": "moment5",
+      "seed": 30,
+      "min_bound_fraction": 0.9996634024960935,
+      "max_absolute_error_gap": 0.000291501937164651,
+      "min_output_floor": 0.865733747155665
+    },
+    {
+      "target": "mixed_sine",
+      "seed": 30,
+      "min_bound_fraction": 0.9995773470487122,
+      "max_absolute_error_gap": 0.0003857058404154179,
+      "min_output_floor": 0.9121942163365413
+    },
+    {
+      "target": "gauss_left",
+      "seed": 30,
+      "min_bound_fraction": 0.9954046555824987,
+      "max_absolute_error_gap": 0.003621465654098044,
+      "min_output_floor": 0.7844512716810486
+    },
+    {
+      "target": "bump_right",
+      "seed": 30,
+      "min_bound_fraction": 0.997939829119929,
+      "max_absolute_error_gap": 0.0018150661454620076,
+      "min_output_floor": 0.879211921965082
+    },
+    {
+      "target": "step_right",
+      "seed": 30,
+      "min_bound_fraction": 0.9789332227198732,
+      "max_absolute_error_gap": 0.010315884193270786,
+      "min_output_floor": 0.4793595918465395
+    },
+    {
+      "target": "kink_abs",
+      "seed": 30,
+      "min_bound_fraction": 0.9982804815520376,
+      "max_absolute_error_gap": 0.000736707442342166,
+      "min_output_floor": 0.4269524965684468
+    },
+    {
+      "target": "step_right",
+      "seed": 31,
+      "min_bound_fraction": 0.977140434727575,
+      "max_absolute_error_gap": 0.011190726034521814,
+      "min_output_floor": 0.47835165594685813
+    },
+    {
+      "target": "kink_abs",
+      "seed": 31,
+      "min_bound_fraction": 0.9979129370635917,
+      "max_absolute_error_gap": 0.000894309299261542,
+      "min_output_floor": 0.42669460697731315
+    },
+    {
+      "target": "gauss_left",
+      "seed": 31,
+      "min_bound_fraction": 0.9938846789180685,
+      "max_absolute_error_gap": 0.004818122833698535,
+      "min_output_floor": 0.7830592051343012
+    },
+    {
+      "target": "bump_right",
+      "seed": 31,
+      "min_bound_fraction": 0.9972665462419806,
+      "max_absolute_error_gap": 0.0024078307811056243,
+      "min_output_floor": 0.878467060203064
+    }
+  ],
+  "minimum_sampled_bound_fraction": 0.977140434727575,
+  "scope": "Native-step GD recurrence with interpolated sampled structural coefficients; no certified between-sample enclosure.",
+  "selection": "Main pair: mixed sine links to Figure 4; smooth step has the largest principal population-growth allowance. Appendix: all ten continuations.",
+  "diagnostic_stride_updates": 500,
+  "source_sha256": {
+    "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_flow_20260924/states.csv": "0f01ec7bab8ae20cd531e14aecc053145e04ef47e1554bdf4c8b3be1c62314df",
+    "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_evolving_verified_20260924/summary.csv": "412672e524e90de8788f81170441a395924b1ebb96720aa3ee29619222c30d99",
+    "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_stress_flow_20260924/states.csv": "61a8d261ca5937d9f9f126693d5b76b922d63780a1ecfe7938614ff8c60208fb",
+    "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/results/checkpoint_D_optimizers/expD34_readout_race/population_output/evidence/balance_stress_comparison_20260924/summary.csv": "4c92e15f9fcc1b6bd17aa71af8b622d414e38bb520aa17166916325af3015124"
+  }
+}

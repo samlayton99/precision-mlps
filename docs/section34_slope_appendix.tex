@@ -1,0 +1,249 @@
+\section{Proof of the slope-dependent output-error bound}
+\label{app:slope-proof}
+
+The continuous-center integral exposes how the common tanh slope changes the
+readout kernel. An explicit lattice allowance transfers this calculation to
+finitely many equally spaced centers. Interlacing supplies upper bounds on the
+relative learning rates; substituting these bounds into the exact GD residual
+formula gives the output-error lower bound. We separate this analytic argument
+from its numerical evaluation below.
+
+\paragraph{Setup and statement.}
+Fix distinct samples $z_1,\ldots,z_m$ and $W$ consecutive centers $x_j$ on
+$c_0+h\mathbb Z$, with $h>0$, covering the sample interval. Fix $\gamma>0$ and set
+\begin{equation}
+ J_\gamma=\frac1{\sqrt m}
+ [\mathbf1,(\tanh(\gamma(z_a-x_j)))_{a,j}],\qquad
+ K_\gamma=J_\gamma J_\gamma^T,\qquad y_a=\frac{f(z_a)}{\sqrt m}.
+ \label{eq:app-slope-setup}
+\end{equation}
+Thus $\|J_\gamma w-y\|^2$ is the mean squared sampled output error. Assume
+$y\ne0$, write the descending eigenpairs of $K_\gamma$ as $(\mu_i,u_i)_{i=1}^m$,
+and define
+\begin{equation}
+ \rho_i=\mu_i/\mu_1,\qquad p_i=|u_i^Ty|^2/\|y\|^2,\qquad
+ v_0=\mathbf1/\sqrt m.
+\end{equation}
+The weights sum to one, including energy in the exact nullspace. The symbol
+$\lambda=\gamma h$ continues to denote relative bandwidth, not an eigenvalue.
+
+Let $Q$ have orthonormal columns spanning $v_0^\perp$, and let
+$t_\gamma(c)=(\tanh(\gamma(z_a-c)))_a$. Define
+\begin{equation}
+ H_\gamma=\frac1{hm}\int_{\mathbb R}
+ Q^Tt_\gamma(c)t_\gamma(c)^TQ\,dc
+ =-\frac2{hm}Q^T[d_{ab}\coth(\gamma d_{ab})]_{a,b}Q,
+ \quad d_{ab}=z_a-z_b,
+ \label{eq:app-slope-integral}
+\end{equation}
+where the diagonal value inside brackets is $1/\gamma$. Retain a finite set
+$\mathcal F$ of absent exterior lattice centers such that the remaining absent
+centers form two tails, starting at $c_L<z_{\min}$ and $c_R>z_{\max}$. Put
+\begin{equation}
+ T_\gamma=\frac1m\sum_{c\in\mathcal F}
+ Q^Tt_\gamma(c)t_\gamma(c)^TQ,\qquad S_\gamma=H_\gamma-T_\gamma,
+ \label{eq:app-slope-corrected}
+\end{equation}
+and let $\beta_1\ge\cdots\ge\beta_{m-1}$ be the eigenvalues of $S_\gamma$.
+For any $0<\vartheta<\pi/2$, define
+\begin{equation}
+ \delta_\gamma=
+ \frac{8\gamma\|z-\bar z\mathbf1\|^2\sec^4\vartheta}
+ {3hm[\exp(2\pi\vartheta/(\gamma h))-1]},\qquad
+ \bar z=m^{-1}\sum_a z_a,\qquad \ell_\gamma=v_0^TK_\gamma v_0.
+ \label{eq:app-slope-lattice-allowance}
+\end{equation}
+
+\paragraph{Output-error lower bound.}
+Set $\bar\rho_1=1$ and
+\begin{equation}
+ \bar\rho_i(\gamma)=\min\left\{1,
+ \frac{\beta_{i-1}(\gamma)+\delta_\gamma}{\ell_\gamma}\right\},
+ \qquad 2\le i\le m.
+ \label{eq:app-slope-upper-rates}
+\end{equation}
+Then $\rho_i\le\bar\rho_i\le1$. Gradient descent from $w_0=0$ on
+$\frac12\|J_\gamma w-y\|^2$, with $\eta=1/(2\mu_1)$, satisfies
+\begin{equation}
+ \frac{\|J_\gamma w_n-y\|^2}{\|y\|^2}
+ \ge\sum_{i=1}^m p_i(\gamma)
+ \left(1-\frac{\bar\rho_i(\gamma)}2\right)^{2n}
+ \qquad(n\ge0).
+ \label{eq:app-slope-output-bound}
+\end{equation}
+Known exact zero eigenvalues may have their endpoints set to zero; in
+particular, $\operatorname{rank}K_\gamma\le W+1$. The conclusion depends on
+target energy in the bounded slow directions; it does not assert that every
+target is slow at small slope.
+
+\subsection{The continuous-center kernel exposes gamma}
+Removing the constant sample pattern makes the integral finite because
+$Q^Tt_\gamma(c)$ decays exponentially at both ends. The identity
+$1-\tanh u\tanh v=\coth(u-v)(\tanh u-\tanh v)$ gives
+\begin{equation}
+ \int_{\mathbb R}[1-\tanh(\gamma(z_a-c))\tanh(\gamma(z_b-c))]\,dc
+ =2d_{ab}\coth(\gamma d_{ab}),
+\end{equation}
+with diagonal limit $2/\gamma$. Multiplication by $Q^T$ and $Q$ cancels the
+constant term and proves Eq.~\eqref{eq:app-slope-integral}.
+
+Write $s_\gamma(t)=\frac\gamma2\operatorname{sech}^2(\gamma t)$. The identity
+$\tanh(\gamma\,\cdot)=s_\gamma*\operatorname{sign}$ follows because both sides
+vanish at zero and have derivative $2s_\gamma$. For the convention
+$\widehat g(\omega)=\int g(t)e^{-i\omega t}\,dt$, substitution
+$r=e^{2\gamma t}$, the beta integral, and the gamma-function reflection formula
+yield
+\begin{align}
+ \widehat s_\gamma(\omega)
+ &=\int_0^\infty\frac{r^{-i\omega/(2\gamma)}}{(1+r)^2}\,dr
+ =\Gamma\!\left(1-\frac{i\omega}{2\gamma}\right)
+  \Gamma\!\left(1+\frac{i\omega}{2\gamma}\right)\notag\\
+ &=\frac{\pi\omega/(2\gamma)}{\sinh(\pi\omega/(2\gamma))}
+ =:M_\gamma(\omega),\qquad M_\gamma(0)=1.
+\end{align}
+For $u=Qv$, the step combination
+$g_0(c)=\sum_a u_a\operatorname{sign}(c-z_a)$ has compact support since
+$\sum_a u_a=0$. Its distributional derivative is
+$2\sum_a u_a\delta_{z_a}$, so
+$\widehat g_0(\omega)=2\sum_a u_a e^{-i\omega z_a}/(i\omega)$.
+Parseval therefore gives
+\begin{equation}
+ v^TH_\gamma v=\frac2{\pi hm}\int_{\mathbb R}
+ \frac{M_\gamma(\omega)^2}{\omega^2}
+ \left|\sum_a(Qv)_a e^{-i\omega z_a}\right|^2\,d\omega.
+ \label{eq:app-slope-fourier}
+\end{equation}
+The zero-frequency singularity is removable because the numerator vanishes
+there. The direction's coefficients $(Qv)_a$ determine its frequency content;
+gamma changes its weight through $M_\gamma^2$. Since
+$d\log(z/\sinh z)/dz=1/z-\coth z<0$ for $z>0$, increasing gamma increases
+$M_\gamma$ at every fixed frequency. Thus $H_\Gamma\succeq H_\gamma$ for
+$\Gamma\ge\gamma$, and min-max gives ordered growth of the integral
+eigenvalues. The eigenvectors may change. Exterior-center subtraction and
+normalization by the largest finite eigenvalue need not preserve this order.
+
+\subsection{Transfer to a finite center lattice}
+For $u\perp\mathbf1$, let
+$g(\zeta)=\sum_a u_a\tanh(\gamma(\zeta-z_a))$, analytic in
+$|\operatorname{Im}\zeta|<\pi/(2\gamma)$. Subtract the common translate at
+$\bar z$, write each difference as an integral of its derivative, and apply
+Minkowski and Cauchy--Schwarz. On the strip boundaries this gives
+\begin{equation}
+ \int_{\mathbb R}|g(t\pm i\vartheta/\gamma)|^2\,dt
+ \le\frac{4\gamma}{3}\sec^4\vartheta
+ \|z-\bar z\mathbf1\|^2\|u\|^2.
+ \label{eq:app-slope-strip}
+\end{equation}
+Indeed,
+$|\operatorname{sech}^2(t+i\vartheta)|\le
+\sec^2\vartheta\operatorname{sech}^2t$ and
+$\int\operatorname{sech}^4t\,dt=4/3$, so the $L^2$ norm of a translate
+difference is at most
+$|z_a-\bar z|\sqrt{4\gamma/3}\sec^2\vartheta$.
+
+Shift the contour for the analytic function $g(\zeta)^2$, not $|g(\zeta)|^2$.
+Its transform is bounded by Eq.~\eqref{eq:app-slope-strip} times
+$e^{-\vartheta|\omega|/\gamma}$. Poisson summation on $c_0+h\mathbb Z$
+and the geometric sum over frequencies $2\pi k/h$, $k\ne0$, imply
+\begin{equation}
+ \left\|\frac1m\sum_{c\in c_0+h\mathbb Z}
+ Q^Tt_\gamma(c)t_\gamma(c)^TQ-H_\gamma\right\|
+ \le\delta_\gamma.
+\end{equation}
+The lattice origin enters only through phases of modulus one.
+
+The finite kernel removes all absent centers. Let $T_{\rm tail}$ contain the
+absent centers not retained in $\mathcal F$. Since $Q^T\mathbf1=0$ and
+$1-\tanh t\le2e^{-2t}$ for $t\ge0$, a right-tail projected outer product
+divided by $m$ has norm at most $4e^{-4\gamma(c-z_{\max})}$; the left tail
+is analogous. Hence
+\begin{equation}
+ 0\preceq T_{\rm tail}\preceq\tau_\gamma I,\qquad
+ \tau_\gamma=\frac{4[e^{-4\gamma(c_R-z_{\max})}
+ +e^{-4\gamma(z_{\min}-c_L)}]}{1-e^{-4\gamma h}}.
+\end{equation}
+Writing the lattice discrepancy as $R_{\rm lattice}$ yields
+\begin{equation}
+ Q^TK_\gamma Q=S_\gamma+R_{\rm lattice}-T_{\rm tail},\qquad
+ \|R_{\rm lattice}\|\le\delta_\gamma,
+\end{equation}
+and consequently
+\begin{equation}
+ S_\gamma-(\delta_\gamma+\tau_\gamma)I
+ \preceq Q^TK_\gamma Q\preceq S_\gamma+\delta_\gamma I.
+ \label{eq:app-slope-enclosure}
+\end{equation}
+The bias vanishes under $Q$. The unretained exterior tail can only lower the
+finite kernel; it is unnecessary for its upper eigenvalue bound.
+
+\subsection{Relative rates and GD output error}
+If $\kappa_i$ are the descending eigenvalues of $Q^TK_\gamma Q$, min-max and
+codimension-one interlacing give
+\begin{equation}
+ \beta_i-\delta_\gamma-\tau_\gamma\le\kappa_i\le\beta_i+\delta_\gamma,
+ \qquad \mu_i\ge\kappa_i\ge\mu_{i+1}.
+\end{equation}
+Thus $\mu_i\le\beta_{i-1}+\delta_\gamma$ for $i\ge2$. In exact arithmetic
+this upper endpoint is nonnegative. The Rayleigh quotient
+$\ell_\gamma=\|J_\gamma^Tv_0\|^2\le\mu_1$ is at least one because the bias
+is present. Dividing by it and imposing $\rho_i\le1$ proves
+Eq.~\eqref{eq:app-slope-upper-rates}.
+
+The residual $r_n=J_\gamma w_n-y$ satisfies
+\begin{equation}
+ r_{n+1}=(I-\eta K_\gamma)r_n,\qquad r_0=-y,\qquad
+ \frac{\|r_n\|^2}{\|y\|^2}=
+ \sum_i p_i(1-\eta\mu_i)^{2n}.
+\end{equation}
+At $\eta=1/(2\mu_1)$ the factors are $(1-\rho_i/2)^{2n}$, decreasing in
+$\rho_i\in[0,1]$. Replacing $\rho_i$ by its upper bound and summing against
+$p_i\ge0$ proves Eq.~\eqref{eq:app-slope-output-bound}. This step is a fixed
+conservative fraction of the stability limit $2/\mu_1$, not the maximal stable
+step. For any nonoscillatory step $0<\eta\mu_1\le1$, the proof replaces
+$\rho/2$ by $\eta\mu_1\rho$.
+
+Only energy in the exact nullspace contributes a permanent floor
+$p_0=\sum_{\mu_i=0}p_i$. A positive mode is representable because
+$u_i=J_\gamma(J_\gamma^Tu_i/\mu_i)$, even when its decay is slow. The weights
+$p_i$ use the actual finite-kernel eigenvectors; replacing them with
+continuous-center eigenvectors would require another argument.
+
+\subsection{Numerical evaluation and sources of slack}
+The analytic statement uses exact $H_\gamma$ and $S_\gamma$. Numerical
+evaluation uses a positive center-quadrature factor $A$ and an exterior factor
+$C$, forming $AA^T-CC^T$. It does not truncate a Fourier series: quadrature
+evaluates the same integral whose Fourier identity explains the mechanism.
+
+Truncating the integral at
+$\pm(\max_a|z_a|+P/\gamma)$ omits a positive matrix with norm at most
+$2e^{-4P}/(h\gamma)$, added to the numerical upper endpoint. The exterior tail
+enters the lower side of the kernel enclosure. For $Z=[A,C]$, its truncated SVD $Z_r$, and
+$D=\operatorname{diag}(I,-I)$, expansion of $Z=Z_r+E$ gives
+\begin{equation}
+ \|ZDZ^T-Z_rDZ_r^T\|
+ \le2\sigma_1(Z)\sigma_{r+1}(Z)+\sigma_{r+1}(Z)^2.
+\end{equation}
+This allowance enters both endpoints. Pad the compressed spectrum with zeros
+between its positive and negative eigenvalues to recover dimension $m-1$.
+
+Quadrature and arithmetic error are separate from these analytic tails.
+Quadrature refinement and sensitivity checks support a numerical evaluation;
+they are not rigorous error certificates. A multiple of machine epsilon is an
+empirical guard unless justified by an arithmetic-error proof. Clipping a
+negative computed upper endpoint at zero cannot repair a violated enclosure.
+Computed curves should therefore be identified as checked floating-point
+evaluations of the theorem.
+
+Omitting numerically unresolved target energy weakens the lower curve
+conservatively. Report unresolved spectral energy separately from the directly
+computed projection residual; neither alone proves an exact nonrepresentability
+floor in finite precision. The analytic bound also loses sharpness through the
+interlacing index shift and the use of $\ell_\gamma$ instead of $\mu_1$.
+Additive lattice and numerical allowances can dominate very small eigenvalues.
+Retaining more exterior centers or improving arithmetic reduces some of this
+slack, but does not remove the interlacing or normalization gaps. These are
+distinct from inaccurate numerical evaluation.
+
+All conclusions concern fixed features and the specified sample norm.
+Population error, evolving centers or slopes, and Adam require additional
+analysis or empirical evidence.

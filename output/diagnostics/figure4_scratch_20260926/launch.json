@@ -1,0 +1,62 @@
+{
+  "workers": [
+    {
+      "lane": 0,
+      "gpu": 0,
+      "pid": 56318,
+      "widths": [
+        1024
+      ],
+      "started_unix": 1790399913.3302944,
+      "command": [
+        "timeout",
+        "--signal=TERM",
+        "--kill-after=5s",
+        "10400s",
+        "/tmp/figure4-venv/bin/python",
+        "-u",
+        "/dev/shm/figure4_scratch_20260926/code/figure4_width_sweep.py",
+        "--root",
+        "/dev/shm/figure4_scratch_20260926/production",
+        "--lane",
+        "0"
+      ]
+    },
+    {
+      "lane": 1,
+      "gpu": 1,
+      "pid": 56319,
+      "widths": [
+        512,
+        128,
+        256
+      ],
+      "started_unix": 1790399913.3310528,
+      "command": [
+        "timeout",
+        "--signal=TERM",
+        "--kill-after=5s",
+        "10400s",
+        "/tmp/figure4-venv/bin/python",
+        "-u",
+        "/dev/shm/figure4_scratch_20260926/code/figure4_width_sweep.py",
+        "--root",
+        "/dev/shm/figure4_scratch_20260926/production",
+        "--lane",
+        "1"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "adam_feature_probe_prepare.py": "8879fdb531a3955d5d4326bf05eb19bb04bafe7c549bb8cb6fa764960c352239",
+    "figure4_width_sweep.py": "94cc74096da48c52671eab46f45c0b2e0dabafa794f1c71a64c2fcfe96c23a27",
+    "figure4_durable.py": "504af691f82d92dbc019a1986345dc0abb0c650c981282f56e23323226cd7da7",
+    "adam_joint_probe_run.py": "813b33c0fec1903b3dbade1d480e8fd66817f012da8e252e3375e38ca20c9b33"
+  },
+  "max_gpu_hours": 6,
+  "trial_allowance_seconds": 790,
+  "lane_timeout_seconds": 10400,
+  "kill_grace_seconds": 5,
+  "backup_interval": 250000,
+  "backup_timeout": 300
+}

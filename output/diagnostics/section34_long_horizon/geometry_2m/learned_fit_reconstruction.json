@@ -1,0 +1,188 @@
+{
+  "input_hash_verified": true,
+  "relative_cutoff": 1e-12,
+  "method": "Independently reconstruct tanh activations on eval grid and accumulate saved readout coefficients column by column in FP64; no SVD projection residual used.",
+  "checks": [
+    {
+      "geometry": "adam_seed0_step2000000_scale1",
+      "reported_eval_error": 0.0042862555658248576,
+      "independent_columnwise_eval_error": 0.00428625556643338,
+      "absolute_error_difference": 6.085227807761662e-13
+    },
+    {
+      "geometry": "adam_seed0_step2000000_scale4",
+      "reported_eval_error": 0.1327009506094489,
+      "independent_columnwise_eval_error": 0.1327009506094489,
+      "absolute_error_difference": 0.0
+    },
+    {
+      "geometry": "adam_seed0_step2000000_scale16",
+      "reported_eval_error": 0.18055235623492405,
+      "independent_columnwise_eval_error": 0.18055235623492402,
+      "absolute_error_difference": 2.7755575615628914e-17
+    },
+    {
+      "geometry": "adam_seed1_step2000000_scale1",
+      "reported_eval_error": 0.003558603409510069,
+      "independent_columnwise_eval_error": 0.0035586034327724603,
+      "absolute_error_difference": 2.3262391145306704e-11
+    },
+    {
+      "geometry": "adam_seed1_step2000000_scale4",
+      "reported_eval_error": 0.10633798372816859,
+      "independent_columnwise_eval_error": 0.10633798372816901,
+      "absolute_error_difference": 4.163336342344337e-16
+    },
+    {
+      "geometry": "adam_seed1_step2000000_scale16",
+      "reported_eval_error": 0.1720891117072523,
+      "independent_columnwise_eval_error": 0.17208911170725127,
+      "absolute_error_difference": 1.0269562977782698e-15
+    },
+    {
+      "geometry": "adam_seed2_step2000000_scale1",
+      "reported_eval_error": 0.001916583180126059,
+      "independent_columnwise_eval_error": 0.0019165832515025823,
+      "absolute_error_difference": 7.137652339832268e-11
+    },
+    {
+      "geometry": "adam_seed2_step2000000_scale4",
+      "reported_eval_error": 0.09130137890404301,
+      "independent_columnwise_eval_error": 0.09130137890404301,
+      "absolute_error_difference": 0.0
+    },
+    {
+      "geometry": "adam_seed2_step2000000_scale16",
+      "reported_eval_error": 0.14563812613832902,
+      "independent_columnwise_eval_error": 0.14563812613832902,
+      "absolute_error_difference": 0.0
+    },
+    {
+      "geometry": "adam_seed3_step2000000_scale1",
+      "reported_eval_error": 0.0021265705461796965,
+      "independent_columnwise_eval_error": 0.0021265705366052476,
+      "absolute_error_difference": 9.574448872617936e-12
+    },
+    {
+      "geometry": "adam_seed3_step2000000_scale4",
+      "reported_eval_error": 0.10445531946588199,
+      "independent_columnwise_eval_error": 0.10445531946588198,
+      "absolute_error_difference": 1.3877787807814457e-17
+    },
+    {
+      "geometry": "adam_seed3_step2000000_scale16",
+      "reported_eval_error": 0.16430681807426226,
+      "independent_columnwise_eval_error": 0.16430681807426226,
+      "absolute_error_difference": 0.0
+    },
+    {
+      "geometry": "adam_seed4_step2000000_scale1",
+      "reported_eval_error": 0.0024068310808434052,
+      "independent_columnwise_eval_error": 0.002406831035973185,
+      "absolute_error_difference": 4.487022038646149e-11
+    },
+    {
+      "geometry": "adam_seed4_step2000000_scale4",
+      "reported_eval_error": 0.10557323404128066,
+      "independent_columnwise_eval_error": 0.10557323404128069,
+      "absolute_error_difference": 2.7755575615628914e-17
+    },
+    {
+      "geometry": "adam_seed4_step2000000_scale16",
+      "reported_eval_error": 0.16517008862779342,
+      "independent_columnwise_eval_error": 0.16517008862779342,
+      "absolute_error_difference": 0.0
+    },
+    {
+      "geometry": "gd_seed0_step2000000_scale1",
+      "reported_eval_error": 0.22223718554171512,
+      "independent_columnwise_eval_error": 0.22223718559010838,
+      "absolute_error_difference": 4.839326162020541e-11
+    },
+    {
+      "geometry": "gd_seed0_step2000000_scale4",
+      "reported_eval_error": 0.2343456065860064,
+      "independent_columnwise_eval_error": 0.2343456050106523,
+      "absolute_error_difference": 1.5753540971719104e-09
+    },
+    {
+      "geometry": "gd_seed0_step2000000_scale16",
+      "reported_eval_error": 0.1886639373317528,
+      "independent_columnwise_eval_error": 0.18866393672259751,
+      "absolute_error_difference": 6.09155281772189e-10
+    },
+    {
+      "geometry": "gd_seed1_step2000000_scale1",
+      "reported_eval_error": 0.2221160201256,
+      "independent_columnwise_eval_error": 0.2221160194550828,
+      "absolute_error_difference": 6.70517197320919e-10
+    },
+    {
+      "geometry": "gd_seed1_step2000000_scale4",
+      "reported_eval_error": 0.23873420221661634,
+      "independent_columnwise_eval_error": 0.23873420087755626,
+      "absolute_error_difference": 1.339060085037147e-09
+    },
+    {
+      "geometry": "gd_seed1_step2000000_scale16",
+      "reported_eval_error": 0.19049983957801647,
+      "independent_columnwise_eval_error": 0.19049983913250423,
+      "absolute_error_difference": 4.455122382118759e-10
+    },
+    {
+      "geometry": "gd_seed2_step2000000_scale1",
+      "reported_eval_error": 0.2058048176460703,
+      "independent_columnwise_eval_error": 0.2058048212006326,
+      "absolute_error_difference": 3.5545622834032287e-09
+    },
+    {
+      "geometry": "gd_seed2_step2000000_scale4",
+      "reported_eval_error": 0.18735693290212224,
+      "independent_columnwise_eval_error": 0.187356934365225,
+      "absolute_error_difference": 1.4631027500655591e-09
+    },
+    {
+      "geometry": "gd_seed2_step2000000_scale16",
+      "reported_eval_error": 0.14366877746138054,
+      "independent_columnwise_eval_error": 0.1436687841073202,
+      "absolute_error_difference": 6.64593965971072e-09
+    },
+    {
+      "geometry": "gd_seed3_step2000000_scale1",
+      "reported_eval_error": 0.20486426478333217,
+      "independent_columnwise_eval_error": 0.20486426640701394,
+      "absolute_error_difference": 1.6236817723669361e-09
+    },
+    {
+      "geometry": "gd_seed3_step2000000_scale4",
+      "reported_eval_error": 0.17048142071317604,
+      "independent_columnwise_eval_error": 0.17048142749637016,
+      "absolute_error_difference": 6.78319411751005e-09
+    },
+    {
+      "geometry": "gd_seed3_step2000000_scale16",
+      "reported_eval_error": 0.14911398495623904,
+      "independent_columnwise_eval_error": 0.14911398156998612,
+      "absolute_error_difference": 3.3862529169592648e-09
+    },
+    {
+      "geometry": "gd_seed4_step2000000_scale1",
+      "reported_eval_error": 0.21744755199289248,
+      "independent_columnwise_eval_error": 0.21744755167913393,
+      "absolute_error_difference": 3.137585469215054e-10
+    },
+    {
+      "geometry": "gd_seed4_step2000000_scale4",
+      "reported_eval_error": 0.20498664689974685,
+      "independent_columnwise_eval_error": 0.20498664782840037,
+      "absolute_error_difference": 9.286535151975528e-10
+    },
+    {
+      "geometry": "gd_seed4_step2000000_scale16",
+      "reported_eval_error": 0.15568122507437016,
+      "independent_columnwise_eval_error": 0.15568122483869082,
+      "absolute_error_difference": 2.356793371571797e-10
+    }
+  ],
+  "maximum_absolute_error_difference": 6.78319411751005e-09
+}

@@ -1,0 +1,376 @@
+{
+  "tag": "N512_collective_adam_continue",
+  "n": 512,
+  "map": "collective",
+  "gammas": [
+    1,
+    2,
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96
+  ],
+  "optimizer": "adam",
+  "columns": [
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "exp_sin_3pi",
+      "target_index": 1,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "quadratic",
+      "target_index": 3,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "sine_2pi",
+      "target_index": 4,
+      "initialization": "zero",
+      "view": "selected"
+    },
+    {
+      "target": "sine_mix_2_6_10",
+      "target_index": 0,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "exp_sin_3pi",
+      "target_index": 1,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "runge_25",
+      "target_index": 2,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "quadratic",
+      "target_index": 3,
+      "initialization": "zero",
+      "view": "common"
+    },
+    {
+      "target": "sine_2pi",
+      "target_index": 4,
+      "initialization": "zero",
+      "view": "common"
+    }
+  ],
+  "rates": [
+    [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.01,
+      0.1,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.01,
+      0.001,
+      0.1,
+      0.01,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.1,
+      0.1,
+      0.001,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.01,
+      0.001,
+      0.1,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.001,
+      0.1,
+      0.001,
+      0.1,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.0001,
+      0.01,
+      0.1,
+      0.1,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.0001,
+      0.1,
+      0.1,
+      0.1,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ],
+    [
+      0.0001,
+      0.1,
+      0.001,
+      0.1,
+      0.0001,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.001
+    ]
+  ],
+  "epsilons": [
+    [
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-08,
+      1e-12,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ],
+    [
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-08,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ]
+  ],
+  "matrix_hashes": [
+    "d5202dec9215876fcf30ceb8bbc0386a619f3c79473807dc34bd11557df72ff2",
+    "88bd63b9ef2dac7305380d09858258fd574fd334de4d0a6ce880f5ca568a79c4",
+    "834f4542d90902cdcdce3d0d9a33e844c9da9f62579fbd6ad675067865989fc3",
+    "35782f352c1a45496133bce434c9057f6e50b661d4909fb3cf774ef2fc6e6a8e",
+    "f002f09992a07758a46a971f32e068e5cc4260740b512af3864c58c0bbc3edc0",
+    "143ec29ce6ea4c88c878c5cf7e024258dfd94718b24120a779bb7748be987a64",
+    "23b15477566f66b02ae6bfbe3706beaf84947eab9a00983196e4b866195ebe5c",
+    "e8375723f8bfc9a502958294b15859adfbe3681b32cbb90bbd33b77800d56eca",
+    "5f54805e0cf03603f5d09c00ecd9e79459f8147e297cc22a45ae7d5722a0e6ac",
+    "1503c32047cc93f39739f7b01f7d45f10f5d24dc4e9c08912cb627ce332ecf2c",
+    "294b1dd0afbf27548a82187ba89b484ea67de4c0fbb3ac9ec26cf3ff0c9ee46f"
+  ],
+  "initial_hash": "135967e4e2871a3150a5056eb9e88c4256e5100999ad8e5f671a974534b1fda2",
+  "trace_columns": [
+    "train_relative_error",
+    "half_mse",
+    "gradient_l2",
+    "native_step_l2",
+    "physical_step_l2",
+    "native_parameter_l2",
+    "physical_parameter_l2",
+    "zero_motion",
+    "rate"
+  ],
+  "trace_convention": "state n before update n+1; endpoint separately evaluated",
+  "source_commit": "ffb08373fa1f05503829e0fdc26584001a783acd"
+}

@@ -1,0 +1,1728 @@
+{
+  "cases": [
+    {
+      "optimizer": "adam",
+      "seed": 0,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.005356900154044869,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.9751431488904273e-05,
+          "energy_closure": 0.9999999999999981,
+          "direct_quadratic_form": 2.3647393818541946,
+          "spectral_quadratic_form": 2.364739381854193
+        },
+        "residual": {
+          "total_energy": 2.869637926040595e-05,
+          "complement_energy": 1.9751431488904432e-05,
+          "energy_closure": 2.869637926040595e-05,
+          "direct_quadratic_form": 2.9414032907660847e-06,
+          "spectral_quadratic_form": 2.9414032907660797e-06
+        }
+      },
+      "mu_max": 15.322372485387502,
+      "numerical_unresolved_target_energy_at_1e_18": 2.834795464412565e-05,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed0_readout_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 0,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.005356900154044869,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.9841573269053574e-05,
+          "energy_closure": 1.0,
+          "direct_quadratic_form": 252.27900926893605,
+          "spectral_quadratic_form": 252.279009268936
+        },
+        "residual": {
+          "total_energy": 2.869637926040595e-05,
+          "complement_energy": 1.9841573269053832e-05,
+          "energy_closure": 2.869637926040595e-05,
+          "direct_quadratic_form": 0.00029937964954599155,
+          "spectral_quadratic_form": 0.00029937964954599165
+        }
+      },
+      "mu_max": 1739.8630634399774,
+      "numerical_unresolved_target_energy_at_1e_18": 2.8347953649476842e-05,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed0_readout_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        93.46992083037064,
+        6022.337448314054
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 0,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.005356900154044869,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 3.6900209054890395e-11,
+          "energy_closure": 0.9999999999999994,
+          "direct_quadratic_form": 2.752666210699924,
+          "spectral_quadratic_form": 2.752666210699929
+        },
+        "residual": {
+          "total_energy": 2.869637926040595e-05,
+          "complement_energy": 3.6900209055007124e-11,
+          "energy_closure": 2.8696379260405952e-05,
+          "direct_quadratic_form": 3.1099730460910037e-06,
+          "spectral_quadratic_form": 3.109973046091004e-06
+        }
+      },
+      "mu_max": 15.529196401527692,
+      "numerical_unresolved_target_energy_at_1e_18": 4.733683445223846e-10,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed0_full_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 0,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.005356900154044869,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 3.691734837670254e-11,
+          "energy_closure": 1.000000000000001,
+          "direct_quadratic_form": 447.35992715597297,
+          "spectral_quadratic_form": 447.3599271559729
+        },
+        "residual": {
+          "total_energy": 2.869637926040595e-05,
+          "complement_energy": 3.691734837594244e-11,
+          "energy_closure": 2.8696379260405963e-05,
+          "direct_quadratic_form": 0.00037202274821020973,
+          "spectral_quadratic_form": 0.00037202274821021087
+        }
+      },
+      "mu_max": 1901.19205974923,
+      "numerical_unresolved_target_energy_at_1e_18": 4.737217285111228e-10,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed0_full_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        93.46992083037064,
+        99555699.54094625
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 1,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.03217355505600713,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.0006242123372126042,
+          "energy_closure": 1.0000000000000029,
+          "direct_quadratic_form": 1.8360928353584265,
+          "spectral_quadratic_form": 1.8360928353584263
+        },
+        "residual": {
+          "total_energy": 0.0010351376449419221,
+          "complement_energy": 0.000624212337212603,
+          "energy_closure": 0.0010351376449419226,
+          "direct_quadratic_form": 7.806912584807191e-10,
+          "spectral_quadratic_form": 7.806912584804845e-10
+        }
+      },
+      "mu_max": 13.696237978880449,
+      "numerical_unresolved_target_energy_at_1e_18": 0.0010175005228625356,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed1_readout_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 1,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.03217355505600713,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.00063480018233678,
+          "energy_closure": 1.0000000000000002,
+          "direct_quadratic_form": 189.64607494729594,
+          "spectral_quadratic_form": 189.64607494729546
+        },
+        "residual": {
+          "total_energy": 0.0010351376449419221,
+          "complement_energy": 0.0006348001823367799,
+          "energy_closure": 0.0010351376449419223,
+          "direct_quadratic_form": 1.3527060477013314e-07,
+          "spectral_quadratic_form": 1.3527060477011705e-07
+        }
+      },
+      "mu_max": 1211.863406403715,
+      "numerical_unresolved_target_energy_at_1e_18": 0.0010023597944900375,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed1_readout_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        68.67743131058792,
+        3262.1925167842323
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 1,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.03217355505600713,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.2033375699454709e-06,
+          "energy_closure": 1.0000000000000013,
+          "direct_quadratic_form": 3.2714966870022555,
+          "spectral_quadratic_form": 3.2714966870022626
+        },
+        "residual": {
+          "total_energy": 0.0010351376449419221,
+          "complement_energy": 1.2033375699456663e-06,
+          "energy_closure": 0.0010351376449419232,
+          "direct_quadratic_form": 9.047338211587573e-10,
+          "spectral_quadratic_form": 9.04733821158547e-10
+        }
+      },
+      "mu_max": 19.78042909507001,
+      "numerical_unresolved_target_energy_at_1e_18": 8.402196365697723e-05,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed1_full_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 1,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.03217355505600713,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.6098129245346837e-06,
+          "energy_closure": 1.0000000000000013,
+          "direct_quadratic_form": 438.1940538673356,
+          "spectral_quadratic_form": 438.19405386733683
+        },
+        "residual": {
+          "total_energy": 0.0010351376449419221,
+          "complement_energy": 1.609812924534702e-06,
+          "energy_closure": 0.0010351376449419195,
+          "direct_quadratic_form": 2.388668534970508e-07,
+          "spectral_quadratic_form": 2.388668534970495e-07
+        }
+      },
+      "mu_max": 1771.2338241392624,
+      "numerical_unresolved_target_energy_at_1e_18": 6.11355126785007e-05,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed1_full_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        39.06178110787839,
+        289640.91845875053
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 2,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.007710186018209869,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.152970250400616e-05,
+          "energy_closure": 1.0000000000000018,
+          "direct_quadratic_form": 2.5539520306389254,
+          "spectral_quadratic_form": 2.5539520306389303
+        },
+        "residual": {
+          "total_energy": 5.9446968435398965e-05,
+          "complement_energy": 2.152970250400669e-05,
+          "energy_closure": 5.9446968435398965e-05,
+          "direct_quadratic_form": 7.153791801669316e-09,
+          "spectral_quadratic_form": 7.153791801669341e-09
+        }
+      },
+      "mu_max": 20.51925766597428,
+      "numerical_unresolved_target_energy_at_1e_18": 5.1878204724964405e-05,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed2_readout_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 2,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.007710186018209869,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.295078671114139e-05,
+          "energy_closure": 1.0000000000000007,
+          "direct_quadratic_form": 69.65389012893971,
+          "spectral_quadratic_form": 69.65389012893966
+        },
+        "residual": {
+          "total_energy": 5.9446968435398965e-05,
+          "complement_energy": 2.2950786711141628e-05,
+          "energy_closure": 5.9446968435398965e-05,
+          "direct_quadratic_form": 1.7310723731107171e-07,
+          "spectral_quadratic_form": 1.7310723731106631e-07
+        }
+      },
+      "mu_max": 1219.634825891804,
+      "numerical_unresolved_target_energy_at_1e_18": 5.188385729704148e-05,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed2_readout_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        18.30528218469087,
+        490.9294772411312
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 2,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.007710186018209869,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 5.051895874555174e-11,
+          "energy_closure": 0.9999999999999996,
+          "direct_quadratic_form": 2.8726418687765776,
+          "spectral_quadratic_form": 2.872641868776579
+        },
+        "residual": {
+          "total_energy": 5.9446968435398965e-05,
+          "complement_energy": 5.051895874547272e-11,
+          "energy_closure": 5.9446968435399005e-05,
+          "direct_quadratic_form": 8.476633504749942e-09,
+          "spectral_quadratic_form": 8.476633504750107e-09
+        }
+      },
+      "mu_max": 20.97052193938891,
+      "numerical_unresolved_target_energy_at_1e_18": 3.5795433284135925e-10,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed2_full_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 2,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.007710186018209869,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 5.2184187728645056e-11,
+          "energy_closure": 1.0000000000000007,
+          "direct_quadratic_form": 117.97384580575675,
+          "spectral_quadratic_form": 117.97384580575692
+        },
+        "residual": {
+          "total_energy": 5.9446968435398965e-05,
+          "complement_energy": 5.218418772826796e-11,
+          "energy_closure": 5.944696843539895e-05,
+          "direct_quadratic_form": 3.023258494600361e-07,
+          "spectral_quadratic_form": 3.0232584946003763e-07
+        }
+      },
+      "mu_max": 1339.0754349501724,
+      "numerical_unresolved_target_energy_at_1e_18": 2.4743740389965296e-10,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed2_full_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        18.30528218469087,
+        470331.9023350312
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 3,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.006959775116041696,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 3.308372211903661e-05,
+          "energy_closure": 0.9999999999999991,
+          "direct_quadratic_form": 1.735208555349454,
+          "spectral_quadratic_form": 1.735208555349462
+        },
+        "residual": {
+          "total_energy": 4.84384696658732e-05,
+          "complement_energy": 3.308372211903569e-05,
+          "energy_closure": 4.8438469665873195e-05,
+          "direct_quadratic_form": 1.9748535885983773e-10,
+          "spectral_quadratic_form": 1.9748535885979917e-10
+        }
+      },
+      "mu_max": 17.363516853420688,
+      "numerical_unresolved_target_energy_at_1e_18": 4.8220937920007145e-05,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed3_readout_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 3,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.006959775116041696,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 3.215386239461911e-05,
+          "energy_closure": 1.000000000000001,
+          "direct_quadratic_form": 171.1388588118287,
+          "spectral_quadratic_form": 171.13885881182856
+        },
+        "residual": {
+          "total_energy": 4.84384696658732e-05,
+          "complement_energy": 3.215386239461812e-05,
+          "energy_closure": 4.84384696658732e-05,
+          "direct_quadratic_form": 1.8219804446580066e-08,
+          "spectral_quadratic_form": 1.8219804446581903e-08
+        }
+      },
+      "mu_max": 1294.9443433453741,
+      "numerical_unresolved_target_energy_at_1e_18": 4.818974213116611e-05,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed3_readout_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        51.34826049798736,
+        1126.6570635433065
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 3,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.006959775116041696,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 8.739627463300835e-09,
+          "energy_closure": 1.0000000000000007,
+          "direct_quadratic_form": 2.970560828264744,
+          "spectral_quadratic_form": 2.970560828264758
+        },
+        "residual": {
+          "total_energy": 4.84384696658732e-05,
+          "complement_energy": 8.73962746328422e-09,
+          "energy_closure": 4.843846966587314e-05,
+          "direct_quadratic_form": 2.1575246314352146e-10,
+          "spectral_quadratic_form": 2.1575246314349085e-10
+        }
+      },
+      "mu_max": 19.346267328529628,
+      "numerical_unresolved_target_energy_at_1e_18": 1.1918616182882147e-07,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed3_full_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 3,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.006959775116041696,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 1.051935235422893e-08,
+          "energy_closure": 1.0,
+          "direct_quadratic_form": 340.46331654983624,
+          "spectral_quadratic_form": 340.46331654983607
+        },
+        "residual": {
+          "total_energy": 4.84384696658732e-05,
+          "complement_energy": 1.0519352354209013e-08,
+          "energy_closure": 4.8438469665873277e-05,
+          "direct_quadratic_form": 2.40555313875588e-08,
+          "spectral_quadratic_form": 2.4055531387559637e-08
+        }
+      },
+      "mu_max": 1660.4000731703723,
+      "numerical_unresolved_target_energy_at_1e_18": 1.1893306461896458e-07,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed3_full_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        38.10481104289581,
+        99769788.79371841
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 4,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.006168789708739956,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.403037665041383e-05,
+          "energy_closure": 0.9999999999999974,
+          "direct_quadratic_form": 2.1699234440676234,
+          "spectral_quadratic_form": 2.1699234440676225
+        },
+        "residual": {
+          "total_energy": 3.805396647065599e-05,
+          "complement_energy": 2.403037665041406e-05,
+          "energy_closure": 3.805396647065599e-05,
+          "direct_quadratic_form": 3.843776871029968e-10,
+          "spectral_quadratic_form": 3.843776871030298e-10
+        }
+      },
+      "mu_max": 15.491616230606258,
+      "numerical_unresolved_target_energy_at_1e_18": 3.735079136168995e-05,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed4_readout_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 4,
+      "family": "readout",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.006168789708739956,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 2.542425684075768e-05,
+          "energy_closure": 1.0,
+          "direct_quadratic_form": 97.65916378389149,
+          "spectral_quadratic_form": 97.65916378389159
+        },
+        "residual": {
+          "total_energy": 3.805396647065599e-05,
+          "complement_energy": 2.5424256840758198e-05,
+          "energy_closure": 3.805396647065599e-05,
+          "direct_quadratic_form": 9.547150294839292e-09,
+          "spectral_quadratic_form": 9.547150294839433e-09
+        }
+      },
+      "mu_max": 662.1815974369991,
+      "numerical_unresolved_target_energy_at_1e_18": 3.735085224565449e-05,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed4_readout_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        18.992958779228857,
+        933.2448689450413
+      ]
+    },
+    {
+      "optimizer": "adam",
+      "seed": 4,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.006168789708739956,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 8.41720184874018e-10,
+          "energy_closure": 0.9999999999999994,
+          "direct_quadratic_form": 3.2787838954485973,
+          "spectral_quadratic_form": 3.278783895448601
+        },
+        "residual": {
+          "total_energy": 3.805396647065599e-05,
+          "complement_energy": 8.417201848734107e-10,
+          "energy_closure": 3.805396647065597e-05,
+          "direct_quadratic_form": 4.052314844821631e-10,
+          "spectral_quadratic_form": 4.0523148448215687e-10
+        }
+      },
+      "mu_max": 17.056446017856455,
+      "numerical_unresolved_target_energy_at_1e_18": 1.1512050146489372e-07,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed4_full_raw",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d"
+    },
+    {
+      "optimizer": "adam",
+      "seed": 4,
+      "family": "full",
+      "metric": "adaptive",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "adam",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_adam",
+        "recipe_index": 2,
+        "schedule": "constant",
+        "learning_rate": 0.02,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.005357452614880527,
+          0.03217421946831539,
+          0.007711146694995886,
+          0.0069603664332897565,
+          0.006169587771212531
+        ],
+        "median_validation_error": 0.0069603664332897565,
+        "train_errors": [
+          0.005356900154044869,
+          0.03217355505600713,
+          0.007710186018209869,
+          0.006959775116041696,
+          0.006168789708739956
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.006168789708739956,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 7.351274913390575e-10,
+          "energy_closure": 0.9999999999999984,
+          "direct_quadratic_form": 172.25507730636838,
+          "spectral_quadratic_form": 172.25507730636838
+        },
+        "residual": {
+          "total_energy": 3.805396647065599e-05,
+          "complement_energy": 7.351274913441446e-10,
+          "energy_closure": 3.805396647065597e-05,
+          "direct_quadratic_form": 1.451523991931019e-08,
+          "spectral_quadratic_form": 1.4515239919310227e-08
+        }
+      },
+      "mu_max": 831.5130440231,
+      "numerical_unresolved_target_energy_at_1e_18": 2.476167493270509e-08,
+      "epsilon": 1e-08,
+      "preconditioner_source": "actual joint optimizer second moment, bias corrected",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "adam_seed4_full_adaptive",
+      "state_sha256": "8a6193de73194f4cfd7d0c1c8d32496e56b824b599ccf4295a10e86ef01efb4d",
+      "diagonal_range": [
+        13.189240610508572,
+        99830812.60727635
+      ]
+    },
+    {
+      "optimizer": "gd",
+      "seed": 0,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.25602264301496125,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.03685292197739724,
+          "energy_closure": 0.9999999999999972,
+          "direct_quadratic_form": 1.1118365363801572,
+          "spectral_quadratic_form": 1.111836536380157
+        },
+        "residual": {
+          "total_energy": 0.06554759373636632,
+          "complement_energy": 0.03685292197739726,
+          "energy_closure": 0.06554759373636632,
+          "direct_quadratic_form": 0.0031921134403712324,
+          "spectral_quadratic_form": 0.003192113440371222
+        }
+      },
+      "mu_max": 5.18290835441312,
+      "numerical_unresolved_target_energy_at_1e_18": 0.061045592353059286,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed0_readout_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 0,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.25602264301496125,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.005283527345107151,
+          "energy_closure": 1.0000000000000004,
+          "direct_quadratic_form": 1.2418455755440148,
+          "spectral_quadratic_form": 1.2418455755440143
+        },
+        "residual": {
+          "total_energy": 0.06554759373636632,
+          "complement_energy": 0.005283527345107154,
+          "energy_closure": 0.06554759373636629,
+          "direct_quadratic_form": 0.008667976835630408,
+          "spectral_quadratic_form": 0.008667976835630373
+        }
+      },
+      "mu_max": 10.045682084023033,
+      "numerical_unresolved_target_energy_at_1e_18": 0.02933390842782224,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed0_full_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 1,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.2587416134923541,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.03595052464799669,
+          "energy_closure": 0.9999999999999998,
+          "direct_quadratic_form": 1.1106771228145165,
+          "spectral_quadratic_form": 1.1106771228145207
+        },
+        "residual": {
+          "total_energy": 0.06694722255262675,
+          "complement_energy": 0.0359505246479967,
+          "energy_closure": 0.06694722255262672,
+          "direct_quadratic_form": 0.009654504775332085,
+          "spectral_quadratic_form": 0.009654504775332135
+        }
+      },
+      "mu_max": 5.177085005611235,
+      "numerical_unresolved_target_energy_at_1e_18": 0.06196765974003915,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed1_readout_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 1,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.2587416134923541,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.00592068258304785,
+          "energy_closure": 1.000000000000002,
+          "direct_quadratic_form": 1.2422755992135501,
+          "spectral_quadratic_form": 1.2422755992135535
+        },
+        "residual": {
+          "total_energy": 0.06694722255262675,
+          "complement_energy": 0.005920682583047851,
+          "energy_closure": 0.06694722255262676,
+          "direct_quadratic_form": 0.022704415392988234,
+          "spectral_quadratic_form": 0.02270441539298821
+        }
+      },
+      "mu_max": 10.042265959598229,
+      "numerical_unresolved_target_energy_at_1e_18": 0.02966973499497705,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed1_full_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 2,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.2611622831796615,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.03318154071316877,
+          "energy_closure": 0.9999999999999987,
+          "direct_quadratic_form": 0.7575017297967122,
+          "spectral_quadratic_form": 0.7575017297967118
+        },
+        "residual": {
+          "total_energy": 0.0682057381556137,
+          "complement_energy": 0.033181540713168776,
+          "energy_closure": 0.06820573815561368,
+          "direct_quadratic_form": 0.0013413272956266094,
+          "spectral_quadratic_form": 0.001341327295626616
+        }
+      },
+      "mu_max": 4.651822374690134,
+      "numerical_unresolved_target_energy_at_1e_18": 0.06029331237926061,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed2_readout_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 2,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.2611622831796615,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.005621770580373114,
+          "energy_closure": 1.0000000000000027,
+          "direct_quadratic_form": 0.785931787657782,
+          "spectral_quadratic_form": 0.7859317876577829
+        },
+        "residual": {
+          "total_energy": 0.0682057381556137,
+          "complement_energy": 0.005621770580373123,
+          "energy_closure": 0.06820573815561376,
+          "direct_quadratic_form": 0.01050500762740941,
+          "spectral_quadratic_form": 0.010505007627409392
+        }
+      },
+      "mu_max": 10.001336463952633,
+      "numerical_unresolved_target_energy_at_1e_18": 0.03362511728364481,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed2_full_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 3,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.20487612682893538,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.022378502033085956,
+          "energy_closure": 0.999999999999999,
+          "direct_quadratic_form": 1.5255329727302782,
+          "spectral_quadratic_form": 1.5255329727302716
+        },
+        "residual": {
+          "total_energy": 0.04197422734442602,
+          "complement_energy": 0.022378502033085945,
+          "energy_closure": 0.04197422734442601,
+          "direct_quadratic_form": 0.004457827254635887,
+          "spectral_quadratic_form": 0.004457827254635886
+        }
+      },
+      "mu_max": 9.273351054440806,
+      "numerical_unresolved_target_energy_at_1e_18": 0.04010689824431091,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed3_readout_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 3,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.20487612682893538,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.00015120351115499825,
+          "energy_closure": 0.9999999999999981,
+          "direct_quadratic_form": 1.645510963329216,
+          "spectral_quadratic_form": 1.6455109633292122
+        },
+        "residual": {
+          "total_energy": 0.04197422734442602,
+          "complement_energy": 0.00015120351115499947,
+          "energy_closure": 0.04197422734442604,
+          "direct_quadratic_form": 0.007404657444915838,
+          "spectral_quadratic_form": 0.007404657444915816
+        }
+      },
+      "mu_max": 9.998549116666114,
+      "numerical_unresolved_target_energy_at_1e_18": 0.00724459011660461,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed3_full_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 4,
+      "family": "readout",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.2148760374306808,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.02939586492631822,
+          "energy_closure": 1.0000000000000027,
+          "direct_quadratic_form": 1.5585371396693954,
+          "spectral_quadratic_form": 1.5585371396694012
+        },
+        "residual": {
+          "total_energy": 0.04617171146191133,
+          "complement_energy": 0.029395864926318217,
+          "energy_closure": 0.046171711461911326,
+          "direct_quadratic_form": 0.016656478264562916,
+          "spectral_quadratic_form": 0.016656478264562923
+        }
+      },
+      "mu_max": 9.184467076442434,
+      "numerical_unresolved_target_energy_at_1e_18": 0.04334383536458408,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed4_readout_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    },
+    {
+      "optimizer": "gd",
+      "seed": 4,
+      "family": "full",
+      "metric": "raw",
+      "checkpoint_step": 2000000,
+      "recipe": {
+        "optimizer": "gd",
+        "run": "/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps-frozen-gamma-probe/results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/joint_gd",
+        "recipe_index": 5,
+        "schedule": "constant",
+        "learning_rate": 0.2,
+        "horizon": 2000000,
+        "validation_errors": [
+          0.25602600622757365,
+          0.25874486288175647,
+          0.2611657399461401,
+          0.20487839833345506,
+          0.21487762913415492
+        ],
+        "median_validation_error": 0.25602600622757365,
+        "train_errors": [
+          0.25602264301496125,
+          0.2587416134923541,
+          0.2611622831796615,
+          0.20487612682893538,
+          0.2148760374306808
+        ],
+        "all_seeds_finite": true
+      },
+      "train_error": 0.2148760374306808,
+      "checks": {
+        "target": {
+          "total_energy": 1.0,
+          "complement_energy": 0.0013212990978139485,
+          "energy_closure": 0.9999999999999999,
+          "direct_quadratic_form": 1.709323115749068,
+          "spectral_quadratic_form": 1.7093231157490671
+        },
+        "residual": {
+          "total_energy": 0.04617171146191133,
+          "complement_energy": 0.0013212990978139494,
+          "energy_closure": 0.04617171146191138,
+          "direct_quadratic_form": 0.027436840013376408,
+          "spectral_quadratic_form": 0.027436840013376464
+        }
+      },
+      "mu_max": 10.00256083171659,
+      "numerical_unresolved_target_energy_at_1e_18": 0.0081582842437945,
+      "epsilon": null,
+      "preconditioner_source": "identity",
+      "parameter_block": "[a,b,c,d]",
+      "learning_rate_included": false,
+      "prefix": "gd_seed4_full_raw",
+      "state_sha256": "780940b0f7a949759441609cbc1f8882ea51d2a2504b3717ff2a52ccee894003"
+    }
+  ],
+  "interpretation": "Endpoint local Jacobian metrics. Adaptive diagonals come from the actual joint Adam state. Momentum, changing geometry, and changing preconditioning are omitted; these are not Adam rate predictions.",
+  "normalization": "Jacobians divided by sqrt(m); both target and residual spectral energies divided by target squared norm.",
+  "numerical_resolution": "Unresolved spectral energy is not a proved capacity floor.",
+  "analysis_sha256": "1b6752387942d9f76be4134c418b8eed6703b430ca14fefdf8e447cedee0fae5"
+}

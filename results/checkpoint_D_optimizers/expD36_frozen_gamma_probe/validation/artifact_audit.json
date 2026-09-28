@@ -1,0 +1,230 @@
+{
+  "status": "passed",
+  "checks": [
+    "common array hashes",
+    "matrix dimensions",
+    "compact diagnostics identical to full artifacts",
+    "frozen matrices match training hashes",
+    "all declared training frontiers complete and finite",
+    "executed GD threshold crossings equal spectral integer predictions",
+    "precision audit complete",
+    "allocated-time budget including failed startup"
+  ],
+  "matrices": [
+    {
+      "map": "raw",
+      "gamma": 1,
+      "hashes": {
+        "J": "75ab35af3dc21948cd2f069c8ccf349a93fe197c9c1a6176c09e36c68a66d7f5",
+        "J_eval": "ab77b6583e949686a1b3346c0abf2faa7fd97efe2f91108d2454fb3f7a59111e",
+        "J_validation": "08617a4b411b9581b39a12dd8167c1105925f8b93882897bb669622335f14410"
+      }
+    },
+    {
+      "map": "raw",
+      "gamma": 4,
+      "hashes": {
+        "J": "81dc07ef624a68413f5fb702b75d5019d48efa9010172087cf620a12843fa072",
+        "J_eval": "5a9dbaedb52bdd81ec9ebf37abc77108f2c5e00b5e0ab032a25b35aded60c966",
+        "J_validation": "7f5e9cc7a2ea0894ab356b46002013908dd120189024fcebca7a58fda3b572d1"
+      }
+    },
+    {
+      "map": "raw",
+      "gamma": 16,
+      "hashes": {
+        "J": "c0777b8ae8ac39b4bfcdccdfa66af8fa8330d19d712ebc7c4c082a52126818c4",
+        "J_eval": "ebfae49d294f43672fe4ba886fd2a05fea8fbdda2d53cd1bdd04383ff5690a19",
+        "J_validation": "8b2a174ec58deb4af5b0a22b64ea33d6e3c660f10d1e93fd68a0a8fc50d8f3ee"
+      }
+    },
+    {
+      "map": "raw",
+      "gamma": 64,
+      "hashes": {
+        "J": "82b3565b205d451eb917a9065124ca5d07d0b1efc0260cb585f7173f8d9767eb",
+        "J_eval": "9d04ab3c089121917f60fe4600f7d73c4277a955c15aafb9d3bba5f6450a75f6",
+        "J_validation": "e3a688695a21ac6f46e2556ab6b10f830ec80e8e3b86cc54a80591064efbb2d8"
+      }
+    },
+    {
+      "map": "collective",
+      "gamma": 1,
+      "hashes": {
+        "J": "d5202dec9215876fcf30ceb8bbc0386a619f3c79473807dc34bd11557df72ff2",
+        "J_eval": "6da38baaa75497586ceabb3176c3678302a0240f2378a93e4a86f237e8d418bd",
+        "J_validation": "c951fbee5d5b58cc722bed46110054ba71a89c3263bad329adec5fd802505367"
+      }
+    },
+    {
+      "map": "collective",
+      "gamma": 4,
+      "hashes": {
+        "J": "834f4542d90902cdcdce3d0d9a33e844c9da9f62579fbd6ad675067865989fc3",
+        "J_eval": "c5ac24f308005af00186f4534a77b8425489c9c9ccf9ed2fe45cfb30d8c59008",
+        "J_validation": "73cec20b36030003b4190e72bcff6b0af6ef0b932485863828fe108dff6e32e3"
+      }
+    },
+    {
+      "map": "collective",
+      "gamma": 16,
+      "hashes": {
+        "J": "143ec29ce6ea4c88c878c5cf7e024258dfd94718b24120a779bb7748be987a64",
+        "J_eval": "a42a85568581b0bb190a40c3927bdddaf4ad5f714796515769ee61c6bf326337",
+        "J_validation": "642073d927033417e7d11c700e11cc68e1249d41dbb01a89bb30dfefe8bbaf45"
+      }
+    },
+    {
+      "map": "collective",
+      "gamma": 64,
+      "hashes": {
+        "J": "1503c32047cc93f39739f7b01f7d45f10f5d24dc4e9c08912cb627ce332ecf2c",
+        "J_eval": "23f61a3f83b91f48a487a69e0ed7d5a82d32e5dcfa5d2597efa57edf26e16718",
+        "J_validation": "c832ef8d3597d88261d0ab4b6776a72e2437acf5f9702307a8b6f879a2162e05"
+      }
+    }
+  ],
+  "training": [
+    {
+      "folder": "adam_collective_lr0.001",
+      "steps": 50000,
+      "cases": 4,
+      "finite": true,
+      "frozen_matrix_hashes_match": true,
+      "source_commit": "66eb341"
+    },
+    {
+      "folder": "adam_collective_lr0.01",
+      "steps": 50000,
+      "cases": 4,
+      "finite": true,
+      "frozen_matrix_hashes_match": true,
+      "source_commit": "66eb341"
+    },
+    {
+      "folder": "adam_raw_lr0.001",
+      "steps": 50000,
+      "cases": 4,
+      "finite": true,
+      "frozen_matrix_hashes_match": true,
+      "source_commit": "66eb341"
+    },
+    {
+      "folder": "adam_raw_lr0.01",
+      "steps": 50000,
+      "cases": 4,
+      "finite": true,
+      "frozen_matrix_hashes_match": true,
+      "source_commit": "66eb341"
+    },
+    {
+      "folder": "gd_collective",
+      "steps": 100000,
+      "cases": 8,
+      "finite": true,
+      "frozen_matrix_hashes_match": true,
+      "source_commit": "66eb341"
+    },
+    {
+      "folder": "gd_raw",
+      "steps": 100000,
+      "cases": 8,
+      "finite": true,
+      "frozen_matrix_hashes_match": true,
+      "source_commit": "66eb341"
+    }
+  ],
+  "executed_gd_hits": [
+    {
+      "map": "raw",
+      "gamma": 16,
+      "target": "sine_mix_2_6_10",
+      "epsilon": 0.01,
+      "step": 61792
+    },
+    {
+      "map": "raw",
+      "gamma": 64,
+      "target": "sine_mix_2_6_10",
+      "epsilon": 0.01,
+      "step": 16013
+    },
+    {
+      "map": "raw",
+      "gamma": 64,
+      "target": "quadratic",
+      "epsilon": 0.01,
+      "step": 15119
+    },
+    {
+      "map": "collective",
+      "gamma": 4,
+      "target": "quadratic",
+      "epsilon": 0.01,
+      "step": 9833
+    },
+    {
+      "map": "collective",
+      "gamma": 16,
+      "target": "quadratic",
+      "epsilon": 0.01,
+      "step": 16980
+    },
+    {
+      "map": "collective",
+      "gamma": 64,
+      "target": "quadratic",
+      "epsilon": 0.01,
+      "step": 7839
+    }
+  ],
+  "maximum_spectral_abs_discrepancy": 5.10702591327572e-15,
+  "jobs": [
+    {
+      "job_id": 676,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "elapsed_seconds": 4,
+      "gpu_count": 0,
+      "resources": "billing=8,cpu=8,mem=64G,node=1"
+    },
+    {
+      "job_id": 677,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 105,
+      "gpu_count": 0,
+      "resources": "billing=8,cpu=8,mem=64G,node=1"
+    },
+    {
+      "job_id": 678,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 125,
+      "gpu_count": 1,
+      "resources": "billing=4,cpu=4,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 679,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 82,
+      "gpu_count": 1,
+      "resources": "billing=4,cpu=4,gres/gpu=1,mem=32G,node=1"
+    },
+    {
+      "job_id": 680,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 84,
+      "gpu_count": 0,
+      "resources": "billing=8,cpu=8,mem=64G,node=1"
+    }
+  ],
+  "allocated_gpu_seconds": 207,
+  "cpu_only_allocation_seconds": 193,
+  "cpu_accounting_note": "Remote allocation walltime, not core-seconds; local testing and artifact analysis excluded",
+  "local_array_versions": {
+    "numpy": "2.5.1"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "job": "JobId=678 JobName=gamma-probe-train\n   UserId=junmiaoh(1003) GroupId=junmiaoh(1006) MCS_label=N/A\n   Priority=4294901228 Nice=0 Account=lab QOS=lab-gpu2\n   JobState=RUNNING Reason=None Dependency=(null)\n   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0\n   RunTime=00:00:01 TimeLimit=00:55:00 TimeMin=N/A\n   SubmitTime=2026-09-20T21:02:30 EligibleTime=2026-09-20T21:02:30\n   AccrueTime=2026-09-20T21:02:30\n   StartTime=2026-09-20T21:02:31 EndTime=2026-09-20T21:57:31 Deadline=N/A\n   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-20T21:02:31 Scheduler=Main\n   Partition=gpu AllocNode:Sid=1212ac4ba094:1759110\n   ReqNodeList=(null) ExcNodeList=(null)\n   NodeList=1212ac4ba094\n   BatchHost=1212ac4ba094\n   NumNodes=1 NumCPUs=4 NumTasks=1 CPUs/Task=4 ReqB:S:C:T=0:0:*:*\n   TRES=cpu=4,mem=32G,node=1,billing=4,gres/gpu=1\n   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*\n   MinCPUsNode=4 MinMemoryNode=32G MinTmpDiskNode=0\n   Features=(null) DelayBoot=00:00:00\n   OverSubscribe=OK Contiguous=0 Licenses=(null) Network=(null)\n   Command=/workspace/junmiaoh/experiments/precision-mlps/gamma-probe-code/66eb341/experiments/expD36_frozen_gamma_probe/train.sbatch\n   WorkDir=/home/junmiaoh\n   StdErr=/tmp/gamma-probe-train-678.log\n   StdIn=/dev/null\n   StdOut=/tmp/gamma-probe-train-678.log\n   Power=\n   TresPerNode=gres:gpu:1\n   \n\n",
+  "step": "StepId=678.0 UserId=1003 StartTime=2026-09-20T21:02:31 TimeLimit=UNLIMITED\n   State=RUNNING Partition=gpu NodeList=1212ac4ba094\n   Nodes=1 CPUs=4 Tasks=1 Name=python Network=(null)\n   TRES=cpu=4,gres/gpu=1,mem=32G,node=1\n   ResvPorts=(null)\n   CPUFreqReq=Default Dist=Cyclic\n   SrunHost:Pid=1212ac4ba094:1759143\n   TresPerNode=gres:gpu:1\n\n",
+  "cuda_mask": "1",
+  "devices": [
+    "cuda:0"
+  ],
+  "jax": "0.10.2",
+  "optax": "0.2.8",
+  "source_commit": "66eb341"
+}

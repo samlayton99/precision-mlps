@@ -1,0 +1,246 @@
+{
+  "launch.json": {
+    "workers": [
+      {
+        "lane": 0,
+        "gpu_uuid": "GPU-21154c33-7c17-fcd8-80c4-741544547458",
+        "timeout_pid": 10004,
+        "started_unix": 1790323334.7821841,
+        "command": [
+          "timeout",
+          "--signal=TERM",
+          "--kill-after=5s",
+          "10790s",
+          "/workspace/junmiaoh/experiments/precision-mlps/.venv/bin/python",
+          "-u",
+          "/workspace/junmiaoh/experiments/precision-mlps/runs/figure4_width_sweep_20260925/code/figure4_width_sweep.py",
+          "--root",
+          "/workspace/junmiaoh/experiments/precision-mlps/runs/figure4_width_sweep_20260925",
+          "--lane",
+          "0"
+        ]
+      },
+      {
+        "lane": 1,
+        "gpu_uuid": "GPU-a5a64c13-3e93-fa1e-7ddf-45fd5c2a655b",
+        "timeout_pid": 10005,
+        "started_unix": 1790323334.7836092,
+        "command": [
+          "timeout",
+          "--signal=TERM",
+          "--kill-after=5s",
+          "10790s",
+          "/workspace/junmiaoh/experiments/precision-mlps/.venv/bin/python",
+          "-u",
+          "/workspace/junmiaoh/experiments/precision-mlps/runs/figure4_width_sweep_20260925/code/figure4_width_sweep.py",
+          "--root",
+          "/workspace/junmiaoh/experiments/precision-mlps/runs/figure4_width_sweep_20260925",
+          "--lane",
+          "1"
+        ]
+      }
+    ],
+    "total_gpu_hour_limit": 6,
+    "source_sha256": {
+      "adam_feature_probe_prepare.py": "8879fdb531a3955d5d4326bf05eb19bb04bafe7c549bb8cb6fa764960c352239",
+      "adam_joint_probe_run.py": "af22b76d5b8e97b26830a5f7e5be07a6597ee7fe729f005a78fd3856bda700af",
+      "figure4_width_sweep.py": "6a2962cf1f71ef1c91d6e065e89d6063a2eb8a29a3239d6968c77b3317576e2d"
+    },
+    "dispatch": "Direct root fallback explicitly authorized; Slurm absent; one fixed GPU per worker; timeout kills process group."
+  },
+  "manifest.json": {
+    "horizon": 5000000,
+    "widths": [
+      128,
+      256,
+      512,
+      1024
+    ],
+    "new_widths": [
+      128,
+      256,
+      1024
+    ],
+    "reused_width512": "/workspace/junmiaoh/experiments/precision-mlps/runs/section34_long_horizon_20260924/main",
+    "lanes": {
+      "0": [
+        128,
+        256
+      ],
+      "1": [
+        1024
+      ]
+    },
+    "configs": {
+      "joint_adam_cosine": {
+        "horizon": 5000000,
+        "epsilon": 1e-08,
+        "chunk_size": 100,
+        "optimizer": "adam",
+        "schedules": [
+          "cosine"
+        ],
+        "learning_rates": [
+          0.05,
+          0.02
+        ]
+      },
+      "joint_adam_constant": {
+        "horizon": 5000000,
+        "epsilon": 1e-08,
+        "chunk_size": 100,
+        "optimizer": "adam",
+        "schedules": [
+          "constant"
+        ],
+        "learning_rates": [
+          0.02,
+          0.002
+        ]
+      },
+      "joint_gd": {
+        "horizon": 5000000,
+        "epsilon": 1e-08,
+        "chunk_size": 100,
+        "optimizer": "gd",
+        "schedules": [
+          "constant",
+          "cosine"
+        ],
+        "learning_rates": [
+          0.2,
+          0.5
+        ]
+      }
+    },
+    "selection": "One recipe per width and optimizer by median final validation error across five seeds; all endpoints finite.",
+    "recipe_scope": "Same final five-million-update candidate grid as W=512; no new per-width LR screening.",
+    "raw_traces": "Every update error/RMS; full parameters every 10000 updates.",
+    "total_gpu_hour_limit": 6,
+    "lane_timeout_seconds": 10790,
+    "kill_grace_seconds": 5,
+    "geometries": [
+      {
+        "width": 128,
+        "interior_intervals": 105,
+        "interior_centers": 106,
+        "halo_each_side": 11,
+        "spacing": 0.01904761904761905,
+        "halo_rule": "ceil(sqrt(interior_intervals)); inverted within total width",
+        "seed_ids": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "samples": 2048,
+        "validation_samples": 4096,
+        "eval_samples": 8192,
+        "target_name": "mixed_sines",
+        "target_normalizer": 0.8100925873009825,
+        "target_formula": "sin(2*pi*x)+0.5*sin(6*pi*x)+0.25*sin(14*pi*x)",
+        "input_sha256": "443d8ddeb806e5035f5579e834f87897abf3d0fcf0218bb37f11e1792eb4c803",
+        "initialization": "D24 affine Xavier, RNG keyed by seed and budget-derived intervals"
+      },
+      {
+        "width": 256,
+        "interior_intervals": 225,
+        "interior_centers": 226,
+        "halo_each_side": 15,
+        "spacing": 0.008888888888888889,
+        "halo_rule": "ceil(sqrt(interior_intervals)); inverted within total width",
+        "seed_ids": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "samples": 2048,
+        "validation_samples": 4096,
+        "eval_samples": 8192,
+        "target_name": "mixed_sines",
+        "target_normalizer": 0.8100925873009825,
+        "target_formula": "sin(2*pi*x)+0.5*sin(6*pi*x)+0.25*sin(14*pi*x)",
+        "input_sha256": "305cb8aa3b0353a1f1adeaca59fe5bbbf8bef8b36536b1a90080e9470d0c7fb0",
+        "initialization": "D24 affine Xavier, RNG keyed by seed and budget-derived intervals"
+      },
+      {
+        "width": 1024,
+        "interior_intervals": 961,
+        "interior_centers": 962,
+        "halo_each_side": 31,
+        "spacing": 0.002081165452653486,
+        "halo_rule": "ceil(sqrt(interior_intervals)); inverted within total width",
+        "seed_ids": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "samples": 2048,
+        "validation_samples": 4096,
+        "eval_samples": 8192,
+        "target_name": "mixed_sines",
+        "target_normalizer": 0.8100925873009825,
+        "target_formula": "sin(2*pi*x)+0.5*sin(6*pi*x)+0.25*sin(14*pi*x)",
+        "input_sha256": "aab49ea8c2adbbae3444714febde30f617f2292ef5e5768a2ea0345d8d4bd243",
+        "initialization": "D24 affine Xavier, RNG keyed by seed and budget-derived intervals"
+      }
+    ]
+  },
+  "launch_verification": {
+    "checked_utc": "2026-09-25T08:03:33.012736+00:00",
+    "jobs": [
+      {
+        "width": 128,
+        "self_tests": [
+          {
+            "self_test": "passed",
+            "optimizer": "adam",
+            "max_error_difference": 4.440892098500626e-16
+          },
+          {
+            "self_test": "passed",
+            "optimizer": "gd",
+            "max_error_difference": 4.440892098500626e-16
+          }
+        ],
+        "latest_progress": {
+          "update": 568000,
+          "elapsed_seconds": 57.126404697075486,
+          "min_error": 0.008181154947056197,
+          "max_error": 0.2969574329329428,
+          "finite_cases": 10
+        },
+        "durable_checkpoint_update": 560000
+      },
+      {
+        "width": 1024,
+        "self_tests": [
+          {
+            "self_test": "passed",
+            "optimizer": "adam",
+            "max_error_difference": 4.440892098500626e-16
+          },
+          {
+            "self_test": "passed",
+            "optimizer": "gd",
+            "max_error_difference": 4.440892098500626e-16
+          }
+        ],
+        "latest_progress": {
+          "update": 159000,
+          "elapsed_seconds": 56.99570457357913,
+          "min_error": 0.0316023032939906,
+          "max_error": 0.15138333519081412,
+          "finite_cases": 10
+        },
+        "durable_checkpoint_update": 150000
+      }
+    ],
+    "gpu_status": "index, utilization.gpu [%], memory.used [MiB]\n0, 89 %, 1375 MiB\n1, 97 %, 3295 MiB\n2, 0 %, 0 MiB\n"
+  }
+}

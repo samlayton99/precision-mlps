@@ -1,0 +1,44 @@
+{
+  "sources": {
+    "adam_endpoint_5m.json": {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/endpoint_adam/summary.json",
+      "sha256": "c06f20ab70f8161c7550d33fab3493d8f7819141145bc7ad4e24b045fe33852b"
+    },
+    "adam_direct_fits_5m.json": {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/learned_adam_least_squares/mixed_sine_summary.json",
+      "sha256": "f846002902d821e0ce47782ca8bcc8a87541ba48a716e0c6e6b0eb475da21a75"
+    },
+    "readout_restarts_5m.json": {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/learned_access/summary.json",
+      "sha256": "118eb2fc983de8b40bc8b520801645462cd808858ccf8d5fea71fa50e3940733"
+    },
+    "feature_access_assays_5m.pdf": {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/learned_access/feature_access_assays.pdf",
+      "sha256": "626e7bf897fdd4462bdd0cca7567ae431dd8c10f47ed645bae38992a62524123"
+    },
+    "feature_access_assays_5m.png": {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/learned_access/feature_access_assays.png",
+      "sha256": "72f8e33aadcc1ffd50d417f43c7d90a76fd83959d4cd62595ef68f504dedd3b0"
+    },
+    "horizon_comparison.json": {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/learned_access/horizon_comparison.json",
+      "sha256": "c0a1d8924e6eff26b1ff6e019635ea508f50f63bf5d374ad65ebfe4f12d9d3f6"
+    },
+    "independent_final_reconstruction.json": {
+      "path": "results/checkpoint_D_optimizers/expD36_frozen_gamma_probe/section34_long_horizon_20260924/main/h5m/learned_access/independent_final_reconstruction.json",
+      "sha256": "a7a65307b6e2abb167c9612260f37fe553574914a988b5b46b3faf661e984c39"
+    }
+  },
+  "computation": "Local CPU endpoint reconstruction and2-thread directSVDfits on actualselected5MAdamfeatures.",
+  "restart_execution": {
+    "gpu_job": 1457,
+    "gpu_elapsed_seconds": 1000,
+    "analysis_job": 1460,
+    "analysis_elapsed_seconds": 78,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "source_horizon": 5000000,
+    "readout_horizon": 2000000,
+    "all_readout_optimizers": "Adam"
+  }
+}
