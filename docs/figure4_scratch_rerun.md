@@ -1,5 +1,7 @@
 # Figure 4 rerun with verified off-pod backups
 
+**Data availability, 2026-09-27.** This is the execution and recovery record for the completed rerun. The user subsequently requested deletion of local raw histories, checkpoints, and duplicate export segments. The compact figure data, configurations, verification records, and completed analysis were retained. Statements below about locally verified segments describe their status at completion; the full segments are no longer a local archive. Publication figures can be reproduced from `figure_handoff/optimization/` on branch `figure/optimization-style-handoff` without training.
+
 The rerun bypasses the unresponsive `/workspace` mount. Training and immutable backup segments use RAM scratch at `/dev/shm/figure4_scratch_20260926`. A laptop collector copies each segment over direct SSH, verifies SHA-256 hashes and checkpoint consistency, flushes the copied data to disk, and acknowledges receipt. Training waits for that acknowledgment every 250,000 updates and stops if it does not arrive within five minutes.
 
 ## Storage and protocol
