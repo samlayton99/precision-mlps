@@ -1,0 +1,942 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.88in,headheight=14pt,headsep=16pt,footskip=26pt]{geometry}
+% ===== BEGIN preamble.tex =====
+% Math-only declarations for importing the proof into another manuscript.
+% The bsa prefix is used for custom commands, environments, and labels.
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\newcommand{\bsaNorm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\bsaAbs}[1]{\left|#1\right|}
+\newcommand{\bsaPos}[1]{\left[#1\right]_+}
+\newcommand{\bsaRR}{\mathbb R}
+\DeclareMathOperator{\bsaArsinh}{arsinh}
+\DeclareMathOperator{\bsaRange}{range}
+\DeclareMathOperator{\bsaDiag}{diag}
+\DeclareMathOperator{\bsaDist}{dist}
+\newtheorem{bsaTheorem}{Theorem}
+\newtheorem{bsaLemma}{Lemma}[section]
+\newtheorem{bsaProposition}{Proposition}[section]
+\newtheorem{bsaCorollary}{Corollary}[section]
+\theoremstyle{remark}
+\newtheorem{bsaRemark}{Remark}[section]
+
+% Restore the conventional default for later declarations in a host manuscript.
+\theoremstyle{plain}
+
+% ===== END preamble.tex =====
+\usepackage{microtype}
+\usepackage{xcolor,fancyhdr,lastpage}
+\usepackage{hyperref}
+\definecolor{bsaInk}{HTML}{19394D}
+\hypersetup{colorlinks=true,linkcolor=bsaInk,citecolor=bsaInk,urlcolor=bsaInk,
+ pdftitle={Bounded-slope readout accessibility: complete proofs},
+ pdfauthor={Continuous MLPs},
+ pdfsubject={Appendix-ready proofs of polynomial-tail access and sharp readout learning-time bounds}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\sffamily\small\color{bsaInk}CONTINUOUS MLPS / PROOF NOTE}
+\fancyhead[R]{\sffamily\small\color{bsaInk}SEPTEMBER 2026}
+\fancyfoot[L]{\sffamily\footnotesize Necessary target-tail energy / readout access}
+\fancyfoot[R]{\sffamily\footnotesize\thepage\,/\,\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.35pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{1.3em}
+\allowdisplaybreaks[1]
+\title{\vspace{-1.5em}\color{bsaInk}\textbf{Bounded-slope readout accessibility}\\[4pt]
+ \large Complete proofs for a future appendix}
+\author{Continuous MLPs}
+\date{September 2026}
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\vspace{-1.3em}
+\begin{abstract}
+We give complete proofs of a bounded-slope accessibility theorem for frozen one-hidden-layer tanh networks. The structural estimate attains the full pole-determined exponential degree rate and controls the readout response to an entire polynomial-tail subspace. A sharp, target-dependent gradient-flow bound converts necessary correction energy divided by access into learning time without assuming an exactly polynomial-orthogonal initial residual. We separate exact span capacity, norm-budget capacity, and optimization accessibility, and give discrete-GD, readout-reparameterization, neighboring, and one-step damped Gauss--Newton consequences. The sharpness claims are stated separately from the finite prefactors that are not known here to be minimax-optimal. No empirical conclusions or experimental protocols are needed for the proofs.
+\end{abstract}
+% ===== BEGIN proof.tex =====
+% Importable proof body. Load preamble.tex in the manuscript preamble.
+% Citation keys are in references.bib; references.tex provides an inline alternative.
+\section{Setting, normalization, and the capacity--accessibility distinction}
+\label{bsa:sec:setup}
+
+Fix integers $m,W\ge1$, samples $X=(x_1,\ldots,x_m)$ in $[-1,1]$, and $\Gamma>0$. Consider the real-valued shallow tanh network
+\begin{equation}
+ f_c(x)=c_0+\sum_{j=1}^W c_j\tanh(a_jx+b_j),
+ \qquad |a_j|\le\Gamma.
+ \label{bsa:eq:network}
+\end{equation}
+All hidden slopes and biases are fixed and real; the biases are unrestricted. In particular, no center-spacing, halo, rank, or target-regularity condition is assumed. Define
+\begin{equation}
+ A_{i0}=m^{-1/2},\qquad
+ A_{ij}=m^{-1/2}\tanh(a_jx_i+b_j),\qquad
+ y_i=g(x_i)/\sqrt m.
+ \label{bsa:eq:matrix}
+\end{equation}
+Thus $\tfrac12\bsaNorm{Ac-y}^2$ is half the empirical mean-squared error. Unmarked vector norms are Euclidean and matrix norms are induced Euclidean norms; $\bsaNorm{\cdot}_F$ is the Frobenius norm.
+
+For a fixed invertible matrix $M\in\bsaRR^{(W+1)\times(W+1)}$, let
+\begin{equation}
+ c=M\theta,\qquad B=AM,\qquad
+ L(\theta)=\tfrac12\bsaNorm{B\theta-y}^2,\qquad K=BB^\top.
+ \label{bsa:eq:coordinates}
+\end{equation}
+The raw readout is $M=I$. Diagonal and anchored neighboring readouts are covered by other fixed choices of $M$. The generic linear-algebra and dynamics results below also hold for any real matrix $B$, without the tanh representation or invertibility assumption on $M$.
+
+For an integer $k\ge0$, let
+\begin{equation}
+ \mathcal P_k^X
+ =\left\{\frac1{\sqrt m}(p(x_1),\ldots,p(x_m))^\top:\deg p\le k\right\},
+ \qquad Q_k=I-P_k,
+ \label{bsa:eq:polynomial-space}
+\end{equation}
+where $P_k$ denotes the orthogonal projector onto $\mathcal P_k^X$.
+These are sampled polynomial spaces, not necessarily continuum Legendre or Chebyshev spaces. Repeated samples cause no difficulty. If $\mathcal P_k^X=\bsaRR^m$, then $Q_k=0$ and nonzero-tail statements at this degree are vacuous. For $y\ne0$, the relative polynomial approximation error is
+\begin{equation}
+ D_k(g;X):=\frac{\bsaNorm{Q_ky}}{\bsaNorm y}
+ =\frac{\inf_{\deg p\le k}\bigl(\sum_i|g(x_i)-p(x_i)|^2\bigr)^{1/2}}
+ {\bigl(\sum_i|g(x_i)|^2\bigr)^{1/2}}.
+ \label{bsa:eq:target-tail}
+\end{equation}
+
+\paragraph{Three distinct questions.}
+Let $\Pi$ be the orthogonal projector onto $\mathcal S=\bsaRange(B)=\bsaRange(A)$. Then
+\begin{equation}
+ \inf_\theta\bsaNorm{B\theta-y}=\bsaNorm{(I-\Pi)y},\qquad
+ \bsaNorm{B\theta-y}^2
+ =\bsaNorm{(I-\Pi)y}^2+\bsaNorm{B\theta-\Pi y}^2.
+ \label{bsa:eq:capacity-split}
+\end{equation}
+The first term is an unrestricted capacity obstruction for this fixed dictionary on these samples. The second is error in an attainable fit. A coefficient-norm budget introduces a third question: how accurate a fit is possible with coefficients of a specified size?
+
+For a unit correction $q$, define its squared readout access by
+\begin{equation}
+ \mu_B(q):=\bsaNorm{B^\top q}^2=q^\top Kq.
+ \label{bsa:eq:directional-access}
+\end{equation}
+If $\Pi q\ne0$, setting $\widehat q=\Pi q/\bsaNorm{\Pi q}$ gives the identity
+\begin{equation}
+ \mu_B(q)=\underbrace{\bsaNorm{\Pi q}^2}_{\text{overlap with the span}}
+ \;\cdot\;\underbrace{\widehat q^\top K\widehat q}_{\text{curvature inside the span}}.
+ \label{bsa:eq:access-split}
+\end{equation}
+If $\Pi q=0$, then $\mu_B(q)=0$. Thus weak access can reflect missing overlap, small positive curvature, or both. It is not by itself a proof of unrestricted representational impossibility. Notice also that
+\begin{equation}
+ B^\top(B\theta-y)=B^\top(B\theta-\Pi y).
+ \label{bsa:eq:projected-target}
+\end{equation}
+Replacing $y$ by $\Pi y$ therefore removes the capacity floor without changing the full-batch gradient field. These identities follow from $K=\Pi K\Pi$ and $B^\top(I-\Pi)=0$.
+
+\paragraph{Provenance and scope.}
+The sampled normalization and the polynomial-tail mechanism follow the supplied bounded-slope note~\cite{bsa-original}. The full-pole approximation envelope, sharp general-residual conversion, and corollaries developed in the accompanying discussion are proved in detail here. They are not claims taken from the earlier quasi-interpolant construction analysis. All dynamics are exact-arithmetic, fixed-geometry results in the stated readout metric.
+
+\section{Main statements}
+\label{bsa:sec:main}
+
+For $r_0\ne0$ and $Q_kr_0\ne0$, define
+\begin{equation}
+ \delta_k=\frac{\bsaNorm{Q_kr_0}}{\bsaNorm{r_0}},\qquad
+ q_k=\frac{Q_kr_0}{\bsaNorm{Q_kr_0}},\qquad
+ \mu_k=\bsaNorm{B^\top q_k}^2,\qquad
+ C_\epsilon=\frac{\log(1/\epsilon)}{(1-\epsilon)^2}.
+ \label{bsa:eq:tail-data}
+\end{equation}
+Every supremum over $k$ below is restricted to nonzero tails. Its value is zero if there are no such tails. A positive numerator divided by zero has value $+\infty$; a zero numerator contributes zero, including the $0/0$ case.
+
+\begin{bsaTheorem}[Sharp necessary-correction/access bound]
+\label{bsa:thm:time}
+Let $B$ be a real matrix and train by unit-rate Euclidean gradient flow,
+\begin{equation}
+ \dot\theta=-B^\top(B\theta-y),\qquad
+ r(t)=B\theta(t)-y,\qquad r_0=r(0)\ne0.
+ \label{bsa:eq:gf}
+\end{equation}
+For $0<\epsilon<1$, let
+$T_\epsilon=\inf\{t\ge0:\bsaNorm{r(t)}\le\epsilon\bsaNorm{r_0}\}$,
+with $T_\epsilon=\infty$ when the set is empty. For every unit vector $q$, set
+$\delta(q)=|\langle q,r_0\rangle|/\bsaNorm{r_0}$. Then
+\begin{equation}
+ T_\epsilon\ge C_\epsilon
+ \frac{\bsaPos{\delta(q)-\epsilon}^2}{\mu_B(q)}.
+ \label{bsa:eq:general-directional-time}
+\end{equation}
+In particular,
+\begin{equation}
+ \boxed{T_\epsilon\ge C_\epsilon\sup_k
+ \frac{\overbrace{\bsaPos{\delta_k-\epsilon}^2}^{\text{necessary residual-tail energy}}}
+ {\underbrace{\mu_k}_{\text{squared readout access to that tail}}}.}
+ \label{bsa:eq:tail-time}
+\end{equation}
+For each fixed $\epsilon$, $C_\epsilon$ is the largest universal multiplicative factor for the ratio in~\eqref{bsa:eq:general-directional-time}. Equality is attained by a sampled tanh dictionary. No invariance of $\bsaRange(Q_k)$ under $K$ is required.
+\end{bsaTheorem}
+
+For $\gamma>0$, define
+\begin{align}
+ \rho_\gamma&=\frac{\pi}{2\gamma}+\sqrt{1+\frac{\pi^2}{4\gamma^2}},
+ &\alpha_\gamma&=\log\rho_\gamma=\bsaArsinh\!\left(\frac{\pi}{2\gamma}\right),
+ \label{bsa:eq:pole-rate}\\
+ U_k(\gamma)&=\frac{4\rho_\gamma^{-k}}{\rho_\gamma-1}
+ \left[\frac1{\sqrt{\gamma^2+\pi^2/4}}+\frac1{\pi(k+1)}\right],
+ &e_k(\gamma)&=\min\{\tanh\gamma,U_k(\gamma)\},\quad e_k(0)=0.
+ \label{bsa:eq:explicit-envelope}
+\end{align}
+
+\begin{bsaTheorem}[Bounded slopes give weak access beyond degree $k$]
+\label{bsa:thm:access}
+Under~\eqref{bsa:eq:network}--\eqref{bsa:eq:polynomial-space}, for every integer $k\ge0$,
+\begin{equation}
+ \bsaNorm{Q_kA}^2
+ \le\bsaNorm{Q_kA}_F^2
+ \le\sum_{j=1}^W e_k(|a_j|)^2
+ \le W e_k(\Gamma)^2.
+ \label{bsa:eq:raw-access}
+\end{equation}
+Consequently,
+\begin{equation}
+ \boxed{\bsaNorm{Q_kB}^2
+ \le\bsaNorm M^2\sum_{j=1}^W e_k(|a_j|)^2
+ \le\mathcal B_k(\Gamma,M):=\bsaNorm M^2W e_k(\Gamma)^2.}
+ \label{bsa:eq:transformed-access}
+\end{equation}
+Every unit $q\in\bsaRange(Q_k)$ satisfies $\mu_B(q)\le\mathcal B_k$. Equivalently,
+\begin{equation}
+ \bsaNorm{Q_kB\Delta\theta}\le\sqrt{\mathcal B_k}\,\bsaNorm{\Delta\theta}.
+ \label{bsa:eq:output-movement}
+\end{equation}
+The exponential degree rate $\alpha_\Gamma$ and the raw-dictionary width factor $W$ are optimal in a worst-case sense made precise in Section~\ref{bsa:sec:sharpness}. The finite prefactor and the $\bsaNorm M^2$ relaxation are not claimed to be exact for each dictionary.
+\end{bsaTheorem}
+
+\begin{bsaCorollary}[Combined target-dependent certificate]
+\label{bsa:cor:combined}
+Under both theorems,
+\begin{align}
+ T_\epsilon
+ &\ge C_\epsilon\sup_k
+ \frac{\bsaPos{\delta_k-\epsilon}^2}{\bsaNorm{Q_kB}^2}
+ \ge\frac{C_\epsilon}{\bsaNorm M^2W}
+ \sup_k\frac{\bsaPos{\delta_k-\epsilon}^2}{e_k(\Gamma)^2}.
+ \label{bsa:eq:combined}
+\end{align}
+If $\theta(0)=0$ and $y\ne0$, then $\delta_k=D_k(g;X)$, and $\mu_k$ is unchanged if $q_k$ is replaced by $Q_ky/\bsaNorm{Q_ky}$. Thus the numerator becomes necessary \emph{target}-tail energy.
+\end{bsaCorollary}
+\begin{proof}
+Since $q_k\in\bsaRange(Q_k)$ and $\bsaNorm{q_k}=1$,
+$\mu_k\le\bsaNorm{Q_kB}^2\le\mathcal B_k$. Substitute this chain into Theorem~\ref{bsa:thm:time}. If $\theta_0=0$, then $r_0=-y$, which changes only the sign of the normalized tail.
+\end{proof}
+
+\paragraph{The form suitable for a simplified main-text statement.}
+The exact envelopes imply the universal bound
+\begin{equation}
+ e_k(\Gamma)\le e^{\pi/2}e^{-k\alpha_\Gamma},\qquad
+ \mathcal B_k(\Gamma,M)\le e^\pi\bsaNorm M^2W e^{-2k\alpha_\Gamma};
+ \label{bsa:eq:universal-envelope}
+\end{equation}
+its proof is given below. Also $C_\epsilon\ge\log(1/\epsilon)$. Accordingly, for zero initialization the informal ratio
+\[
+ T_\epsilon\gtrsim\log(1/\epsilon)\,
+ \frac{\text{necessary target-tail energy}}{\text{squared readout access}}
+\]
+can be stated without hiding a gamma-dependent prefactor, provided the coefficient metric and fixed-geometry assumptions remain explicit.
+
+\section{Polynomial approximation at the full pole-limited rate}
+\label{bsa:sec:approximation}
+
+\subsection{Resolvents and a bias-uniform estimate}
+
+\begin{bsaLemma}[Chebyshev expansion of a resolvent]
+\label{bsa:lem:resolvent}
+For $z\notin[-1,1]$, choose $s(z)=\sqrt{z^2-1}$ on the branch satisfying $s(z)\sim z$ at infinity, and put $w(z)=z+s(z)$, so $|w(z)|>1$. For $x\in[-1,1]$,
+\begin{equation}
+ \frac1{z-x}
+ =\frac1{s(z)}\left[1+2\sum_{n=1}^\infty w(z)^{-n}T_n(x)\right],
+ \label{bsa:eq:resolvent-series}
+\end{equation}
+where $T_n(\cos t)=\cos(nt)$. Truncation at degree $k$ has uniform error at most
+\begin{equation}
+ \frac{2|w(z)|^{-k}}{|s(z)|(|w(z)|-1)}.
+ \label{bsa:eq:resolvent-error}
+\end{equation}
+\end{bsaLemma}
+\begin{proof}
+For $|t|<1$, summing the geometric cosine series yields
+\[
+ 1+2\sum_{n\ge1}t^nT_n(x)=\frac{1-t^2}{1-2xt+t^2}.
+\]
+Set $t=w^{-1}$ and use $w+w^{-1}=2z$ and $w-w^{-1}=2s(z)$ to obtain~\eqref{bsa:eq:resolvent-series}. Since $|T_n(x)|\le1$, the tail is bounded by
+\[
+ \frac2{|s(z)|}\sum_{n\ge k+1}|w|^{-n}
+ =\frac{2|w|^{-k}}{|s(z)|(|w|-1)}.
+\]
+\end{proof}
+
+\begin{bsaLemma}[Worst horizontal pole location for this remainder bound]
+\label{bsa:lem:bias-uniform}
+Let $v=|\operatorname{Im}z|>0$, $r=|w(z)|$, and $r(v)=v+\sqrt{1+v^2}$. Then
+\begin{equation}
+ \frac{r^{-k}}{|s(z)|(r-1)}
+ \le\frac{r(v)^{-k}}{\sqrt{1+v^2}\,[r(v)-1]}.
+ \label{bsa:eq:bias-uniform}
+\end{equation}
+\end{bsaLemma}
+\begin{proof}
+Write $w=e^{u+i\theta}$ with $u>0$. Since $z=(w+w^{-1})/2$ and $s=(w-w^{-1})/2$,
+\[
+ v=\sinh u\,|\sin\theta|,\qquad
+ |s|^2=\sinh^2u+\sin^2\theta.
+\]
+Thus $r=e^u\ge r(v)$ and
+\begin{equation}
+ |s|^2(r-1)^2
+ =(r-1)^2\sinh^2u
+ +v^2\left(\frac{2r}{r+1}\right)^2.
+ \label{bsa:eq:denominator-monotone}
+\end{equation}
+For fixed $v$, both terms on the right increase with $r\ge1$. At its smallest allowed value $r(v)$, we have $\sinh u=v$, $|\sin\theta|=1$, and $|s|=\sqrt{1+v^2}$. The denominator is therefore at least $\sqrt{1+v^2}[r(v)-1]$, while $r^{-k}\le r(v)^{-k}$.
+\end{proof}
+
+\subsection{The tanh partial fractions and the convergent envelope}
+
+Set $t_\ell=\pi(\ell+\tfrac12)$. The classical product
+\begin{equation}
+ \cosh z=\prod_{\ell=0}^\infty\left(1+\frac{z^2}{t_\ell^2}\right)
+ \label{bsa:eq:cosh-product}
+\end{equation}
+\cite[Eq.~4.36.2]{bsa-dlmf} gives, by logarithmic differentiation away from its zeros,
+\begin{equation}
+ \tanh z=\sum_{\ell=0}^\infty\frac{2z}{z^2+t_\ell^2}
+ =\sum_{\ell=0}^\infty
+ \left(\frac1{z-it_\ell}+\frac1{z+it_\ell}\right).
+ \label{bsa:eq:tanh-poles}
+\end{equation}
+The pairs are $O(t_\ell^{-2})$ on any fixed compact set away from the poles, so the paired series converges locally uniformly. Logarithmic differentiation is justified by uniform convergence on such compact sets of the corresponding differentiated logarithmic series.
+
+For $\gamma>0$, write
+\begin{equation}
+ d_\ell(\gamma)=\sqrt{1+(t_\ell/\gamma)^2},\qquad
+ \rho_\ell(\gamma)=t_\ell/\gamma+d_\ell(\gamma),\qquad
+ S_k(\gamma)=\frac4\gamma\sum_{\ell=0}^\infty
+ \frac{\rho_\ell(\gamma)^{-k}}{d_\ell(\gamma)[\rho_\ell(\gamma)-1]}.
+ \label{bsa:eq:pole-envelope}
+\end{equation}
+In particular, $\rho_0(\gamma)=\rho_\gamma$.
+
+\begin{bsaLemma}[Uniform approximation of a bounded-slope feature]
+\label{bsa:lem:tanh-approximation}
+For $\gamma>0$, $b\in\bsaRR$, and $k\ge0$,
+\begin{equation}
+ \inf_{\deg p\le k}\bsaNorm{\tanh(\gamma\,\cdot+b)-p}_{L^\infty([-1,1])}
+ \le\min\{\tanh\gamma,S_k(\gamma)\}
+ \le e_k(\gamma).
+ \label{bsa:eq:feature-approximation}
+\end{equation}
+\end{bsaLemma}
+\begin{proof}
+The feature has poles $z_\ell^\pm=(-b\pm it_\ell)/\gamma$ and, by~\eqref{bsa:eq:tanh-poles},
+\begin{equation}
+ \tanh(\gamma x+b)
+ =-\frac1\gamma\sum_{\ell\ge0}
+ \left(\frac1{z_\ell^+-x}+\frac1{z_\ell^--x}\right).
+ \label{bsa:eq:scaled-poles}
+\end{equation}
+Apply Lemmas~\ref{bsa:lem:resolvent} and~\ref{bsa:lem:bias-uniform} to each conjugate pair, with $v=t_\ell/\gamma$. Their real degree-$k$ truncations have total error bounded by $S_k(\gamma)$.
+
+Here is an explicit justification for summing the polynomial approximants. The partial paired sums in~\eqref{bsa:eq:scaled-poles} converge uniformly on $[-1,1]$. Degree-$k$ Chebyshev truncation is a bounded linear operator on $C([-1,1])$: its coefficients are bounded cosine integrals and there are finitely many of them. Thus the truncated partial sums converge uniformly to a real degree-$k$ polynomial. The error series in~\eqref{bsa:eq:pole-envelope} is absolutely convergent, since its summands are $O(\ell^{-k-2})$. Passing to the limit preserves the stated error bound.
+
+To obtain the closed form, let
+\[
+ g_k(v)=\frac{e^{-k\bsaArsinh v}}
+ {\sqrt{1+v^2}\,(e^{\bsaArsinh v}-1)}.
+\]
+This is positive and decreasing. Its arguments in~\eqref{bsa:eq:pole-envelope} have spacing $\pi/\gamma$ and start at $v_0=\pi/(2\gamma)$. The decreasing-series comparison gives
+\begin{equation}
+ S_k(\gamma)\le\frac4\gamma g_k(v_0)
+ +\frac4\pi\int_{v_0}^{\infty}g_k(v)\,dv.
+ \label{bsa:eq:sum-integral}
+\end{equation}
+With $v=\sinh u$ and $u_0=\log\rho_\gamma$,
+\begin{align}
+ \int_{v_0}^{\infty}g_k(v)\,dv
+ &=\int_{u_0}^{\infty}\frac{e^{-ku}}{e^u-1}\,du
+ =\sum_{n=k+1}^{\infty}\frac{\rho_\gamma^{-n}}n\notag\\
+ &\le\frac{\rho_\gamma^{-k}}{(k+1)(\rho_\gamma-1)}.
+ \label{bsa:eq:integral-tail}
+\end{align}
+The sum--integral interchange has nonnegative terms. Since $\gamma\sqrt{1+v_0^2}=\sqrt{\gamma^2+\pi^2/4}$, substituting~\eqref{bsa:eq:integral-tail} into~\eqref{bsa:eq:sum-integral} proves $S_k(\gamma)\le U_k(\gamma)$.
+
+Finally, choose the constant halfway between the feature's endpoint values. Monotonicity of tanh gives its error as
+\begin{equation}
+ \frac{\tanh(b+\gamma)-\tanh(b-\gamma)}2
+ =\frac{\sinh(2\gamma)}{\cosh(2b)+\cosh(2\gamma)}
+ \le\tanh\gamma.
+ \label{bsa:eq:constant-cap}
+\end{equation}
+Taking the better of the two approximants proves the lemma.
+\end{proof}
+
+\begin{bsaLemma}[Monotonicity and a universal prefactor]
+\label{bsa:lem:universal}
+For fixed $k\ge0$, $e_k(\gamma)$ is nondecreasing in $\gamma\ge0$. Moreover,
+\begin{equation}
+ e_k(\gamma)\le e^{\pi/2}\rho_\gamma^{-k}\qquad(\gamma>0).
+ \label{bsa:eq:universal-feature}
+\end{equation}
+\end{bsaLemma}
+\begin{proof}
+The parameter $\rho=\rho_\gamma$ decreases with $\gamma$. The first term of $U_k(\gamma)$ can be written
+\[
+ \frac8\pi\frac{\rho+1}{\rho^2+1}\rho^{-k},
+\]
+which decreases with $\rho>1$, and its second term is
+$4\rho^{-k}/[\pi(k+1)(\rho-1)]$, also decreasing. Both $U_k$ and $\tanh\gamma$ therefore increase with $\gamma$; their minimum does as well. The extension at zero is consistent with the constant cap.
+
+If $k+1\ge\gamma$, then $\rho_\gamma-1\ge\pi/(2\gamma)$ gives
+\begin{equation}
+ U_k(\gamma)\le\frac8\pi\left(1+\frac1\pi\right)\rho_\gamma^{-k}
+ \le e^{\pi/2}\rho_\gamma^{-k}.
+ \label{bsa:eq:large-degree-envelope}
+\end{equation}
+If $k+1<\gamma$, then $k\log\rho_\gamma\le k\pi/(2\gamma)<\pi/2$, so
+$e_k(\gamma)\le1\le e^{\pi/2}\rho_\gamma^{-k}$. These cases cover all $k\ge0$ and $\gamma>0$.
+\end{proof}
+
+\subsection{Proof of the bounded-slope access theorem}
+For a negative slope, $\tanh(a x+b)=-\tanh(|a|x-b)$, so the same envelope applies. A zero slope gives a constant. For each hidden column, Lemma~\ref{bsa:lem:tanh-approximation} supplies a real degree-$k$ polynomial approximant whose normalized sampled error is at most $e_k(|a_j|)$. Orthogonal projection is the best Euclidean approximation, hence
+\[
+ \bsaNorm{Q_kA_{:j}}\le e_k(|a_j|).
+\]
+The output-bias column is annihilated by $Q_k$. Consequently,
+\[
+ \bsaNorm{Q_kA}^2\le\bsaNorm{Q_kA}_F^2
+ =\sum_{j=1}^W\bsaNorm{Q_kA_{:j}}^2
+ \le\sum_{j=1}^W e_k(|a_j|)^2\le W e_k(\Gamma)^2,
+\]
+where the last step uses Lemma~\ref{bsa:lem:universal}. Multiplying by $M$ proves~\eqref{bsa:eq:transformed-access}. Since
+$B^\top q=(Q_kB)^\top q$ for $q\in\bsaRange(Q_k)$, the directional and output-movement statements follow. Lemma~\ref{bsa:lem:universal} also proves~\eqref{bsa:eq:universal-envelope}.\hfill$\square$
+
+\begin{bsaRemark}[A numerically evaluable series with a tail bound]
+\label{bsa:rem:series-truncation}
+The tighter series $S_k(\gamma)$ in~\eqref{bsa:eq:pole-envelope} can replace $U_k$ feature by feature. If its first $L\ge1$ terms are retained, the omitted positive tail is at most
+\begin{equation}
+ \frac{16\gamma^{k+1}}{\pi^{k+2}}
+ \left[\frac1{(2L+1)^{k+2}}
+ +\frac1{2(k+1)(2L+1)^{k+1}}\right].
+ \label{bsa:eq:series-remainder}
+\end{equation}
+Indeed, $d_\ell\ge t_\ell/\gamma$, $\rho_\ell\ge2t_\ell/\gamma$, and
+$\rho_\ell-1\ge t_\ell/\gamma$. Each term is then at most
+$16\gamma^{k+1}/[\pi^{k+2}(2\ell+1)^{k+2}]$; a decreasing-series integral comparison proves~\eqref{bsa:eq:series-remainder}. This bounds truncation, not floating-point rounding.
+\end{bsaRemark}
+
+\section{Precisely which structural bounds are sharp}
+\label{bsa:sec:sharpness}
+
+\begin{bsaProposition}[Optimal exponential degree rate]
+\label{bsa:prop:rate-sharp}
+Fix $\Gamma>0$, let $f_\Gamma(x)=\tanh(\Gamma x)$, and use the Chebyshev probability measure
+$d\omega(x)=dx/[\pi\sqrt{1-x^2}]$ on $[-1,1]$. Then
+\begin{equation}
+ \lim_{k\to\infty}
+ \left(\inf_{\deg p\le k}\bsaNorm{f_\Gamma-p}_{L^2(\omega)}\right)^{1/k}
+ =\rho_\Gamma^{-1}.
+ \label{bsa:eq:rate-sharp}
+\end{equation}
+The same root limit holds for best uniform approximation.
+\end{bsaProposition}
+\begin{proof}
+Use the convention $f_\Gamma(x)=c_0+\sum_{n\ge1}c_nT_n(x)$. For a centered upper pole $z=i t_\ell/\Gamma$, the branches in Lemma~\ref{bsa:lem:resolvent} satisfy
+$s=i d_\ell(\Gamma)$ and $w=i\rho_\ell(\Gamma)$; their lower counterparts are conjugates. Substitution into~\eqref{bsa:eq:scaled-poles} gives zero even coefficients and, for odd $n$,
+\begin{equation}
+ c_n=\frac4\Gamma(-1)^{(n-1)/2}
+ \sum_{\ell=0}^{\infty}\frac{\rho_\ell(\Gamma)^{-n}}{d_\ell(\Gamma)}.
+ \label{bsa:eq:centered-chebyshev}
+\end{equation}
+The sign is common to all terms for a given odd $n$. Hence
+\begin{equation}
+ |c_n|\ge\frac4{\sqrt{\Gamma^2+\pi^2/4}}\rho_\Gamma^{-n}.
+ \label{bsa:eq:coefficient-lower}
+\end{equation}
+The coefficient calculation is justified by uniform convergence and boundedness of each cosine-coefficient functional, as in the approximation proof.
+
+Under $\omega$, the polynomials $T_n$ are orthogonal, with $\bsaNorm{T_n}_{L^2(\omega)}^2=1/2$ for $n\ge1$. Let $n_k$ be the smallest odd integer greater than $k$, so $n_k\le k+2$. Every degree-$k$ polynomial has zero coefficient at $n_k$, giving
+\begin{equation}
+ \inf_{\deg p\le k}\bsaNorm{f_\Gamma-p}_{L^2(\omega)}
+ \ge\frac{|c_{n_k}|}{\sqrt2}
+ \ge\frac{2\sqrt2}{\sqrt{\Gamma^2+\pi^2/4}}\rho_\Gamma^{-(k+2)}.
+ \label{bsa:eq:approximation-lower}
+\end{equation}
+The best uniform error is at least the best $L^2(\omega)$ error, and Lemma~\ref{bsa:lem:tanh-approximation} gives a uniform upper bound $U_k(\Gamma)\le C_\Gamma\rho_\Gamma^{-k}$ with $C_\Gamma$ independent of $k$. Taking $k$th roots proves both assertions.
+\end{proof}
+
+\paragraph{Transfer to the sampled theorem.}
+For fixed $k$, take equally weighted nodes $x_i=\cos((i-\tfrac12)\pi/m)$ and let $m\to\infty$. Riemann sums of continuous functions converge to integration against $\omega$. The finite-dimensional polynomial Gram matrices, their target inner products, and hence the best degree-$k$ sampled errors converge to their $L^2(\omega)$ counterparts. The limiting polynomial Gram matrix is positive definite. Thus, if a bound with an exponent strictly larger than $\alpha_\Gamma$ held with a prefactor independent of $k$ and $m$ for all allowed sample sets, letting $m\to\infty$ at each fixed $k$ would contradict~\eqref{bsa:eq:approximation-lower}. This argument does not assert nontrivial tails as $k\to\infty$ on one fixed finite grid.
+
+\begin{bsaProposition}[Exact worst-case width factor on a fixed grid]
+\label{bsa:prop:width-sharp}
+For a fixed grid $X$, define
+\begin{equation}
+ \xi_{k,X}(\Gamma)
+ :=\sup_{|a|\le\Gamma,\ b\in\bsaRR}
+ \left\|Q_k\frac{(\tanh(ax_i+b))_{i=1}^m}{\sqrt m}\right\|.
+ \label{bsa:eq:grid-optimum}
+\end{equation}
+Then
+\begin{equation}
+ \sup_{\substack{|a_j|\le\Gamma\,,\ b_j\in\bsaRR\,,\ 1\le j\le W}}
+ \bsaNorm{Q_kA}^2=W\xi_{k,X}(\Gamma)^2.
+ \label{bsa:eq:width-exact}
+\end{equation}
+\end{bsaProposition}
+\begin{proof}
+The upper bound follows by summing the squared projected column norms. For the reverse bound, choose a feature approaching the scalar supremum and repeat it in all $W$ hidden columns. If its projected column is $z$, then $Q_kA=[0,z,\ldots,z]$ and $\bsaNorm{Q_kA}^2=W\bsaNorm z^2$. Take a sequence approaching the supremum.
+\end{proof}
+
+The exact grid-dependent constant is therefore characterized by~\eqref{bsa:eq:grid-optimum}; the explicit envelope only bounds it from above. The norm inequalities, bias-uniform resolvent estimates, and triangle inequalities can be strict. Sharpness of the exponent and width factor is not a claim that the full finite prefactor predicts a specific dictionary exactly.
+
+\section{Proof of the sharp gradient-flow certificate}
+\label{bsa:sec:time-proof}
+
+The proof in this section holds for any fixed real matrix $B$. The spectral representation of least-squares gradient flow is standard; see~\cite{bsa-ali} for background. The endpoint displacement inequality and the sharp ratio below are derived explicitly here.
+
+\begin{bsaLemma}[Sharp endpoint displacement inequality]
+\label{bsa:lem:displacement}
+For the flow~\eqref{bsa:eq:gf}, let $e(t)=\bsaNorm{r(t)}/\bsaNorm{r_0}$. If $0<e(t)<1$, then
+\begin{equation}
+ \bsaNorm{\theta(t)-\theta(0)}^2
+ \le t\bsaNorm{r_0}^2\frac{(1-e(t))^2}{\log(1/e(t))}.
+ \label{bsa:eq:displacement}
+\end{equation}
+Equality holds when $r_0$ lies in a single positive-eigenvalue eigenspace of $K=BB^\top$.
+\end{bsaLemma}
+\begin{proof}
+Choose an orthonormal eigenbasis of $K$, including its zero eigenvalues:
+$Ku_i=\nu_i u_i$ and $r_0/\bsaNorm{r_0}=\sum_i\beta_i u_i$, with $\sum_i\beta_i^2=1$.
+Because $\dot r=-Kr$,
+\begin{equation}
+ e(t)^2=\sum_i\beta_i^2e^{-2t\nu_i}.
+ \label{bsa:eq:spectral-residual}
+\end{equation}
+For $\nu_i>0$, the vectors $v_i=B^\top u_i/\sqrt{\nu_i}$ are orthonormal. Integrating the coefficient update gives
+\begin{align}
+ \theta(t)-\theta(0)
+ &=-\bsaNorm{r_0}\sum_{\nu_i>0}\beta_i
+ \frac{1-e^{-t\nu_i}}{\sqrt{\nu_i}}v_i,\notag\\
+ \frac{\bsaNorm{\theta(t)-\theta(0)}^2}{\bsaNorm{r_0}^2}
+ &=\sum_{\nu_i>0}\beta_i^2\frac{(1-e^{-t\nu_i})^2}{\nu_i}.
+ \label{bsa:eq:spectral-displacement}
+\end{align}
+
+Define the continuous function on $[0,1]$
+\begin{equation}
+ F(z)=\frac{2(1-\sqrt z)^2}{-\log z}\quad(0<z<1),
+ \qquad F(0)=F(1)=0.
+ \label{bsa:eq:concave-function}
+\end{equation}
+It is concave. To check this directly, set $s=-\tfrac12\log z$ and $h(s)=(1-e^{-s})^2/s$, so $F(z)=h(s)$. Then
+\begin{align}
+ F''(z)&=\frac{h''(s)+2h'(s)}{4z^2},\notag\\
+ h''(s)+2h'(s)
+ &=\frac{2e^{-2s}}{s^3}
+ \underbrace{(s+1-e^s)}_{\le0}
+ \underbrace{((s-1)e^s+1)}_{\ge0}\le0.
+ \label{bsa:eq:concavity-proof}
+\end{align}
+The second factor vanishes at zero and has derivative $se^s\ge0$. Continuity at the endpoints extends concavity to the closed interval.
+
+Set $z_i=e^{-2t\nu_i}$. A zero eigenvalue contributes $F(1)=0$ to coefficient movement. Equations~\eqref{bsa:eq:spectral-residual}--\eqref{bsa:eq:spectral-displacement} and Jensen give
+\begin{align}
+ \frac{\bsaNorm{\theta(t)-\theta(0)}^2}{t\bsaNorm{r_0}^2}
+ &=\sum_i\beta_i^2F(z_i)
+ \le F\!\left(\sum_i\beta_i^2z_i\right)
+ =F(e(t)^2)\notag\\
+ &=\frac{(1-e(t))^2}{\log(1/e(t))}.
+\end{align}
+If all initial residual energy lies in one positive eigenspace, all relevant $z_i$ are equal and Jensen is an equality.
+\end{proof}
+
+\subsection{Proof of the sharp learning-time theorem}
+If $T_\epsilon=\infty$, there is nothing to prove. Otherwise continuity gives
+$\bsaNorm{r(T_\epsilon)}=\epsilon\bsaNorm{r_0}$. For any unit $q$, put $\Delta\theta=\theta(T_\epsilon)-\theta(0)$. Since $B\Delta\theta=r(T_\epsilon)-r_0$,
+\begin{align}
+ \bsaPos{\delta(q)-\epsilon}\bsaNorm{r_0}
+ &\le |\langle q,r_0-r(T_\epsilon)\rangle|\notag\\
+ &\le\bsaNorm{B^\top q}\,\bsaNorm{\Delta\theta}.
+ \label{bsa:eq:necessary-movement}
+\end{align}
+Lemma~\ref{bsa:lem:displacement} bounds
+$\bsaNorm{\Delta\theta}^2\le T_\epsilon\bsaNorm{r_0}^2/C_\epsilon$,
+which proves~\eqref{bsa:eq:general-directional-time}. If $\mu_B(q)=0$ while $\delta(q)>\epsilon$, then $\langle q,r(t)\rangle=\langle q,r_0\rangle$ for every $t$, so the tolerance is impossible, consistent with the extended-value convention. Finally, for $q=q_k$,
+\[
+ \langle q_k,r_0\rangle
+ =\frac{\langle Q_kr_0,r_0\rangle}{\bsaNorm{Q_kr_0}}
+ =\bsaNorm{Q_kr_0}.
+\]
+Taking the supremum proves~\eqref{bsa:eq:tail-time}.\hfill$\square$
+
+\subsection{Sharpness of the tolerance factor}
+Take samples $x_1=-1$, $x_2=1$, a bias column, and one hidden feature $\tanh(\gamma x)$ with $\gamma>0$. Let
+\[
+ u=\frac1{\sqrt2}(1,1)^\top,\qquad
+ q=\frac1{\sqrt2}(-1,1)^\top,\qquad
+ A=[u,\tanh(\gamma)q],\qquad M=I.
+\]
+Choose $r_0=q$; this can be achieved from zero readout by taking $y=-q$. Then $P_0q=0$, $Kq=\mu q$ with $\mu=\tanh^2\gamma$, and
+\[
+ T_\epsilon=\frac{\log(1/\epsilon)}\mu
+ =C_\epsilon\frac{(1-\epsilon)^2}{\mu}.
+\]
+Here $\delta_0=1$, so both the directional and polynomial-tail certificates attain equality. For each $\epsilon$, any larger universal prefactor multiplying the same ratio would fail on this example. For a broad spectral distribution the certificate can be strictly smaller than the true hitting time; optimality of its prefactor does not assert that it captures every slow spectral component.
+
+\begin{bsaCorollary}[Pure-tail residuals]
+\label{bsa:cor:pure-tail}
+If $P_kr_0=0$ and $\mu_0=\bsaNorm{B^\top r_0}^2/\bsaNorm{r_0}^2$, then
+\begin{equation}
+ \frac{\bsaNorm{r(t)}}{\bsaNorm{r_0}}\ge e^{-t\mu_0},\qquad
+ T_\epsilon\ge\frac{\log(1/\epsilon)}{\mu_0}
+ \ge\frac{\log(1/\epsilon)}{\mathcal B_k}.
+ \label{bsa:eq:pure-tail}
+\end{equation}
+\end{bsaCorollary}
+\begin{proof}
+The time inequality follows from $\delta_k=1$ in Theorem~\ref{bsa:thm:time}. For the all-time statement, apply Jensen to~\eqref{bsa:eq:spectral-residual}, using convexity of $\nu\mapsto e^{-2t\nu}$ and $\mu_0=\sum_i\beta_i^2\nu_i$. This includes zero eigenvalues and does not require that later residuals stay polynomial-orthogonal.
+\end{proof}
+
+\section{Coefficient-budget capacity and its exact dual interpretation}
+\label{bsa:sec:budget}
+
+\begin{bsaProposition}[Norm-budget obstruction]
+\label{bsa:prop:budget}
+Let $y\ne0$ and $q_k^y=Q_ky/\bsaNorm{Q_ky}$ for a nonzero target tail. Set
+$\mu_k^y=\bsaNorm{B^\top q_k^y}^2$. For $R_0\ge0$,
+\begin{equation}
+ \mathcal E_B(R_0):=\frac{\min_{\bsaNorm\theta\le R_0}\bsaNorm{B\theta-y}}{\bsaNorm y}
+ \ge\sup_k\bsaPos{D_k(g;X)-\frac{R_0\sqrt{\mu_k^y}}{\bsaNorm y}}.
+ \label{bsa:eq:budget-lower}
+\end{equation}
+Consequently, any readout achieving relative error $\epsilon$ must satisfy
+\begin{equation}
+ \bsaNorm\theta\ge\bsaNorm y\sup_k
+ \frac{\bsaPos{D_k(g;X)-\epsilon}}{\sqrt{\mu_k^y}}.
+ \label{bsa:eq:required-norm}
+\end{equation}
+For a general coefficient norm $\bsaNorm{\cdot}_{\mathsf N}$, replace $\sqrt{\mu_k^y}$ by the dual norm $\bsaNorm{B^\top q_k^y}_{\mathsf N,*}$.
+\end{bsaProposition}
+\begin{proof}
+The unit witness $q_k^y$ gives
+\[
+ \bsaNorm{B\theta-y}\ge|\langle q_k^y,y-B\theta\rangle|
+ \ge\bsaNorm{Q_ky}-\bsaNorm{B^\top q_k^y}\,\bsaNorm\theta.
+\]
+Take a positive part, divide by $\bsaNorm y$, and optimize over $k$ and admissible coefficients. The general-norm version is the same argument with the dual-norm inequality.
+\end{proof}
+
+For example, an $\ell_\infty$ readout budget uses $\bsaNorm{B^\top q}_{1}$ rather than $\bsaNorm{B^\top q}_{2}$. A numerical bound on each coefficient must not be substituted as the same numerical Euclidean-norm bound. Likewise a bound on physical coefficients $c=M\theta$ is a different budget from a bound on $\theta$; use $A$ and the physical norm when that is the intended restriction.
+
+\begin{bsaProposition}[Exact cost when all witness directions are allowed]
+\label{bsa:prop:dual-radius}
+For $r_0\ne0$, define the minimal Euclidean displacement needed to reach tolerance
+\[
+ R_\epsilon^*:=\inf\{\bsaNorm d:\bsaNorm{r_0+Bd}\le\epsilon\bsaNorm{r_0}\},
+\]
+with value $\infty$ if the constraint is infeasible. Then
+\begin{equation}
+ \frac{R_\epsilon^*}{\bsaNorm{r_0}}
+ =\sup_{\bsaNorm q=1}
+ \frac{\bsaPos{\delta(q)-\epsilon}}{\bsaNorm{B^\top q}},
+ \qquad
+ T_\epsilon\ge C_\epsilon\frac{(R_\epsilon^*)^2}{\bsaNorm{r_0}^2}.
+ \label{bsa:eq:dual-radius}
+\end{equation}
+\end{bsaProposition}
+\begin{proof}
+For a finite $R\ge0$, a feasible displacement with norm at most $R$ exists exactly when
+\[
+ -r_0\in B\mathbb B_R+\epsilon\bsaNorm{r_0}\mathbb B_1,
+\]
+where $\mathbb B_R$ denotes a Euclidean ball in the appropriate dimension. This set is compact, convex, and symmetric. Its support function in direction $q$ is
+$R\bsaNorm{B^\top q}+\epsilon\bsaNorm{r_0}\bsaNorm q$.
+The separating-hyperplane characterization of membership therefore gives the equivalent condition
+\[
+ |\langle q,r_0\rangle|
+ \le R\bsaNorm{B^\top q}+\epsilon\bsaNorm{r_0}\bsaNorm q
+ \quad\text{for every }q.
+\]
+Restrict by homogeneity to unit vectors and take the infimum over $R$. This proves the first identity, including infeasible cases. Apply~\eqref{bsa:eq:general-directional-time} and take the supremum over all unit witnesses to obtain the second inequality.
+\end{proof}
+
+The polynomial-tail witnesses are thus an interpretable restriction of an exact coefficient-cost dual. They need not be the strongest possible witnesses for a given target. Even the full coefficient-cost certificate need not equal the hitting time for a residual spread across many spectral scales.
+
+\section{Ordinary discrete gradient descent}
+\label{bsa:sec:gd}
+
+Assume $L_B=\bsaNorm B^2>0$ and use a constant step
+\begin{equation}
+ \theta_{n+1}=\theta_n-\eta B^\top r_n,\qquad
+ 0<\eta\le L_B^{-1}.
+ \label{bsa:eq:gd-update}
+\end{equation}
+This nonoscillatory step range is sufficient for the statements below; it is not asserted to be the full convergence range of GD. If $B=0$, the residual is constant and all smaller tolerances are unattainable.
+
+\begin{bsaProposition}[Exact spectral formula and sharp mean-access bound]
+\label{bsa:prop:gd-pure}
+Use the eigenbasis and coefficients from Section~\ref{bsa:sec:time-proof}, and set
+$\mu_0=\bsaNorm{B^\top r_0}^2/\bsaNorm{r_0}^2$. For $n\ge1$,
+\begin{equation}
+ \frac{\bsaNorm{r_n}^2}{\bsaNorm{r_0}^2}
+ =\sum_i\beta_i^2(1-\eta\nu_i)^{2n}
+ \ge(1-\eta\mu_0)^{2n}.
+ \label{bsa:eq:gd-jensen}
+\end{equation}
+If $0<\eta\mu_0<1$, the first successful iteration satisfies
+\begin{equation}
+ N_\epsilon\ge
+ \left\lceil\frac{\log(1/\epsilon)}{-\log(1-\eta\mu_0)}\right\rceil.
+ \label{bsa:eq:gd-time}
+\end{equation}
+Equality is attained by a single-eigenvalue residual. If $P_kr_0=0$, then $\mu_0\le\mathcal B_k$, which may replace $\mu_0$ in~\eqref{bsa:eq:gd-time} when $\eta\mathcal B_k<1$.
+\end{bsaProposition}
+\begin{proof}
+The recurrence gives $r_n=(I-\eta K)^nr_0$. On $[0,L_B]$, the map
+$\nu\mapsto(1-\eta\nu)^{2n}$ is convex and nonnegative. Jensen yields~\eqref{bsa:eq:gd-jensen}, and rearrangement gives~\eqref{bsa:eq:gd-time}. The eigenvalue mean is $\mu_0$. For a pure polynomial-tail initial residual, Theorem~\ref{bsa:thm:access} bounds that mean. The denominator $-\log(1-\eta\mu)$ increases with $\mu$, so substitution of a valid upper bound weakens the lower bound in the required direction.
+\end{proof}
+If $\mu_0=0$, there is no residual decay. If $\eta\mu_0=1$ in the stated step range, all residual mass is at $\nu=1/\eta=L_B$ and the residual is annihilated in one step. These endpoint cases should not be evaluated by a logarithmic formula with an undefined denominator.
+
+\begin{bsaProposition}[General-correction finite-step certificate]
+\label{bsa:prop:gd-general}
+For $n\ge0$, define
+\begin{equation}
+ G_n(\eta,L_B)=\max_{0\le\nu\le L_B}
+ \frac{[1-(1-\eta\nu)^n]^2}{\nu},
+ \label{bsa:eq:gn-envelope}
+\end{equation}
+where the value at $\nu=0$ is its continuous extension zero and $G_0=0$. If
+$\bsaNorm{r_n}\le\epsilon\bsaNorm{r_0}$, then
+\begin{equation}
+ G_n(\eta,L_B)\ge
+ \frac{\bsaPos{\delta(q)-\epsilon}^2}{\mu_B(q)}
+ \quad\text{for every unit }q,
+ \qquad
+ G_n(\eta,L_B)\ge\sup_k\frac{\bsaPos{\delta_k-\epsilon}^2}{\mu_k}.
+ \label{bsa:eq:gd-general}
+\end{equation}
+\end{bsaProposition}
+\begin{proof}
+Summing the coefficient recurrence along each positive singular mode yields
+\[
+ \frac{\bsaNorm{\theta_n-\theta_0}^2}{\bsaNorm{r_0}^2}
+ =\sum_{\nu_i>0}\beta_i^2\frac{[1-(1-\eta\nu_i)^n]^2}{\nu_i}
+ \le G_n(\eta,L_B).
+\]
+Combine with the necessary-movement inequality~\eqref{bsa:eq:necessary-movement}, which holds for any successful iterate, independently of its update rule. Choosing $q=q_k$ proves the final statement.
+\end{proof}
+
+These formulas concern actual iterations and avoid identifying $n\eta$ with gradient-flow time. The loss normalization in~\eqref{bsa:eq:coordinates} is part of every time or step-size claim. Multiplying the loss or the flow rate by a constant rescales time accordingly. None of the stated GD certificates is, without further analysis, a theorem about Adam, momentum, line search, or adaptive preconditioning.
+
+\section{Readout reparameterizations and neighboring coordinates}
+\label{bsa:sec:reparameterization}
+
+Theorem~\ref{bsa:thm:time} applies to $B=AM$ in the coordinates actually trained. Under Euclidean gradient flow in $\theta$, the physical coefficients obey
+\begin{equation}
+ \dot c=-MM^\top A^\top(Ac-y),\qquad
+ \dot r=-A MM^\top A^\top r.
+ \label{bsa:eq:preconditioner}
+\end{equation}
+Thus a fixed coordinate map is a fixed positive-definite preconditioner in physical readout space. The span is unchanged, but access, coefficient budgets, and learning times need not be. A uniform scalar map $M=sI$ changes the GD step scale by $s^2$ while leaving the nonzero condition number unchanged.
+
+\begin{bsaProposition}[Anchored neighboring preserves the exponential barrier]
+\label{bsa:prop:neighboring}
+Let $s_j=\sum_{\ell=1}^j c_\ell$ for the hidden readout, with $s_0=0$, and write $c_{1:W}=Ds$, where
+$ (Ds)_j=s_j-s_{j-1}$. Keep the bias unchanged, so $M=\bsaDiag(1,D)$. Then
+\begin{equation}
+ \sum_{j=1}^Wc_j\phi_j
+ =\sum_{j=1}^{W-1}s_j(\phi_j-\phi_{j+1})+s_W\phi_W,
+ \qquad \bsaNorm M\le2.
+ \label{bsa:eq:neighboring}
+\end{equation}
+In particular, $\bsaNorm{Q_kB}^2\le4W e_k(\Gamma)^2$.
+\end{bsaProposition}
+\begin{proof}
+Reindex the sum $\sum_j(s_j-s_{j-1})\phi_j$ to obtain the identity. Also
+\[
+ \bsaNorm{Ds}^2=s_1^2+\sum_{j=2}^W(s_j-s_{j-1})^2\le4\bsaNorm s^2.
+\]
+The final feature is an anchor, not a dispensable term; keeping it makes $D$ invertible. The access bound follows from Theorem~\ref{bsa:thm:access}.
+\end{proof}
+
+This telescoping identity holds for any ordered features. Interpreting the differences as positive localized kernels requires additional equal-positive-slope and ordered-center structure, which the proof does not need. Additional diagonal scales, division by $h$, or unit-peak normalization belong in the actual $M$ and cannot be omitted from the bound.
+
+\begin{bsaProposition}[Relative access under a fixed invertible map]
+\label{bsa:prop:relative-access}
+For $A\ne0$, an invertible $M$, and any unit $q$, put $B=AM$ and
+$\kappa(M)=\bsaNorm M\,\bsaNorm{M^{-1}}$. Then
+\begin{equation}
+ \kappa(M)^{-2}\frac{\mu_A(q)}{\bsaNorm A^2}
+ \le\frac{\mu_B(q)}{\bsaNorm B^2}
+ \le\kappa(M)^2\frac{\mu_A(q)}{\bsaNorm A^2}.
+ \label{bsa:eq:relative-access}
+\end{equation}
+\end{bsaProposition}
+\begin{proof}
+Use $\bsaNorm{M^{-1}}^{-2}\mu_A(q)\le\mu_B(q)\le\bsaNorm M^2\mu_A(q)$ and
+$\bsaNorm A/\bsaNorm{M^{-1}}\le\bsaNorm{AM}\le\bsaNorm A\bsaNorm M$.
+\end{proof}
+For unscaled neighboring, $D^{-1}$ is the cumulative-sum matrix, with
+\[
+ \bsaNorm{D^{-1}}\le\bsaNorm{D^{-1}}_F=\sqrt{W(W+1)/2}\le W.
+\]
+Thus $\kappa(M)\le2W$. Such a change of coordinates can give polynomial improvements in relative access, but cannot by itself cancel an active exponential-in-width relative-access bound. A general whitening map need not have polynomially bounded condition number and is not covered by that conclusion.
+
+\section{A sharp one-step damped Gauss--Newton diagnostic}
+\label{bsa:sec:damping}
+
+\begin{bsaProposition}[Damping recovery from directional access]
+\label{bsa:prop:damping}
+For fixed $B$, a residual $r$, and $\zeta>0$, define
+\begin{equation}
+ \Delta\theta_\zeta
+ =\underset{d}{\operatorname{argmin}}\left\{\tfrac12\bsaNorm{r+Bd}^2
+ +\tfrac\zeta2\bsaNorm d^2\right\},\qquad
+ r_\zeta^+=r+B\Delta\theta_\zeta.
+ \label{bsa:eq:damped-step}
+\end{equation}
+Then
+\begin{equation}
+ r_\zeta^+=\zeta(K+\zeta I)^{-1}r.
+ \label{bsa:eq:damped-residual}
+\end{equation}
+For any unit probe $q$, put $\mathcal R_B(q;\zeta)=\bsaNorm{\zeta(K+\zeta I)^{-1}q}$. Then
+\begin{equation}
+ \boxed{\mathcal R_B(q;\zeta)\ge\frac{\zeta}{\mu_B(q)+\zeta}.}
+ \label{bsa:eq:damped-access}
+\end{equation}
+This lower bound is attained when $q$ lies in one eigenspace of $K$. For a unit polynomial-tail probe it also gives
+$\mathcal R_B(q;\zeta)\ge\zeta/(\mathcal B_k+\zeta)$.
+\end{bsaProposition}
+\begin{proof}
+The normal equations give
+$\Delta\theta_\zeta=-(B^\top B+\zeta I)^{-1}B^\top r$.
+An SVD verifies
+$B(B^\top B+\zeta I)^{-1}B^\top=K(K+\zeta I)^{-1}$,
+which proves~\eqref{bsa:eq:damped-residual}. For $q=\sum_i b_i u_i$, $\sum_i b_i^2=1$, the squared recovery remainder is
+\[
+ \mathcal R_B(q;\zeta)^2
+ =\sum_i b_i^2\left(\frac\zeta{\nu_i+\zeta}\right)^2
+ \ge\left(\frac\zeta{\sum_i b_i^2\nu_i+\zeta}\right)^2.
+\]
+This is Jensen for the convex function $x\mapsto\zeta^2/(x+\zeta)^2$ on $[0,\infty)$. The mean is $\mu_B(q)$, and equality holds on one eigenspace. Apply Theorem~\ref{bsa:thm:access} for the final assertion.
+\end{proof}
+
+A curvature mode $\nu$ retains amplitude $\zeta/(\nu+\zeta)$. Thus damping is a soft curvature cutoff, not a polynomial-degree cutoff. To reduce a unit probe to relative norm at most $\varepsilon\in(0,1)$ in one step, it is necessary that
+\begin{equation}
+ \zeta\le\frac{\varepsilon}{1-\varepsilon}\mu_B(q).
+ \label{bsa:eq:damping-threshold}
+\end{equation}
+The condition is not sufficient for a general spectral mixture. With $L_B=\bsaNorm B^2>0$ and relative damping $\varrho=\zeta/L_B$, the normalized inequality is
+\begin{equation}
+ \mathcal R_B(q;\varrho L_B)
+ \ge\frac{\varrho}{\varrho+\mu_B(q)/L_B}.
+ \label{bsa:eq:relative-damping}
+\end{equation}
+Furthermore,
+\begin{equation}
+ \lim_{\zeta\downarrow0}\mathcal R_B(q;\zeta)=\bsaNorm{(I-\Pi)q}.
+ \label{bsa:eq:damping-floor}
+\end{equation}
+The limit is the probe's span obstruction, while the curve above it resolves small positive curvatures. A polynomial tail $Q_ky$ need not itself lie in the feature span even if $y$ does; one should not replace a full-target capacity statement by an isolated-probe statement.
+
+In fixed linear readout coordinates, the Hessian is exactly $B^\top B$, equal to the Gauss--Newton matrix. An exact undamped pseudoinverse step reaches the least-squares fitted vector. The role of~\eqref{bsa:eq:damped-access} is therefore a fixed one-step diagnostic, not a separate convergence theorem for an adaptive GN training algorithm. The identity penalty in~\eqref{bsa:eq:damped-step} is in native coordinates. In physical coefficients it penalizes $\bsaNorm{M^{-1}\Delta c}^2$; keeping the same numerical damping across different maps does not keep the same physical penalty.
+
+\section{Width scaling: conditional consequences and claim boundaries}
+\label{bsa:sec:width}
+
+\subsection{What constant and width-scaled slopes imply structurally}
+For fixed $\Gamma_0>0$ and a family of maps $M_W$,~\eqref{bsa:eq:universal-envelope} gives
+\begin{equation}
+ \mathcal B_k(\Gamma_0,M_W)
+ \le e^\pi\bsaNorm{M_W}^2W e^{-2\alpha_{\Gamma_0}k}.
+ \label{bsa:eq:constant-gamma}
+\end{equation}
+At $k=\lfloor\kappa W\rfloor$ with $\kappa>0$, this is exponentially small in $W$ if $\bsaNorm{M_W}$ grows at most polynomially. For $\Gamma_W=gW$ with fixed $g>0$ instead,
+\begin{equation}
+ k\alpha_{\Gamma_W}
+ =\lfloor\kappa W\rfloor\bsaArsinh\!\left(\frac\pi{2gW}\right)
+ \longrightarrow\frac{\pi\kappa}{2g}.
+ \label{bsa:eq:linear-gamma}
+\end{equation}
+The particular exponential-in-width suppression is then absent from the upper bound. This does not produce a lower bound on actual access or guarantee fast training. We write this comparator as $\Gamma=\Theta(W)$; the notation $O(W)$ alone also permits constant slopes.
+
+For large $\Gamma$,
+\begin{equation}
+ \alpha_\Gamma=\frac\pi{2\Gamma}+O(\Gamma^{-3}),\qquad
+ -2k\alpha_\Gamma=-\frac{\pi k}{\Gamma}+O(k\Gamma^{-3}).
+ \label{bsa:eq:large-gamma}
+\end{equation}
+The exact $\bsaArsinh$ expression should be used when $k$ and $\Gamma$ vary jointly. For fixed $k$ as $\Gamma\downarrow0$, the explicit envelope gives $e_k(\Gamma)=O_k(\Gamma^{k+1})$; the primary constant-versus-width comparison does not require this small-slope limit.
+
+\subsection{When the target justifies a degree proportional to width}
+
+\begin{bsaCorollary}[Geometric target tails and a geometric accuracy schedule]
+\label{bsa:cor:width-time}
+Consider zero-initialized readout flow with nonzero sampled targets on a sequence of sample grids and width-$W$ dictionaries. Suppose $\Gamma\le\Gamma_0$ and $\bsaNorm{M_W}\le C_MW^p$ for constants $\Gamma_0,C_M>0$, $p\ge0$. Let $\epsilon_W=\epsilon_0e^{-sW}$ with $\epsilon_0,s>0$. Suppose the empirical target tails obey
+\begin{equation}
+ D_k(g;X_W)\ge d_-e^{-\beta_f k}
+ \label{bsa:eq:target-lower-assumption}
+\end{equation}
+for constants $d_-,\beta_f>0$ and for the witness degrees
+\begin{equation}
+ k_W=\left\lfloor\frac1{\beta_f}\log\frac{d_-}{2\epsilon_W}\right\rfloor\ge0,
+ \label{bsa:eq:witness-degree}
+\end{equation}
+for all sufficiently large $W$. In particular these empirical tail spaces must be nontrivial. Then
+\begin{equation}
+ T_{\epsilon_W}\ge
+ \frac{C_{\epsilon_W}d_-^2}{4e^\pi C_M^2W^{2p+1}}
+ \exp\!\left(2[\alpha_{\Gamma_0}-\beta_f]k_W\right).
+ \label{bsa:eq:width-time}
+\end{equation}
+If $\alpha_{\Gamma_0}>\beta_f$, this is an exponential-in-width lower bound up to the displayed factors.
+\end{bsaCorollary}
+\begin{proof}
+By the floor in~\eqref{bsa:eq:witness-degree},
+$d_-e^{-\beta_fk_W}\ge2\epsilon_W$, so $D_{k_W}\ge2\epsilon_W$ and
+\[
+ (D_{k_W}-\epsilon_W)^2\ge D_{k_W}^2/4
+ \ge(d_-^2/4)e^{-2\beta_fk_W}.
+\]
+Use this numerator in~\eqref{bsa:eq:combined}, with~\eqref{bsa:eq:constant-gamma} and the bound on $\bsaNorm{M_W}$. Since $k_W=(s/\beta_f)W+O(1)$, the strict inequality of exponents gives exponential growth. All constants in this statement are independent of $W$.
+\end{proof}
+
+A matching upper tail bound $D_k\le d_+e^{-\beta_fk}$ around the tolerance crossing gives
+$k_\epsilon=\beta_f^{-1}\log(1/\epsilon)+O(1)$ for the degree required to attain tolerance. This is one sufficient reason for $k\asymp W$ under a geometric accuracy schedule. Analyticity by itself supplies no two-sided tail law, and an upper approximation bound alone cannot establish necessary target energy. For a fixed target and fixed tolerance, the relevant degree need not grow with width. Once a reference accuracy stops improving, the geometric-schedule argument no longer applies.
+
+\paragraph{What is not concluded.}
+Theorems~\ref{bsa:thm:time} and~\ref{bsa:thm:access} do not prove failure for every $\Gamma=o(W)$: the target-tail decay rate, the desired tolerance, and the coefficient metric matter. They also do not show monotonic improvement with $\Gamma$, a universal necessity of $\Gamma=\Theta(W)$, or sufficiency of large slopes. For example, $W$ identical features $\tanh(Wx)$ have width-scaled slopes but, with a bias, at most a two-dimensional span. A separate result would be needed to show that joint training remains in the bounded-slope regime.
+
+\paragraph{Interpretation for the appendix.}
+The complete logical chain is: bounded slopes force small feature remainders beyond low-degree polynomials; these remainders limit output correction per unit readout movement; necessary target-tail energy therefore forces a coefficient cost and a gradient-flow or GD time cost. Exact span capacity, norm-budget capacity, and optimization accessibility remain distinct throughout. In finite precision, a truncated numerical rank, an unresolved polynomial tail, or a solver stopping rule must not be identified automatically with a mathematical zero or an exact lower bound. The statements concern the sampled loss; a separate approximation argument or evaluation is required between samples.
+
+% ===== END proof.tex =====
+% ===== BEGIN references.tex =====
+\begin{thebibliography}{9}
+\bibitem{bsa-original}
+Continuous MLPs Project.
+\emph{Bounded slopes and weak access to function corrections: Main theorem and fixed-geometry learning-time consequences}.
+Supplied four-page note, September 2026.
+File: \texttt{bounded\_slope\_weak\_access\_theorem(1).pdf}.
+Cited for the sampled setup and the original interior-ellipse access theorem. The sharpened envelope and general-residual results are proved in this note.
+
+\bibitem{bsa-dlmf}
+NIST Digital Library of Mathematical Functions.
+Section 4.36, especially Eq.~4.36.2: infinite product for $\cosh z$.
+\url{https://dlmf.nist.gov/4.36.E2}.
+
+\bibitem{bsa-ali}
+Alnur Ali, J. Zico Kolter, and Ryan J. Tibshirani.
+A Continuous-Time View of Early Stopping for Least Squares Regression.
+\emph{Proceedings of the Twenty-Second International Conference on Artificial Intelligence and Statistics},
+PMLR 89:1370--1378, 2019.
+\url{https://proceedings.mlr.press/v89/ali19a.html}.
+Cited for background on least-squares gradient flow, not for the sharp target-tail certificate established here.
+\end{thebibliography}
+
+% ===== END references.tex =====
+\end{document}

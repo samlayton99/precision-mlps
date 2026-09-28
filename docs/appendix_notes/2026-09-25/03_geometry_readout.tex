@@ -1,0 +1,499 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.95in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\allowdisplaybreaks
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}[proposition]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[proposition]{Remark}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\ip}[2]{\left\langle #1,#2\right\rangle}
+\newcommand{\range}{\operatorname{range}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\sech}{\operatorname{sech}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\src}[1]{\begin{quote}\small\raggedright\path{#1}\end{quote}}
+
+\title{Geometry, Readout Fitting, and Finite-Time Slope Motion}
+\author{}
+\date{Section 3 source note 3 --- 25 September 2026}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Geometry, readout fitting, and slope motion}
+\fancyhead[R]{\small Section 3 source note 3}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}\setlength{\emergencystretch}{2em}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For a network that is linear in its readout, squared training loss separates exactly into the best error available at the current geometry and the error from an unfinished readout fit. The geometry gradient admits a second, different decomposition according to whether prediction changes lie inside or outside the readout span. We derive both decompositions, their relationship, and the local Hessian of the exact readout-profiled loss. We then prove continuous and discrete bounds on raw-slope travel, using either the accumulated residual or the loss dissipated by gradient descent. These results constrain specified dynamics on a finite horizon. They do not establish that joint training must fail, that useful geometry information disappears, or that the scales of one approximation construction are necessary for every accurate network.
+\end{abstract}
+
+\section{Model, normalization, and the question being answered}
+
+Consider the one-hidden-layer network
+\begin{equation}
+ f_{\theta,v}(x)=d+\sum_{j=1}^{W}c_j\tanh(a_jx+b_j),
+ \qquad \theta=(a,b)\in\R^{2W},\quad v=(d,c)\in\R^{W+1}.
+ \label{eq:model}
+\end{equation}
+The geometry parameters $\theta$ determine the features; the readout $v$ combines them. Fix samples $x_1,\ldots,x_n$, target values $g(x_i)$, and the normalized feature matrix and target vector
+\begin{equation}
+ A_{i0}=n^{-1/2},\qquad
+ A_{ij}(\theta)=n^{-1/2}\tanh(a_jx_i+b_j),\qquad
+ y_i=n^{-1/2}g(x_i).
+\end{equation}
+Thus the residual $r=Av-y$ has norm equal to the training root-mean-square error, and
+\begin{equation}
+ L(\theta,v)=\frac12\norm{r}^2
+ =\frac{1}{2n}\sum_{i=1}^{n}\bigl(f_{\theta,v}(x_i)-g(x_i)\bigr)^2.
+ \label{eq:loss}
+\end{equation}
+All vector norms and inner products are Euclidean unless stated otherwise. This normalization matters for both gradients and training times.
+
+For a nonzero slope, $\gamma_j=|a_j|$ is its inverse transition width and $z_j=-b_j/a_j$ is its center. If $h>0$ is a fixed reference center spacing, then $\lambda_j=h\gamma_j$ is dimensionless. A construction with a fixed positive $\lambda_j$ requires $\gamma_j$ of order $h^{-1}$. That is a property of the construction; it is not yet a necessary condition for accurate approximation by arbitrary parameters in~\eqref{eq:model}.
+
+The next three sections concern any smooth matrix-valued map $A(\theta)$, not only tanh. Statements about derivatives of a least-squares profile are made on an open neighborhood where $A$ has constant rank. Statements about raw-slope motion return to~\eqref{eq:model}. Raw $(a,b)$ descent and descent in centered $(\gamma,z)$ or log-scale coordinates have different metrics and must be kept separate.
+
+\section{Two exact decompositions, and why they differ}
+\subsection{The loss separates approximation from unfinished readout fitting}
+
+At a fixed geometry define the Moore--Penrose pseudoinverse $A^\dagger$, the orthogonal projector $P=AA^\dagger$ onto $\range(A)$, and
+\begin{equation}
+ v_*=A^\dagger y,\qquad
+ r_*=Av_*-y=-(I-P)y,\qquad
+ F(\theta)=\min_v L(\theta,v)=\frac12\norm{r_*}^2.
+ \label{eq:profile}
+\end{equation}
+The vector $v_*$ is the minimum-norm least-squares readout. It is one minimizer even when the coefficients are nonunique; the fitted predictions $Av_*=Py$ are always unique. Write $\delta v=v-v_*$. Since $A^Tr_*=0$,
+\begin{equation}
+ r=r_*+A\delta v,\qquad
+ \ip{r_*}{A\delta v}=0,
+ \qquad
+ \boxed{L=F+G,\quad G(\theta,v)=\frac12\norm{A\delta v}^2\geq0.}
+ \label{eq:FG}
+\end{equation}
+This is the Pythagorean identity for the exact feature span. The quantity $F$ is a sampled approximation floor with unrestricted coefficients, and $G$ is the remaining readout-fit gap. Neither quantity by itself controls error between the samples or the size and cancellation of the fitted coefficients.
+
+\subsection{The current geometry gradient separates by prediction span}
+
+For fixed $v$, let $J(v)\in\R^{n\times q}$, with $q=\dim(\theta)$, be the geometry Jacobian:
+\begin{equation}
+ J(v)u=\bigl(DA(\theta)[u]\bigr)v,
+ \qquad u\in\R^q.
+ \label{eq:J}
+\end{equation}
+It measures the first-order prediction change from a geometry displacement $u$ while keeping the readout fixed. Its columns in the tanh model contain the current coefficients $c_j$. Define
+\begin{equation}
+ C=A^\dagger J(v),\qquad Z=(I-P)J(v),\qquad
+ r_\perp=(I-P)r=r_*.
+\end{equation}
+Then $J(v)=AC+Z$ and $A^TZ=0$. Therefore
+\begin{align}
+ \nabla_vL&=A^Tr,\\
+ \nabla_\theta L
+ &=J(v)^TPr+J(v)^Tr_\perp\notag\\
+ &=\underbrace{C^T\nabla_vL}_{g_{\rm shared}}
+   +\underbrace{Z^Tr_\perp}_{g_{\rm outside}}.
+ \label{eq:span-gradient}
+\end{align}
+The first contribution uses residual within the current readout span. The second uses residual orthogonal to that span. The identity is valid at a single state without any local constant-rank assumption; differentiating $P$ is not needed.
+
+For a proposed geometry displacement $u$, the linear readout change $\delta v=-Cu$ cancels the in-span part $ACu$ of its prediction change. The remaining tangent is $Zu$. This is an infinitesimal compensation statement. A large compensating readout change may be undesirable, and the calculation says nothing about a finite displacement or whether a particular component increases $\gamma_j$.
+
+\subsection{The envelope gradient uses the solved readout}
+
+Assume now that $A$ is continuously differentiable and has constant rank in a neighborhood. Its pseudoinverse, $v_*$, and $r_*$ are then differentiable there. Use stars to mark the solved-readout tangent maps:
+\begin{equation}
+ J_*=J(v_*),\qquad Z_*=(I-P)J_*.
+\end{equation}
+For a direction $u$, differentiating $F=\norm{r_*}^2/2$ gives
+\begin{align}
+ DF[u]
+ &=\ip{r_*}{DA[u]v_*+A\,Dv_*[u]}\notag\\
+ &=\ip{r_*}{J_*u},\qquad
+ \boxed{\nabla F=J_*^Tr_*=Z_*^Tr_*.}
+ \label{eq:envelope}
+\end{align}
+The derivative of the optimal readout disappears because $A^Tr_*=0$, not because $v_*$ is treated as a constant during the entire optimization process.
+
+The full residual derivative retains another term. Projecting the differentiated residual outside $\range(A)$ gives $(I-P)Dr_*[u]=Z_*u$. Differentiating the normal equations yields
+\begin{equation}
+ A^TDr_*[u]=-DA[u]^Tr_*.
+\end{equation}
+Since $(A^\dagger)^TA^T=P$, these two components combine to give
+\begin{equation}
+ \boxed{Dr_*[u]=Z_*u-(A^\dagger)^TDA[u]^Tr_*.}
+ \label{eq:residual-derivative}
+\end{equation}
+The second term lies in $\range(A)$ and is orthogonal to $r_*$. It vanishes from~\eqref{eq:envelope}, but generally not from a residual Jacobian or its Gauss--Newton matrix. It is zero at an exact fit.
+
+Linearity of $J(v)$ in $v$ now shows exactly why the two decompositions do not coincide. Define
+\begin{equation}
+ \Delta g=J(v-v_*)^Tr_*.
+\end{equation}
+Since $J(v)=J_*+J(v-v_*)$ and $\nabla_\theta G=\nabla_\theta L-\nabla F$,
+\begin{equation}
+ \boxed{\nabla F=g_{\rm outside}-\Delta g,\qquad
+ \nabla_\theta G=g_{\rm shared}+\Delta g.}
+ \label{eq:mismatch}
+\end{equation}
+Consequently, a large ratio $\norm{\nabla G}/\norm{\nabla F}$ does not directly measure suppression by $I-P$. Amplifying $\nabla F$ and amplifying the current $g_{\rm outside}$ define different geometry updates. The terms coincide at $v=v_*$, or under the weaker condition $\Delta g=0$; neither condition holds automatically during joint training.
+
+An exact readout solve also changes both factors of the geometry gradient. At fixed geometry, with pre-solve and post-solve quantities labeled $-$ and $+$,
+\begin{equation}
+ J_+^Tr_+-J_-^Tr_-
+ =J_-^T(r_+-r_-)+(J_+-J_-)^Tr_+.
+ \label{eq:readout-replacement}
+\end{equation}
+The first term changes the residual; the second changes the tangent map through the coefficients. A post-solve gradient change cannot in general be attributed only to residual depletion.
+
+\section{What joint training says about improvement of the geometry}
+
+Let $h_F=\nabla F$ and $h_G=\nabla_\theta G$. Under joint gradient flow with positive constant block rates,
+\begin{equation}
+ \dot\theta=-\eta_\theta(h_F+h_G),\qquad
+ \dot v=-\eta_v\nabla_vL,
+\end{equation}
+the profile depends on time only through $\theta$. Thus
+\begin{equation}
+ \boxed{\dot F=-\eta_\theta\bigl(\norm{h_F}^2+\ip{h_F}{h_G}\bigr).}
+ \label{eq:Fdot}
+\end{equation}
+If $h_F\ne0$, the instantaneous approximation floor increases precisely when
+\begin{equation}
+ \ip{h_F}{h_G}<-\norm{h_F}^2.
+\end{equation}
+Alignment helps the profile decrease; orthogonality leaves its instantaneous decrease equal to $-\eta_\theta\norm{h_F}^2$. A much larger, mildly opposing $h_G$ can reverse that decrease without nearly canceling the total gradient. Norm dominance alone does not determine the sign.
+
+Meanwhile the actual training objective satisfies
+\begin{equation}
+ \dot L=-\eta_\theta\norm{\nabla_\theta L}^2
+          -\eta_v\norm{\nabla_vL}^2\leq0.
+\end{equation}
+There is therefore no contradiction in improving the current fit while worsening the best fit available at the evolving geometry. Conversely, descent of $F$ need not increase any chosen scale: better approximation can involve decreasing scales or moving centers.
+
+The residual equation gives a related distinction. Along joint flow,
+\begin{equation}
+ \dot r=-\bigl(\eta_vAA^T+\eta_\theta J(v)J(v)^T\bigr)r.
+ \label{eq:joint-r}
+\end{equation}
+Both matrices vary along the trajectory. If geometry is frozen and only the readout moves, $A$ and $P$ are constant and the exact solution is
+\begin{equation}
+ r(t)=r_\perp+e^{-\eta_v AA^Tt}Pr(0).
+ \label{eq:frozen-readout}
+\end{equation}
+For $A=U\Sigma V^T$, a represented residual component along $u_j$ decays as $e^{-\eta_v\sigma_j^2t}$. Discrete readout gradient descent multiplies it by $1-\eta_k\sigma_j^2$ at step $k$. This precisely describes frozen-geometry readout fitting. Applying it as an explanation of joint training requires control of the changing geometry, coefficients, and residual directions.
+
+\section{Independent geometry sensitivity and its local square}
+\subsection{Separate tangent size, compensation, and signed alignment}
+
+At an exact readout-profiled state, choose a nonzero geometry direction $u$. When the denominators below are nonzero, define
+\begin{equation}
+ R_* = \norm{r_*},\quad S_u=\norm{J_*u},\quad
+ \chi_u=\frac{\norm{Z_*u}}{\norm{J_*u}},\quad
+ \mathcal A_u=-\frac{\ip{r_*}{Z_*u}}{\norm{r_*}\norm{Z_*u}}.
+\end{equation}
+The projector is a contraction, so $0\leq\chi_u\leq1$, while $-1\leq\mathcal A_u\leq1$. Equation~\eqref{eq:envelope} becomes
+\begin{equation}
+ -DF[u]=R_*S_u\chi_u\mathcal A_u.
+ \label{eq:factors}
+\end{equation}
+If a denominator vanishes, the directional derivative is zero and the corresponding ratio need not be defined. A small derivative can reflect a small residual, a weak raw tangent, a tangent largely reproducible by the readout, poor alignment, or several of these together. Equation~\eqref{eq:factors} is a factorization, not evidence that one factor dominates an observed trajectory.
+
+For a matrix $B$ of selected geometry tangents, let $B=U_B\Sigma_BV_B^T$ be its thin SVD over its nonzero singular directions. Then
+\begin{equation}
+ \bigl((I-P)B\bigr)^T\bigl((I-P)B\bigr)
+ =V_B\Sigma_B\bigl(I-U_B^TPU_B\bigr)\Sigma_BV_B^T.
+ \label{eq:compensation-matrix}
+\end{equation}
+The singular values in $\Sigma_B$ measure raw response. The middle matrix measures the additional loss under projection; its eigenvalues are squared sines of the principal angles between the tangent span and readout span, with the usual unit eigenvalues for unmatched tangent directions. Normalizing the raw tangent magnitudes does not remove this additional loss. Neither factor alone establishes slow fitting of a particular target, which must load onto the affected directions.
+
+\subsection{Hessian of the exact profile at an exact fit}
+
+\begin{proposition}[Local squared sensitivity]
+Suppose $A$ is twice continuously differentiable and has constant rank on a neighborhood of $\bar\theta$, and $r_*(\bar\theta)=0$. Set $\bar Z=Z_*(\bar\theta)$. Then
+\begin{equation}
+ \nabla^2F(\bar\theta)=\bar Z^T\bar Z.
+ \label{eq:hessian}
+\end{equation}
+For $e=\theta-\bar\theta$ sufficiently small,
+\begin{equation}
+ r_*(\bar\theta+e)=\bar Ze+O(\norm{e}^2),\qquad
+ F(\bar\theta+e)=\frac12\norm{\bar Ze}^2+O(\norm{e}^3).
+\end{equation}
+\end{proposition}
+\begin{proof}
+At zero residual,~\eqref{eq:residual-derivative} gives $Dr_*(\bar\theta)=\bar Z$. For a least-squares objective,
+\begin{equation}
+ \nabla^2F=(Dr_*)^TDr_*+\sum_{i=1}^{n}r_{*,i}\nabla^2r_{*,i}.
+\end{equation}
+The second term vanishes at $\bar\theta$. Taylor expansion of the twice continuously differentiable residual gives the stated expansions.
+\end{proof}
+
+If $\bar Zv_j=s_ju_j$ is a singular pair, the linearized unit-rate profiled flow and its constant-step gradient descent discretization obey
+\begin{equation}
+ \dot e_j=-s_j^2e_j,\qquad
+ e_{j,k+1}=(1-\eta s_j^2)e_{j,k},\qquad e_j=\ip{e}{v_j}.
+ \label{eq:squared-rate}
+\end{equation}
+Forward sensitivity contributes one factor $s_j$ to the residual and the backward gradient contributes the other. On the subspace of positive singular values, the condition number of $\bar Z^T\bar Z$ is the square of the corresponding condition number of $\bar Z$. Zero singular values are unidentifiable at this order. A small positive $s_j$ matters only if the initial perturbation or residual has a component in that mode.
+
+These are local statements about exact variable projection. They are not the Hessian of the full joint parameter problem, nor a rate theorem far from a fitted state. When $A$ has full row rank in a neighborhood, $P=I$ and $F$ is identically zero there; accordingly $Z_*=0$. An unrestricted profile can therefore conceal practical difficulty from enormous coefficients or poor off-sample accuracy.
+
+There is also an exact rate identity away from zero residual. For unit-rate profiled flow $\dot\theta=-\nabla F$, on any constant-rank interval with $R_*>0$,
+\begin{equation}
+ -\frac{\dd}{\dd t}\log R_*
+ =\frac{\norm{\nabla F}^2}{R_*^2}
+ =\norm{Z_*^T\widehat r_*}^2,
+ \qquad \widehat r_*=r_*/R_*.
+ \label{eq:relative-rate}
+\end{equation}
+Indeed $R_*\dot R_*=\dot F=-\norm{\nabla F}^2$. If $\norm{Z_*^T\widehat r_*}\leq\kappa$ along the entire interval, integrating gives
+\begin{equation}
+ R_*(T)\geq R_*(0)e^{-\kappa^2T},\qquad
+ T\geq\kappa^{-2}\log\frac{R_*(0)}{\varepsilon}
+ \quad\text{if }R_*(T)\leq\varepsilon<R_*(0).
+\end{equation}
+A small absolute gradient does not alone imply slow relative convergence. The residual-normalized quantity in~\eqref{eq:relative-rate} must remain small; an endpoint diagnostic supplies no such persistence guarantee. The identity is not~\eqref{eq:Fdot} for joint flow.
+
+\subsection{A tanh scale tangent has a controlled readout-like term}
+
+Temporarily use a positive centered scale $\gamma_j$ and fixed center $z_j$. Define normalized sample vectors
+\begin{equation}
+ (\phi_j)_i=\frac{\tanh(\gamma_j u_i)}{\sqrt n},\qquad
+ u_i=x_i-z_j,\qquad
+ M_{3,j}=\left(\frac1n\sum_i|u_i|^6\right)^{1/2}.
+\end{equation}
+For $\zeta_j=\partial_{\gamma_j}\phi_j-\phi_j/\gamma_j$, one has the global bound
+\begin{equation}
+ \norm{\zeta_j}\leq\frac23\gamma_j^2M_{3,j}.
+ \label{eq:tanh-remainder}
+\end{equation}
+To see this, put $H(q)=q\sech^2q-\tanh q$. Then $H(0)=0$ and $H'(q)=-2q\sech^2q\tanh q$. Since $|\tanh q|\leq|q|$ and $\sech^2q\leq1$, integration gives $|H(q)|\leq2|q|^3/3$. Apply this coordinatewise to $\zeta_{j,i}=H(\gamma_ju_i)/(\gamma_j\sqrt n)$.
+
+The current centered-scale derivative consequently satisfies
+\begin{equation}
+ \partial_{\gamma_j}L
+ =\frac{c_j}{\gamma_j}\partial_{c_j}L+c_j\ip{r}{\zeta_j},
+ \qquad
+ \norm{(I-P)c_j\partial_{\gamma_j}\phi_j}
+ \leq\frac23|c_j|\gamma_j^2M_{3,j}.
+ \label{eq:tanh-compensation}
+\end{equation}
+Here $(I-P)\phi_j=0$ because the feature is a column of $A$. In the small-preactivation regime, the expansion makes the first nontrivial remainder explicit:
+\begin{equation}
+ \partial_\gamma\tanh(\gamma u)
+ =\frac{\tanh(\gamma u)}{\gamma}
+   -\frac23\gamma^2u^3+O(\gamma^4|u|^5).
+\end{equation}
+The leading scale change can be reproduced by the readout even when the activation derivative is close to one. Further projection may reduce the remainder. The bound does not determine its useful sign, bound fitted $c_j$, or prove that the small-preactivation regime persists. A centered-scale derivative is also not a raw $a_j$ derivative at fixed $b_j$.
+
+\section{Finite-horizon budgets for raw-slope motion}
+\subsection{A direct residual and readout budget}
+
+Return to raw $(a,b)$ coordinates and suppose $|x_i|\leq X$. Let $R=\norm{r}$. Direct differentiation and Cauchy--Schwarz give
+\begin{align}
+ \partial_{a_j}L
+ &=\frac{c_j}{n}\sum_i\bigl(f(x_i)-g(x_i)\bigr)x_i\sech^2(a_jx_i+b_j),\\
+ |\partial_{a_j}L|&\leq X|c_j|R.
+ \label{eq:raw-gradient-bound}
+\end{align}
+Hence ordinary unit-rate raw-geometry flow, even with jointly moving readouts and biases, satisfies
+\begin{equation}
+ |a_j(T)-a_j(0)|\leq X\int_0^T|c_j(t)|R(t)\dd t.
+ \label{eq:residual-budget-flow}
+\end{equation}
+For simultaneous gradient descent with geometry step $\eta_k>0$,
+\begin{equation}
+ |a_{j,K}-a_{j,0}|\leq X\sum_{k<K}\eta_k|c_{j,k}|R_k.
+ \label{eq:residual-budget-discrete}
+\end{equation}
+These also bound $\bigl||a_j(T)|-|a_j(0)|\bigr|$, by the reverse triangle inequality. The sum of absolute slope increments, or the continuous slope path length, obeys the same bound. No loss-descent assumption is needed for these two inequalities; they follow directly from the updates.
+
+If $|c_j(t)|\leq C_{\rm out}$ and $R(t)\leq R_0$ throughout the interval, reaching $|a_j(T)|\geq\Gamma>|a_j(0)|$ requires
+\begin{equation}
+ T\geq\frac{\Gamma-|a_j(0)|}{XC_{\rm out}R_0}.
+\end{equation}
+For $\Gamma=\lambda_*/h$ with fixed positive $\lambda_*$ and width-independent constants, this is order $h^{-1}$. If the actual readouts satisfy the stronger bound $|c_j|\leq C_0h$, a fixed increase in $\lambda_j=h|a_j|$ requires order $h^{-2}$ time. Coefficient scaling in one construction is not automatically a bound on trained readouts.
+
+More specifically, if $R(t)\leq B e^{-\mu t}+R_{\rm floor}$ with $\mu>0$, then
+\begin{equation}
+ |a_j(T)-a_j(0)|\leq XC_{\rm out}
+ \left[\frac{B}{\mu}(1-e^{-\mu T})+TR_{\rm floor}\right].
+\end{equation}
+An integrable residual with bounded readouts gives finite total travel. A nonzero floor permits continued travel and gives only a finite-horizon restriction. All residuals here are from the actual optimized objective, not an evaluation-only readout refit.
+
+\subsection{An energy budget that needs no readout bound}
+
+\begin{proposition}[Continuous loss-dissipation bound]
+Let $p$ contain all trainable raw parameters, including the slope subvector $a$. Suppose a differentiable nonnegative objective $L$ and a solution of $\dot p=-\nabla L(p)$ are defined on $[0,T]$, with the chain rule and the integrals below valid. Then
+\begin{equation}
+ \left(\int_0^T\norm{\dot a(t)}\dd t\right)^2
+ \leq T\bigl(L(p(0))-L(p(T))\bigr)
+ \leq TL(p(0)).
+ \label{eq:energy-flow}
+\end{equation}
+In particular the same upper bound applies to $\norm{a(T)-a(0)}^2$.
+\end{proposition}
+\begin{proof}
+The energy identity and Cauchy--Schwarz give
+\begin{align}
+ L(p(0))-L(p(T))&=\int_0^T\norm{\nabla L(p(t))}^2\dd t
+ =\int_0^T\norm{\dot p(t)}^2\dd t,\\
+ \left(\int_0^T\norm{\dot a(t)}\dd t\right)^2
+ &\leq T\int_0^T\norm{\dot a(t)}^2\dd t
+ \leq T\int_0^T\norm{\dot p(t)}^2\dd t.
+\end{align}
+Nonnegativity supplies the last inequality in~\eqref{eq:energy-flow}.
+\end{proof}
+
+Thus a slope target set at Euclidean distance at least $D>0$ from $a(0)$ cannot be reached before $D^2/L(p(0))$, when $L(p(0))>0$. Frozen parameter blocks may simply be omitted from $p$. If the initial loss is zero, differentiability and nonnegativity imply zero gradient; a well-posed smooth gradient flow stays there.
+
+\begin{proposition}[Discrete loss-dissipation bound]
+Consider simultaneous gradient descent,
+\begin{equation}
+ p_{k+1}=p_k-\eta_k\nabla L(p_k),\qquad \eta_k>0,
+\end{equation}
+with $L_k=L(p_k)\geq0$. Assume each step satisfies, for one fixed $\alpha>0$,
+\begin{equation}
+ L_k-L_{k+1}\geq\alpha\eta_k\norm{\nabla L(p_k)}^2.
+ \label{eq:suff-descent}
+\end{equation}
+Write $S_K=\sum_{k<K}\eta_k$. Then
+\begin{equation}
+ \left(\sum_{k<K}\norm{a_{k+1}-a_k}\right)^2
+ \leq\frac{S_K}{\alpha}(L_0-L_K)
+ \leq\frac{S_KL_0}{\alpha}.
+ \label{eq:energy-discrete}
+\end{equation}
+\end{proposition}
+\begin{proof}
+Weighted Cauchy--Schwarz and~\eqref{eq:suff-descent} imply
+\begin{align}
+ \left(\sum_{k<K}\eta_k\norm{\nabla_aL(p_k)}\right)^2
+ &\leq S_K\sum_{k<K}\eta_k\norm{\nabla_aL(p_k)}^2\notag\\
+ &\leq\frac{S_K}{\alpha}\sum_{k<K}(L_k-L_{k+1})
+ =\frac{S_K}{\alpha}(L_0-L_K).
+\end{align}
+The left side is the squared slope path length for these updates.
+\end{proof}
+
+A sufficient condition for~\eqref{eq:suff-descent} is a $\beta$-Lipschitz gradient on every update segment and $\eta_k\leq1/\beta$. Indeed the descent lemma gives
+\begin{equation}
+ L_{k+1}\leq L_k-\eta_k\left(1-\frac{\beta\eta_k}{2}\right)
+ \norm{\nabla L(p_k)}^2,
+\end{equation}
+so $\alpha=1/2$ works. A global uniform $\beta$ is not automatic for the joint tanh/readout objective. Observed monotone loss alone does not establish a uniform positive $\alpha$.
+
+Reaching slope distance $D$ therefore requires
+\begin{equation}
+ S_K\geq\frac{\alpha D^2}{L_0},\qquad
+ K\geq\frac{\alpha D^2}{\eta L_0}
+ \quad\text{at constant step }\eta.
+ \label{eq:effective-time}
+\end{equation}
+The accumulated learning rate, not iteration count alone, determines this bound. Restarting the proof at a later time or step gives the sharper remaining budgets
+\begin{equation}
+ \norm{a(t_f+H)-a(t_f)}^2\leq H L(t_f),\qquad
+ \norm{a_K-a_{k_f}}^2\leq
+ \frac{L_{k_f}}{\alpha}\sum_{k=k_f}^{K-1}\eta_k.
+ \label{eq:late-budget}
+\end{equation}
+The smaller actual loss after fitting leaves less raw-slope travel over a fixed future budget. Replacing $L(t_f)$ by the lower evaluation-only floor $F(\theta(t_f))$ would be invalid for joint gradient descent. Genuine profiled flow has its own energy identity for its own objective $F$.
+
+\subsection{When a target set gives a width-dependent bound}
+
+Suppose every initial slope obeys $|a_j(0)|\leq g_0<\Gamma$, and the specified target set requires at least $M$ slopes to have magnitude at least $\Gamma$. At any target endpoint, each of those $M$ coordinates has moved by at least $\Gamma-g_0$, irrespective of sign changes. Therefore
+\begin{equation}
+ D^2\geq M(\Gamma-g_0)^2.
+ \label{eq:many-slopes}
+\end{equation}
+The subset may be chosen at the endpoint because the initial bound holds for every coordinate. A bound on the mean initial scale does not supply this premise. With nonuniform initial magnitudes, one can instead use the minimum sum of the appropriate squared positive gaps over eligible endpoint subsets.
+
+If $h^{-1}=\Theta(W)$, $\Gamma=\lambda_*/h$, $g_0=O(1)$, $L_0=O(1)$, and $M=\Theta(W)$, then~\eqref{eq:many-slopes} gives $D^2=\Omega(W^3)$. The continuous necessary time is $\Omega(W^3)$; the discrete necessary accumulated rate has this order if $\alpha$ is bounded below independently of $W$. Requiring only one such slope gives $\Omega(W^2)$. At constant learning rate the iteration lower bound includes the additional factor $\eta^{-1}$.
+
+These are conditional bounds for reaching the stated set, not an approximation lower bound. The center spacing, halo convention, initialization, loss normalization, coordinate metric, and number of required large slopes are all premises. A proof that a particular construction uses many large slopes does not prove that every accurate representation must reach this set.
+
+\subsection{The metric and descent constant cannot be suppressed}
+
+For a constant positive diagonal preconditioner $D$, flow $\dot p=-D\nabla L$ obeys
+\begin{equation}
+ \int_0^T\norm{\dot p}_{D^{-1}}^2\dd t=L_0-L_T,
+ \qquad
+ \norm{p(T)-p(0)}_{D^{-1}}^2\leq T(L_0-L_T),
+\end{equation}
+where $\norm{x}_{D^{-1}}^2=x^TD^{-1}x$. For steps $p_{k+1}=p_k-\eta_kD\nabla L_k$, the corresponding discrete proof assumes
+$L_k-L_{k+1}\geq\alpha\eta_k\nabla L_k^TD\nabla L_k$ and uses the same weighted norm. Increasing a slope learning-rate factor reduces the metric cost of raw-slope movement.
+
+If the full update is $p_{k+1}=p_k-D_k\nabla L_k$ with positive diagonal $D_k$, assume instead $L_k-L_{k+1}\geq\alpha\nabla L_k^TD_k\nabla L_k$. Writing $d_{a,k}$ for the largest diagonal entry in its slope block, Cauchy--Schwarz gives
+\begin{equation}
+ \left(\sum_{k<K}\norm{a_{k+1}-a_k}\right)^2
+ \leq\frac{L_0-L_K}{\alpha}\sum_{k<K}d_{a,k}.
+\end{equation}
+Indeed $\norm{D_{a,k}\nabla_aL_k}^2\leq d_{a,k}\nabla_aL_k^TD_{a,k}\nabla_aL_k$, after which the previous weighted argument applies.
+
+Euclidean descent in $\rho=\log\gamma$ pays distance in $\rho$, not in $\gamma$; centered flow then has $\dot\gamma=-\gamma^2\partial_\gamma L$. A single tied scale pays one scalar distance, not the sum over its displayed copies. Summed and averaged gradients for that tied parameter use different effective rates. Momentum, Adam, readout resets, and steps lacking the specified descent inequality do not inherit the ordinary-gradient-descent bounds automatically.
+
+Nor does violating the sufficient condition $\alpha=1/2$ prove instability. For $L(p)=\beta p^2/2$, constant-step gradient descent has exact descent coefficient $1-\eta\beta/2$. At $\eta=1.9/\beta$, it is asymptotically stable and decreases loss, but its coefficient is $0.05$. A faster trajectory may violate a chosen descent constant, metric, rate budget, or distance premise without being unstable.
+
+Finally, finite integrated squared speed does not imply finite total path length on an infinite interval. The $\sqrt{T}$ bound in~\eqref{eq:energy-flow} grows with $T$. It cannot establish permanent nonreachability without additional information.
+
+\section{Numerical profiles and the scope of a possible failure theorem}
+\subsection{A truncated solve is a different reference objective}
+
+Suppose $A=U\Sigma V^T$ and a threshold $\tau$ selects a retained set of positive singular values. Let
+\begin{equation}
+ P_\tau=U_\tau U_\tau^T,\qquad
+ v_\tau=V_\tau\Sigma_\tau^{-1}U_\tau^Ty,\qquad
+ F_\tau=\frac12\norm{(I-P_\tau)y}^2.
+\end{equation}
+Then $Av_\tau=P_\tau y$, but in general $A^T(Av_\tau-y)\ne0$: discarded nonzero directions have not been minimized over. Thus $F_\tau\geq F$, and $G_\tau=L-F_\tau$ can be negative if current coefficients fit discarded directions better than the truncated reference.
+
+On a region where the retained subspace is separated from its complement and varies smoothly, differentiation gives
+\begin{equation}
+ DF_\tau[u]
+ =-\ip{(I-P_\tau)y}{DP_\tau[u]y}
+ =\ip{r_\tau}{DA[u]v_\tau+A\,Dv_\tau[u]},
+ \qquad r_\tau=Av_\tau-y.
+\end{equation}
+The second term cannot generally be discarded. Substituting $v_\tau$ into the exact envelope formula~\eqref{eq:envelope} would silently omit motion of the truncated coefficient space. Hard threshold crossings may destroy differentiability and introduce jumps. Constant retained rank at saved checkpoints does not prove a smooth path between them or identify the exact rank of $A$.
+
+A regularized solve likewise changes the objective. For example, the envelope formula for the ridge profile applies to $\min_v\{L+\lambda\norm{v}^2/2\}$, not automatically to the unregularized residual evaluated at its optimizer. An evaluation-only solve diagnoses available fitting quality under its solver convention; it is not a training step unless those coefficients are installed in the model.
+
+\subsection{What would complete a joint-training obstruction}
+
+The source evidence supports readout-dominated progress in some baseline runs and shows that changes in rates or geometry objectives can produce useful approximation improvements. It does not establish universal cancellation, disappearance of useful geometry gradients, or a single persistent cause of a plateau. The exact identities above accommodate both improvement and deterioration of the profile under joint descent.
+
+A finite-budget failure theorem would need two compatible ingredients. First, establish an error lower bound throughout a specified region of geometry, using the target, sampling, and any coefficient or numerical-stability constraints that define admissible accuracy. Second, prove that the chosen dynamics remain inside that region for the claimed horizon, using a drift budget or a persistent sensitivity bound with justified constants. Distance to one successful construction cannot replace the first ingredient because a different accurate representation may lie closer.
+
+A causal claim about readout depletion requires more: an initially useful geometry direction, removal of its driving residual by readout adaptation before sufficient movement, and control of the remaining directions afterward. The frozen-matrix recurrence does not alone establish this sequence under joint training. The material here supplies exact components and explicit conditional bounds for such an argument; it does not supply the missing global theorem.
+
+\section*{Source provenance}
+This note reorganizes existing project mathematics and incorporates the later audits' corrections. It introduces no training runs or new experimental claims. Paths below are relative to the repository root.
+\begin{itemize}
+\item The expanded September 8 handoff supplies the current-readout projection, exact variable-projection derivative, local squared-sensitivity result, raw residual budget, and tangent compensation factorization (Sections 3--6):
+\src{docs/appendix_materials/2026-09-25/sources/attachments/gamma_barrier_handoff_v2.pdf}
+\item The shorter competition note supplies the controlled tanh remainder and residual-depletion interpretation (Sections 2, 3, and 5):
+\src{docs/appendix_materials/2026-09-25/sources/attachments/readout_scale_competition.pdf}
+\item The projection audit establishes the distinction between the $F/G$ and current-span decompositions, documents numerical-profile caveats, and restricts causal interpretations:
+\src{docs/gamma_barrier_synthesis/projection_audit.md}
+\item The energy audit supplies the continuous and discrete drift budgets, width scaling under a specified slope target set, metric qualifications, and the distinction between sufficient descent and stability:
+\src{docs/gamma_barrier_synthesis/energy_bound_audit.md}
+\item The framework sets out the joint-flow derivative of $F$ and the remaining proof obligations for an accuracy-versus-training-time claim:
+\src{docs/gamma_barrier_synthesis/theory_framework.md}
+\item The September 19 ledger records which empirical interpretations survive later interventions and which remain unestablished; see especially Sections 2, 5, and 6:
+\src{docs/scale_mismatch_evidence_ledger.md}
+\end{itemize}
+The older handoff attributes the variable-projection identities to D.~P.~O'Leary and B.~W.~Rust, \emph{Variable Projection for Nonlinear Least Squares Problems}, Computational Optimization and Applications \textbf{54} (2013), 579--593. The derivations required here are given explicitly above. Fourier escape estimates and fixed-geometry spectral timing belong to the companion source material and are not prerequisites for the finite-horizon energy bounds.
+
+\end{document}

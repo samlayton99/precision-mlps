@@ -1,0 +1,467 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[letterpaper,margin=0.95in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\sech}{\operatorname{sech}}
+\newcommand{\csch}{\operatorname{csch}}
+\newcommand{\sinc}{\operatorname{sinc}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\title{Neighboring readouts, conditioning, and the scope of a slope barrier}
+\author{}
+\date{Section 3 source note 5 --- 25 September 2026}
+
+\usepackage{microtype,fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Neighboring readouts and conditioning}
+\fancyhead[R]{\small Section 3 source note 5}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[2]
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For an equal-slope tanh dictionary on a uniform lattice, neighboring
+differences have whole-line Riesz bounds independent of the number of
+features after a common spatial scale is removed.  Physical tanh
+readouts on the same zero-sum function space incur an additional
+condition-number factor proportional to width.  This improvement leaves
+exponential small-slope attenuation intact.  We prove these statements,
+identify a distinct bias--halo obstruction on a finite observation
+window, and record the exact gradient metric induced by invertible
+readout coordinates.  These results supply controls for interpreting a
+slope-dependent optimization barrier; they do not establish a universal
+training lower bound or an error floor.
+\end{abstract}
+
+\section{Dictionary, norm, and the comparison being made}
+
+Fix a center spacing $h>0$ and a dimensionless slope $\lambda>0$.
+The physical slope is $\gamma=\lambda/h$.  For $j=0,\ldots,m$, define
+\[
+ \phi_j(x)=\tanh\!\left(\lambda\left(\frac{x}{h}-j\right)\right),
+ \qquad \psi_j=\phi_j-\phi_{j+1}\quad(0\le j<m).
+\]
+The neighboring-readout map is
+\[
+ B_m:\R^m\longrightarrow L^2(\R,dx),
+ \qquad B_mq=\sum_{j=0}^{m-1}q_j\psi_j.
+\]
+Coefficients have the Euclidean norm.  Singular values refer to this
+coefficient norm and the stated function norm; their ratio is denoted
+$\kappa$.  Thus a Gram matrix has condition number $\kappa^2$.
+Using $dx/2$ instead of $dx$ multiplies all squared singular values by
+$1/2$ and leaves $\kappa$ unchanged.
+
+An individual $\phi_j$ is not in $L^2(\R)$, because it has nonzero tails.
+The physical readout comparison must therefore use
+\[
+ \mathcal W_m=\left\{w\in\R^{m+1}:\sum_{j=0}^m w_j=0\right\},
+ \qquad P_mw=\sum_{j=0}^{m}w_j\phi_j.
+\]
+Every such combination has exponentially decaying tails.  The maps
+$P_m$ and $B_m$ represent exactly the same functions, with different
+coefficient norms.  Neither includes a bias or an unconstrained final
+tanh anchor.  Those columns require a finite observation domain and a
+separate analysis below.
+
+\section{A width-independent whole-line bound}
+
+\begin{theorem}[Explicit Riesz bounds]\label{thm:riesz}
+For every $m\ge1$, $h>0$, $\lambda>0$, and $q\in\R^m$,
+\begin{equation}\label{eq:riesz}
+ h a_\lambda\norm{q}_2^2
+ \le \norm{B_mq}_{L^2(\R)}^2
+ \le 4h\norm{q}_2^2,
+ \qquad
+ a_\lambda=\frac{4\pi^2}
+ {\lambda^2\sinh^2(\pi^2/(2\lambda))}.
+\end{equation}
+Consequently,
+\begin{equation}\label{eq:C}
+ \sqrt{h a_\lambda}\le \sigma_{\min}(B_m)
+ \le \sigma_{\max}(B_m)\le2\sqrt h,
+ \qquad
+ \kappa(B_m)\le C_\lambda
+ :=\frac{\lambda}{\pi}\sinh\!\left(\frac{\pi^2}{2\lambda}\right).
+\end{equation}
+In particular, the bounds for $B_m/\sqrt h$ do not depend on width.
+\end{theorem}
+
+\begin{proof}
+Use the dimensionless coordinate $t=x/h$.  Introduce the probability
+density and the piecewise constant coefficient function
+\[
+ \rho_\lambda(t)=\frac{\lambda}{2}\sech^2(\lambda t),
+ \qquad p_q(t)=\sum_{j=0}^{m-1}q_j\mathbf 1_{[j,j+1]}(t).
+\]
+Integration of the tanh derivative gives the exact identity
+\begin{equation}\label{eq:convolution}
+ (B_mq)(ht)=2(\rho_\lambda*p_q)(t).
+\end{equation}
+Since $\norm{\rho_\lambda}_1=1$ and
+$\norm{p_q}_2^2=\norm{q}_2^2$, the $L^1$--$L^2$ convolution inequality
+proves the upper bound in \eqref{eq:riesz}.
+
+Use the Fourier convention
+$\widehat f(\omega)=\int_\R f(t)e^{-i\omega t}\,dt$.
+The transform of the smoothing density is
+\begin{equation}\label{eq:multiplier}
+ \widehat\rho_\lambda(\omega)=M_\lambda(\omega)
+ =\frac{\pi\omega/(2\lambda)}{\sinh(\pi\omega/(2\lambda))},
+ \qquad M_\lambda(0)=1.
+\end{equation}
+For completeness, setting $u=e^{2\lambda t}$ and
+$a=\omega/(2\lambda)$ reduces the transform to
+\[
+ \int_0^\infty\frac{u^{-ia}}{(1+u)^2}\,du
+ =\Gamma(1-ia)\Gamma(1+ia)
+ =\frac{\pi a}{\sinh(\pi a)}.
+\]
+The first equality is the beta integral and the second is the gamma
+reflection identity, continued at $a=0$.
+
+Writing $\sinc u=\sin(u)/u$, with $\sinc0=1$, we also have
+\[
+ \widehat p_q(\omega)=e^{-i\omega/2}\sinc(\omega/2)Q(\omega),
+ \qquad Q(\omega)=\sum_{j=0}^{m-1}q_je^{-ij\omega}.
+\]
+For $|\omega|\le\pi$, $\sinc(\omega/2)\ge2/\pi$ and
+$M_\lambda(\omega)\ge M_\lambda(\pi)$: the function $v/\sinh v$
+decreases for $v\ge0$.  Plancherel's identity, restriction to this
+frequency interval, and Parseval's identity for $Q$ give
+\begin{align*}
+ \frac1h\norm{B_mq}_2^2
+ &=\frac4{2\pi}\int_\R
+ M_\lambda(\omega)^2\sinc^2(\omega/2)|Q(\omega)|^2\,d\omega\\
+ &\ge\frac{16}{\pi^2}M_\lambda(\pi)^2
+ \frac1{2\pi}\int_{-\pi}^{\pi}|Q(\omega)|^2\,d\omega
+ =a_\lambda\norm{q}_2^2.
+\end{align*}
+Taking square roots and ratios proves \eqref{eq:C}.
+\end{proof}
+
+The word ``Riesz'' means precisely the two norm bounds
+\eqref{eq:riesz}.  They hold for every finite coefficient sequence,
+including sequences placed at any integer translate of the displayed
+lattice segment.  Absolute singular values still scale as $\sqrt h$;
+the theorem controls their ratio, rather than asserting a nonvanishing
+absolute scale under grid refinement.
+
+\section{The physical readout penalty and the sharp-step limit}
+
+Define the rectangular difference map $E_m:\R^m\to\mathcal W_m$ by
+\[
+ E_mq=(q_0,\ q_1-q_0,\ldots,q_{m-1}-q_{m-2},\ -q_{m-1})^T.
+\]
+It is a bijection onto $\mathcal W_m$, and
+$B_m=P_mE_m$.  Both endpoint terms matter.
+
+\begin{proposition}\label{prop:physical}
+The singular values of $E_m$, in increasing order, are
+\begin{equation}\label{eq:Esingular}
+ e_k=2\sin\!\left(\frac{k\pi}{2(m+1)}\right),
+ \quad 1\le k\le m,
+ \qquad
+ \kappa(E_m)=\cot\!\left(\frac{\pi}{2(m+1)}\right).
+\end{equation}
+Moreover,
+\begin{equation}\label{eq:physical}
+ \frac{\kappa(E_m)}{C_\lambda}
+ \le\kappa(P_m)\le C_\lambda\kappa(E_m).
+\end{equation}
+Thus $\kappa(P_m)=\Theta_\lambda(m)$ at fixed $\lambda>0$, whereas
+$\kappa(B_m)$ stays bounded as $m$ increases.
+\end{proposition}
+
+\begin{proof}
+The matrix $E_m^TE_m$ has diagonal entries $2$ and off-diagonal entries
+$-1$.  Its sine eigenvectors, with entries
+$\sin(jk\pi/(m+1))$ for $1\le j\le m$, have eigenvalues
+$4\sin^2(k\pi/(2(m+1)))$.  This proves \eqref{eq:Esingular}.
+For $w=E_mq\ne0$, Theorem~\ref{thm:riesz} gives
+\[
+ h a_\lambda\frac{\norm q_2^2}{\norm{E_mq}_2^2}
+ \le\frac{\norm{P_mw}_2^2}{\norm w_2^2}
+ \le4h\frac{\norm q_2^2}{\norm{E_mq}_2^2}.
+\]
+Taking maxima and minima over $q$ yields
+\[
+ \frac{\sqrt{h a_\lambda}}{e_1}\le\sigma_{\max}(P_m)
+ \le\frac{2\sqrt h}{e_1},
+ \qquad
+ \frac{\sqrt{h a_\lambda}}{e_m}\le\sigma_{\min}(P_m)
+ \le\frac{2\sqrt h}{e_m}.
+\]
+Dividing the respective bounds proves \eqref{eq:physical}.
+\end{proof}
+
+This comparison identifies a cumulative-coordinate penalty.  It does
+not assert that every singular value increases under differencing, or
+that $\kappa(B_m)<\kappa(P_m)$ for every finite pair $(m,\lambda)$.
+
+There is an exact limiting comparison.  For fixed $m,h$, as
+$\lambda\to\infty$, the densities $\rho_\lambda$ form an approximate
+identity.  Equation~\eqref{eq:convolution} therefore converges in $L^2$
+to $2p_q$, equivalently
+$\psi_j\to2\mathbf1_{[jh,(j+1)h]}$ in $L^2(dx)$.  In the resulting
+sharp-step dictionary,
+\begin{equation}\label{eq:step}
+ B_m^*B_m=4hI,
+ \qquad \kappa(B_m)=1,
+ \qquad \kappa(P_m)=\kappa(E_m)
+ \sim\frac{2(m+1)}{\pi}.
+\end{equation}
+The last identity follows from
+$\norm{P_mE_mq}_2^2=4h\norm q_2^2$: the singular values of $P_m$
+are $2\sqrt h/e_k$, in reverse order.  The Gram condition number
+changes from order $m^2$ to one.  The bound $C_\lambda$ is conservative
+and tends to $\pi/2$, so this sharp limit uses the exact argument above.
+
+\section{Width uniformity does not remove small-slope attenuation}
+
+To see which difficulty remains, periodize the Fourier energy.
+For every finite $q$,
+\begin{equation}\label{eq:gramian}
+ \norm{B_mq}_2^2=\frac h{2\pi}\int_{-\pi}^{\pi}
+ G_\lambda(\omega)|Q(\omega)|^2\,d\omega,
+ \quad
+ G_\lambda(\omega)=4\sum_{k\in\Z}
+ \sinc^2\!\left(\frac{\omega+2\pi k}{2}\right)
+ M_\lambda(\omega+2\pi k)^2.
+\end{equation}
+This continuous, positive multiplier describes the infinite translated
+dictionary.  Theorem~\ref{thm:riesz} gives
+$a_\lambda\le G_\lambda\le4$.  At the constant and alternating
+coefficient frequencies,
+\begin{equation}\label{eq:twofreq}
+ G_\lambda(0)=4,
+ \qquad
+ G_\lambda(\pi)=\frac{8\pi^2}{\lambda^2}
+ \sum_{r=0}^{\infty}
+ \csch^2\!\left((2r+1)\frac{\pi^2}{2\lambda}\right).
+\end{equation}
+Indeed, all nonzero aliases vanish at zero frequency.  At $\pi$,
+$\sinc^2(\nu/2)=4/\nu^2$ for odd multiples $\nu$ of $\pi$, which
+cancels the numerator of $M_\lambda(\nu)^2$; pairing positive and
+negative frequencies gives the series.
+
+Define the infinite-lattice condition number by
+\[
+ \kappa_\infty(\lambda)
+ =\sqrt{\frac{\max_{[-\pi,\pi]}G_\lambda}
+ {\min_{[-\pi,\pi]}G_\lambda}}.
+\]
+No assertion about the location of the minimum is needed for
+\begin{equation}\label{eq:infinitebounds}
+ \sqrt{\frac4{G_\lambda(\pi)}}
+ \le\kappa_\infty(\lambda)\le C_\lambda.
+\end{equation}
+These modes also have a finite-sequence meaning.  The real packets
+$q_j=m^{-1/2}$ and $q_j=(-1)^jm^{-1/2}$ have Fourier energy tending
+to point masses at $0$ and $\pi$, respectively.  This is the
+approximate-identity property of the Fej\'er kernel $|Q|^2$.
+Their squared gains tend to $hG_\lambda(0)$ and $hG_\lambda(\pi)$.
+In particular,
+$\liminf_{m\to\infty}\kappa(B_m)\ge\sqrt{4/G_\lambda(\pi)}$.
+An infinite constant sequence itself is not an $\ell^2$ coefficient
+vector and is not being used as one.
+
+Set $A=\pi^2/(2\lambda)$.  As $\lambda\downarrow0$, the first term in
+\eqref{eq:twofreq} dominates, since
+$\csch^2((2r+1)A)=4e^{-2(2r+1)A}(1+o(1))$.  Hence
+\begin{equation}\label{eq:smalllambda}
+ G_\lambda(\pi)\sim\frac{32\pi^2}{\lambda^2}e^{-\pi^2/\lambda},
+ \quad
+ \sqrt{\frac4{G_\lambda(\pi)}}
+ \sim\frac{\lambda}{2\sqrt2\,\pi}e^{\pi^2/(2\lambda)},
+ \quad
+ C_\lambda\sim\frac{\lambda}{2\pi}e^{\pi^2/(2\lambda)}.
+\end{equation}
+Thus the remaining exponential dependence on small $\lambda$ is real,
+not merely an artifact of the lower-bound proof.  For example,
+$\lambda=0.25$ gives $a_\lambda\approx1.80834\times10^{-14}$,
+$C_\lambda\approx1.48727\times10^7$, and the lower bound in
+\eqref{eq:infinitebounds} is approximately $1.05166\times10^7$.
+These are whole-line spectral constants, not condition numbers of a
+particular finite training matrix.  The large-width packet limit and
+the small-$\lambda$ limit are distinct statements.
+
+\section{Finite windows, halo columns, and the missing lower bound}
+
+Restricting an integral to $[-1,1]$ decreases its value.  Therefore
+\eqref{eq:riesz} supplies a finite-window upper bound but does not
+supply the same lower bound.  A bump supported mostly outside the
+window can have arbitrarily little observed energy.  Bias and anchor
+columns introduce an additional concrete obstruction.
+
+\begin{proposition}[Bias--halo cancellation]\label{prop:halo}
+Let $\mathsf B$ be a real sampled feature matrix with $M$ rows, at
+least as many rows as columns, and samples $x_i\in[-1,1]$.  Suppose it
+contains the columns
+\[
+ \frac{d_b}{\sqrt M}\mathbf1,
+ \qquad \frac{t}{\sqrt M}\phi_W(x_i),
+ \qquad
+ \phi_W(x)=\tanh\!\left(\frac\lambda h(x-x_W)\right),
+ \quad x_W=1+Rh,
+\]
+where $d_b,t,\lambda,h>0$ and $R\ge0$.  There is no assumption on its
+other columns.  Then
+\begin{equation}\label{eq:halo}
+ \sigma_{\min}(\mathsf B)
+ \le\frac{2t}{\sqrt{1+(t/d_b)^2}}e^{-2\lambda R},
+ \qquad
+ \kappa(\mathsf B)
+ \ge\frac{\sqrt{d_b^2+t^2}}{2t}e^{2\lambda R}.
+\end{equation}
+The full condition number is infinite if the matrix is rank deficient.
+\end{proposition}
+
+\begin{proof}
+For every observed $x$,
+\[
+ 0<1+\phi_W(x)
+ =\frac{2e^{2\lambda(x-x_W)/h}}{1+e^{2\lambda(x-x_W)/h}}
+ \le2e^{-2\lambda R}.
+\]
+Choose a coefficient vector $v$ equal to $t/d_b$ in the bias position,
+$1$ in the anchor position, and zero elsewhere.  Then
+$\norm v_2^2=1+(t/d_b)^2$ and
+$\norm{\mathsf Bv}_2\le2t e^{-2\lambda R}$.
+This bounds $\sigma_{\min}$ from above.  The bias column gives
+$\sigma_{\max}\ge d_b$, proving the second inequality.
+\end{proof}
+
+In particular, $R=\lceil\sqrt N\rceil$ gives a lower bound at least
+$\tfrac12 e^{2\lambda\lceil\sqrt N\rceil}$ for the full condition
+number.  Increasing $\lambda$ can improve the interior smoothing
+spectrum while worsening this out-of-domain cancellation.  Neither
+bound identifies which directions a target residual occupies.
+
+Three further changes require their own estimates.  Scaling the bump
+coefficients by a positive diagonal $S$ gives only
+$\kappa(B_mS)\le C_\lambda S_{\max}/S_{\min}$; the scale ratio may
+depend on width.  Replacing integration by samples requires an
+operator-norm bound on the Gram approximation error to preserve a
+positive lower bound.  Finally, unequal slopes invalidate the common
+convolution multiplier; same-sign slopes still cancel tails, but
+opposite signs need not.  None of these cases is covered merely by
+citing Theorem~\ref{thm:riesz}.
+
+\section{Invertible coordinates and what they control}
+
+For a finite window, let
+$c=(b,w_1,\ldots,w_W)^T$ be the physical coefficients and define the complete sampled dictionary by
+\[\mathsf A=M^{-1/2}[\mathbf1,\phi_1,\ldots,\phi_W].\]  Geometry is frozen here.  For any fixed invertible
+matrix $T$, set $c=T\theta$.  Then
+\begin{equation}\label{eq:metric}
+ \operatorname{range}(\mathsf AT)=\operatorname{range}(\mathsf A),
+ \qquad
+ \nabla_\theta\mathcal L=T^T\nabla_c\mathcal L,
+ \qquad
+ \Delta c=-\eta TT^T\nabla_c\mathcal L
+\end{equation}
+for one ordinary gradient-descent step in $\theta$.  The first identity
+preserves approximation capacity.  The last identity changes the
+physical gradient metric, and is exact for any differentiable loss
+with this fixed linear map.  It is not the update rule for Adam.
+
+Here are the concrete maps used in the source implementation review.
+Let $\alpha_j>0$ and $\alpha_b>0$ be fixed reference allowances; they
+are scales, not constraints imposed on trained coefficients.  Put
+$s_j=\sum_{k=1}^j\alpha_k$.  Let $C$ be the square cumulative-sum
+matrix and $L=C^{-1}$ its lower bidiagonal inverse.  In each row of
+Table~\ref{tab:maps}, $T=\diag(t_b,T_w)$.
+\begin{table}[ht]
+\centering
+\caption{Invertible maps for the complete physical readout.}
+\label{tab:maps}
+\begin{tabular}{lll}
+\toprule
+Coordinates & Hidden-readout map $T_w$ & Bias scale $t_b$\\
+\midrule
+Raw & $I$ & $1$\\
+Collective & $\diag(\sqrt{\alpha_j})$ & $\sqrt{\alpha_b}$\\
+Individual & $\diag(\alpha_j)$ & $\alpha_b$\\
+Collective neighboring & $L\diag(\sqrt{s_j})$ & $\sqrt{\alpha_b}$\\
+Individual neighboring & $L\diag(s_j)$ & $\alpha_b$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For a neighboring map $w=LS\theta_w$, the feature row is exactly
+\[
+ [\phi_1,\ldots,\phi_W]LS
+ =[S_{11}(\phi_1-\phi_2),\ldots,
+ S_{W-1,W-1}(\phi_{W-1}-\phi_W),S_{WW}\phi_W].
+\]
+The final anchor makes $L$ square and invertible.  This map differs
+from the rectangular $E_m$ used for the whole-line zero-sum comparison.
+It induces the coupled physical metric $LS^2L^T$ for hidden readouts.
+The scales multiply cumulative coefficients before differencing:
+unequal scales applied to individual tanhs first would leave uncancelled
+tails in $d_j\phi_j-d_{j+1}\phi_{j+1}$.
+
+A matched physical start must be encoded as
+$\theta_0=T^{-1}c_0$.  Independent random draws in each coordinate
+system generally give different physical functions.  Likewise, native
+isotropic damping changes its physical penalty under this map:
+$\mu\norm{\Delta\theta}_2^2
+=\mu\norm{T^{-1}\Delta c}_2^2$.  A claim about coordinates should
+specify both initialization and the optimizer or regularizer.
+
+Let $y\in\R^M$ contain the target values at the samples. For the squared training loss,
+$\mathcal L(\theta)=\tfrac12\norm{\mathsf AT\theta-y/\sqrt M}_2^2$,
+the Hessian is $(\mathsf AT)^T(\mathsf AT)$.  With
+$0<\eta<2/\norm{\mathsf AT}_2^2$, an attainable left-singular residual
+component evolves exactly as
+\begin{equation}\label{eq:rate}
+ e_i(k)=(1-\eta\sigma_i^2)^k e_i(0),
+\end{equation}
+where $\sigma_i>0$ is the corresponding singular value of
+$\mathsf AT$.  Components orthogonal to its range remain unchanged.
+A tiny positive singular value is therefore a rate obstruction for
+this algorithm when its residual component is nonzero; it is not an
+exact-arithmetic error floor.  Stability and rates use the complete
+matrix, including bias, anchor, and halos, not the isolated bound
+$4h$ from Theorem~\ref{thm:riesz}.
+
+These facts locate the role of neighboring readouts in a proposed
+``$\gamma$ barrier.''  At fixed spacing, changing $\gamma$ changes
+$\lambda=h\gamma$ and hence the dictionary's smoothing.  Changing
+$T$ at fixed $\gamma$ preserves its represented function space but
+changes the gradient metric and its singular spectrum.  A frozen
+comparison at matched physical initialization can therefore separate
+some coordinate dependence from slope dependence.  Reference
+allowances should be held fixed during that comparison if the intended
+change is slope alone.  The whole-line calculation predicts a
+small-$\lambda$ obstruction in fine coefficient modes after removing
+the cumulative-coordinate penalty.  It does not prove that a given
+target loads those modes, that finite-window halos are harmless, or
+that a measured fraction of finite-budget optimization error is caused
+by bounded slopes.  Such conclusions need the actual complete
+dictionary and residual, with the algorithm specified.
+
+\paragraph{Source and scope.}
+This standalone note reorganizes the analytic argument in
+\path{docs/neighbor_difference_conditioning.md} and the readout-map
+audit in
+\path{docs/frozen_geometry_capacity_access/pr_conditioning_review.md}.
+The latter records the maps in the merged implementation at commit
+\texttt{d7d26e6}.  The numerical constants above are evaluations of the
+displayed formulas, as also recorded in the former source.  No new
+experiment or empirical convergence claim is included here.
+
+\end{document}

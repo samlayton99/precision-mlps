@@ -66,7 +66,9 @@ def compiled_kernel(n,coordinates,target,source,epsilon,search_threshold,length,
             stored=current['solver'].f_info.grad
             matrix_slope=stored@(-matrix_before@stored)
             stored_slope=stored@(-current['solver'].descent_state.newton)
-            bad=(stored_slope>=0)|(matrix_slope>=0)|~jnp.isfinite(stored_slope)|~jnp.isfinite(matrix_slope)
+            # A fresh search state holds a placeholder zero gradient. Priming
+            # computes its first direction using the explicitly supplied metric.
+            bad=(~current['solver'].first_step)&((stored_slope>=0)|(matrix_slope>=0)|~jnp.isfinite(stored_slope)|~jnp.isfinite(matrix_slope))
             scheduled=(current['count']%interval==0)&(mode>0)&(mode<4)
             reset=(current['count']>0)&(current['status']==0)&(scheduled|((mode==4)&bad))
             def replace(st):

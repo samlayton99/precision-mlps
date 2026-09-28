@@ -1,0 +1,17 @@
+experiment: expC10_scaled_readout_comparison
+interior_resolutions: [64, 128, 256, 512]
+halo_per_side: 24
+targets: [sine, mixed, quadratic, runge, gaussian_envelope, exp]
+train_points: 2049
+eval_points: 8191
+lambda_min: 0.03
+lambda_max: 1.5
+lambda_count: 81
+standard_lambda: 0.25
+relative_svd_cutoff: 1.0e-14
+effective_aliasing_budget: 2.220446049250313e-16
+delta_default: 0.25
+delta_by_target:
+  runge: 0.19
+precision: float64
+threads: 4
