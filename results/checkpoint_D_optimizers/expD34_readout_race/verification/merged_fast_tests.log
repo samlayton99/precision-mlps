@@ -1,0 +1,1287 @@
+..FF.................................................................... [ 10%]
+........................................................................ [ 21%]
+.......s.ss.s................s.......................................... [ 32%]
+.....FF................................................................. [ 43%]
+........................................................................ [ 54%]
+........................s.........................F..FFFF.FF......F..... [ 65%]
+..................FF...............FF................................... [ 76%]
+..............................................................Fs........ [ 87%]
+........................................................................ [ 98%]
+............                                                             [100%]
+=================================== FAILURES ===================================
+_________________ test_accuracy_both_precisions[product_sines] _________________
+
+name = 'product_sines'
+
+    @pytest.mark.parametrize("name", list(TARGETS))
+    def test_accuracy_both_precisions(name):
+        f, fx, fy, fxy = TARGETS[name]
+    
+        qi64 = TensorQI2D(N_TEST, precision="fp64").fit(f, fx, fy, fxy)
+        rel64, linf64 = _errors(qi64, f)
+    
+        qimp = TensorQI2D(N_TEST, precision="mpmath").fit(f, fx, fy, fxy)
+        relmp, linfmp = _errors(qimp, f)
+    
+        print(
+            f"\n[{name:14s}] fp64   rel-L2={rel64:.3e}  L_inf={linf64:.3e}"
+            f"\n[{name:14s}] mpmath rel-L2={relmp:.3e}  L_inf={linfmp:.3e}"
+        )
+    
+        assert rel64 < 1e-7, (
+            f"{name}: fp64 rel-L2 {rel64:.3e} not < 1e-7 (L_inf {linf64:.3e})"
+        )
+>       assert relmp < 1e-11, (
+            f"{name}: mpmath rel-L2 {relmp:.3e} not < 1e-11 (L_inf {linfmp:.3e})"
+        )
+E       AssertionError: product_sines: mpmath rel-L2 6.726e-11 not < 1e-11 (L_inf 9.020e-11)
+E       assert 6.726136951890816e-11 < 1e-11
+
+constructions/test_tensor_qi_2d.py:118: AssertionError
+----------------------------- Captured stdout call -----------------------------
+
+[product_sines ] fp64   rel-L2=1.702e-11  L_inf=2.321e-11
+[product_sines ] mpmath rel-L2=6.726e-11  L_inf=9.020e-11
+__________________ test_accuracy_both_precisions[radial_bump] __________________
+
+name = 'radial_bump'
+
+    @pytest.mark.parametrize("name", list(TARGETS))
+    def test_accuracy_both_precisions(name):
+        f, fx, fy, fxy = TARGETS[name]
+    
+        qi64 = TensorQI2D(N_TEST, precision="fp64").fit(f, fx, fy, fxy)
+        rel64, linf64 = _errors(qi64, f)
+    
+        qimp = TensorQI2D(N_TEST, precision="mpmath").fit(f, fx, fy, fxy)
+        relmp, linfmp = _errors(qimp, f)
+    
+        print(
+            f"\n[{name:14s}] fp64   rel-L2={rel64:.3e}  L_inf={linf64:.3e}"
+            f"\n[{name:14s}] mpmath rel-L2={relmp:.3e}  L_inf={linfmp:.3e}"
+        )
+    
+        assert rel64 < 1e-7, (
+            f"{name}: fp64 rel-L2 {rel64:.3e} not < 1e-7 (L_inf {linf64:.3e})"
+        )
+>       assert relmp < 1e-11, (
+            f"{name}: mpmath rel-L2 {relmp:.3e} not < 1e-11 (L_inf {linfmp:.3e})"
+        )
+E       AssertionError: radial_bump: mpmath rel-L2 3.463e-11 not < 1e-11 (L_inf 4.085e-11)
+E       assert 3.463075626771233e-11 < 1e-11
+
+constructions/test_tensor_qi_2d.py:118: AssertionError
+----------------------------- Captured stdout call -----------------------------
+
+[radial_bump   ] fp64   rel-L2=2.920e-12  L_inf=3.648e-12
+[radial_bump   ] mpmath rel-L2=3.463e-11  L_inf=4.085e-11
+_______________ test_tabular_is_two_layers_with_layer1_geometry ________________
+
+NF = <module 'expD17n_run' from '/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/experiments/expD17_geometry_motion/norm_factorial/run.py'>
+
+    def test_tabular_is_two_layers_with_layer1_geometry(NF):
+        """Tabular must be depth 2, with only the first layer tracked as geometry."""
+>       b = NF.build("tabular", "kin8nm", "gelu_none_qi", 128)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expD17n_norm_factorial.py:94: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/expD17_geometry_motion/norm_factorial/run.py:291: in build
+    b = BASE_BUILDERS[cls](problem, init, width)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+experiments/expD17_geometry_motion/norm_factorial/run.py:245: in build_tabular
+    Xtr, ytr, Xte, yte = load_tab(problem)
+                         ^^^^^^^^^^^^^^^^^
+experiments/expD17_geometry_motion/norm_factorial/run.py:234: in load_tab
+    raw = _D20.CANDIDATES[name]()
+          ^^^^^^^^^^^^^^^^^^^^^^^
+experiments/expD20_tabular_suite/datasets.py:49: in wrapped
+    Xtr, ytr, Xte, yte = fn(*a, **kw)
+                         ^^^^^^^^^^^^
+experiments/expD20_tabular_suite/datasets.py:258: in load_kin8nm
+    return _openml(189)
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data_id = 189, target = None, n_max = 60000, drop = ()
+
+    def _openml(data_id, target=None, n_max=60000, drop=()):
+        """`drop` removes columns that leak the target (e.g. a binarized copy)."""
+>       from sklearn.datasets import fetch_openml
+E       ModuleNotFoundError: No module named 'sklearn'
+
+experiments/expD20_tabular_suite/datasets.py:197: ModuleNotFoundError
+__________________ test_tabular_metric_is_variance_normalized __________________
+
+NF = <module 'expD17n_run' from '/Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/experiments/expD17_geometry_motion/norm_factorial/run.py'>
+
+    def test_tabular_metric_is_variance_normalized(NF):
+        """expD20's prep standardizes the target on train, so the zero-readout
+        model (which predicts the train mean) scores ~1.0 -- a mean-predictor no
+        longer gets free credit for the offset."""
+>       b = NF.build("tabular", "kin8nm", "tanh_none_qi", 128)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expD17n_norm_factorial.py:109: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/expD17_geometry_motion/norm_factorial/run.py:291: in build
+    b = BASE_BUILDERS[cls](problem, init, width)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+experiments/expD17_geometry_motion/norm_factorial/run.py:245: in build_tabular
+    Xtr, ytr, Xte, yte = load_tab(problem)
+                         ^^^^^^^^^^^^^^^^^
+experiments/expD17_geometry_motion/norm_factorial/run.py:234: in load_tab
+    raw = _D20.CANDIDATES[name]()
+          ^^^^^^^^^^^^^^^^^^^^^^^
+experiments/expD20_tabular_suite/datasets.py:49: in wrapped
+    Xtr, ytr, Xte, yte = fn(*a, **kw)
+                         ^^^^^^^^^^^^
+experiments/expD20_tabular_suite/datasets.py:258: in load_kin8nm
+    return _openml(189)
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data_id = 189, target = None, n_max = 60000, drop = ()
+
+    def _openml(data_id, target=None, n_max=60000, drop=()):
+        """`drop` removes columns that leak the target (e.g. a binarized copy)."""
+>       from sklearn.datasets import fetch_openml
+E       ModuleNotFoundError: No module named 'sklearn'
+
+experiments/expD20_tabular_suite/datasets.py:197: ModuleNotFoundError
+__________________ test_rough_darcy_reconstruction_is_bounded __________________
+
+    def test_rough_darcy_reconstruction_is_bounded():
+        codec = qc.QICodec(W=576, lam=0.25)
+>       a = np.load(DARCY)["x"][0].astype(np.float64).ravel()
+            ^^^^^^^^^^^^^^
+
+tests/test_expF10_qi_operator.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+file = '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_train_16_jax.npz'
+mmap_mode = None, allow_pickle = False, fix_imports = True, encoding = 'ASCII'
+max_header_size = 10000
+
+    @set_module('numpy')
+    def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True,
+             encoding='ASCII', *, max_header_size=_MAX_HEADER_SIZE):
+        """
+        Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
+    
+        .. warning:: Loading files that contain object arrays uses the ``pickle``
+                     module, which is not secure against erroneous or maliciously
+                     constructed data. Consider passing ``allow_pickle=False`` to
+                     load data that is known not to contain object arrays for the
+                     safer handling of untrusted sources.
+    
+        Parameters
+        ----------
+        file : file-like object, string, or pathlib.Path
+            The file to read. File-like objects must support the
+            ``seek()`` and ``read()`` methods and must always
+            be opened in binary mode.  Pickled files require that the
+            file-like object support the ``readline()`` method as well.
+        mmap_mode : {None, 'r+', 'r', 'w+', 'c'}, optional
+            If not None, then memory-map the file, using the given mode (see
+            `numpy.memmap` for a detailed description of the modes).  A
+            memory-mapped array is kept on disk. However, it can be accessed
+            and sliced like any ndarray.  Memory mapping is especially useful
+            for accessing small fragments of large files without reading the
+            entire file into memory.
+        allow_pickle : bool, optional
+            Allow loading pickled object arrays stored in npy files. Reasons for
+            disallowing pickles include security, as loading pickled data can
+            execute arbitrary code. If pickles are disallowed, loading object
+            arrays will fail. Default: False
+        fix_imports : bool, optional
+            Only useful when loading Python 2 generated pickled files,
+            which includes npy/npz files containing object arrays. If `fix_imports`
+            is True, pickle will try to map the old Python 2 names to the new names
+            used in Python 3.
+        encoding : str, optional
+            What encoding to use when reading Python 2 strings. Only useful when
+            loading Python 2 generated pickled files, which includes
+            npy/npz files containing object arrays. Values other than 'latin1',
+            'ASCII', and 'bytes' are not allowed, as they can corrupt numerical
+            data. Default: 'ASCII'
+        max_header_size : int, optional
+            Maximum allowed size of the header.  Large headers may not be safe
+            to load securely and thus require explicitly passing a larger value.
+            See :py:func:`ast.literal_eval()` for details.
+            This option is ignored when `allow_pickle` is passed.  In that case
+            the file is by definition trusted and the limit is unnecessary.
+    
+        Returns
+        -------
+        result : array, tuple, dict, etc.
+            Data stored in the file. For ``.npz`` files, the returned instance
+            of NpzFile class must be closed to avoid leaking file descriptors.
+    
+        Raises
+        ------
+        OSError
+            If the input file does not exist or cannot be read.
+        UnpicklingError
+            If ``allow_pickle=True``, but the file cannot be loaded as a pickle.
+        ValueError
+            The file contains an object array, but ``allow_pickle=False`` given.
+        EOFError
+            When calling ``np.load`` multiple times on the same file handle,
+            if all data has already been read
+    
+        See Also
+        --------
+        save, savez, savez_compressed, loadtxt
+        memmap : Create a memory-map to an array stored in a file on disk.
+        lib.format.open_memmap : Create or load a memory-mapped ``.npy`` file.
+    
+        Notes
+        -----
+        - If the file contains pickle data, then whatever object is stored
+          in the pickle is returned.
+        - If the file is a ``.npy`` file, then a single array is returned.
+        - If the file is a ``.npz`` file, then a dictionary-like object is
+          returned, containing ``{filename: array}`` key-value pairs, one for
+          each file in the archive.
+        - If the file is a ``.npz`` file, the returned value supports the
+          context manager protocol in a similar fashion to the open function::
+    
+            with load('foo.npz') as data:
+                a = data['a']
+    
+          The underlying file descriptor is closed when exiting the 'with'
+          block.
+    
+        Examples
+        --------
+        >>> import numpy as np
+    
+        Store data to disk, and load it again:
+    
+        >>> np.save('/tmp/123', np.array([[1, 2, 3], [4, 5, 6]]))
+        >>> np.load('/tmp/123.npy')
+        array([[1, 2, 3],
+               [4, 5, 6]])
+    
+        Store compressed data to disk, and load it again:
+    
+        >>> a=np.array([[1, 2, 3], [4, 5, 6]])
+        >>> b=np.array([1, 2])
+        >>> np.savez('/tmp/123.npz', a=a, b=b)
+        >>> data = np.load('/tmp/123.npz')
+        >>> data['a']
+        array([[1, 2, 3],
+               [4, 5, 6]])
+        >>> data['b']
+        array([1, 2])
+        >>> data.close()
+    
+        Mem-map the stored array, and then access the second row
+        directly from disk:
+    
+        >>> X = np.load('/tmp/123.npy', mmap_mode='r')
+        >>> X[1, :]
+        memmap([4, 5, 6])
+    
+        """
+        if encoding not in ('ASCII', 'latin1', 'bytes'):
+            # The 'encoding' value for pickle also affects what encoding
+            # the serialized binary data of NumPy arrays is loaded
+            # in. Pickle does not pass on the encoding information to
+            # NumPy. The unpickling code in numpy._core.multiarray is
+            # written to assume that unicode data appearing where binary
+            # should be is in 'latin1'. 'bytes' is also safe, as is 'ASCII'.
+            #
+            # Other encoding values can corrupt binary data, and we
+            # purposefully disallow them. For the same reason, the errors=
+            # argument is not exposed, as values other than 'strict'
+            # result can similarly silently corrupt numerical data.
+            raise ValueError("encoding must be 'ASCII', 'latin1', or 'bytes'")
+    
+        pickle_kwargs = {'encoding': encoding, 'fix_imports': fix_imports}
+    
+        with contextlib.ExitStack() as stack:
+            if hasattr(file, 'read'):
+                fid = file
+                own_fid = False
+            else:
+>               fid = stack.enter_context(open(os.fspath(file), "rb"))
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               FileNotFoundError: [Errno 2] No such file or directory: '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_train_16_jax.npz'
+
+.venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py:454: FileNotFoundError
+_________________________ test_load_darcy_downsamples __________________________
+
+    def test_load_darcy_downsamples():
+>       a, u = dd.load_darcy("train", n=8, res=32)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expF10_qi_operator.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/expF10_qi_operator/data.py:26: in load_darcy
+    d = np.load(f"{BASE}/darcy_{split}_{source_res}_jax.npz")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+file = '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_train_421_jax.npz'
+mmap_mode = None, allow_pickle = False, fix_imports = True, encoding = 'ASCII'
+max_header_size = 10000
+
+    @set_module('numpy')
+    def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True,
+             encoding='ASCII', *, max_header_size=_MAX_HEADER_SIZE):
+        """
+        Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
+    
+        .. warning:: Loading files that contain object arrays uses the ``pickle``
+                     module, which is not secure against erroneous or maliciously
+                     constructed data. Consider passing ``allow_pickle=False`` to
+                     load data that is known not to contain object arrays for the
+                     safer handling of untrusted sources.
+    
+        Parameters
+        ----------
+        file : file-like object, string, or pathlib.Path
+            The file to read. File-like objects must support the
+            ``seek()`` and ``read()`` methods and must always
+            be opened in binary mode.  Pickled files require that the
+            file-like object support the ``readline()`` method as well.
+        mmap_mode : {None, 'r+', 'r', 'w+', 'c'}, optional
+            If not None, then memory-map the file, using the given mode (see
+            `numpy.memmap` for a detailed description of the modes).  A
+            memory-mapped array is kept on disk. However, it can be accessed
+            and sliced like any ndarray.  Memory mapping is especially useful
+            for accessing small fragments of large files without reading the
+            entire file into memory.
+        allow_pickle : bool, optional
+            Allow loading pickled object arrays stored in npy files. Reasons for
+            disallowing pickles include security, as loading pickled data can
+            execute arbitrary code. If pickles are disallowed, loading object
+            arrays will fail. Default: False
+        fix_imports : bool, optional
+            Only useful when loading Python 2 generated pickled files,
+            which includes npy/npz files containing object arrays. If `fix_imports`
+            is True, pickle will try to map the old Python 2 names to the new names
+            used in Python 3.
+        encoding : str, optional
+            What encoding to use when reading Python 2 strings. Only useful when
+            loading Python 2 generated pickled files, which includes
+            npy/npz files containing object arrays. Values other than 'latin1',
+            'ASCII', and 'bytes' are not allowed, as they can corrupt numerical
+            data. Default: 'ASCII'
+        max_header_size : int, optional
+            Maximum allowed size of the header.  Large headers may not be safe
+            to load securely and thus require explicitly passing a larger value.
+            See :py:func:`ast.literal_eval()` for details.
+            This option is ignored when `allow_pickle` is passed.  In that case
+            the file is by definition trusted and the limit is unnecessary.
+    
+        Returns
+        -------
+        result : array, tuple, dict, etc.
+            Data stored in the file. For ``.npz`` files, the returned instance
+            of NpzFile class must be closed to avoid leaking file descriptors.
+    
+        Raises
+        ------
+        OSError
+            If the input file does not exist or cannot be read.
+        UnpicklingError
+            If ``allow_pickle=True``, but the file cannot be loaded as a pickle.
+        ValueError
+            The file contains an object array, but ``allow_pickle=False`` given.
+        EOFError
+            When calling ``np.load`` multiple times on the same file handle,
+            if all data has already been read
+    
+        See Also
+        --------
+        save, savez, savez_compressed, loadtxt
+        memmap : Create a memory-map to an array stored in a file on disk.
+        lib.format.open_memmap : Create or load a memory-mapped ``.npy`` file.
+    
+        Notes
+        -----
+        - If the file contains pickle data, then whatever object is stored
+          in the pickle is returned.
+        - If the file is a ``.npy`` file, then a single array is returned.
+        - If the file is a ``.npz`` file, then a dictionary-like object is
+          returned, containing ``{filename: array}`` key-value pairs, one for
+          each file in the archive.
+        - If the file is a ``.npz`` file, the returned value supports the
+          context manager protocol in a similar fashion to the open function::
+    
+            with load('foo.npz') as data:
+                a = data['a']
+    
+          The underlying file descriptor is closed when exiting the 'with'
+          block.
+    
+        Examples
+        --------
+        >>> import numpy as np
+    
+        Store data to disk, and load it again:
+    
+        >>> np.save('/tmp/123', np.array([[1, 2, 3], [4, 5, 6]]))
+        >>> np.load('/tmp/123.npy')
+        array([[1, 2, 3],
+               [4, 5, 6]])
+    
+        Store compressed data to disk, and load it again:
+    
+        >>> a=np.array([[1, 2, 3], [4, 5, 6]])
+        >>> b=np.array([1, 2])
+        >>> np.savez('/tmp/123.npz', a=a, b=b)
+        >>> data = np.load('/tmp/123.npz')
+        >>> data['a']
+        array([[1, 2, 3],
+               [4, 5, 6]])
+        >>> data['b']
+        array([1, 2])
+        >>> data.close()
+    
+        Mem-map the stored array, and then access the second row
+        directly from disk:
+    
+        >>> X = np.load('/tmp/123.npy', mmap_mode='r')
+        >>> X[1, :]
+        memmap([4, 5, 6])
+    
+        """
+        if encoding not in ('ASCII', 'latin1', 'bytes'):
+            # The 'encoding' value for pickle also affects what encoding
+            # the serialized binary data of NumPy arrays is loaded
+            # in. Pickle does not pass on the encoding information to
+            # NumPy. The unpickling code in numpy._core.multiarray is
+            # written to assume that unicode data appearing where binary
+            # should be is in 'latin1'. 'bytes' is also safe, as is 'ASCII'.
+            #
+            # Other encoding values can corrupt binary data, and we
+            # purposefully disallow them. For the same reason, the errors=
+            # argument is not exposed, as values other than 'strict'
+            # result can similarly silently corrupt numerical data.
+            raise ValueError("encoding must be 'ASCII', 'latin1', or 'bytes'")
+    
+        pickle_kwargs = {'encoding': encoding, 'fix_imports': fix_imports}
+    
+        with contextlib.ExitStack() as stack:
+            if hasattr(file, 'read'):
+                fid = file
+                own_fid = False
+            else:
+>               fid = stack.enter_context(open(os.fspath(file), "rb"))
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               FileNotFoundError: [Errno 2] No such file or directory: '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_train_421_jax.npz'
+
+.venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py:454: FileNotFoundError
+_________________________ test_models_forward_backward _________________________
+
+    def test_models_forward_backward():
+        codec = qc.QICodec(W=128, lam=0.25)   # small W for a fast test
+        Phi_out = codec.basis(codec.grid(16))  # [256, D]
+        # A: coeff MLP
+        A, kindA = mo.build_model("A", D=codec.D, Phi_out=Phi_out)
+        assert kindA == "coeff"
+        ca = torch.randn(4, codec.D)
+>       ua = A(ca)
+             ^^^^^
+
+tests/test_expF10_qi_operator.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1553: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1562: in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = CoeffMLP(
+  (mlp): Sequential(
+    (0): Linear(in_features=131, out_features=1024, bias=True)
+    (1): GELU(approximat...1024, bias=True)
+    (7): GELU(approximate='none')
+    (8): Linear(in_features=1024, out_features=131, bias=True)
+  )
+)
+c_a = tensor([[ 1.2478e-01,  1.1741e+00, -1.3477e+00, -1.5144e+00, -1.4785e+00,
+         -1.3563e+00, -8.4548e-01, -6.8946e-...113e+00, -3.2693e-01,
+          5.5711e-01, -1.0773e+00,  1.6093e+00,  1.6037e+00, -1.2713e+00,
+         -1.5689e-02]])
+
+    def forward(self, c_a):
+        c_u = self.mlp(c_a)                 # [b, D]
+>       return c_u @ self.Phi_out.t()       # [b, n_out]  (decoded field, flat)
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: expected m1 and m2 to have the same dtype, but got: double != float
+
+experiments/expF10_qi_operator/models.py:26: RuntimeError
+_______________ test_smoke_train_one_config_returns_finite_loss ________________
+
+    def test_smoke_train_one_config_returns_finite_loss():
+        """Tiny end-to-end: train config C for 2 epochs on 16 instances at 16^2."""
+>       cfg = g10.SMOKE_CFG
+              ^^^^^^^^^^^^^
+E       AttributeError: module 'run' has no attribute 'SMOKE_CFG'
+
+tests/test_expF10_qi_operator.py:99: AttributeError
+_________________________ test_u_qi_is_a_sane_solution _________________________
+
+    def test_u_qi_is_a_sane_solution():
+>       a, u = dd.load_darcy("test", n=2, res=32)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expF11_qi_fno_init.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/expF10_qi_operator/data.py:26: in load_darcy
+    d = np.load(f"{BASE}/darcy_{split}_{source_res}_jax.npz")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+file = '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_test_421_jax.npz'
+mmap_mode = None, allow_pickle = False, fix_imports = True, encoding = 'ASCII'
+max_header_size = 10000
+
+    @set_module('numpy')
+    def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True,
+             encoding='ASCII', *, max_header_size=_MAX_HEADER_SIZE):
+        """
+        Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
+    
+        .. warning:: Loading files that contain object arrays uses the ``pickle``
+                     module, which is not secure against erroneous or maliciously
+                     constructed data. Consider passing ``allow_pickle=False`` to
+                     load data that is known not to contain object arrays for the
+                     safer handling of untrusted sources.
+    
+        Parameters
+        ----------
+        file : file-like object, string, or pathlib.Path
+            The file to read. File-like objects must support the
+            ``seek()`` and ``read()`` methods and must always
+            be opened in binary mode.  Pickled files require that the
+            file-like object support the ``readline()`` method as well.
+        mmap_mode : {None, 'r+', 'r', 'w+', 'c'}, optional
+            If not None, then memory-map the file, using the given mode (see
+            `numpy.memmap` for a detailed description of the modes).  A
+            memory-mapped array is kept on disk. However, it can be accessed
+            and sliced like any ndarray.  Memory mapping is especially useful
+            for accessing small fragments of large files without reading the
+            entire file into memory.
+        allow_pickle : bool, optional
+            Allow loading pickled object arrays stored in npy files. Reasons for
+            disallowing pickles include security, as loading pickled data can
+            execute arbitrary code. If pickles are disallowed, loading object
+            arrays will fail. Default: False
+        fix_imports : bool, optional
+            Only useful when loading Python 2 generated pickled files,
+            which includes npy/npz files containing object arrays. If `fix_imports`
+            is True, pickle will try to map the old Python 2 names to the new names
+            used in Python 3.
+        encoding : str, optional
+            What encoding to use when reading Python 2 strings. Only useful when
+            loading Python 2 generated pickled files, which includes
+            npy/npz files containing object arrays. Values other than 'latin1',
+            'ASCII', and 'bytes' are not allowed, as they can corrupt numerical
+            data. Default: 'ASCII'
+        max_header_size : int, optional
+            Maximum allowed size of the header.  Large headers may not be safe
+            to load securely and thus require explicitly passing a larger value.
+            See :py:func:`ast.literal_eval()` for details.
+            This option is ignored when `allow_pickle` is passed.  In that case
+            the file is by definition trusted and the limit is unnecessary.
+    
+        Returns
+        -------
+        result : array, tuple, dict, etc.
+            Data stored in the file. For ``.npz`` files, the returned instance
+            of NpzFile class must be closed to avoid leaking file descriptors.
+    
+        Raises
+        ------
+        OSError
+            If the input file does not exist or cannot be read.
+        UnpicklingError
+            If ``allow_pickle=True``, but the file cannot be loaded as a pickle.
+        ValueError
+            The file contains an object array, but ``allow_pickle=False`` given.
+        EOFError
+            When calling ``np.load`` multiple times on the same file handle,
+            if all data has already been read
+    
+        See Also
+        --------
+        save, savez, savez_compressed, loadtxt
+        memmap : Create a memory-map to an array stored in a file on disk.
+        lib.format.open_memmap : Create or load a memory-mapped ``.npy`` file.
+    
+        Notes
+        -----
+        - If the file contains pickle data, then whatever object is stored
+          in the pickle is returned.
+        - If the file is a ``.npy`` file, then a single array is returned.
+        - If the file is a ``.npz`` file, then a dictionary-like object is
+          returned, containing ``{filename: array}`` key-value pairs, one for
+          each file in the archive.
+        - If the file is a ``.npz`` file, the returned value supports the
+          context manager protocol in a similar fashion to the open function::
+    
+            with load('foo.npz') as data:
+                a = data['a']
+    
+          The underlying file descriptor is closed when exiting the 'with'
+          block.
+    
+        Examples
+        --------
+        >>> import numpy as np
+    
+        Store data to disk, and load it again:
+    
+        >>> np.save('/tmp/123', np.array([[1, 2, 3], [4, 5, 6]]))
+        >>> np.load('/tmp/123.npy')
+        array([[1, 2, 3],
+               [4, 5, 6]])
+    
+        Store compressed data to disk, and load it again:
+    
+        >>> a=np.array([[1, 2, 3], [4, 5, 6]])
+        >>> b=np.array([1, 2])
+        >>> np.savez('/tmp/123.npz', a=a, b=b)
+        >>> data = np.load('/tmp/123.npz')
+        >>> data['a']
+        array([[1, 2, 3],
+               [4, 5, 6]])
+        >>> data['b']
+        array([1, 2])
+        >>> data.close()
+    
+        Mem-map the stored array, and then access the second row
+        directly from disk:
+    
+        >>> X = np.load('/tmp/123.npy', mmap_mode='r')
+        >>> X[1, :]
+        memmap([4, 5, 6])
+    
+        """
+        if encoding not in ('ASCII', 'latin1', 'bytes'):
+            # The 'encoding' value for pickle also affects what encoding
+            # the serialized binary data of NumPy arrays is loaded
+            # in. Pickle does not pass on the encoding information to
+            # NumPy. The unpickling code in numpy._core.multiarray is
+            # written to assume that unicode data appearing where binary
+            # should be is in 'latin1'. 'bytes' is also safe, as is 'ASCII'.
+            #
+            # Other encoding values can corrupt binary data, and we
+            # purposefully disallow them. For the same reason, the errors=
+            # argument is not exposed, as values other than 'strict'
+            # result can similarly silently corrupt numerical data.
+            raise ValueError("encoding must be 'ASCII', 'latin1', or 'bytes'")
+    
+        pickle_kwargs = {'encoding': encoding, 'fix_imports': fix_imports}
+    
+        with contextlib.ExitStack() as stack:
+            if hasattr(file, 'read'):
+                fid = file
+                own_fid = False
+            else:
+>               fid = stack.enter_context(open(os.fspath(file), "rb"))
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               FileNotFoundError: [Errno 2] No such file or directory: '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_test_421_jax.npz'
+
+.venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py:454: FileNotFoundError
+______________________ test_train_eval_all_methods_finite ______________________
+
+    def test_train_eval_all_methods_finite():
+        cfg = g11.SMOKE_CFG
+        for method in ("D0", "1", "2", "3"):
+>           rec = g11.train_eval(method, cfg)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expF11_qi_fno_init.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/expF11_qi_fno_init/run.py:105: in train_eval
+    a_tr, u_tr, uq_tr, a_te, u_te, uq_te = _load(cfg)
+                                           ^^^^^^^^^^
+experiments/expF11_qi_fno_init/run.py:96: in _load
+    a_tr, u_tr = dd.load_darcy("train", cfg.n_qi, cfg.res)      # n_qi >= n_lab
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+experiments/expF10_qi_operator/data.py:26: in load_darcy
+    d = np.load(f"{BASE}/darcy_{split}_{source_res}_jax.npz")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+file = '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_train_421_jax.npz'
+mmap_mode = None, allow_pickle = False, fix_imports = True, encoding = 'ASCII'
+max_header_size = 10000
+
+    @set_module('numpy')
+    def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True,
+             encoding='ASCII', *, max_header_size=_MAX_HEADER_SIZE):
+        """
+        Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
+    
+        .. warning:: Loading files that contain object arrays uses the ``pickle``
+                     module, which is not secure against erroneous or maliciously
+                     constructed data. Consider passing ``allow_pickle=False`` to
+                     load data that is known not to contain object arrays for the
+                     safer handling of untrusted sources.
+    
+        Parameters
+        ----------
+        file : file-like object, string, or pathlib.Path
+            The file to read. File-like objects must support the
+            ``seek()`` and ``read()`` methods and must always
+            be opened in binary mode.  Pickled files require that the
+            file-like object support the ``readline()`` method as well.
+        mmap_mode : {None, 'r+', 'r', 'w+', 'c'}, optional
+            If not None, then memory-map the file, using the given mode (see
+            `numpy.memmap` for a detailed description of the modes).  A
+            memory-mapped array is kept on disk. However, it can be accessed
+            and sliced like any ndarray.  Memory mapping is especially useful
+            for accessing small fragments of large files without reading the
+            entire file into memory.
+        allow_pickle : bool, optional
+            Allow loading pickled object arrays stored in npy files. Reasons for
+            disallowing pickles include security, as loading pickled data can
+            execute arbitrary code. If pickles are disallowed, loading object
+            arrays will fail. Default: False
+        fix_imports : bool, optional
+            Only useful when loading Python 2 generated pickled files,
+            which includes npy/npz files containing object arrays. If `fix_imports`
+            is True, pickle will try to map the old Python 2 names to the new names
+            used in Python 3.
+        encoding : str, optional
+            What encoding to use when reading Python 2 strings. Only useful when
+            loading Python 2 generated pickled files, which includes
+            npy/npz files containing object arrays. Values other than 'latin1',
+            'ASCII', and 'bytes' are not allowed, as they can corrupt numerical
+            data. Default: 'ASCII'
+        max_header_size : int, optional
+            Maximum allowed size of the header.  Large headers may not be safe
+            to load securely and thus require explicitly passing a larger value.
+            See :py:func:`ast.literal_eval()` for details.
+            This option is ignored when `allow_pickle` is passed.  In that case
+            the file is by definition trusted and the limit is unnecessary.
+    
+        Returns
+        -------
+        result : array, tuple, dict, etc.
+            Data stored in the file. For ``.npz`` files, the returned instance
+            of NpzFile class must be closed to avoid leaking file descriptors.
+    
+        Raises
+        ------
+        OSError
+            If the input file does not exist or cannot be read.
+        UnpicklingError
+            If ``allow_pickle=True``, but the file cannot be loaded as a pickle.
+        ValueError
+            The file contains an object array, but ``allow_pickle=False`` given.
+        EOFError
+            When calling ``np.load`` multiple times on the same file handle,
+            if all data has already been read
+    
+        See Also
+        --------
+        save, savez, savez_compressed, loadtxt
+        memmap : Create a memory-map to an array stored in a file on disk.
+        lib.format.open_memmap : Create or load a memory-mapped ``.npy`` file.
+    
+        Notes
+        -----
+        - If the file contains pickle data, then whatever object is stored
+          in the pickle is returned.
+        - If the file is a ``.npy`` file, then a single array is returned.
+        - If the file is a ``.npz`` file, then a dictionary-like object is
+          returned, containing ``{filename: array}`` key-value pairs, one for
+          each file in the archive.
+        - If the file is a ``.npz`` file, the returned value supports the
+          context manager protocol in a similar fashion to the open function::
+    
+            with load('foo.npz') as data:
+                a = data['a']
+    
+          The underlying file descriptor is closed when exiting the 'with'
+          block.
+    
+        Examples
+        --------
+        >>> import numpy as np
+    
+        Store data to disk, and load it again:
+    
+        >>> np.save('/tmp/123', np.array([[1, 2, 3], [4, 5, 6]]))
+        >>> np.load('/tmp/123.npy')
+        array([[1, 2, 3],
+               [4, 5, 6]])
+    
+        Store compressed data to disk, and load it again:
+    
+        >>> a=np.array([[1, 2, 3], [4, 5, 6]])
+        >>> b=np.array([1, 2])
+        >>> np.savez('/tmp/123.npz', a=a, b=b)
+        >>> data = np.load('/tmp/123.npz')
+        >>> data['a']
+        array([[1, 2, 3],
+               [4, 5, 6]])
+        >>> data['b']
+        array([1, 2])
+        >>> data.close()
+    
+        Mem-map the stored array, and then access the second row
+        directly from disk:
+    
+        >>> X = np.load('/tmp/123.npy', mmap_mode='r')
+        >>> X[1, :]
+        memmap([4, 5, 6])
+    
+        """
+        if encoding not in ('ASCII', 'latin1', 'bytes'):
+            # The 'encoding' value for pickle also affects what encoding
+            # the serialized binary data of NumPy arrays is loaded
+            # in. Pickle does not pass on the encoding information to
+            # NumPy. The unpickling code in numpy._core.multiarray is
+            # written to assume that unicode data appearing where binary
+            # should be is in 'latin1'. 'bytes' is also safe, as is 'ASCII'.
+            #
+            # Other encoding values can corrupt binary data, and we
+            # purposefully disallow them. For the same reason, the errors=
+            # argument is not exposed, as values other than 'strict'
+            # result can similarly silently corrupt numerical data.
+            raise ValueError("encoding must be 'ASCII', 'latin1', or 'bytes'")
+    
+        pickle_kwargs = {'encoding': encoding, 'fix_imports': fix_imports}
+    
+        with contextlib.ExitStack() as stack:
+            if hasattr(file, 'read'):
+                fid = file
+                own_fid = False
+            else:
+>               fid = stack.enter_context(open(os.fspath(file), "rb"))
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               FileNotFoundError: [Errno 2] No such file or directory: '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_train_421_jax.npz'
+
+.venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py:454: FileNotFoundError
+___________________ test_pretrain_init_lowers_starting_loss ____________________
+
+    def test_pretrain_init_lowers_starting_loss():
+        """Method 1's pretrained net starts below a random net on the labeled set."""
+        cfg = g11.SMOKE_CFG
+>       assert g11.pretrain_start_loss(cfg) < g11.random_start_loss(cfg)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expF11_qi_fno_init.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/expF11_qi_fno_init/run.py:141: in pretrain_start_loss
+    a_tr, u_tr, uq_tr, *_ = _load(cfg)
+                            ^^^^^^^^^^
+experiments/expF11_qi_fno_init/run.py:96: in _load
+    a_tr, u_tr = dd.load_darcy("train", cfg.n_qi, cfg.res)      # n_qi >= n_lab
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+experiments/expF10_qi_operator/data.py:26: in load_darcy
+    d = np.load(f"{BASE}/darcy_{split}_{source_res}_jax.npz")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+file = '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_train_421_jax.npz'
+mmap_mode = None, allow_pickle = False, fix_imports = True, encoding = 'ASCII'
+max_header_size = 10000
+
+    @set_module('numpy')
+    def load(file, mmap_mode=None, allow_pickle=False, fix_imports=True,
+             encoding='ASCII', *, max_header_size=_MAX_HEADER_SIZE):
+        """
+        Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
+    
+        .. warning:: Loading files that contain object arrays uses the ``pickle``
+                     module, which is not secure against erroneous or maliciously
+                     constructed data. Consider passing ``allow_pickle=False`` to
+                     load data that is known not to contain object arrays for the
+                     safer handling of untrusted sources.
+    
+        Parameters
+        ----------
+        file : file-like object, string, or pathlib.Path
+            The file to read. File-like objects must support the
+            ``seek()`` and ``read()`` methods and must always
+            be opened in binary mode.  Pickled files require that the
+            file-like object support the ``readline()`` method as well.
+        mmap_mode : {None, 'r+', 'r', 'w+', 'c'}, optional
+            If not None, then memory-map the file, using the given mode (see
+            `numpy.memmap` for a detailed description of the modes).  A
+            memory-mapped array is kept on disk. However, it can be accessed
+            and sliced like any ndarray.  Memory mapping is especially useful
+            for accessing small fragments of large files without reading the
+            entire file into memory.
+        allow_pickle : bool, optional
+            Allow loading pickled object arrays stored in npy files. Reasons for
+            disallowing pickles include security, as loading pickled data can
+            execute arbitrary code. If pickles are disallowed, loading object
+            arrays will fail. Default: False
+        fix_imports : bool, optional
+            Only useful when loading Python 2 generated pickled files,
+            which includes npy/npz files containing object arrays. If `fix_imports`
+            is True, pickle will try to map the old Python 2 names to the new names
+            used in Python 3.
+        encoding : str, optional
+            What encoding to use when reading Python 2 strings. Only useful when
+            loading Python 2 generated pickled files, which includes
+            npy/npz files containing object arrays. Values other than 'latin1',
+            'ASCII', and 'bytes' are not allowed, as they can corrupt numerical
+            data. Default: 'ASCII'
+        max_header_size : int, optional
+            Maximum allowed size of the header.  Large headers may not be safe
+            to load securely and thus require explicitly passing a larger value.
+            See :py:func:`ast.literal_eval()` for details.
+            This option is ignored when `allow_pickle` is passed.  In that case
+            the file is by definition trusted and the limit is unnecessary.
+    
+        Returns
+        -------
+        result : array, tuple, dict, etc.
+            Data stored in the file. For ``.npz`` files, the returned instance
+            of NpzFile class must be closed to avoid leaking file descriptors.
+    
+        Raises
+        ------
+        OSError
+            If the input file does not exist or cannot be read.
+        UnpicklingError
+            If ``allow_pickle=True``, but the file cannot be loaded as a pickle.
+        ValueError
+            The file contains an object array, but ``allow_pickle=False`` given.
+        EOFError
+            When calling ``np.load`` multiple times on the same file handle,
+            if all data has already been read
+    
+        See Also
+        --------
+        save, savez, savez_compressed, loadtxt
+        memmap : Create a memory-map to an array stored in a file on disk.
+        lib.format.open_memmap : Create or load a memory-mapped ``.npy`` file.
+    
+        Notes
+        -----
+        - If the file contains pickle data, then whatever object is stored
+          in the pickle is returned.
+        - If the file is a ``.npy`` file, then a single array is returned.
+        - If the file is a ``.npz`` file, then a dictionary-like object is
+          returned, containing ``{filename: array}`` key-value pairs, one for
+          each file in the archive.
+        - If the file is a ``.npz`` file, the returned value supports the
+          context manager protocol in a similar fashion to the open function::
+    
+            with load('foo.npz') as data:
+                a = data['a']
+    
+          The underlying file descriptor is closed when exiting the 'with'
+          block.
+    
+        Examples
+        --------
+        >>> import numpy as np
+    
+        Store data to disk, and load it again:
+    
+        >>> np.save('/tmp/123', np.array([[1, 2, 3], [4, 5, 6]]))
+        >>> np.load('/tmp/123.npy')
+        array([[1, 2, 3],
+               [4, 5, 6]])
+    
+        Store compressed data to disk, and load it again:
+    
+        >>> a=np.array([[1, 2, 3], [4, 5, 6]])
+        >>> b=np.array([1, 2])
+        >>> np.savez('/tmp/123.npz', a=a, b=b)
+        >>> data = np.load('/tmp/123.npz')
+        >>> data['a']
+        array([[1, 2, 3],
+               [4, 5, 6]])
+        >>> data['b']
+        array([1, 2])
+        >>> data.close()
+    
+        Mem-map the stored array, and then access the second row
+        directly from disk:
+    
+        >>> X = np.load('/tmp/123.npy', mmap_mode='r')
+        >>> X[1, :]
+        memmap([4, 5, 6])
+    
+        """
+        if encoding not in ('ASCII', 'latin1', 'bytes'):
+            # The 'encoding' value for pickle also affects what encoding
+            # the serialized binary data of NumPy arrays is loaded
+            # in. Pickle does not pass on the encoding information to
+            # NumPy. The unpickling code in numpy._core.multiarray is
+            # written to assume that unicode data appearing where binary
+            # should be is in 'latin1'. 'bytes' is also safe, as is 'ASCII'.
+            #
+            # Other encoding values can corrupt binary data, and we
+            # purposefully disallow them. For the same reason, the errors=
+            # argument is not exposed, as values other than 'strict'
+            # result can similarly silently corrupt numerical data.
+            raise ValueError("encoding must be 'ASCII', 'latin1', or 'bytes'")
+    
+        pickle_kwargs = {'encoding': encoding, 'fix_imports': fix_imports}
+    
+        with contextlib.ExitStack() as stack:
+            if hasattr(file, 'read'):
+                fid = file
+                own_fid = False
+            else:
+>               fid = stack.enter_context(open(os.fspath(file), "rb"))
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               FileNotFoundError: [Errno 2] No such file or directory: '/scr/cdeng/continuous-mlps/data/fno_datasets_jax/darcy_train_421_jax.npz'
+
+.venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py:454: FileNotFoundError
+_______________________ test_newton_solve_tiny_converges _______________________
+
+    def test_newton_solve_tiny_converges():
+        """Tiny Gauss-Newton NS solve: the first step (Stokes) already lands well
+        below the zero init, and iterating does not diverge."""
+        import newton_solve as nsv
+>       _, _, theta, hist = nsv.solve_navier_stokes(
+            n_centers=8, lam=0.2, K_vel=300, K_p=150, n_int=1200, n_ic=400,
+            n_bc=400, newton_iters=2, verbose=False)
+
+tests/test_expF12_tensor_ns3d.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+n_centers = 8, lam = 0.2, K_vel = 300, K_p = 150, n_int = 1200, n_ic = 400
+n_bc = 400, newton_iters = 2, seed = 0, rcond = 1e-15, log_path = None
+verbose = False, theta0 = None, init = 'cascade', w_mult = 1.0
+
+    def solve_navier_stokes(n_centers=12, lam=0.15, K_vel=2000, K_p=1000,
+                            n_int=5000, n_ic=1500, n_bc=2000, newton_iters=6,
+                            seed=0, rcond=RCOND, log_path=None, verbose=True,
+                            theta0=None, init="cascade", w_mult=1.0):
+        """Gauss-Newton NS solve. Returns (basis_v, basis_p, theta, history).
+    
+        expF03 techniques carried over:
+        - init="cascade" (expF03 part 1's dominant nonlinear knob): solve at K/4
+          first, then polish at full K. In this basis the cascade fit is exact
+          embedding -- the top-K/4 product-SVD tuples are a prefix of the top-K
+          list, so the coarse solution zero-pads into the full basis.
+        - rcond: default 1e-15 via RCOND (expF03: gains 4-5 orders on nonlinear
+          problems over 1e-13).
+        - Condition blocks (IC/BC/gauge) weighted w_mult * sqrt(n_pde / n_blk)
+          after O(1) row scaling (expF03 convention) -- without it a 33-row gauge
+          block is drowned by ~24k PDE rows.
+        - The no-oracle tuning signal (stacked FRESH residual incl condition rows)
+          is logged every iteration as `fresh_sig`.
+        theta0: explicit warm start (overrides init; zeros -> first step = Stokes).
+        """
+        rng = np.random.default_rng(seed)
+        basis_v = ReducedTensorBasis(n_centers, lam, K=K_vel)
+        basis_p = ReducedTensorBasis(n_centers, lam, K=K_p)
+        if theta0 is None and init == "cascade" and K_vel >= 800:
+            sub_v, sub_p, th_sub, _ = solve_navier_stokes(
+                n_centers, lam, K_vel // 4, K_p // 4, n_int, n_ic, n_bc,
+                newton_iters=max(newton_iters, 3), seed=seed, rcond=rcond,
+                verbose=verbose, init="zero", w_mult=w_mult)
+            theta0 = np.zeros(3 * basis_v.K + basis_p.K)
+            for i in range(3):
+                theta0[i * basis_v.K:i * basis_v.K + sub_v.K] = \
+                    th_sub[i * sub_v.K:(i + 1) * sub_v.K]
+            assert np.array_equal(sub_v.idx, basis_v.idx[:, :sub_v.K]), \
+                "cascade embedding requires prefix-nested tuple selection"
+            theta0[3 * basis_v.K:3 * basis_v.K + sub_p.K] = th_sub[3 * sub_v.K:]
+            if verbose:
+                print(f"[cascade] embedded K={sub_v.K}/{sub_p.K} solution into "
+                      f"K={basis_v.K}/{basis_p.K}", flush=True)
+        Kv, Kp = basis_v.K, basis_p.K
+        ncols = 3 * Kv + Kp
+    
+>       Xi = pinn.sample_interior(rng, n_int).numpy()
+             ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'pinn' has no attribute 'sample_interior'
+
+experiments/expF12_tensor_ns3d/newton_solve.py:174: AttributeError
+________________________ test_1d_qi_floor_anchor_lorenz ________________________
+
+    def test_1d_qi_floor_anchor_lorenz():
+        """Measured in-build: qi_grid oracle fit of the Lorenz mpmath reference at
+        W=256, halo 8, seed 0 gives 1.07e-13. Gate at 10x."""
+        from f17.tasks1d import dysts_task
+        from f17.dicts import dict_rng
+>       t = dysts_task("Lorenz")
+            ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expF17_method_scaling_suite.py:229: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/expF17_method_scaling_suite/f17/tasks1d.py:35: in dysts_task
+    sys_obj = f14_systems.System(name)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <[AttributeError("'System' object has no attribute 'name'") raised in repr()] System object at 0x152b92b10>
+name = 'Lorenz'
+
+    def __init__(self, name):
+>       import dysts.flows as flows
+E       ModuleNotFoundError: No module named 'dysts'
+
+experiments/expF14_dysts_chaos/systems.py:225: ModuleNotFoundError
+____________________ test_1d_spectral_dynamic_floor_lorenz _____________________
+
+    def test_1d_spectral_dynamic_floor_lorenz():
+        """Measured in-build: the Chebyshev collocation solve of Lorenz at W=384
+        reaches 1.7e-14 under Chebyshev-density collocation (uniform-density data
+        at this degree is the Platte-Trefethen-Kuijlaars unstable regime and gave
+        9.3e0 -- the sampling rule is load-bearing). Gate at 100x."""
+        from f17.tasks1d import dysts_task
+>       t = dysts_task("Lorenz")
+            ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expF17_method_scaling_suite.py:242: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/expF17_method_scaling_suite/f17/tasks1d.py:35: in dysts_task
+    sys_obj = f14_systems.System(name)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <[AttributeError("'System' object has no attribute 'name'") raised in repr()] System object at 0x152f38dd0>
+name = 'Lorenz'
+
+    def __init__(self, name):
+>       import dysts.flows as flows
+E       ModuleNotFoundError: No module named 'dysts'
+
+experiments/expF14_dysts_chaos/systems.py:225: ModuleNotFoundError
+_______________ test_evaluate_cell_holdout_is_finite_and_harder ________________
+
+    def test_evaluate_cell_holdout_is_finite_and_harder():
+        """Runge under edge_holdout at lambda=0.25: held-out rel L2 is finite and
+        no better than the unmasked region."""
+>       rec = g03run.evaluate_cell("edge_holdout", "runge", 0.25, N=128)
+              ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'run' has no attribute 'evaluate_cell'
+
+tests/test_expG03_extrapolation.py:73: AttributeError
+___________________________ test_viz_writes_figures ____________________________
+
+tmp_path = PosixPath('/private/var/folders/kx/zf_6px5n7pd5pgkscl53kfvw0000gn/T/pytest-of-junmiaohu/pytest-200/test_viz_writes_figures0')
+
+    def test_viz_writes_figures(tmp_path):
+>       import viz
+
+tests/test_expG03_extrapolation.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Figures for expH06. Legends sit above the axes; error axes are fixed to [1e-14, 1]."""
+    
+    from __future__ import annotations
+    
+    import json
+    import sys
+    from pathlib import Path
+    
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import run as R
+    
+    ERR_LIM = (1e-14, 3.0)
+    ACTION_STYLE = {"open_bg": ("tab:blue", "o", "open background directions"),
+                    "open_atom": ("tab:red", "*", "open an atom (found direction)"),
+                    "refine_bg": ("tab:cyan", "s", "refine background blocks"),
+                    "refine_atoms": ("tab:orange", "D", "refine atom blocks"),
+                    "init": ("k", ".", "start")}
+    
+    
+    def _legend_above(ax, ncol=3):
+        ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=ncol, borderaxespad=0, fontsize=8, frameon=False)
+    
+    
+    # ---------------------------------------------------------------------------
+    # floors
+    # ---------------------------------------------------------------------------
+    
+>   def plot_floors(path=R.FLOORS_JSON, out=R.FIG_DIR / "floors_d3.png"):
+                         ^^^^^^^^^^^^^
+E   AttributeError: module 'run' has no attribute 'FLOORS_JSON'
+
+experiments/expH06_ridge_hierarchy/viz.py:33: AttributeError
+______________________ test_structured_regression_loaders ______________________
+
+    def test_structured_regression_loaders():
+        import tasks
+>       D = tasks.friedman1(seed=0, n=400)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_expI02_block_prior.py:284: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+seed = 0, n = 400, noise = 1.0
+
+    def friedman1(seed=0, n=2000, noise=1.0):
+>       from sklearn.datasets import make_friedman1
+E       ModuleNotFoundError: No module named 'sklearn'
+
+experiments/expI02_block_prior/tasks.py:141: ModuleNotFoundError
+=============================== warnings summary ===============================
+experiments/expI03_investigation/f_init/test_fixed_qi_mlp.py::test_geometry_is_immutable_under_training
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/mpmath/ctx_mp.py:35: DeprecationWarning: mpnumeric is deprecated
+    warnings.warn(f"{name} is deprecated", DeprecationWarning)
+
+experiments/expI03_investigation/f_init/test_fixed_qi_mlp.py::test_geometry_is_immutable_under_training
+experiments/expI03_investigation/f_init/test_fixed_qi_mlp.py::test_geometry_is_immutable_under_training
+experiments/expI03_investigation/f_init/test_fixed_qi_mlp.py::test_geometry_is_immutable_under_training
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/mpmath/rational.py:4: DeprecationWarning: the rational private module is deprecated
+    warnings.warn("the rational private module is deprecated",
+
+tests/test_construction.py::TestQIResultBasics::test_types
+tests/test_construction.py::TestQIPrecisionSine::test_linf_below_1e11
+tests/test_construction.py::TestExponentialConvergence::test_error_decreases_monotonically
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/_pytest/fixtures.py:1313: PytestRemovedIn10Warning: Class-scoped fixture defined as instance method is deprecated.
+  Instance attributes set in this fixture will NOT be visible to test methods,
+  as each test gets a new instance while the fixture runs only once per class.
+  Use @classmethod decorator and set attributes on cls instead.
+  See https://docs.pytest.org/en/stable/deprecations.html#class-scoped-fixture-as-instance-method
+    fixturefunc = resolve_fixture_function(fixturedef, request)
+
+tests/test_ssbroyden.py::test_quadratic
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but tests/test_ssbroyden.py::test_quadratic returned <class 'float'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+tests/test_ssbroyden.py::test_rosenbrock
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but tests/test_ssbroyden.py::test_rosenbrock returned <class 'float'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+tests/test_ssbroyden.py::test_least_squares
+  /Users/junmiaohu/Documents/Stanford/courses/CME391chris/precision-mlps/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but tests/test_ssbroyden.py::test_least_squares returned <class 'float'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]
+FAILED constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]
+FAILED tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry
+FAILED tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized
+FAILED tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded
+FAILED tests/test_expF10_qi_operator.py::test_load_darcy_downsamples - FileNo...
+FAILED tests/test_expF10_qi_operator.py::test_models_forward_backward - Runti...
+FAILED tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss
+FAILED tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution - FileN...
+FAILED tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite
+FAILED tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss
+FAILED tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges - A...
+FAILED tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz
+FAILED tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz
+FAILED tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder
+FAILED tests/test_expG03_extrapolation.py::test_viz_writes_figures - Attribut...
+FAILED tests/test_expI02_block_prior.py::test_structured_regression_loaders
+17 failed, 636 passed, 8 skipped, 4 deselected, 10 warnings in 306.37s (0:05:06)

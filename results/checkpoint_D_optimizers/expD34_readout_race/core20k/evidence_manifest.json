@@ -1,0 +1,85 @@
+{
+  "inputs": [
+    "/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race/core20k_N64",
+    "/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race/core20k_N128",
+    "/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race/core20k_N256"
+  ],
+  "analyses": [
+    {
+      "end": 20000,
+      "bundles": [
+        "core_N64_s0",
+        "core_N64_s1",
+        "core_N64_s2",
+        "core_N64_s3",
+        "core_N64_s4"
+      ],
+      "rows": 875,
+      "reference_rows": 713300,
+      "probe_rows": 61250,
+      "source_sha256": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+      "probe_schedule": "steps 0 through 20 and nearest saved states to 61 logarithmic times",
+      "evidence_role": "descriptive optimization diagnostics; no checkpoint selection"
+    },
+    {
+      "end": 20000,
+      "bundles": [
+        "core_N128_s0",
+        "core_N128_s1",
+        "core_N128_s2",
+        "core_N128_s3",
+        "core_N128_s4"
+      ],
+      "rows": 875,
+      "reference_rows": 713300,
+      "probe_rows": 61250,
+      "source_sha256": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+      "probe_schedule": "steps 0 through 20 and nearest saved states to 61 logarithmic times",
+      "evidence_role": "descriptive optimization diagnostics; no checkpoint selection"
+    },
+    {
+      "end": 20000,
+      "bundles": [
+        "core_N256_s0",
+        "core_N256_s1",
+        "core_N256_s2",
+        "core_N256_s3",
+        "core_N256_s4"
+      ],
+      "rows": 875,
+      "reference_rows": 713300,
+      "probe_rows": 61250,
+      "source_sha256": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+      "probe_schedule": "steps 0 through 20 and nearest saved states to 61 logarithmic times",
+      "evidence_role": "descriptive optimization diagnostics; no checkpoint selection"
+    }
+  ],
+  "source_sha256": "983e276011649ce01d6224400ff0ca154251c4f21aaa9db21aef96f58e298084",
+  "files": {
+    "rate_contrasts.csv": "46565e166b07f76f64768d8c5ac52039d00efdc0f4d3cdddbb76de68d258dda9",
+    "sample_probes.csv": "3d41ab92a50de7b75443616f18cb8499d7f76100e686b583a162477ce47de109",
+    "probe_audit.csv": "bf1765218138266d8051542a62d272cc4f22e9d65d4dd7ecd150407c8907c3bb",
+    "matched_target_audit.csv": "ae0309093626d4a7d5945121b49abe2cfdcb8d10784ae622663a517e3c79473d",
+    "reference_audit.csv": "7329b21e855e56b6108e00c6e7b0d7085f6cf4af71d976ae819c9a9baa93dce4",
+    "summary.csv": "379c08c9b2cbf0fa425cc3e90ca187c5a7c3b99eb7c7d3e57b5db02c9b66f257",
+    "summary.json": "87b78fc66447617223f1152ac5c84b108f733695ed45411a807d5d4103478062",
+    "core_N256_s0_curves.npz": "b0794c2c2d1df00d7416460443f21881721f7ef5f642b9d1ab894b9139ae0f81",
+    "core_N256_s1_curves.npz": "478094e4aea76bd6489d92a2b419de6bceba3753f2a47d78b102973ca49570c5",
+    "core_N256_s2_curves.npz": "a2c14ea69b3d5b19ac5319e8725b461bffefb0e799b99ebfe9bf050e46e47eaa",
+    "core_N256_s3_curves.npz": "dedae60ef4e685326d3fa0f38ea7a479abc046f7baf652227d3f3789aca4c1f0",
+    "core_N256_s4_curves.npz": "580ddb6fa45be16012a69ea742ace6d0ad53447f2ded4fe73d843585e4e24366",
+    "core_N128_s0_curves.npz": "96323eab6f4a24faf1ff9de72c31951d83a69c57ee25a7387b18232b95a1d581",
+    "core_N128_s1_curves.npz": "8bb793f40ec9082fb54b41015a26e58dbd714a7f227090b83785d681ecd5ef67",
+    "core_N128_s2_curves.npz": "fda5d55d69a0f3b020d73afe29302252c83dd149b2dd1f7b57f07ffd6860b26f",
+    "core_N128_s3_curves.npz": "3b0c744c2c46c1d340ba2d16ed4e797b32e482483a4911c7875d09fda2ada534",
+    "core_N128_s4_curves.npz": "d0e0248d2972b316f729c40128562ab93cac521c37f40a572d181f28d3a331d5",
+    "core_N64_s0_curves.npz": "6341120b06bdee6ff9c87562df8af0e01dfd5beea78a550cf28eb7e32a320368",
+    "core_N64_s1_curves.npz": "a918678b1291ce5ca1bc4885dd12121a0e5eb3752e2216669b3837d3111d95f7",
+    "core_N64_s2_curves.npz": "a5f5db631a0ee5135bcd925bf153a4eb29f8b07f75806810a3e5eb89e63b671e",
+    "core_N64_s3_curves.npz": "769700bfa90ebd253e165670d7736742da8a079fa376b66f9afb8019e113c117",
+    "core_N64_s4_curves.npz": "1de6cb2abdda71ec25ece8622a56be9c1670f1cbdb1231d0b8beaadede4a0fa2"
+  },
+  "audit_scope": "All analyzed rows; max_abs fields are descriptive maxima; 5% is a post-observation summary threshold",
+  "curve_scope": "Only columns identified by plot_trace_columns are included; all full traces remain at source",
+  "probe_scope": "Full sample probe curves retained for width 177 seed 0; other probes summarized and retained at source"
+}

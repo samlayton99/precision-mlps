@@ -1,0 +1,356 @@
+[
+  {
+    "config": {
+      "batch_size": 1024,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "coordinates": "neighbor",
+      "ema_alpha": 0.98,
+      "ema_location": 1,
+      "ema_normalized": false,
+      "ema_strength": 0.5,
+      "epsilon": 1e-15,
+      "eta": 9e-06,
+      "initialization": "reference_xavier",
+      "n": 512,
+      "optimizer": "adam",
+      "reset": "none",
+      "sampling": "full",
+      "schedule": "constant",
+      "slope_initialization": "lambda_xavier",
+      "target": "sine"
+    },
+    "seeds": [
+      {
+        "seed": 0,
+        "id": "adam_N512_s0_neighbor_sine_9a6a1ff26cd2",
+        "mean_mse": 2.485637368521482e-08,
+        "final_mse": 1.7731602380078878e-09,
+        "lambda_median": 0.06712575651561918
+      },
+      {
+        "seed": 1,
+        "id": "adam_N512_s1_neighbor_sine_45a03eb4c4df",
+        "mean_mse": 3.42842686144559e-08,
+        "final_mse": 1.2725385230634742e-09,
+        "lambda_median": 0.05971192355035959
+      },
+      {
+        "seed": 2,
+        "id": "adam_N512_s2_neighbor_sine_0cb921ca990d",
+        "mean_mse": 4.7489751162336854e-09,
+        "final_mse": 4.3711024456909133e-10,
+        "lambda_median": 0.06564649404201864
+      },
+      {
+        "seed": 3,
+        "id": "adam_N512_s3_neighbor_sine_16a683a36ba9",
+        "mean_mse": 1.4433060873640059e-08,
+        "final_mse": 1.1148657868556987e-10,
+        "lambda_median": 0.06348670672542918
+      },
+      {
+        "seed": 4,
+        "id": "adam_N512_s4_neighbor_sine_03b9c3723e1a",
+        "mean_mse": 3.832132512594026e-09,
+        "final_mse": 5.6642267815786445e-09,
+        "lambda_median": 0.06211126428418628
+      }
+    ]
+  },
+  {
+    "config": {
+      "batch_size": 1024,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "coordinates": "individual",
+      "ema_alpha": 0.995,
+      "ema_location": 2,
+      "ema_normalized": false,
+      "ema_strength": 2.0,
+      "epsilon": 1e-15,
+      "eta": 0.009,
+      "initialization": "reference_xavier",
+      "n": 512,
+      "optimizer": "adam",
+      "reset": "none",
+      "sampling": "full",
+      "schedule": "constant",
+      "slope_initialization": "physical_xavier",
+      "target": "mixed"
+    },
+    "seeds": [
+      {
+        "seed": 0,
+        "id": "adam_N512_s0_individual_mixed_cbbb40bbce52",
+        "mean_mse": 1.4030215327964224e-07,
+        "final_mse": 2.691142699221948e-08,
+        "lambda_median": 0.7966445010611913
+      },
+      {
+        "seed": 1,
+        "id": "adam_N512_s1_individual_mixed_d2001c7056dd",
+        "mean_mse": 8.632606052251845e-07,
+        "final_mse": 4.866286687003933e-09,
+        "lambda_median": 0.7658732386316549
+      },
+      {
+        "seed": 2,
+        "id": "adam_N512_s2_individual_mixed_54c29e857862",
+        "mean_mse": 7.413001168622605e-05,
+        "final_mse": 2.635619476093178e-07,
+        "lambda_median": 0.7684198351526025
+      },
+      {
+        "seed": 3,
+        "id": "adam_N512_s3_individual_mixed_aefed0968757",
+        "mean_mse": 8.269332750716176e-07,
+        "final_mse": 1.8826540753708785e-08,
+        "lambda_median": 0.7678076893901867
+      },
+      {
+        "seed": 4,
+        "id": "adam_N512_s4_individual_mixed_c5aef13f9758",
+        "mean_mse": 5.7632769054001355e-08,
+        "final_mse": 1.216257339018391e-07,
+        "lambda_median": 0.7970195714955348
+      }
+    ]
+  },
+  {
+    "config": {
+      "batch_size": 1024,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "coordinates": "neighbor",
+      "ema_alpha": 0.98,
+      "ema_location": 1,
+      "ema_normalized": false,
+      "ema_strength": 0.0,
+      "epsilon": 1e-08,
+      "eta": 0.0009,
+      "initialization": "reference_xavier",
+      "n": 512,
+      "optimizer": "adam",
+      "reset": "none",
+      "sampling": "full",
+      "schedule": "constant",
+      "slope_initialization": "lambda_xavier",
+      "target": "moment9"
+    },
+    "seeds": [
+      {
+        "seed": 0,
+        "id": "adam_N512_s0_neighbor_moment9_43eb93d7a006",
+        "mean_mse": 4.774282143634569e-06,
+        "final_mse": 2.2945648934883933e-06,
+        "lambda_median": 0.16859279029134283
+      },
+      {
+        "seed": 1,
+        "id": "adam_N512_s1_neighbor_moment9_b407726f9f5a",
+        "mean_mse": 4.7521166214870065e-06,
+        "final_mse": 2.2056998139245085e-05,
+        "lambda_median": 0.17696552457556108
+      },
+      {
+        "seed": 2,
+        "id": "adam_N512_s2_neighbor_moment9_23f365366d4c",
+        "mean_mse": 2.2524873465324094e-06,
+        "final_mse": 7.440781439464967e-08,
+        "lambda_median": 0.17304147751770935
+      },
+      {
+        "seed": 3,
+        "id": "adam_N512_s3_neighbor_moment9_2f630115ddde",
+        "mean_mse": 2.698165470407654e-06,
+        "final_mse": 4.457160445650466e-08,
+        "lambda_median": 0.16148965964612008
+      },
+      {
+        "seed": 4,
+        "id": "adam_N512_s4_neighbor_moment9_74e4f03cc51c",
+        "mean_mse": 1.3358074766679717e-06,
+        "final_mse": 2.865475285663844e-09,
+        "lambda_median": 0.1681039991986806
+      }
+    ]
+  },
+  {
+    "config": {
+      "n": 512,
+      "target": "sine",
+      "optimizer": "gd",
+      "coordinates": "neighbor",
+      "eta": 0.003,
+      "initialization": "reference_xavier",
+      "slope_initialization": "lambda_xavier",
+      "epsilon": 1e-15,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "ema_alpha": 0.98,
+      "ema_strength": 0.0,
+      "ema_location": 1,
+      "ema_normalized": false,
+      "sampling": "full",
+      "batch_size": 1024,
+      "schedule": "constant",
+      "reset": "none"
+    },
+    "seeds": [
+      {
+        "seed": 0,
+        "id": "gd_N512_s0_neighbor_sine_51df38334097",
+        "mean_mse": 2.618854842479159e-07,
+        "final_mse": 2.3116847719033577e-07,
+        "lambda_median": 0.06946278197708068
+      },
+      {
+        "seed": 1,
+        "id": "gd_N512_s1_neighbor_sine_a53975615637",
+        "mean_mse": 1.8312646379356778e-07,
+        "final_mse": 1.6368414650574458e-07,
+        "lambda_median": 0.06302291108571163
+      },
+      {
+        "seed": 2,
+        "id": "gd_N512_s2_neighbor_sine_519b16c78d35",
+        "mean_mse": 4.910018198756312e-07,
+        "final_mse": 6.438400786870609e-07,
+        "lambda_median": 0.07079845973925691
+      },
+      {
+        "seed": 3,
+        "id": "gd_N512_s3_neighbor_sine_b554e95adeeb",
+        "mean_mse": 2.1630588816987896e-07,
+        "final_mse": 1.9684585067685556e-07,
+        "lambda_median": 0.06651778077949723
+      },
+      {
+        "seed": 4,
+        "id": "gd_N512_s4_neighbor_sine_0bc39f6acc21",
+        "mean_mse": 1.4581219268305826e-07,
+        "final_mse": 1.3618191737342087e-07,
+        "lambda_median": 0.06811998419210974
+      }
+    ]
+  },
+  {
+    "config": {
+      "batch_size": 1024,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "coordinates": "neighbor",
+      "ema_alpha": 0.98,
+      "ema_location": 1,
+      "ema_normalized": false,
+      "ema_strength": 8.0,
+      "epsilon": 1e-15,
+      "eta": 0.0009000000000000001,
+      "initialization": "reference_xavier",
+      "n": 512,
+      "optimizer": "gd",
+      "reset": "none",
+      "sampling": "full",
+      "schedule": "constant",
+      "slope_initialization": "lambda_xavier",
+      "target": "mixed"
+    },
+    "seeds": [
+      {
+        "seed": 0,
+        "id": "gd_N512_s0_neighbor_mixed_b2cc7a8331c0",
+        "mean_mse": 1.2091832193899818e-06,
+        "final_mse": 1.0691979614216873e-06,
+        "lambda_median": 0.08101086055770908
+      },
+      {
+        "seed": 1,
+        "id": "gd_N512_s1_neighbor_mixed_056fc22ee5ef",
+        "mean_mse": 1.5772759416728806e-06,
+        "final_mse": 1.3975210674578823e-06,
+        "lambda_median": 0.08062010713563474
+      },
+      {
+        "seed": 2,
+        "id": "gd_N512_s2_neighbor_mixed_de7f7f6c5509",
+        "mean_mse": 1.3432777139154472e-06,
+        "final_mse": 1.1987995355682227e-06,
+        "lambda_median": 0.07685936541097305
+      },
+      {
+        "seed": 3,
+        "id": "gd_N512_s3_neighbor_mixed_5e3028fb3345",
+        "mean_mse": 3.487601866156361e-06,
+        "final_mse": 3.1268861751473105e-06,
+        "lambda_median": 0.0807410097341598
+      },
+      {
+        "seed": 4,
+        "id": "gd_N512_s4_neighbor_mixed_c62de0246da0",
+        "mean_mse": 1.9221958782380896e-06,
+        "final_mse": 1.6297148442476154e-06,
+        "lambda_median": 0.07811202317923335
+      }
+    ]
+  },
+  {
+    "config": {
+      "batch_size": 1024,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "coordinates": "neighbor",
+      "ema_alpha": 0.98,
+      "ema_location": 1,
+      "ema_normalized": false,
+      "ema_strength": 2.0,
+      "epsilon": 1e-15,
+      "eta": 0.0009,
+      "initialization": "reference_xavier",
+      "n": 512,
+      "optimizer": "gd",
+      "reset": "none",
+      "sampling": "full",
+      "schedule": "constant",
+      "slope_initialization": "lambda_xavier",
+      "target": "moment9"
+    },
+    "seeds": [
+      {
+        "seed": 0,
+        "id": "gd_N512_s0_neighbor_moment9_1036deb8be3d",
+        "mean_mse": 6.190119001307553e-06,
+        "final_mse": 5.806627311974023e-06,
+        "lambda_median": 0.070072732317717
+      },
+      {
+        "seed": 1,
+        "id": "gd_N512_s1_neighbor_moment9_855c35e200dd",
+        "mean_mse": 1.0279444130186837e-05,
+        "final_mse": 9.6992230628951e-06,
+        "lambda_median": 0.06292130851049227
+      },
+      {
+        "seed": 2,
+        "id": "gd_N512_s2_neighbor_moment9_26f06f9236b8",
+        "mean_mse": 1.3625119238602811e-05,
+        "final_mse": 1.179840037314208e-05,
+        "lambda_median": 0.06984014016113296
+      },
+      {
+        "seed": 3,
+        "id": "gd_N512_s3_neighbor_moment9_fa6a22a732ad",
+        "mean_mse": 2.878675084801583e-05,
+        "final_mse": 2.325240907084231e-05,
+        "lambda_median": 0.06841702729715299
+      },
+      {
+        "seed": 4,
+        "id": "gd_N512_s4_neighbor_moment9_fa1ca3238744",
+        "mean_mse": 2.312045537149899e-05,
+        "final_mse": 2.1974518605630055e-05,
+        "lambda_median": 0.06728997446108938
+      }
+    ]
+  }
+]

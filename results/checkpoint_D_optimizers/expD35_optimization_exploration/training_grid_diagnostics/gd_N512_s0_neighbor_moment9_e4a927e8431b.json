@@ -1,0 +1,122 @@
+{
+  "snapshot": "results/checkpoint_D_optimizers/expD35_optimization_exploration/evidence/gd_N512_s0_neighbor_moment9_e4a927e8431b/snapshot_000100000.npz",
+  "config": {
+    "batch_size": 1024,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "coordinates": "neighbor",
+    "ema_alpha": 0.98,
+    "ema_location": 1,
+    "ema_normalized": false,
+    "ema_strength": 0.0,
+    "epsilon": 1e-08,
+    "eta": 0.0003,
+    "initialization": "reference_xavier",
+    "n": 512,
+    "optimizer": "gd",
+    "reset": "none",
+    "sampling": "full",
+    "schedule": "constant",
+    "slope_initialization": "lambda_xavier",
+    "target": "moment9",
+    "seed": 0,
+    "origin": {
+      "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_neighbor_moment9_43eb93d7a006/checkpoint_000500000.npz",
+      "sha256": "3ebce97032097bd1735ebc5cef8bb3082c9433b52a8e7b56ca3131ce38a84489",
+      "carry_optimizer": false
+    }
+  },
+  "grid_size": 8193,
+  "quadrature": "training endpoint grid",
+  "mse": 3.53584347890616e-09,
+  "lambda_quantiles": [
+    0.014441570033160945,
+    0.10292528316280108,
+    0.16859370197166756,
+    0.28212660265792044,
+    1.892861624132296
+  ],
+  "resolved_mode_energy": 3.5358434789061627e-09,
+  "residual_energy": 3.53584347890616e-09,
+  "least_squares": [
+    {
+      "relative_cutoff": 1.8192114481507815e-12,
+      "rank": 447,
+      "fit_mse": 7.498403516738815e-21,
+      "validation_mse": 7.38899415424441e-21,
+      "coefficient_l2": 13.7043842415596
+    },
+    {
+      "relative_cutoff": 1e-12,
+      "rank": 453,
+      "fit_mse": 7.2695300290675e-21,
+      "validation_mse": 7.160158903177405e-21,
+      "coefficient_l2": 14.220454303153474
+    },
+    {
+      "relative_cutoff": 1e-14,
+      "rank": 493,
+      "fit_mse": 2.947665043273953e-23,
+      "validation_mse": 2.9458736035742237e-23,
+      "coefficient_l2": 129.7998725012493
+    },
+    {
+      "relative_cutoff": 1e-16,
+      "rank": 523,
+      "fit_mse": 1.7163488927315584e-23,
+      "validation_mse": 1.6576149191314353e-23,
+      "coefficient_l2": 13626.17473140846
+    }
+  ],
+  "mode_edges": [
+    0.0,
+    1e-08,
+    1e-06,
+    0.0001,
+    0.01,
+    0.1,
+    1.0000001
+  ],
+  "mode_energy": [
+    3.665235785968935e-15,
+    1.8533379546615572e-11,
+    3.5007195505247156e-09,
+    1.63930410011638e-11,
+    1.93842472636342e-13,
+    1.2524562654135802e-19
+  ],
+  "frequency_bands": [
+    "0\u20130",
+    "1\u20131",
+    "2\u20133",
+    "4\u20137",
+    "8\u201315",
+    "16\u201331",
+    "32\u201363",
+    "64\u2013127",
+    "128\u2013255",
+    "256+"
+  ],
+  "frequency_mse": [
+    3.425486141536145e-21,
+    1.0594916371600779e-16,
+    1.1790168257758811e-15,
+    5.915843966822319e-15,
+    2.674733219812883e-14,
+    4.604891888433748e-13,
+    1.013776871490405e-11,
+    1.4625938357785797e-09,
+    1.8353132986439052e-09,
+    2.2730413843434735e-10
+  ],
+  "geometry_signal": {
+    "coarse_residual_mse": 1.571435316709886e-17,
+    "remainder_residual_mse": 3.5358434631918073e-09,
+    "gradient_norm": 5.247458974252088e-10,
+    "coarse_gradient_norm": 7.670397321362829e-12,
+    "remainder_gradient_norm": 5.251267860710053e-10,
+    "readout_span_gradient_norm": 5.247458974245721e-10,
+    "orthogonal_gradient_norm": 1.4217674267089313e-20,
+    "span_relative_cutoff": 1e-12
+  }
+}

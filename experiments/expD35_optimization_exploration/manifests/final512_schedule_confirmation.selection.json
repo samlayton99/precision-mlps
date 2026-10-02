@@ -1,0 +1,321 @@
+{
+  "horizon": 500000,
+  "selected": [
+    {
+      "config": {
+        "batch_size": 1024,
+        "beta1": 0.9,
+        "beta2": 0.999,
+        "coordinates": "neighbor",
+        "ema_alpha": 0.98,
+        "ema_location": 1,
+        "ema_normalized": false,
+        "ema_strength": 0.5,
+        "epsilon": 1e-15,
+        "eta": 9e-06,
+        "initialization": "reference_xavier",
+        "n": 512,
+        "optimizer": "adam",
+        "reset": "none",
+        "sampling": "full",
+        "schedule": "decay",
+        "slope_initialization": "lambda_xavier",
+        "target": "sine",
+        "origin": {
+          "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_neighbor_sine_9a6a1ff26cd2/checkpoint_000100000.npz",
+          "sha256": "16ae57f9e53e443af129e0649e6b38d568f47572de34a3903713bf5e98745561",
+          "carry_optimizer": true,
+          "reset_filter": false
+        },
+        "eta_ceiling": 9e-06
+      },
+      "score": 2.2995429800740048e-10,
+      "members": [
+        {
+          "id": "adam_N512_s0_neighbor_sine_e544873b643c",
+          "config": {
+            "batch_size": 1024,
+            "beta1": 0.9,
+            "beta2": 0.999,
+            "coordinates": "neighbor",
+            "ema_alpha": 0.98,
+            "ema_location": 1,
+            "ema_normalized": false,
+            "ema_strength": 0.5,
+            "epsilon": 1e-15,
+            "eta": 9e-06,
+            "initialization": "reference_xavier",
+            "n": 512,
+            "optimizer": "adam",
+            "reset": "none",
+            "sampling": "full",
+            "schedule": "decay",
+            "slope_initialization": "lambda_xavier",
+            "target": "sine",
+            "seed": 0,
+            "origin": {
+              "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_neighbor_sine_9a6a1ff26cd2/checkpoint_000100000.npz",
+              "sha256": "16ae57f9e53e443af129e0649e6b38d568f47572de34a3903713bf5e98745561",
+              "carry_optimizer": true,
+              "reset_filter": false
+            },
+            "eta_ceiling": 9e-06
+          },
+          "step": 500000,
+          "score": 1.5047665521414956e-10,
+          "median": 1.5047411758550314e-10,
+          "upper": 1.5048511756257826e-10,
+          "best": 1.504717954365083e-10
+        },
+        {
+          "id": "adam_N512_s1_neighbor_sine_cda3d242c2ef",
+          "config": {
+            "batch_size": 1024,
+            "beta1": 0.9,
+            "beta2": 0.999,
+            "coordinates": "neighbor",
+            "ema_alpha": 0.98,
+            "ema_location": 1,
+            "ema_normalized": false,
+            "ema_strength": 0.5,
+            "epsilon": 1e-15,
+            "eta": 9e-06,
+            "initialization": "reference_xavier",
+            "n": 512,
+            "optimizer": "adam",
+            "reset": "none",
+            "sampling": "full",
+            "schedule": "decay",
+            "slope_initialization": "lambda_xavier",
+            "target": "sine",
+            "seed": 1,
+            "origin": {
+              "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s1_neighbor_sine_45a03eb4c4df/checkpoint_000100000.npz",
+              "sha256": "faf23a95a63f93b56c727c914b072038f5e8703a01981da6738a5cb35f03537a",
+              "carry_optimizer": true,
+              "reset_filter": false
+            },
+            "eta_ceiling": 9e-06
+          },
+          "step": 500000,
+          "score": 3.0943194080065137e-10,
+          "median": 3.094286276554502e-10,
+          "upper": 3.094427220437052e-10,
+          "best": 3.0942569830484374e-10
+        }
+      ],
+      "step": 500000
+    },
+    {
+      "config": {
+        "batch_size": 1024,
+        "beta1": 0.9,
+        "beta2": 0.999,
+        "coordinates": "individual",
+        "ema_alpha": 0.995,
+        "ema_location": 2,
+        "ema_normalized": false,
+        "ema_strength": 2.0,
+        "epsilon": 1e-15,
+        "eta": 0.009,
+        "initialization": "reference_xavier",
+        "n": 512,
+        "optimizer": "adam",
+        "reset": "none",
+        "sampling": "full",
+        "schedule": "decay",
+        "slope_initialization": "physical_xavier",
+        "target": "mixed",
+        "origin": {
+          "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_individual_mixed_cbbb40bbce52/checkpoint_000100000.npz",
+          "sha256": "fd8dbab11b7493f10b22a06817ddaab0c1df9894973b685d2d558a79875a6748",
+          "carry_optimizer": true,
+          "reset_filter": false
+        },
+        "eta_ceiling": 0.009
+      },
+      "score": 1.3410461430357355e-08,
+      "members": [
+        {
+          "id": "adam_N512_s1_individual_mixed_4cf90fb5ef83",
+          "config": {
+            "batch_size": 1024,
+            "beta1": 0.9,
+            "beta2": 0.999,
+            "coordinates": "individual",
+            "ema_alpha": 0.995,
+            "ema_location": 2,
+            "ema_normalized": false,
+            "ema_strength": 2.0,
+            "epsilon": 1e-15,
+            "eta": 0.009,
+            "initialization": "reference_xavier",
+            "n": 512,
+            "optimizer": "adam",
+            "reset": "none",
+            "sampling": "full",
+            "schedule": "decay",
+            "slope_initialization": "physical_xavier",
+            "target": "mixed",
+            "seed": 1,
+            "origin": {
+              "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s1_individual_mixed_d2001c7056dd/checkpoint_000100000.npz",
+              "sha256": "b5f053152949ebe9e81d50bb604879e96907d678f49e48c9c676f280280c4ab1",
+              "carry_optimizer": true,
+              "reset_filter": false
+            },
+            "eta_ceiling": 0.009
+          },
+          "step": 500000,
+          "score": 3.2136686171834666e-10,
+          "median": 3.209840904509243e-10,
+          "upper": 3.2276087298838774e-10,
+          "best": 3.204930922981663e-10
+        },
+        {
+          "id": "adam_N512_s0_individual_mixed_92df90f78945",
+          "config": {
+            "batch_size": 1024,
+            "beta1": 0.9,
+            "beta2": 0.999,
+            "coordinates": "individual",
+            "ema_alpha": 0.995,
+            "ema_location": 2,
+            "ema_normalized": false,
+            "ema_strength": 2.0,
+            "epsilon": 1e-15,
+            "eta": 0.009,
+            "initialization": "reference_xavier",
+            "n": 512,
+            "optimizer": "adam",
+            "reset": "none",
+            "sampling": "full",
+            "schedule": "decay",
+            "slope_initialization": "physical_xavier",
+            "target": "mixed",
+            "seed": 0,
+            "origin": {
+              "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_individual_mixed_cbbb40bbce52/checkpoint_000100000.npz",
+              "sha256": "fd8dbab11b7493f10b22a06817ddaab0c1df9894973b685d2d558a79875a6748",
+              "carry_optimizer": true,
+              "reset_filter": false
+            },
+            "eta_ceiling": 0.009
+          },
+          "step": 500000,
+          "score": 2.6499555998996365e-08,
+          "median": 2.6497603434319908e-08,
+          "upper": 2.650660171153401e-08,
+          "best": 2.6495165691613303e-08
+        }
+      ],
+      "step": 500000
+    },
+    {
+      "config": {
+        "batch_size": 1024,
+        "beta1": 0.9,
+        "beta2": 0.999,
+        "coordinates": "neighbor",
+        "ema_alpha": 0.98,
+        "ema_location": 1,
+        "ema_normalized": false,
+        "ema_strength": 0.0,
+        "epsilon": 1e-08,
+        "eta": 0.0009,
+        "initialization": "reference_xavier",
+        "n": 512,
+        "optimizer": "adam",
+        "reset": "none",
+        "sampling": "full",
+        "schedule": "agreement",
+        "slope_initialization": "lambda_xavier",
+        "target": "moment9",
+        "origin": {
+          "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_neighbor_moment9_43eb93d7a006/checkpoint_000100000.npz",
+          "sha256": "94ca9b594825c683d494a5adb4a8608f01ad3958119fb60c9e38d006ce06d91c",
+          "carry_optimizer": true,
+          "reset_filter": false
+        },
+        "eta_ceiling": 0.0009
+      },
+      "score": 8.370747858255025e-10,
+      "members": [
+        {
+          "id": "adam_N512_s1_neighbor_moment9_4af72df21714",
+          "config": {
+            "batch_size": 1024,
+            "beta1": 0.9,
+            "beta2": 0.999,
+            "coordinates": "neighbor",
+            "ema_alpha": 0.98,
+            "ema_location": 1,
+            "ema_normalized": false,
+            "ema_strength": 0.0,
+            "epsilon": 1e-08,
+            "eta": 0.0009,
+            "initialization": "reference_xavier",
+            "n": 512,
+            "optimizer": "adam",
+            "reset": "none",
+            "sampling": "full",
+            "schedule": "agreement",
+            "slope_initialization": "lambda_xavier",
+            "target": "moment9",
+            "seed": 1,
+            "origin": {
+              "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s1_neighbor_moment9_b407726f9f5a/checkpoint_000100000.npz",
+              "sha256": "0c2ff62c24a40977c67e18aabf5c5eeedf9f661b1f74c34ac99b24efad12fe8d",
+              "carry_optimizer": true,
+              "reset_filter": false
+            },
+            "eta_ceiling": 0.0009
+          },
+          "step": 500000,
+          "score": 7.308681311323213e-10,
+          "median": 4.667349432480585e-10,
+          "upper": 1.3984804309997083e-09,
+          "best": 3.6183464213581764e-10
+        },
+        {
+          "id": "adam_N512_s0_neighbor_moment9_3f11ee64c2db",
+          "config": {
+            "batch_size": 1024,
+            "beta1": 0.9,
+            "beta2": 0.999,
+            "coordinates": "neighbor",
+            "ema_alpha": 0.98,
+            "ema_location": 1,
+            "ema_normalized": false,
+            "ema_strength": 0.0,
+            "epsilon": 1e-08,
+            "eta": 0.0009,
+            "initialization": "reference_xavier",
+            "n": 512,
+            "optimizer": "adam",
+            "reset": "none",
+            "sampling": "full",
+            "schedule": "agreement",
+            "slope_initialization": "lambda_xavier",
+            "target": "moment9",
+            "seed": 0,
+            "origin": {
+              "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s0_neighbor_moment9_43eb93d7a006/checkpoint_000100000.npz",
+              "sha256": "94ca9b594825c683d494a5adb4a8608f01ad3958119fb60c9e38d006ce06d91c",
+              "carry_optimizer": true,
+              "reset_filter": false
+            },
+            "eta_ceiling": 0.0009
+          },
+          "step": 500000,
+          "score": 9.432814405186837e-10,
+          "median": 6.910028523538701e-10,
+          "upper": 2.519362229321204e-09,
+          "best": 4.706967376326694e-10
+        }
+      ],
+      "step": 500000
+    }
+  ],
+  "cases": 18
+}

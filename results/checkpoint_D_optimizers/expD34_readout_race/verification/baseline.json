@@ -1,0 +1,19 @@
+{
+  "check": "unchanged D28 PyTorch versus batched JAX",
+  "results": [
+    {
+      "target": "sine",
+      "updates": 20000,
+      "checked_states": 1020,
+      "maximum_parameter_absolute_error": 3.0531133177191805e-16,
+      "passed": true
+    },
+    {
+      "target": "runge",
+      "updates": 20000,
+      "checked_states": 1020,
+      "maximum_parameter_absolute_error": 2.7755575615628914e-16,
+      "passed": true
+    }
+  ]
+}
