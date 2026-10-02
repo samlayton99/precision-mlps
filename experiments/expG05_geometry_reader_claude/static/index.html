@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geometry reader (Claude)</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header>
+  <div class="title">Geometry reader <span class="tag">Claude version</span></div>
+  <div id="message" class="message"></div>
+  <button id="full-reset" title="End any run or replay (recordings stay saved) and restore every default">Full reset</button>
+  <div class="hint">wheel: zoom x (shift or over the y-axis: zoom y) &middot; drag background: pan &middot; double-click: reset view &middot; space: play/pause &middot; cmd-Z / shift-cmd-Z: undo / redo &middot; arrows: step frames</div>
+</header>
+
+<section id="knobs">
+  <div class="card">
+    <h3>Target</h3>
+    <label>preset <select id="k-target-preset"></select></label>
+    <label class="wide">f(x) <input id="k-target" type="text" spellcheck="false"></label>
+  </div>
+  <div class="card">
+    <h3>Training data</h3>
+    <label>domain <input id="k-dom-a" type="number" step="0.1" class="n4"> to <input id="k-dom-b" type="number" step="0.1" class="n4"></label>
+    <label>points <input id="k-ntrain" type="number" min="4" step="1" class="n6"></label>
+    <label>sampling <select id="k-sampling"><option>equispaced</option><option>chebyshev</option><option>uniform</option></select></label>
+    <label>seed <input id="k-dseed" type="number" step="1" class="n3"></label>
+    <label>noise sigma <input id="k-noise" type="number" step="any" min="0" class="n6"></label>
+  </div>
+  <div class="card">
+    <h3>Solve and evaluation</h3>
+    <label>rcond 10^<input id="k-rcond" type="number" step="1" min="-17" max="-1" class="n3"> <span class="dim">(-17 = machine)</span></label>
+    <label>lambda* <input id="k-lstar" type="number" step="0.01" min="0.001" class="n4"></label>
+    <label>eval points <input id="k-neval" type="number" step="1" min="16" class="n6"></label>
+  </div>
+  <div class="card">
+    <h3>Display</h3>
+    <div class="seg" id="v-readout"><button data-v="ls">lstsq readout</button><button data-v="adam">Adam readout</button></div>
+    <label><input type="checkbox" id="v-glog" checked> gamma log axis</label>
+    <label><input type="checkbox" id="v-asym"> readout symlog</label>
+    <label><input type="checkbox" id="v-deriv" checked> scaled f'(x) h/2</label>
+    <label><input type="checkbox" id="v-train"> training points</label>
+    <label><input type="checkbox" id="v-ideal" checked> ideal gamma = lambda*/h</label>
+  </div>
+</section>
+
+<main>
+  <div id="plots">
+    <div class="toolbar">
+      <label>preset <select id="g-preset"></select></label>
+      <label>seed <input id="g-pseed" type="number" value="0" step="1" class="n3"></label>
+      <button id="g-load">Load preset</button>
+      <span class="sep"></span>
+      <label>neurons <input id="g-count" type="range" min="4" max="1200" step="1"> <input id="g-count-n" type="number" min="1" max="5000" class="n5"></label>
+      <span class="sep"></span>
+      <button id="v-fit-domain">view domain</button>
+      <button id="v-fit-all">view all centers</button>
+    </div>
+    <div class="plotwrap" id="wrap-geom"><canvas id="c-geom"></canvas><div class="plabel">geometry: centers c<sub>k</sub> (bottom rail, drag sideways) and slopes |gamma<sub>k</sub>| (drag up/down); diamond on the axis = mean gamma</div></div>
+    <div class="toolbar">
+      <button id="g-clean">Clean</button> <input id="g-clean-p" type="range" min="0" max="100" value="100"> <span id="g-clean-pv" class="pv">100%</span>
+      <select id="g-clean-what"><option value="both">centers + gamma</option><option value="centers">centers</option><option value="gamma">gamma (lambda*/h at current centers)</option></select>
+      <label>grid <select id="g-clean-halo"><option value="sqrt">halo max(10, ceil(sqrt N))</option><option value="qi">QI default halo</option><option value="none">no halo</option><option value="span">uniform over current span</option></select></label>
+      <span class="sep"></span>
+      <button id="g-jit-c">Jitter centers</button> <input id="g-jit-c-p" type="range" min="0" max="100" value="20"> <span id="g-jit-c-pv" class="pv">20%</span>
+      <button id="g-jit-g">Jitter gamma</button> <input id="g-jit-g-p" type="range" min="0" max="100" value="20"> <span id="g-jit-g-pv" class="pv">20%</span>
+      <label>seed <input id="g-jseed" type="number" value="0" class="n3"></label>
+      <span class="sep"></span>
+      <button id="g-undo">Undo</button><button id="g-redo">Redo</button>
+    </div>
+    <div class="plotwrap" id="wrap-readout"><canvas id="c-readout"></canvas><div class="plabel">readout a<sub>k</sub> at c<sub>k</sub> (drag the filled dots up/down) &middot; hollow = least squares &middot; red = f'(x) h(x)/2</div></div>
+    <div class="plotwrap" id="wrap-fit"><canvas id="c-fit"></canvas><div class="plabel">target f (black) and network (blue)</div></div>
+    <div class="plotwrap" id="wrap-res"><canvas id="c-res"></canvas><div class="plabel">signed residual f&#770; - f, symlog (sign &middot; (log10|r| + 16))</div></div>
+  </div>
+
+  <aside id="panel">
+    <div class="box">
+      <div class="statusrow"><span id="light" class="light"></span><span id="mode-label"></span><span id="stepinfo" class="dim"></span></div>
+      <div class="row">
+        <button id="t-play" class="big">Play</button>
+        <button id="t-stop">Stop</button>
+        <button id="t-follow">Follow live</button>
+      </div>
+      <div class="scrub"><div id="scrub-ticks"></div><input id="t-scrub" type="range" min="0" max="0" value="0"></div>
+      <div class="row"><label>delay per frame <input id="t-delay" type="range" min="0" max="100" value="0"> <span id="t-delay-v" class="pv">0 ms</span></label></div>
+      <div id="fork" class="dim"></div>
+    </div>
+
+    <div class="box" id="staged-box">
+      <div id="staged-info">no staged edits</div>
+      <div class="row">
+        <button id="t-inject">Inject edits</button>
+        <button id="t-discard">Discard edits</button>
+        <button id="t-inject-ls">Inject lstsq readout</button>
+      </div>
+      <label><input type="checkbox" id="t-reset-mom"> reset Adam moments on inject</label>
+    </div>
+
+    <div class="box">
+      <h3>Metrics <span class="dim" id="m-which"></span></h3>
+      <table class="metrics">
+        <tr><th></th><th>train MSE</th><th>eval rel L2</th><th>eval L&infin;</th></tr>
+        <tr id="m-adam"><td>Adam</td><td></td><td></td><td></td></tr>
+        <tr id="m-ls"><td>lstsq</td><td></td><td></td><td></td></tr>
+      </table>
+      <div id="m-extra" class="dim"></div>
+      <canvas id="c-hist"></canvas>
+    </div>
+
+    <div class="box" id="adam-box">
+      <h3>Adam <span class="dim" id="adam-lock"></span></h3>
+      <div class="grid2">
+        <label>lr <input id="a-lr" type="number" step="any"></label>
+        <label>geometry lr x <input id="a-glr" type="number" step="any"></label>
+        <label>beta1 <input id="a-b1" type="number" step="any"></label>
+        <label>beta2 <input id="a-b2" type="number" step="any"></label>
+        <label>eps <input id="a-eps" type="number" step="any"></label>
+        <label>steps <input id="a-steps" type="number" step="1" min="1"></label>
+        <label>batch (0 = full) <input id="a-batch" type="number" step="1" min="0"></label>
+        <label>lr schedule <select id="a-sched"><option>constant</option><option>cosine</option></select></label>
+        <label>gamma param <select id="a-gparam"><option value="linear">gamma</option><option value="log">log gamma</option></select></label>
+      </div>
+      <div class="row">train: <label><input type="checkbox" id="a-tc"> centers</label><label><input type="checkbox" id="a-tg"> gamma</label><label><input type="checkbox" id="a-ta"> readout</label><label><input type="checkbox" id="a-tb"> bias</label></div>
+      <div class="row"><label>readout init <select id="a-rinit"><option value="zero">zero</option><option value="xavier">Xavier</option><option value="lstsq">lstsq</option></select></label>
+        <label>seed <input id="a-rseed" type="number" value="0" class="n3"></label><button id="a-rapply">Apply</button></div>
+      <h3>Snapshots (each one = lstsq solve + evaluation + saved frame)</h3>
+      <div class="grid2">
+        <label>spacing <select id="s-mode"><option value="geometric">geometric</option><option value="every">every k steps</option></select></label>
+        <label>every k <input id="s-every" type="number" min="1" step="1"></label>
+        <label>first gap <input id="s-first" type="number" min="1" step="1"></label>
+        <label>ratio <input id="s-ratio" type="number" min="1" step="0.01"></label>
+        <label>max gap <input id="s-max" type="number" min="1" step="1"></label>
+      </div>
+      <div id="s-preview" class="dim"></div>
+      <label class="wide">run name <input id="r-name" type="text" placeholder="auto: date, W"></label>
+    </div>
+
+    <div class="box">
+      <h3>Saved runs <button id="r-refresh" class="small">refresh</button></h3>
+      <div id="r-dir" class="dim small"></div>
+      <div id="runs"></div>
+    </div>
+  </aside>
+</main>
+
+<div id="modal" hidden>
+  <div class="modal-card">
+    <p>You have staged edits that are not in the run yet.</p>
+    <div class="row"><button id="mo-inject" class="big">Inject and play</button><button id="mo-discard">Discard and play</button><button id="mo-cancel">Cancel</button></div>
+  </div>
+</div>
+<div id="tooltip" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

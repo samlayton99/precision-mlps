@@ -1,5 +1,7 @@
 # Where everything lives
 
+**Radon / QUILL current organization:** [Results library](radon_results_library/README.md), [best methods by problem class](radon_results_library/rankings.md), and [PINN aims versus demonstrated evidence](radon_results_library/pinn_aims.md). This October 1, 2026 collection retains all 60 historical methods, later components, failures and original artifact links. Numerical experiments are paused for organization.
+
 Every surviving document in the repo, what it is for, and when to read it. Documents live **next to the experiment's writeup under `results/`** (Sam reads `results/`, not `experiments/`); `experiments/` holds only code; `docs/` holds only program-level material that no single experiment owns.
 
 ## Read in this order
@@ -12,6 +14,12 @@ Every surviving document in the repo, what it is for, and when to read it. Docum
 | 4 | `CLAUDE.md` | Repo conventions, architecture, the QI construction's precision regimes, writeup format. |
 
 If a document is not linked from `ORIENTATION.md` or from this index, treat it as historical.
+
+## Geometry and solved readouts
+
+| document | contents |
+|---|---|
+| [Codex theory checkpoint](geometry_readout_theory_codex/checkpoint.md) | September 29, 2026 consolidation with step-by-step proofs: dual derivative measurements, single and multiple geometry changes, exact tent responses, a four-neuron analytic prediction with a remainder bound, ReLU curvature, activation spectra and empirical limits. Records the next two directions: controlled multi-neuron prediction and activation selection by target and geometry. |
 
 ## The optimizer program (checkpoint D)
 
@@ -26,6 +34,11 @@ If a document is not linked from `ORIENTATION.md` or from this index, treat it a
 | `results/checkpoint_D_optimizers/expD36_frozen_lambda_sweep/expD36_results.md` | Completed 20k-step frozen-geometry baseline: four note targets, eight lambda values, N256, raw zero readouts, GD/Adam and numerical least squares. Four 3×4 figures show early/middle/final/best slices; compact data and Adam state support continuation. |
 | `results/checkpoint_D_optimizers/expD36_frozen_lambda_sweep/ablations/expD36_ablation_results.md` | Two sequential one-factor controls: unscaled neighboring and PR square-root allowance coordinates, each compared with the preserved raw baseline in a fourth plot row. Eight figures and resumable data; changes not combined. |
 | `results/checkpoint_D_optimizers/expD37_capacity_access_figures/expD37_results.md` | Measured replacements for two frozen-readout schematics: five coordinate maps at 20k steps, plus polynomial-tail access, one-step damping curves, and gradient-flow time bounds. Reuses D36 and trains two missing maps; includes an 80/120-digit access audit. |
+| `results/checkpoint_D_optimizers/expD38_init_readout_baseline/expD38_results.md` | Six regression tasks; 18 LR pilots, 36 paired 20k-step runs, and two 100k-step SARCOS runs, with two width-512 tanh hidden layers. Tracks trained/LS readouts, input OLS, frozen-feature ridge, and unseen-input controls. Three seeds on a fixed split; capped log-log figures. Corrected SARCOS splits exclude its duplicated supplied test file; older supplied-test scores are invalid. |
+| `results/checkpoint_D_optimizers/expD39_qi_init_theory/expD39_results.md` | QI theory/implementation audit and 88 completed runs: 13 initialization variants, 52 validation-only pilots, 36 matched three-seed confirmations. Corrects actual-spacing gamma formula in a versioned initializer; broad raw gamma remains compatible with projection-dependent domains. No clear global replacement; softer Kin8nm and second-layer-only SARCOS improve validation-selected test MSE by 11.8%/6.7% versus original QI. Scalar constructor, feature-learning/readout, bandwidth/generalization and bank-alignment diagnostics separate theorem scope from empirical training effects. |
+| `results/checkpoint_D_optimizers/expD40_bimodal_gamma/expD40_results.md` | Bimodal physical row-norm initialization: 56 validation-only pilots and 45 three-seed confirmations at width 512, two tanh layers. Tests half-low/half-high groups, 10:1 and 30:1 separation, both layers or layer 2 only. Selected mixtures have worse mean validation/test than matched single-scale controls on all four tasks and lose all 12 paired test comparisons. Final gamma groups remain separated; movement, frozen-feature and observational readout diagnostics distinguish retained scales from generalization benefit. |
+| `results/checkpoint_D_optimizers/expD41_activation_lens/expD41_results.md` | Codex activation-lens comparison: 48 matched 10k-step float64 Adam runs from derivative-constructed QI and three-seed Xavier; tanh, integrated spectral notch, localized variational spline, and supplementary sinc. Target/bandwidth sweep, actual-versus-refitted readouts, 3x3 trajectories, endpoint bars, dense-grid and cutoff checks. Local design has no uniform training advantage; projection quality, initialization, and attained readouts give different orderings. |
+| `results/checkpoint_D_optimizers/expD41_activation_lens/frozen_geometry/expD41_frozen_results.md` | Corrected zero-readout QI follow-up: 48 readout-only Adam runs with frozen QI geometry, zero or three-seed random readout, shared LS reference. Local improves zero-start Runge/mixture endpoints versus tanh and notch but retains a higher approximation floor; the mixture does not reach that floor. Includes fixed-geometry error decomposition and dense-grid checks. |
 | `docs/REQUIREMENTS.md` | the gate (above) |
 | `docs/requirements_and_lessons.md` | the evidence behind the gate: five requirements as originally written, three litmus tests, eight measured lessons with their measurements |
 | `results/checkpoint_D_optimizers/PROGRAM_FRAMING.md` | **the program-level context (Sam, 2026-08-12): the geometry/readout split, the four experiment axes, the three ways to win, the moonshot stated properly. Read before designing any optimizer or init experiment.** |

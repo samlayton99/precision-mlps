@@ -1,0 +1,19 @@
+experiment: expD40_bimodal_gamma
+version: 1
+tasks: [airfoil, kin8nm, sarcos, superconductivity]
+width: 512
+hidden_layers: 2
+activation: tanh
+screen_steps: 10000
+screen_seed: 0
+confirmation_steps: 20000
+confirmation_seeds: [0, 1, 2]
+reference: D39_centered_balanced_exact_spacing
+reference_gamma: per_layer_median_row_norm
+low_multiplier: 0.1
+high_multiplier: 3.0
+high_fraction: 0.5
+scopes: [both, last]
+shapes: [low, mid, high, rms, mix]
+selection: per_task_best_validation_mixture_and_best_uniform_same_scope
+training_recipe: unchanged_D38_per_task

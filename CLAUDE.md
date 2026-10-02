@@ -121,6 +121,10 @@ experiments/                  One FLAT folder per experiment (expXNN_name), each
   expG01_interactive_explorer/  Interactive Dash explorer (lambda, N, target, hold-out mask; live lstsq refit)
   expG03_extrapolation/         Extrapolation sweep
   expG04_cascade_multiband/     Band-count ablation
+  expG05_geometry_reader_claude/ Interactive geometry reader (Claude version; stdlib server + numpy + canvas JS):
+                                drag centers/gammas/readout, live lstsq, recordable Adam with staged edits, inject,
+                                replay and forks; Full reset; presets incl. expD06 trained-Xavier arrays. README.md there; runs on
+                                the laptop (~/venv/precisionMLPs/bin/python app.py); tests/test_expG05_geometry_reader.py
   # Checkpoint H -- high-dimensional ridge/QI extension
   #   80-task suite over [-1,1]^d, d=1..5, 16 per dimension (spec: SUITE_SPEC.md, Version 3). Targets are
   #   genuinely multivariate (no target is a sum of 1-D profiles).

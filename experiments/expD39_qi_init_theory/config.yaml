@@ -1,0 +1,14 @@
+experiment: expD39_qi_init_theory
+version: 1
+screen_tasks: [airfoil, kin8nm, sarcos, superconductivity]
+screen_variants: [qi, spacing, balanced, centered, collar, common, lambda05, lambda10, directions64, first_only, last_only]
+screen_steps: 10000
+screen_seed: 0
+confirmation_tasks: [airfoil, bike_sharing, kin8nm, pol, sarcos, superconductivity]
+confirmation_steps: 20000
+confirmation_seeds: [0, 1, 2]
+selection: geometric_mean_of_best_validation_mse_ratios_to_legacy_across_screen_tasks
+width: 512
+hidden_layers: 2
+activation: tanh
+training_recipe: expD38_frozen_per_task_LR_and_data_protocol

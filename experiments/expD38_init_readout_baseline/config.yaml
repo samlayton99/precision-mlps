@@ -1,0 +1,30 @@
+tasks: [airfoil, bike_sharing, kin8nm, pol, sarcos, superconductivity]
+width: 512
+hidden_layers: 2
+activation: tanh
+dtype: float64
+batch_size: 256
+optimizer: Adam
+betas: [0.9, 0.999]
+weight_decay: 0.0
+learning_rates: [0.0001, 0.0003, 0.001]
+pilot_steps: 10000
+comparison_steps: 20000
+comparison_seeds: [0, 1, 2]
+long_budget_tasks: [sarcos]
+long_budget_steps: 100000
+long_budget_seeds: [0]
+validation_seed: 3701
+validation_fraction: 0.2
+task_data_protocols:
+  sarcos: train_file_disjoint_random_80_20_v2
+schedule: flat_first_20_percent_then_cosine_to_1_percent
+standard_init: xavier_uniform_tanh_gain_hidden_zero_bias
+readout_init: xavier_uniform_gain_1_zero_bias_paired
+qi_layers: both_hidden
+qi_lambda: 0.25
+qi_centers_per_direction: floor_sqrt_width
+least_squares_rcond: 1.0e-12
+feature_ridge_alphas: [0.0, 1.0e-10, 1.0e-8, 1.0e-6, 0.0001, 0.01, 1.0]
+preprocessing: train_only_affine_standardization_bike_onehot_categories
+selection: standard_init_minimum_validation_mse_only

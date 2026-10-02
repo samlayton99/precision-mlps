@@ -1588,6 +1588,28 @@ wheels = [
 ]
 
 [[package]]
+name = "pfloat"
+version = "0.1.0"
+source = { editable = "../../../projects/tools/pfloat" }
+dependencies = [
+    { name = "mpmath" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gmpy2", marker = "extra == 'mp'", specifier = ">=2.3" },
+    { name = "gmpy2", marker = "extra == 'test'", specifier = ">=2.3" },
+    { name = "mpmath", specifier = ">=1.3" },
+    { name = "numpy", specifier = ">=1.24" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=7" },
+    { name = "torch", marker = "extra == 'torch'", specifier = ">=2.0" },
+]
+provides-extras = ["mp", "test", "torch"]
+
+[[package]]
 name = "pillow"
 version = "12.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1744,6 +1766,7 @@ jax-experiments = [
 ]
 precision = [
     { name = "gmpy2" },
+    { name = "pfloat" },
 ]
 
 [package.metadata]
@@ -1755,6 +1778,7 @@ requires-dist = [
     { name = "mpmath", specifier = ">=1.3.0" },
     { name = "numpy", specifier = ">=1.24.0" },
     { name = "optax", marker = "extra == 'jax-experiments'", specifier = ">=0.2.3" },
+    { name = "pfloat", marker = "extra == 'precision'", editable = "../../../projects/tools/pfloat" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "scipy", specifier = ">=1.10.0" },
