@@ -1,0 +1,22 @@
+{
+  "dimensions": [1, 2, 3, 4],
+  "main_target": "narrow",
+  "angular_orders": [2, 3, 4, 6, 8, 10, 12, 16, 20, 24],
+  "cells_per_angular_order": 8,
+  "minimum_cells": 32,
+  "physical_halo": 0.5,
+  "analytic_strip": 1.0,
+  "evaluation_points": 160,
+  "evaluation_seed": 91873,
+  "precision_angular_order": 20,
+  "precision_cells": 128,
+  "precision_bits": [8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 53],
+  "allocation_orders": [2, 3, 4, 6, 8, 10, 12, 16, 20],
+  "allocation_cells": [32, 40, 48, 64, 80, 96, 128],
+  "algebraic_cells": [4, 8, 16, 32, 64, 128, 256, 512],
+  "nonanalytic_spectral_cutoffs": [4, 8, 16, 32, 64, 128, 256],
+  "targets": ["broad", "narrow", "shifted", "two_peaks", "signed_mixture"],
+  "target_definition": "Isotropic Gaussian mixtures with fixed explicit centers, widths and amplitudes; see mixtures(d).",
+  "prediction": "Exact polynomial quadrature remainder plus finite-contour tanh scalar bound; no error-fitted constants.",
+  "precision_scope": "Round only final readouts and output bias; keep geometry and evaluation in float64."
+}

@@ -1,0 +1,9 @@
+# Additional integrated proof bridges
+
+`AlgebraicConstruction.lean` now combines the actual canonical Sobolev angular quadrature bound and the actual finite scalar global-moment construction. It derives angular exponent `t=s_ang-(d-1)/2`, selects finite q and scalar cutoff independently at half the requested tolerance, proves actual network error<=epsilon, and counts the actual halo-inclusive index. The already proved `MultidimensionalScaling.algebraic_total_grid_epsilon_bigO` supplies the corresponding fixed-dimension exponent. The local finite-smooth preparation variant remains a separate obligation.
+
+`Quadrature/OrbitContinuity.lean` proves continuity in an external topological parameter of the derivative at zero of uniformly bounded holomorphic disk extensions, assuming continuity only on real parameter slices. It derives the quantitative slope error `8 B |t|/r^2` for |t|<=r/4 from Cauchy estimates and the mean-value theorem, then takes uniform continuous approximations. No joint continuity of a chosen complex extension is assumed. This is used by the actual orbit-family-to-canonical-energy theorem.
+
+`Radon/ParameterizedDSlope.lean` proves the exact segment-integral representation of the removable divided difference, including its diagonal value. This yields actual joint complex smoothness of the finite singularity-subtracted Hilbert inner integral with all additional finite-dimensional parameters. Its bound is the requested `4 L B/delta`. Successive scalar partials remain jointly smooth and agree with actual iterated derivatives of the scalar slices.
+
+`FiniteSampleObstruction.lean` constructs an explicit polynomial vanishing at all finitely many supplied sites but attaining any prescribed height at an unsampled interior point. Thus even qualitative analyticity cannot certify uniform error from finite samples without quantitative bounds. This supports the need for the coverage/regularity hypotheses in the actual data-based certificates.

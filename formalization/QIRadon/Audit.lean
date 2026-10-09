@@ -1,0 +1,78 @@
+import QIRadon
+
+/-! Audit principal completed declarations and the final-polish supporting lemmas.
+The precise theorem scope and deferred work are recorded in STATUS.md. -/
+
+#print axioms QIRadon.relu_quadratic_lower_bound
+#print axioms QIRadon.relu_quadratic_error_witness
+#print axioms QIRadon.flatWindow_uniform_error
+#print axioms QIRadon.anchored_succ_iteratedDeriv_uniform
+#print axioms QIRadon.Kernel.finite_spectral_kernel_certificate
+#print axioms QIRadon.Kernel.finite_activation_function_certificate
+#print axioms QIRadon.ScalarRate.analytic_accuracy_and_width
+#print axioms QIRadon.ScalarRate.algebraic_scheduled_certificate
+#print axioms QIRadon.ScalarRate.finite_kernel_envelope_certificate
+#print axioms QIRadon.ScalarRate.algebraic_accuracy_and_width
+#print axioms QIRadon.ScalarScaling.analytic_gridWidth_epsilon_bigO
+#print axioms QIRadon.ScalarScaling.algebraic_gridWidth_epsilon_bigO
+#print axioms QIRadon.Allocation.algebraicSplit_strict_min
+#print axioms QIRadon.Allocation.existsUnique_analytic_optimizer
+#print axioms QIRadon.Allocation.analytic_optimizer_fraction_tendsto
+#print axioms QIRadon.Gaussian.exists_gaussJacobi_rule
+#print axioms QIRadon.Gaussian.sphereAverage_even_monomial
+#print axioms QIRadon.positive_ridge_reconstruction
+#print axioms QIRadon.Radon.local_radial_filtered_reconstruction
+#print axioms QIRadon.Gaussian.sphereRule_polynomial_exact
+#print axioms QIRadon.Gaussian.foldedSphere_analytic_series_error
+#print axioms QIRadon.Addition.evaluation_bound
+#print axioms QIRadon.Architecture.spokeNetwork_eq_network
+#print axioms QIRadon.sample_cover_error_bound
+#print axioms QIRadon.finite_network_perturbation
+#print axioms QIRadon.AlgebraicConstruction.algebraic_accuracy_and_width
+#print axioms QIRadon.MultidimensionalScaling.algebraic_total_grid_epsilon_bigO
+#print axioms QIRadon.CanonicalConstruction.canonical_analytic_accuracy_and_width
+#print axioms QIRadon.LocalMultidimensional.local_analytic_accuracy_and_width
+#print axioms QIRadon.LocalScaling.local_total_grid_epsilon_bigO
+#print axioms QIRadon.LocalGELU.local_gelu_is_network
+#print axioms QIRadon.LocalGELU.local_gelu_accuracy_and_width
+#print axioms QIRadon.LocalGELU.local_gelu_total_epsilon_bigO
+#print axioms QIRadon.Gaussian.canonical_foldedSphere_sobolev_error
+#print axioms QIRadon.SharpAngular.canonical_quadrature_error
+#print axioms QIRadon.OrbitContinuity.continuous_deriv_zero
+#print axioms QIRadon.CenteredGELU.canonical_uniform_accuracy_and_width
+#print axioms QIRadon.CenteredGELU.canonical_total_epsilon_bigO
+#print axioms QIRadon.UniformConstruction.algebraic_uniform_accuracy_and_width
+#print axioms QIRadon.Casimir.BoundedOrbitExtension.canonical_energy
+#print axioms QIRadon.Radon.parameterized_hilbertInner_smooth
+#print axioms QIRadon.NumericalPrecision.rounded_network_error
+#print axioms QIRadon.NumericalPrecision.workingBits_accuracy
+#print axioms QIRadon.NumericalPrecision.readoutDensity_bound
+#print axioms QIRadon.AllocationPower.constrained_per_spoke_global_min
+#print axioms QIRadon.AllocationPower.existsUnique_spoke_root
+#print axioms QIRadon.FiniteSampleObstruction.no_unqualified_uniform_sample_certificate
+#print axioms QIRadon.AutomaticConstruction.known_target_gelu
+#print axioms QIRadon.KnownFunctionConstruction.general_kernel_accuracy_and_width
+#print axioms QIRadon.KnownFunctionConstruction.firstOrder_mlp_accuracy_and_width
+#print axioms QIRadon.KnownFunctionConstruction.gelu_total_width_bigO
+#print axioms QIRadon.LocalAlgebraicConstruction.local_centered_uniform_accuracy_and_width
+#print axioms QIRadon.LocalAlgebraicConstruction.local_centered_total_epsilon_bigO
+#print axioms QIRadon.AllocatedConstruction.allocated_rows_certificate
+#print axioms QIRadon.AllocatedConstruction.allocated_projection_certificate
+#print axioms QIRadon.StatisticalSelection.validation_selection_certificate
+#print axioms QIRadon.StatisticalSelection.frozen_squaredLoss_confidence
+#print axioms QIRadon.DeterministicSelection.exists_sample_selected_near_best
+#print axioms QIRadon.PreparationStability.sampled_network_error
+#print axioms QIRadon.Activations.tanh_derivative_kernel
+#print axioms QIRadon.TanhCorollary.accuracy
+#print axioms QIRadon.TanhCorollary.width_bigO
+#print axioms QIRadon.ReLUSpline.network_uniform_error_of_contDiff
+#print axioms QIRadon.PolynomialActivation.network_error_lower_bound
+#print axioms QIRadon.GenericAnchoredConstruction.known_target_with_anchor
+
+#print axioms QIRadon.normalized_approximation_error
+#print axioms QIRadon.LocalScaling.localAccuracyOrder_le
+#print axioms QIRadon.Gaussian.canonical_partial_integral
+#print axioms QIRadon.Gaussian.canonical_foldedSphere_error_of_partial
+
+#print axioms QIRadon.AllocationPower.exponential_budget_tangent_nonneg
+#print axioms QIRadon.Kernel.poisson_scaled_synthesize_mul_reflect

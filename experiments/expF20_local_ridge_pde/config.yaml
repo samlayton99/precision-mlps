@@ -1,0 +1,31 @@
+precision: float64
+threads: 1
+seed_train: 813
+seed_validation: 18973
+domain: unit_disk
+activation: tanh
+lambda: 0.25
+center_interval: [-1.25, 1.25]
+cutoff: 18
+cutoff_audit: 24
+linear_pde: '-laplacian(u) = f'
+manufactured_solution: 'exp(0.3*x)*cos(1.3*y) + 0.1*x*y'
+boundary: Dirichlet
+interior_solution_labels: false
+independent_readout_coordinates:
+  raw: 'w = z / gamma^2'
+  smooth: 'w = IDCT(h / (1 + (pi*k/(N*h))^2) * DCT(z)); all multipliers positive'
+solver: 'LSMR restarted every 50 iterations; explicit iteration budgets'
+interpretation: 'Neuron count, independent unknowns, sampled constraints, and held-out errors are separate metrics.'
+reduced_controls:
+  lambda: 0.2
+  small_directions: 32
+  small_interior_centers: 257
+  million_directions: 256
+  million_interior_centers: 4097
+  degrees: [6, 10, 14, 18, 22]
+  target_frequencies: [1.3, 5.0]
+  independent_coordinates: [28, 66, 120, 190, 276]
+  seed_train: 101
+  seed_validation: 202
+  solver: 'Explicit reduced matrices; dense QR and damped Newton from zero'

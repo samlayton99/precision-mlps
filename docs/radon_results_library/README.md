@@ -8,6 +8,7 @@ Start with the problem you need to solve. There is no single overall winner: con
 
 | What you want to find | Where to go |
 |---|---|
+| Standalone known-function construction, coefficient formulas, full error budget, and activation generalization | [Derivation and practical construction (PDF)](../radon_known_function_construction.pdf), [editable LaTeX](../radon_known_function_construction.tex) |
 | Best three options for each problem class, with reasons and limits | **[Rankings by problem](rankings.md)** |
 | Everything PINNs are supposed to offer, and what we actually deliver | **[PINN aims and evidence](pinn_aims.md)** |
 | Every historical attempt, grouped by present usefulness | [Complete method catalogue](catalogue/README.md), [spreadsheet](catalogue/methods.csv) |

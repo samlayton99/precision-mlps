@@ -1,0 +1,1169 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+\usepackage{enumitem}
+\setlength{\parskip}{5pt}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\Sph}{\mathbb S^{d-1}}
+\newcommand{\ii}{\mathrm i}
+\newcommand{\dd}{\,\mathrm d}
+\newcommand{\sech}{\operatorname{sech}}
+\newcommand{\Res}{\operatorname{Res}}
+\newcommand{\Imag}{\operatorname{Im}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\title{Constructing a known function as a Radon--tanh network\\
+\large From directional profiles to explicit readouts, finite halos, and error bounds}
+\author{Research note for Sam Layton}
+\date{October 4, 2026}
+\begin{document}
+\maketitle
+
+\textbf{The result.} Suppose a known function can be decomposed into sufficiently regular one-dimensional directional profiles. We can convert each profile into the readout weights of a prescribed row of tanh neurons. Combining these rows gives an ordinary, single-hidden-layer MLP. The coefficients come from function evaluations and one-dimensional integrals, including explicit corrections at the ends of each row. No least-squares fit or training is part of this construction.
+
+There are two separate approximation problems: replacing the continuous set of directions by finitely many directions, and replacing each directional profile by finitely many neurons. This note derives both error contributions and distinguishes them from numerical error in evaluating the coefficient formulas.
+
+\textbf{Scope.} The target function, or an adequate description of its directional profiles, is available. This is a construction theorem, not a procedure for discovering an unknown PDE solution. Knowing how to evaluate a function on real inputs does not, by itself, make its Radon profiles or their complex continuations cheap to compute. Those access assumptions are stated explicitly below.
+
+\textbf{What is general?} The Radon decomposition does not depend on tanh. Converting a directional profile to neurons does depend on the activation. The last section derives the common principle and explains the different formulas and limitations for ReLU, GELU, and raw kernels.
+
+\tableofcontents
+\newpage
+
+\section{What we are constructing, and what the symbols mean}
+
+Let $d\ge2$ be the input dimension and let
+\[
+ \mathbb B^d=\{x\in\R^d:\norm{x}_2\le1\}
+\]
+be the domain of interest. The target is a real-valued function $f:\mathbb B^d\to\R$. A direction $\theta$ is a unit vector in $\Sph$; its projected input $s=\theta\cdot x$ lies in $[-1,1]$.
+
+We will construct
+\begin{equation}
+ q(x)=b+\sum_{m=1}^{M}\sum_{j=-R}^{n+R}
+ w_{mj}\tanh\!\left(\gamma(\theta_m\cdot x-c_j)\right).
+ \label{eq:network}
+\end{equation}
+Here $M$ is the number of directions, $c_j$ is a scalar center along a direction, $\gamma>0$ controls steepness, and $w_{mj}$ is a scalar readout. The input weight vector of this neuron is $v_{mj}=\gamma\theta_m\in\R^d$ and its hidden bias is $\beta_{mj}=-\gamma c_j\in\R$. Thus this really is an MLP of the form $b+\sum w\tanh(v\cdot x+\beta)$.
+
+We distinguish the angular quadrature weight $\alpha_m$ from the neuron readout $w_{mj}$. The former measures how much angular integration is assigned to direction $m$; the latter measures how much one particular neuron contributes.
+
+The counting convention is important:
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$N$ & Number of interior centers, including $-1$ and $1$ \\
+$n=N-1$ & Number of intervals between those centers \\
+$h=2/n$ & Center spacing \\
+$R$ & Number of halo centers on each side \\
+$W=n+1+2R$ & Neurons per direction, including halos \\
+$P=MW$ & Total hidden neurons \\
+$\lambda=\gamma h$ & Dimensionless bandwidth parameter \\
+\bottomrule
+\end{tabular}
+\end{center}
+The paper and the existing encoder count \emph{intervals}; their grid-size argument corresponds to $n$ here. Sam's interior-center count is $N=n+1$. In particular,
+\begin{equation}
+ c_j=-1+jh,\qquad \gamma=\frac{\lambda}{h}=\frac{\lambda(N-1)}2.
+ \label{eq:geometry}
+\end{equation}
+Adding halo neurons does not change $h$ or this formula for $\gamma$.
+
+\section{The directional decomposition comes before the activation}
+\subsection{The information needed about the target}
+
+For a direct Fourier/Radon derivation, suppose we have a real extension $F:\R^d\to\R$ whose restriction to the ball equals $f$. Initially one may assume $F$ is a Schwartz function, meaning it and all its derivatives decay faster than every inverse polynomial; this justifies the Fourier manipulations. Later, the tanh construction requires additional analyticity of the directional profiles. Schwartz regularity alone does not imply that analyticity.
+
+Exact equality of the extension is not essential. If instead
+\[
+ E_{\rm ext}:=\sup_{x\in\mathbb B^d}|f(x)-F(x)|>0,
+\]
+that error is retained in the final bound. A different valid, explicitly supplied ridge decomposition may also be used; one need not compute a Radon transform if the directional profiles are already known.
+
+Our Fourier conventions, in dimensions $d$ and $1$, respectively, are
+\begin{align}
+ \widehat F(\xi)&=\int_{\R^d}F(x)e^{-\ii\xi\cdot x}\dd x,
+ &F(x)&=\frac1{(2\pi)^d}\int_{\R^d}\widehat F(\xi)e^{\ii\xi\cdot x}\dd\xi,
+ \label{eq:fourier-d}\\
+ \widehat g(\omega)&=\int_\R g(s)e^{-\ii\omega s}\dd s,
+ &g(s)&=\frac1{2\pi}\int_\R\widehat g(\omega)e^{\ii\omega s}\dd\omega.
+ \label{eq:fourier-one}
+\end{align}
+All subsequent factors of $2\pi$ refer to these conventions.
+
+\subsection{Deriving a profile along each spoke}
+
+The Radon transform integrates $F$ on a hyperplane:
+\begin{equation}
+ p_\theta(s)=(\mathcal RF)(\theta,s)
+ =\int_{\{x:\theta\cdot x=s\}}F(x)\dd S(x).
+ \label{eq:radon}
+\end{equation}
+This is a scalar function of one real variable. It is not the restriction $F(s\theta)$ of the function to a line. Integrating first over parallel hyperplanes gives
+\begin{align*}
+ \widehat p_\theta(\omega)
+ &=\int_\R\int_{\theta\cdot x=s}F(x)e^{-\ii\omega s}\dd S(x)\dd s\\
+ &=\int_{\R^d}F(x)e^{-\ii(\omega\theta)\cdot x}\dd x
+ =\widehat F(\omega\theta).
+\end{align*}
+This is the Fourier-slice identity: a one-dimensional Fourier transform of the hyperplane integrals gives a radial line in the full Fourier transform.
+
+Polar coordinates in frequency space have volume element $r^{d-1}\dd r\dd\theta$. Integrating signed $\omega\in\R$ and all $\theta\in\Sph$ counts every nonzero frequency twice, so
+\begin{align}
+ F(x)
+ &=\frac1{2(2\pi)^d}\int_{\Sph}\int_\R
+ |\omega|^{d-1}\widehat F(\omega\theta)
+ e^{\ii\omega\theta\cdot x}\dd\omega\dd\theta\\
+ &=\int_{\Sph}g_\theta(\theta\cdot x)\dd\theta,
+ \label{eq:ridge-integral}
+\end{align}
+where the \emph{filtered directional profile} is
+\begin{equation}
+ \boxed{g_\theta(s)=\frac1{2(2\pi)^d}\int_\R
+ |\omega|^{d-1}\widehat F(\omega\theta)e^{\ii\omega s}\dd\omega.}
+ \label{eq:profile}
+\end{equation}
+Equivalently, it is $[2(2\pi)^{d-1}]^{-1}$ times the inverse one-dimensional Fourier transform of $|\omega|^{d-1}\widehat p_\theta(\omega)$. The factor $|\omega|^{d-1}$ comes from the polar-coordinate Jacobian. It compensates for the different amounts of frequency-space volume represented by different radial frequencies.
+
+For example, in $d=3$, multiplication by $\omega^2$ is the Fourier transform of minus the second derivative. Hence
+\begin{equation}
+ g_\theta(s)=-\frac1{8\pi^2}p_\theta''(s),\qquad
+ F(x)=\int_{\mathbb S^2}g_\theta(\theta\cdot x)\dd\theta.
+ \label{eq:3d-profile}
+\end{equation}
+The derivative later used to construct tanh readouts is the derivative of \emph{this filtered profile}. It is not simply the directional derivative of $F$ along the line $s\theta$.
+
+\subsection{Exactly what \texorpdfstring{$\alpha_m$}{alpha-m} means}
+
+Replace the sphere integral by a quadrature rule, meaning prescribed directions $\theta_m$ and weights $\alpha_m$ that approximate integration:
+\begin{equation}
+ F_M(x)=\sum_{m=1}^M\alpha_m g_{\theta_m}(\theta_m\cdot x).
+ \label{eq:angular-sum}
+\end{equation}
+Here $\dd\theta$ is ordinary sphere surface measure, whose total mass is
+\[
+ S_{d-1}=\frac{2\pi^{d/2}}{\Gamma(d/2)}.
+\]
+A quadrature rule exact on constants must therefore have $\sum_m\alpha_m=S_{d-1}$.
+Here $\Gamma$ is the Euler gamma function, which extends factorials: $\Gamma(k)=(k-1)!$ for positive integers $k$.
+
+For equally spaced directions on the full circle in $d=2$,
+\[
+ \theta_m=(\cos(2\pi m/M),\sin(2\pi m/M)),\qquad \alpha_m=\frac{2\pi}{M}.
+\]
+In $d=3$, use Gauss--Legendre nodes $z_\ell\in[-1,1]$ with integration weights $v_\ell$ and equally spaced azimuths $\varphi_k=2\pi k/K$. Then
+\[
+ \theta_{\ell k}=(\sqrt{1-z_\ell^2}\cos\varphi_k,
+ \sqrt{1-z_\ell^2}\sin\varphi_k,z_\ell),\quad
+ \alpha_{\ell k}=v_\ell\frac{2\pi}{K}.
+\]
+Their weights sum to $4\pi$, because surface measure in these coordinates is $\dd z\dd\varphi$.
+
+These weights are not learned and are not generally $1/M$. If a normalized sphere average is used instead, the factor $S_{d-1}$ must be put elsewhere. Also $g_{-\theta}(-s)=g_\theta(s)$: using only one of each antipodal pair requires combining the pair's angular weights. Simply deleting half the directions would lose a factor of two.
+
+\subsection{A controlled way to obtain analytic profiles}
+
+The tanh theorem below uses complex evaluations of $g_\theta$. If these are directly available, no frequency cutoff is needed. Otherwise, one sufficient construction is to retain frequencies $|\xi|\le\Omega$:
+\[
+ F_\Omega(x)=\frac1{(2\pi)^d}\int_{|\xi|\le\Omega}
+ \widehat F(\xi)e^{\ii\xi\cdot x}\dd\xi.
+\]
+Its profiles are given by \eqref{eq:profile} with $|\omega|\le\Omega$. Each is entire, and
+\begin{equation}
+ \norm{F-F_\Omega}_\infty\le
+ E_{\rm tail}:=\frac1{(2\pi)^d}\int_{|\xi|>\Omega}|\widehat F(\xi)|\dd\xi.
+ \label{eq:tail}
+\end{equation}
+For $|\Imag z|<\delta$, a usable profile bound is
+\begin{equation}
+ |g_\theta(z)|\le B_\theta:=%
+ \frac1{2(2\pi)^d}\int_{-\Omega}^{\Omega}
+ |\omega|^{d-1}|\widehat F(\omega\theta)|e^{\delta|\omega|}\dd\omega.
+ \label{eq:bandlimited-bound}
+\end{equation}
+The proof is just $|e^{\ii\omega z}|\le e^{|\omega|\delta}$ and the triangle inequality. Larger bandwidth may make $B_\theta$ much larger; the constants cannot be ignored.
+
+A smooth cutoff in physical space need not produce analytic profiles. A nonzero globally analytic function cannot also have compact support. Thus ``extend the function and apply the theorem'' requires specifying a valid extension and its regularity, or paying an explicit approximation error such as \eqref{eq:tail}.
+
+\section{Why the tanh readout is a corrected derivative}
+Fix one direction and write $g=g_\theta$. This section solves the scalar problem of representing $g(s)$ on $[-1,1]$.
+
+\subsection{Differentiate the neurons to identify the quantity to invert}
+
+The derivative of $\tfrac12\tanh(\gamma t)$ is the unit-mass kernel
+\begin{equation}
+ K_\gamma(t)=\frac{\gamma}{2}\sech^2(\gamma t),\qquad
+ \int_\R K_\gamma(t)\dd t=1.
+ \label{eq:tanh-kernel}
+\end{equation}
+Suppose temporarily that an infinite integral is justified, and we use a coefficient density $\rho:\R\to\R$:
+\[
+ q(s)=b+\frac12\int_\R\rho(c)\tanh(\gamma(s-c))\dd c.
+\]
+Differentiating gives
+\begin{equation}
+ q'(s)=\int_\R\rho(c)K_\gamma(s-c)\dd c=(K_\gamma*\rho)(s).
+ \label{eq:convolution}
+\end{equation}
+So to obtain $q'=g'$, the coefficient density must undo the smoothing of $g'$ by $K_\gamma$. Taking $\rho=g'$ alone is the leading approximation; it produces the smoothed derivative $K_\gamma*g'$, not exactly $g'$.
+
+\subsection{The Fourier multiplier and its inverse}
+
+For the convention \eqref{eq:fourier-one},
+\begin{equation}
+ \widehat K_\gamma(\omega)=\frac{\tau\omega}{\sinh(\tau\omega)},
+ \qquad \tau=\frac\pi{2\gamma}.
+ \label{eq:kernel-transform}
+\end{equation}
+The value at $\omega=0$ is the continuous limit $1$. Here is a derivation. Put $a=\omega/\gamma$ and $t=e^{2\gamma x}$. Since
+\[
+ \sech^2(\gamma x)=\frac{4t}{(1+t)^2},\qquad
+ \dd x=\frac{\dd t}{2\gamma t},
+\]
+the kernel transform is
+\[
+ \int_0^\infty\frac{t^{-\ii a/2}}{(1+t)^2}\dd t
+ =\Gamma(1-\ii a/2)\Gamma(1+\ii a/2)
+ =\frac{\pi a/2}{\sinh(\pi a/2)}.
+\]
+The first equality is the beta integral. The second follows from
+$\Gamma(z)\Gamma(1-z)=\pi/\sin(\pi z)$ and $\Gamma(1+z)=z\Gamma(z)$.
+
+Fourier transforming \eqref{eq:convolution} gives
+\[
+ \widehat K_\gamma(\omega)\widehat\rho(\omega)
+ =\ii\omega\widehat g(\omega).
+\]
+Solving this scalar equation at each frequency yields
+\begin{equation}
+ \widehat\rho(\omega)=
+ \ii\frac{\sinh(\tau\omega)}{\tau}\widehat g(\omega).
+ \label{eq:density-transform}
+\end{equation}
+This inverse exists on real frequencies, but grows exponentially with frequency. Enough regularity is necessary for its use; this is not a stable deconvolution formula for arbitrary noisy data.
+
+Now suppose Fourier inversion also converges at $s\pm\ii\tau$. Substituting those arguments directly into the inverse transform gives
+\[
+ g(s+\ii\tau)=\frac1{2\pi}\int\widehat g(\omega)e^{\ii\omega s}e^{-\tau\omega}\dd\omega,
+ \quad
+ g(s-\ii\tau)=\frac1{2\pi}\int\widehat g(\omega)e^{\ii\omega s}e^{\tau\omega}\dd\omega.
+\]
+Subtract and divide by $2\ii\tau$. The multiplier is
+\[
+ \frac{e^{-\tau\omega}-e^{\tau\omega}}{2\ii\tau}
+ =\frac{-\sinh(\tau\omega)}{\ii\tau}
+ =\ii\frac{\sinh(\tau\omega)}\tau.
+\]
+This proves the density formula
+\begin{equation}
+ \boxed{\rho(z)=\frac{g(z+\ii\tau)-g(z-\ii\tau)}{2\ii\tau}.}
+ \label{eq:density}
+\end{equation}
+The factor $\ii$ in \eqref{eq:density-transform} is essential. For real $s$, conjugate symmetry gives the convenient real expression $\rho(s)=\Imag g(s+\ii\tau)/\tau$.
+
+Taylor expansion explains the derivative connection:
+\begin{equation}
+ \rho(s)=g'(s)-\frac{\tau^2}{3!}g'''(s)
+ +\frac{\tau^4}{5!}g^{(5)}(s)-\cdots.
+ \label{eq:density-taylor}
+\end{equation}
+Thus the construction is not inventing an unrelated coefficient pattern. It starts with the derivative and adds the correction that compensates for finite tanh width. With spacing $h$, the leading readout is $h g'(c_j)/2$.
+
+For a concrete check, if $g(s)=\sin(\kappa s)$, then
+\[
+ \rho(s)=\frac{\sinh(\kappa\tau)}\tau\cos(\kappa s)
+ =\kappa\frac{\sinh(\kappa\tau)}{\kappa\tau}\cos(\kappa s).
+\]
+The kernel attenuates this frequency by $\kappa\tau/\sinh(\kappa\tau)$, so the correction restores exactly the missing amplitude in the continuous convolution.
+
+The global Fourier derivation explains \emph{why} \eqref{eq:density} is the right quantity. The finite-interval proof next only needs local analyticity; it does not assume that the global convolution exists.
+
+\section{Finite centers and halos: an exact local identity}
+\subsection{Assumptions for one profile}
+
+Let $\Delta>0$ be a real extension margin and $\delta>0$ a complex analyticity radius. Define
+\[
+ I_\Delta=[-1-\Delta,1+\Delta],\qquad
+ U_\delta(I_\Delta)=\{z\in\C:\operatorname{dist}(z,I_\Delta)<\delta\}.
+\]
+Assume $g$ is holomorphic on this open set, real on its real segment, and $|g(z)|\le B$ there. The constant $B$ bounds the profile in the complex neighborhood, not just on the real interval.
+Holomorphic means complex differentiable throughout the set; in particular, the function has a convergent Taylor series in each disk contained in that set. This condition makes the imaginary evaluations and the contour arguments legitimate.
+
+Use \eqref{eq:geometry}, with $0<\lambda\le1$. The explicit bounds below are stated under
+\begin{equation}
+ r:=(R+\tfrac12)h\le\Delta,\qquad
+ \gamma\delta\ge4\pi,\qquad
+ \lambda R\ge2\log2.
+ \label{eq:admissibility}
+\end{equation}
+Set $a=-1-r$, $b=1+r$, and choose the reference point $s_0=-1$. The centers $c_{-R},\ldots,c_{n+R}$ are precisely the midpoints of the $W$ equal cells covering $[a,b]$.
+
+These conditions are sufficient for the proof, not claimed necessary for every successful construction. Small examples can work outside them without being certified by this theorem.
+
+\subsection{The finite integral and the boundary term}
+
+For a real input $s\in[-1,1]$ and a complex integration variable $z$, define
+\begin{align}
+ D_s(z)&=\tfrac12\{\tanh(\gamma(s-z))-\tanh(\gamma(s_0-z))\},\\
+ H_s(z)&=\coth(\gamma(s-z))-\coth(\gamma(s_0-z)),\\
+ F_s(z)&=\rho(z)D_s(z).
+\end{align}
+Subtracting the value at $s_0$ keeps the constant part separate. The exact identity is
+\begin{align}
+ g(s)&=g(s_0)+\int_a^b F_s(t)\dd t+\mathcal B[g](s),
+ \label{eq:finite-identity}\\
+ \mathcal B[g](s)&=\frac1{4\tau}\int_{-\tau}^{\tau}
+ \{g(a+\ii y)H_s(a+\ii y)-g(b+\ii y)H_s(b+\ii y)\}\dd y.
+ \label{eq:boundary-integral}
+\end{align}
+Everything in the boundary term uses the same known profile, evaluated along two short vertical segments beyond the target interval.
+
+\textbf{Derivation.} The identity $\gamma\tau=\pi/2$ gives
+$H_s(t\pm\ii\tau)=2D_s(t)$. Therefore
+\[
+ \int_a^b F_s(t)\dd t=\frac1{4\ii\tau}
+ \left\{\int_a^b g(t+\ii\tau)H_s(t+\ii\tau)\dd t
+ -\int_a^b g(t-\ii\tau)H_s(t-\ii\tau)\dd t\right\}.
+\]
+At a simple pole $p$, the residue of a function $J$ is the coefficient of $1/(z-p)$ in its local expansion, equivalently $\Res(J;p)=\lim_{z\to p}(z-p)J(z)$. The residue theorem says that a positively oriented closed contour integral equals $2\pi\ii$ times the sum of the enclosed residues. Here the only poles of $g(z)H_s(z)$ inside the rectangle
+$[a,b]+\ii[-\tau,\tau]$ are at $z=s,s_0$. Their residues are
+$-g(s)/\gamma$ and $g(s_0)/\gamma$: the negative sign comes from differentiating the argument $\gamma(s-z)$ with respect to $z$. For a positively oriented rectangle, bottom minus top plus the two vertical integrals equals
+$2\pi\ii[g(s_0)-g(s)]/\gamma$. Substitution into the preceding display, using $4\tau\gamma=2\pi$, gives \eqref{eq:finite-identity} with exactly the sign in \eqref{eq:boundary-integral}. At $s=s_0$ both sides reduce to the anchor value.
+
+For $\Real w>0$, $\coth w=1+2\sum_{\ell\ge1}e^{-2\ell w}$. This expansion and oddness at the other endpoint imply
+\begin{equation}
+ \norm{\mathcal B[g]}_\infty
+ \le B\{\coth(\gamma r)-\coth(\gamma(r+2))\}
+ \le\frac{2B}{e^{2\gamma r}-1}.
+ \label{eq:uncorrected-boundary}
+\end{equation}
+For completeness, at a displacement $u=s-s_0\in[0,2]$, the absolute endpoint factors are bounded by
+$\coth(\gamma r)-\coth(\gamma(r+u))$ and
+$\coth(\gamma(r+2-u))-\coth(\gamma(r+2))$. Each is at most the brace in \eqref{eq:uncorrected-boundary}; integrating both segments with the prefactor $1/(4\tau)$ proves the bound.
+
+This is what an uncorrected finite halo leaves behind. Since $\gamma r=\lambda(R+1/2)$, its bound decays like $e^{-2\lambda R}$, not like $e^{-cR^2}$. Merely adding $R\sim\sqrt n$ halos is different from applying the correction derived below.
+
+\subsection{The baseline neuron coefficients}
+
+Midpoint quadrature replaces the real integral by $h\sum_j F_s(c_j)$:
+\begin{align}
+ q_h(s)&=g(s_0)+h\sum_{j=-R}^{n+R}\rho(c_j)D_s(c_j),\\
+ u_j^{\rm base}&=\frac h2\rho(c_j),\qquad
+ b^{\rm base}=g(s_0)-\sum_j u_j^{\rm base}\tanh(\gamma(s_0-c_j)).
+ \label{eq:baseline}
+\end{align}
+Thus $q_h(s)=b^{\rm base}+\sum_j u_j^{\rm base}\tanh(\gamma(s-c_j))$. The variable $u_j$ denotes a readout for one profile, before multiplication by the angular weight.
+
+\section{Exactly where the one-dimensional error comes from}
+\subsection{A signed quadrature identity}
+
+We need the signs of the quadrature error because its endpoint contribution must be corrected together with \eqref{eq:boundary-integral}.
+
+Choose
+\begin{equation}
+ k=\left\lceil\frac{\delta}{8\tau}\right\rceil,
+ \qquad \sigma=2k\tau.
+ \label{eq:contour-height}
+\end{equation}
+Condition \eqref{eq:admissibility} gives $\tau\le\delta/8$, and hence
+\[
+ \delta/4\le\sigma\le\delta/2,\qquad
+ \sigma+\tau\le5\delta/8.
+\]
+The density obeys
+\begin{equation}
+ |\rho(t+\ii y)|\le M_\sigma:=\frac{B}{\delta-\sigma-\tau}
+ \le\frac{4B}{\delta},\quad t\in[a,b],\ |y|\le\sigma.
+ \label{eq:density-bound}
+\end{equation}
+Indeed, integrating the derivative along the short vertical segment gives
+$\rho(z)=(2\tau)^{-1}\int_{-\tau}^{\tau}g'(z+\ii v)\dd v$. Cauchy's derivative estimate bounds the integrand by $B/(\delta-\sigma-\tau)$.
+For this estimate, a disk of any radius smaller than $\delta-\sigma-\tau$ around the evaluation point remains in the analytic tube. Cauchy's formula on a circle of radius $r_0$ bounds the derivative by $B/r_0$; letting $r_0$ increase to $\delta-\sigma-\tau$ gives the displayed value.
+
+For a meromorphic function $F$ on the rectangle (with no poles on its boundary or the real segment), let
+\[
+ Q_hF=h\sum_j F(c_j),\quad IF=\int_a^b F(t)\dd t,\quad
+ z_0=a+h/2,
+\]
+and introduce a function whose poles mark the quadrature grid:
+\[
+ \mathcal K_h(z)=\frac1{2\ii}\cot\frac{\pi(z-z_0)}h,
+ \qquad R_h^\pm(z)=\mathcal K_h(z)\pm\frac12.
+\]
+The symbol $R_h^\pm$ here is a contour weight; it is unrelated to the number $R$ of halo centers. Define three scalar contributions:
+\begin{align}
+ \mathcal H_h[F]&=\int_a^b
+ \{R_h^-(t-\ii\sigma)F(t-\ii\sigma)
+ -R_h^+(t+\ii\sigma)F(t+\ii\sigma)\}\dd t,
+ \label{eq:horizontal}\\
+ \mathcal V_h[F]&=\ii\int_0^\sigma
+ \frac{F(b+\ii y)-F(a+\ii y)-F(b-\ii y)+F(a-\ii y)}
+ {1+e^{2\pi y/h}}\dd y,
+ \label{eq:vertical}\\
+ \mathcal P_h[F]&=2\pi\ii\left\{
+ \sum_{p\text{ upper}}\Res(R_h^+F;p)
+ +\sum_{p\text{ lower}}\Res(R_h^-F;p)\right\}.
+ \label{eq:poles}
+\end{align}
+The poles in the last line are those of $F$, inside the respective half-rectangles, not the real grid poles. The exact signed identity is
+\begin{equation}
+ \boxed{Q_hF-IF=\mathcal H_h[F]+\mathcal V_h[F]-\mathcal P_h[F].}
+ \label{eq:midpoint-identity}
+\end{equation}
+
+\textbf{Derivation.} Every real grid pole of $\mathcal K_h$ has residue $h/(2\pi\ii)$, so its contribution to the contour integral of $\mathcal K_hF$ is $hF(c_j)$. Let $U$ be the upper outer path $b\to b+\ii\sigma\to a+\ii\sigma\to a$, and $L$ the lower outer path $a\to a-\ii\sigma\to b-\ii\sigma\to b$. The residue theorem gives
+\[
+ \int_U F=2\pi\ii\sum_{p\text{ upper}}\Res(F;p)-IF,
+ \quad
+ \int_L F=2\pi\ii\sum_{p\text{ lower}}\Res(F;p)+IF.
+\]
+Apply the same theorem to $\mathcal K_hF$ around the full rectangle and substitute $\mathcal K_h=R_h^+-1/2$ on $U$, $\mathcal K_h=R_h^-+1/2$ on $L$. The half-residue terms cancel. What remains is $Q_hF-IF=\int_U R_h^+F+\int_L R_h^-F-\mathcal P_h[F]$. The horizontal pieces are \eqref{eq:horizontal}. At the half-cell endpoints,
+$R_h^+(a+\ii y)=R_h^+(b+\ii y)=(1+e^{2\pi y/h})^{-1}$ and the lower values are their negatives. The vertical pieces are therefore \eqref{eq:vertical}.
+
+Writing $w=e^{2\pi\ii(z-z_0)/h}$ also gives $R_h^+=w/(w-1)$ and $R_h^-=1/(w-1)$, hence
+\begin{equation}
+ |R_h^+(z)|\le\frac1{e^{2\pi\Imag z/h}-1},\quad
+ |R_h^-(z)|\le\frac1{e^{2\pi|\Imag z|/h}-1}
+ \label{eq:contour-weight-bound}
+\end{equation}
+in the upper and lower half-planes respectively.
+
+Applying \eqref{eq:midpoint-identity} to $F_s=\rho D_s$ and subtracting from \eqref{eq:finite-identity} yields
+\begin{equation}
+ g(s)-q_h(s)=
+ \underbrace{\mathcal B[g](s)-\mathcal V_h[F_s]}_{\mathcal B_{\rm eff}(s)}
+ +\mathcal P_h[F_s]-\mathcal H_h[F_s].
+ \label{eq:exact-baseline-error}
+\end{equation}
+This is an equality, not an asymptotic estimate. The effective boundary term is the physical truncation term \emph{minus} the endpoint contribution of quadrature.
+
+\subsection{Bounding the horizontal and pole contributions}
+
+The contour height was chosen so that $\gamma\sigma=k\pi$. Tanh has imaginary period $\ii\pi$, so $D_s(t\pm\ii\sigma)=D_s(t)$. On the real axis,
+\[
+ D_s(t)=\int_{s_0}^s K_\gamma(v-t)\dd v\ge0,
+ \qquad \int_\R D_s(t)\dd t=s-s_0\le2.
+\]
+Each horizontal edge in \eqref{eq:horizontal} is therefore bounded by
+$2M_\sigma/(e^{2\pi\sigma/h}-1)$, giving
+\begin{equation}
+ E_{\rm hor}:=\frac{4M_\sigma}{e^{2\pi\sigma/h}-1}.
+ \label{eq:exact-h-bound}
+\end{equation}
+
+Inside the rectangle, $D_s$ has pole families
+$s\pm\ii(2\ell+1)\tau$ and $s_0\pm\ii(2\ell+1)\tau$, with $0\le\ell<k$. Each residue has absolute value $1/(2\gamma)$. Inserting this, \eqref{eq:density-bound}, and \eqref{eq:contour-weight-bound} into \eqref{eq:poles} gives
+\begin{equation}
+ E_{\rm pole}:=\frac{4\pi M_\sigma}{\gamma}
+ \sum_{\ell=0}^{k-1}\frac1{e^{(2\ell+1)\pi^2/\lambda}-1}.
+ \label{eq:exact-p-bound}
+\end{equation}
+There are four pole families; $4(2\pi)/(2\gamma)=4\pi/\gamma$ accounts for the prefactor. The exponent comes from
+$2\pi(2\ell+1)\tau/h=(2\ell+1)\pi^2/\lambda$.
+
+This pole term is the finite-spacing or lattice contribution. It is the source of the $e^{-\pi^2/\lambda}$ factor. It is distinct from angular aliasing between directions.
+
+For reference, bounding the vertical term directly gives
+\begin{equation}
+ |\mathcal V_h[F_s]|\le
+ \frac{4M_\sigma h\log2}{\pi(e^{2\gamma r}-1)}.
+ \label{eq:v-bound}
+\end{equation}
+To see this, the saturated-tanh expansion bounds each endpoint value of $|D_s|$ by $2/(e^{2\gamma r}-1)$. There are four terms in \eqref{eq:vertical}, and
+$\int_0^\infty(1+e^{2\pi y/h})^{-1}\dd y=h\log2/(2\pi)$.
+
+\section{The halo correction, with explicit coefficients}
+\subsection{Rewrite the effective boundary term as two power series}
+
+Define
+\[
+ z_-(s)=e^{-2\gamma(s-a)},\quad z_+(s)=e^{-2\gamma(b-s)},\quad
+ \vartheta=e^{-\gamma r}.
+\]
+For $s\in[-1,1]$, both arguments lie in $(0,\vartheta^2]$. The scalar $\vartheta$ is not a direction vector. For each positive integer $\ell$, define endpoint moments using $(e,\epsilon)=(a,+1)$ for the left end and $(b,-1)$ for the right end:
+\begin{align}
+ \mu_\ell(e,\epsilon)&=\frac1{2\tau}\int_{-\tau}^{\tau}
+ g(e+\ii y)e^{2\ii\epsilon\ell\gamma y}\dd y,
+ \label{eq:mu}\\
+ \nu_\ell(e,\epsilon)&=2(-1)^\ell\Imag\int_0^\sigma
+ \frac{\rho(e+\ii y)e^{2\ii\epsilon\ell\gamma y}}
+ {1+e^{2\pi y/h}}\dd y.
+ \label{eq:nu}
+\end{align}
+Let $G_\ell^-:=\mu_\ell(a,+1)-\nu_\ell(a,+1)$ and
+$G_\ell^+:=\mu_\ell(b,-1)-\nu_\ell(b,-1)$, and introduce the scalar series
+$G^\pm(z)=\sum_{\ell\ge1}G_\ell^\pm z^\ell$. Then
+\begin{equation}
+ \mathcal B_{\rm eff}(s)=
+ G^-(z_-(s))-G^-(z_-(s_0))+
+ G^+(z_+(s))-G^+(z_+(s_0)).
+ \label{eq:boundary-series}
+\end{equation}
+
+Here is why these particular moments appear. Expanding $\coth w$ at the left endpoint gives
+\[
+ H_s(a+\ii y)=2\sum_{\ell\ge1}
+ [z_-(s)^\ell-z_-(s_0)^\ell]e^{2\ii\ell\gamma y}.
+\]
+Substitution into \eqref{eq:boundary-integral} produces the $\mu_\ell$ coefficients. Similarly,
+$\tanh w=1+2\sum_{\ell\ge1}(-1)^\ell e^{-2\ell w}$ gives
+\[
+ D_s(a+\ii y)=\sum_{\ell\ge1}(-1)^\ell
+ [z_-(s)^\ell-z_-(s_0)^\ell]e^{2\ii\ell\gamma y}.
+\]
+In \eqref{eq:vertical}, the conjugate pair at this endpoint becomes
+$2(-1)^\ell\Imag\int\rho(a+\ii y)e^{2\ii\ell\gamma y}/(1+e^{2\pi y/h})\dd y$, which is $\nu_\ell$. The right endpoint has the opposite phase; its endpoint orientation and the oddness of tanh/coth give the same overall series sign. Subtracting $\mathcal V_h$ from $\mathcal B$ gives $\mu-\nu$.
+
+All moments are real by conjugate symmetry. Moreover,
+\begin{equation}
+ |G_\ell^\pm|\le M_h:=\frac{Bh}{\delta}D_\lambda,
+ \qquad D_\lambda=\frac\pi{2\lambda}+\frac{4\log2}{\pi}.
+ \label{eq:moment-bound}
+\end{equation}
+To verify this, $\int_{-\tau}^{\tau}e^{2\ii\epsilon\ell\gamma y}\dd y=0$ because $2\gamma\tau=\pi$. Thus $g(e)$ can be subtracted in \eqref{eq:mu}. Cauchy's bound $|g'|\le2B/\delta$ gives
+\[
+ |\mu_\ell|\le\frac1{2\tau}\int_{-\tau}^{\tau}
+ \frac{2B}{\delta}|y|\dd y=\frac{B\tau}{\delta}
+ =\frac{Bh}{\delta}\frac\pi{2\lambda}.
+\]
+Equation \eqref{eq:density-bound} and the integral following \eqref{eq:v-bound} give
+$|\nu_\ell|\le4Bh\log2/(\pi\delta)$. Their sum proves \eqref{eq:moment-bound}.
+
+\subsection{Match the series using the existing halo neurons}
+
+Choose $L=\lfloor(R+1)/2\rfloor$ and define prescribed positive numbers
+\[
+ t_i=e^{2\lambda(i-1/2)},\quad i=1,\ldots,L,\qquad
+ D_L(z)=\prod_{i=1}^L(1+t_i z).
+\]
+The letter $L$ counts corrected halo slots per side; it is not the dimension or total width. For each endpoint, form
+\begin{equation}
+ P_L^\pm(z)=[D_L(z)G^\pm(z)]_{\le L},\qquad
+ S_L^\pm(z)=\frac{P_L^\pm(z)}{D_L(z)}.
+ \label{eq:rational-correction}
+\end{equation}
+The brackets mean retain powers $0,\ldots,L$. Only the first $L$ moments are needed. This is explicit polynomial multiplication and truncation with a prescribed denominator; it does not fit the target at sample points.
+
+Since the roots are distinct, write
+\begin{equation}
+ S_L^\pm(z)=C^\pm+\sum_{i=1}^L\frac{\kappa_i^\pm}{1+t_i z},
+ \quad
+ \kappa_i^\pm=\frac{P_L^\pm(-1/t_i)}{\prod_{j\ne i}(1-t_j/t_i)}.
+ \label{eq:partial-fractions}
+\end{equation}
+This formula follows by multiplying by $1+t_i z$ and evaluating at $z=-1/t_i$. The constant $C^\pm$ cancels in the anchored correction below.
+
+The outermost halo centers are
+\[
+ \xi_i^-=a+(i-1/2)h=c_{-R+i-1},\qquad
+ \xi_i^+=b-(i-1/2)h=c_{n+R-i+1}.
+\]
+Direct algebra gives
+\begin{align}
+ \frac1{1+t_i z_-(s)}&=\frac{1+\tanh(\gamma(s-\xi_i^-))}{2},\\
+ \frac1{1+t_i z_+(s)}&=\frac{1-\tanh(\gamma(s-\xi_i^+))}{2}.
+ \label{eq:rational-is-tanh}
+\end{align}
+For example, $t_i z_-(s)=e^{-2\gamma(s-\xi_i^-)}$ and
+$(1+\tanh u)/2=1/(1+e^{-2u})$. Thus the rational expression introduces no new type of neuron.
+
+Define
+\begin{align}
+ q_{\rm bd}(s)&=S_L^-(z_-(s))-S_L^-(z_-(s_0))
+ +S_L^+(z_+(s))-S_L^+(z_+(s_0)),\\
+ q^\star(s)&=q_h(s)+q_{\rm bd}(s).
+\end{align}
+In terms of ordinary readouts, initialize $u_j=h\rho(c_j)/2$, then make only these changes:
+\begin{equation}
+ \boxed{u_{-R+i-1}\mathrel{+}=\kappa_i^-/2,\qquad
+ u_{n+R-i+1}\mathrel{-}=\kappa_i^+/2,\quad 1\le i\le L.}
+ \label{eq:halo-readouts}
+\end{equation}
+Finally set
+\begin{equation}
+ b_g=g(s_0)-\sum_j u_j\tanh(\gamma(s_0-c_j)).
+ \label{eq:profile-bias}
+\end{equation}
+Then $q^\star(s)=b_g+\sum_j u_j\tanh(\gamma(s-c_j))$ and $q^\star(s_0)=g(s_0)$.
+
+\subsection{Why the corrected halo error has an \texorpdfstring{$R^2$}{R-squared} exponent}
+
+Because $L\le(R+1)/2$, we have $t_i\le\vartheta^{-1}$. On $|z|=\vartheta$,
+$|D_L(z)|\le2^L$ and $|G^\pm(z)|\le M_h/(1-\vartheta)$, using a slightly loose geometric-series bound. Cauchy's coefficient estimate bounds the coefficient of $z^p$ in $D_LG$ by
+$2^LM_h[(1-\vartheta)\vartheta^p]^{-1}$. The terms omitted by truncation have $p\ge L+1$. For real $0\le z\le\vartheta^2$, their sum is at most
+\[
+ \frac{2^LM_h}{1-\vartheta}\sum_{p=L+1}^{\infty}\vartheta^p
+ =\frac{M_h\vartheta}{(1-\vartheta)^2}(2\vartheta)^L.
+\]
+Also $D_L(z)\ge1$ on this real interval. Dividing by it cannot enlarge this bound. There are four anchored evaluations in \eqref{eq:boundary-series}, so
+\begin{equation}
+ E_{\rm halo}:=
+ \frac{4M_h\vartheta}{(1-\vartheta)^2}(2\vartheta)^L
+ \quad\text{bounds}\quad
+ \norm{\mathcal B_{\rm eff}-q_{\rm bd}}_\infty.
+ \label{eq:exact-b-bound}
+\end{equation}
+Under $\lambda R\ge2\log2$, $\vartheta\le e^{-\lambda R}\le1/4$ and $L\ge R/2$. In particular
+\[
+ \log(2\vartheta)\le\log2-\lambda R\le-\lambda R/2,
+ \quad (2\vartheta)^L\le e^{-\lambda R^2/4}.
+\]
+Bounding the remaining factor loosely by $16$ gives
+\begin{equation}
+ E_{\rm halo}\le16M_h e^{-\lambda R^2/4}.
+ \label{eq:halo-simplified}
+\end{equation}
+One factor of $R$ comes from how far the halo extends in units of kernel width; the other comes from matching $L$ series coefficients, with $L$ proportional to $R$. This is the reason a corrected $R\sim\sqrt n$ halo can give an exponent proportional to $n$.
+
+\section{The one-profile theorem, and what its rate actually says}
+
+Combining the exact identities gives
+\begin{equation}
+ \boxed{g-q^\star=(\mathcal B_{\rm eff}-q_{\rm bd})+
+ \mathcal P_h[F_s]-\mathcal H_h[F_s].}
+ \label{eq:exact-corrected-error}
+\end{equation}
+Consequently, under the assumptions already stated,
+\begin{equation}
+ \boxed{\norm{g-q^\star}_\infty\le E_{\rm hor}+E_{\rm pole}+E_{\rm halo},}
+ \label{eq:three-errors}
+\end{equation}
+where \eqref{eq:exact-h-bound}, \eqref{eq:exact-p-bound}, and \eqref{eq:exact-b-bound} give explicit quantities. These are upper bounds on the contributions, not claims that the actual error equals their sum.
+
+For comparison with the paper's compact statement, they imply
+\begin{align}
+ E_{\rm hor}&\le\frac{32B}{\delta}e^{-\pi\delta n/4},
+ \label{eq:simple-horizontal}\\
+ E_{\rm pole}&\le\frac{64\pi B}{\lambda\delta n}e^{-\pi^2/\lambda},
+ \label{eq:simple-pole}\\
+ E_{\rm halo}&\le\frac{32BD_\lambda}{\delta n}e^{-\lambda R^2/4}.
+ \label{eq:simple-halo}
+\end{align}
+For the first, use $\sigma\ge\delta/4$, $h=2/n$, $M_\sigma\le4B/\delta$, and $(e^x-1)^{-1}\le2e^{-x}$ in the present admissible range. For the second, put $A=\pi^2/\lambda\ge\pi^2$ and observe
+\[
+ \sum_{\ell\ge0}\frac1{e^{(2\ell+1)A}-1}
+ \le\frac{e^{-A}}{(1-e^{-A})(1-e^{-2A})}\le2e^{-A}.
+\]
+Insert this in \eqref{eq:exact-p-bound} and use $\gamma=\lambda n/2$. The third follows directly from $M_h=2BD_\lambda/(\delta n)$.
+
+\begin{theorem}[Explicit one-profile construction]
+In addition to \eqref{eq:admissibility}, suppose $n\ge16$, $W\le2n$, and
+$R\ge a_H\sqrt n$ for a chosen constant $a_H>0$. Define
+\[
+ c=\frac18\min\{\pi\delta,\lambda a_H^2\}.
+\]
+The explicit network above satisfies
+\begin{equation}
+ \norm{g-q^\star}_\infty\le
+ \frac{128\pi B}{\lambda\delta}
+ \left[e^{-cW}+\frac{e^{-\pi^2/\lambda}}W\right].
+ \label{eq:profile-theorem}
+\end{equation}
+\end{theorem}
+\begin{proof}
+Let $\kappa=\frac14\min\{\pi\delta,\lambda a_H^2\}$. The horizontal and halo terms have exponential factors at most $e^{-\kappa n}\le e^{-\kappa W/2}=e^{-cW}$. Their prefactors sum to at most
+$32B(1+D_\lambda)/\delta<128\pi B/(\lambda\delta)$, since
+$\lambda(1+D_\lambda)<4\pi$ for $0<\lambda\le1$. Finally $1/n\le2/W$ turns \eqref{eq:simple-pole} into the second term of \eqref{eq:profile-theorem}.
+\end{proof}
+
+The paper's choice $R=\lceil a_H\sqrt n\rceil$, with $n\ge16\max\{1,a_H^2\}$, ensures $W\le2n$. Sam's convention $R=\lceil\sqrt N\rceil=\lceil\sqrt{n+1}\rceil$ also fits the stated theorem with $a_H=1$ when $n\ge16$. If a practical minimum halo count is imposed, use the actual $R$ in the three component bounds and check $W\le2n$ before using the compact theorem.
+
+At fixed $\lambda$, the second term is proportional to $e^{-\pi^2/\lambda}/W$. It is often tiny, but it is not identically zero and is not a constant error floor. Thus this theorem does not claim pure exponential convergence for arbitrarily large $W$ at fixed $\lambda$. Reducing $\lambda$ suppresses that term but makes the halo exponent smaller and can worsen coefficient conditioning. Those effects must be considered together.
+
+This is the paper's \emph{constructed representation} estimate. Its separate theorem about recovering coefficients from sampled data introduces a recovery allowance and different constants. That recovery theorem is not needed here because these coefficients are explicitly constructed.
+
+\section{Put the spokes together: the full coefficients and full error}
+\subsection{Every weight and bias of the final MLP}
+
+For each direction $m$, construct $q_m^\star$ for $g_m=g_{\theta_m}$ using the same grid, bandwidth, and halo rule. Denote its corrected readouts by $u_{mj}$ and its anchored bias by $b_m$. Then
+\begin{equation}
+ \boxed{v_{mj}=\gamma\theta_m,\quad
+ \beta_{mj}=-\gamma c_j,\quad w_{mj}=\alpha_m u_{mj},\quad
+ b=\sum_m\alpha_m b_m.}
+ \label{eq:full-parameters}
+\end{equation}
+Here, explicitly,
+\begin{align}
+ u_{mj}&=\frac{h}{4\ii\tau}
+ [g_m(c_j+\ii\tau)-g_m(c_j-\ii\tau)]
+ +\text{the halo additions in \eqref{eq:halo-readouts}},
+ \label{eq:full-coeff}\\
+ b_m&=g_m(-1)-\sum_j u_{mj}\tanh(\gamma(-1-c_j)).
+\end{align}
+All halo additions are specified by the finite integrals \eqref{eq:mu}--\eqref{eq:nu} and the finite algebra \eqref{eq:rational-correction}--\eqref{eq:partial-fractions}; they are not fitted unknowns.
+
+Substituting the Fourier expression \eqref{eq:profile} into the uncorrected term produces the full spoke formula
+\begin{equation}
+ w_{mj}^{\rm base}=\frac{\alpha_m h}{4(2\pi)^d}
+ \int_\R |\omega|^{d-1}(\ii\omega)
+ \frac{\sinh(\tau\omega)}{\tau\omega}
+ \widehat F(\omega\theta_m)e^{\ii\omega c_j}\dd\omega.
+ \label{eq:full-fourier-coeff}
+\end{equation}
+Use $[-\Omega,\Omega]$ instead when using a frequency cutoff. The three factors have different jobs: $|\omega|^{d-1}$ forms the Radon profile; $\ii\omega$ differentiates it; $\sinh(\tau\omega)/(\tau\omega)$ undoes the tanh derivative kernel's smoothing. The halo modification is still needed on a finite row of neurons.
+
+The bias choice above preserves each profile's reference value. One may additionally force $q(0)=f(0)$ by replacing $b$ by $b+f(0)-q(0)$. If the original total uniform error is at most $E$, this optional adjustment has error at most $2E$, because
+$|f(x)-q(x)-f(0)+q(0)|\le2E$. It does not inherit the unchanged bound automatically.
+
+\subsection{Angular error: a separate, explicit requirement}
+
+For every $x\in\mathbb B^d$, define the scalar function on the sphere
+$A_x(\theta)=g_\theta(\theta\cdot x)$. The angular error is
+\begin{equation}
+ E_{\rm ang}=\sup_{x\in\mathbb B^d}
+ \left|\int_{\Sph}A_x(\theta)\dd\theta
+ -\sum_m\alpha_m A_x(\theta_m)\right|.
+ \label{eq:angular-error}
+\end{equation}
+The one-dimensional theorem does not bound this term. Analyticity in the scalar variable $s$ is not a substitute for control in $\theta$.
+
+Here are three usable angular certificates, under their respective assumptions.
+
+\textbf{A cell-based rule in any dimension.} Partition the sphere into cells $C_m$, choose $\theta_m\in C_m$, and set $\alpha_m=\operatorname{area}(C_m)$. Let $\eta_m$ bound the geodesic distance from any point in $C_m$ to $\theta_m$. Suppose uniformly for real $s\in[-1,1]$,
+$\norm{\nabla_{\Sph}g_\theta(s)}\le L_\theta$ and
+$|\partial_sg_\theta(s)|\le L_s$. Splitting the change in profile orientation from the change in its argument gives
+\[
+ |A_x(\theta)-A_x(\theta_m)|
+ \le L_\theta\operatorname{dist}(\theta,\theta_m)
+ +L_s|\theta\cdot x-\theta_m\cdot x|
+ \le(L_\theta+L_s)\eta_m.
+\]
+Integrating on each cell proves
+\begin{equation}
+ E_{\rm ang}\le(L_\theta+L_s)\sum_m\alpha_m\eta_m
+ \le S_{d-1}(L_\theta+L_s)\max_m\eta_m.
+ \label{eq:angular-cell-bound}
+\end{equation}
+This bound is for these area weights; it is not automatically a certificate for unrelated quadrature weights.
+
+For the frequency-cutoff profiles, these constants can themselves be bounded from the known Fourier data. Differentiating \eqref{eq:profile} under its integral shows that one may take
+\begin{align*}
+ L_s&=\frac1{2(2\pi)^d}\sup_\theta\int_{-\Omega}^{\Omega}
+ |\omega|^d|\widehat F(\omega\theta)|\dd\omega,\\
+ L_\theta&=\frac1{2(2\pi)^d}\sup_\theta\int_{-\Omega}^{\Omega}
+ |\omega|^d\norm{\nabla_\xi\widehat F(\omega\theta)}_2\dd\omega,
+\end{align*}
+when the indicated derivative exists and the bounds are finite. The second line follows because differentiation along a unit tangent to the sphere differentiates $\widehat F(\omega\theta)$ by $\omega$ times a directional frequency derivative. These estimates can be conservative, but make the angular certificate explicit in terms of target information.
+
+\textbf{Positive polynomial-exact quadrature.} Suppose the angular rule is exact for restrictions to the sphere of polynomials of degree at most $J$, and its weights are positive. Suppose for every $x$ there exists such a polynomial $p_x$ satisfying $\norm{A_x-p_x}_\infty\le\varepsilon_J$. Subtract $p_x$ from both the integral and the quadrature sum. The polynomial terms cancel, and both remaining absolute sums are at most $S_{d-1}\varepsilon_J$. Thus
+\begin{equation}
+ E_{\rm ang}\le2S_{d-1}\varepsilon_J.
+ \label{eq:angular-poly-bound}
+\end{equation}
+This states precisely what angular approximation information is required. An exponential rate for $\varepsilon_J$ needs corresponding angular regularity and constants; it is not asserted for arbitrary targets.
+
+\textbf{An explicit analytic bound on the circle.} In $d=2$, write
+$A_x(\varphi)=\sum_{k\in\mathbb Z}a_k(x)e^{\ii k\varphi}$ and use the equally spaced $M$-point rule. The root-of-unity sum is zero unless $k$ is a multiple of $M$, so the exact difference between the quadrature sum and the integral is
+\[
+ 2\pi\sum_{\ell\ne0}a_{\ell M}(x).
+\]
+If $A_x$ extends analytically to $|\Imag\varphi|<\eta$ and is uniformly bounded there by $B_{\rm ang}$, contour shifting gives $|a_k(x)|\le B_{\rm ang}e^{-\eta|k|}$. Summing the geometric series gives
+\begin{equation}
+ E_{\rm ang}\le\frac{4\pi B_{\rm ang}}{e^{\eta M}-1}.
+ \label{eq:angular-2d}
+\end{equation}
+This is angular aliasing. Its $M$-dependent exponent is different from the $\lambda$-dependent lattice term along each spoke.
+
+\subsection{The complete error ledger}
+
+Let $q^\star$ denote the network with exactly evaluated construction coefficients. For an exact extension with no frequency cutoff, set $E_{\rm ext}=E_{\rm tail}=0$. Otherwise retain the terms defined earlier. The triangle inequality gives
+\begin{equation}
+ \boxed{\begin{aligned}
+ \norm{f-q^\star}_{L^\infty(\mathbb B^d)}
+ &\le E_{\rm ext}+E_{\rm tail}+E_{\rm ang}\\
+ &\quad+\sum_m|\alpha_m|
+ (E_{{\rm hor},m}+E_{{\rm pole},m}+E_{{\rm halo},m}).
+ \end{aligned}}
+ \label{eq:total-error}
+\end{equation}
+To verify the last step directly, write
+$F_M(x)-q^\star(x)=\sum_m\alpha_m[g_m(\theta_m\cdot x)-q_m^\star(\theta_m\cdot x)]$ and use $\theta_m\cdot x\in[-1,1]$. No cancellation between directions is assumed by the bound.
+
+If the profiles share $\delta,\Delta$ and the geometry, but have possibly different complex bounds $B_m$, define $B_\alpha=\sum_m|\alpha_m|B_m$. The compact theorem becomes
+\begin{equation}
+ \norm{f-q^\star}_\infty\le E_{\rm ext}+E_{\rm tail}+E_{\rm ang}
+ +\frac{128\pi B_\alpha}{\lambda\delta}
+ \left[e^{-cW}+\frac{e^{-\pi^2/\lambda}}W\right].
+ \label{eq:total-compact}
+\end{equation}
+For positive weights and $B_m\le B$, $B_\alpha\le S_{d-1}B$, so no additional factor $M$ is introduced merely by summing more angular cells.
+
+These are absolute uniform value bounds. With normalized volume measure on the ball and a nonzero target, an absolute bound $E$ implies relative $L^2$ error at most $E/\norm{f}_{L^2}$. A derivative or PDE-residual error bound needs a further argument; small function error alone does not imply equally small derivative error.
+
+\section{Numerical evaluation is an additional error term}
+\subsection{The halo algebra can be evaluated without cancelling polynomials}
+
+Equation \eqref{eq:partial-fractions} defines the coefficients, but direct evaluation of its alternating polynomials can lose precision. A scaled equivalent used in the repository is
+\begin{align}
+ \zeta&=e^{-2\lambda},\quad r_i=t_i^{-1}=\zeta^{i-1/2},\quad
+ p_k=\prod_{j=1}^k(1-\zeta^j),\quad p_0=1,\\
+ \kappa_i^\pm&=(-1)^i
+ \frac{\zeta^{[i(i+1)-1]/2}}{p_{i-1}p_{L-i}}
+ \sum_{\ell=1}^L
+ e_{\ell-1}(r_1,\ldots,\widehat r_i,\ldots,r_L)G_\ell^\pm.
+ \label{eq:scaled-pf}
+\end{align}
+The hat means omit $r_i$. The elementary symmetric polynomial $e_k$ is the coefficient of $z^k$ in $\prod_{j\ne i}(1+r_jz)$. Its coefficients can be generated by repeatedly multiplying by $(1+r_jz)$, using additions of nonnegative numbers.
+
+To derive \eqref{eq:scaled-pf}, in the numerator of \eqref{eq:partial-fractions} cancel the factor $1+t_i z$ before evaluating the truncated product. This gives
+\[
+ P_L(-r_i)=(-r_i)^L\sum_{\ell=1}^L
+ G_\ell[z^{L-\ell}]\prod_{j\ne i}(1+t_jz).
+\]
+The polynomial coefficient here is
+$(\prod_{j\ne i}t_j)e_{\ell-1}(r_1,\ldots,\widehat r_i,\ldots,r_L)$.
+In the denominator, split $j<i$ and $j>i$:
+\[
+ \prod_{j\ne i}(1-t_j/t_i)
+ =(-1)^{L-i}\zeta^{-(L-i)(L-i+1)/2}p_{i-1}p_{L-i}.
+\]
+Combining this with $(-r_i)^L$ and $\prod_{j\ne i}t_j$ gives the sign $(-1)^i$ and exponent $[i(i+1)-1]/2$ in \eqref{eq:scaled-pf}.
+
+For fixed $\lambda>0$, the absolute sum of this linear map's outputs is bounded independently of $L$:
+\begin{equation}
+ \sum_i|\kappa_i^\pm|\le C_{\rm bd}(\lambda)\max_\ell|G_\ell^\pm|,
+ \qquad
+ C_{\rm bd}(\lambda)\le
+ \frac{\sqrt\pi e^\lambda}{2\sqrt\lambda}
+ \exp\!\left(\frac{5\pi^2}{24\lambda}\right).
+ \label{eq:conditioning}
+\end{equation}
+Here is a bound establishing finiteness and the stated constant. Define
+$p_\infty=\prod_{j\ge1}(1-\zeta^j)>0$ and
+$L_+=\prod_{j\ge1}(1+\zeta^{j-1/2})<\infty$. Summing the nonnegative elementary coefficients in \eqref{eq:scaled-pf} gives a bound by
+$p_\infty^{-2}L_+e^\lambda\sum_{i\ge1}e^{-\lambda i(i+1)}$. The inequalities
+\[
+ \log p_\infty^{-1}\le\frac{\pi^2}{12\lambda},\qquad
+ \log L_+\le\frac{\pi^2}{24\lambda},\qquad
+ \sum_{i\ge1}e^{-\lambda i(i+1)}\le\frac{\sqrt\pi}{2\sqrt\lambda}
+\]
+prove \eqref{eq:conditioning}. For the first, expand $-\log(1-\zeta^j)$ and use $e^{2\lambda k}-1\ge2\lambda k$. For the second, apply the midpoint integral bound for the convex function $\log(1+e^{-t})$, whose integral is $\pi^2/12$. The last follows by comparing the decreasing Gaussian to its integral on $[0,\infty)$.
+
+The baseline coefficient bound and the two halo contributions imply
+\begin{equation}
+ \sum_j|u_j|\le\frac{2B(1+\Delta)}\delta+
+ C_{\rm bd}(\lambda)\frac{BhD_\lambda}{\delta},\qquad
+ |b_g|\le B+\sum_j|u_j|.
+ \label{eq:l1-bound}
+\end{equation}
+For the baseline, Cauchy's estimate gives $|\rho(c_j)|\le2B/\delta$, so
+$\sum_j h|\rho(c_j)|/2\le BWh/\delta\le2B(1+\Delta)/\delta$.
+For the correction, each endpoint contributes half its partial-fraction absolute sum, giving the second term. These bounds show why taking $\lambda$ arbitrarily small is not free: the available conditioning bound grows rapidly as $\lambda$ decreases.
+
+\subsection{Propagating coefficient and evaluation errors}
+
+Let $\widetilde b,\widetilde w$ be computed parameters, and first suppose hidden geometry is exact. Since real tanh has absolute value at most one,
+\begin{equation}
+ \norm{q^\star-\widetilde q}_\infty
+ \le|b-\widetilde b|+\sum_{mj}|w_{mj}-\widetilde w_{mj}|.
+ \label{eq:coefficient-error}
+\end{equation}
+This accounts for inaccurate complex profile values, moment quadrature, and coefficient arithmetic, once their induced parameter errors are bounded.
+
+For example, suppose each complex value used in the real-center density has absolute error at most $\varepsilon_g$, each boundary moment $G_\ell^\pm$ has error at most $\varepsilon_G$, and the anchor has error at most $\varepsilon_0$. In exact subsequent arithmetic, \eqref{eq:density} gives $|\Delta\rho|\le\varepsilon_g/\tau$. Equations \eqref{eq:halo-readouts} and \eqref{eq:conditioning} then give
+\[
+ \sum_j|\Delta u_j|\le\frac{Wh}{2\tau}\varepsilon_g+
+ C_{\rm bd}(\lambda)\varepsilon_G.
+\]
+Because the bias is recomputed from the anchor, its error is at most $\varepsilon_0+\sum_j|\Delta u_j|$. The resulting per-profile function error is at most
+\begin{equation}
+ \varepsilon_0+\frac{Wh}{\tau}\varepsilon_g+
+ 2C_{\rm bd}(\lambda)\varepsilon_G.
+ \label{eq:data-propagation}
+\end{equation}
+Additional arithmetic errors in the coefficient calculation must be added, not presumed covered by exact quadrature.
+
+If stored hidden weights and biases are perturbed as well, tanh is $1$-Lipschitz on the real line. On the unit ball the additional bound is
+\[
+ \sum_{mj}|\widetilde w_{mj}|
+ \big(\norm{\widetilde v_{mj}-v_{mj}}_2+
+ |\widetilde\beta_{mj}-\beta_{mj}|\big).
+\]
+During inference, errors in the computed preactivations propagate by the same Lipschitz bound. If each tanh evaluation has absolute error at most $\varepsilon_{\tanh}$, this contributes at most
+$\varepsilon_{\tanh}\sum|\widetilde w_{mj}|$.
+
+Under the usual floating-point model, with unit roundoff $u$, no overflow/underflow, and exact activation values supplied, a conservative sequential product-and-sum allowance is
+$\eta_{2P+1}(|\widetilde b|+\sum|\widetilde w_{mj}|)$, where $\eta_k=ku/(1-ku)$ and $ku<1$. Dot-product and activation errors are separate. Pairwise or compensated summation can improve this allowance. Library-specific activation accuracy must be established rather than assumed from the precision of the storage format.
+
+Call the sum of these certified numerical allowances $E_{\rm num}$. Add it to \eqref{eq:total-error}. The construction theorem is an exact-arithmetic statement; it does not promise an automatic machine-epsilon result in floating point.
+
+\subsection{Evaluating the one-dimensional integrals}
+
+The moments use finite one-dimensional integrals, for which the implementation uses Gauss--Legendre quadrature. For a real integrand $v$ on an interval of length $T$, a $Q$-point rule obeys
+\[
+ |I(v)-Q(v)|\le
+ \frac{T^{2Q+1}(Q!)^4}{(2Q+1)[(2Q)!]^3}
+ \max|v^{(2Q)}|
+\]
+when the indicated derivative is continuous. Apply this to real and imaginary components separately for complex integrands. Analytic contour bounds or interval arithmetic are alternatives. Increasing quadrature order and observing stable coefficients is a useful check, but is not itself a rigorous error certificate.
+
+For the $\mu$ moments, subtract $g(e)$ before quadrature because its integral is exactly zero. An equivalent stable formula is
+\[
+ \mu_\ell(e,\epsilon)=\frac1\tau\Real\int_0^\tau
+ [g(e+\ii y)-g(e)]e^{2\ii\epsilon\ell\gamma y}\dd y.
+\]
+The exponential denominator in the $\nu$ integrand should be evaluated without overflowing, for example as a logistic function of $-2\pi y/h$.
+
+\section{A complete practical recipe}
+\subsection{Inputs and output}
+
+The inputs are: a target domain and extension or supplied ridge decomposition; complex-evaluable profiles $g_\theta$; angular directions and weights; grid size $N$; bandwidth $\lambda$; halo rule; and valid analytic margins and bounds. The output is the arrays $(v,\beta,w,b)$ of \eqref{eq:full-parameters} and an error ledger.
+
+\begin{enumerate}[leftmargin=*,itemsep=6pt]
+\item \textbf{Specify target access.} State how $g_\theta(z)$ is obtained: an analytical formula, a Fourier integral with a controlled cutoff, or a given valid ridge decomposition. Account for any extension, transform, or frequency-tail approximation.
+\item \textbf{Choose angular integration.} Specify full-sphere versus antipodal convention and check $\sum\alpha_m=S_{d-1}$. Supply an angular error bound of the kind in the preceding section. An arbitrary set of directions with arbitrary weights has no such guarantee.
+\item \textbf{Build the shared scalar geometry.} Set $n=N-1$, $h=2/n$, $\gamma=\lambda/h$, and $R=\lceil\sqrt N\rceil$ if using the interior-center convention. Set $c_j$, $r$, $a$, $b$, and $\tau$ as above. Verify \eqref{eq:admissibility}; determine $k,\sigma,L$.
+\item \textbf{For each direction, compute baseline coefficients.} Evaluate $\rho_m(c_j)$ by the complex-shift formula and set $u_{mj}=h\rho_m(c_j)/2$.
+\item \textbf{Compute both sets of boundary moments.} Evaluate the $\mu$ and $\nu$ integrals for $1\le\ell\le L$. Form $G_\ell^\pm=\mu_\ell^\pm-\nu_\ell^\pm$.
+\item \textbf{Correct the existing halo coefficients.} Apply \eqref{eq:scaled-pf}, add $\kappa_i^-/2$ on the left and subtract $\kappa_i^+/2$ on the right. Compute the per-profile bias from $g_m(-1)$.
+\item \textbf{Assemble the MLP.} Multiply all per-profile readouts and biases by their angular weights, and flatten the neurons using \eqref{eq:full-parameters}.
+\item \textbf{Report errors separately.} Record extension/cutoff error, angular error, the three per-profile bounds, and numerical allowances. Evaluate the actual resulting MLP on independent points, including near the domain boundary, as a consistency check. Refining $M$, $N$, and contour quadrature separately helps identify which contribution dominates.
+\end{enumerate}
+
+The repository's current scalar encoder is:
+\begin{quote}
+\path{experiments/expF19_radon_direct_pde/quill_boundary.py}
+\end{quote}
+Its interface uses interval cells:
+\begin{verbatim}
+enc = encode(
+    profile,                    # complex-evaluable g_m(z)
+    n_cells=N - 1,
+    lam=lambda_value,
+    halo=ceil(sqrt(N)),          # explicitly use interior-center count
+    analytic_delta=delta,
+    quadrature_order=Q,
+)
+# enc.weights = corrected u_mj
+# enc.bias    = anchored b_m
+# enc.centers and enc.gamma specify the scalar geometry
+\end{verbatim}
+The code's default halo count is $\lceil\sqrt{n}\rceil$, so pass \texttt{halo} explicitly to use $\lceil\sqrt N\rceil$. The code also imposes a conservative check $r\le\delta$; the theorem itself separates the real margin $r\le\Delta$ from the complex radius $\delta$. Supplying \texttt{analytic\_delta} is not a proof of analyticity or a calculation of $B_m$; the caller must establish those facts. Its default choice is intended for entire profiles and does not establish a useful complex bound automatically.
+
+\subsection{How to choose directions versus centers}
+
+The total width is $P=MW$. Increasing $W$ resolves a profile along each direction. Increasing $M$ resolves how those profiles vary with direction. Either can be the limiting approximation error. The useful allocation principle is to balance their error contributions at the requested tolerance, using their actual constants.
+
+For example, \emph{conditionally}, if angular polynomial degree $J$ gives error $Ce^{-aJ}$ and a suitable angular rule uses $M$ of order $J^{d-1}$, while the relevant one-profile term behaves as $C'e^{-bW}$, then balancing suggests $W$ proportional to $J$ and $P$ of order $J^d$. The corresponding rate is of the form $e^{-cP^{1/d}}$ in that regime. This is an allocation model under stated analytic assumptions, not a universal theorem for the full method: the lattice term, dimension-dependent constants, numerical errors, and profile acquisition cost remain. At fixed $\lambda$, the $e^{-\pi^2/\lambda}/W$ term eventually prevents a claim of purely exponential asymptotics.
+
+For merely Lipschitz angular data, the cell bound instead reflects a covering radius typically scaling as $M^{-1/(d-1)}$ for well-distributed directions. The directional curse of dimensionality has not disappeared.
+
+\subsection{What is computed, and how much work is hidden in it}
+
+There is no global neuron-by-neuron least-squares matrix here. There is still numerical quadrature and finite coefficient algebra. Let $Q$ be the contour quadrature order, $L=O(\sqrt n)$ the number of corrected slots per side, and $C_g$ the cost of one complex profile evaluation. Excluding acquisition of the profiles themselves, a direct implementation costs per direction approximately
+\[
+ O\big((W+Q)C_g+LQ+L^3\big).
+\]
+The $L^3$ term describes the current straightforward generation of elementary coefficients separately for each excluded index in \eqref{eq:scaled-pf}; it is not a least-squares solve. With streamed directions, temporary storage can be of order $W+LQ+Q$, in addition to stored outputs. The default quadrature order in the current code grows with $Lk$; therefore this implementation is not automatically linear-time in $W$.
+
+If stored with shared directions, the representation uses $O(Md+MW)$ numbers and evaluation at one input uses $O(Md+MW)$ arithmetic: compute each $\theta_m\cdot x$ once, then all its neurons. Flattening it into an ordinary dense MLP uses $O(Pd)$ storage and standard dense evaluation work. Both describe the same function.
+
+The cost of obtaining the directional profiles must be added. For a generic target provided only by real evaluations, computing a Radon integral can itself involve $(d-1)$-dimensional integration, and analytic continuation can be ill-conditioned. This note does not claim that arbitrary high-dimensional profile access costs the same as one target evaluation. Explicit analytical profiles are a particularly favorable access model.
+
+\subsection{Nonuniform centers and other domains}
+
+The continuous density \eqref{eq:density} is defined independently of the center grid. If $[a,b]$ is partitioned into cells of lengths $h_j$ and centers $c_j$, a natural baseline is $u_j=h_j\rho(c_j)/2$. But the uniform-grid contour identity and geometric halo correction above do not transfer unchanged.
+
+For example, if $c_j$ is each cell's midpoint and $|\partial_tF_s(t)|\le L_F$ uniformly in $s,t$, direct integration of $|t-c_j|$ gives
+\[
+ \left|\int_a^bF_s(t)\dd t-\sum_j h_jF_s(c_j)\right|
+ \le\frac{L_F}{4}\sum_jh_j^2.
+\]
+With an arbitrary node in each cell, replace $1/4$ by $1/2$. The continuous boundary term remains \eqref{eq:boundary-integral}, but correcting the new quadrature endpoint error requires its own derivation. Moving a center while retaining the old uniform readout and halo formulas is not covered by the stated theorem.
+
+For a physical domain contained in the ball $x=x_c+\ell z$, $\norm z\le1$, first construct the normalized target $f(x_c+\ell z)$. The physical input weights and biases become
+$v_{mj}=(\gamma/\ell)\theta_m$ and
+$\beta_{mj}=-\gamma c_j-(\gamma/\ell)\theta_m\cdot x_c$.
+Readouts do not change. A box may be enclosed in such a ball, with the resulting larger projected range reflected in the resolution and constants.
+
+\section{Worked example: an explicit three-dimensional target}
+
+Take $F(x)=e^{-\norm{x}_2^2/2}$ on all of $\R^3$, and approximate it on the unit ball. Its Radon transform is
+\[
+ p_\theta(s)=2\pi e^{-s^2/2},
+\]
+because the two perpendicular Gaussian coordinates each integrate to $\sqrt{2\pi}$. Equation \eqref{eq:3d-profile} gives
+\begin{equation}
+ g_\theta(s)=g(s)=\frac{(1-s^2)e^{-s^2/2}}{4\pi}.
+ \label{eq:gaussian-profile}
+\end{equation}
+Every direction has the same profile, though it is evaluated at a different projection. This symmetry makes the example inexpensive; generic targets do not share it.
+
+Check the normalization without relying on the Fourier derivation. If $r_x=\norm{x}$, rotational symmetry gives
+\begin{align*}
+ \int_{\mathbb S^2}g(\theta\cdot x)\dd\theta
+ &=\frac12\int_{-1}^1(1-r_x^2u^2)e^{-r_x^2u^2/2}\dd u\\
+ &=\frac12[u e^{-r_x^2u^2/2}]_{-1}^1
+ =e^{-r_x^2/2}.
+\end{align*}
+At $x=0$, this is also $4\pi g(0)=1$.
+
+The coefficient density can be evaluated without numerical differentiation:
+\begin{equation}
+ \rho(c)=-\frac{e^{(\tau^2-c^2)/2}}{4\pi\tau}
+ \left[(1-c^2+\tau^2)\sin(c\tau)+2c\tau\cos(c\tau)\right].
+ \label{eq:gaussian-density}
+\end{equation}
+To obtain it, write
+$1-(c+\ii\tau)^2=1-c^2+\tau^2-2\ii c\tau$ and
+$e^{-(c+\ii\tau)^2/2}=e^{(\tau^2-c^2)/2}e^{-\ii c\tau}$, then take the imaginary part and divide by $4\pi\tau$. As $\tau\to0$, this approaches
+$g'(c)=(c^3-3c)e^{-c^2/2}/(4\pi)$, as required.
+
+For any chosen analytic tube $U_\delta(I_\Delta)$, an explicit conservative bound is
+\[
+ B:=\frac{1+(1+\Delta+\delta)^2+\delta^2}{4\pi}e^{\delta^2/2}.
+\]
+Indeed $|\Real z|\le1+\Delta+\delta$, $|\Imag z|\le\delta$,
+$|1-z^2|\le1+|z|^2$, and $|e^{-z^2/2}|\le e^{\delta^2/2}$.
+
+Choose a full-sphere angular rule, choose admissible $N,\lambda,R$, compute \eqref{eq:gaussian-density} at all centers, and compute the two endpoint moment sequences from \eqref{eq:gaussian-profile}. Apply the halo correction once, since the profile is shared. For each direction multiply the resulting readouts and bias by its $\alpha_m$. This completes the construction, without a regression step. Its error is still the sum of the angular contribution and the corrected one-profile contribution, plus numerical error. This worked example is an algebraic illustration, not a new benchmark or a claim that a particular finite network reaches a specified observed error.
+
+\section{Sources and relation to the existing paper}
+
+The finite tanh identity, meromorphic midpoint formula, prescribed-halo correction, coefficient bound, and compact witness estimate are expanded from the repository's current construction appendix:
+\begin{quote}\small\ttfamily
+docs/appendix\_notes/paper\_v5\_replacements/\\
+organized\_v7\_package/sections/7\_appendix/\\
+01\_Construction/09\_26\_sl.tex
+\end{quote}
+That appendix uses $N$ for cells and $d$ for the imaginary shift. This note uses $n$ for cells, $N=n+1$ for interior centers, $d$ for input dimension, and $\tau$ for the imaginary shift. The mathematical construction is the same. The existing implementation is
+\path{experiments/expF19_radon_direct_pde/quill_boundary.py}.
+
+The angular decomposition, normalization bookkeeping, angular error certificates, numerical-error ledger, and worked 3D example have been assembled here so the entire known-function procedure can be read in one place. They are not evidence of solving an unknown PDE.
+
+Useful external sources for the underlying mathematics are:
+\begin{itemize}[leftmargin=*]
+\item V. Ivrii, \href{https://www.math.utoronto.ca/courses/apm346h1/20181/PDE-textbook/Chapter9/S9.A.html}{Radon transform notes}: Fourier-slice and inversion reasoning. Fourier normalizations vary; this note derives its own constants in \eqref{eq:fourier-d}--\eqref{eq:profile}.
+\item M. Javed and L. N. Trefethen (2014), \href{https://doi.org/10.1098/rspa.2013.0571}{A trapezoidal rule error bound unifying the Euler--Maclaurin formula and geometric convergence for periodic functions}: finite-interval contour quadrature. The meromorphic midpoint and halo formulas used here are the local paper's specific development.
+\item NIST, \href{https://dlmf.nist.gov/3.5}{DLMF, numerical quadrature}: Gaussian quadrature and its remainder structure.
+\item D. Hendrycks and K. Gimpel, \href{https://arxiv.org/abs/1606.08415}{Gaussian Error Linear Units}: the exact GELU activation $s\Phi(s)$, used in the final section.
+\end{itemize}
+
+\section{Generalization beyond tanh}
+\label{sec:generalization}
+\subsection{What survives, and the activation-dependent equation}
+
+The Radon decomposition and the angular quadrature are independent of the activation. To replace tanh, keep those steps and re-derive how a scalar profile is encoded. The useful common principle is: \emph{differentiate the activation until its derivative is a kernel, then compensate for that kernel's smoothing of the corresponding derivative of the profile.}
+
+Make this precise. Let $\phi:\R\to\R$ be an activation, and choose an integer $r\ge1$ for which its $r$th derivative is an integrable kernel, or an appropriate distribution, with nonzero finite mass
+\[
+ m_0=\int_\R\phi^{(r)}(t)\dd t\ne0.
+\]
+Define the normalized kernel $K_0=\phi^{(r)}/m_0$ and the normalized, scaled activation
+\[
+ \Phi_\gamma(s)=\frac{\phi(\gamma s)}{m_0\gamma^{r-1}},\qquad
+ K_\gamma(s)=\gamma K_0(\gamma s).
+\]
+The chain rule gives $\Phi_\gamma^{(r)}=K_\gamma$ and $\int K_\gamma=1$. If $a(c)$ is a coefficient density, then
+\[
+ \frac{\dd^r}{\dd s^r}\int_\R a(c)\Phi_\gamma(s-c)\dd c
+ =(K_\gamma*a)(s).
+\]
+Consequently, matching the profile's $r$th derivative requires
+\begin{equation}
+ \widehat a(\omega)=
+ \frac{(\ii\omega)^r\widehat g(\omega)}{\widehat K_0(\omega/\gamma)}.
+ \label{eq:general-inverse}
+\end{equation}
+This equation is valid when the transforms, convolution, and inverse multiplier exist in the function or distribution class being used. The denominator must not vanish on required frequencies, or those frequencies need a separate treatment. Rapid growth of its inverse can also make the density undefined or unstable for a proposed target class.
+
+Integrating $r$ times leaves a polynomial of degree at most $r-1$. It must be fixed by reference values or derivatives and represented in the final model. After midpoint quadrature, the baseline readout multiplying the \emph{raw} activation $\phi(\gamma(s-c_j))$ is
+\begin{equation}
+ u_j^{\rm base}=\frac{h\,a(c_j)}{m_0\gamma^{r-1}}.
+ \label{eq:general-coeff}
+\end{equation}
+For the full Radon network, multiply by $\alpha_m$ as before. Finite-interval corrections and quadrature errors must then be analyzed for this activation; the tanh halo formula is not an activation-independent black box.
+
+\subsection{Tanh: first derivative and an exact imaginary difference}
+For $\phi(s)=\tanh s$, choose $r=1$, $m_0=2$, and
+$K_0(s)=\sech^2s/2$. Equation \eqref{eq:general-inverse} becomes the density transform \eqref{eq:density-transform}, and \eqref{eq:general-coeff} becomes $h\rho(c_j)/2$. A constant bias supplies the integration constant. The particular hyperbolic-sine inverse multiplier is why two imaginary-shifted evaluations work exactly, and the tanh/coth identities are why the finite boundary correction can use the prescribed tanh halo slots.
+
+\subsection{ReLU: second derivative, with no smooth-kernel deconvolution}
+
+For $\phi(s)=s_+=\max(0,s)$, its first derivative is a step and its second derivative is the Dirac delta $\delta_0$ in the distributional sense. Thus $r=2$, $m_0=1$, $K_0=\delta_0$, and $\widehat K_0=1$. The density is simply $a=g''$. On a finite interval, the fundamental theorem of calculus gives the exact identity
+\begin{equation}
+ g(s)=g(a)+(s-a)g'(a)+\int_a^b g''(c)(s-c)_+\dd c,
+ \qquad s\in[a,b].
+ \label{eq:relu-identity}
+\end{equation}
+To verify it, $(s-c)_+=0$ when $c>s$, so the integral is
+$\int_a^s g''(c)(s-c)\dd c$. Integration by parts makes it
+$-(s-a)g'(a)+g(s)-g(a)$, proving the formula. It suffices, for example, that $g'$ be absolutely continuous.
+
+The scaling factor is important: $\phi(\gamma(s-c))/\gamma=(s-c)_+$ for $\gamma>0$. A positive ReLU slope is therefore redundant with its readout magnitude; it is not an independent smoothing bandwidth as in tanh.
+
+There is also an entirely explicit finite construction from known values. For knots $c_0<\cdots<c_n$, let
+$s_j=[g(c_{j+1})-g(c_j)]/(c_{j+1}-c_j)$ be the secant slope. The piecewise-linear interpolant is
+\[
+ q(s)=g(c_0)+s_0(s-c_0)+
+ \sum_{j=1}^{n-1}(s_j-s_{j-1})(s-c_j)_+.
+\]
+Each coefficient is a jump in slope. On a uniform grid and for a smooth target,
+$s_j-s_{j-1}=h g''(c_j)+O(h^3)$, making the second-derivative readout interpretation explicit. If $g\in C^2$, its uniform interpolation error is at most
+$h_{\max}^2\norm{g''}_\infty/8$, obtained from the interpolation remainder on each interval. Thus the natural finite ReLU construction generally converges algebraically, even for analytic targets; it does not inherit the tanh theorem's rate. The affine term can be represented within one hidden layer by a bias and two ReLUs, using $s=s_+-(-s)_+$.
+
+\subsection{Exact GELU: second derivative, but a different and stronger inverse}
+
+Let $\phi(s)=s\Phi(s)$, where $\Phi$ is the standard normal cumulative distribution function and $\varphi(s)=(2\pi)^{-1/2}e^{-s^2/2}$ its density. Differentiating twice gives
+\[
+ \phi'(s)=\Phi(s)+s\varphi(s),\qquad
+ \phi''(s)=(2-s^2)\varphi(s).
+\]
+This signed kernel has integral $1$, so $r=2$, $m_0=1$. It is not a positive Gaussian kernel. Since the Fourier transform of $\varphi$ is $e^{-\omega^2/2}$ and multiplication by $s^2$ corresponds to minus the second frequency derivative,
+\[
+ \widehat K_0(\omega)=2e^{-\omega^2/2}
+ +\frac{\dd^2}{\dd\omega^2}e^{-\omega^2/2}
+ =(1+\omega^2)e^{-\omega^2/2}.
+\]
+Therefore the exact formal density is
+\begin{equation}
+ \widehat a(\omega)=(\ii\omega)^2
+ \frac{e^{\omega^2/(2\gamma^2)}}{1+(\omega/\gamma)^2}
+ \widehat g(\omega),\qquad
+ u_j^{\rm base}=\frac h\gamma a(c_j).
+ \label{eq:gelu-inverse}
+\end{equation}
+At low frequency, this is the second derivative with a kernel correction. However, the inverse multiplier grows like a Gaussian in frequency. A target whose Fourier transform only decays exponentially, as can occur for strip-analytic functions, need not have an ordinary globally defined density under \eqref{eq:gelu-inverse}. There are no real zeros in the denominator, but absence of zeros alone does not guarantee a well-posed inverse.
+
+Bandlimited profiles avoid that existence problem at the price of an explicit bandwidth-dependent amplification. Another route, used in the paper's GELU discussion, is finite polynomial deconvolution. To see why that is possible, the kernel's moment-generating function is
+\[
+ M_K(z)=\int_\R K_0(t)e^{zt}\dd t=(1-z^2)e^{z^2/2}.
+\]
+Write $1/M_K(z)=\sum_{\ell\ge0}b_{2\ell}z^{2\ell}$. For a polynomial $p$ approximating $g''$, define the finite sum
+\[
+ a_p=\sum_{2\ell\le\deg p}b_{2\ell}\gamma^{-2\ell}p^{(2\ell)}.
+\]
+Taylor expansion of $p(s-t/\gamma)$ terminates, so convolution by $K_\gamma$ on polynomials equals the finite differential operator $M_K(-\partial_s/\gamma)$. The kernel is even, making the sign immaterial. Multiplying its finite series by the reciprocal series proves $K_\gamma*a_p=p$ exactly. One must still bound the error of replacing $g''$ by $p$, integrate twice, truncate the integral, and analyze the GELU quadrature and halo tails. This is a different construction proof, not the tanh imaginary-difference identity with a new activation name.
+
+The affine part is representable by two exact GELUs because $\phi(s)-\phi(-s)=s$. All formulas here concern exact GELU $s\Phi(s)$; a commonly used tanh approximation to GELU is a different kernel and needs its own analysis.
+
+\subsection{Raw bumps, tent kernels, and genuine obstructions}
+
+For a network built from raw unit-mass bumps $K_\gamma(s-c)$, there is no need to integrate an activation: the relevant equation is directly
+$g=K_\gamma*a$. Thus $\widehat a=\widehat g/\widehat K_\gamma$ and the leading readout resembles $h g(c_j)$ rather than a derivative. The same questions about zeros, inverse growth, finite endpoints, and quadrature remain.
+
+For the unit-area tent $K(t)=(1-|t|)_+$, direct integration gives
+\[
+ \widehat K(\omega)=\left(\frac{\sin(\omega/2)}{\omega/2}\right)^2.
+\]
+It vanishes at nonzero integer multiples of $2\pi$. A fixed-width translated family therefore cannot use an ordinary stable convolution inverse at those frequencies. Finite-interval approximation, nonuniform widths, or distributional coefficient descriptions can change the problem, but division by this symbol is not an unconditional construction for arbitrary targets. Piecewise-linear tent interpolation is still useful and has its own algebraic approximation theory.
+
+A linear activation produces only affine functions regardless of width. A fixed-degree polynomial activation in a single hidden layer produces only polynomials of at most that degree. These are immediate examples for which ``works for anything'' is false. More subtly, even a nonpolynomial activation can have a poor inverse for a particular target class or geometry.
+
+The general result is therefore a \emph{principle with testable conditions}: identify the derivative kernel, inspect its Fourier multiplier, construct the density in a valid function class, and prove that its discretization and boundary treatment are controlled. For tanh, this note supplies that entire chain with explicit finite-halo coefficients and error bounds. The Radon step carries over to other activations; their scalar inverse, integration constants, halo correction, numerical conditioning, and convergence rate must each be justified.
+
+\end{document}
