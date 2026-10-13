@@ -1,0 +1,43 @@
+{
+  "research_commit": "98c9bdd",
+  "purpose": "Compact exact plotting inputs for Figures 3 and 4; Figure 4(c) replaced with measured Adam intervention responses. No training.",
+  "files": {
+    "figures/joint_acquisition.pdf": "1833ca0bc535ff687ccf4d818c567cbf45c649ce2627600e7260ceb9ed68b54d",
+    "figures/joint_acquisition.png": "3124111fbd4b15263d50682a5c76e53142070ddf482e4e95794a8433abfce1a3",
+    "figures/spectrum_readout.pdf": "3a4f85af2bdf1244b4e7d170093462b7020efd2b8897717eae2bbc58cf1f4717",
+    "figures/spectrum_readout.png": "54931145dfae2e248a469860b21685a82b28a91ecb49e60bba39ed5026e28f13",
+    "sources/figure4_figure.py": "7f6c1ee1150ef33daf65b33b7d1975e09ac4a99b46b48d5e5c75cbf332bc904f",
+    "sources/spectrum_readout_provenance.json": "ae2d7363bb7559bd8fad4a4f6186276a6ef8ca5b412c9f2faabc15f3b46b465c",
+    "sources/section34_paired_figures.py": "ba6fc0350345568fe7fa91388d34ccc7c33dd1a736e5698586341e23378d1090",
+    "sources/joint_acquisition_provenance.json": "5201028e76f016c66aee5a38da85fd604ea632f6881c89b6aeea7480e09b2af0",
+    "data/joint_acquisition.npz": "070d95198ccea5af315972e236eb423509f00ae7c3fd9f83a85edb13de552fe0",
+    "data/spectrum_readout.npz": "043d315260f646b3490b8937e469f9c44b61495674f19c1315ee30b22b440be8",
+    "render.py": "994fd6f09d0f02f920f06b8e0d71e88a4e614ab1f7b423213ad0a90360bab8c6",
+    "prepare_adam_intervention.py": "6cb85367658216b0f80b81c58bbb0b90fc3faeffd67f6544c544fd3cfe3d716c",
+    "data/adam_intervention.csv": "50e04a9681365c3a976ed0c401b771ea3ad9c378b01678eb254dc7700bd56481",
+    "data/adam_intervention_provenance.json": "205227821241da5bff80c4339b96dc44a81d63ea2eb7d826a86069303e081743"
+  },
+  "panel_c": {
+    "extraction_record": "data/adam_intervention_provenance.json",
+    "notes": "adam_intervention.md",
+    "plot_csv": "data/adam_intervention.csv",
+    "historical_sources": "sources/ retains original experiment renderers and pre-intervention provenance",
+    "unchanged_data_panels": [
+      "4(a)",
+      "4(b)"
+    ]
+  },
+  "layout": {
+    "figure_size_inches": [
+      5.5,
+      1.85
+    ],
+    "panel_title": "(c) Motion vs. scale",
+    "axes_labelpad": 1,
+    "tick_labelpad": 2,
+    "wspace": 0.4,
+    "axes_width_inches": 1.328684210526316,
+    "axes_height_inches": 0.9805,
+    "panel_c_ylabel": "RMS slope change (%)"
+  }
+}
