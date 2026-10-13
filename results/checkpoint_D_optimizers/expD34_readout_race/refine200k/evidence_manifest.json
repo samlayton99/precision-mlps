@@ -1,0 +1,34 @@
+{
+  "inputs": [
+    "/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race/refine200k"
+  ],
+  "analyses": [
+    {
+      "end": 200000,
+      "bundles": [
+        "refine_N128_s0"
+      ],
+      "rows": 175,
+      "reference_rows": 10360,
+      "probe_rows": 12950,
+      "source_sha256": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+      "reference_snapshot_schedule": "early plus logarithmic",
+      "probe_schedule": "steps 0 through 20 and nearest saved states to 61 logarithmic times",
+      "evidence_role": "descriptive optimization diagnostics; no checkpoint selection"
+    }
+  ],
+  "source_sha256": "c3af37fea17b5506ab64f429047e0db72aff2c6b38851c847c14040820664bbe",
+  "files": {
+    "rate_contrasts.csv": "d2c90c2be24a540e8f90303bc81910fd6ef2f1be6944dc5b56d84bac52dd2354",
+    "sample_probes.csv": "64f875abf2cfec10f712f2ca8d8071287ebfdc82f573f716c7fd85e212695d04",
+    "probe_audit.csv": "ad3de2d2f0d1cef1baac57083aa0da4594a25032a28357d74b1b67f99bfc7176",
+    "matched_target_audit.csv": "b177205e41c09e3f4a17d57fff49c9f19108087283493274a1656428ea4423fd",
+    "reference_audit.csv": "711b7d5a0b19cc136288796a81c9ec055ed8446f7477d8657d6b0d3dfd0c994d",
+    "summary.csv": "0a230206ed9f5dd582825778fe020e3487e86c1ba4e1d6b593a88cbf16fc4f02",
+    "summary.json": "98a08bf1dff9fa8d9a3582d6fdb7d21e2dd6c1c66743fe44d840dd6d024dcc3b",
+    "refine_N128_s0_curves.npz": "4f663fb27bd03f9098a5f3934dbfb9c8849f5782a5d56e034e8f4e5060ab2178"
+  },
+  "audit_scope": "All analyzed rows; max_abs fields are descriptive maxima; 5% is a post-observation summary threshold",
+  "curve_scope": "Only columns identified by plot_trace_columns are included; all full traces remain at source",
+  "probe_scope": "Full sample probe curves retained for width 177 seed 0; other probes summarized and retained at source"
+}

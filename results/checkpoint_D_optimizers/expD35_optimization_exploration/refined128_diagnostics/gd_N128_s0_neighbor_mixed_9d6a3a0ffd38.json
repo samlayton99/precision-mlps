@@ -1,0 +1,116 @@
+{
+  "snapshot": "results/checkpoint_D_optimizers/expD35_optimization_exploration/evidence/gd_N128_s0_neighbor_mixed_9d6a3a0ffd38/snapshot_000500000.npz",
+  "config": {
+    "n": 128,
+    "seed": 0,
+    "target": "mixed",
+    "optimizer": "gd",
+    "coordinates": "neighbor",
+    "eta": 0.0009000000000000001,
+    "initialization": "reference_xavier",
+    "slope_initialization": "lambda_xavier",
+    "epsilon": 1e-15,
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "ema_alpha": 0.98,
+    "ema_strength": 8.0,
+    "ema_location": 1,
+    "ema_normalized": false,
+    "sampling": "full",
+    "batch_size": 1024,
+    "schedule": "constant",
+    "reset": "none"
+  },
+  "grid_size": 8192,
+  "mse": 8.672311865175699e-05,
+  "lambda_quantiles": [
+    0.05978870639113056,
+    0.09247093084867562,
+    0.21554301696494577,
+    0.4239543953201815,
+    9.230041686375927
+  ],
+  "resolved_mode_energy": 8.672311865167581e-05,
+  "residual_energy": 8.672311865175699e-05,
+  "least_squares": [
+    {
+      "relative_cutoff": 1.8189894035458565e-12,
+      "rank": 132,
+      "fit_mse": 4.966916140155717e-14,
+      "validation_mse": 4.966928496885648e-14,
+      "coefficient_l2": 31288.0533302732
+    },
+    {
+      "relative_cutoff": 1e-12,
+      "rank": 135,
+      "fit_mse": 4.8569706668680355e-14,
+      "validation_mse": 4.8570222425964895e-14,
+      "coefficient_l2": 32587.520348717197
+    },
+    {
+      "relative_cutoff": 1e-14,
+      "rank": 141,
+      "fit_mse": 1.3913306046629933e-16,
+      "validation_mse": 1.3911475165013524e-16,
+      "coefficient_l2": 989139.351614821
+    },
+    {
+      "relative_cutoff": 1e-16,
+      "rank": 148,
+      "fit_mse": 1.591293962462663e-16,
+      "validation_mse": 1.5923613712536437e-16,
+      "coefficient_l2": 3667772.21669507
+    }
+  ],
+  "mode_edges": [
+    0.0,
+    1e-08,
+    1e-06,
+    0.0001,
+    0.01,
+    0.1,
+    1.0000001
+  ],
+  "mode_energy": [
+    1.0929129115070776e-09,
+    2.4827716287727e-07,
+    8.093152880593409e-05,
+    5.471139780778544e-06,
+    6.889687701089539e-08,
+    2.1831121634938025e-09
+  ],
+  "frequency_bands": [
+    "0\u20130",
+    "1\u20131",
+    "2\u20133",
+    "4\u20137",
+    "8\u201315",
+    "16\u201331",
+    "32\u201363",
+    "64\u2013127",
+    "128\u2013255",
+    "256+"
+  ],
+  "frequency_mse": [
+    1.0372453745828471e-09,
+    2.003015420514519e-09,
+    4.073495815458529e-09,
+    9.058415323627737e-09,
+    3.5819404583336504e-08,
+    4.0302709889954974e-05,
+    3.3081902914941033e-05,
+    9.60137093063771e-06,
+    2.654973630089887e-06,
+    1.030169709615862e-06
+  ],
+  "geometry_signal": {
+    "coarse_residual_mse": 1.8254918048753755e-09,
+    "remainder_residual_mse": 8.672129315995212e-05,
+    "gradient_norm": 9.116985876469378e-06,
+    "coarse_gradient_norm": 3.219287935649398e-06,
+    "remainder_gradient_norm": 9.542117109951896e-06,
+    "readout_span_gradient_norm": 9.116985866861126e-06,
+    "orthogonal_gradient_norm": 5.579624203590872e-13,
+    "span_relative_cutoff": 1e-12
+  }
+}

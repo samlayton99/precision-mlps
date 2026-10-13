@@ -1,0 +1,55 @@
+{
+  "inputs": [
+    "/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race/continue600k_even_recovered",
+    "/workspace/junmiaoh/experiments/precision-mlps/analysis/readout_race/continue600k_odd_recovered"
+  ],
+  "analyses": [
+    {
+      "end": 600000,
+      "bundles": [
+        "core_N128_s0",
+        "core_N128_s2",
+        "core_N128_s4"
+      ],
+      "rows": 525,
+      "reference_rows": 31920,
+      "probe_rows": 39900,
+      "source_sha256": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+      "reference_snapshot_schedule": "early plus logarithmic",
+      "probe_schedule": "steps 0 through 20 and nearest saved states to 61 logarithmic times",
+      "evidence_role": "descriptive optimization diagnostics; no checkpoint selection"
+    },
+    {
+      "end": 600000,
+      "bundles": [
+        "core_N128_s1",
+        "core_N128_s3"
+      ],
+      "rows": 350,
+      "reference_rows": 21280,
+      "probe_rows": 26600,
+      "source_sha256": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+      "reference_snapshot_schedule": "early plus logarithmic",
+      "probe_schedule": "steps 0 through 20 and nearest saved states to 61 logarithmic times",
+      "evidence_role": "descriptive optimization diagnostics; no checkpoint selection"
+    }
+  ],
+  "source_sha256": "c3af37fea17b5506ab64f429047e0db72aff2c6b38851c847c14040820664bbe",
+  "files": {
+    "rate_contrasts.csv": "e82bfe24dbd72be486bb5d693f5cee617ffa6a0d60bec77295220356436ae868",
+    "sample_probes.csv": "65941f79b8aa25e7fd0fd704252c16ea45357f0b35cbbd35b8f0625ba9105563",
+    "probe_audit.csv": "ee37bb96903acc29d7e3ff3dbe053d5db833fbc66b78fbf428f349405d748bf7",
+    "matched_target_audit.csv": "e7d46d3eedd325de3ea72259e8c1b2c769467b8d7291731ec84a800832709554",
+    "reference_audit.csv": "8aaf39985f6f0618e7f2a86b6174877cc6559c980fc30636836bb334ec083a21",
+    "summary.csv": "bddd62d9cd4977a19469d2a1aadeb83d9aaa48a39dc3dab9d0d29d218d3fce74",
+    "summary.json": "f8b0ea46dff51d2b90c1aaa46def525e811911e56138c770a3a07e23ab437d6b",
+    "core_N128_s1_curves.npz": "ca2e0e2059b99881553b5a42b308383eba1b48539b019bd1147d9d8be02d4d71",
+    "core_N128_s3_curves.npz": "35556fc3c5ab18d21e17dd37de74f26dc0dcdd34e49cb60580586be64a0a00ea",
+    "core_N128_s0_curves.npz": "af8021c3473b0e98cae51521e3f6ad44502be5a5ce1871e242a50f1870acbbb8",
+    "core_N128_s2_curves.npz": "da95be4dc699d71c287db178c234ee8883ff6c728edd1d36c332a27277269353",
+    "core_N128_s4_curves.npz": "bda0be4dbef343fc9ab7f940e06d61bb4d2ce8b7868b9c443a7ab91f95ccd5f4"
+  },
+  "audit_scope": "All analyzed rows; max_abs fields are descriptive maxima; 5% is a post-observation summary threshold",
+  "curve_scope": "Only columns identified by plot_trace_columns are included; all full traces remain at source",
+  "probe_scope": "Full sample probe curves retained for width 177 seed 0; other probes summarized and retained at source"
+}

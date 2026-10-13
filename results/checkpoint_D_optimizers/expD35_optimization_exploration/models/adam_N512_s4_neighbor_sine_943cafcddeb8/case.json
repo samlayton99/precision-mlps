@@ -1,0 +1,28 @@
+{
+  "batch_size": 1024,
+  "beta1": 0.9,
+  "beta2": 0.999,
+  "coordinates": "neighbor",
+  "ema_alpha": 0.98,
+  "ema_location": 1,
+  "ema_normalized": false,
+  "ema_strength": 0.5,
+  "epsilon": 1e-15,
+  "eta": 9e-06,
+  "initialization": "reference_xavier",
+  "n": 512,
+  "optimizer": "adam",
+  "reset": "none",
+  "sampling": "full",
+  "schedule": "decay",
+  "slope_initialization": "reference_lambda",
+  "target": "sine",
+  "seed": 4,
+  "eta_ceiling": 9e-06,
+  "origin": {
+    "checkpoint": "/workspace/junmiaoh/experiments/precision-mlps/runs/optimization_exploration/adam_N512_s4_neighbor_sine_fc103bc1d486/checkpoint_000500000.npz",
+    "sha256": "09f19c1d6d008e42b2d5f6228c16bb401f0ab01749a83c8500e1b82c5d6bcc2b",
+    "carry_optimizer": true,
+    "reset_filter": false
+  }
+}

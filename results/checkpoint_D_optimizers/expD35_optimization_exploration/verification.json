@@ -1,0 +1,77 @@
+{
+  "revision": "15a7282",
+  "first_order_tests": {
+    "passed": 35,
+    "command": "JAX_ENABLE_X64=true .venv/bin/python -m pytest -q tests/test_expD35_exploration.py",
+    "revision": "f46f04f",
+    "seconds": 8.31
+  },
+  "ssb_tests": {
+    "passed": 5,
+    "command": "SSB_SOURCE=/private/tmp/precision-ssbroyden-4c87785 JAX_ENABLE_X64=true /private/tmp/precision-curvature-venv/bin/python -m pytest -q tests/test_expD35_ssb.py",
+    "revision": "15a7282",
+    "seconds": 4.47
+  },
+  "full_suite": {
+    "passed": 692,
+    "failed": 17,
+    "skipped": 9,
+    "seconds": 346.86,
+    "failures": [
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+      "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+      "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+      "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+      "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+      "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+      "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+      "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+      "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+      "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+      "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+      "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+    ],
+    "baseline_comparison": "The failure set exactly matches the campaign suite and its previously reproduced untouched-baseline failures.",
+    "revision": "15a7282"
+  },
+  "campaign_full_suite": {
+    "passed": 675,
+    "failed": 17,
+    "skipped": 9,
+    "seconds": 328.83,
+    "failures": [
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[product_sines]",
+      "constructions/test_tensor_qi_2d.py::test_accuracy_both_precisions[radial_bump]",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_is_two_layers_with_layer1_geometry",
+      "tests/test_expD17n_norm_factorial.py::test_tabular_metric_is_variance_normalized",
+      "tests/test_expF10_qi_operator.py::test_rough_darcy_reconstruction_is_bounded",
+      "tests/test_expF10_qi_operator.py::test_load_darcy_downsamples",
+      "tests/test_expF10_qi_operator.py::test_models_forward_backward",
+      "tests/test_expF10_qi_operator.py::test_smoke_train_one_config_returns_finite_loss",
+      "tests/test_expF11_qi_fno_init.py::test_u_qi_is_a_sane_solution",
+      "tests/test_expF11_qi_fno_init.py::test_train_eval_all_methods_finite",
+      "tests/test_expF11_qi_fno_init.py::test_pretrain_init_lowers_starting_loss",
+      "tests/test_expF12_tensor_ns3d.py::test_newton_solve_tiny_converges",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_qi_floor_anchor_lorenz",
+      "tests/test_expF17_method_scaling_suite.py::test_1d_spectral_dynamic_floor_lorenz",
+      "tests/test_expG03_extrapolation.py::test_evaluate_cell_holdout_is_finite_and_harder",
+      "tests/test_expG03_extrapolation.py::test_viz_writes_figures",
+      "tests/test_expI02_block_prior.py::test_structured_regression_loaders"
+    ],
+    "baseline_comparison": "Same 17 failures previously reproduced on the untouched campaign baseline; unrelated to D35.",
+    "revision": "f46f04f"
+  },
+  "publication_integration": {
+    "base_main": "d7d26e6",
+    "scientific_code_unchanged_from": "622097b",
+    "standalone_model_checks": {
+      "ssbroyden_N512_s1_neighbor_sine_5b6b76c68533": 2.0294120294826158e-21,
+      "adam_N1024_s2_neighbor_sine_15bfdaa0823e": 8.605120159235457e-11
+    }
+  }
+}

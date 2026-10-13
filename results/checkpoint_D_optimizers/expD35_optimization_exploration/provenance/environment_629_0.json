@@ -1,0 +1,26 @@
+{
+  "job": "JobId=629 JobName=optimization-exploration\n   UserId=junmiaoh(1003) GroupId=junmiaoh(1006) MCS_label=N/A\n   Priority=4294901277 Nice=0 Account=lab QOS=lab-gpu2\n   JobState=RUNNING Reason=None Dependency=(null)\n   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0\n   RunTime=00:00:03 TimeLimit=00:45:00 TimeMin=N/A\n   SubmitTime=2026-09-20T13:28:02 EligibleTime=2026-09-20T13:41:34\n   AccrueTime=Unknown\n   StartTime=2026-09-20T13:41:34 EndTime=2026-09-20T14:26:34 Deadline=N/A\n   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-09-20T13:41:34 Scheduler=Main\n   Partition=gpu AllocNode:Sid=1212ac4ba094:1584946\n   ReqNodeList=(null) ExcNodeList=(null)\n   NodeList=1212ac4ba094\n   BatchHost=1212ac4ba094\n   NumNodes=1 NumCPUs=2 NumTasks=1 CPUs/Task=2 ReqB:S:C:T=0:0:*:*\n   TRES=cpu=2,mem=48G,node=1,billing=2,gres/gpu=1\n   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*\n   MinCPUsNode=2 MinMemoryNode=48G MinTmpDiskNode=0\n   Features=(null) DelayBoot=00:00:00\n   OverSubscribe=OK Contiguous=0 Licenses=(null) Network=(null)\n   Command=/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD35_optimization_exploration/run.sbatch --manifest experiments/expD35_optimization_exploration/manifests/final1024_finishes_confirmation.json --frontier 500000 --capture-last 2048 --seconds 2550\n   WorkDir=/workspace/junmiaoh/experiments/precision-mlps/exploration-code\n   StdErr=/tmp/exploration-629.log\n   StdIn=/dev/null\n   StdOut=/tmp/exploration-629.log\n   Power=\n   TresPerNode=gres:gpu:1\n   \n\n",
+  "step": "StepId=629.0 UserId=1003 StartTime=2026-09-20T13:41:34 TimeLimit=UNLIMITED\n   State=RUNNING Partition=gpu NodeList=1212ac4ba094\n   Nodes=1 CPUs=2 Tasks=1 Name=python Network=(null)\n   TRES=cpu=2,gres/gpu=1,mem=48G,node=1\n   ResvPorts=(null)\n   CPUFreqReq=Default Dist=Cyclic\n   SrunHost:Pid=1212ac4ba094:1588168\n   TresPerNode=gres:gpu:1\n\n",
+  "mask": "1",
+  "devices": [
+    "cuda:0"
+  ],
+  "jax": "0.10.2",
+  "numpy": "2.4.6",
+  "sources": {
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/verify_baseline.py": "60519a48a3120403d6b49d3ff354227c91efcba902c957bf1bcf6fe3cca1ac99",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/targets.py": "a098485bf6ad922f7ecd38047d84d7eb7b471d54f0699576c47ee1c3ef99c093",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/run.py": "47ceaa7bd8e6427892f5c6eea3c56964101c6d020212ec9c2adc7f53bd05434e",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/references.py": "e92301521aae05009217dce44443ad6c67da1c3319f5feee76dd4e52d3956c09",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/plot.py": "4acf389efd40aa03ddaa1792615fe62f2abfbb5d368364cfa997d4cff06cc577",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/curvature_check.py": "15e1c37254a2771f1661a5e7960079e5d00b03707268727978fd860c54559239",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/curate.py": "c3af37fea17b5506ab64f429047e0db72aff2c6b38851c847c14040820664bbe",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/core.py": "97be4105d949619ebe56f0c55bc0ec79df17a0e9ede63df181f467f06e7269f5",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/compress_affine.py": "84650055cf0f70f68ac584db90837052d79b878fa905276940eea908c14bd650",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/analyze.py": "b8600324acb0649cb202fd878fd45830d077393221fc1d773e0ae0f23702cee4",
+    "/workspace/junmiaoh/experiments/precision-mlps/exploration-code/experiments/expD34_readout_race/__init__.py": "8f74ffdc3dbbedd6611a0b3928990eb73299977cf5759d9b51fe7bcc592cf17f",
+    "experiments/expD28_loss_gradient_decomposition/run.py": "fa17978843139cf0223549390c98d456ccfb44c9f1e70418c2723a5cb541276e",
+    "experiments/expD24_gd_residual_spectrum/run.py": "05a84d72d5b1a02c4ef3e69eefa5ba81395b349a86cb7b8a751493bb6266453a",
+    "experiments/expC05_geometry_interpolation/common.py": "e6982f4f8f3139ec681162ebfd5cbc26292360328a493b429bc207014b427d3c"
+  }
+}
