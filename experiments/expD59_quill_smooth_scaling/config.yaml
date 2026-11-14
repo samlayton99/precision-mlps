@@ -1,0 +1,18 @@
+experiment: expD59_quill_smooth_scaling
+activation: tanh
+coefficient_method: fixed_geometry_rank_revealing_least_squares
+domain: [-1.0, 1.0]
+intervals: [8, 16, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024, 1536, 2048]
+lambda: 0.25
+halo: max_20_ceil_sqrt_N_per_side
+solver: gelsd
+rcond: 1.0e-14
+dtype: float64
+train_points_minimum: 2003
+train_points_per_interior_center: 4
+normalization_points: 1024
+evaluation_points: 65536
+random_audit_points: 8192
+random_seed: 59030
+targets: [square, cubic, exponential, sine_pi, cosine_pi, sine_4pi, legendre_5, runge_25, gaussian_25, softplus_5, mixed_sine, chirp, legendre_12, runge_100, tanh_20, localized_oscillation, erf_transition, gamma_shifted, airy_transition, smooth_bump]
+excluded: [signed_sqrt_cusp, oscillatory_cusp, shifted_step, square_wave]

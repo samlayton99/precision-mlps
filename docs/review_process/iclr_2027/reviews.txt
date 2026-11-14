@@ -1,0 +1,234 @@
+QUILL — ICLR 2027 Reviews
+================================================================================
+
+Source: Reviews pasted from OpenReview; reviewer wording preserved.
+Editorial note: Some mathematical expressions were missing from the pasted
+source. Their gaps are retained; no missing expressions have been inferred.
+
+================================================================================
+Reviewer: whqg
+================================================================================
+Posted:     23 Oct 2026, 00:43
+Modified:   06 Nov 2026, 04:21
+Visibility: Everyone
+Revisions:  https://openreview.net/revisions?id=akD9Fp48cB
+
+Paper Summary
+-------------
+
+The paper investigates whether exact numerical computation can be built directly into the
+weights of ordinary neural networks, instead of relying on chain-of-thought or external tools.
+It proposes QUILL, a recipe for setting the weights of a one-hidden-layer  network so that it
+computes a chosen smooth one-variable function (for example , , exp) to near the limit of 64-bit
+floating point.
+
+Presentation: 2: Generally understandable, but requires substantial effort in places.
+
+Informativeness: 3: I gained a substantially deeper understanding of the problem or question.
+
+Soundness: 2: I have minor or fixable concerns about the paper’s soundness.
+
+Critical Strengths
+------------------
+
+- The paper provides a clearer understanding of why high-precision computation is difficult for
+  neural networks. In particular, it shows a tradeoff between network width, weight magnitude,
+  and numerical precision, and how a one-hidden-layer construction can balance all three.
+
+- The paper proposes a single-layer construction that is very accurate, uses small weights, and
+  works with standard computer precision.
+
+- The handling of rounding errors is thorough and well validated.
+
+- The experiments convincingly show errors around  across many functions.
+
+- The observation that accurate small networks exist but normal training does not find them is
+  interesting.
+
+Critical Weaknesses
+-------------------
+
+- The following claims in the paper are stronger than what the experimental results demonstrate.
+
+  -  The paper says it proves that gradient descent cannot learn the right network fast enough.
+    The proof only holds under conditions checked experimentally for limited training periods,
+    and stronger training methods are not tested.
+
+  -  The experiments use a different fitting method from the one analyzed in the theory.
+
+- The LLM demo doesn’t show what the paper suggests. The input number is read by hand-written
+  code, and the answer is written back by hand-written code. The module also runs in FP64 while
+  the model runs in BF16. So the language model is not doing any of the computation. Rather, it
+  works more like a calculator plugged into the forward pass. Because of this, the comparison
+  with CoT and calculator use in Table 3 is not fair.
+
+- Precision is a problem for LLMs. The paper’s own Figure 2c shows that accuracy drops a lot at
+  lower precision. FP64 precision itself only holds about 15–16 digits, so it is not clear if
+  the proposed method would work beyond 7-digit numbers.
+
+- It is not clear if the neural network form is needed for one-variable functions. Standard
+  methods like Chebyshev approximation already reach this accuracy easily. The main reason given
+  for wanting it as a network is the LLM use case, which isn’t really shown.
+
+- The paper states it proves gradient descent can’t learn these networks, but the result depends
+  on conditions that are only checked experimentally for limited training runs. Some of the
+  difficulty may simply be that the fitting problem is numerically hard. Michaud et al. (2023)
+  trained networks close to machine precision with better optimizers, and that paper isn’t
+  cited.
+
+- The paper argues construction is necessary because training fails, but only tests GD and Adam.
+  Stronger optimizers such as L-BFGS, used by Michaud et al. (2023) to reach near machine
+  precision, should be compared.
+
+Questions For Authors
+---------------------
+
+- What real benefit does the neural-network form give compared with standard high-precision
+  methods run on a computer?
+
+- In the language-model demo, what is the worst-case error over all 3-, 5- and 7-digit inputs?
+  What exactly does the hand-written input reader do, and does it differ between the three
+  models?
+
+- How well does the module work at the language model’s own precision (16-bits)?
+
+- Can the method handle numbers longer than 7 digits?
+
+- How do stronger training methods, such as L-BFGS and the methods of Michaud et al., compare
+  with the proposed construction?
+
+Flag For Ethics Review: No
+
+Rating: 2: Weak rejection
+
+Confidence: 2: I have broad familiarity with this field but little or no direct research
+experience on this topic.
+
+================================================================================
+Reviewer: WgoC
+================================================================================
+Posted:     19 Oct 2026, 13:17
+Modified:   06 Nov 2026, 04:21
+Visibility: Everyone
+Revisions:  https://openreview.net/revisions?id=aKCgISxySx
+
+Paper Summary
+-------------
+
+The paper proposes to extend MLPs with function blocks computing exact functions like x+y, x^2,
+c*x, which in principle can improve accuracy of the neural networks (especially LLMs) on these
+tasks.
+
+Presentation: 2: Generally understandable, but requires substantial effort in places.
+
+Informativeness: 1: I learned little or nothing new from this paper.
+
+Soundness: 1: I have significant concerns about the paper’s soundness that do not appear easy to
+address.
+
+Critical Strengths
+------------------
+
+- Extending neural networks with exact mathematical functions in interesting, because it can not
+  only improve the accuracy, which was primary motivation of authors, but also interpretability.
+
+- The integration of the proposed module inside the LLM is indeed interesting.
+
+Critical Weaknesses
+-------------------
+
+- I do not understand, what is the motivation of approximating known algebraic functions by MLPs
+  in Equation (3).
+
+- The demonstrated method works because authors have selected easy functions, like addition,
+  multiplication, and square on a bounded interval. For this choice, the gradient is finite and
+  everything converges. For more important functions, like division, this does not hold and
+  everything becomes way more complicated. For example authors in [1] aims to extend neural
+  networks with exact multiplication and division and the resulting unit is very unstable to
+  train. Critically, this instability is not caused by chosen representation, but by the nature
+  of function to be approximated.
+
+- Line 393 states: "QUILL can approximate bounded primitives such as 1/x, sin(x), and 1/√x". To
+  my knowledge, 1/x is unbounded around zero, which causes enormous issues when QUILL would be
+  trained as a part of NN. Similarly 1/√x has unbounded derivative.
+
+- Statement "QUILL can approximate bounded primitives" is obvious from the universal
+  approximation theorem due to its form in Equation (3).
+
+- The selected experimental case, x^2 is very simple and naive. The method in [1] can solve this
+  with ease. It is trivial.
+
+Reference
+---------
+
+[1] Heim, Niklas, Tomas Pevny, and Vasek Smidl. "Neural power units." Advances in Neural
+Information Processing Systems 33 (2020): 6573-6583.
+
+Questions For Authors
+---------------------
+
+Generally all my questions are in critical weakness.
+
+Flag For Ethics Review: No
+
+Rating: 1: Clear rejection
+
+Confidence: 3: I am familiar with this topic and its relevant literature.
+
+================================================================================
+Reviewer: JmZ3
+================================================================================
+Posted:     10 Oct 2026, 08:01
+Modified:   06 Nov 2026, 04:21
+Visibility: Everyone
+Revisions:  https://openreview.net/revisions?id=btjZGZ11IJ
+
+Paper Summary
+-------------
+
+The paper propose a method for encoding bounded numerical functions in ordinary MLP weights. The
+proposed method can assist LM to achieve better accuracy with lower token cost in numerical
+functions computation compared to traditional solutions.
+
+Presentation: 3: Clear and easy to follow.
+
+Informativeness: 2: I learned something interesting or useful.
+
+Soundness: 2: I have minor or fixable concerns about the paper’s soundness.
+
+Critical Strengths
+------------------
+
+1. The proposed method can assist LM to achieve better accuracy with lower token cost in
+   numerical function computations compared to using caculate, direct prompt and Chain of
+   Thought.
+
+2. This method enables the MLP component to achieve a lower  error whilst reducing the scale of
+   hidden neurons.
+
+Critical Weaknesses
+-------------------
+
+The proposed method encodes the target bounded numerical function into the weights of a standard
+MLP, which appears to imply that QUILL must prepare specific MLP weights for different target
+numerical functions. Although table 3 has demonstrated that the proposed approach can improve
+accuracy and reduce token cost in  computation, the sacrifice of flexibility in general use
+cases does not convince me to use QUILL to replace a calculator.
+
+Questions For Authors
+---------------------
+
+I appreciate the author's efforts in this work and would kindly ask authors to clarify the
+following questions:
+
+1. Does QUILL require to prepare different MLP weights for different numerical functions?
+
+2. If so, please clarify in which use cases it is worthwhile to sacrifice flexibility in
+   exchange for improved accuracy and reduced token cost.
+
+Flag For Ethics Review: No
+
+Rating: 2: Weak rejection
+
+Confidence: 2: I have broad familiarity with this field but little or no direct research
+experience on this topic.

@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-10",
+  "status": "Prepared for manual insertion; manuscript not edited.",
+  "instructions": "COPY_PASTE_EDITS.txt",
+  "figure": "figures/quill_practical_vs_theorem.pdf",
+  "metric": "Relative L2 error on evaluation grid despite abbreviated L2 error axis label; native readout L1 including bias.",
+  "methods": "Common FP64 DGEJSV; raw fixed relative cutoff2**-52; theorem uses reference scaling and A65 with sharper same-witness bound.",
+  "checks": [
+    "Nine LaTeX blocks have balanced braces and environments",
+    "Figure path and cross-reference match",
+    "Numerical data unchanged",
+    "Rendered figure visually inspected"
+  ],
+  "full_manuscript_compilation": "Not performed; apply changes and compile twice in actual manuscript project.",
+  "files": {
+    "COPY_PASTE_EDITS.txt": "4871d63a2c797d8708b35feca2053b35a1cacfac97f05954018ff4e492f3703b",
+    "evidence/config.yaml": "1d6d1734f640f26986c4f1c5d85daebcdf93323bc34d3ac8d11bfba9454d4372",
+    "evidence/figure_renderer.py": "389e9634237892c3e11d738a75c09609068a4d671970b2c39a10891b05ced30e",
+    "evidence/metrics.csv": "27d93180537b8393fc63394abc7863fa85dd501f9b2f16f7306e27efb30743b7",
+    "evidence/metrics.json": "e5d5663edc5a19be86536ee5847f3a7b39c3004a17c774446266f17e33f8eae7",
+    "evidence/provenance.json": "ba5ff66f7c38a42a6baafffbb81d7c37bb83a890f6cd303d11cd0fe9fe10bd7c",
+    "evidence/summary.json": "210b8110ce794bc20ddb487bf1ad1c12f119905884d7e05b8bf9209f37a34e15",
+    "figures/quill_practical_vs_theorem.pdf": "6d2179acdab10b8b9f96bcd862e591fd1eb05ead7487a2e25ec1a065d4f6bf5b",
+    "figures/quill_practical_vs_theorem.png": "6be08e6d787056ee875743cdd4b09b3e7f3ac1b6b3807f7367b0346f55cd18ee",
+    "figures/quill_practical_vs_theorem.svg": "d78d68f79018664a2e00302fdd0e3d2f0ba80e49c4cd96ae55ab2cd3c068456d"
+  },
+  "figure_axis_note": "Readout L1 is sum of absolute native coefficients, including bias; not divided by width.",
+  "revision": "Seven-step minimal revision after editorial pass and independent audit; two main-text edits, optional caption rewrite removed.",
+  "editorial_checks": [
+    "Prose shortened without changing mathematical bounds",
+    "Repeated definitions and optional caption edit removed",
+    "Analytic B bounds and full backend disclosure included",
+    "Numeric claims rechecked against all60 pairs",
+    "LaTeX braces/environments and figure cross-reference checked"
+  ],
+  "archive_members": [
+    "COPY_PASTE_EDITS.txt",
+    "figures/quill_practical_vs_theorem.pdf"
+  ]
+}

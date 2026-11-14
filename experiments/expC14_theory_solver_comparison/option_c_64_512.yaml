@@ -1,0 +1,22 @@
+experiment: expC14_option_c_original_theorem_N64_512
+N: [64, 128, 256, 512]
+targets: [exp, sine4, sine24, chirp, weak_high_frequency, packet]
+lambda: 0.25
+a_H: 2.0
+delta: 2.0
+Delta: 0.5625
+sampling_density: 8
+sampling_degree: 1
+ellipse_rho: 2.0
+eval_points: 16384
+validation_points: 32768
+actual_relative_cutoff: 2.220446049250313e-16
+theory_driver: gejsv
+threads: 4
+analytic_bound: Original A.51 E_rep, unchanged
+numerical_interface: A.61-A.62 with validated weighted-polar residual bounds
+cutoff: Original A.65, unchanged; no norm guard and no practical cutoff substitution
+design_selection: At N=64 original admissibility requires a_H<=2 and gamma*delta>=4pi. Fixed a_H=2 and delta=2 satisfy both throughout this range; parameters chosen before observing errors.
+driver_selection: Same native FP64 DGEJSV C/U/J/N/N/N as previous option C comparison
+coefficient_arithmetic: FP64 formation, SVD, pairwise projection, division and export
+bound_arithmetic: FP64 expansion matrix products and 256-bit directed scalar interval calculations

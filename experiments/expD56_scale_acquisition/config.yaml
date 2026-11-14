@@ -1,0 +1,27 @@
+experiment: expD56_scale_acquisition
+optimizer: full_batch_gradient_descent
+loss: half_mean_squared_error
+dtype: float64
+width: 196
+steps: 200000
+learning_rates: [0.01, 0.001, 0.0001]
+initialization_multipliers: [1.0, 2.0, 4.0]
+initialization: torch_nn_Linear_default_first_layer_scaled
+seed: 30
+domain: [-1.0, 1.0]
+train_points: 1024
+eval_points: 4096
+target_normalization: divide_by_training_grid_RMS_without_mean_subtraction
+log_every: 500
+checkpoint_every: 5000
+workers: 4
+threads_per_worker: 1
+quill_reference:
+  interior_intervals: 147
+  halo_each_side: 24
+  total_width: 196
+  lambda: 0.25
+targets:
+  easy: [square, cubic, exponential, sine_pi, cosine_pi]
+  medium: [sine_4pi, legendre_5, runge_25, gaussian_25, softplus_5]
+  hard: [mixed_sine, chirp, legendre_12, runge_100, tanh_20, localized_oscillation]

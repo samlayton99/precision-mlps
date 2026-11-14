@@ -1,0 +1,309 @@
+QUILL SOLVER REVISION: COPY-PASTE INSTRUCTIONS
+2026-11-10. The manuscript has not been edited.
+
+Apply the seven steps below. Only steps 2 and 3 change the main text.
+Leave the existing Figure 2 caption unchanged. All additions go in the
+appendix. New displays are unnumbered, so existing equation numbers stay
+unchanged. Locations refer to printed lines in submission (18).
+
+1. ADD THE FIGURE
+
+Copy figures/quill_practical_vs_theorem.pdf into your paper project at
+that exact path. The figure block in step 7 uses this filename.
+The paper already uses graphicx; no new package is needed.
+
+2. SECTION 3.1, PAGE 4, PRINTED LINES 184--187
+
+Find the paragraph beginning "Given M=sN+1 equispaced observations".
+Keep the preceding sentence about width W and the hidden parameters.
+Replace the paragraph, stopping before Equation (4), with:
+
+```latex
+Given $M=sN+1$ equispaced observations, our empirical solver
+applies unscaled truncated SVD to the least-squares objective
+(Appendix~C):
+```
+
+Replace only the mathematical contents of Equation (4) with the following.
+Keep its existing equation environment and label.
+
+```latex
+\min_{c\in\mathbb{R}^{W+1}}
+\sum_{i=1}^{M}\left|q_c(z_i)-f(z_i)\right|^2.
+```
+
+This states the objective without claiming that truncated SVD returns its
+unrestricted minimizer.
+
+3. THEOREM 3.1, PAGE 5, PRINTED LINE 232
+
+Find "The computed network" and replace the fragment ending "satisfies"
+with the following. Keep Equations (5)--(6) and the rest of the theorem.
+
+```latex
+The reference-scaled recovery of Appendix~A returns a network
+$\widehat q_W$, with readout $c_W$, satisfying
+```
+
+4. ADD THE SHARPER APPROXIMATION BOUND
+
+Appendix A, page 19, after printed line 1025.
+Find "The analytic tanh witness", then Theorem A.2 and its proof.
+Insert this after that proof's \end{proof}, immediately before
+"Recovery and continuous error".
+
+```latex
+\paragraph{Sharper approximation bound for recovery.}
+Combining (A.24), (A.25), and (A.42), before the
+simplifications leading to (A.51), gives
+\[
+\begin{aligned}
+E_{\mathrm{sharp}}
+:=\min\Biggl\{E_{\mathrm{rep}}(W,\lambda),\;&
+\frac{4M_\sigma}{e^{2\pi\sigma/h}-1}\\
+&+\frac{4\pi M_\sigma}{\gamma}
+\sum_{\ell=0}^{k-1}
+\frac{1}{e^{(2\ell+1)\pi^2/\lambda}-1}\\
+&+\frac{4M_h\theta}{(1-\theta)^2}(2\theta)^m
+\Biggr\}.
+\end{aligned}
+\]
+Here $M_\sigma=B/(\delta-\sigma-d)$ and
+$m=\lfloor(R+1)/2\rfloor$; the remaining quantities
+retain their definitions above. For the same reference network,
+\[
+\|f-q^\star\|_\infty
+\le E_{\mathrm{sharp}}
+\le E_{\mathrm{rep}}(W,\lambda).
+\]
+Its coefficient envelopes and reference scaling are unchanged.
+```
+
+5. USE THE SHARPER BOUND IN RECOVERY
+
+First: Appendix A.3.1, page 20, printed line 1054.
+Find "Verification for tanh." Replace its first sentence, beginning
+"Take m_j=1 and", with:
+
+```latex
+Take $m_j=1$ and $E_W^{\mathrm{an}}=E_{\mathrm{sharp}}$
+for the tanh reference network constructed above.
+```
+
+Keep "The real-axis feature bound is immediate" and everything after it.
+
+Second: Appendix A.3.6, page 24, printed line 1268.
+Find this sentence:
+For tanh, $R_X=2\Erep(W,\lambda)+\Delta_{\rm rec,W}$.
+
+Replace it with:
+
+```latex
+For tanh,
+$R_X=2E_{\mathrm{sharp}}+\Delta_{\mathrm{rec},W}
+\le 2E_{\mathrm{rep}}(W,\lambda)+\Delta_{\mathrm{rec},W}$.
+```
+
+Keep the following sentence beginning "Using c_M <= 2" and all subsequent
+equations unchanged.
+
+6. ADD THE NUMERICAL BOUNDS USED BY THE EXPERIMENT
+
+Appendix A.3.3, page 22, after printed line 1145.
+Find the paragraph ending "it does not assume recovery of the analytic
+coefficients." Insert the next three blocks consecutively after that
+paragraph and before "Cutoff and recovery bound".
+
+```latex
+\paragraph{Sharper numerical bounds for the comparison.}
+The experiment in Appendix~C uses the following bounds
+for (A.61)--(A.62). Define the orthogonality defects
+\[
+H=\widehat U^\top\widehat U-I,\qquad
+G=\widehat V^\top\widehat V-I,
+\]
+with validated bounds $\|H\|_2\le o_U<1$ and
+$\|G\|_2\le o_V<1$. Let
+$\sigma_{\max}=\|\widehat\Sigma\|_2$ and
+$V_+=\sqrt{1+o_V}$, and define
+\[
+t_s(e)=\frac{e^2}{8(1-e)^{3/2}},\qquad
+t_i(e)=\frac{3e^2}{8(1-e)^{5/2}},
+\qquad 0\le e<1.
+\]
+With $e_F,r_F$ as defined above, one may take
+\[
+\begin{aligned}
+a_W={}&e_F+r_F\\
+&+\left(\frac12\|H\widehat\Sigma\|_2
++t_s(o_U)\sigma_{\max}\right)V_+\\
+&+\frac12\|\widehat\Sigma G\|_2
++t_s(o_V)\sigma_{\max}.
+\end{aligned}
+\]
+Let $p$ be the computed projection from (A.60), and
+$q=\widehat U^\top\widetilde y$ the exact projection of
+stored labels. Define
+\[
+d_p=\|p-q\|_2+\frac12\|Hq\|_2+t_i(o_U)\|q\|_2.
+\]
+Then a valid label-perturbation bound is
+\[
+b_W=e_y+d_p+u\|p\|_2+\mu\|\widehat\sigma\|_2,
+\]
+where $\widehat\sigma$ is the vector of returned singular
+values. All displayed norms use validated upper bounds.
+```
+
+```latex
+For the proof, write $\widehat U=U_0(I+H)^{1/2}$ and
+$\widehat V=V_0(I+G)^{1/2}$, with orthonormal $U_0,V_0$.
+Taylor's theorem and the spectral theorem give
+\[
+\begin{aligned}
+\|(I+H)^{1/2}-I-H/2\|_2&\le t_s(o_U),\\
+\|(I+H)^{-1/2}-I+H/2\|_2&\le t_i(o_U).
+\end{aligned}
+\]
+and the corresponding square-root bound for $G$.
+Expanding
+$\widehat U\widehat\Sigma\widehat V^\top
+-U_0\widehat\Sigma V_0^\top$
+into its left and right polar corrections gives $a_W$.
+Since $U_0^\top\widetilde y=(I+H)^{-1/2}q$,
+we obtain $\|p-U_0^\top\widetilde y\|_2\le d_p$.
+The existing construction of $y_0$ and its division-rounding
+allowance give $b_W$. The export bound (A.64) and cutoff
+condition (A.65) are unchanged.
+```
+
+```latex
+Residual and Gram products are enclosed using fixed-point
+chunks of FP64 inputs. For chunk width $b$ and inner
+dimension $k$, we check
+$2b+\lceil\log_2k\rceil\le52$ and representable exponent
+ranges, so digit products and sums are exact under the
+stated arithmetic. Compensated reconstruction includes
+decomposition tails and rounding allowances. Norm bounds
+include these errors; a validated Frobenius bound is used
+when exact normalization is unavailable. Scalar bounds are
+rounded outward in MPFR. This verification does not refine
+the fitted coefficients.
+```
+
+7. ADD THE PRACTICAL COMPARISON AND FIGURE
+
+Appendix C, after printed line 1896.
+Find the "Validation" paragraph whose final sentence ends
+"the observed precision--error relation is an empirical result."
+Insert the following blocks consecutively after that paragraph and before
+the next appendix section.
+
+```latex
+\subsection{Practical implementation versus theoretical recovery}
+\label{sec:quill-practical-recovery}
+
+For fixed neurons, unscaled truncated SVD fits the readout
+from sampled target values without bounds on the target's
+analytic extension. We use one relative cutoff across widths.
+The recovery guarantee in Appendix~A applies to reference-scaled
+SVD. Figure~\ref{fig:quill-practical-vs-theorem} compares
+these two procedures.
+
+Both use the same neurons, samples, sample normalization,
+and FP64 DGEJSV solver. The raw solve uses relative cutoff
+$2^{-52}$ at every width. The reference-scaled solve uses
+(A.65) with $E_{\mathrm{sharp}}$ and the numerical bounds
+in Appendix~A.3.3. The original width and bandwidth experiments
+use DGELSD, and the precision-controlled experiment above
+uses DGELSS; this comparison holds the SVD backend fixed.
+```
+
+```latex
+We fix $\lambda=1/4$,
+$R=\lceil(11/8)\sqrt N\rceil$, $\delta=4$, and
+$\Delta=9/16$, using the general construction in Appendix~A.1.
+The tested resolutions are
+\[
+N\in\{64,128,196,256,320,384,448,512,576,640,704,768\},
+\]
+with total hidden width $W=N+2R+1$ and $M=8N+1$
+equispaced training samples on $[-1,1]$.
+The sampling parameters are $s=8$, $p=1$, and $\varrho=2$;
+non-dyadic widths use the uniform input-error bound (A.81).
+
+For the reference-scaled solve, the analytic magnitude
+bounds $B$ for $e^x$, $\sin(4\pi x)$, $\sin(24\pi x)$,
+the chirp, and the wave packet, respectively, are outward
+upper bounds on
+\[
+e^{89/16},\qquad \cosh(16\pi),\qquad
+\cosh(96\pi),\qquad \cosh(420\pi),\qquad
+e^{128}\cosh(32\pi).
+\]
+These follow from
+$U_\delta(I_\Delta)\subseteq
+\{z:|\operatorname{Re}z|\le1+\Delta+\delta,
+|\operatorname{Im}z|\le\delta\}$.
+MPFR stores these bounds, including those outside the FP64
+exponent range.
+```
+
+```latex
+We store $\gamma=N/8$ and $\beta_j=N/8-j/4$ exactly
+in FP64, giving neurons $\tanh(\gamma x+\beta_j)$.
+Target samples are computed offline at higher precision and
+rounded to FP64. We use correctly rounded tanh values and
+pairwise output summation. Model arrays and readout arithmetic
+are FP64; bound verification uses directed 256-bit arithmetic
+and FP64 expansion products.
+
+Errors are measured on 16,384 independent uniform midpoint
+samples. Doubling this grid changes the reported errors by
+less than $0.32\%$. For all five functions at every tested
+$W\ge301$, both methods have relative error below
+$6\times10^{-13}$, and their readout $\ell^1$ norms differ
+by less than $20\%$. At the smallest tested width, the
+theoretical procedure has larger errors. In the tested
+larger-width range, raw SVD achieves high accuracy and
+similar weight magnitudes without the analytic bounds or
+width-dependent cutoff calculation.
+```
+
+```latex
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=\linewidth]
+        {figures/quill_practical_vs_theorem.pdf}
+    \caption{
+        Practical implementation versus theoretical recovery.
+        Solid: unscaled SVD with relative cutoff $2^{-52}$.
+        Dashed: reference-scaled recovery using (A.65) and
+        the sharper approximation bound. Both use the same
+        SVD backend, neurons, and samples.
+        (a) Measured relative $L^2$ error.
+        (b) Readout $\ell^1$ norm, including the output bias;
+        the norm is not divided by width.
+        The horizontal axis is total hidden width $W=N+2R+1$.
+        Chirp is $\sin(8\pi(x+1)^2)$; wave packet is
+        $e^{-8(x-0.2)^2}\sin(8\pi x)$.
+        Errors are grid measurements, not continuous-domain
+        certificates.
+    }
+    \label{fig:quill-practical-vs-theorem}
+\end{figure}
+```
+
+AFTER INSERTION
+
+Compile the paper twice to resolve the figure reference, then check
+pagination and float placement. The full manuscript has not been compiled
+with these edits. Leave the existing Figure 2 caption, reference-scaling
+construction, cutoff inequality (A.65), and main theorem equations unchanged.
+
+FIGURE NOTE
+
+The supplied figure is the final version: title and panel subtitles present;
+solid Practical (Raw SVD), dashed Theorem Implementation; actual width W
+on the x-axis; L2 error on the left; Weights l1 with the smaller sum on the
+right. The error data remain relative L2 errors, as the caption states.

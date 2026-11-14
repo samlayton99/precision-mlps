@@ -1,0 +1,42 @@
+{
+  "epsilon": 0.0001,
+  "extension_order": 16,
+  "domain": [
+    0.0001,
+    1.0
+  ],
+  "models": [
+    "Adam MLP"
+  ],
+  "training_modes": [
+    "matched_halo"
+  ],
+  "width": 1000,
+  "seed": 0,
+  "data_seed": 10000,
+  "steps": 20000,
+  "learning_rate": 0.001,
+  "batch_size": 100,
+  "betas": [
+    0.9,
+    0.999
+  ],
+  "adam_epsilon": 1e-08,
+  "weight_decay": 0.0,
+  "warmup_steps": 0,
+  "dtype": "float64",
+  "log_every": 250,
+  "checkpoint_every": 5000,
+  "validation_quadrature_order": 32,
+  "test_quadrature_orders": [
+    256,
+    512
+  ],
+  "halo_reference_N": 256,
+  "halo_reference_R": 32,
+  "halo_reference_width": 4815,
+  "initialization": "PyTorch nn.Linear default initialization, float64, seed 0",
+  "architecture": "Linear(1,1000), Tanh, Linear(1000,1); same fixed input centering as QUILL",
+  "selection": "Best positive-step order-32 validation checkpoint; independent order-256/512 evaluation; final checkpoint also retained.",
+  "recipe_note": "Only hidden width changes from the previous 4815-unit Adam reference. Same C17 extension, fixed N=256/R=32 halo-center dataset, minibatch RNG, Adam settings and 20k-step budget. All 3001 MLP parameters trainable; no QI initialization."
+}

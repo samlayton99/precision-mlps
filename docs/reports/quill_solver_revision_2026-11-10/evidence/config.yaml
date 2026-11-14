@@ -1,0 +1,64 @@
+targets:
+- exp
+- sine4
+- sine24
+- chirp
+- packet
+geometry:
+  experiment: expC14_sharp_existing_bound_N64_768
+  N:
+  - 64
+  - 128
+  - 196
+  - 256
+  - 320
+  - 384
+  - 448
+  - 512
+  - 576
+  - 640
+  - 704
+  - 768
+  targets:
+  - exp
+  - sine4
+  - sine24
+  - chirp
+  - weak_high_frequency
+  - packet
+  lambda: 0.25
+  a_H: 1.375
+  delta: 4.0
+  Delta: 0.5625
+  sampling_density: 8
+  sampling_degree: 1
+  ellipse_rho: 2.0
+  eval_points: 16384
+  validation_points: 32768
+  actual_relative_cutoff: 2.220446049250313e-16
+  theory_driver: gejsv
+  threads: 4
+  analytic_bound: Minimum of original A51 and existing unsimplified horizontal, pole
+    and boundary bounds with M_sigma=B/(delta-sigma-d). Same analytic witness; sharpened
+    Ean input to original A65.
+  numerical_interface: A.61-A.62 with validated weighted-polar residual bounds
+  cutoff: Original A.65, unchanged; no norm guard and no practical cutoff substitution
+  design_selection: Retain all mathematical and solver parameters from the dense N32-512
+    experiment; change only requested N values. Use original A.81 for non-dyadic widths.
+    No new tuning.
+  driver_selection: Same native FP64 DGEJSV C/U/J/N/N/N as previous option C comparison
+  coefficient_arithmetic: FP64 formation, SVD, pairwise projection, division and export
+  bound_arithmetic: FP64 expansion products; MPFR256 scalar enclosures with extended
+    exponent range for large analytic constants
+  input_error_route: uniform_A81
+  feature_parameterization: exact_affine
+  extended_scalar_bounds: true
+  approximation_bound: sharp_existing_lemmas
+driver_both_arms: gejsv
+raw_relative_cutoff: 2.220446049250313e-16
+theoretical_cutoff: A.65 with sharper existing same-witness approximation bound
+input_sources:
+  theory: /Users/sam/my-repos/research/collaborations/precisionMLPs/results/checkpoint_C_geometry/expC14_theory_solver_comparison/option_c_sharp_bound_64_768
+  raw: /Users/sam/my-repos/research/collaborations/precisionMLPs/results/checkpoint_C_geometry/expC14_theory_solver_comparison/readout_l1_three_methods_64_768
+x_axis: Actual total hidden width W=N+2R+1, linear numeric positions.
+norms_include_bias: true

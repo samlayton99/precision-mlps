@@ -1,0 +1,167 @@
+% Proposed insertions/replacements for QI_MLPs___ICLR_2027_Submission (18).pdf.
+% This is a patch fragment, not a standalone document. Not applied to the paper.
+% Locations below refer to printed manuscript line numbers, not source lines.
+% All new figures and substantive exposition belong in the appendix.
+% Main-text replacements still require compilation in the actual paper project
+% to confirm unchanged pagination; no full main-text TeX source is present here.
+% Keep existing equation/theorem labels when replacing their contents.
+
+% MAIN-TEXT BUDGET: replacements only; no new figure or paragraph.
+% EDIT 1. Page 4, Section 3.1: retain the first sentence at line 183
+% (width and hidden parameters). Replace the following prose and Equation (4).
+% TSVD denotes the truncated-SVD pseudoinverse, defined here in words;
+% Appendix C supplies its threshold convention and expanded formula.
+Given $M=sN+1$ equispaced observations, form the unscaled feature matrix
+$A$ and sample vector $y$. Our empirical readout uses the truncated-SVD
+pseudoinverse:
+\begin{equation}
+  \widehat c=\operatorname{TSVD}_{\tau_{\mathrm{emp}}}(A)y.
+  \tag{4}
+\end{equation}
+Appendix~C specifies the cutoff $\tau_{\mathrm{emp}}$ and compares this
+solve with the reference-scaled recovery analyzed in Appendix~A.
+
+% EDIT 2. Page 5, Theorem 3.1: replace only the sentence at line 232.
+The reference-scaled recovery of Appendix~A returns a network
+$\widehat q_W$, with readout $c_W$, satisfying
+% Keep Equations (5)--(6) and the rest of the theorem unchanged.
+% Keep the main theorem's a_H=1 special case; the new experiment below
+% explicitly uses the general Appendix A.1 geometry instead.
+
+% EDIT 3. Page 4, Figure 2 caption: replace only its opening sentence.
+Empirical performance of QUILL with unscaled truncated-SVD readouts.
+% Retain the descriptions of panels (a)--(c).
+
+% EDIT 4. Appendix C: insert a separate subsection after line 1896, after
+% the existing precision experiment's Validation paragraph. This comparison
+% does not share that experiment's all-operations-at-p-bits protocol.
+\subsection{Comparison of recovery procedures}
+\label{sec:recovery_comparison}
+For clarity, the exact-arithmetic form of the empirical solve (4) is
+\[
+ \operatorname{TSVD}_{\tau_{\mathrm{emp}}}(A)y
+ =\sum_{\sigma_k>\tau_{\mathrm{emp}}}
+       \frac{u_k^\top y}{\sigma_k}\,v_k,
+ \qquad A=U\Sigma V^\top.
+\]
+Here $\sigma_k$ are the singular values and $u_k,v_k$ the corresponding
+left and right singular vectors; the cutoff is specified for each experiment.
+This truncated solve need not minimize the unrestricted least-squares objective.
+
+We compare the reference-scaled recovery procedure of Appendix~A with the
+practical unscaled SVD solve on the six functions in
+Figure~\ref{fig:recovery_comparison}. Both receive the same neurons and
+$M=8N+1$ equispaced observations on $[-1,1]$. We fix $\lambda=1/4$,
+$R=\lceil(11/8)\sqrt N\rceil$, $\delta=4$, and $\Delta=9/16$, using the
+general geometry of Appendix~A.1. Thus the hidden width is $W=N+2R+1$.
+We use $N\in\{64,128,196,256,320,384,448,512,576,640,704,768\}$.
+The sampling parameters in (A.55) are $s=8$, $p=1$, and $\varrho=2$.
+For non-dyadic widths we use the uniform input-error route (A.81).
+
+The practical solve uses FP64 DGELSD with relative cutoff $2^{-52}$.
+The reference-scaled solve uses FP64 DGEJSV, the analytic bound (A.51),
+the cutoff condition (A.65), and the sharper numerical bounds given below.
+The two solvers are compared as complete procedures; this is not an
+ablation of column scaling alone. To preserve the nominal geometry,
+we store the exactly representable affine parameters
+$\gamma=N/8$ and $\beta_j=N/8-j/4$, so each neuron is
+$\tanh(\gamma x+\beta_j)$ for $j=-R,\ldots,N+R$.
+
+Target samples are prepared offline at higher precision and rounded to FP64.
+The comparison uses correctly rounded tanh values, FP64 model arrays and
+readout arithmetic, and pairwise output summation. Analytic and numerical
+bound verification uses 256-bit directed MPFR arithmetic and FP64 expansion
+products. This is separate from the preceding precision-controlled experiment.
+All 72 function--resolution pairs pass the stated geometry and recovery
+checks. Errors are measured on 16,384 uniform midpoint samples; doubling
+the evaluation grid changes the reported errors by less than $0.68\%$.
+
+At every tested $N\ge512$, both procedures attain measured relative errors
+below $6\times10^{-13}$ on all six functions. At smaller widths the
+theoretical cutoff can be substantially more conservative, and the unscaled
+solver often attains high accuracy earlier. These results demonstrate high
+measured accuracy for the theoretically specified procedure and support the
+simpler solver as a practical implementation. They do not extend the recovery
+guarantee to the unscaled solver.
+
+\begin{figure}[t]
+  \centering
+  % Copy the generated comparison.pdf to this project-relative location.
+  \includegraphics[width=\linewidth]{figures/recovery_comparison.pdf}
+  \caption{Comparison of readout recovery procedures. Solid curves use
+  unscaled SVD; dashed curves use reference-scaled SVD with the prescribed
+  theoretical cutoff. Colors identify target functions. Each pair uses
+  identical neurons and samples, with fixed parameters across resolutions.
+  The horizontal variable $N$ counts interior intervals; the hidden width
+  is $W=N+2\lceil(11/8)\sqrt N\rceil+1$. Both methods attain measured
+  relative $L^2$ error below $6\times10^{-13}$ at every tested $N\ge512$;
+  the unscaled procedure often attains high accuracy earlier. Errors are
+  evaluation-grid measurements, not certified continuous-domain error bounds.}
+  \label{fig:recovery_comparison}
+\end{figure}
+
+% EDIT 5. Appendix A.3.3, page 22: insert after line 1145, before A.3.4.
+% A.63 remains a valid sufficient realization. This paragraph supplies the
+% sharper realization used by the new experiment, not a changed cutoff.
+\paragraph{Sharper numerical bounds for the recovery comparison.}
+The comparison in Section~\ref{sec:recovery_comparison} uses the following
+alternative sufficient realization of (A.61)--(A.62). Let
+$H=\widehat U^\top\widehat U-I$ and
+$G=\widehat V^\top\widehat V-I$ be the orthogonality defects of the
+returned singular-vector matrices. Retain the bounds
+$\|H\|_2\le o_U<1$ and $\|G\|_2\le o_V<1$ above, and write
+$\sigma_{\max}=\|\widehat\Sigma\|_2$ and $V_+=\sqrt{1+o_V}$.
+Define the scalar remainder bounds
+\[
+ t_s(e)=\frac{e^2}{8(1-e)^{3/2}},\qquad
+ t_i(e)=\frac{3e^2}{8(1-e)^{5/2}}\quad(0\le e<1).
+\]
+With $e_F$ and $r_F$ as above, one may use
+\[
+ a_W=e_F+r_F+
+ \left(\frac12\|H\widehat\Sigma\|_2+
+       t_s(o_U)\sigma_{\max}\right)V_+
+ +\frac12\|\widehat\Sigma G\|_2+t_s(o_V)\sigma_{\max}.
+\]
+Let $p$ be the computed pairwise projection from (A.60), and let
+$q=\widehat U^\top\widetilde y$ denote the exact projection of the stored
+arrays, used only for analysis. Define
+\[
+ d_p=\|p-q\|_2+\frac12\|Hq\|_2+t_i(o_U)\|q\|_2.
+\]
+Then a valid label perturbation bound is
+\[
+ b_W=e_y+d_p+u\|p\|_2+\mu\|\widehat\sigma\|_2,
+\]
+where $\widehat\sigma$ is the vector of returned singular values;
+$e_y$, $u$, and $\mu$ retain their meanings above. All displayed norm
+quantities are replaced by validated upper bounds in the implementation.
+
+To verify these formulas, write
+$\widehat U=U_0(I+H)^{1/2}$ and
+$\widehat V=V_0(I+G)^{1/2}$ with orthonormal $U_0,V_0$.
+Taylor's theorem and the spectral theorem give
+\[
+ \|(I+H)^{1/2}-I-H/2\|_2\le t_s(o_U),\qquad
+ \|(I+H)^{-1/2}-I+H/2\|_2\le t_i(o_U),
+\]
+and the corresponding square-root bound for $G$.
+Subtracting $U_0\widehat\Sigma V_0^\top$ from
+$\widehat U\widehat\Sigma\widehat V^\top$ and grouping the left and
+right polar corrections proves the stated $a_W$ bound. Since
+$U_0^\top\widetilde y=(I+H)^{-1/2}q$, the inverse-square-root bound gives
+$\|p-U_0^\top\widetilde y\|_2\le d_p$. The same retained-coordinate
+construction of $y_0$ used above, together with its division-rounding
+allowance, proves the stated $b_W$ bound. The export bound (A.64) and
+cutoff condition (A.65) remain unchanged.
+
+The validation computes enclosures of residual and Gram products by
+decomposing FP64 inputs into fixed-point chunks. For chunk width $b$ and
+inner dimension $k$, the implementation checks
+$2b+\lceil\log_2 k\rceil\le52$ and representable exponent ranges,
+so the digit products and sums are exact under the stated FP64 arithmetic.
+Reconstruction uses compensated sums, with decomposition tails and
+rounding allowances included. Norm bounds include these enclosure errors;
+when exact normalization is unavailable, a validated Frobenius-norm bound
+is used. Scalar bounds are rounded outward in MPFR. These calculations
+validate the numerical bounds and do not refine the fitted coefficients.

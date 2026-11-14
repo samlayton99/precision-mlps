@@ -1,0 +1,22 @@
+experiment: expC14_option_c_original_theorem
+N: [128, 256, 512, 1024, 2048]
+targets: [exp, sine4, sine24, chirp, weak_high_frequency, packet]
+lambda: 0.25
+a_H: 2.75
+delta: 1.0
+Delta: 0.5625
+sampling_density: 8
+sampling_degree: 1
+ellipse_rho: 2.0
+eval_points: 16384
+validation_points: 32768
+actual_relative_cutoff: 2.220446049250313e-16
+theory_driver: gejsv
+threads: 4
+analytic_bound: Original A.51 E_rep, unchanged
+numerical_interface: A.61-A.62 with validated weighted-polar residual bounds
+cutoff: Original A.65, unchanged; no norm guard and no practical cutoff substitution
+design_selection: Fixed a_H=11/4 makes the original E_rep/B below 1e-16 already at N=128; all choices precede fitting
+driver_selection: Native FP64 DGEJSV C/U/J/N/N/N selected by feature-matrix residual bounds without evaluating target labels
+coefficient_arithmetic: FP64 formation, SVD, pairwise projection, division and export
+bound_arithmetic: FP64 expansion matrix products and 256-bit directed scalar interval calculations

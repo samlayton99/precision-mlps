@@ -1,0 +1,64 @@
+experiment: expC14_original_theorem_dense_N32_512
+N:
+- 32
+- 48
+- 64
+- 80
+- 96
+- 112
+- 128
+- 144
+- 160
+- 176
+- 192
+- 208
+- 224
+- 240
+- 256
+- 272
+- 288
+- 304
+- 320
+- 336
+- 352
+- 368
+- 384
+- 400
+- 416
+- 432
+- 448
+- 464
+- 480
+- 496
+- 512
+targets:
+- exp
+- sine4
+- sine24
+- chirp
+- weak_high_frequency
+- packet
+lambda: 0.25
+a_H: 1.375
+delta: 4.0
+Delta: 0.5625
+sampling_density: 8
+sampling_degree: 1
+ellipse_rho: 2.0
+eval_points: 16384
+validation_points: 32768
+actual_relative_cutoff: 2.220446049250313e-16
+theory_driver: gejsv
+threads: 4
+analytic_bound: Original A.51 E_rep, unchanged
+numerical_interface: A.61-A.62 with validated weighted-polar residual bounds
+cutoff: Original A.65, unchanged; no norm guard and no practical cutoff substitution
+design_selection: Fixed a_H=11/8 and delta=4 satisfy original A.3 at N=32. Non-dyadic
+  widths use original A.81 input-rounding route. No test-error tuning.
+driver_selection: Same native FP64 DGEJSV C/U/J/N/N/N as previous option C comparison
+coefficient_arithmetic: FP64 formation, SVD, pairwise projection, division and export
+bound_arithmetic: FP64 expansion products; MPFR256 scalar enclosures with extended
+  exponent range for large analytic constants
+input_error_route: uniform_A81
+feature_parameterization: exact_affine
+extended_scalar_bounds: true

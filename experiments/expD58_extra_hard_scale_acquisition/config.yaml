@@ -1,0 +1,26 @@
+experiment: expD58_extra_hard_scale_acquisition
+activation: tanh
+optimizer: full_batch_gradient_descent
+optimizer_label: GD
+loss: half_mean_squared_error
+dtype: float64
+width: 196
+steps: 200000
+learning_rates: [0.01, 0.001, 0.0001]
+initialization_multipliers: [1.0, 2.0, 4.0]
+seed: 30
+train_points: 1024
+eval_points: 4096
+dense_eval_points: 65536
+log_every: 500
+round_steps: 5000
+workers: 4
+target_normalization: training_grid_RMS_without_mean_subtraction
+figure_title: "Scale Acquisition Ablation: 8 extra-hard functions"
+quill_reference:
+  interior_intervals: 147
+  halo_each_side: 24
+  total_width: 196
+  lambda: 0.25
+targets:
+  extra_hard: [erf_transition, gamma_shifted, airy_transition, signed_sqrt_cusp, smooth_bump, oscillatory_cusp, shifted_step, square_wave]

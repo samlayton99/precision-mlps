@@ -1,0 +1,39 @@
+{
+  "targets": [
+    "square",
+    "sine",
+    "sine_mixture"
+  ],
+  "learning_rates": [
+    0.01,
+    0.001,
+    0.0001,
+    1e-05,
+    1e-06
+  ],
+  "steps": 10000,
+  "warmup_steps": 1000,
+  "train_points": 1024,
+  "eval_points": 2048,
+  "qi": {
+    "N": 128,
+    "precision": "mpmath",
+    "mp_dps": 30,
+    "lambda_star": 0.25,
+    "Kc": 160
+  },
+  "adam": {
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.0
+  },
+  "initial_error_ceiling": 1e-12,
+  "dtype": "float64",
+  "seed": 0,
+  "threads": 1,
+  "initialization": "standard",
+  "width": 269
+}

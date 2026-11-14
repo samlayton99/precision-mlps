@@ -1,0 +1,18 @@
+experiment: expC14_theory_solver_comparison
+N: [128, 256, 512, 1024, 2048]
+targets: [exp, sine4, sine24, chirp, weak_high_frequency, packet]
+lambda: 0.25
+a_H: 1.0
+delta: 1.0
+Delta: 0.25
+sampling_density: 8
+sampling_degree: 1
+ellipse_rho: 2.0
+eval_points: 32768
+validation_points: 65536
+precision: float64
+actual_relative_cutoff: 2.220446049250313e-16
+threads: 4
+analytic_bound: A.51 E_rep, not an empirical approximation error
+numerical_bounds: A.63 with measured Frobenius residuals plus conservative standard dot-product rounding allowances
+certification: algorithmic comparison; not an interval-certified continuous-error claim

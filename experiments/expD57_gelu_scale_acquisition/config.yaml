@@ -1,0 +1,28 @@
+experiment: expD57_gelu_scale_acquisition
+activation: exact_gelu
+optimizers: [gd, adam]
+loss: half_mean_squared_error
+dtype: float64
+width: 196
+steps: 200000
+learning_rates: [0.01, 0.001, 0.0001]
+initialization_multipliers: [1.0, 2.0, 4.0]
+seed: 30
+train_points: 1024
+eval_points: 4096
+target_normalization: training_grid_RMS_without_mean_subtraction
+log_every: 500
+round_steps: 5000
+workers: 4
+adam:
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 1.0e-8
+quill_reference:
+  interior_intervals: 147
+  halo_each_side: 24
+  total_width: 196
+  lambda: 0.707
+targets:
+  medium: [sine_4pi]
+  hard: [runge_100]
